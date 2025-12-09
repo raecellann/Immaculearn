@@ -33,6 +33,7 @@ import ProfGradeRecordPage from "./pages/prof-GradeViewing/profgradeviewing.jsx"
 import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx";
 import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx";
 import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
+import CreateFileAdmin from "./pages/CreateFile-Admin/createfile.jsx";
 
 import ParentLogin from "./pages/parent-login/parentlogin.jsx";
 import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
@@ -41,15 +42,18 @@ export default function Routes() {
   return (
     <ReactRoutes>
 
+
+      {/* ADMIN ROUTES */}
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
       <Route path="/admin-students" element={<AdminStudents />} />
       <Route path="/admin-teachers" element={<AdminTeachers />} />
 
+
+      {/* STUDENT ROUTES */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/chatlist" element={<ChatList />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/create-space" element={<SpaceCreationPage />} />
-      <Route path="/create-space-admin" element={<CreateSpaceAdmin />} />
       <Route path="/initial-invite" element={<InitialInvitePage />} />
       <Route path="/home" element={<HomePage />} />
       <Route path="/accsettings" element={<ProfilePage />} />
@@ -61,10 +65,18 @@ export default function Routes() {
       <Route path="/space" element={<SpacePage />} />
       <Route path="/settings" element={<SettingsPage />} />
 
+
+      {/* ADMIN STUDENT ROUTES */}
       <Route path="/task-view" element={<TaskViewPage />} />
       <Route path="/task-view-admin" element={<TaskViewPageAdmin />} />
       <Route path="/task-view-all" element={<TaskViewAll />} />
+      <Route path="/create-space-admin" element={<CreateSpaceAdmin />} />
+      <Route path="/create-file-admin" element={<CreateFileAdmin />} />
 
+
+
+
+      {/* PROFESSOR ROUTES */}
       <Route path="/prof-acc-settings" element={<ProfProfilePage />} />
       <Route path="/prof-notifications" element={<ProfNotificationPage />} />
       <Route path="/prof-list-activity" element={<ProfListActivityPage />} />
@@ -74,6 +86,8 @@ export default function Routes() {
       <Route path="/prof-home" element={<ProfHomePage />} />
       <Route path="/prof-settings" element={<ProfSettingsPage />} />
 
+
+      {/* PARENT ROUTES */}
       <Route path="/parent-grade-login" element={<ParentLogin />} />
       <Route path="/parent-grade-view" element={<ParentGradeView />} />
 

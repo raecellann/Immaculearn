@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import Sidebar from "../component/sidebar";
 
 const statusStyles = {
-  Done: "border-green-400 text-green-400",
-  "In Progress": "border-blue-400 text-blue-400",
-  Missing: "border-red-400 text-red-400",
+  Done: "border-2 border-[#00B865] text-[#10E164]",
+  "In Progress": "border-[#0066D2] text-[#4D9BEF]",
+  Missing: "border-[#FF5252] text-[#FF5252]",
 };
 
 const TaskPage = () => {
@@ -73,24 +73,28 @@ const TaskPage = () => {
                         onClick={() =>
                           setOpenIndex(openIndex === index ? null : index)
                         }
-                        className={`bg-black px-4 py-1 rounded-full border ${statusStyles[task.status]} flex items-center gap-2`}
+                        className={`bg-black px-4 py-1 rounded-full ${
+                          statusStyles[task.status]
+                        } flex items-center gap-2 text-sm`}
                       >
-                        {task.status}
+                        <span className="font-medium">{task.status}</span>
                         <span className="text-xs">▼</span>
                       </button>
 
                       {/* DARK DROPDOWN */}
                       {openIndex === index && (
-                        <div className="absolute left-0 mt-2 w-36 bg-black border border-gray-700 rounded-md z-50">
-                          {Object.keys(statusStyles).map((st) => (
-                            <button
-                              key={st}
-                              onClick={() => handleStatusChange(index, st)}
-                              className="w-full text-left px-3 py-2 text-gray-200 hover:bg-[#2A303A] rounded-md"
-                            >
-                              {st}
-                            </button>
-                          ))}
+                        <div className="absolute left-0 mt-2 w-44 bg-black border border-gray-700 rounded-lg p-3 z-50">
+                          <div className="flex flex-col gap-2">
+                            {Object.keys(statusStyles).map((st) => (
+                              <button
+                                key={st}
+                                onClick={() => handleStatusChange(index, st)}
+                                className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
+                              >
+                                {st}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>

@@ -172,13 +172,15 @@ const SpacePage = () => {
 
                     {/* Dropdown Menu */}
                     {showMenu === `your-${space.id}` && (
-                      <div className="absolute top-10 right-0 bg-[#242B38] rounded-md shadow-lg py-2 min-w-[150px] z-10">
-                        <button className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3E4450] transition">
-                          View Details
-                        </button>
-                        <button className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#3E4450] transition">
-                          Leave Space
-                        </button>
+                      <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                        <div className="flex flex-col gap-2">
+                          <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm hover:opacity-95 transition">
+                            View Details
+                          </button>
+                          <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm hover:opacity-95 transition">
+                            Leave Space
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -226,13 +228,15 @@ const SpacePage = () => {
 
                     {/* Dropdown Menu */}
                     {showMenu === space.id && (
-                      <div className="absolute top-10 right-0 bg-[#242B38] rounded-md shadow-lg py-2 min-w-[150px] z-10">
-                        <button className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3E4450] transition">
-                          View Details
-                        </button>
-                        <button className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#3E4450] transition">
-                          Leave Space
-                        </button>
+                      <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                        <div className="flex flex-col gap-2">
+                          <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm hover:opacity-95 transition">
+                            View Details
+                          </button>
+                          <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm hover:opacity-95 transition">
+                            Leave Space
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

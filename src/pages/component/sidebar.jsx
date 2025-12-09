@@ -11,63 +11,18 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+
+import { Link, useLocation } from "react-router";
+
 import Logout from "./logout";
 import logo from "../../assets/HomePage/logo.png";
 import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
 
 const Sidebar = () => {
   const [showLogout, setShowLogout] = useState(false);
-  const [activeItem, setActiveItem] = useState(null);
-  const [routerModule, setRouterModule] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
 
-  const handleNavigate = (path) => {
-    if (!path || typeof window === "undefined") return;
-    window.history.pushState({}, "", path);
-    window.dispatchEvent(new PopStateEvent("popstate"));
-  };
-
-  useEffect(() => {
-    const updateActive = () => {
-      const currentPath = window.location.pathname;
-      const menuItemsMap = {
-        "/home": "Home",
-        "/space": "Spaces",
-        "/notifications": "Notifications",
-        "/task": "Tasks",
-        "/files": "Files",
-        "/grade-viewing": "Grade Viewing",
-        "/chatlist": "Chats",
-        "/accsettings": "Account",
-        "/settings": "Settings",
-      };
-      setActiveItem(menuItemsMap[currentPath] || null);
-    };
-
-    updateActive();
-    window.addEventListener("popstate", updateActive);
-    return () => window.removeEventListener("popstate", updateActive);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    let cancelled = false;
-    import("react-router-dom")
-      .then((mod) => {
-        if (!cancelled) setRouterModule(mod);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (hoveredItem !== null) {
-      const timer = setTimeout(() => setHoveredItem(null), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [hoveredItem]);
+  const location = useLocation();
 
   const menuItems = [
     { icon: <Home size={20} />, label: "Home", path: "/home" },
@@ -104,13 +59,8 @@ const Sidebar = () => {
       }}
     >
       <style>{`
-        .sidebar-scroll::-webkit-scrollbar {
-          display: none;
-        }
-        .sidebar-scroll {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
+        .sidebar-scroll::-webkit-scrollbar { display: none; }
+        .sidebar-scroll { scrollbar-width: none; -ms-overflow-style: none; }
       `}</style>
 
       <div className="flex-1 flex flex-col items-start p-5 overflow-y-auto sidebar-scroll">
@@ -130,10 +80,9 @@ const Sidebar = () => {
               icon={item.icon}
               label={item.label}
               path={item.path}
+              active={location.pathname === item.path} // ← FIX
               isHovered={hoveredItem === item.label}
               onHover={() => setHoveredItem(item.label)}
-              onClick={() => handleNavigate(item.path)}
-              routerModule={routerModule}
             />
           ))}
         </nav>
@@ -148,10 +97,9 @@ const Sidebar = () => {
               icon={item.icon}
               label={item.label}
               path={item.path}
+              active={location.pathname === item.path}
               isHovered={hoveredItem === item.label}
               onHover={() => setHoveredItem(item.label)}
-              onClick={() => handleNavigate(item.path)}
-              routerModule={routerModule}
             />
           ))}
         </div>
@@ -163,18 +111,18 @@ const Sidebar = () => {
               icon={item.icon}
               label={item.label}
               path={item.path}
+              active={location.pathname === item.path}
               isHovered={hoveredItem === item.label}
               onHover={() => setHoveredItem(item.label)}
-              onClick={() => handleNavigate(item.path)}
-              routerModule={routerModule}
             />
           ))}
+
           <SidebarItem
             icon={<LogOut size={20} />}
             label="Log Out Account"
+            onClick={() => setShowLogout(true)}
             isHovered={hoveredItem === "Log Out Account"}
             onHover={() => setHoveredItem("Log Out Account")}
-            onClick={() => setShowLogout(true)}
           />
         </div>
       </div>
@@ -188,7 +136,12 @@ const Sidebar = () => {
         <span className="text-sm font-semibold">Raecell Ann Galvez</span>
       </div>
 
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+      {showLogout && (
+        <Logout
+          onClose={() => setShowLogout(false)}
+          onLogOut={() => setShowLogout(true)}
+        />
+      )}
     </div>
   );
 };
@@ -196,65 +149,39 @@ const Sidebar = () => {
 const SidebarItem = ({
   icon,
   label,
-  onClick,
   path,
-  routerModule,
+  onClick,
+  active,
   isHovered,
   onHover,
 }) => {
-  const handleClick = (e) => {
-    e && e.preventDefault();
-    onClick && onClick();
-  };
+  const Component = path ? Link : "div";
 
-  const baseClass = `relative flex items-center space-x-3 px-5 py-2.5 text-xs font-medium
-                     transition-all duration-150 rounded-md 
-                     text-white hover:text-white 
-                     [&_*]:text-white [&_*]:hover:text-white`;
-
-  const inner = (
-    <>
-      <div
-        className={`absolute left-3 top-0 bottom-0 w-[88%] rounded-full transition-all duration-200 ${
-          isHovered ? "bg-black" : ""
-        }`}
-      ></div>
+  return (
+    <Component
+      to={path}
+      onClick={onClick}
+      onMouseEnter={onHover}
+      className={`relative flex items-center space-x-3 px-5 py-2.5 text-xs font-medium
+                  transition-all duration-150 rounded-md cursor-pointer
+                  text-white hover:text-white
+                  ${isHovered ? "bg-black" : ""}
+                  ${active ? "bg-black/25" : ""}
+                 `}
+    >
+      {/* <div
+        className={`absolute left-3 top-0 bottom-0 w-[88%] rounded-full
+                    transition-all duration-200
+                    ${isHovered ? "bg-black" : ""}
+        `}
+      ></div> */}
 
       <div className="relative flex items-center space-x-3 z-10">
         {icon}
-        <span className="text-white">{label}</span>
+        <span>{label}</span>
       </div>
-    </>
-  );
-
-  if (
-    routerModule &&
-    (routerModule.Link || (routerModule.default && routerModule.default.Link))
-  ) {
-    const LinkComp = routerModule.Link || routerModule.default.Link;
-    return (
-      <LinkComp
-        to={path || "#"}
-        onMouseEnter={onHover}
-        onClick={handleClick}
-        className={baseClass}
-      >
-        {inner}
-      </LinkComp>
-    );
-  }
-
-  return (
-    <div
-      onMouseEnter={onHover}
-      onClick={handleClick}
-      style={{ textDecoration: "none", cursor: "pointer" }}
-      className={baseClass}
-    >
-      {inner}
-    </div>
+    </Component>
   );
 };
-
 
 export default Sidebar;
