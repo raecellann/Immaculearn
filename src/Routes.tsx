@@ -34,6 +34,7 @@ import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx";
 import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx";
 import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
 import CreateFileAdmin from "./pages/CreateFile-Admin/createfile.jsx";
+import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx";
 
 import ParentLogin from "./pages/parent-login/parentlogin.jsx";
 import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
@@ -72,6 +73,7 @@ export default function Routes() {
       <Route path="/task-view-all" element={<TaskViewAll />} />
       <Route path="/create-space-admin" element={<CreateSpaceAdmin />} />
       <Route path="/create-file-admin" element={<CreateFileAdmin />} />
+      <Route path="/view-all-files" element={<ViewAllFilesPage />} />
 
 
 

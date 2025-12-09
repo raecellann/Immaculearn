@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import InputField from "@/pages/component/InputField";
 import Button from "@/pages/component/Button";
+import { Mail } from "lucide-react";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -14,6 +15,15 @@ const LoginPage = () => {
       return;
     }
     alert(`Logging in as ${role}`);
+  };
+
+  const handleGmailLogin = () => {
+    if (!role) {
+      alert("Please select whether you are a Student or a Professor.");
+      return;
+    }
+    // Redirect to Gmail login or OAuth flow
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=email%20profile&state=${role}`;
   };
 
   return (
@@ -35,7 +45,7 @@ const LoginPage = () => {
 
       {/* Center Content */}
       <div className="text-center mb-8">
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-700">
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mt-8">
           Log in with{" "}
           <span className="text-green-600 font-bold">ImmacuLearn</span> Today!
         </h2>
@@ -53,15 +63,13 @@ const LoginPage = () => {
         </div>
 
         {/* Form */}
-        <form
-          className="flex flex-col gap-4 items-center"
-          onSubmit={handleSubmit}
-        >
+        <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit}>
           <InputField
             type="email"
             placeholder="Enter your email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            style={{ width: "100%" }}
           />
 
           <InputField
@@ -69,6 +77,7 @@ const LoginPage = () => {
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            style={{ width: "100%" }}
           />
 
           {/* ✅ Checkbox Section */}
@@ -95,14 +104,64 @@ const LoginPage = () => {
           <Button
             type="submit"
             style={{
-              width: "30%",
-              background: "#000",
+              width: "50%",
+              background: "#0066D2",
+              padding: "10px",
+              fontSize: "16px",
+              fontWeight: "600",
+              borderRadius: "8px",
+              marginTop: "8px",
+              margin: "0 auto",
             }}
             onClick={handleSubmit}
           >
             Log in
           </Button>
         </form>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-6">
+          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="text-gray-500 text-sm">Or</span>
+          <div className="flex-1 border-t border-gray-300"></div>
+        </div>
+
+        {/* Gmail Login Button */}
+        <button
+          onClick={handleGmailLogin}
+          style={{
+            width: "80%",
+            padding: "12px 24px",
+            fontSize: "16px",
+            fontWeight: "600",
+            borderRadius: "8px",
+            border: "2px solid #e5e7eb",
+            backgroundColor: "#ffffff",
+            color: "#374151",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "12px",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            margin: "0 auto",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = "#f3f4f6";
+            e.currentTarget.style.borderColor = "#d1d5db";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = "#ffffff";
+            e.currentTarget.style.borderColor = "#e5e7eb";
+          }}
+        >
+          <Mail
+            size={20}
+            className="text-red-500"
+            style={{ color: "#ef4444" }}
+          />
+          Continue with Gmail
+        </button>
 
         <p className="text-center text-gray-600 text-sm mt-4">
           Check your email inbox for log in credentials.
