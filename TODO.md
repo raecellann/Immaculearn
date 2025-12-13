@@ -1,2 +1,0 @@
-- [ ] Update the style of the "Log in" button to width: "80%" and add margin: "0 auto" for centering
-- [ ] Update the style of the "Continue with Gmail" button to width: "80%" and add margin: "0 auto" for centering

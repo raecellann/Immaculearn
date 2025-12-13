@@ -6,10 +6,12 @@ import AdminStudents from "./pages/admin-students/adminstudents.jsx";
 import AdminTeachers from "./pages/admin-teachers/adminteachers.jsx";
 
 import LandingPage from "./pages/Landing/landingPage.jsx";
-import ChatList from "./pages/User_chats/user_chats";
-import LoginPage from "./pages/SignIn/signInPage.jsx"; // Import the LoginPage component
 import SpaceCreationPage from "./pages/SpaceCreation/spacecreation.jsx";
 import InitialInvitePage from "./pages/SpaceCreation/inviteteam.jsx";
+
+import ChatList from "./pages/User_chats/user_chats";
+import LoginPage from "./pages/SignIn/signInPage.jsx"; 
+import UserPage from "./pages/UserSpace/zj-space.jsx";
 import HomePage from "./pages/HomePage/homepage.jsx";
 import ProfilePage from "./pages/AccSettings/accsettingspage.jsx";
 import GradeViewing from "./pages/GradeViewing/gradeViewing.jsx";
@@ -65,6 +67,8 @@ export default function Routes() {
       <Route path="/view-files" element={<ViewFilePage/>} />
       <Route path="/space" element={<SpacePage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/view-all-files" element={<ViewAllFilesPage />} />
+      <Route path="/user-space-zj" element={<UserPage />} /> 
 
 
       {/* ADMIN STUDENT ROUTES */}
@@ -73,8 +77,6 @@ export default function Routes() {
       <Route path="/task-view-all" element={<TaskViewAll />} />
       <Route path="/create-space-admin" element={<CreateSpaceAdmin />} />
       <Route path="/create-file-admin" element={<CreateFileAdmin />} />
-      <Route path="/view-all-files" element={<ViewAllFilesPage />} />
-
 
 
 
