@@ -1,24 +1,30 @@
 import React, { useState, useRef } from "react";
 import Sidebar from "../component/sidebar";
-import { FiSearch, FiFileText, FiCheckCircle, FiLink } from "react-icons/fi";
+import {
+  FiSearch,
+  FiFileText,
+  FiCheckCircle,
+  FiLink,
+  FiMessageCircle,
+} from "react-icons/fi";
 
 const UserPage = () => {
   const [isFocused, setIsFocused] = useState(false);
   const editorRef = useRef(null);
 
-  // Apply formatting ONLY when text is selected inside the editor
   const applyFormat = (command) => {
-    editorRef.current?.focus(); // Ensure the editor is focused first
+    editorRef.current?.focus();
     const selection = window.getSelection();
     if (!selection || selection.toString() === "") return;
-
     document.execCommand(command, false, null);
   };
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
+      {/* SIDEBAR */}
       <Sidebar />
 
+      {/* MAIN */}
       <div className="flex-1 overflow-y-auto">
         {/* COVER */}
         <div className="relative">
@@ -29,6 +35,7 @@ const UserPage = () => {
           />
           <div className="absolute inset-0 bg-black/50" />
 
+          {/* SEARCH */}
           <div className="absolute top-4 right-6">
             <div className="relative">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -68,14 +75,10 @@ const UserPage = () => {
             </button>
           </div>
 
-          {/* POST SECTION */}
+          {/* POST BOX */}
           <div
             className={`
-              bg-white
-              rounded-xl
-              border
-              transition
-              cursor-text
+              bg-white rounded-xl border cursor-text transition
               ${isFocused ? "border-black" : "border-transparent"}
               hover:border-black
             `}
@@ -89,19 +92,19 @@ const UserPage = () => {
                 className="absolute left-6 top-6 w-10 h-10 rounded-full"
               />
 
-              {/* RICH TEXT EDITOR */}
+              {/* EDITOR */}
               <div
                 ref={editorRef}
                 contentEditable
                 suppressContentEditableWarning
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => {
-                  // If editor is empty, remove focus state
                   if (editorRef.current.innerText.trim() === "") {
                     setIsFocused(false);
                   }
                 }}
                 className="
+                  editor
                   w-full
                   min-h-[40px]
                   bg-white
@@ -111,65 +114,53 @@ const UserPage = () => {
                   pr-4
                   py-2
                   outline-none
-                  cursor-text
                 "
-              >
-                {!isFocused && editorRef.current?.innerText.trim() === "" && (
-                  <span className="text-gray-400 pointer-events-none">
-                    Post something to your space
-                  </span>
-                )}
-              </div>
+              />
 
               {/* ACTIONS */}
               {isFocused && (
                 <>
-                  {/* FORMAT BUTTONS */}
+                  {/* FORMAT */}
                   <div className="flex gap-8 mt-4 text-black">
                     <button
                       onMouseDown={(e) => {
                         e.preventDefault();
                         applyFormat("bold");
                       }}
-                      className="font-bold text-lg hover:underline bg-white "
+                      className="font-bold text-lg bg-white"
                     >
                       B
                     </button>
-
                     <button
                       onMouseDown={(e) => {
                         e.preventDefault();
                         applyFormat("italic");
                       }}
-                      className="italic text-lg hover:underline bg-white "
+                      className="italic text-lg bg-white"
                     >
                       I
                     </button>
-
                     <button
                       onMouseDown={(e) => {
                         e.preventDefault();
                         applyFormat("underline");
                       }}
-                      className="underline text-lg hover:opacity-70 bg-white "
+                      className="underline text-lg bg-white"
                     >
                       U
                     </button>
                   </div>
 
-                  {/* DIVIDER */}
-                  <div className="mt-4">
-                    <div className="border-t border-gray-300" />
-                  </div>
+                  <div className="mt-4 border-t border-gray-300" />
 
                   {/* FOOTER */}
-                  <div className="mt-4 pr-4 flex justify-between items-center">
+                  <div className="mt-4 flex justify-between items-center pr-4">
                     <div className="flex gap-8 text-sm text-gray-600">
-                      <button className="flex items-center gap-2 hover:text-black bg-white ">
+                      <button className="flex items-center gap-2 bg-white hover:text-black">
                         <FiFileText />
                         Add File
                       </button>
-                      <button className="flex items-center gap-2 hover:text-black bg-white ">
+                      <button className="flex items-center gap-2 bg-white hover:text-black">
                         <FiLink />
                         Add Link
                       </button>
@@ -181,11 +172,11 @@ const UserPage = () => {
                           setIsFocused(false);
                           editorRef.current.innerHTML = "";
                         }}
-                        className="px-4 py-2 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 transition"
+                        className="px-4 py-2 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300"
                       >
                         Cancel
                       </button>
-                      <button className="px-5 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition">
+                      <button className="px-5 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700">
                         Post
                       </button>
                     </div>
@@ -195,8 +186,9 @@ const UserPage = () => {
             </div>
           </div>
 
-          {/* GRID */}
+          {/* CONTENT GRID */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+            {/* REMINDERS */}
             <div className="bg-black border border-gray-700 rounded-xl p-5">
               <h2 className="font-bold mb-4">Reminders</h2>
               <div className="space-y-3">
@@ -208,11 +200,26 @@ const UserPage = () => {
                     Operating System • Oct 15
                   </p>
                 </div>
+                <div className="bg-[#141820] p-3 rounded-lg">
+                  <p className="font-semibold text-sm">
+                    Week 7 Individual Activity
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Operating System • Oct 15
+                  </p>
+                </div>
               </div>
+
+              {/* CHAT */}
+              <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-black border border-gray-700 hover:bg-gray-900">
+                <FiMessageCircle />
+                Enter Chat
+              </button>
             </div>
 
-            <div className="lg:col-span-2 bg-[#1B1F26] p-5 rounded-xl border border-gray-700">
-              <div className="flex items-center justify-between">
+            {/* ACTIVITY */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="bg-[#1B1F26] p-5 rounded-xl border border-gray-700 flex justify-between items-center">
                 <div className="flex gap-4">
                   <FiFileText className="text-blue-400" size={24} />
                   <div>
@@ -228,10 +235,38 @@ const UserPage = () => {
                   See File
                 </button>
               </div>
+
+              <div className="bg-[#1B1F26] p-5 rounded-xl border border-gray-700 flex justify-between items-center">
+                <div className="flex gap-4">
+                  <FiCheckCircle className="text-blue-400" size={24} />
+                  <div>
+                    <p className="font-semibold">
+                      Zeldrick assigned task with you
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      Thesis • Survey Revision
+                    </p>
+                  </div>
+                </div>
+                <button className="text-blue-400 hover:underline">
+                  See Task
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* PLACEHOLDER STYLE */}
+      <style>
+        {`
+          .editor:empty:before {
+            content: "Post something to your space";
+            color: #9ca3af;
+            pointer-events: none;
+          }
+        `}
+      </style>
     </div>
   );
 };
