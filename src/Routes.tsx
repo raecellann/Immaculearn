@@ -12,6 +12,9 @@ import InitialInvitePage from "./pages/SpaceCreation/inviteteam.jsx";
 import ChatList from "./pages/User_chats/user_chats";
 import LoginPage from "./pages/SignIn/signInPage.jsx"; 
 import UserPage from "./pages/UserSpace/zj-space.jsx";
+import UserTaskPage from "./pages/UserSpace/UserTaskPage.jsx";
+import UserFilesShared from "./pages/UserSpace/UserFilesShared.jsx";
+import UserPeoplePage from "./pages/UserSpace/UserPeoplePage.jsx";
 import HomePage from "./pages/HomePage/homepage.jsx";
 import ProfilePage from "./pages/AccSettings/accsettingspage.jsx";
 import GradeViewing from "./pages/GradeViewing/gradeViewing.jsx";
@@ -69,6 +72,11 @@ export default function Routes() {
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/view-all-files" element={<ViewAllFilesPage />} />
       <Route path="/user-space-zj" element={<UserPage />} /> 
+
+      {/* USER SPACE SUBPAGES */}
+      <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
+      <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
+      <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
 
 
       {/* ADMIN STUDENT ROUTES */}

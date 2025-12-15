@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
 import {
   FiSearch,
@@ -11,6 +12,7 @@ import {
 const UserPage = () => {
   const [isFocused, setIsFocused] = useState(false);
   const editorRef = useRef(null);
+  const navigate = useNavigate();
 
   const applyFormat = (command) => {
     editorRef.current?.focus();
@@ -64,13 +66,22 @@ const UserPage = () => {
             <button className="text-white text-xl font-semibold border-b-2 border-white pb-2">
               Stream
             </button>
-            <button className="text-gray-400 text-xl hover:text-white transition">
+            <button
+              className="text-gray-400 text-xl hover:text-white transition"
+              onClick={() => navigate("/user-space-zj/tasks")}
+            >
               Tasks
             </button>
-            <button className="text-gray-400 text-xl hover:text-white transition">
+            <button
+              className="text-gray-400 text-xl hover:text-white transition"
+              onClick={() => navigate("/user-space-zj/files-shared")}
+            >
               Files Shared
             </button>
-            <button className="text-gray-400 text-xl hover:text-white transition">
+            <button
+              className="text-gray-400 text-xl hover:text-white transition"
+              onClick={() => navigate("/user-space-zj/people")}
+            >
               People
             </button>
           </div>
@@ -226,9 +237,7 @@ const UserPage = () => {
                     <p className="font-semibold">
                       Zeldrick shared a file with you
                     </p>
-                    <p className="text-sm text-gray-400">
-                      OS • Week 7 Lecture
-                    </p>
+                    <p className="text-sm text-gray-400">OS • Week 7 Lecture</p>
                   </div>
                 </div>
                 <button className="text-blue-400 hover:underline">
