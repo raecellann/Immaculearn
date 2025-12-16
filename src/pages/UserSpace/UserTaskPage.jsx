@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
 
 const UserTaskPage = () => {
+  const navigate = useNavigate();
   // Task status styles
   const statusStyles = {
     Done: "border-2 border-[#00B865] text-[#10E164]",
@@ -69,16 +71,28 @@ const UserTaskPage = () => {
 
         {/* TABS */}
         <div className="flex justify-center gap-[120px] border-b border-white/10 mb-6 text-xl">
-          <button className="pb-3 text-white/70 hover:text-white">
+          <button
+            className="pb-3 text-white/70 hover:text-white"
+            onClick={() => navigate("/user-space-zj")}
+          >
             Stream
           </button>
-          <button className="pb-3 border-b-2 border-white font-medium">
+          <button
+            className="pb-3 border-b-2 border-white font-medium"
+            onClick={() => navigate("/usertaskpage")}
+          >
             Tasks
           </button>
-          <button className="pb-3 text-white/70 hover:text-white">
+          <button
+            className="pb-3 text-white/70 hover:text-white"
+            onClick={() => navigate("/userfilesshared")}
+          >
             Files Shared
           </button>
-          <button className="pb-3 text-white/70 hover:text-white">
+          <button
+            className="pb-3 text-white/70 hover:text-white"
+            onClick={() => navigate("/userpeoplepage")}
+          >
             People
           </button>
         </div>

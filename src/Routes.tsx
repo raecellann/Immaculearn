@@ -71,6 +71,8 @@ export default function Routes() {
       <Route path="/space" element={<SpacePage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/view-all-files" element={<ViewAllFilesPage />} />
+
+       {/* USER SPACE (example si zj,this is also the home or stream of the space) */}     
       <Route path="/user-space-zj" element={<UserPage />} /> 
 
       {/* USER SPACE SUBPAGES */}
