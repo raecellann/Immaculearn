@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router";
-import Sidebar from "../component/sidebar";
+import Sidebar from "../../component/sidebar";
 
-const UserTaskPage = () => {
+const AdminTaskPage = () => {
   const navigate = useNavigate();
   // Task status styles
   const statusStyles = {
@@ -60,8 +60,8 @@ const UserTaskPage = () => {
           {/* TITLE — sharp top, rounded bottom */}
           <div className="absolute top-0 z-10">
             <div
-              className="bg-black text-white px-10 py-3 
-      rounded-b-[1rem] rounded-t-none shadow-lg 
+              className="bg-black text-white px-10 py-3 \
+      rounded-b-[1rem] rounded-t-none shadow-lg \
       text-2xl font-extrabold text-left"
             >
               Zeldrick’s Space
@@ -73,34 +73,46 @@ const UserTaskPage = () => {
         <div className="flex justify-center gap-[120px] border-b border-white/10 mb-6 text-xl">
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/user-space-zj")}
+            onClick={() => navigate("/admin-space-zj")}
           >
             Stream
           </button>
           <button
             className="pb-3 border-b-2 border-white font-medium"
-            onClick={() => navigate("/user-space-zj/tasks")}
+            onClick={() => navigate("/admintaskpage")}
           >
             Tasks
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/user-space-zj/files-shared")}
+            onClick={() => navigate("/adminfilesshared")}
           >
             Files Shared
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/user-space-zj/people")}
+            onClick={() => navigate("/adminpeoplepage")}
           >
             People
+          </button>
+        </div>
+
+        {/* CREATE/UPLOAD ACTIVITY BUTTON */}
+        <div className="flex justify-end mb-4">
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-2"
+            onClick={() => {
+              /* handle create/upload activity */
+            }}
+          >
+            <span>＋</span> Create or Upload Activity
           </button>
         </div>
 
         {/* TASK TABLE */}
         <div className="max-w-5xl mx-auto">
           <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            To Do Lists 📚
+            Activities 📚
           </h2>
           <table className="w-full border-collapse">
             <thead>
@@ -108,7 +120,7 @@ const UserTaskPage = () => {
                 <th className="py-3 px-4 font-medium">Status</th>
                 <th className="py-3 px-4 font-medium">Task Name</th>
                 <th className="py-3 px-4 font-medium">Deadline</th>
-                <th className="py-3 px-4 font-medium">Space Name</th>
+                <th className="py-3 px-4 font-medium">Details</th>
               </tr>
             </thead>
             <tbody>
@@ -153,7 +165,7 @@ const UserTaskPage = () => {
 
                   <td className="py-3 px-4">
                     <a
-                      href="/task-view"
+                      href="/task-view-admin"
                       className="text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-2"
                     >
                       {task.name}
@@ -161,7 +173,14 @@ const UserTaskPage = () => {
                   </td>
 
                   <td className="py-3 px-4">{task.deadline}</td>
-                  <td className="py-3 px-4">{task.space}</td>
+                  <td className="py-3 px-4">
+                    <a
+                      href="/task-view-admin"
+                      className="text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-2"
+                    >
+                      See Activity
+                    </a>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -172,4 +191,4 @@ const UserTaskPage = () => {
   );
 };
 
-export default UserTaskPage;
+export default AdminTaskPage;

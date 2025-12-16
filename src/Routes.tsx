@@ -29,6 +29,9 @@ import TaskViewPageAdmin from "./pages/Task-view Admin/Task-View-Admin.jsx";
 import TaskViewAll from "./pages/Task-view Admin/Task-View-All.jsx";
 import ViewFilePage from "./pages/ViewFiles/ViewFiles.jsx";
 
+import AdminTaskPage from "./pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
+
+
 import ProfProfilePage from "./pages/prof-AccSettings/profaccsettingspage.jsx";
 import ProfNotificationPage from "./pages/prof-Notifications/profnotification.jsx";
 import ProfListActivityPage from "./pages/prof-ListActivities/proflistactivitypage.jsx";
@@ -79,6 +82,8 @@ export default function Routes() {
       <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
       <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
       <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
+
+      <Route path="/admintaskpage" element={<AdminTaskPage />} />
 
 
       {/* ADMIN STUDENT ROUTES */}
