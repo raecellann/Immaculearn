@@ -51,10 +51,14 @@ import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx";
 
 import ParentLogin from "./pages/parent-login/parentlogin.jsx";
 import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
+import { SignInPageWithOAuth } from "./pages/test-page/signInPageWithOAuth.jsx";
+import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
 
 export default function Routes() {
   return (
     <ReactRoutes>
+
+      <Route path="/test-page" element={<SignInPageWithOAuth />} />
 
 
       {/* ADMIN ROUTES */}
@@ -119,6 +123,9 @@ export default function Routes() {
       {/* PARENT ROUTES */}
       <Route path="/parent-grade-login" element={<ParentLogin />} />
       <Route path="/parent-grade-view" element={<ParentGradeView />} />
+
+
+      <Route path="*" element={<PageNotFound />} />
 
     </ReactRoutes>
   );

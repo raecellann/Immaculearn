@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { encryptData, decryptData } from "../../hooks/useLocalStorage";
 import Button from "@/pages/component/Button";
 import InputField from "../component/InputField";
+import { Link } from "react-router";
 
 const LandingPage = () => {
   const [showMainPage, setShowMainPage] = useState(false);
@@ -52,16 +53,19 @@ const LandingPage = () => {
             <a href="#contact">Contact Us</a>
           </nav>
 
-          <Button
-            className="px-5 py-2"
-            style={{
-              background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
-              borderRadius: "10px",
-              fontSize: "15px",
-            }}
-          >
-            Log In
-          </Button>
+
+          <Link to="login">
+            <Button
+              className="px-5 py-2"
+              style={{
+                background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
+                borderRadius: "10px",
+                fontSize: "15px",
+              }}
+            >
+              Log In
+            </Button>
+          </Link>
         </header>
 
         <img

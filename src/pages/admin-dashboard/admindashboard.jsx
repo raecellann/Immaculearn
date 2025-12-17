@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import AdminSidebar from "../component/AdminSidebar";
+import AdminSidebar from "../component/adminsidebar";
 import { Users, GraduationCap, UserCheck } from "lucide-react";
 
 const AdminDashboard = () => {

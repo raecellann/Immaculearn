@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AdminSidebar from "../component/AdminSidebar";
+import AdminSidebar from "../component/adminsidebar";
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);

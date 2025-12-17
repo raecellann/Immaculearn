@@ -7,7 +7,7 @@ import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
-import { Server } from 'socket.io';
+// import { Server } from 'socket.io';
 
 const IS_PRODUCTION = process.env.ENV === 'production';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -15,7 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 async function createCustomServer() {
   const app = express();
   const server = createServer(app);
-  const io = new Server(server);
+  // const io = new Server(server);
 
   let vite;
 
@@ -33,6 +33,13 @@ async function createCustomServer() {
 
     app.use(vite.middlewares);
   }
+  // Ignore Chrome DevTools and other well-known paths
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/.well-known')) {
+      return res.status(404).end();
+    }
+    next();
+  });
 
   app.use('*', async (req, res, next) => {
     const url = req.originalUrl;
@@ -64,11 +71,11 @@ async function createCustomServer() {
     }
   });
 
-  io.on('connection', (socket) => {
-    console.log('user connected');
+  // io.on('connection', (socket) => {
+  //   console.log('user connected');
 
-    socket.emit('welcome', 'A message from the server');
-  });
+  //   socket.emit('welcome', 'A message from the server');
+  // });
 
   console.log('console', process.env.PORT)
   server.listen(process.env.PORT);
