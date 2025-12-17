@@ -45,7 +45,7 @@ const ProfFilesShared = () => {
           {/* SPACE NAME */}
           <div className="absolute top-0 z-10">
             <div className="bg-black text-white px-10 py-3 rounded-b-[1rem] rounded-t-none shadow-lg text-2xl font-extrabold text-left">
-              Professor Susan's Space
+              CS Thesis 2 Space
             </div>
           </div>
         </div>
@@ -54,25 +54,25 @@ const ProfFilesShared = () => {
         <div className="flex justify-center gap-[120px] border-b border-white/10 mb-6 text-xl">
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/prof-space-susan")}
+            onClick={() => navigate("/prof-space-thesis")}
           >
             Stream
           </button>
           <button
             className="pb-3 border-b-2 border-white font-medium"
-            onClick={() => navigate("/prof-space-susan/tasks")}
+            onClick={() => navigate("/prof-space-thesis/tasks")}
           >
             Tasks
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/prof-space-susan/files-shared")}
+            onClick={() => navigate("/prof-space-thesis/files-shared")}
           >
             Files Shared
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/prof-space-susan/people")}
+            onClick={() => navigate("/prof-space-thesis/people")}
           >
             People
           </button>

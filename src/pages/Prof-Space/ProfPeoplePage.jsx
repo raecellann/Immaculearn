@@ -24,7 +24,7 @@ const ProfPeoplePage = () => {
           {/* TITLE */}
           <div className="absolute top-0 z-10">
             <div className="bg-black text-white px-10 py-3 rounded-b-[1rem] rounded-t-none shadow-lg text-2xl font-extrabold text-left">
-              Professor Susan's Space
+              CS Thesis 2 Space
             </div>
           </div>
         </div>
@@ -33,7 +33,7 @@ const ProfPeoplePage = () => {
         <div className="relative flex justify-between items-center mb-6">
           <div className="w-20"></div> {/* Spacer to balance the back button */}
           <h1 className="text-2xl font-semibold absolute left-1/2 transform -translate-x-1/2">
-            People – Susana's Space
+            People – CS Thesis 2 Space
           </h1>
           <button
             onClick={() => navigate(-1)}

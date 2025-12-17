@@ -52,7 +52,7 @@ const ThesisSpace = () => {
         <div className="p-6">
           {/* HEADER */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold">Professor Susan's Space</h1>
+            <h1 className="text-3xl font-bold">CS Thesis 2 Space</h1>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-xs text-gray-400">(5 Members)</span>
               <button className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition">
@@ -68,19 +68,19 @@ const ThesisSpace = () => {
             </button>
             <button
               className="text-gray-400 text-xl hover:text-white transition"
-              onClick={() => navigate("/prof-space-susan/tasks")}
+              onClick={() => navigate("/prof-space-thesis/tasks")}
             >
               Tasks
             </button>
             <button
               className="text-gray-400 text-xl hover:text-white transition"
-              onClick={() => navigate("/prof-space-susan/files-shared")}
+              onClick={() => navigate("/prof-space-thesis/files-shared")}
             >
               Files Shared
             </button>
             <button
               className="text-gray-400 text-xl hover:text-white transition"
-              onClick={() => navigate("/prof-space-susan/people")}
+              onClick={() => navigate("/prof-space-thesis/people")}
             >
               People
             </button>
