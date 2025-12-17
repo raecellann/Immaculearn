@@ -10,7 +10,7 @@ import SpaceCreationPage from "./pages/SpaceCreation/spacecreation.jsx";
 import InitialInvitePage from "./pages/SpaceCreation/inviteteam.jsx";
 
 import ChatList from "./pages/User_chats/user_chats";
-import LoginPage from "./pages/SignIn/signInPage.jsx"; 
+import LoginPage from "./pages/SignIn/signInPage.jsx";
 import UserPage from "./pages/UserSpace/zj-space.jsx";
 import UserTaskPage from "./pages/UserSpace/UserTaskPage.jsx";
 import UserFilesShared from "./pages/UserSpace/UserFilesShared.jsx";
@@ -31,7 +31,7 @@ import ViewFilePage from "./pages/ViewFiles/ViewFiles.jsx";
 
 import AdminTaskPage from "./pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
 import AdminCreateActivityPage from "./pages/UserSpace/AdminSpacePages/AdminCreateActivityPage.jsx";
-
+import AdminFilesSharedPage from "./pages/UserSpace/AdminSpacePages/AdminFilesSharedPage.jsx";
 
 import ProfProfilePage from "./pages/prof-AccSettings/profaccsettingspage.jsx";
 import ProfNotificationPage from "./pages/prof-Notifications/profnotification.jsx";
@@ -61,12 +61,10 @@ export default function Routes() {
 
       <Route path="/test-page" element={<SignInPageWithOAuth />} />
 
-
       {/* ADMIN ROUTES */}
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
       <Route path="/admin-students" element={<AdminStudents />} />
       <Route path="/admin-teachers" element={<AdminTeachers />} />
-
 
       {/* STUDENT ROUTES */}
       <Route path="/" element={<LandingPage />} />
@@ -85,8 +83,8 @@ export default function Routes() {
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/view-all-files" element={<ViewAllFilesPage />} />
 
-       {/* USER SPACE (example si zj,this is also the home or stream of the space) */}     
-      <Route path="/user-space-zj" element={<UserPage />} /> 
+      {/* USER SPACE (example si zj,this is also the home or stream of the space) */}
+      <Route path="/user-space-zj" element={<UserPage />} />
 
       {/* USER SPACE SUBPAGES */}
       <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
@@ -96,15 +94,14 @@ export default function Routes() {
       <Route path="/admintaskpage" element={<AdminTaskPage />} />
       <Route path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />
 
-
       {/* ADMIN STUDENT ROUTES */}
       <Route path="/task-view" element={<TaskViewPage />} />
       <Route path="/task-view-admin" element={<TaskViewPageAdmin />} />
       <Route path="/task-view-all" element={<TaskViewAll />} />
       <Route path="/create-space-admin" element={<CreateSpaceAdmin />} />
       <Route path="/create-file-admin" element={<CreateFileAdmin />} />
-
-
+      <Route path="/upload-file-admin" element={<CreateFileAdmin />} />
+      <Route path="/admin-files-shared" element={<AdminFilesSharedPage />} />
 
       {/* PROFESSOR ROUTES */}
       <Route path="/prof-acc-settings" element={<ProfProfilePage />} />
@@ -125,7 +122,6 @@ export default function Routes() {
       {/* PARENT ROUTES */}
       <Route path="/parent-grade-login" element={<ParentLogin />} />
       <Route path="/parent-grade-view" element={<ParentGradeView />} />
-
 
       <Route path="*" element={<PageNotFound />} />
 

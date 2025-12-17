@@ -85,7 +85,7 @@ const AdminTaskPage = () => {
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/adminfilesshared")}
+            onClick={() => navigate("/admin-files-shared")}
           >
             Files Shared
           </button>
