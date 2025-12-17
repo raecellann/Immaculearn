@@ -58,6 +58,7 @@ import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
 import { SignInPageWithOAuth } from "./pages/test-page/signInPageWithOAuth.jsx";
 import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
 import Onboarding from "./pages/SignIn/onBoardingPage.jsx";
+import OAuthCallback from "./pages/SignIn/oauthCallbackPage.jsx";
 
 export default function Routes() {
   return (
@@ -73,6 +74,7 @@ export default function Routes() {
 
         <Route path="/test-page" element={<SignInPageWithOAuth />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
 
         {/* ADMIN ROUTES */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />

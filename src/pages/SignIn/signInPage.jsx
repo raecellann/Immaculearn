@@ -10,7 +10,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState(""); // ✅ track selected role
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
 
@@ -41,7 +41,13 @@ const LoginPage = () => {
       return;
     }
     // Redirect to Gmail login or OAuth flow
-    window.location.href = `http://localhost:3000/v1/account/oauth/google/redirect?role=${role}`;  
+    // window.location.href = `http://localhost:3000/v1/account/oauth/google/redirect?role=${role}`;  
+
+    window.open(
+      `http://localhost:3000/v1/account/oauth/google/redirect?role=${role}`,
+      "_blank",
+      "width=500,height=600,top=100,left=100,resizable=yes,scrollbars=yes"
+    );
     // const response = await axios.post(`http://localhost:3000/v1/account/oauth/google/redirect?role=${role}`);
 
     // if (!response.data.success) {
@@ -51,6 +57,23 @@ const LoginPage = () => {
 
     // navigate(response.data.redirectTo)
   };
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.origin !== "http://localhost:5173") return;
+      if (event.data.success) {
+        if (event.data.needsOnboarding) {
+          navigate(`/onboarding?role=${event.data.role}`)
+        } else {
+          navigate("/home"); // or onboarding
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
 
   // const [role, setRole] = useState('');
   
