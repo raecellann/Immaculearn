@@ -1,6 +1,9 @@
 import React from "react";
 import { Routes as ReactRoutes, Route } from "react-router";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import AdminDashboard from "./pages/admin-dashboard/admindashboard.jsx";
 import AdminStudents from "./pages/admin-students/adminstudents.jsx";
 import AdminTeachers from "./pages/admin-teachers/adminteachers.jsx";
@@ -56,77 +59,86 @@ import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
 
 export default function Routes() {
   return (
-    <ReactRoutes>
+    <>
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        pauseOnHover
+        closeOnClick
+      />
+      <ReactRoutes>
+        
 
-      <Route path="/test-page" element={<SignInPageWithOAuth />} />
-
-
-      {/* ADMIN ROUTES */}
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      <Route path="/admin-students" element={<AdminStudents />} />
-      <Route path="/admin-teachers" element={<AdminTeachers />} />
-
-
-      {/* STUDENT ROUTES */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/chatlist" element={<ChatList />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/create-space" element={<SpaceCreationPage />} />
-      <Route path="/initial-invite" element={<InitialInvitePage />} />
-      <Route path="/home" element={<HomePage />} />
-      <Route path="/accsettings" element={<ProfilePage />} />
-      <Route path="/grade-viewing" element={<GradeViewing />} />
-      <Route path="/task" element={<TaskPage />} />
-      <Route path="/notifications" element={<NotificationPage />} />
-      <Route path="/files" element={<FilePage />} />
-      <Route path="/view-files" element={<ViewFilePage/>} />
-      <Route path="/space" element={<SpacePage />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/view-all-files" element={<ViewAllFilesPage />} />
-
-       {/* USER SPACE (example si zj,this is also the home or stream of the space) */}     
-      <Route path="/user-space-zj" element={<UserPage />} /> 
-
-      {/* USER SPACE SUBPAGES */}
-      <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
-      <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
-      <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
-
-      <Route path="/admintaskpage" element={<AdminTaskPage />} />
+        <Route path="/test-page" element={<SignInPageWithOAuth />} />
 
 
-      {/* ADMIN STUDENT ROUTES */}
-      <Route path="/task-view" element={<TaskViewPage />} />
-      <Route path="/task-view-admin" element={<TaskViewPageAdmin />} />
-      <Route path="/task-view-all" element={<TaskViewAll />} />
-      <Route path="/create-space-admin" element={<CreateSpaceAdmin />} />
-      <Route path="/create-file-admin" element={<CreateFileAdmin />} />
+        {/* ADMIN ROUTES */}
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin-students" element={<AdminStudents />} />
+        <Route path="/admin-teachers" element={<AdminTeachers />} />
+
+
+        {/* STUDENT ROUTES */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/chatlist" element={<ChatList />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/create-space" element={<SpaceCreationPage />} />
+        <Route path="/initial-invite" element={<InitialInvitePage />} />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/accsettings" element={<ProfilePage />} />
+        <Route path="/grade-viewing" element={<GradeViewing />} />
+        <Route path="/task" element={<TaskPage />} />
+        <Route path="/notifications" element={<NotificationPage />} />
+        <Route path="/files" element={<FilePage />} />
+        <Route path="/view-files" element={<ViewFilePage/>} />
+        <Route path="/space" element={<SpacePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/view-all-files" element={<ViewAllFilesPage />} />
+
+        {/* USER SPACE (example si zj,this is also the home or stream of the space) */}     
+        <Route path="/user-space-zj" element={<UserPage />} /> 
+
+        {/* USER SPACE SUBPAGES */}
+        <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
+        <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
+        <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
+
+        <Route path="/admintaskpage" element={<AdminTaskPage />} />
+
+
+        {/* ADMIN STUDENT ROUTES */}
+        <Route path="/task-view" element={<TaskViewPage />} />
+        <Route path="/task-view-admin" element={<TaskViewPageAdmin />} />
+        <Route path="/task-view-all" element={<TaskViewAll />} />
+        <Route path="/create-space-admin" element={<CreateSpaceAdmin />} />
+        <Route path="/create-file-admin" element={<CreateFileAdmin />} />
 
 
 
-      {/* PROFESSOR ROUTES */}
-      <Route path="/prof-acc-settings" element={<ProfProfilePage />} />
-      <Route path="/prof-notifications" element={<ProfNotificationPage />} />
-      <Route path="/prof-list-activity" element={<ProfListActivityPage />} />
-      <Route path="/prof-files" element={<ProfFilePage />} />
-      <Route path="/prof-files-by-subject" element={<ProfFilesBySubject />} />
-      <Route path="/prof-grade-viewing" element={<ProfGradeRecordPage />} />
-      <Route path="/prof-home" element={<ProfHomePage />} />
-      <Route path="/prof-settings" element={<ProfSettingsPage />} />
+        {/* PROFESSOR ROUTES */}
+        <Route path="/prof-acc-settings" element={<ProfProfilePage />} />
+        <Route path="/prof-notifications" element={<ProfNotificationPage />} />
+        <Route path="/prof-list-activity" element={<ProfListActivityPage />} />
+        <Route path="/prof-files" element={<ProfFilePage />} />
+        <Route path="/prof-files-by-subject" element={<ProfFilesBySubject />} />
+        <Route path="/prof-grade-viewing" element={<ProfGradeRecordPage />} />
+        <Route path="/prof-home" element={<ProfHomePage />} />
+        <Route path="/prof-settings" element={<ProfSettingsPage />} />
 
-      {/* PROFESSOR SPACE ROUTES */}
-      <Route path="/prof-space-susan" element={<SusanSpace />} />
-      <Route path="/prof-space-susan/tasks" element={<ProfTaskPage />} />
-      <Route path="/prof-space-susan/files-shared" element={<ProfFilesShared />} />
-      <Route path="/prof-space-susan/people" element={<ProfPeoplePage />} />
+        {/* PROFESSOR SPACE ROUTES */}
+        <Route path="/prof-space-susan" element={<SusanSpace />} />
+        <Route path="/prof-space-susan/tasks" element={<ProfTaskPage />} />
+        <Route path="/prof-space-susan/files-shared" element={<ProfFilesShared />} />
+        <Route path="/prof-space-susan/people" element={<ProfPeoplePage />} />
 
-      {/* PARENT ROUTES */}
-      <Route path="/parent-grade-login" element={<ParentLogin />} />
-      <Route path="/parent-grade-view" element={<ParentGradeView />} />
+        {/* PARENT ROUTES */}
+        <Route path="/parent-grade-login" element={<ParentLogin />} />
+        <Route path="/parent-grade-view" element={<ParentGradeView />} />
 
 
-      <Route path="*" element={<PageNotFound />} />
+        <Route path="*" element={<PageNotFound />} />
 
-    </ReactRoutes>
+      </ReactRoutes>
+    </>
   );
 }
