@@ -85,7 +85,7 @@ const AdminTaskPage = () => {
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/adminfilesshared")}
+            onClick={() => navigate("/admin-files-shared")}
           >
             Files Shared
           </button>
@@ -101,9 +101,7 @@ const AdminTaskPage = () => {
         <div className="flex justify-end mb-4">
           <button
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-2 rounded-lg shadow transition flex items-center gap-2"
-            onClick={() => {
-              /* handle create/upload activity */
-            }}
+            onClick={() => navigate("/admin-create-activity-page")}
           >
             <span>＋</span> Create or Upload Activity
           </button>

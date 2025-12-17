@@ -1,9 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import Sidebar from "../component/sidebar";
+import Sidebar from "../../component/sidebar";
 import { FiFileText } from "react-icons/fi";
 
-const UserFilesShared = () => {
+const AdminFilesSharedPage = () => {
   const navigate = useNavigate(); // ✅ REQUIRED
 
   return (
@@ -23,34 +23,34 @@ const UserFilesShared = () => {
 
           <div className="absolute top-0 z-10">
             <div className="bg-black px-10 py-3 rounded-b-[1rem] text-2xl font-extrabold">
-              Zeldrick’s Space
+              Zeldrick's Space
             </div>
           </div>
         </div>
 
         {/* TABS */}
         <div className="flex justify-center gap-[120px] border-b border-gray-700 pb-4 mb-6">
-          <button className="text-white text-xl font-semibold border-b-2 border-white pb-2">
+          <button
+            className="text-gray-400 text-xl hover:text-white transition"
+            onClick={() => navigate("/user-space-zj")}
+          >
             Stream
           </button>
 
           <button
             className="text-gray-400 text-xl hover:text-white transition"
-            onClick={() => navigate("/user-space-zj/tasks")}
+            onClick={() => navigate("/admintaskpage")}
           >
             Tasks
           </button>
 
-          <button
-            className="text-gray-400 text-xl hover:text-white transition"
-            onClick={() => navigate("/user-space-zj/files-shared")}
-          >
+          <button className="text-white text-xl font-semibold border-b-2 border-white pb-2">
             Files Shared
           </button>
 
           <button
             className="text-gray-400 text-xl hover:text-white transition"
-            onClick={() => navigate("/user-space-zj/people")}
+            onClick={() => navigate("/admin-space/people")}
           >
             People
           </button>
@@ -58,6 +58,22 @@ const UserFilesShared = () => {
 
         {/* FILES TABLE */}
         <div className="bg-[#0F1115] rounded-xl p-6 shadow-lg">
+          {/* BUTTONS */}
+          <div className="flex gap-4 mb-4">
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              onClick={() => navigate("/create-file-admin")}
+            >
+              Create File
+            </button>
+            <button
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+              onClick={() => navigate("/upload-file-admin")}
+            >
+              Upload File
+            </button>
+          </div>
+
           <div className="grid grid-cols-4 text-sm text-gray-400 pb-3 border-b border-gray-700">
             <div>File Name</div>
             <div>Date Posted</div>
@@ -69,19 +85,19 @@ const UserFilesShared = () => {
             {
               name: "Calculus: Lecture 3",
               date: "October 8, 2025",
-              by: "Zeldrick",
+              by: "Admin",
               folder: "Math",
             },
             {
               name: "Biology: Lecture 1",
               date: "October 8, 2025",
-              by: "Nathaniel",
+              by: "Admin",
               folder: "Science",
             },
             {
               name: "Fallacies: Lecture 4",
               date: "October 8, 2025",
-              by: "Raecell",
+              by: "Admin",
               folder: "Law",
             },
           ].map((file, index) => (
@@ -106,4 +122,4 @@ const UserFilesShared = () => {
   );
 };
 
-export default UserFilesShared;
+export default AdminFilesSharedPage;

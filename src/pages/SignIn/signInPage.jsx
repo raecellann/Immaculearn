@@ -1,12 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import InputField from "@/pages/component/InputField";
 import Button from "@/pages/component/Button";
 import { Mail } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState(""); // ✅ track selected role
+
+  // const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+
+    if (error === "not_registered") {
+      toast.error("Google account is not registered!");
+    }
+
+    if (error === "oauth_failed") {
+      toast.error("Google login failed. Please try again.");
+    }
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -17,14 +35,31 @@ const LoginPage = () => {
     alert(`Logging in as ${role}`);
   };
 
-  const handleGmailLogin = () => {
+  const handleGmailLogin = async() => {
     if (!role) {
       alert("Please select whether you are a Student or a Professor.");
       return;
     }
     // Redirect to Gmail login or OAuth flow
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=email%20profile&state=${role}`;
+    window.location.href = `http://localhost:3000/v1/account/oauth/google/redirect?role=${role}`;  
+    // const response = await axios.post(`http://localhost:3000/v1/account/oauth/google/redirect?role=${role}`);
+
+    // if (!response.data.success) {
+    //   navigate(response.data.redirectTo);
+    //   return;
+    // }
+
+    // navigate(response.data.redirectTo)
   };
+
+  // const [role, setRole] = useState('');
+  
+  // const handleRoleSelect = selectedRole => {
+  //   setRole(selectedRole);
+
+  //   // Redirect to backend Google OAuth endpoint with role query
+  //   window.location.href = `http://localhost:3000/v1/account/oauth/google/redirect?role=${selectedRole}`;
+  // };
 
   return (
     <div
@@ -84,21 +119,27 @@ const LoginPage = () => {
           <div className="flex justify-center gap-6 mt-2 w-full">
             <label className="flex items-center gap-2 text-gray-800 font-medium">
               <input
-                type="checkbox"
+                type="radio"
+                name="role"
+                value="Student"
                 checked={role === "Student"}
-                onChange={() => setRole("Student")}
+                onChange={(e) => setRole(e.target.value)}
               />
               Student
             </label>
+
             <label className="flex items-center gap-2 text-gray-800 font-medium">
               <input
-                type="checkbox"
+                type="radio"
+                name="role"
+                value="Professor"
                 checked={role === "Professor"}
-                onChange={() => setRole("Professor")}
+                onChange={(e) => setRole(e.target.value)}
               />
               Professor
             </label>
           </div>
+
 
           {/* Log in Button */}
           <Button
