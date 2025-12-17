@@ -94,8 +94,9 @@ export default function Routes() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/view-all-files" element={<ViewAllFilesPage />} />
 
-        {/* USER SPACE (example si zj,this is also the home or stream of the space) */}
+        {/* USER SPACE (example si zj,this is also the home or stream of the space) same rin to sa home ng admin, naiiba lang pagdating sa ibang buttons /navigation */}
         <Route path="/user-space-zj" element={<UserPage />} />
+
 
         {/* USER SPACE SUBPAGES */}
         <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
