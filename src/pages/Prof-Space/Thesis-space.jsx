@@ -9,7 +9,7 @@ import {
   FiMessageCircle,
 } from "react-icons/fi";
 
-const SusanSpace = () => {
+const ThesisSpace = () => {
   const [isFocused, setIsFocused] = useState(false);
   const editorRef = useRef(null);
   const navigate = useNavigate();
@@ -229,4 +229,4 @@ const SusanSpace = () => {
   );
 };
 
-export default SusanSpace;
+export default ThesisSpace;

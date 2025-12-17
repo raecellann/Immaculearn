@@ -45,7 +45,8 @@ import ProfGradeRecordPage from "./pages/prof-GradeViewing/profgradeviewing.jsx"
 import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx";
 import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx";
 import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
-import SusanSpace from "./pages/Prof-Space/susan-space";
+
+import ThesisSpace from "./pages/Prof-Space/Thesis-space.jsx";
 import ProfTaskPage from "./pages/Prof-Space/ProfTaskPage";
 import ProfFilesShared from "./pages/Prof-Space/ProfFilesShared";
 import ProfPeoplePage from "./pages/Prof-Space/ProfPeoplePage";
@@ -130,10 +131,10 @@ export default function Routes() {
         <Route path="/prof-settings" element={<ProfSettingsPage />} />
 
         {/* PROFESSOR SPACE ROUTES */}
-        <Route path="/prof-space-susan" element={<SusanSpace />} />
-        <Route path="/prof-space-susan/tasks" element={<ProfTaskPage />} />
-        <Route path="/prof-space-susan/files-shared" element={<ProfFilesShared />} />
-        <Route path="/prof-space-susan/people" element={<ProfPeoplePage />} />
+        <Route path="/prof-space-thesis" element={<ThesisSpace />} />
+        <Route path="/prof-space-thesis/tasks" element={<ProfTaskPage />} />
+        <Route path="/prof-space-thesis/files-shared" element={<ProfFilesShared />} />
+        <Route path="/prof-space-thesis/people" element={<ProfPeoplePage />} />
 
         {/* PARENT ROUTES */}
         <Route path="/parent-grade-login" element={<ParentLogin />} />
