@@ -3,90 +3,131 @@ import Sidebar from "../component/sidebar";
 
 const SettingsPage = () => {
   const [activeAccount, setActiveAccount] = useState("Raecell Ann");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const accounts = [
     {
       name: "Raecell Ann",
       status: "Signed In",
-      avatar: "/your-image-1.png", // replace with actual path
+      avatar: "/your-image-1.png",
     },
     {
       name: "ZeldrickJesus25",
       status: "",
-      avatar: "/your-image-2.png", // replace with actual path
+      avatar: "/your-image-2.png",
     },
   ];
 
   return (
-    <div className="flex font-grotesque min-h-screen bg-[#161A20] text-white leading-[1.2] font-semibold">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="flex min-h-screen bg-[#161A20] text-white font-grotesque">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
+
+      {/* Mobile Overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 md:hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <Sidebar />
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-10 flex flex-col items-center">
-        <div className="w-full max-w-5xl">
-          {/* Title Section */}
-          <h1 className="text-4xl font-bold text-center mb-2">Settings</h1>
-          <p className="text-gray-300 mb-10 text-center">
-            Manage your profile, account preferences, and other options below.
-          </p>
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Header */}
+        <div className="md:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Settings</h1>
+        </div>
 
-          {/* Profile Account */}
-          <div className="bg-[#1E222A] rounded-2xl p-6 mb-10 border border-white shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Profile Account</h2>
+        {/* Content */}
+        <div className="flex-1 p-4 md:p-10 flex flex-col items-center overflow-y-auto">
+          <div className="w-full max-w-5xl">
+            {/* Title */}
+            <h1 className="hidden md:block text-4xl font-bold text-center mb-2">
+              Settings
+            </h1>
+            <p className="text-gray-300 mb-6 md:mb-10 text-center text-sm md:text-base">
+              Manage your profile, account preferences, and other options below.
+            </p>
 
-            <div className="flex items-center justify-between">
-              <button className="px-4 py-2 bg-transparent rounded-lg border border-white text-white hover:bg-[#3A7BFF] hover:border-[#3A7BFF] transition-all">
-                Edit Profile
-              </button>
+            {/* Profile Account */}
+            <div className="bg-[#1E222A] rounded-2xl p-4 md:p-6 mb-8 md:mb-10 border border-white shadow-lg">
+              <h2 className="text-lg md:text-xl font-bold mb-4">
+                Profile Account
+              </h2>
 
-              <button className="px-4 py-2 bg-transparent text-red-400 border border-red-500 rounded-lg hover:bg-red-600 hover:text-white hover:border-transparent transition-all">
-                Delete Account
-              </button>
+              <div className="flex flex-col sm:flex-row gap-4 sm:justify-between">
+                <button className="px-4 py-2 bg-transparent rounded-lg border border-white text-white hover:bg-[#3A7BFF] hover:border-[#3A7BFF] transition-all">
+                  Edit Profile
+                </button>
+
+                <button className="px-4 py-2 bg-transparent text-red-400 border border-red-500 rounded-lg hover:bg-red-600 hover:text-white hover:border-transparent transition-all">
+                  Delete Account
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Switch Account Section */}
-          <div className="bg-[#1E222A] rounded-2xl p-6 border border-white shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Switch Account</h2>
+            {/* Switch Account */}
+            <div className="bg-[#1E222A] rounded-2xl p-4 md:p-6 border border-white shadow-lg">
+              <h2 className="text-lg md:text-xl font-bold mb-4">
+                Switch Account
+              </h2>
 
-            <div className="space-y-4">
-              {accounts.map((acc) => (
-                <div
-                  key={acc.name}
-                  className="flex items-center justify-between p-4 border-b border-gray-700"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={acc.avatar}
-                      alt="avatar"
-                      className="w-12 h-12 rounded-full object-cover border"
-                    />
-                    <div>
-                      <p className="font-semibold">{acc.name}</p>
-                      <p className="text-gray-400 text-xs">{acc.status}</p>
+              <div className="space-y-4">
+                {accounts.map((acc) => (
+                  <div
+                    key={acc.name}
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border-b border-gray-700"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={acc.avatar}
+                        alt="avatar"
+                        className="w-12 h-12 rounded-full object-cover border"
+                      />
+                      <div>
+                        <p className="font-semibold">{acc.name}</p>
+                        <p className="text-gray-400 text-xs">
+                          {acc.status}
+                        </p>
+                      </div>
                     </div>
+
+                    {activeAccount !== acc.name ? (
+                      <button
+                        onClick={() => setActiveAccount(acc.name)}
+                        className="px-3 py-1 bg-transparent border border-gray-400 text-gray-300 text-sm rounded-lg hover:bg-[#3A7BFF] hover:border-[#3A7BFF] hover:text-white transition-all self-start sm:self-auto"
+                      >
+                        Switch Account
+                      </button>
+                    ) : (
+                      <span className="text-green-400 text-sm font-medium">
+                        Active
+                      </span>
+                    )}
                   </div>
+                ))}
 
-                  {activeAccount !== acc.name ? (
-                    <button
-                      onClick={() => setActiveAccount(acc.name)}
-                      className="px-3 py-1 bg-transparent border border-gray-400 text-gray-300 text-sm rounded-lg hover:bg-[#3A7BFF] hover:border-[#3A7BFF] hover:text-white transition-all"
-                    >
-                      Switch Account
-                    </button>
-                  ) : (
-                    <span className="text-green-400 text-sm font-medium">
-                      Active
-                    </span>
-                  )}
-                </div>
-              ))}
-
-              {/* Add Account */}
-              <button className="mt-2 flex items-center gap-2 px-4 py-2 bg-transparent border border-gray-400 text-gray-300 rounded-lg hover:bg-[#3A7BFF] hover:border-[#3A7BFF] hover:text-white transition-all w-full justify-center">
-                <span className="text-2xl">+</span> Add Other Accounts
-              </button>
+                {/* Add Account */}
+                <button className="mt-2 flex items-center gap-2 px-4 py-2 bg-transparent border border-gray-400 text-gray-300 rounded-lg hover:bg-[#3A7BFF] hover:border-[#3A7BFF] hover:text-white transition-all w-full justify-center">
+                  <span className="text-2xl">+</span> Add Other Accounts
+                </button>
+              </div>
             </div>
           </div>
         </div>

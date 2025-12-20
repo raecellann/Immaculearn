@@ -8,6 +8,9 @@ const statusStyles = {
 };
 
 const TaskPage = () => {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [openIndex, setOpenIndex] = useState(null);
+
   const [tasks, setTasks] = useState([
     {
       name: "Thesis Paper 🧑‍🎓",
@@ -29,8 +32,6 @@ const TaskPage = () => {
     },
   ]);
 
-  const [openIndex, setOpenIndex] = useState(null);
-
   const handleStatusChange = (index, newStatus) => {
     const updated = [...tasks];
     updated[index].status = newStatus;
@@ -39,57 +40,106 @@ const TaskPage = () => {
   };
 
   return (
-    <div className="flex font-sans min-h-screen bg-[#161A20]">
-      <Sidebar />
+    <div className="flex min-h-screen bg-[#161A20] text-white">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
-      <div className="flex-1 p-10 text-white">
-        <h1 className="text-4xl font-bold text-center mb-10">Task</h1>
+      {/* Mobile Overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
 
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            To Do Lists 📚
-          </h2>
+      {/* Mobile Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 md:hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <Sidebar />
+      </div>
 
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-gray-600 text-left text-gray-400">
-                <th className="py-3 px-4 font-medium">Status</th>
-                <th className="py-3 px-4 font-medium">Task Name</th>
-                <th className="py-3 px-4 font-medium">Deadline</th>
-                <th className="py-3 px-4 font-medium">Space Name</th>
-              </tr>
-            </thead>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Header */}
+        <div className="md:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Task</h1>
+        </div>
 
-            <tbody>
+        {/* Page Content */}
+        <div className="flex-1 p-4 md:p-10 overflow-y-auto">
+          <h1 className="hidden md:block text-4xl font-bold text-center mb-10">
+            Task
+          </h1>
+
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">
+              To Do Lists 📚
+            </h2>
+
+            {/* ================= MOBILE (CARD VIEW) ================= */}
+            <div className="flex flex-col gap-4 md:hidden">
               {tasks.map((task, index) => (
-                <tr
+                <div
                   key={index}
-                  className="border-b border-gray-700 hover:bg-[#1E222A] transition"
+                  className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex flex-col gap-3"
                 >
-                  <td className="py-3 px-4">
-                    <div className="relative inline-block">
-                      {/* BUTTON */}
+                  {/* TASK NAME */}
+                  <a
+                    href="/task-view"
+                    className="text-blue-400 hover:underline text-sm font-medium"
+                  >
+                    {task.name}
+                  </a>
+
+                  {/* DEADLINE */}
+                  <p className="text-sm text-gray-300">
+                    <strong className="text-gray-400">Deadline:</strong>{" "}
+                    {task.deadline}
+                  </p>
+
+                  {/* SPACE + STATUS (ALIGNED) */}
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm text-gray-300">
+                      <strong className="text-gray-400">Space:</strong>{" "}
+                      {task.space}
+                    </p>
+
+                    {/* STATUS */}
+                    <div className="relative">
                       <button
                         onClick={() =>
                           setOpenIndex(openIndex === index ? null : index)
                         }
-                        className={`bg-black px-4 py-1 rounded-full ${
+                        className={`bg-black px-3 py-1 rounded-full ${
                           statusStyles[task.status]
-                        } flex items-center gap-2 text-sm`}
+                        } flex items-center gap-2 text-xs`}
                       >
                         <span className="font-medium">{task.status}</span>
                         <span className="text-xs">▼</span>
                       </button>
 
-                      {/* DARK DROPDOWN */}
                       {openIndex === index && (
-                        <div className="absolute left-0 mt-2 w-44 bg-black border border-gray-700 rounded-lg p-3 z-50">
+                        <div className="absolute right-0 mt-2 w-40 bg-black border border-gray-700 rounded-lg p-2 z-50">
                           <div className="flex flex-col gap-2">
                             {Object.keys(statusStyles).map((st) => (
                               <button
                                 key={st}
-                                onClick={() => handleStatusChange(index, st)}
-                                className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
+                                onClick={() =>
+                                  handleStatusChange(index, st)
+                                }
+                                className={`w-full text-center px-3 py-1.5 rounded-full bg-black ${
+                                  statusStyles[st]
+                                } text-xs font-medium`}
                               >
                                 {st}
                               </button>
@@ -98,23 +148,79 @@ const TaskPage = () => {
                         </div>
                       )}
                     </div>
-                  </td>
-
-                  <td className="py-3 px-4">
-                    <a
-                      href="/task-view"
-                      className="text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-2"
-                    >
-                      {task.name}
-                    </a>
-                  </td>
-
-                  <td className="py-3 px-4">{task.deadline}</td>
-                  <td className="py-3 px-4">{task.space}</td>
-                </tr>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            {/* ================= TABLET & DESKTOP (TABLE VIEW) ================= */}
+            <div className="hidden md:block">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-600 text-left text-gray-400">
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Task Name</th>
+                    <th className="py-3 px-4">Deadline</th>
+                    <th className="py-3 px-4">Space Name</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {tasks.map((task, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-gray-700 hover:bg-[#1E222A]"
+                    >
+                      <td className="py-3 px-4">
+                        <div className="relative inline-block">
+                          <button
+                            onClick={() =>
+                              setOpenIndex(openIndex === index ? null : index)
+                            }
+                            className={`bg-black px-4 py-1 rounded-full ${
+                              statusStyles[task.status]
+                            } flex items-center gap-2 text-sm`}
+                          >
+                            {task.status}
+                            <span className="text-xs">▼</span>
+                          </button>
+
+                          {openIndex === index && (
+                            <div className="absolute left-0 mt-2 w-44 bg-black border border-gray-700 rounded-lg p-3 z-50">
+                              <div className="flex flex-col gap-2">
+                                {Object.keys(statusStyles).map((st) => (
+                                  <button
+                                    key={st}
+                                    onClick={() =>
+                                      handleStatusChange(index, st)
+                                    }
+                                    className={`w-full rounded-full px-4 py-2 text-sm ${statusStyles[st]}`}
+                                  >
+                                    {st}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <a
+                          href="/task-view"
+                          className="text-blue-400 hover:underline"
+                        >
+                          {task.name}
+                        </a>
+                      </td>
+                      <td className="py-3 px-4">{task.deadline}</td>
+                      <td className="py-3 px-4">{task.space}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>

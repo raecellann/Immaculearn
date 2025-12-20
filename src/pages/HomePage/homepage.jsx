@@ -41,13 +41,13 @@ const HomePage1 = () => {
       <div className="flex-1 flex p-8 gap-6">
         {/* CENTER CONTENT */}
         <div className="flex-1">
-        {/* Title and Date ABOVE the card */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-white font-grotesque">
-            Get Productive Today!
-          </h2>
-          <p className="text-gray-400 text-sm font-inter">{currentDate}</p>
-        </div>
+          {/* Title and Date ABOVE the card */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-white font-grotesque">
+              Get Productive Today!
+            </h2>
+            <p className="text-gray-400 text-sm font-inter">{currentDate}</p>
+          </div>
 
           {/* Header Card */}
           <div className="bg-[#1E242E] rounded-xl p-6 mb-6">
@@ -84,19 +84,19 @@ const HomePage1 = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setSlideIndexYourSpace(Math.max(0, slideIndexYourSpace - 1))}
-                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded"
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   disabled={slideIndexYourSpace === 0}
                 >
                   ‹
                 </button>
                 <button
                   onClick={() => setSlideIndexYourSpace(Math.min(2, slideIndexYourSpace + 1))}
-                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded"
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   disabled={slideIndexYourSpace === 2}
                 >
                   ›
                 </button>
-                <button className="text-[#007AFF] hover:underline text-sm ml-2">View All</button>
+                <button className="text-[#007AFF] hover:underline text-sm ml-2 bg-transparent">View All</button>
               </div>
             </div>
 
@@ -126,26 +126,26 @@ const HomePage1 = () => {
             </div>
           </div>
 
-            {/* Spaces Section */}
-            <div className="mb-8">
+          {/* Spaces Section */}
+          <div className="mb-8">
             <div className="flex justify-between items-center mb-3">
-                <h2 className="text-xl font-semibold">Spaces</h2>
-                <div className="flex gap-2">
+              <h2 className="text-xl font-semibold">Spaces</h2>
+              <div className="flex gap-2">
                 <button
                   onClick={() => setSlideIndexSpaces(Math.max(0, slideIndexSpaces - 1))}
-                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded"
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   disabled={slideIndexSpaces === 0}
                 >
                   ‹
                 </button>
                 <button
                   onClick={() => setSlideIndexSpaces(Math.min(2, slideIndexSpaces + 1))}
-                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded"
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   disabled={slideIndexSpaces === 2}
                 >
                   ›
                 </button>
-                <button className="text-[#007AFF] hover:underline text-sm ml-2">View All</button>
+                <button className="text-[#007AFF] hover:underline text-sm ml-2 bg-transparent">View All</button>
               </div>
             </div>
 
@@ -155,71 +155,51 @@ const HomePage1 = () => {
                 style={{ transform: `translateX(-${slideIndexSpaces * 648}px)` }}
               >
                 {[
-                {
-                    title: "Zeldrick's Spaces",
-                    members: "3 Members",
-                    time: "Opened just now",
-                    image: "/src/assets/HomePage/spaces-cover/cover1.jpg",
-                },
-                {
-                    title: "Wilson Space",
-                    members: "4 Members",
-                    time: "Opened 1 min ago",
-                    image: "/src/assets/HomePage/spaces-cover/cover2.jpg",
-                },
-                {
-                    title: "Nath Space",
-                    members: "5 Members",
-                    time: "Opened 5 min ago",
-                    image: "/src/assets/HomePage/spaces-cover/cover3.jpg",
-                },
+                  { title: "Zeldrick's Spaces", members: "3 Members", time: "Opened just now", image: "/src/assets/HomePage/spaces-cover/cover1.jpg" },
+                  { title: "Wilson Space", members: "4 Members", time: "Opened 1 min ago", image: "/src/assets/HomePage/spaces-cover/cover2.jpg" },
+                  { title: "Nath Space", members: "5 Members", time: "Opened 5 min ago", image: "/src/assets/HomePage/spaces-cover/cover3.jpg" },
                 ].map((space, i) => (
-                <div
+                  <div
                     key={i}
                     className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg min-w-[200px]"
-                >
-                    {/* Image + badge + menu button */}
+                  >
                     <div className="relative">
-                    <img
+                      <img
                         src={space.image}
                         alt={space.title}
                         className="h-32 w-full object-cover"
-                    />
-
-
-                    {/* Three dots menu */}
-                    <div className="absolute top-2 right-2">
-                      <button
-                        onClick={() => setShowMenu(showMenu === i ? null : i)}
-                        className="bg-black/60 hover:bg-black text-white w-6 h-6 flex items-center justify-center rounded-md"
-                      >
-                        ...
-                      </button>
-                      {showMenu === i && (
-                        <div className="absolute top-8 right-0 rounded-md shadow-lg py-2 min-w-[120px] z-10 space-y-1">
-                          <button className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3E4450]">
-                            View Details
-                          </button>
-                          <button className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#3E4450]">
-                            Leave Space
-                          </button>
-                        </div>
-                      )}
+                      />
+                      <div className="absolute top-2 right-2">
+                        <button
+                          onClick={() => setShowMenu(showMenu === i ? null : i)}
+                          className="bg-black/60 hover:bg-black text-white w-6 h-6 flex items-center justify-center rounded-md"
+                        >
+                          ...
+                        </button>
+                        {showMenu === i && (
+                          <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                            <div className="flex flex-col gap-2">
+                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
+                                View Details
+                              </button>
+                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
+                                Leave Space
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    </div>
-
-                    {/* Details */}
                     <div className="p-4">
-                    <h3 className="font-medium text-sm">{space.title}</h3>
-                    <p className="text-gray-400 text-xs mt-1">{space.members}</p>
-                    <p className="text-gray-500 text-xs mt-1">{space.time}</p>
+                      <h3 className="font-medium text-sm">{space.title}</h3>
+                      <p className="text-gray-400 text-xs mt-1">{space.members}</p>
+                      <p className="text-gray-500 text-xs mt-1">{space.time}</p>
                     </div>
-                </div>
+                  </div>
                 ))}
               </div>
             </div>
-            </div>
-
+          </div>
 
           {/* Articles Section */}
           <div>
@@ -249,7 +229,7 @@ const HomePage1 = () => {
           {/* Calendar and Reminders Group */}
           <div className="flex flex-col">
             {/* Calendar */}
-            <div className="bg-[#1E242E] mb-6">
+            <div className="bg-[#1E242E] mb-6 p-3 rounded-lg">
               <div className="flex justify-between items-center mb-3">
                 <h4 className="font-semibold">{new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} {currentYear}</h4>
                 <div className="flex gap-1">
@@ -262,7 +242,7 @@ const HomePage1 = () => {
                         setCurrentMonth(currentMonth - 1);
                       }
                     }}
-                    className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded"
+                    className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded bg-transparent"
                   >
                     ‹
                   </button>
@@ -275,7 +255,7 @@ const HomePage1 = () => {
                         setCurrentMonth(currentMonth + 1);
                       }
                     }}
-                    className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded"
+                    className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded bg-transparent"
                   >
                     ›
                   </button>
@@ -293,11 +273,9 @@ const HomePage1 = () => {
                   const todayYear = today.getFullYear();
 
                   const days = [];
-                  // Add empty cells for days before the first day of the month
                   for (let i = 0; i < (firstDay === 0 ? 6 : firstDay - 1); i++) {
                     days.push(<span key={`empty-${i}`} className="p-1.5 rounded-md"></span>);
                   }
-                  // Add days of the month
                   for (let i = 1; i <= daysInMonth; i++) {
                     const isToday = i === todayDate && currentMonth === todayMonth && currentYear === todayYear;
                     days.push(
@@ -366,7 +344,7 @@ const HomePage1 = () => {
                   </div>
                 </li>
               </ul>
-              <button className="mt-4 text-[#007AFF] hover:underline text-sm">See All</button>
+              <button className="mt-4 text-[#007AFF] hover:underline text-sm bg-transparent">See All</button>
             </div>
           </div>
         </div>
