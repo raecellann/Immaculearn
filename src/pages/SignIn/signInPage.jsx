@@ -9,22 +9,9 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState(""); // ✅ track selected role
+  const [error, setError] = useState("")
 
   const navigate = useNavigate();
-
-  const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    const error = searchParams.get("error");
-
-    if (error === "not_registered") {
-      toast.error("Google account is not registered!");
-    }
-
-    if (error === "oauth_failed") {
-      toast.error("Google login failed. Please try again.");
-    }
-  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -36,31 +23,24 @@ const LoginPage = () => {
   };
 
   const handleGmailLogin = async() => {
-    if (!role) {
-      alert("Please select whether you are a Student or a Professor.");
-      return;
-    }
-    // Redirect to Gmail login or OAuth flow
-    // window.location.href = `http://localhost:3000/v1/account/oauth/google/redirect?role=${role}`;  
-
-    window.open(
-      `http://localhost:3000/v1/account/oauth/google/redirect?role=${role}`,
-      "_blank",
-      "width=500,height=600,top=100,left=100,resizable=yes,scrollbars=yes"
-    );
-    // const response = await axios.post(`http://localhost:3000/v1/account/oauth/google/redirect?role=${role}`);
-
-    // if (!response.data.success) {
-    //   navigate(response.data.redirectTo);
+    // if (!role) {
+    //   alert("Please select whether you are a Student or a Professor.");
     //   return;
     // }
 
-    // navigate(response.data.redirectTo)
+    window.open(
+      `http://localhost:3000/v1/account/oauth/google/redirect`,
+      "_blank",
+      `width=500,height=600,top=${(screen.height-600)/2},left=${(screen.width-500)/2},resizable=yes,scrollbars=yes`
+    );
   };
 
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.origin !== "http://localhost:5173") return;
+      if (!event.data.success) {
+        setError(event.data.error)
+      }
       if (event.data.success) {
         if (event.data.needsOnboarding) {
           navigate(`/onboarding?role=${event.data.role}`)
@@ -74,15 +54,15 @@ const LoginPage = () => {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  useEffect(() => {
+    if (!error) return;
 
-  // const [role, setRole] = useState('');
-  
-  // const handleRoleSelect = selectedRole => {
-  //   setRole(selectedRole);
-
-  //   // Redirect to backend Google OAuth endpoint with role query
-  //   window.location.href = `http://localhost:3000/v1/account/oauth/google/redirect?role=${selectedRole}`;
-  // };
+    if (error === "not_registered") {
+      toast.error("Google account is not register!");
+    } else if (error === "oauth_failed") {
+      toast.error("Google login failed. Please try again.");
+    }
+  }, [error]); // run only when `error` changes
 
   return (
     <div

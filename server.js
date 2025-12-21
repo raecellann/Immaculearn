@@ -78,7 +78,7 @@ async function createCustomServer() {
   // });
 
   console.log('console', process.env.PORT)
-  server.listen(process.env.PORT);
+  server.listen(process.env.PORT, '::');
 }
 
 createCustomServer();

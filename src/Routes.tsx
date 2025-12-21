@@ -60,6 +60,7 @@ import { SignInPageWithOAuth } from "./pages/test-page/signInPageWithOAuth.jsx";
 import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
 import Onboarding from "./pages/SignIn/onBoardingPage.jsx";
 import OAuthCallback from "./pages/SignIn/oauthCallbackPage.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 export default function Routes() {
   return (
@@ -88,7 +89,13 @@ export default function Routes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/create-space" element={<SpaceCreationPage />} />
         <Route path="/initial-invite" element={<InitialInvitePage />} />
-        <Route path="/home" element={<HomePage />} />
+
+        <Route path="/home" element={
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        } />
+        
         <Route path="/accsettings" element={<ProfilePage />} />
         <Route path="/grade-viewing" element={<GradeViewing />} />
         <Route path="/task" element={<TaskPage />} />

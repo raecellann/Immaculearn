@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "axios": "^1.13.2",
     "crypto-js": "^4.2.0",
     "express": "^4.21.2",
     "lucide-react": "^0.542.0",
