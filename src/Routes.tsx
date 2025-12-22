@@ -54,6 +54,9 @@ import ProfPeoplePage from "./pages/Prof-Space/ProfPeoplePage";
 import CreateFileAdmin from "./pages/CreateFile-Admin/createfile.jsx";
 import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx";
 
+{/* DDOCUMENT EDITOR */}
+import CreateDocumentPage from "./pages/Create-Document/CreateDocument.jsx";
+
 import ParentLogin from "./pages/parent-login/parentlogin.jsx";
 import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
 import { SignInPageWithOAuth } from "./pages/test-page/signInPageWithOAuth.jsx";
@@ -124,7 +127,6 @@ export default function Routes() {
         <Route path="/task-view-all" element={<TaskViewAll />} />
         <Route path="/create-space" element={<CreateSpaceAdmin />} />
         <Route path="/create-file-admin" element={<CreateFileAdmin />} />
-        <Route path="/upload-file-admin" element={<CreateFileAdmin />} />
         <Route path="/admin-files-shared" element={<AdminFilesSharedPage />} />
 
         {/* PROFESSOR ROUTES */}
@@ -146,6 +148,9 @@ export default function Routes() {
         {/* PARENT ROUTES */}
         <Route path="/parent-grade-login" element={<ParentLogin />} />
         <Route path="/parent-grade-view" element={<ParentGradeView />} />
+
+        {/* DOCUMENT EDITOR ROUTE */}
+        <Route path="/create-document" element={<CreateDocumentPage />} />
 
         <Route path="*" element={<PageNotFound />} />
 

@@ -41,7 +41,7 @@ const LandingPage = () => {
         <header className="flex justify-between items-center w-full relative z-20">
           <div className="flex items-center gap-2 mt-2">
             <img
-              src="/src/assets/LandingPage/LOGO.png"
+              src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379259/LOGO_ozziow.png"
               alt="Logo"
               className="w-[80px] h-[60px]"
             />
@@ -52,7 +52,6 @@ const LandingPage = () => {
             <a href="#feature">Feature</a>
             <a href="#contact">Contact Us</a>
           </nav>
-
 
           <Link to="login">
             <Button
@@ -69,7 +68,7 @@ const LandingPage = () => {
         </header>
 
         <img
-          src="/src/assets/LandingPage/header wave.png"
+          src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379306/header_wave_o6yymb.png"
           alt="Header Wave"
           className="absolute bottom-[1px] left-0 w-full z-10 h-full"
         />
@@ -108,7 +107,7 @@ const LandingPage = () => {
 
         <div className="relative w-full md:w-1/2 flex justify-end mt-5 md:mt-0">
           <img
-            src="/src/assets/LandingPage/sample.svg"
+            src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379654/sample_lwkfab.svg"
             alt="Students"
             className="relative w-[600px] z-10"
           />
@@ -118,7 +117,7 @@ const LandingPage = () => {
       {/* SCHOOL SECTION */}
       <div className="w-full mt-5 relative">
         <img
-          src="/src/assets/LandingPage/school.svg"
+          src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379976/school_g07n2t.jpg"
           alt="School"
           className="w-full h-auto object-cover"
         />
@@ -156,13 +155,13 @@ const LandingPage = () => {
         id="feature"
       >
         <img
-          src="/src/assets/LandingPage/asterisk.png"
+          src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380042/Asterisk_itnvzs.png"
           className="absolute left-[-10px] top-[350px] w-[180px] z-0"
           alt="asterisk"
         />
 
         <img
-          src="/src/assets/LandingPage/arrow.png"
+          src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380049/arrow_q9xp1c.png"
           className="absolute left-[200px] top-[360px] w-[120px] z-20"
           alt="arrow"
         />
@@ -272,7 +271,7 @@ const LandingPage = () => {
       {/* BLUE MARQUEE */}
       <div className="relative w-full mt-16">
         <img
-          src="/src/assets/LandingPage/violet.svg"
+          src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380095/violet_z9udug.svg"
           alt="Background Accent"
           className="absolute right-0 w-[200px] opacity-80 z-10 hidden lg:block"
         />
@@ -319,7 +318,7 @@ const LandingPage = () => {
         </div>
 
         <img
-          src="/src/assets/LandingPage/green.svg"
+          src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380124/green_ybz4wq.svg"
           alt="Green Accent"
           className="absolute left-0 bottom-0 w-48 z-0 hidden lg:block"
         />
@@ -400,7 +399,7 @@ const LandingPage = () => {
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-56 h-56 bg-[#9EC9FF] rounded-full blur-2xl opacity-50"></div>
 
             <img
-              src="/src/assets/LandingPage/laptop.svg"
+              src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380239/laptop_xt0qjg.svg"
               alt="Laptop Preview"
               className="w-[380px] relative z-10"
             />
@@ -444,7 +443,7 @@ const LandingPage = () => {
       <div className="w-full mt-20 relative">
         {/* Background Image */}
         <img
-          src="/src/assets/LandingPage/school-footer.svg"
+          src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380309/schoolfooter_f2viek.png"
           className="w-full h-auto object-cover"
           alt="Footer Background"
         />
@@ -454,7 +453,7 @@ const LandingPage = () => {
           {/* LOGO + BRAND */}
           <div className="flex flex-col items-start">
             <img
-              src="/src/assets/LandingPage/LOGO.png"
+              src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379259/LOGO_ozziow.png"
               className="w-[120px]"
               alt="Logo"
             />
