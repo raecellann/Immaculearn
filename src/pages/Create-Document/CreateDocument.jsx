@@ -6,6 +6,9 @@ import {
   FiItalic,
   FiUnderline,
   FiAlignLeft,
+  FiAlignCenter,
+  FiAlignRight,
+  FiAlignJustify,
   FiChevronDown,
   FiImage,
   FiFileText,
@@ -14,6 +17,12 @@ import {
 
 const CreateDocumentPage = () => {
   const [title, setTitle] = useState("Thesis Chapter 2 Participation");
+  const [isAlignmentDropdownOpen, setIsAlignmentDropdownOpen] = useState(false);
+  const [selectedAlignment, setSelectedAlignment] = useState("left");
+  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
+  const [selectedTextColor, setSelectedTextColor] = useState("black");
+  const [selectedHighlightColor, setSelectedHighlightColor] =
+    useState("transparent");
 
   return (
     <div className="flex min-h-screen bg-[#F3F4F6]">
@@ -65,23 +74,149 @@ const CreateDocumentPage = () => {
           <div className="h-6 w-px bg-gray-400" />
 
           {/* ALIGNMENT */}
-          <div className="flex items-center gap-1 text-lg cursor-pointer">
-            <FiAlignLeft />
-            <FiChevronDown className="text-sm" />
+          <div className="relative">
+            <div
+              className="flex items-center gap-1 text-lg cursor-pointer"
+              onClick={() =>
+                setIsAlignmentDropdownOpen(!isAlignmentDropdownOpen)
+              }
+            >
+              {selectedAlignment === "left" && <FiAlignLeft />}
+              {selectedAlignment === "center" && <FiAlignCenter />}
+              {selectedAlignment === "right" && <FiAlignRight />}
+              {selectedAlignment === "justify" && <FiAlignJustify />}
+              <FiChevronDown className="text-sm" />
+            </div>
+            {isAlignmentDropdownOpen && (
+              <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10">
+                <div
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                  onClick={() => {
+                    setSelectedAlignment("left");
+                    setIsAlignmentDropdownOpen(false);
+                  }}
+                >
+                  <FiAlignLeft />
+                  <span className="text-sm">Left</span>
+                </div>
+                <div
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                  onClick={() => {
+                    setSelectedAlignment("center");
+                    setIsAlignmentDropdownOpen(false);
+                  }}
+                >
+                  <FiAlignCenter />
+                  <span className="text-sm">Center</span>
+                </div>
+                <div
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                  onClick={() => {
+                    setSelectedAlignment("right");
+                    setIsAlignmentDropdownOpen(false);
+                  }}
+                >
+                  <FiAlignRight />
+                  <span className="text-sm">Right</span>
+                </div>
+                <div
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                  onClick={() => {
+                    setSelectedAlignment("justify");
+                    setIsAlignmentDropdownOpen(false);
+                  }}
+                >
+                  <FiAlignJustify />
+                  <span className="text-sm">Justify</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="h-6 w-px bg-gray-400" />
 
-          {/* COLOR */}
-          <div className="flex items-center gap-1 text-lg cursor-pointer">
-            <span className="font-semibold">A</span>
-            <FiChevronDown className="text-sm" />
-          </div>
+          {/* COLOR & HIGHLIGHT */}
+          <div className="relative">
+            <div
+              className="flex items-center gap-1 text-lg cursor-pointer"
+              onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
+            >
+              <span className="font-bold" style={{ color: selectedTextColor }}>
+                A
+              </span>
+              <FiChevronDown className="text-sm" />
+            </div>
 
-          {/* HIGHLIGHT */}
-          <div className="flex items-center gap-1 text-lg cursor-pointer">
-            <span className="font-semibold">🖍</span>
-            <FiChevronDown className="text-sm" />
+            {isColorDropdownOpen && (
+              <div className="absolute top-full mt-2 bg-white border rounded-xl shadow-lg z-20 p-3 w-[300px]">
+                {/* TEXT COLOR */}
+                <div className="text-xs font-semibold mb-2 text-gray-700">
+                  Text Color
+                </div>
+                <div className="grid grid-cols-6 gap-2 mb-3">
+                  {[
+                    "black",
+                    "green",
+                    "red",
+                    "blue",
+                    "gold",
+                    "orange",
+                    "purple",
+                    "pink",
+                    "brown",
+                    "teal",
+                    "navy",
+                    "gray",
+                  ].map((color) => (
+                    <button
+                      key={color}
+                      className="w-8 h-8 flex items-center justify-center rounded border border-black bg-white hover:bg-gray-100"
+                      onClick={() => setSelectedTextColor(color)}
+                    >
+                      <span className="font-bold" style={{ color }}>
+                        A
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* HIGHLIGHT COLOR */}
+                <div className="text-xs font-semibold mb-2 text-gray-700">
+                  Highlight
+                </div>
+                <div className="grid grid-cols-6 gap-2">
+                  {[
+                    "transparent",
+                    "yellow",
+                    "lime",
+                    "cyan",
+                    "pink",
+                    "orange",
+                    "purple",
+                    "red",
+                    "blue",
+                    "green",
+                    "gold",
+                    "gray",
+                  ].map((color) => (
+                    <button
+                      key={color}
+                      className="w-8 h-8 flex items-center justify-center rounded border hover:bg-gray-100"
+                      style={{
+                        backgroundColor:
+                          color === "transparent" ? "white" : color,
+                      }}
+                      onClick={() => {
+                        setSelectedHighlightColor(color);
+                        setIsColorDropdownOpen(false);
+                      }}
+                    >
+                      <span className="font-bold text-black">A</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="h-6 w-px bg-gray-400" />
@@ -113,38 +248,57 @@ const CreateDocumentPage = () => {
         {/* ================= CONTENT AREA ================= */}
         <div className="flex gap-6 p-8">
           {/* DOCUMENT */}
-          <div className="flex-1 bg-white rounded-lg shadow p-10 min-h-[500px]">
-            <p className="text-xl font-semibold mb-8">
+          <div
+            className="flex-1 bg-white rounded-lg shadow p-10 min-h-[500px] text-black"
+            contentEditable
+            style={{
+              textAlign: selectedAlignment,
+              color: selectedTextColor,
+              backgroundColor:
+                selectedHighlightColor === "transparent"
+                  ? "transparent"
+                  : selectedHighlightColor,
+            }}
+            suppressContentEditableWarning={true}
+          >
+            <div style={{ textAlign: selectedAlignment }}>
               Nathaniel: DFD & Database
-            </p>
-            <p className="text-xl font-semibold mb-8">
+            </div>
+            <br />
+            <div style={{ textAlign: selectedAlignment }}>
               Zeldrick: Papers and Front-End
-            </p>
-            <p className="text-xl font-semibold mb-8">Wilson: DFD & Back-End</p>
-            <p className="text-xl font-semibold">Raecell: Survey & Prototype</p>
+            </div>
+            <br />
+            <div style={{ textAlign: selectedAlignment }}>
+              Wilson: DFD & Back-End
+            </div>
+            <br />
+            <div style={{ textAlign: selectedAlignment }}>
+              Raecell: Survey & Prototype
+            </div>
           </div>
 
           {/* RIGHT PANEL */}
           <div className="w-[260px]">
-            <h3 className="font-semibold mb-4">Editors:</h3>
+            <h3 className="font-semibold mb-4 text-black">Editors:</h3>
 
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-3 text-black">
               <img
-                src="https://via.placeholder.com/36"
-                className="rounded-full"
+                src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/zj_ouikks.jpg"
+                className="w-8 h-8 rounded-full object-cover"
               />
               <span>Zeldrick Jesus</span>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-black">
               <img
-                src="https://via.placeholder.com/36"
-                className="rounded-full"
+                src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/nath_tzkpl5.jpg"
+                className="w-8 h-8 rounded-full object-cover"
               />
               <span>Nathaniel</span>
             </div>
 
-            <h3 className="font-semibold mt-8 mb-3">Comments:</h3>
+            <h3 className="font-semibold mt-8 mb-3 text-black">Comments:</h3>
 
             <div className="bg-white border rounded-lg p-3 h-32 mb-3" />
 
