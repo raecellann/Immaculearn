@@ -87,7 +87,7 @@ export default function Routes() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/chatlist" element={<ChatList />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/create-space" element={<SpaceCreationPage />} />
+        <Route path="/initial-create-space" element={<SpaceCreationPage />} />
         <Route path="/initial-invite" element={<InitialInvitePage />} />
 
         <Route path="/home" element={
@@ -122,7 +122,7 @@ export default function Routes() {
         <Route path="/task-view" element={<TaskViewPage />} />
         <Route path="/task-view-admin" element={<TaskViewPageAdmin />} />
         <Route path="/task-view-all" element={<TaskViewAll />} />
-        <Route path="/create-space-admin" element={<CreateSpaceAdmin />} />
+        <Route path="/create-space" element={<CreateSpaceAdmin />} />
         <Route path="/create-file-admin" element={<CreateFileAdmin />} />
         <Route path="/upload-file-admin" element={<CreateFileAdmin />} />
         <Route path="/admin-files-shared" element={<AdminFilesSharedPage />} />

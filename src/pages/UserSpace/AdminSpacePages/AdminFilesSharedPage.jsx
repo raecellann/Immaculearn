@@ -50,7 +50,7 @@ const AdminFilesSharedPage = () => {
 
           <button
             className="text-gray-400 text-xl hover:text-white transition"
-            onClick={() => navigate("/admin-space/people")}
+            onClick={() => navigate("/user-space-zj/people")}
           >
             People
           </button>

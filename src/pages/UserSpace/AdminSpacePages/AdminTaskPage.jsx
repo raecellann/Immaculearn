@@ -91,7 +91,7 @@ const AdminTaskPage = () => {
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/adminpeoplepage")}
+            onClick={() => navigate("/user-space-zj/people")}
           >
             People
           </button>
