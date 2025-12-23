@@ -12,17 +12,17 @@ const LandingPage = () => {
     {
       front: "Real-time Collaboration",
       back: "Collaborate instantly with peers on notes, tasks, and projects.",
-      icon: "/src/assets/LandingPage/Calendar.png",
+      icon: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766507073/Calendar_tuswog.png",
     },
     {
       front: "Organized Learning",
       back: "Manage deadlines, courses, and learning materials all in one place.",
-      icon: "/src/assets/LandingPage/file.png",
+      icon: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766507073/file_cbwt9s.png",
     },
     {
       front: "Progress Tracking",
       back: "Track your learning journey and stay motivated with visual tools.",
-      icon: "/src/assets/LandingPage/LOGO.png",
+      icon: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766507073/Calendar_tuswog.png",
     },
   ];
 
@@ -457,7 +457,6 @@ const LandingPage = () => {
               className="w-[120px]"
               alt="Logo"
             />
-            <h3 className="font-bold text-lg mt-2">IMMACULEARN</h3>
           </div>
 
           {/* LINKS + RESOURCES */}
