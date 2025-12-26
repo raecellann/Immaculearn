@@ -28,14 +28,13 @@ const CreateDocumentPage = () => {
 
   const editorRef = useRef(null);
 
-  /* ================== CORE FIX ================== */
   const applyFormatting = (command, value = null) => {
     editorRef.current?.focus();
     document.execCommand(command, false, value);
   };
 
   const handleMouseDown = (e, callback) => {
-    e.preventDefault(); // 🔑 preserves text selection
+    e.preventDefault(); // 
     callback();
   };
 
@@ -55,7 +54,6 @@ const CreateDocumentPage = () => {
     applyFormatting("foreColor", color);
   };
 
-  /* FIX highlight for modern browsers */
   const applyHighlight = (color) => {
     setSelectedHighlightColor(color);
     applyFormatting("hiliteColor", color === "transparent" ? "white" : color);
@@ -66,30 +64,13 @@ const CreateDocumentPage = () => {
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
-      const selectedText = range.toString();
-      if (selectedText) {
-        // Check if the selection is within an existing span with font-size
-        let parentSpan = range.commonAncestorContainer;
-        if (parentSpan.nodeType === Node.TEXT_NODE) {
-          parentSpan = parentSpan.parentNode;
-        }
-        if (
-          parentSpan &&
-          parentSpan.tagName === "SPAN" &&
-          parentSpan.style.fontSize
-        ) {
-          // Update existing span
-          parentSpan.style.fontSize = `${size}px`;
-          parentSpan.style.lineHeight = `${size * 1.1}px`;
-        } else {
-          // Create new span
-          const span = document.createElement("span");
-          span.style.fontSize = `${size}px`;
-          span.style.lineHeight = `${size * 1.1}px`;
-          span.textContent = selectedText;
-          range.deleteContents();
-          range.insertNode(span);
-        }
+      if (!range.collapsed) {
+        const clonedContents = range.cloneContents();
+        const span = document.createElement("span");
+        span.style.fontSize = `${size}px`;
+        span.appendChild(clonedContents);
+        range.deleteContents();
+        range.insertNode(span);
       }
     }
   };
