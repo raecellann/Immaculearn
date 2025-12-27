@@ -5,6 +5,7 @@ import Sidebar from "../component/sidebar";
 const FilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
+
   const spaces = [
     { name: "ZJ’s Space" },
     { name: "Wilson’s Space" },
@@ -14,22 +15,23 @@ const FilePage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+
+      {/* Desktop Sidebar (Laptop & Desktop) */}
+      <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile + Tablet Overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 md:hidden
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <Sidebar />
@@ -37,8 +39,9 @@ const FilePage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile Header */}
-        <div className="md:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+
+        {/* Mobile + Tablet Header */}
+        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -48,27 +51,32 @@ const FilePage = () => {
           <h1 className="text-xl font-bold">Files</h1>
         </div>
 
-        <div className="flex-1 p-4 md:p-10 overflow-y-auto">
-          <h1 className="hidden md:block text-2xl md:text-4xl font-bold text-center mb-6 md:mb-10">Files</h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 max-w-3xl mx-auto">
-          {spaces.map((space, index) => (
-            <div
-              key={index}
-              className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 md:px-5 md:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-              onClick={() => {
-                if (space.name === "ZJ’s Space") navigate("/view-all-files");
-                if (space.name === "Raecell’s Space")
-                  navigate("/create-file-admin");
-              }}
-            >
-              <span className="text-xl">📁</span>
-              <p className="text-lg">{space.name}</p>
-            </div>
-          ))}
+        {/* Page Content */}
+        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
+          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
+            Files
+          </h1>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+            {spaces.map((space, index) => (
+              <div
+                key={index}
+                className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                onClick={() => {
+                  if (space.name === "ZJ’s Space") navigate("/view-all-files");
+                  if (space.name === "Raecell’s Space")
+                    navigate("/create-file-admin");
+                }}
+              >
+                <span className="text-xl">📁</span>
+                <p className="text-lg">{space.name}</p>
+              </div>
+            ))}
+          </div>
         </div>
+
       </div>
     </div>
-  </div>
   );
 };
 

@@ -3,6 +3,7 @@ import Sidebar from "../component/profsidebar";
 
 const ProfNotificationPage = () => {
   const [activeTab, setActiveTab] = useState("all");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const notifications = [
     {
@@ -16,18 +17,18 @@ const ProfNotificationPage = () => {
     },
     {
       id: 2,
-      name: "Zeldrick Jesus Delos Santos",
+      name: "Raecell Ann Galvez",
       comment: "Okay na po, Sir Jober",
-      activity: "Week 8 Activity in Operating System Space",
+      activity: "Week 8 Activity in CS Thesis 2 Space",
       date: "Oct 20",
       unread: false,
       image: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
     },
     {
       id: 3,
-      name: "Zeldrick Jesus Delos Santos",
-      comment: "Okay na po, Sir Jober",
-      activity: "Week 8 Activity in Operating System Space",
+      name: "Wilson ESmabe",
+      comment: "Okay na po, Maam Susan",
+      activity: "Week 2 Activity in MODTECH Space",
       date: "Oct 20",
       unread: true,
       image: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
@@ -41,18 +42,48 @@ const ProfNotificationPage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
-      {/* Sidebar */}
-      <Sidebar />
+      {/* Desktop Sidebar - Shows on lg (1024px) and up */}
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+
+      {/* Mobile/Tablet Overlay - Shows below lg */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Mobile/Tablet Sidebar - Shows below lg */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <Sidebar />
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-10">
-        <h1 className="text-3xl font-bold font-grotesque mb-8 text-center">
-          Notifications
-        </h1>
+      <div className="flex-1 flex flex-col">
+        {/* Mobile/Tablet Header - Shows below lg */}
+        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Notifications</h1>
+        </div>
 
-        {/* Tabs */}
-        <div className="w-full">
-          <div className="flex justify-start gap-10 border-b border-gray-600 pb-3 mb-6 text-gray-300 text-sm">
+        {/* Content */}
+        <div className="flex-1 p-4 md:p-10 overflow-y-auto">
+          <h1 className="hidden lg:block text-2xl lg:text-3xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
+            Notifications
+          </h1>
+
+          {/* Tabs */}
+          <div className="flex gap-4 sm:gap-6 border-b border-gray-600 pb-3 mb-6 text-gray-300 text-xs sm:text-sm">
             <button
               className={`${
                 activeTab === "all" ? "text-white font-semibold" : ""
@@ -76,7 +107,7 @@ const ProfNotificationPage = () => {
             {filteredNotifications.map((notif) => (
               <div
                 key={notif.id}
-                className="flex items-start justify-between border-b border-gray-700 pb-4"
+                className="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b border-gray-700 pb-4 gap-3"
               >
                 <div className="flex items-start gap-4">
                   <img
@@ -85,20 +116,20 @@ const ProfNotificationPage = () => {
                     className="w-10 h-10 rounded-full object-cover"
                   />
                   <div>
-                    <p className="text-sm">
-                      <span className="font-semibold">
-                        {notif.name}
-                      </span>{" "}
+                    <p className="text-xs sm:text-sm leading-relaxed">
+                      <span className="font-semibold">{notif.name}</span>{" "}
                       commented in{" "}
                       <span className="font-semibold text-white">
                         {notif.activity}
                       </span>
                     </p>
-                    <p className="text-gray-400 text-sm mt-1">{notif.comment}</p>
+                    <p className="text-gray-400 text-xs sm:text-sm mt-1">
+                      {notif.comment}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                <div className="flex items-center gap-2 text-gray-400 text-xs sm:text-[13px] md:text-sm sm:self-start">
                   <span>{notif.date}</span>
                   {notif.unread && (
                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>

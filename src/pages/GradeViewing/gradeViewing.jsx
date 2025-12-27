@@ -11,22 +11,23 @@ const GradeViewing = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+
+      {/* Desktop Sidebar (Laptop & Desktop) */}
+      <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile + Tablet Overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 md:hidden
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <Sidebar />
@@ -34,8 +35,9 @@ const GradeViewing = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile Header (MATCHES TASKPAGE) */}
-        <div className="md:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+
+        {/* Mobile + Tablet Header */}
+        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -46,15 +48,15 @@ const GradeViewing = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-4 md:p-10 overflow-y-auto">
+        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
           {!showDetails ? (
             <>
-              <h1 className="hidden md:block text-3xl font-bold mb-10 text-center">
+              <h1 className="hidden lg:block text-3xl font-bold mb-10 text-center">
                 Grades Viewing
               </h1>
 
-              {/* ===== MOBILE VIEW ===== */}
-              <div className="md:hidden flex flex-col gap-4">
+              {/* ===== MOBILE + TABLET VIEW ===== */}
+              <div className="lg:hidden flex flex-col gap-4">
                 <div className="bg-[#1F232B] rounded-xl p-4">
                   <p className="text-sm text-gray-400">Subject</p>
                   <p className="font-semibold">Thesis and Research</p>
@@ -74,8 +76,8 @@ const GradeViewing = () => {
                 </div>
               </div>
 
-              {/* ===== TABLET & DESKTOP ===== */}
-              <div className="hidden md:block overflow-x-auto bg-[#1F232B] rounded-2xl p-6 shadow-lg">
+              {/* ===== LAPTOP & DESKTOP ===== */}
+              <div className="hidden lg:block overflow-x-auto bg-[#1F232B] rounded-2xl p-6 shadow-lg">
                 <table className="min-w-full text-left border-separate border-spacing-y-2">
                   <thead>
                     <tr className="text-gray-400">
@@ -111,8 +113,8 @@ const GradeViewing = () => {
                 />
               </div>
 
-              {/* ===== MOBILE DETAILS ===== */}
-              <div className="md:hidden bg-[#1F232B] rounded-xl p-4 space-y-3">
+              {/* ===== MOBILE + TABLET DETAILS ===== */}
+              <div className="lg:hidden bg-[#1F232B] rounded-xl p-4 space-y-3">
                 <p>
                   <span className="text-gray-400">Subject:</span> Thesis
                 </p>
@@ -141,8 +143,8 @@ const GradeViewing = () => {
                 </p>
               </div>
 
-              {/* ===== DESKTOP DETAILS ===== */}
-              <div className="hidden md:block bg-[#1F232B] rounded-2xl p-6 shadow-lg">
+              {/* ===== LAPTOP & DESKTOP DETAILS ===== */}
+              <div className="hidden lg:block bg-[#1F232B] rounded-2xl p-6 shadow-lg">
                 <p className="text-lg mb-2">
                   <span className="font-semibold text-gray-400">Subject:</span>{" "}
                   Thesis

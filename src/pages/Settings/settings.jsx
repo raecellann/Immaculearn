@@ -20,22 +20,23 @@ const SettingsPage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-grotesque">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+
+      {/* Desktop Sidebar (Laptop & Desktop) */}
+      <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile + Tablet Overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 md:hidden
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <Sidebar />
@@ -43,8 +44,9 @@ const SettingsPage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile Header */}
-        <div className="md:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+
+        {/* Mobile + Tablet Header */}
+        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -55,19 +57,20 @@ const SettingsPage = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-4 md:p-10 flex flex-col items-center overflow-y-auto">
+        <div className="flex-1 p-4 lg:p-10 flex flex-col items-center overflow-y-auto">
           <div className="w-full max-w-5xl">
-            {/* Title */}
-            <h1 className="hidden md:block text-4xl font-bold text-center mb-2">
+
+            {/* Title (Laptop & Desktop only) */}
+            <h1 className="hidden lg:block text-4xl font-bold text-center mb-2">
               Settings
             </h1>
-            <p className="text-gray-300 mb-6 md:mb-10 text-center text-sm md:text-base">
+            <p className="text-gray-300 mb-6 lg:mb-10 text-center text-sm lg:text-base">
               Manage your profile, account preferences, and other options below.
             </p>
 
             {/* Profile Account */}
-            <div className="bg-[#1E222A] rounded-2xl p-4 md:p-6 mb-8 md:mb-10 border border-white shadow-lg">
-              <h2 className="text-lg md:text-xl font-bold mb-4">
+            <div className="bg-[#1E222A] rounded-2xl p-4 lg:p-6 mb-8 lg:mb-10 border border-white shadow-lg">
+              <h2 className="text-lg lg:text-xl font-bold mb-4">
                 Profile Account
               </h2>
 
@@ -83,8 +86,8 @@ const SettingsPage = () => {
             </div>
 
             {/* Switch Account */}
-            <div className="bg-[#1E222A] rounded-2xl p-4 md:p-6 border border-white shadow-lg">
-              <h2 className="text-lg md:text-xl font-bold mb-4">
+            <div className="bg-[#1E222A] rounded-2xl p-4 lg:p-6 border border-white shadow-lg">
+              <h2 className="text-lg lg:text-xl font-bold mb-4">
                 Switch Account
               </h2>
 
@@ -129,8 +132,10 @@ const SettingsPage = () => {
                 </button>
               </div>
             </div>
+
           </div>
         </div>
+
       </div>
     </div>
   );

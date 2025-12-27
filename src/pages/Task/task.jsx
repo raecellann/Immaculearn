@@ -41,22 +41,23 @@ const TaskPage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+
+      {/* Desktop Sidebar (Laptop & Desktop) */}
+      <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile + Tablet Overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 md:hidden
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <Sidebar />
@@ -64,8 +65,9 @@ const TaskPage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile Header */}
-        <div className="md:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+
+        {/* Mobile + Tablet Header */}
+        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -76,24 +78,23 @@ const TaskPage = () => {
         </div>
 
         {/* Page Content */}
-        <div className="flex-1 p-4 md:p-10 overflow-y-auto">
-          <h1 className="hidden md:block text-4xl font-bold text-center mb-10">
+        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
+          <h1 className="hidden lg:block text-4xl font-bold text-center mb-10">
             Task
           </h1>
 
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">
+            <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">
               To Do Lists 📚
             </h2>
 
-            {/* ================= MOBILE (CARD VIEW) ================= */}
-            <div className="flex flex-col gap-4 md:hidden">
+            {/* ================= MOBILE + TABLET (CARD VIEW) ================= */}
+            <div className="flex flex-col gap-4 lg:hidden">
               {tasks.map((task, index) => (
                 <div
                   key={index}
                   className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex flex-col gap-3"
                 >
-                  {/* TASK NAME */}
                   <a
                     href="/task-view"
                     className="text-blue-400 hover:underline text-sm font-medium"
@@ -101,20 +102,17 @@ const TaskPage = () => {
                     {task.name}
                   </a>
 
-                  {/* DEADLINE */}
                   <p className="text-sm text-gray-300">
                     <strong className="text-gray-400">Deadline:</strong>{" "}
                     {task.deadline}
                   </p>
 
-                  {/* SPACE + STATUS (ALIGNED) */}
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm text-gray-300">
                       <strong className="text-gray-400">Space:</strong>{" "}
                       {task.space}
                     </p>
 
-                    {/* STATUS */}
                     <div className="relative">
                       <button
                         onClick={() =>
@@ -153,8 +151,8 @@ const TaskPage = () => {
               ))}
             </div>
 
-            {/* ================= TABLET & DESKTOP (TABLE VIEW) ================= */}
-            <div className="hidden md:block">
+            {/* ================= LAPTOP & DESKTOP (TABLE VIEW) ================= */}
+            <div className="hidden lg:block">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-gray-600 text-left text-gray-400">
@@ -220,6 +218,7 @@ const TaskPage = () => {
                 </tbody>
               </table>
             </div>
+
           </div>
         </div>
       </div>

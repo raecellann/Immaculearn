@@ -42,22 +42,23 @@ const ChatList = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+
+      {/* Desktop Sidebar (Laptop & Desktop) */}
+      <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile + Tablet Overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 md:hidden
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <Sidebar />
@@ -65,8 +66,9 @@ const ChatList = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile Header */}
-        <div className="md:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+
+        {/* Mobile + Tablet Header */}
+        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -78,8 +80,9 @@ const ChatList = () => {
 
         {/* Chat List */}
         <div className="flex-1 flex flex-col bg-gray-900">
+
           {/* Desktop Header */}
-          <div className="hidden md:flex p-4 justify-between items-center border-b border-gray-700">
+          <div className="hidden lg:flex p-4 justify-between items-center border-b border-gray-700">
             <h2 className="text-lg font-semibold">Chats</h2>
             <button className="text-gray-400 hover:text-white">⤢</button>
           </div>
@@ -114,6 +117,7 @@ const ChatList = () => {
               💬 Chats
             </button>
           </div>
+
         </div>
       </div>
     </div>

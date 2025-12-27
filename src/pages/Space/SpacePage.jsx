@@ -90,23 +90,24 @@ const SpacePage = () => {
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
 
-      {/* ================= Desktop Sidebar ================= */}
-      <div className="hidden md:block">
+      {/* ================= Desktop Sidebar (Laptop+) ================= */}
+      <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* ================= Mobile Overlay ================= */}
+      {/* ================= Mobile + Tablet Overlay ================= */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* ================= Mobile Sidebar ================= */}
+      {/* ================= Tablet Sidebar ================= */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 md:hidden
-        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        md:block lg:hidden`}
       >
         <Sidebar />
       </div>
@@ -114,8 +115,8 @@ const SpacePage = () => {
       {/* ================= Main Content ================= */}
       <div className="flex-1 flex flex-col">
 
-        {/* ================= Mobile Header ================= */}
-        <div className="md:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+        {/* ================= Header (Mobile + Tablet) ================= */}
+        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"

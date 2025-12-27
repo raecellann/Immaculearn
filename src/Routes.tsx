@@ -42,6 +42,7 @@ import ProfListActivityPage from "./pages/prof-ListActivities/proflistactivitypa
 import ProfFilePage from "./pages/prof-Files/proffiles.jsx";
 import ProfFilesBySubject from "./pages/prof-Files/ProfFilesBySubject";
 import ProfGradeRecordPage from "./pages/prof-GradeViewing/profgradeviewing.jsx";
+import ProfChatsPage from "./pages/prof-Chats/profchats.jsx";
 import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx";
 import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx";
 import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
@@ -136,6 +137,7 @@ export default function Routes() {
         <Route path="/prof-files" element={<ProfFilePage />} />
         <Route path="/prof-files-by-subject" element={<ProfFilesBySubject />} />
         <Route path="/prof-grade-viewing" element={<ProfGradeRecordPage />} />
+        <Route path="/prof-chats" element={<ProfChatsPage /> }/>
         <Route path="/prof-home" element={<ProfHomePage />} />
         <Route path="/prof-settings" element={<ProfSettingsPage />} />
 

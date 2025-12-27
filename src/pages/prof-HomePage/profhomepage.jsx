@@ -83,19 +83,19 @@ const ProfHomePage = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setSlideIndexYourSpace(Math.max(0, slideIndexYourSpace - 1))}
-                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded"
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   disabled={slideIndexYourSpace === 0}
                 >
                   ‹
                 </button>
                 <button
                   onClick={() => setSlideIndexYourSpace(Math.min(2, slideIndexYourSpace + 1))}
-                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded"
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   disabled={slideIndexYourSpace === 2}
                 >
                   ›
                 </button>
-                <button className="text-[#007AFF] hover:underline text-sm ml-2">View All</button>
+                <button className="text-[#007AFF] hover:underline text-sm ml-2 bg-transparent">View All</button>
               </div>
             </div>
 
@@ -132,19 +132,19 @@ const ProfHomePage = () => {
                 <div className="flex gap-2">
                 <button
                   onClick={() => setSlideIndexSpaces(Math.max(0, slideIndexSpaces - 1))}
-                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded"
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   disabled={slideIndexSpaces === 0}
                 >
                   ‹
                 </button>
                 <button
                   onClick={() => setSlideIndexSpaces(Math.min(2, slideIndexSpaces + 1))}
-                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded"
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   disabled={slideIndexSpaces === 2}
                 >
                   ›
                 </button>
-                <button className="text-[#007AFF] hover:underline text-sm ml-2">View All</button>
+                <button className="text-[#007AFF] hover:underline text-sm ml-2 bg-transparent">View All</button>
               </div>
             </div>
 
@@ -198,13 +198,15 @@ const ProfHomePage = () => {
                         ...
                       </button>
                       {showMenu === i && (
-                        <div className="absolute top-8 right-0 rounded-md shadow-lg py-2 min-w-[120px] z-10 space-y-1">
-                          <button className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[#3E4450]">
-                            View Details
-                          </button>
-                          <button className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#3E4450]">
-                            Delete Space
-                          </button>
+                        <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                          <div className="flex flex-col gap-2">
+                            <button className="w-full text-center px-3 py-2 rounded-full bg-transparent border border-[#3B4457] text-white text-sm hover:bg-[#2A3241] transition">
+                              View Details
+                            </button>
+                            <button className="w-full text-center px-3 py-2 rounded-full bg-transparent border border-red-600 text-red-400 text-sm hover:bg-red-900/20 transition">
+                              Leave Space
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -265,7 +267,7 @@ const ProfHomePage = () => {
                         setCurrentMonth(currentMonth - 1);
                       }
                     }}
-                    className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded"
+                    className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   >
                     ‹
                   </button>
@@ -278,7 +280,7 @@ const ProfHomePage = () => {
                         setCurrentMonth(currentMonth + 1);
                       }
                     }}
-                    className="text-gray-400 hover:text-white text-xs px-2 py-1 rounded"
+                    className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
                   >
                     ›
                   </button>
@@ -369,7 +371,7 @@ const ProfHomePage = () => {
                   </div>
                 </li>
               </ul>
-              <button className="mt-4 text-[#007AFF] hover:underline text-sm">See All</button>
+              <button className="mt-4 text-[#007AFF] hover:underline text-sm bg-transparent">See All</button>
             </div>
           </div>
         </div>
