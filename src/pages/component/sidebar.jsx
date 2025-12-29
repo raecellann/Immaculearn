@@ -16,7 +16,7 @@ import { Link, useLocation } from "react-router";
 
 import Logout from "./logout";
 import logo from "../../assets/HomePage/logo.png";
-import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
+import raecell from "../../assets/HomePage/raecell.jpg";
 
 const Sidebar = () => {
   const [showLogout, setShowLogout] = useState(false);
@@ -129,7 +129,7 @@ const Sidebar = () => {
 
       <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0">
         <img
-          src={frierenAvatar}
+          src={raecell}
           alt="Profile"
           className="w-9 h-9 rounded-full object-cover border border-white/20"
         />

@@ -6,28 +6,9 @@ const ProfChatsPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const chats = [
-    {
-      name: "WEsnabe1920",
-      message:
-        "Good Evening po, Sir Jober. Nakapag-pasa na po ako ng OJT Paper.",
-      time: "1m",
-      avatar: "/avatar1.png",
-    },
-    {
-      name: "Nathaniel F.",
-      message: "Okay na, nakita ko na output mo.",
-      time: "2h",
-      avatar: "/avatar2.png",
-      isYou: true,
-    },
-    {
-      name: "CS THESIS 1 - 1SY2025-2026",
-      message:
-        "Good Evening mga AnaCS4... On-line consultation na lang muna tayo bukas.",
-      time: "15m",
-      avatar: "/group.png",
-      isYou: true,
-    },
+    {id: 1,name: "Wilson Esmabe",message:"Good Evening po, Sir Jober. Nakapag-pasa na po ako ng OJT Paper.",time: "1m",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990149/wilson_gjdkdm.jpg", },
+    {id: 2,name: "Nathaniel Faburada.",message: "Okay na, nakita ko na output mo.",time: "2h",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",isYou: true,},
+    {id: 3,name: "CS THESIS 1 - 1SY2025-2026", message: "Good Evening mga AnaCS4... On-line consultation na lang muna tayo bukas.",time: "15m",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990871/thesis_hdfdkr.png",isYou: true,},
   ];
 
   return (
@@ -37,7 +18,7 @@ const ProfChatsPage = () => {
         <Sidebar />
       </div>
 
-      {/* Overlay */}
+      {/* Mobile Overlay */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -54,42 +35,54 @@ const ProfChatsPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-3 sm:px-5 lg:px-8 py-4 sm:py-6 max-w-full">
-        {/* Mobile Header */}
-        <div className="lg:hidden flex items-center gap-2 mb-4">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="text-2xl"
-          >
-            ☰
-          </button>
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile / Tablet Header */}
+        <div
+          className="
+            lg:hidden
+            sticky top-0 z-30
+            bg-[#1E222A]
+            px-4
+            pt-[env(safe-area-inset-top)]
+            border-b border-[#3B4457]
+          "
+        >
+          <div className="flex items-center h-14">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="text-2xl leading-none bg-transparent p-0 border-none focus:outline-none"
+              style={{ WebkitTapHighlightColor: "transparent" }}
+            >
+              ☰
+            </button>
 
-          <h1 className="text-lg sm:text-xl font-bold flex-1 text-center">
-            Chats
-          </h1>
+            <h1 className="ml-4 text-lg font-bold truncate">Chats</h1>
 
-          <Button
-            style={{
-              padding: "0.3rem 0.7rem",
-              fontSize: "0.7rem",
-              backgroundColor: "#3B82F6",
-              borderRadius: "0.375rem",
-            }}
-          >
-            New
-          </Button>
+            <div className="ml-auto">
+              <Button
+                style={{
+                  padding: "0.25rem 0.7rem",
+                  fontSize: "0.75rem",
+                  backgroundColor: "#3B82F6",
+                  borderRadius: "0.375rem",
+                }}
+              >
+                New
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Desktop Header */}
-        <div className="hidden lg:flex relative items-center mb-6">
-          <h1 className="absolute left-1/2 -translate-x-1/2 text-2xl xl:text-3xl font-bold">
+        <div className="hidden lg:flex relative items-center px-8 py-6">
+          <h1 className="absolute left-1/2 -translate-x-1/2 text-3xl font-bold">
             Chats
           </h1>
           <div className="ml-auto">
             <Button
               style={{
-                padding: "0.4rem 1rem",
-                fontSize: "0.85rem",
+                padding: "0.45rem 1.1rem",
+                fontSize: "0.9rem",
                 backgroundColor: "#3B82F6",
                 borderRadius: "0.375rem",
               }}
@@ -100,28 +93,32 @@ const ProfChatsPage = () => {
         </div>
 
         {/* Chat List */}
-        <div className="space-y-1 sm:space-y-2">
-          {chats.map((chat, index) => (
+        <div className="flex-1 overflow-y-auto pb-4">
+          {chats.map((chat) => (
             <div
-              key={index}
-              className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-md
-                         hover:bg-[#1F242D] cursor-pointer transition
-                         border-b border-gray-700"
+              key={chat.id}
+              className="
+                flex items-center gap-3 sm:gap-4
+                px-3 sm:px-4
+                py-3 sm:p-4
+                border-b border-gray-700
+                hover:bg-[#1F242D]
+                transition
+                cursor-pointer
+              "
             >
-              {/* Avatar */}
               <img
                 src={chat.avatar}
                 alt={chat.name}
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
               />
 
-              {/* Chat Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center">
                   <h2 className="font-semibold text-sm sm:text-base truncate">
                     {chat.name}
                   </h2>
-                  <span className="text-[10px] sm:text-xs text-gray-400 ml-2">
+                  <span className="text-xs text-gray-400 ml-2">
                     {chat.time}
                   </span>
                 </div>

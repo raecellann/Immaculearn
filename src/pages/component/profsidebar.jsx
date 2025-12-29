@@ -112,7 +112,7 @@ const Sidebar = () => {
       {/* Profile Account */}
       <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0">
         <img
-          src="/src/assets/HomePage/frieren-avatar.jpg"
+          src="/src/assets/HomePage/jober.jpg"
           alt="Profile"
           className="w-9 h-9 rounded-full object-cover border border-white/20"
         />

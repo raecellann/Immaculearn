@@ -42,12 +42,12 @@ const ProfNotificationPage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
-      {/* Desktop Sidebar - Shows on lg (1024px) and up */}
+      {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* Mobile/Tablet Overlay - Shows below lg */}
+      {/* Mobile/Tablet Overlay */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -55,7 +55,7 @@ const ProfNotificationPage = () => {
         />
       )}
 
-      {/* Mobile/Tablet Sidebar - Shows below lg */}
+      {/* Mobile/Tablet Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
@@ -65,7 +65,7 @@ const ProfNotificationPage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile/Tablet Header - Shows below lg */}
+        {/* Mobile/Tablet Header */}
         <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
@@ -73,12 +73,13 @@ const ProfNotificationPage = () => {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">Notifications</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Notifications</h1>
         </div>
 
         {/* Content */}
         <div className="flex-1 p-4 md:p-10 overflow-y-auto">
-          <h1 className="hidden lg:block text-2xl lg:text-3xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
+          {/* Desktop Header */}
+          <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
             Notifications
           </h1>
 
@@ -116,14 +117,14 @@ const ProfNotificationPage = () => {
                     className="w-10 h-10 rounded-full object-cover"
                   />
                   <div>
-                    <p className="text-xs sm:text-sm leading-relaxed">
+                    <p className="text-sm sm:text-base lg:text-lg leading-relaxed">
                       <span className="font-semibold">{notif.name}</span>{" "}
                       commented in{" "}
                       <span className="font-semibold text-white">
                         {notif.activity}
                       </span>
                     </p>
-                    <p className="text-gray-400 text-xs sm:text-sm mt-1">
+                    <p className="text-gray-300 text-sm sm:text-base mt-1">
                       {notif.comment}
                     </p>
                   </div>

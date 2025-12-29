@@ -7,14 +7,14 @@ const SettingsPage = () => {
 
   const accounts = [
     {
-      name: "Raecell Ann",
+      name: "Raecell Ann Galvez",
       status: "Signed In",
-      avatar: "/your-image-1.png",
+      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990458/55516289_871534966513522_1623869577760866304_n_wh48kr.jpg",
     },
     {
-      name: "ZeldrickJesus25",
+      name: "Zeldrick Jesus Delos Santos",
       status: "",
-      avatar: "/your-image-2.png",
+      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1760087780/zj_lswba7.jpg",
     },
   ];
 

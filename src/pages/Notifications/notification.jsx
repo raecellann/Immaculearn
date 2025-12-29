@@ -65,12 +65,13 @@ const NotificationPage = ({ notifications = [] }) => {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">Notifications</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Notifications</h1>
         </div>
 
         {/* Content */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
-          <h1 className="hidden lg:block text-2xl lg:text-3xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
+          {/* Desktop Header */}
+          <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
             Notifications
           </h1>
 
@@ -82,7 +83,7 @@ const NotificationPage = ({ notifications = [] }) => {
               >
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{getIconEmoji(notif.type)}</span>
-                  <span className="text-sm sm:text-base">{notif.message}</span>
+                  <span className="text-base sm:text-lg font-medium">{notif.message}</span>
                 </div>
 
                 <div className="flex gap-2 w-full sm:w-auto justify-end">
