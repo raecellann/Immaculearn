@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
 import {
   FiArrowLeft,
@@ -17,6 +17,9 @@ import {
   FiRotateCw,
   FiFile,
   FiColumns,
+  FiDownload,
+  FiSave,
+  FiCheck,
 } from "react-icons/fi";
 
 const CreateDocumentPage = () => {
@@ -37,6 +40,10 @@ const CreateDocumentPage = () => {
   const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
   const [selectedFont, setSelectedFont] = useState("Inter");
   const [isListDropdownOpen, setIsListDropdownOpen] = useState(false);
+  const [isDownloadDropdownOpen, setIsDownloadDropdownOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
+  const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'unsaved'
 
   const paperSizes = {
     Letter: { width: "8.5in", height: "11in" },
@@ -60,8 +67,11 @@ const CreateDocumentPage = () => {
   };
 
   const editorRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
+  const [isClient, setIsClient] = useState(false);
 
   const applyFormatting = (command, value = null) => {
+    if (!isClient) return;
     editorRef.current?.focus();
     document.execCommand(command, false, value);
   };
@@ -71,40 +81,73 @@ const CreateDocumentPage = () => {
     callback();
   };
 
-  const applyBold = () => applyFormatting("bold");
-  const applyItalic = () => applyFormatting("italic");
-  const applyUnderline = () => applyFormatting("underline");
+  const applyBold = () => {
+    if (isClient && document.queryCommandState('bold')) {
+      applyFormatting('bold'); // Toggle off
+    } else {
+      applyFormatting('bold'); // Toggle on
+    }
+  };
+
+  const applyItalic = () => {
+    if (isClient && document.queryCommandState('italic')) {
+      applyFormatting('italic'); // Toggle off
+    } else {
+      applyFormatting('italic'); // Toggle on
+    }
+  };
+
+  const applyUnderline = () => {
+    if (isClient && document.queryCommandState('underline')) {
+      applyFormatting('underline'); // Toggle off
+    } else {
+      applyFormatting('underline'); // Toggle on
+    }
+  };
 
   const applyAlignment = (alignment) => {
-    if (alignment === "left") applyFormatting("justifyLeft");
-    else if (alignment === "center") applyFormatting("justifyCenter");
-    else if (alignment === "right") applyFormatting("justifyRight");
-    else if (alignment === "justify") applyFormatting("justifyFull");
+    if (selectedAlignment === alignment) {
+      // If clicking the same alignment, reset to left
+      applyFormatting('justifyLeft');
+      setSelectedAlignment('left');
+    } else {
+      applyFormatting(`justify${alignment.charAt(0).toUpperCase() + alignment.slice(1)}`);
+      setSelectedAlignment(alignment);
+    }
   };
 
   const applyTextColor = (color) => {
-    setSelectedTextColor(color);
-    applyFormatting("foreColor", color);
+    if (selectedTextColor === color) {
+      // If clicking the same color, reset to black
+      applyFormatting('foreColor', 'black');
+      setSelectedTextColor('black');
+    } else {
+      applyFormatting('foreColor', color);
+      setSelectedTextColor(color);
+    }
+    setIsColorDropdownOpen(false);
   };
 
-  const applyHighlight = (color) => {
-    setSelectedHighlightColor(color);
-    applyFormatting("hiliteColor", color === "transparent" ? "white" : color);
+  const applyHighlightColor = (color) => {
+    if (selectedHighlightColor === color) {
+      // If clicking the same color, reset to transparent
+      applyFormatting('backColor', 'transparent');
+      setSelectedHighlightColor('transparent');
+    } else {
+      applyFormatting('backColor', color);
+      setSelectedHighlightColor(color);
+    }
+    setIsColorDropdownOpen(false);
   };
 
   const applyFontSize = (size) => {
-    setSelectedFontSize(size);
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      if (!range.collapsed) {
-        const clonedContents = range.cloneContents();
-        const span = document.createElement("span");
-        span.style.fontSize = `${size}px`;
-        span.appendChild(clonedContents);
-        range.deleteContents();
-        range.insertNode(span);
-      }
+    if (selectedFontSize === size) {
+      // If clicking the same size, reset to default
+      applyFormatting('fontSize', '16px');
+      setSelectedFontSize(16);
+    } else {
+      applyFormatting('fontSize', `${size}px`);
+      setSelectedFontSize(size);
     }
   };
 
@@ -115,30 +158,56 @@ const CreateDocumentPage = () => {
   };
 
   const applyPaperSize = (size) => {
-    setSelectedPaperSize(size);
-    if (editorRef.current) {
-      editorRef.current.style.width = paperSizes[size].width;
-      editorRef.current.style.height = paperSizes[size].height;
+    if (selectedPaperSize === size) {
+      // If clicking the same size, reset to default
+      const defaultSize = paperSizes['A4'];
+      if (editorRef.current) {
+        editorRef.current.style.width = defaultSize.width;
+        editorRef.current.style.height = defaultSize.height;
+      }
+      setSelectedPaperSize('A4');
+    } else {
+      if (editorRef.current) {
+        editorRef.current.style.width = paperSizes[size].width;
+        editorRef.current.style.height = paperSizes[size].height;
+      }
+      setSelectedPaperSize(size);
     }
     setIsPaperSizeDropdownOpen(false);
   };
 
   const applyMargin = (margin) => {
-    setSelectedMargin(margin);
-    if (editorRef.current) {
-      const margins = marginOptions[margin];
-      editorRef.current.style.padding = `${margins.top} ${margins.right} ${margins.bottom} ${margins.left}`;
+    if (selectedMargin === margin) {
+      // If clicking the same margin, reset to default
+      const defaultMargins = marginOptions['Normal'];
+      if (editorRef.current) {
+        editorRef.current.style.padding = `${defaultMargins.top} ${defaultMargins.right} ${defaultMargins.bottom} ${defaultMargins.left}`;
+      }
+      setSelectedMargin('Normal');
+    } else {
+      if (editorRef.current) {
+        const margins = marginOptions[margin];
+        editorRef.current.style.padding = `${margins.top} ${margins.right} ${margins.bottom} ${margins.left}`;
+      }
+      setSelectedMargin(margin);
     }
     setIsMarginDropdownOpen(false);
   };
 
   const applyFontFamily = (font) => {
-    setSelectedFont(font);
-    applyFormatting("fontName", font);
+    if (selectedFont === font) {
+      // If clicking the same font, reset to default
+      applyFormatting('fontName', 'Inter');
+      setSelectedFont('Inter');
+    } else {
+      applyFormatting('fontName', font);
+      setSelectedFont(font);
+    }
     setIsFontDropdownOpen(false);
   };
 
   const applyList = (listType, style = null) => {
+    if (!isClient) return;
     // Ensure editor has focus
     editorRef.current?.focus();
     
@@ -194,6 +263,87 @@ const CreateDocumentPage = () => {
     }, 10);
   };
 
+  const downloadDocument = (format) => {
+    const content = editorRef.current?.innerText || '';
+    const title = title || 'Document';
+    
+    if (format === 'txt') {
+      // Download as text file
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else if (format === 'html') {
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${title}</title>
+          <style>
+            body { font-family: ${selectedFont}, Arial, sans-serif; line-height: 1.5; }
+            @page { size: ${paperSizes[selectedPaperSize].width} ${paperSizes[selectedPaperSize].height}; margin: ${marginOptions[selectedMargin].top} ${marginOptions[selectedMargin].right} ${marginOptions[selectedMargin].bottom} ${marginOptions[selectedMargin].left}; }
+          </style>
+        </head>
+        <body>
+          ${editorRef.current?.innerHTML || ''}
+        </body>
+        </html>
+      `;
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else if (format === 'pdf') {
+      // For PDF, we'll use window.print() as a fallback
+      // In a real app, you'd use a library like jsPDF or puppeteer
+      window.print();
+    }
+    
+    setIsDownloadDropdownOpen(false);
+  };
+
+  const autoSave = () => {
+    setIsSaving(true);
+    setSaveStatus('saving');
+    
+    // Simulate save process
+    setTimeout(() => {
+      setIsSaving(false);
+      setSaveStatus('saved');
+      setLastSaved(new Date());
+    }, 1000);
+  };
+
+  const handleContentChange = () => {
+    if (!isClient) return;
+    setSaveStatus('unsaved');
+    
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // Set new timeout for auto-save
+    saveTimeoutRef.current = setTimeout(() => {
+      autoSave();
+    }, 2000); // Auto-save after 2 seconds of inactivity
+  };
+
+  // Set client-side flag
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-[#F3F4F6]">
       <Sidebar />
@@ -207,17 +357,72 @@ const CreateDocumentPage = () => {
               <span>Back</span>
             </div>
 
-            <div className="flex gap-3">
-              <button className="px-6 py-2 rounded-full bg-[#3B82F6] text-white font-medium">
-                Save changes
-              </button>
+            <div className="flex items-center gap-3">
+              {/* Auto-save indicator */}
+              <div className="flex items-center gap-2 text-sm">
+                {saveStatus === 'saving' && (
+                  <>
+                    <FiSave className="text-blue-500 animate-spin" />
+                    <span className="text-gray-600">Saving...</span>
+                  </>
+                )}
+                {saveStatus === 'saved' && (
+                  <>
+                    <FiCheck className="text-green-500" />
+                    <span className="text-gray-600">
+                      {lastSaved ? `Saved at ${lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : 'Saved'}
+                    </span>
+                  </>
+                )}
+                {saveStatus === 'unsaved' && (
+                  <>
+                    <FiSave className="text-gray-400" />
+                    <span className="text-gray-500">Unsaved changes</span>
+                  </>
+                )}
+              </div>
+              
+              <div className="relative">
+                <button
+                  className="px-6 py-2 rounded-full bg-[#3B82F6] text-white font-medium"
+                  onClick={() => setIsDownloadDropdownOpen(!isDownloadDropdownOpen)}
+                >
+                  Download
+                </button>
+
+                {isDownloadDropdownOpen && (
+                  <div className="absolute top-full mt-2 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-10 w-40">
+                    <div
+                      className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:bg-gray-100"
+                      onClick={() => downloadDocument('html')}
+                    >
+                      <FiDownload size={16} className="text-gray-800" />
+                      <span className="text-sm text-gray-800">Word (.docx)</span>
+                    </div>
+                    <div
+                      className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:bg-gray-100"
+                      onClick={() => downloadDocument('pdf')}
+                    >
+                      <FiDownload size={16} className="text-gray-800" />
+                      <span className="text-sm text-gray-800">PDF</span>
+                    </div>
+                    <div
+                      className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:bg-gray-100"
+                      onClick={() => downloadDocument('txt')}
+                    >
+                      <FiDownload size={16} className="text-gray-800" />
+                      <span className="text-sm text-gray-800">Text (.txt)</span>
+                    </div>
+                  </div>
+                )}
+              </div>
               <button className="px-6 py-2 rounded-full bg-gray-200 text-gray-600 font-medium">
                 Cancel
               </button>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 mb-4">
             <label className="text-sm font-medium text-gray-700">
               Document Title
             </label>
@@ -227,6 +432,30 @@ const CreateDocumentPage = () => {
               className="w-full max-w-3xl px-5 py-3 border-2 rounded-xl text-lg font-semibold focus:outline-none focus:border-blue-500"
             />
           </div>
+
+          {/* Active Editors - Google Docs Style */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600">Active editors:</span>
+            <div className="flex items-center -space-x-2">
+              <div className="relative">
+                <img
+                  src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/zj_ouikks.jpg"
+                  className="w-7 h-7 rounded-full object-cover border-2 border-white"
+                  title="Zeldrick Jesus"
+                />
+                <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white"></div>
+              </div>
+              <div className="relative">
+                <img
+                  src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/nath_tzkpl5.jpg"
+                  className="w-7 h-7 rounded-full object-cover border-2 border-white"
+                  title="Nathaniel"
+                />
+                <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white"></div>
+              </div>
+            </div>
+            <span className="text-xs text-gray-500">2 people editing</span>
+          </div>
         </div>
 
         {/* ================= TOOLBAR ================= */}
@@ -234,12 +463,19 @@ const CreateDocumentPage = () => {
           {/* TEXT STYLE */}
           <div className="flex items-center gap-4 text-lg">
             <FiBold
-              className="cursor-pointer"
+              className={`cursor-pointer ${isClient && document.queryCommandState('bold') ? 'text-blue-500 bg-blue-100 rounded' : ''}`}
               onMouseDown={(e) => handleMouseDown(e, applyBold)}
+              title="Bold"
             />
             <FiItalic
-              className="cursor-pointer"
+              className={`cursor-pointer ${isClient && document.queryCommandState('italic') ? 'text-blue-500 bg-blue-100 rounded' : ''}`}
               onMouseDown={(e) => handleMouseDown(e, applyItalic)}
+              title="Italic"
+            />
+            <FiUnderline
+              className={`cursor-pointer ${isClient && document.queryCommandState('underline') ? 'text-blue-500 bg-blue-100 rounded' : ''}`}
+              onMouseDown={(e) => handleMouseDown(e, applyUnderline)}
+              title="Underline"
             />
             <div className="relative">
               <div
@@ -248,7 +484,7 @@ const CreateDocumentPage = () => {
                   setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)
                 }
               >
-                <span className="font-semibold">T</span>
+                <span className="text-sm">{selectedFontSize}</span>
                 <FiChevronDown className="text-sm" />
               </div>
 
@@ -279,10 +515,6 @@ const CreateDocumentPage = () => {
                 </div>
               )}
             </div>
-            <FiUnderline
-              className="cursor-pointer"
-              onMouseDown={(e) => handleMouseDown(e, applyUnderline)}
-            />
           </div>
 
           <div className="h-6 w-px bg-gray-400" />
@@ -334,12 +566,14 @@ const CreateDocumentPage = () => {
           {/* COLOR */}
           <div className="relative">
             <div
-              className="flex items-center gap-1 text-lg cursor-pointer"
+              className={`flex items-center gap-2 text-lg cursor-pointer ${selectedTextColor !== 'black' ? 'text-blue-500 bg-blue-100 rounded px-2 py-1' : ''}`}
               onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
+              title="Text Color"
             >
-              <span className="font-bold" style={{ color: selectedTextColor }}>
-                A
-              </span>
+              <div
+                className="w-4 h-4 rounded border border-gray-400"
+                style={{ backgroundColor: selectedTextColor }}
+              />
               <FiChevronDown className="text-sm" />
             </div>
 
@@ -454,11 +688,11 @@ const CreateDocumentPage = () => {
           </div>
           <div className="relative">
             <div
-              className="flex items-center gap-1 text-lg cursor-pointer"
+              className={`flex items-center gap-1 text-lg cursor-pointer ${selectedPaperSize !== 'A4' ? 'text-blue-500 bg-blue-100 rounded px-2 py-1' : ''}`}
               onClick={() => setIsPaperSizeDropdownOpen(!isPaperSizeDropdownOpen)}
               title="Paper Size"
             >
-              <FiFile />
+              <FiFile className="text-sm" />
               <FiChevronDown className="text-sm" />
             </div>
 
@@ -481,11 +715,11 @@ const CreateDocumentPage = () => {
           </div>
           <div className="relative">
             <div
-              className="flex items-center gap-1 text-lg cursor-pointer"
+              className={`flex items-center gap-1 text-lg cursor-pointer ${selectedMargin !== 'Normal' ? 'text-blue-500 bg-blue-100 rounded px-2 py-1' : ''}`}
               onClick={() => setIsMarginDropdownOpen(!isMarginDropdownOpen)}
               title="Margins"
             >
-              <FiColumns />
+              <FiColumns className="text-sm" />
               <FiChevronDown className="text-sm" />
             </div>
 
@@ -514,11 +748,13 @@ const CreateDocumentPage = () => {
           {/* FONT FAMILY */}
           <div className="relative">
             <div
-              className="flex items-center gap-1 text-lg cursor-pointer"
+              className={`flex items-center gap-1 text-lg cursor-pointer ${selectedFont !== 'Inter' ? 'text-blue-500 bg-blue-100 rounded px-2 py-1' : ''}`}
               onClick={() => setIsFontDropdownOpen(!isFontDropdownOpen)}
               title="Font Family"
             >
-              <span className="font-medium">Inter</span>
+              <span className="text-sm" style={{ fontFamily: selectedFont }}>
+                {selectedFont}
+              </span>
               <FiChevronDown className="text-sm" />
             </div>
 
@@ -534,7 +770,7 @@ const CreateDocumentPage = () => {
                   "Courier New",
                   "Helvetica",
                   "Tahoma",
-                  "Trebuchet MS",
+                  "Trebuchet MS"
                 ].map((font) => (
                   <div
                     key={font}
@@ -551,6 +787,9 @@ const CreateDocumentPage = () => {
               </div>
             )}
           </div>
+
+          <div className="h-6 w-px bg-gray-400" />
+
           {/* LIST */}
           <div className="relative">
             <div
@@ -641,48 +880,30 @@ const CreateDocumentPage = () => {
         </div>
 
         {/* ================= CONTENT ================= */}
-        <div className="flex gap-6 p-8">
-          <div
-            ref={editorRef}
-            contentEditable
-            suppressContentEditableWarning
-            className="bg-white rounded-lg shadow p-10 min-h-[500px] text-black focus:outline-none transition-all duration-200"
-            style={{
-              width: paperSizes[selectedPaperSize].width,
-              height: paperSizes[selectedPaperSize].height,
-              maxWidth: '100%',
-              overflow: 'auto',
-              padding: `${marginOptions[selectedMargin].top} ${marginOptions[selectedMargin].right} ${marginOptions[selectedMargin].bottom} ${marginOptions[selectedMargin].left}`,
-              lineHeight: '1.5'
-            }}
-          >
-            <div>Nathaniel: DFD & Database</div>
-            <br />
-            <div>Zeldrick: Papers and Front-End</div>
-            <br />
-            <div>Wilson: DFD & Back-End</div>
-            <br />
-            <div>Raecell: Survey & Prototype</div>
-          </div>
-
-          {/* RIGHT PANEL */}
-          <div className="w-[260px]">
-            <h3 className="font-semibold mb-4 text-black">Editors:</h3>
-
-            <div className="flex items-center gap-3 mb-3 text-black">
-              <img
-                src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/zj_ouikks.jpg"
-                className="w-8 h-8 rounded-full object-cover"
-              />
-              <span>Zeldrick Jesus</span>
-            </div>
-
-            <div className="flex items-center gap-3 text-black">
-              <img
-                src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/nath_tzkpl5.jpg"
-                className="w-8 h-8 rounded-full object-cover"
-              />
-              <span>Nathaniel</span>
+        <div className="p-8 overflow-x-auto">
+          <div className="flex justify-center">
+            <div
+              ref={editorRef}
+              contentEditable
+              suppressContentEditableWarning
+              className="bg-white rounded-lg shadow min-h-[500px] text-black focus:outline-none transition-all duration-200"
+              onInput={handleContentChange}
+              style={{
+                width: paperSizes[selectedPaperSize].width,
+                height: paperSizes[selectedPaperSize].height,
+                maxWidth: '100%',
+                overflow: 'auto',
+                padding: `${marginOptions[selectedMargin].top} ${marginOptions[selectedMargin].right} ${marginOptions[selectedMargin].bottom} ${marginOptions[selectedMargin].left}`,
+                lineHeight: '1.5'
+              }}
+            >
+              <div>Nathaniel: DFD & Database</div>
+              <br />
+              <div>Zeldrick: Papers and Front-End</div>
+              <br />
+              <div>Wilson: DFD & Back-End</div>
+              <br />
+              <div>Raecell: Survey & Prototype</div>
             </div>
           </div>
         </div>
