@@ -44,6 +44,7 @@ import ProfFilesBySubject from "./pages/prof-Files/ProfFilesBySubject";
 import ProfGradeRecordPage from "./pages/prof-GradeViewing/profgradeviewing.jsx";
 import ProfChatsPage from "./pages/prof-Chats/profchats.jsx";
 import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx";
+import ProfMainSpace from "./pages/Prof-MainSpace/profmainspace.jsx";
 import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx";
 import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
 
@@ -140,6 +141,7 @@ export default function Routes() {
         <Route path="/prof-chats" element={<ProfChatsPage /> }/>
         <Route path="/prof-home" element={<ProfHomePage />} />
         <Route path="/prof-settings" element={<ProfSettingsPage />} />
+        <Route path="/prof-main-space" element={<ProfMainSpace />} />
 
         {/* PROFESSOR SPACE ROUTES */}
         <Route path="/prof-space-thesis" element={<ThesisSpace />} />
