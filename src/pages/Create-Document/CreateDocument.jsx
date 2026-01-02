@@ -44,6 +44,10 @@ const CreateDocumentPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'unsaved'
+  const [customPaperSize, setCustomPaperSize] = useState({ width: '21', height: '29.7' });
+  const [customMargins, setCustomMargins] = useState({ top: '2.54', right: '2.54', bottom: '2.54', left: '2.54' });
+  const [showCustomSizeDialog, setShowCustomSizeDialog] = useState(false);
+  const [showCustomMarginDialog, setShowCustomMarginDialog] = useState(false);
 
   const paperSizes = {
     Letter: { width: "8.5in", height: "11in" },
@@ -56,6 +60,7 @@ const CreateDocumentPage = () => {
     A5: { width: "5.83in", height: "8.27in" },
     "B4 (JIS)": { width: "10.12in", height: "14.33in" },
     "B5 (JIS)": { width: "7.16in", height: "10.12in" },
+    Custom: { width: "21cm", height: "29.7cm" }, // Default A4 in cm
   };
 
   const marginOptions = {
@@ -64,6 +69,7 @@ const CreateDocumentPage = () => {
     Moderate: { top: "1in", right: "0.75in", bottom: "1in", left: "0.75in" },
     Wide: { top: "1in", right: "2in", bottom: "1in", left: "2in" },
     Mirrored: { top: "1in", right: "1.25in", bottom: "1in", left: "1.25in" },
+    Custom: { top: "2.54cm", right: "2.54cm", bottom: "2.54cm", left: "2.54cm" }, // Default 1 inch in cm
   };
 
   const editorRef = useRef(null);
@@ -73,7 +79,80 @@ const CreateDocumentPage = () => {
   const applyFormatting = (command, value = null) => {
     if (!isClient) return;
     editorRef.current?.focus();
-    document.execCommand(command, false, value);
+    
+    // Special handling for font size to ensure it works properly
+    if (command === 'fontSize') {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const selectedContents = range.cloneContents();
+        
+        if (selectedContents.textContent.trim() || selectedContents.children.length > 0) {
+          // Create a span element with the desired font size
+          const span = document.createElement('span');
+          span.style.fontSize = value;
+          span.style.fontFamily = selectedFont;
+          
+          try {
+            // Preserve the original HTML structure including spacing
+            span.appendChild(selectedContents);
+            
+            // Extract the selected content and replace with styled span
+            range.deleteContents();
+            range.insertNode(span);
+            
+            // Move cursor after the span
+            range.setStartAfter(span);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          } catch (e) {
+            // Fallback to execCommand if manual approach fails
+            document.execCommand(command, false, value);
+          }
+        } else {
+          // For cursor position (no selection), set the font for future typing
+          try {
+            // Create a temporary span to set the font style
+            const tempSpan = document.createElement('span');
+            tempSpan.style.fontSize = value;
+            tempSpan.style.fontFamily = selectedFont;
+            tempSpan.style.display = 'inline';
+            tempSpan.innerHTML = '&#8203;'; // Zero-width space
+            
+            // Insert the temporary span
+            range.insertNode(tempSpan);
+            
+            // Move cursor after the temp span
+            range.setStartAfter(tempSpan);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            // Remove the temp span but keep the styling
+            setTimeout(() => {
+              if (tempSpan.parentNode) {
+                const textNode = document.createTextNode('');
+                tempSpan.parentNode.replaceChild(textNode, tempSpan);
+                range.setStart(textNode, 0);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+              }
+            }, 0);
+          } catch (e) {
+            // Fallback to execCommand
+            document.execCommand(command, false, value);
+          }
+        }
+      } else {
+        // No selection, use execCommand
+        document.execCommand(command, false, value);
+      }
+    } else {
+      // For other commands, use execCommand
+      document.execCommand(command, false, value);
+    }
   };
 
   const handleMouseDown = (e, callback) => {
@@ -146,8 +225,18 @@ const CreateDocumentPage = () => {
       applyFormatting('fontSize', '16px');
       setSelectedFontSize(16);
     } else {
-      applyFormatting('fontSize', `${size}px`);
+      // Apply the font size with proper formatting
+      const fontSizeValue = `${size}px`;
+      applyFormatting('fontSize', fontSizeValue);
       setSelectedFontSize(size);
+      
+      // Force a content change to trigger auto-save
+      setTimeout(() => {
+        if (editorRef.current) {
+          const event = new Event('input', { bubbles: true });
+          editorRef.current.dispatchEvent(event);
+        }
+      }, 10);
     }
   };
 
@@ -158,6 +247,11 @@ const CreateDocumentPage = () => {
   };
 
   const applyPaperSize = (size) => {
+    if (size === 'Custom') {
+      setShowCustomSizeDialog(true);
+      return;
+    }
+    
     if (selectedPaperSize === size) {
       // If clicking the same size, reset to default
       const defaultSize = paperSizes['A4'];
@@ -176,7 +270,28 @@ const CreateDocumentPage = () => {
     setIsPaperSizeDropdownOpen(false);
   };
 
+  const applyCustomPaperSize = () => {
+    const widthInCm = `${customPaperSize.width}cm`;
+    const heightInCm = `${customPaperSize.height}cm`;
+    
+    if (editorRef.current) {
+      editorRef.current.style.width = widthInCm;
+      editorRef.current.style.height = heightInCm;
+    }
+    
+    // Update the paperSizes object with custom values
+    paperSizes.Custom = { width: widthInCm, height: heightInCm };
+    setSelectedPaperSize('Custom');
+    setShowCustomSizeDialog(false);
+    setIsPaperSizeDropdownOpen(false);
+  };
+
   const applyMargin = (margin) => {
+    if (margin === 'Custom') {
+      setShowCustomMarginDialog(true);
+      return;
+    }
+    
     if (selectedMargin === margin) {
       // If clicking the same margin, reset to default
       const defaultMargins = marginOptions['Normal'];
@@ -191,6 +306,23 @@ const CreateDocumentPage = () => {
       }
       setSelectedMargin(margin);
     }
+    setIsMarginDropdownOpen(false);
+  };
+
+  const applyCustomMargins = () => {
+    const topCm = `${customMargins.top}cm`;
+    const rightCm = `${customMargins.right}cm`;
+    const bottomCm = `${customMargins.bottom}cm`;
+    const leftCm = `${customMargins.left}cm`;
+    
+    if (editorRef.current) {
+      editorRef.current.style.padding = `${topCm} ${rightCm} ${bottomCm} ${leftCm}`;
+    }
+    
+    // Update the marginOptions object with custom values
+    marginOptions.Custom = { top: topCm, right: rightCm, bottom: bottomCm, left: leftCm };
+    setSelectedMargin('Custom');
+    setShowCustomMarginDialog(false);
     setIsMarginDropdownOpen(false);
   };
 
@@ -489,7 +621,7 @@ const CreateDocumentPage = () => {
               </div>
 
               {isFontSizeDropdownOpen && (
-                <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10">
+                <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-48">
                   {[8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72].map(
                     (size) => (
                       <div
@@ -503,12 +635,16 @@ const CreateDocumentPage = () => {
                         }
                       >
                         <span
-                          className="text-sm"
-                          style={{ fontSize: `${size}px` }}
+                          className="text-sm font-medium"
+                          style={{ 
+                            fontSize: `${Math.max(size, 12)}px`,
+                            minWidth: '20px',
+                            display: 'inline-block'
+                          }}
                         >
                           T
                         </span>
-                        <span className="text-sm">{size}px</span>
+                        <span className="text-sm text-gray-600">{size}px</span>
                       </div>
                     )
                   )}
@@ -733,7 +869,7 @@ const CreateDocumentPage = () => {
                       handleMouseDown(e, () => applyMargin(name))
                     }
                   >
-                    <span className="text-sm font-medium">{name}</span>
+                    <span className="text-sm">{name}</span>
                     <span className="text-xs text-gray-500">
                       {margins.top} / {margins.right} / {margins.bottom} / {margins.left}
                     </span>
@@ -881,6 +1017,128 @@ const CreateDocumentPage = () => {
 
         {/* ================= CONTENT ================= */}
         <div className="p-8 overflow-x-auto">
+          {/* Custom Paper Size Dialog */}
+          {showCustomSizeDialog && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-96">
+                <h3 className="text-lg font-semibold mb-4">Custom Paper Size (cm)</h3>
+                <div className="flex gap-4 mb-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Width (cm)</label>
+                    <input
+                      type="number"
+                      value={customPaperSize.width}
+                      onChange={(e) => setCustomPaperSize({...customPaperSize, width: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      step="0.1"
+                      min="1"
+                      max="100"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Height (cm)</label>
+                    <input
+                      type="number"
+                      value={customPaperSize.height}
+                      onChange={(e) => setCustomPaperSize({...customPaperSize, height: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      step="0.1"
+                      min="1"
+                      max="100"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowCustomSizeDialog(false)}
+                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={applyCustomPaperSize}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Custom Margin Dialog */}
+          {showCustomMarginDialog && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-96">
+                <h3 className="text-lg font-semibold mb-4">Custom Margins (cm)</h3>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Top (cm)</label>
+                    <input
+                      type="number"
+                      value={customMargins.top}
+                      onChange={(e) => setCustomMargins({...customMargins, top: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      step="0.1"
+                      min="0"
+                      max="10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Right (cm)</label>
+                    <input
+                      type="number"
+                      value={customMargins.right}
+                      onChange={(e) => setCustomMargins({...customMargins, right: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      step="0.1"
+                      min="0"
+                      max="10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bottom (cm)</label>
+                    <input
+                      type="number"
+                      value={customMargins.bottom}
+                      onChange={(e) => setCustomMargins({...customMargins, bottom: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      step="0.1"
+                      min="0"
+                      max="10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Left (cm)</label>
+                    <input
+                      type="number"
+                      value={customMargins.left}
+                      onChange={(e) => setCustomMargins({...customMargins, left: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      step="0.1"
+                      min="0"
+                      max="10"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowCustomMarginDialog(false)}
+                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={applyCustomMargins}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-center">
             <div
               ref={editorRef}
