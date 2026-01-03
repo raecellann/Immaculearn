@@ -1,8 +1,6 @@
 import React from "react";
 import { Routes as ReactRoutes, Route } from "react-router";
-
 import "react-toastify/dist/ReactToastify.css";
-
 import AdminDashboard from "./pages/admin-dashboard/admindashboard.jsx";
 import AdminStudents from "./pages/admin-students/adminstudents.jsx";
 import AdminTeachers from "./pages/admin-teachers/adminteachers.jsx";
