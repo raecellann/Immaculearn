@@ -256,11 +256,12 @@ const ChatList = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setMobileSidebarOpen(true)}
-                className="text-2xl leading-none bg-transparent p-0 border-none focus:outline-none"
+                className="lg:hidden text-2xl leading-none bg-transparent p-0 border-none outline-none focus:outline-none focus:ring-0 active:bg-transparent"
                 style={{ WebkitTapHighlightColor: "transparent" }}
               >
                 ☰
               </button>
+
 
               <h1 className="text-lg font-bold truncate">Chats</h1>
             </div>
@@ -351,43 +352,51 @@ const ChatList = () => {
         {/* MOBILE CHAT VIEW */}
         <div className={`${showMobileChat ? 'block' : 'hidden'} lg:hidden absolute inset-0 bg-[#161A20] p-6`}>
           {/* Mobile Header - Outside conversation */}
-          <div className="flex items-center justify-between h-14 mb-4">
-            <button
-              onClick={handleBackToChatList}
-              className="text-gray-400 hover:text-gray-200"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            
-            {activeChat && (
+            <div className="flex items-center h-14 mb-4">
+              {/* LEFT SIDE: Back + Avatar + Name */}
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img
-                    src={activeChat.avatar}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                </div>
-                <div>
-                  <h2 className="font-semibold text-white text-sm">
-                    {activeChat.name}
-                  </h2>
-                  <p className="text-[10px] text-green-400">Active now</p>
-                </div>
-              </div>
-            )}
+                <button
+                  onClick={handleBackToChatList}
+                  className="text-gray-400 hover:text-gray-200 bg-transparent p-0"
+                  style={{ WebkitTapHighlightColor: "transparent" }}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
 
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="text-gray-400 hover:text-gray-200"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
+                {activeChat && (
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <img
+                        src={activeChat.avatar}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                    </div>
+
+                    <div className="leading-tight">
+                      <h2 className="font-semibold text-white text-sm truncate max-w-[140px]">
+                        {activeChat.name}
+                      </h2>
+                      <p className="text-[10px] text-green-400">Active now</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT SIDE: Menu */}
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="ml-auto text-gray-400 hover:text-gray-200 bg-transparent p-0"
+                style={{ WebkitTapHighlightColor: "transparent" }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+
 
           {activeChat ? (
             <div className="bg-white rounded-xl w-full flex flex-col h-[calc(100%-5rem)]">
@@ -501,11 +510,12 @@ const ChatList = () => {
                 </div>
                 <div className="relative">
                   <button
-                    className="text-white-600 hover:text-white-800"
+                    className="text-gray-600 hover:text-gray-900 transition-colors"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   >
                     <FiMoreVertical size={20} />
                   </button>
+
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-10 text-white">
                       <ul className="py-1">
