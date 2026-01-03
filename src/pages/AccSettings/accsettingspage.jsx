@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
+import { useUser } from "../../contexts/user/useUser";
 
 const ProfilePage = () => {
+
+  const { user } = useUser();
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  const profileName = "Zeldrick Jesus"; // fixed name
+  const profileName = user && user.name; // fixed name
 
   // Upload profile picture
   const handleImageChange = (e) => {
@@ -14,6 +17,14 @@ const ProfilePage = () => {
       setProfileImage(URL.createObjectURL(file));
     }
   };
+
+
+  useEffect(() => {
+    if (user?.profile_pic) {
+      setProfileImage(user.profile_pic);
+    }
+  }, [user]);
+
 
   return (
     <div className="flex font-grotesque min-h-screen bg-[#161A20] text-white leading-[1.2] font-semibold">
@@ -102,7 +113,7 @@ const ProfilePage = () => {
                   {profileName}
                 </h2>
                 <p className="text-[#3A7BFF] mt-1 text-sm font-medium">
-                  Student
+                  {user && user.role}
                 </p>
               </div>
 
@@ -118,19 +129,21 @@ const ProfilePage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <input
                     type="text"
+                    value={user && user.name}
                     placeholder="First Name"
                     className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white"
                   />
                   <input
                     type="text"
+                    value={user && user.name}
                     placeholder="Last Name"
                     className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white"
                   />
-                  <input
+                  {/* <input
                     type="email"
                     placeholder="Email Address"
                     className="sm:col-span-2 bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white"
-                  />
+                  /> */}
                 </div>
 
                 <textarea

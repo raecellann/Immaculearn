@@ -12,8 +12,10 @@ import {
   LogOut,
 } from "lucide-react";
 import Logout from "./logout";
+import { useUser } from "../../contexts/user/useUser";
 
 const Sidebar = () => {
+  const { user } = useUser();
   const [showLogout, setShowLogout] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
 
@@ -112,11 +114,11 @@ const Sidebar = () => {
       {/* Profile Account */}
       <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0">
         <img
-          src="/src/assets/HomePage/jober.jpg"
+          src={ user ? user.profile_pic : "/src/assets/HomePage/frieren-avatar.jpg"}
           alt="Profile"
           className="w-9 h-9 rounded-full object-cover border border-white/20"
         />
-        <span className="text-sm font-semibold">Jober Reyes</span>
+        <span className="text-sm font-semibold">{user && user.name}</span>
       </div>
 
       {/* Logout Modal */}

@@ -1,7 +1,6 @@
 import React from "react";
 import { Routes as ReactRoutes, Route } from "react-router";
 
-import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import AdminDashboard from "./pages/admin-dashboard/admindashboard.jsx";
@@ -69,24 +68,16 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 export default function Routes() {
   return (
-    <>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        pauseOnHover
-        closeOnClick
-      />
-      <ReactRoutes>
-        
+    <ReactRoutes>
 
-        <Route path="/test-page" element={<SignInPageWithOAuth />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/oauth/callback" element={<OAuthCallback />} />
+      <Route path="/test-page" element={<SignInPageWithOAuth />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/oauth/callback" element={<OAuthCallback />} />
 
-        {/* ADMIN ROUTES */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin-students" element={<AdminStudents />} />
-        <Route path="/admin-teachers" element={<AdminTeachers />} />
+      {/* ADMIN ROUTES */}
+      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/admin-students" element={<AdminStudents />} />
+      <Route path="/admin-teachers" element={<AdminTeachers />} />
 
         {/* STUDENT ROUTES */}
         <Route path="/" element={<LandingPage />} />
@@ -95,33 +86,35 @@ export default function Routes() {
         <Route path="/initial-create-space" element={<SpaceCreationPage />} />
         <Route path="/initial-invite" element={<InitialInvitePage />} />
 
-        <Route path="/home" element={
+      
+      
+      <Route path="/home" element={
           <ProtectedRoute>
             <HomePage />
           </ProtectedRoute>
-        } />
-        
-        <Route path="/accsettings" element={<ProfilePage />} />
-        <Route path="/grade-viewing" element={<GradeViewing />} />
-        <Route path="/task" element={<TaskPage />} />
-        <Route path="/notifications" element={<NotificationPage />} />
-        <Route path="/files" element={<FilePage />} />
-        <Route path="/view-files" element={<ViewFilePage/>} />
-        <Route path="/space" element={<SpacePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/view-all-files" element={<ViewAllFilesPage />} />
+      } />
+      
+      <Route path="/accsettings" element={<ProfilePage />} />
+      <Route path="/grade-viewing" element={<GradeViewing />} />
+      <Route path="/task" element={<TaskPage />} />
+      <Route path="/notifications" element={<NotificationPage />} />
+      <Route path="/files" element={<FilePage />} />
+      <Route path="/view-files" element={<ViewFilePage/>} />
+      <Route path="/space" element={<SpacePage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/view-all-files" element={<ViewAllFilesPage />} />
 
-        {/* USER SPACE (example si zj,this is also the home or stream of the space) same rin to sa home ng admin, naiiba lang pagdating sa ibang buttons /navigation */}
-        <Route path="/user-space-zj" element={<UserPage />} />
+      {/* USER SPACE (example si zj,this is also the home or stream of the space) same rin to sa home ng admin, naiiba lang pagdating sa ibang buttons /navigation */}
+      <Route path="/user-space-zj" element={<UserPage />} />
 
 
-        {/* USER SPACE SUBPAGES */}
-        <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
-        <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
-        <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
+      {/* USER SPACE SUBPAGES */}
+      <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
+      <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
+      <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
 
-        <Route path="/admintaskpage" element={<AdminTaskPage />} />
-        <Route path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />
+      <Route path="/admintaskpage" element={<AdminTaskPage />} />
+      <Route path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />
 
         {/* ADMIN STUDENT ROUTES */}
         <Route path="/task-view" element={<TaskViewPage />} />
@@ -143,22 +136,21 @@ export default function Routes() {
         <Route path="/prof-settings" element={<ProfSettingsPage />} />
         <Route path="/prof-main-space" element={<ProfMainSpace />} />
 
-        {/* PROFESSOR SPACE ROUTES */}
-        <Route path="/prof-space-thesis" element={<ThesisSpace />} />
-        <Route path="/prof-space-thesis/tasks" element={<ProfTaskPage />} />
-        <Route path="/prof-space-thesis/files-shared" element={<ProfFilesShared />} />
-        <Route path="/prof-space-thesis/people" element={<ProfPeoplePage />} />
+      {/* PROFESSOR SPACE ROUTES */}
+      <Route path="/prof-space-thesis" element={<ThesisSpace />} />
+      <Route path="/prof-space-thesis/tasks" element={<ProfTaskPage />} />
+      <Route path="/prof-space-thesis/files-shared" element={<ProfFilesShared />} />
+      <Route path="/prof-space-thesis/people" element={<ProfPeoplePage />} />
 
-        {/* PARENT ROUTES */}
-        <Route path="/parent-grade-login" element={<ParentLogin />} />
-        <Route path="/parent-grade-view" element={<ParentGradeView />} />
+      {/* PARENT ROUTES */}
+      <Route path="/parent-grade-login" element={<ParentLogin />} />
+      <Route path="/parent-grade-view" element={<ParentGradeView />} />
 
-        {/* DOCUMENT EDITOR ROUTE */}
-        <Route path="/create-document" element={<CreateDocumentPage />} />
+      {/* DOCUMENT EDITOR ROUTE */}
+      <Route path="/create-document" element={<CreateDocumentPage />} />
 
-        <Route path="*" element={<PageNotFound />} />
+      <Route path="*" element={<PageNotFound />} />
 
-      </ReactRoutes>
-    </>
+    </ReactRoutes>
   );
 }

@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import Sidebar from "../component/sidebar";
 import { ArrowLeft, MoreVertical } from "lucide-react";
+import { useNavigate } from "react-router";
+import { useUser } from "../../contexts/user/useUser";
 
 const SpacePage = () => {
+  const { user } = useUser();
   const [showMenu, setShowMenu] = useState(null);
+  const navigate = useNavigate();
 
   // 🔹 ADDED: mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -87,6 +91,7 @@ const SpacePage = () => {
   const yourSpaces = spaces.filter((s) => s.category === "Your Space");
   const friendsSpaces = spaces.filter((s) => s.category === "Friends Space");
 
+
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
 
@@ -143,7 +148,7 @@ const SpacePage = () => {
               {/* Left side */}
               <div>
                 <h2 className="text-2xl font-bold text-[#60A5FA] mb-2">
-                  Good Morning, Raecell
+                  Good Morning, {user && user.name}
                 </h2>
                 <p className="text-gray-300 text-sm mb-1">
                   Meet your classmates and collaborate with them
@@ -152,7 +157,9 @@ const SpacePage = () => {
                   Join space or create your own.
                 </p>
                 <div className="flex gap-3">
-                  <button className="px-6 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition">
+                  <button
+                  onClick={() => navigate("/create-space-admin")} 
+                  className="px-6 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition">
                     Create Space
                   </button>
                 </div>
@@ -169,7 +176,9 @@ const SpacePage = () => {
                     placeholder="Enter join code..."
                     className="w-full bg-transparent border-b border-[#3B4457] text-white placeholder-gray-500 pb-2 focus:outline-none focus:border-[#0EA5E9]"
                   />
-                  <button className="mt-4 w-full px-4 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition">
+                  <button 
+                  onClick={() => alert("Join Space Click!")} 
+                  className="mt-4 w-full px-4 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition">
                     Join Space
                   </button>
                 </div>
