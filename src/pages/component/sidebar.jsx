@@ -52,6 +52,9 @@ const Sidebar = () => {
     { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
   ];
 
+  // ✅ BACKEND-READY STUDENT NAME (temporary fallback)
+  const displayName = user?.name || "Raecell Ann Galvez";
+
   return (
     <div
       className="h-screen w-60 text-white flex flex-col justify-between font-inter sticky top-0"
@@ -135,7 +138,7 @@ const Sidebar = () => {
           alt="Profile"
           className="w-9 h-9 rounded-full object-cover border border-white/20"
         />
-        <span className="text-sm font-semibold">{user && user.name}</span>
+        <span className="text-sm font-semibold">{displayName}</span>
       </div>
 
       {showLogout && (
