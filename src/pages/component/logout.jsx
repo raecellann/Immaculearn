@@ -2,25 +2,21 @@ import React from "react";
 
 const Logout = ({ onClose }) => {
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-70">
-      <div className="bg-neutral-800 p-8 rounded-2xl shadow-xl text-center w-[350px] animate-fadeIn">
-        <h1 className="text-xl font-semibold mb-6 text-white">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-4">
+      <div className="bg-neutral-800 p-6 sm:p-8 rounded-2xl shadow-xl text-center w-full max-w-[350px]">
+        <h1 className="text-lg sm:text-xl font-semibold mb-6 text-white">
           Are you sure you want to Logout?
         </h1>
 
-        <div className="flex justify-between gap-4">
-          {/* Cancel Button */}
+        <div className="flex gap-4">
           <button
             onClick={onClose}
-            className="flex-1 px-6 py-2 bg-transparent border border-gray-500 rounded-full 
-                       text-white font-semibold shadow-md 
-                       hover:bg-neutral-700/40 transition-colors"
+            className="flex-1 px-6 py-2 bg-transparent border border-gray-500 rounded-full text-white font-semibold hover:bg-neutral-700/40"
           >
             No
           </button>
 
-          {/* Confirm Logout Button */}
-          <button className="flex-1 px-6 py-2 bg-red-600 rounded-full text-white font-semibold shadow-md hover:bg-red-700 transition-colors">
+          <button className="flex-1 px-6 py-2 bg-red-600 rounded-full text-white font-semibold hover:bg-red-700">
             Yes
           </button>
         </div>

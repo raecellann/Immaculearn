@@ -1,49 +1,49 @@
 import React from "react";
 import { Routes as ReactRoutes, Route } from "react-router";
 import "react-toastify/dist/ReactToastify.css";
-import AdminDashboard from "./pages/admin-dashboard/admindashboard.jsx";
-import AdminStudents from "./pages/admin-students/adminstudents.jsx";
-import AdminTeachers from "./pages/admin-teachers/adminteachers.jsx";
+import AdminDashboard from "./pages/admin-dashboard/admindashboard.jsx"; //done responsive//
+import AdminStudents from "./pages/admin-students/adminstudents.jsx"; //done responsive//
+import AdminTeachers from "./pages/admin-teachers/adminteachers.jsx"; //done responsive//
 
 import LandingPage from "./pages/Landing/landingPage.jsx";
 import SpaceCreationPage from "./pages/SpaceCreation/spacecreation.jsx";
 import InitialInvitePage from "./pages/SpaceCreation/inviteteam.jsx";
 
-import ChatList from "./pages/User_chats/user_chats";
+import ChatList from "./pages/User_chats/user_chats"; //done responsive//
 import LoginPage from "./pages/SignIn/signInPage.jsx";
 import UserPage from "./pages/UserSpace/zj-space.jsx";
 import UserTaskPage from "./pages/UserSpace/UserTaskPage.jsx";
 import UserFilesShared from "./pages/UserSpace/UserFilesShared.jsx";
 import UserPeoplePage from "./pages/UserSpace/UserPeoplePage.jsx";
 import HomePage from "./pages/HomePage/homepage.jsx";
-import ProfilePage from "./pages/AccSettings/accsettingspage.jsx";
-import GradeViewing from "./pages/GradeViewing/gradeViewing.jsx";
-import TaskPage from "./pages/Task/task.jsx";
-import NotificationPage from "./pages/Notifications/notification.jsx";
-import FilePage from "./pages/Files/files.jsx";
-import SpacePage from "./pages/Space/SpacePage.jsx";
-import SettingsPage from "./pages/Settings/settings.jsx";
+import ProfilePage from "./pages/AccSettings/accsettingspage.jsx"; //done responsive//
+import GradeViewing from "./pages/GradeViewing/gradeViewing.jsx"; //done responsive//
+import TaskPage from "./pages/Task/task.jsx"; //done responsive//
+import NotificationPage from "./pages/Notifications/notification.jsx"; //done responsive//
+import FilePage from "./pages/Files/files.jsx"; //done responsive//
+import SpacePage from "./pages/Space/SpacePage.jsx"; //done responsive//
+import SettingsPage from "./pages/Settings/settings.jsx"; //done responsive//
 
-import TaskViewPage from "./pages/Task-View/TaskViewPage.jsx";
+import TaskViewPage from "./pages/Task-View/TaskViewPage.jsx"; 
 import TaskViewPageAdmin from "./pages/Task-view Admin/Task-View-Admin.jsx";
-import TaskViewAll from "./pages/Task-view Admin/Task-View-All.jsx";
-import ViewFilePage from "./pages/ViewFiles/ViewFiles.jsx";
+import TaskViewAll from "./pages/Task-view Admin/Task-View-All.jsx"; 
+import ViewFilePage from "./pages/ViewFiles/ViewFiles.jsx"; //done responsive//
 
 import AdminTaskPage from "./pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
 import AdminCreateActivityPage from "./pages/UserSpace/AdminSpacePages/AdminCreateActivityPage.jsx";
 import AdminFilesSharedPage from "./pages/UserSpace/AdminSpacePages/AdminFilesSharedPage.jsx";
 
-import ProfProfilePage from "./pages/prof-AccSettings/profaccsettingspage.jsx";
-import ProfNotificationPage from "./pages/prof-Notifications/profnotification.jsx";
-import ProfListActivityPage from "./pages/prof-ListActivities/proflistactivitypage.jsx";
-import ProfFilePage from "./pages/prof-Files/proffiles.jsx";
-import ProfFilesBySubject from "./pages/prof-Files/ProfFilesBySubject";
-import ProfGradeRecordPage from "./pages/prof-GradeViewing/profgradeviewing.jsx";
-import ProfChatsPage from "./pages/prof-Chats/profchats.jsx";
-import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx";
-import ProfMainSpace from "./pages/Prof-MainSpace/profmainspace.jsx";
-import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx";
-import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
+import ProfProfilePage from "./pages/prof-AccSettings/profaccsettingspage.jsx"; //done responsive//
+import ProfNotificationPage from "./pages/prof-Notifications/profnotification.jsx"; //done responsive//
+import ProfListActivityPage from "./pages/prof-ListActivities/proflistactivitypage.jsx"; //done responsive//
+import ProfFilePage from "./pages/prof-Files/proffiles.jsx"; //done responsive//
+import ProfFilesBySubject from "./pages/prof-Files/ProfFilesBySubject"; //done responsive//
+import ProfGradeRecordPage from "./pages/prof-GradeViewing/profgradeviewing.jsx"; //done responsive//
+import ProfChatsPage from "./pages/prof-Chats/profchats.jsx"; //done responsive//
+import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx"; //done responsive//
+import ProfMainSpace from "./pages/Prof-MainSpace/profmainspace.jsx"; //done responsive//
+import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx"; //done responsive//
+import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx"; 
 
 import ThesisSpace from "./pages/Prof-Space/Thesis-space.jsx";
 import ProfTaskPage from "./pages/Prof-Space/ProfTaskPage";
@@ -51,7 +51,7 @@ import ProfFilesShared from "./pages/Prof-Space/ProfFilesShared";
 import ProfPeoplePage from "./pages/Prof-Space/ProfPeoplePage";
 
 import CreateFileAdmin from "./pages/CreateFile-Admin/createfile.jsx";
-import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx";
+import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx"; //done responsive//
 
 {/* DDOCUMENT EDITOR */}
 import CreateDocumentPage from "./pages/Create-Document/CreateDocument.jsx";

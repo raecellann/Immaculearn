@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
 
 const ViewFilePage = () => {
@@ -9,10 +9,29 @@ const ViewFilePage = () => {
 
 ∫u dv = uv − ∫v du
 
-Where u and v are functions of x. The process involves choosing u and dv such that the integral on the right‑hand side is easier to solve than the original integral.
+Where u and v are functions of x. The process involves choosing u and dv such that the integral on the right-hand side is easier to solve than the original integral.
 
 We also discussed the method of partial fractions, which allows us to break down complex fractions into simpler ones, making them easier to integrate.`);
   const [isEditingContent, setIsEditingContent] = useState(false);
+
+  /* 🔹 ADDED — SAME STICKY HEADER LOGIC */
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
@@ -41,8 +60,12 @@ We also discussed the method of partial fractions, which allows us to break down
       {/* ================= MAIN CONTENT ================= */}
       <div className="flex-1 flex flex-col">
 
-        {/* ================= MOBILE + TABLET HEADER ================= */}
-        <div className="lg:hidden p-4 flex items-center gap-4">
+        {/* 🔹 MOBILE + TABLET STICKY HEADER */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -51,6 +74,9 @@ We also discussed the method of partial fractions, which allows us to break down
           </button>
           <h1 className="text-xl font-bold">Files</h1>
         </div>
+
+        {/* 🔹 Spacer for fixed header */}
+        <div className="lg:hidden h-16" />
 
         {/* ================= PAGE CONTENT ================= */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto w-full max-w-6xl mx-auto">
@@ -131,7 +157,7 @@ We also discussed the method of partial fractions, which allows us to break down
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-2 mb-3">
                 <h3 className="text-xl font-semibold text-white">Content:</h3>
                 {!isEditingContent && (
-                  <button 
+                  <button
                     onClick={() => setIsEditingContent(true)}
                     className="text-sm text-blue-400 hover:underline bg-transparent border-none p-0"
                   >
@@ -173,10 +199,10 @@ We also discussed the method of partial fractions, which allows us to break down
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 w-full">
-            <button className="px-4 sm:px-5 py-2 sm:py-1.5 bg-white text-gray-800 hover:bg-gray-200 rounded-full transition-colors text-sm sm:text-sm">
+            <button className="px-4 sm:px-5 py-2 sm:py-1.5 bg-white text-gray-800 hover:bg-gray-200 rounded-full transition-colors text-sm">
               Cancel
             </button>
-            <button className="px-4 sm:px-5 py-2 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors text-sm sm:text-sm">
+            <button className="px-4 sm:px-5 py-2 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors text-sm">
               Publish
             </button>
           </div>

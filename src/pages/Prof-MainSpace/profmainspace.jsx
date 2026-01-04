@@ -1,10 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 
 const ProfSpacePage = () => {
   const [showMenu, setShowMenu] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("All");
+
+  /* 🔹 ADDED — STICKY HEADER LOGIC */
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const spaces = [
     {
@@ -35,8 +54,6 @@ const ProfSpacePage = () => {
       time: "Opened just now",
       category: "Your Space",
     },
-
-    /* Classroom Spaces */
     {
       id: 5,
       title: "Thesis and Research",
@@ -129,6 +146,7 @@ const ProfSpacePage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
+
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -153,19 +171,29 @@ const ProfSpacePage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="lg:hidden p-4 border-b border-[#3B4457] flex items-center gap-3">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
-          >
-            ☰
-          </button>
-          <h1 className="text-lg font-semibold">Spaces</h1>
+
+        {/* 🔹 STICKY MOBILE / TABLET HEADER */}
+        <div
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457] px-4 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
+          <div className="flex items-center h-14 pt-[env(safe-area-inset-top)] gap-3">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-semibold">Spaces</h1>
+          </div>
         </div>
 
+        {/* 🔹 Spacer */}
+        <div className="lg:hidden h-16" />
+
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
-          {/* Title */}
+          {/* Desktop Title */}
           <div className="hidden md:flex justify-center mb-8">
             <h1 className="text-4xl font-bold">Spaces</h1>
           </div>
@@ -266,6 +294,7 @@ const ProfSpacePage = () => {
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </div>

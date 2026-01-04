@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import Sidebar from "../component/sidebar";
 
@@ -29,6 +29,25 @@ const ViewAllFilesPage = () => {
     },
   ]);
 
+  /* 🔹 ADDED — SAME STICKY HEADER LOGIC */
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
 
@@ -56,8 +75,12 @@ const ViewAllFilesPage = () => {
       {/* ================= MAIN CONTENT ================= */}
       <div className="flex-1 flex flex-col">
 
-        {/* ================= MOBILE + TABLET HEADER ================= */}
-        <div className="lg:hidden p-4 flex items-center gap-4">
+        {/* 🔹 MOBILE + TABLET STICKY HEADER */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -66,6 +89,9 @@ const ViewAllFilesPage = () => {
           </button>
           <h1 className="text-xl font-bold">Files</h1>
         </div>
+
+        {/* 🔹 Spacer for fixed header */}
+        <div className="lg:hidden h-16" />
 
         {/* ================= PAGE CONTENT ================= */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
@@ -101,7 +127,6 @@ const ViewAllFilesPage = () => {
                       {file.spaceName}
                     </p>
 
-                    {/* ✅ View File Button for ALL files */}
                     <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition">
                       View File
                     </span>
@@ -139,11 +164,14 @@ const ViewAllFilesPage = () => {
 
                       <td className="px-6 py-4 font-medium">{file.name}</td>
 
-                      <td className="px-6 py-4 text-gray-300">{file.datePosted}</td>
+                      <td className="px-6 py-4 text-gray-300">
+                        {file.datePosted}
+                      </td>
 
-                      <td className="px-6 py-4 text-gray-300">{file.spaceName}</td>
+                      <td className="px-6 py-4 text-gray-300">
+                        {file.spaceName}
+                      </td>
 
-                      {/* ✅ Action Button for ALL rows */}
                       <td className="px-6 py-4">
                         <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition">
                           View File

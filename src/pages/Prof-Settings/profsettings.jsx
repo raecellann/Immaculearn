@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 
 const ProfSettingsPage = () => {
@@ -10,15 +10,36 @@ const ProfSettingsPage = () => {
       name: "Jober Reyes",
       status: "Signed In",
       role: "Professor",
-      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/jober_gp01iv.jpg",
+      avatar:
+        "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/jober_gp01iv.jpg",
     },
     {
       name: "Aldrich Bernardo",
       status: "",
       role: "Professor",
-      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766991223/sir_y8aru3.png",
+      avatar:
+        "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766991223/sir_y8aru3.png",
     },
   ];
+
+  /* 🔹 ADDED — SAME AS STUDENT SETTINGS */
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="flex font-grotesque min-h-screen bg-[#161A20] text-white">
@@ -44,32 +65,25 @@ const ProfSettingsPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* ✅ MOBILE / TABLET HEADER */}
-        <div
-          className="
-            lg:hidden
-            sticky top-0 z-30
-            bg-[#1E222A]
-            px-4
-            pt-[env(safe-area-inset-top)]
-            border-b border-[#3B4457]
-          "
-        >
-          <div className="flex items-center h-14">
-            {/* Hamburger */}
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="text-2xl bg-transparent p-0 border-none focus:outline-none"
-              style={{ WebkitTapHighlightColor: "transparent" }}
-            >
-              ☰
-            </button>
+      <div className="flex-1 flex flex-col">
 
-            {/* Title */}
-            <h1 className="ml-4 text-lg font-bold truncate">Settings</h1>
-          </div>
+        {/* 🔹 MOBILE / TABLET STICKY HEADER (MATCHED TO STUDENT) */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="text-2xl bg-transparent p-0 border-none focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold truncate">Settings</h1>
         </div>
+
+        {/* 🔹 Spacer for fixed header */}
+        <div className="lg:hidden h-16" />
 
         {/* Desktop Header */}
         <div className="hidden lg:block px-10 pt-10">
@@ -82,9 +96,12 @@ const ProfSettingsPage = () => {
         {/* Content */}
         <div className="flex-1 px-4 sm:px-6 lg:px-10 pb-10">
           <div className="max-w-5xl mx-auto mt-6 lg:mt-10">
+
             {/* Profile Account */}
             <div className="bg-[#1E222A] rounded-2xl p-4 sm:p-6 mb-8 sm:mb-10 border border-white shadow-lg">
-              <h2 className="text-lg sm:text-xl font-bold mb-4">Professor Profile</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">
+                Professor Profile
+              </h2>
               <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
                 <button className="px-4 py-2 bg-transparent rounded-lg border border-white text-white hover:bg-[#3A7BFF] hover:border-[#3A7BFF] transition-all">
                   Edit Professor Profile
@@ -97,7 +114,10 @@ const ProfSettingsPage = () => {
 
             {/* Switch Account Section */}
             <div className="bg-[#1E222A] rounded-2xl p-4 sm:p-6 border border-white shadow-lg">
-              <h2 className="text-lg sm:text-xl font-bold mb-4">Switch Professor Account</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-4">
+                Switch Professor Account
+              </h2>
+
               <div className="space-y-4">
                 {accounts.map((acc) => (
                   <div
@@ -111,12 +131,15 @@ const ProfSettingsPage = () => {
                         className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border"
                       />
                       <div>
-                        <p className="font-semibold text-sm sm:text-base">{acc.name}</p>
+                        <p className="font-semibold text-sm sm:text-base">
+                          {acc.name}
+                        </p>
                         <p className="text-gray-400 text-xs">
                           {acc.role} {acc.status && `• ${acc.status}`}
                         </p>
                       </div>
                     </div>
+
                     {activeAccount !== acc.name ? (
                       <button
                         onClick={() => setActiveAccount(acc.name)}
@@ -125,16 +148,19 @@ const ProfSettingsPage = () => {
                         Switch Account
                       </button>
                     ) : (
-                      <span className="text-green-400 text-sm font-medium">Active</span>
+                      <span className="text-green-400 text-sm font-medium">
+                        Active
+                      </span>
                     )}
                   </div>
                 ))}
-                {/* Add Account */}
+
                 <button className="mt-2 flex items-center gap-2 px-4 py-2 bg-transparent border border-gray-400 text-gray-300 rounded-lg hover:bg-[#3A7BFF] hover:border-[#3A7BFF] hover:text-white transition-all w-full justify-center">
                   <span className="text-2xl">+</span> Add Other Accounts
                 </button>
               </div>
             </div>
+
           </div>
         </div>
       </div>
