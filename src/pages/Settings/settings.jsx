@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
 
 const SettingsPage = () => {
@@ -9,14 +9,35 @@ const SettingsPage = () => {
     {
       name: "Raecell Ann Galvez",
       status: "Signed In",
-      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990458/55516289_871534966513522_1623869577760866304_n_wh48kr.jpg",
+      avatar:
+        "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990458/55516289_871534966513522_1623869577760866304_n_wh48kr.jpg",
     },
     {
       name: "Zeldrick Jesus Delos Santos",
       status: "",
-      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1760087780/zj_lswba7.jpg",
+      avatar:
+        "https://res.cloudinary.com/dpxfbom0j/image/upload/v1760087780/zj_lswba7.jpg",
     },
   ];
+
+  // 🔹 ADDED: hide-on-scroll header
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-grotesque">
@@ -45,8 +66,12 @@ const SettingsPage = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
 
-        {/* Mobile + Tablet Header */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+        {/* Mobile + Tablet Header with hide-on-scroll */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -55,6 +80,9 @@ const SettingsPage = () => {
           </button>
           <h1 className="text-xl font-bold">Settings</h1>
         </div>
+
+        {/* Spacer for fixed header */}
+        <div className="lg:hidden h-16"></div>
 
         {/* Content */}
         <div className="flex-1 p-4 lg:p-10 flex flex-col items-center overflow-y-auto">

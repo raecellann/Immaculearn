@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../component/profsidebar";
 import Button from "../component/Button";
 
@@ -7,12 +7,35 @@ const ProfProfilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const profileName = "Jober Reyes";
 
+  const headerRef = useRef(null);
+  const lastScroll = useRef(0);
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setProfileImage(URL.createObjectURL(file));
     }
   };
+
+  // 🔹 Hide-on-scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScroll = window.pageYOffset;
+      if (headerRef.current) {
+        if (currentScroll > lastScroll.current) {
+          // scroll down → hide
+          headerRef.current.style.transform = "translateY(-100%)";
+        } else {
+          // scroll up → show
+          headerRef.current.style.transform = "translateY(0)";
+        }
+      }
+      lastScroll.current = currentScroll;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-grotesque">
@@ -41,6 +64,7 @@ const ProfProfilePage = () => {
       <div className="flex-1 flex flex-col min-w-0">
         {/* ✅ MOBILE / TABLET HEADER */}
         <div
+          ref={headerRef}
           className="
             lg:hidden
             sticky top-0 z-30
@@ -48,6 +72,7 @@ const ProfProfilePage = () => {
             px-4
             pt-[env(safe-area-inset-top)]
             border-b border-[#3B4457]
+            transition-transform duration-300
           "
         >
           <div className="flex items-center h-14">

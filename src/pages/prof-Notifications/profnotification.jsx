@@ -1,9 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 
 const ProfNotificationPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // sticky header scroll state
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setShowHeader(false); // scrolling down
+      } else {
+        setShowHeader(true); // scrolling up
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   const notifications = [
     {
@@ -33,6 +52,24 @@ const ProfNotificationPage = () => {
       unread: true,
       image: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
     },
+    {
+      id: 4,
+      name: "Wilson ESmabe",
+      comment: "Okay na po, Maam Susan",
+      activity: "Week 2 Activity in MODTECH Space",
+      date: "Oct 20",
+      unread: false,
+      image: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    },
+    {
+      id: 5,
+      name: "Wilson ESmabe",
+      comment: "Okay na po, Maam Susan",
+      activity: "Week 2 Activity in MODTECH Space",
+      date: "Oct 20",
+      unread: true,
+      image: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    },
   ];
 
   const filteredNotifications =
@@ -47,7 +84,7 @@ const ProfNotificationPage = () => {
         <Sidebar />
       </div>
 
-      {/* Mobile/Tablet Overlay */}
+      {/* Mobile Overlay */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -55,7 +92,7 @@ const ProfNotificationPage = () => {
         />
       )}
 
-      {/* Mobile/Tablet Sidebar */}
+      {/* Mobile Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
@@ -65,19 +102,24 @@ const ProfNotificationPage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile/Tablet Header */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
-          >
-            ☰
-          </button>
-          <h1 className="text-xl sm:text-2xl font-bold">Notifications</h1>
+        {/* 🔥 Sticky Mobile Header */}
+        <div
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457] transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+        >
+          <div className="p-4 flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0"
+            >
+              ☰
+            </button>
+            <h1 className="text-xl sm:text-2xl font-bold">Notifications</h1>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 p-4 md:p-10 overflow-y-auto">
+        {/* 🔽 Added proper spacing so sticky header doesn’t cover tabs on tablets/mobile */}
+        <div className="flex-1 p-4 md:p-15 pt-[5.5rem] lg:pt-10 overflow-y-auto">
           {/* Desktop Header */}
           <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
             Notifications

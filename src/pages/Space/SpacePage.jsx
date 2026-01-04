@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../component/sidebar";
 import { ArrowLeft, MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router";
@@ -11,6 +11,30 @@ const SpacePage = () => {
 
   // 🔹 ADDED: mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // 🔹 ADDED: hide-on-scroll state
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        // scrolling down
+        setShowHeader(false);
+      } else {
+        // scrolling up
+        setShowHeader(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Space data structure matching homepage
   const spaces = [
@@ -91,10 +115,8 @@ const SpacePage = () => {
   const yourSpaces = spaces.filter((s) => s.category === "Your Space");
   const friendsSpaces = spaces.filter((s) => s.category === "Friends Space");
 
-
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
-
       {/* ================= Desktop Sidebar (Laptop+) ================= */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -119,9 +141,12 @@ const SpacePage = () => {
 
       {/* ================= Main Content ================= */}
       <div className="flex-1 flex flex-col">
-
         {/* ================= Header (Mobile + Tablet) ================= */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -131,9 +156,11 @@ const SpacePage = () => {
           <h1 className="text-xl font-bold">Spaces</h1>
         </div>
 
+        {/* ================= Spacer for fixed header ================= */}
+        <div className="lg:hidden h-16"></div>
+
         {/* ================= Page Content ================= */}
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
-
           {/* Header (Desktop only – original) */}
           <div className="hidden md:flex items-center justify-center mb-8">
             <div className="flex items-center gap-4">
@@ -144,7 +171,6 @@ const SpacePage = () => {
           {/* ================= Welcome Section ================= */}
           <div className="bg-gradient-to-r from-[#1E3A8A] to-[#0F172A] rounded-xl p-6 mb-8 border border-[#3B4457]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
               {/* Left side */}
               <div>
                 <h2 className="text-2xl font-bold text-[#60A5FA] mb-2">
@@ -158,8 +184,9 @@ const SpacePage = () => {
                 </p>
                 <div className="flex gap-3">
                   <button
-                  onClick={() => navigate("/create-space-admin")} 
-                  className="px-6 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition">
+                    onClick={() => navigate("/create-space-admin")}
+                    className="px-6 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition"
+                  >
                     Create Space
                   </button>
                 </div>
@@ -176,9 +203,10 @@ const SpacePage = () => {
                     placeholder="Enter join code..."
                     className="w-full bg-transparent border-b border-[#3B4457] text-white placeholder-gray-500 pb-2 focus:outline-none focus:border-[#0EA5E9]"
                   />
-                  <button 
-                  onClick={() => alert("Join Space Click!")} 
-                  className="mt-4 w-full px-4 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition">
+                  <button
+                    onClick={() => alert("Join Space Click!")}
+                    className="mt-4 w-full px-4 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition"
+                  >
                     Join Space
                   </button>
                 </div>
@@ -296,7 +324,6 @@ const SpacePage = () => {
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -304,4 +331,3 @@ const SpacePage = () => {
 };
 
 export default SpacePage;
-  

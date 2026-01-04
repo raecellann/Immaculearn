@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Sidebar from "../component/sidebar";
 import { useUser } from "../../contexts/user/useUser";
 
 const ProfilePage = () => {
-
   const { user } = useUser();
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -18,13 +17,30 @@ const ProfilePage = () => {
     }
   };
 
-
   useEffect(() => {
     if (user?.profile_pic) {
       setProfileImage(user.profile_pic);
     }
   }, [user]);
 
+  // 🔹 ADDED: hide-on-scroll header
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="flex font-grotesque min-h-screen bg-[#161A20] text-white leading-[1.2] font-semibold">
@@ -53,8 +69,12 @@ const ProfilePage = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col w-full">
 
-        {/* Mobile + Tablet Header */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-gray-700 flex items-center gap-4">
+        {/* Mobile + Tablet Header with hide-on-scroll */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-gray-700 flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -63,6 +83,9 @@ const ProfilePage = () => {
           </button>
           <h1 className="text-xl font-bold">Your Profile</h1>
         </div>
+
+        {/* Spacer for fixed header */}
+        <div className="lg:hidden h-16"></div>
 
         {/* Content */}
         <div className="flex-1 p-4 lg:p-6 xl:p-10 overflow-y-auto">
@@ -139,11 +162,6 @@ const ProfilePage = () => {
                     placeholder="Last Name"
                     className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white"
                   />
-                  {/* <input
-                    type="email"
-                    placeholder="Email Address"
-                    className="sm:col-span-2 bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white"
-                  /> */}
                 </div>
 
                 <textarea
