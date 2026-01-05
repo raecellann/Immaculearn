@@ -1,8 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../component/sidebar";
 
 const NotificationPage = ({ notifications = [] }) => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // 🔹 ADDED: hide-on-scroll state
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        // scrolling down
+        setShowHeader(false);
+      } else {
+        // scrolling up
+        setShowHeader(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Default notifications for demo
   const defaultNotifications = [
@@ -57,8 +80,12 @@ const NotificationPage = ({ notifications = [] }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
 
-        {/* Mobile + Tablet Header */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
+        {/* Mobile + Tablet Header with hide-on-scroll */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -67,6 +94,9 @@ const NotificationPage = ({ notifications = [] }) => {
           </button>
           <h1 className="text-xl sm:text-2xl font-bold">Notifications</h1>
         </div>
+
+        {/* Spacer for fixed header */}
+        <div className="lg:hidden h-16"></div>
 
         {/* Content */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
@@ -121,8 +151,8 @@ const NotificationPage = ({ notifications = [] }) => {
               </div>
             ))}
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
   );

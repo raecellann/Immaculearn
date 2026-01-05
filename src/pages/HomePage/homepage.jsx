@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../component/sidebar";
 import Button from "../component/Button";
 import { BookOpen, User, GraduationCap, FileText, Calendar } from "lucide-react";
+import { useUser } from "../../contexts/user/useUser";
 
 const HomePage1 = () => {
+  const { user } = useUser();
+
   const [currentDate, setCurrentDate] = useState('');
   const [greeting, setGreeting] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
@@ -13,6 +16,10 @@ const HomePage1 = () => {
   const [slideIndexSpaces, setSlideIndexSpaces] = useState(0);
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showMenu, setShowMenu] = useState(null);
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  const role = urlParams.get("role");
 
   useEffect(() => {
     const now = new Date();
@@ -54,7 +61,7 @@ const HomePage1 = () => {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-lg font-semibold text-[#B0C4FF] mb-1">
-                  {greeting}, Raecell
+                  {greeting}, {user && user.name}
                 </h1>
                 <p className="text-gray-400 text-sm">
                   Meet your classmates and collaborate with them.
@@ -217,12 +224,12 @@ const HomePage1 = () => {
           {/* Profile */}
           <div className="flex flex-col items-center text-center mb-4">
             <img
-              src="/src/assets/HomePage/frieren-avatar.jpg"
+              src={user && user.profile_pic}
               alt="Frieren Avatar"
               className="w-20 h-20 rounded-full object-cover mb-3"
             />
-            <h3 className="text-lg font-semibold">Raecell Ann</h3>
-            <p className="text-gray-400 text-sm">Student</p>
+            <h3 className="text-lg font-semibold">{user && user.name}</h3>
+            <p className="text-gray-400 text-sm">{role}</p>
             <Button className="homepage-edit-button mt-2">Edit Profile</Button>
           </div>
 

@@ -22,7 +22,7 @@ const CreateSpaceAdmin = () => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isCropping, setIsCropping] = useState(false);
 
-  const memberOptions = [2, 4, 5, 6, 7, 8, 9, 10];
+  const memberOptions = [2,3, 4, 5, 6, 7, 8, 9];
 
   const colorOptions = [
     "linear-gradient(45deg, #FFC107, #FF5722)",
@@ -352,7 +352,7 @@ const CreateSpaceAdmin = () => {
             </button>
 
             <Button onClick={handleCreateSpace} className="bg-[#007AFF] hover:bg-[#2563eb] text-xs">
-              Save Space
+              Create Space
             </Button>
           </div>
 

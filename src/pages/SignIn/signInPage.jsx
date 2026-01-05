@@ -45,7 +45,11 @@ const LoginPage = () => {
         if (event.data.needsOnboarding) {
           navigate(`/onboarding?role=${event.data.role}`)
         } else {
-          navigate("/home"); // or onboarding
+          if (role === "student") {
+            navigate(`/home?role=${event.data.role}`); // or onboarding
+          } else {
+            navigate(`/prof-home?role=${event.data.role}`); // or onboarding
+          }
         }
       }
     };

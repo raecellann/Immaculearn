@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react";
 import ProfSidebar from "../component/profsidebar";
 import Button from "../component/Button";
 import { BookOpen, User, GraduationCap, FileText, Calendar } from "lucide-react";
+import { useUser } from "../../contexts/user/useUser";
 
 const ProfHomePage = () => {
+  const { user } = useUser();
+
   const [currentDate, setCurrentDate] = useState('');
   const [greeting, setGreeting] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
@@ -31,6 +34,10 @@ const ProfHomePage = () => {
     setToday(now);
   }, []);
 
+  useEffect(() => {
+    console.log(user)
+  },[])
+
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
       {/* Sidebar */}
@@ -53,7 +60,7 @@ const ProfHomePage = () => {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-lg font-semibold text-[#B0C4FF] mb-1">
-                  {greeting}, Jober Reyes
+                  {greeting}, {user && user.name}
                 </h1>
                 <p className="text-gray-400 text-sm">
                   Manage your classes and collaborate with students.
@@ -246,8 +253,8 @@ const ProfHomePage = () => {
               alt="Prof Avatar"
               className="w-20 h-20 rounded-full object-cover mb-3"
             />
-            <h3 className="text-lg font-semibold">Jober Reyes</h3>
-            <p className="text-gray-400 text-sm">Teacher</p>
+            <h3 className="text-lg font-semibold">{user && user.name}</h3>
+            <p className="text-gray-400 text-sm">{user && user.role}</p>
             <Button className="homepage-edit-button mt-2">Edit Profile</Button>
           </div>
 

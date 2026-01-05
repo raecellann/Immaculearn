@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 
 const ProfGradeRecordPage = () => {
@@ -36,8 +36,28 @@ const ProfGradeRecordPage = () => {
     { name: "Adriano, Mary Ann", prelim: 85, midterm: 87, preFinal: 80, final: 90 },
   ];
 
+  /* 🔹 ADDED — STICKY + HIDE ON SCROLL */
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -60,9 +80,14 @@ const ProfGradeRecordPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-4 sm:px-6 lg:px-10 py-8">
-        {/* Mobile / Tablet Header */}
-        <div className="lg:hidden flex items-center gap-4 mb-4">
+      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-10 py-8">
+
+        {/* 🔹 MOBILE / TABLET STICKY HEADER */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
@@ -71,6 +96,9 @@ const ProfGradeRecordPage = () => {
           </button>
           <h1 className="text-xl font-bold flex-1">Grade Record</h1>
         </div>
+
+        {/* 🔹 Spacer */}
+        <div className="lg:hidden h-16" />
 
         {/* Desktop Header */}
         <div className="hidden lg:flex justify-between items-center mb-6 relative">
@@ -89,6 +117,7 @@ const ProfGradeRecordPage = () => {
               </button>
             )}
           </div>
+
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-300">Year Level:</label>
             <select
@@ -109,7 +138,7 @@ const ProfGradeRecordPage = () => {
 
         <div className="border-t border-gray-700 mb-6"></div>
 
-        {/* Folder View - Mobile & Desktop */}
+        {/* Folder View */}
         {!selectedSubject && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 justify-center">
             {subjectsByYear[yearLevel].map((subject, index) => (
@@ -125,10 +154,10 @@ const ProfGradeRecordPage = () => {
           </div>
         )}
 
-        {/* Grade Table - Mobile / Tablet as Cards */}
+        {/* Grades */}
         {selectedSubject && (
           <>
-            {/* Cards for Mobile/Tablet */}
+            {/* Mobile / Tablet Cards */}
             <div className="lg:hidden space-y-4">
               {studentGrades.map((student, idx) => (
                 <div
@@ -149,7 +178,7 @@ const ProfGradeRecordPage = () => {
               ))}
             </div>
 
-            {/* Table for Desktop */}
+            {/* Desktop Table */}
             <div className="hidden lg:block">
               <table className="w-full border-collapse text-center text-sm">
                 <thead>

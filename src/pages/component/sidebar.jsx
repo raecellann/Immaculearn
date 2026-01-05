@@ -16,9 +16,11 @@ import { Link, useLocation } from "react-router";
 
 import Logout from "./logout";
 import logo from "../../assets/HomePage/logo.png";
-import raecell from "../../assets/HomePage/raecell.jpg";
+import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
+import { useUser } from "../../contexts/user/useUser";
 
 const Sidebar = () => {
+  const { user } = useUser();
   const [showLogout, setShowLogout] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
 
@@ -49,6 +51,9 @@ const Sidebar = () => {
     { icon: <User size={20} />, label: "Account", path: "/accsettings" },
     { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
   ];
+
+  // ✅ BACKEND-READY STUDENT NAME (temporary fallback)
+  const displayName = user?.name || "Raecell Ann Galvez";
 
   return (
     <div
@@ -129,11 +134,11 @@ const Sidebar = () => {
 
       <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0">
         <img
-          src={raecell}
+          src={user ? user.profile_pic : frierenAvatar}
           alt="Profile"
           className="w-9 h-9 rounded-full object-cover border border-white/20"
         />
-        <span className="text-sm font-semibold">Raecell Ann Galvez</span>
+        <span className="text-sm font-semibold">{displayName}</span>
       </div>
 
       {showLogout && (

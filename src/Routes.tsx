@@ -1,51 +1,49 @@
 import React from "react";
 import { Routes as ReactRoutes, Route } from "react-router";
-
-import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-import AdminDashboard from "./pages/admin-dashboard/admindashboard.jsx";
-import AdminStudents from "./pages/admin-students/adminstudents.jsx";
-import AdminTeachers from "./pages/admin-teachers/adminteachers.jsx";
+import AdminDashboard from "./pages/admin-dashboard/admindashboard.jsx"; //done responsive//
+import AdminStudents from "./pages/admin-students/adminstudents.jsx"; //done responsive//
+import AdminTeachers from "./pages/admin-teachers/adminteachers.jsx"; //done responsive//
 
 import LandingPage from "./pages/Landing/landingPage.jsx";
 import SpaceCreationPage from "./pages/SpaceCreation/spacecreation.jsx";
 import InitialInvitePage from "./pages/SpaceCreation/inviteteam.jsx";
 
-import ChatList from "./pages/User_chats/user_chats";
+import ChatList from "./pages/User_chats/user_chats"; //done responsive//
 import LoginPage from "./pages/SignIn/signInPage.jsx";
 import UserPage from "./pages/UserSpace/zj-space.jsx";
 import UserTaskPage from "./pages/UserSpace/UserTaskPage.jsx";
 import UserFilesShared from "./pages/UserSpace/UserFilesShared.jsx";
 import UserPeoplePage from "./pages/UserSpace/UserPeoplePage.jsx";
 import HomePage from "./pages/HomePage/homepage.jsx";
-import ProfilePage from "./pages/AccSettings/accsettingspage.jsx";
-import GradeViewing from "./pages/GradeViewing/gradeViewing.jsx";
-import TaskPage from "./pages/Task/task.jsx";
-import NotificationPage from "./pages/Notifications/notification.jsx";
-import FilePage from "./pages/Files/files.jsx";
-import SpacePage from "./pages/Space/SpacePage.jsx";
-import SettingsPage from "./pages/Settings/settings.jsx";
+import ProfilePage from "./pages/AccSettings/accsettingspage.jsx"; //done responsive//
+import GradeViewing from "./pages/GradeViewing/gradeViewing.jsx"; //done responsive//
+import TaskPage from "./pages/Task/task.jsx"; //done responsive//
+import NotificationPage from "./pages/Notifications/notification.jsx"; //done responsive//
+import FilePage from "./pages/Files/files.jsx"; //done responsive//
+import SpacePage from "./pages/Space/SpacePage.jsx"; //done responsive//
+import SettingsPage from "./pages/Settings/settings.jsx"; //done responsive//
 
-import TaskViewPage from "./pages/Task-View/TaskViewPage.jsx";
+import TaskViewPage from "./pages/Task-View/TaskViewPage.jsx"; 
 import TaskViewPageAdmin from "./pages/Task-view Admin/Task-View-Admin.jsx";
-import TaskViewAll from "./pages/Task-view Admin/Task-View-All.jsx";
-import ViewFilePage from "./pages/ViewFiles/ViewFiles.jsx";
+import TaskViewAll from "./pages/Task-view Admin/Task-View-All.jsx"; 
+import ViewFilePage from "./pages/ViewFiles/ViewFiles.jsx"; //done responsive//
 
 import AdminTaskPage from "./pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
 import AdminCreateActivityPage from "./pages/UserSpace/AdminSpacePages/AdminCreateActivityPage.jsx";
 import AdminFilesSharedPage from "./pages/UserSpace/AdminSpacePages/AdminFilesSharedPage.jsx";
 
-import ProfProfilePage from "./pages/prof-AccSettings/profaccsettingspage.jsx";
-import ProfNotificationPage from "./pages/prof-Notifications/profnotification.jsx";
-import ProfListActivityPage from "./pages/prof-ListActivities/proflistactivitypage.jsx";
-import ProfFilePage from "./pages/prof-Files/proffiles.jsx";
-import ProfFilesBySubject from "./pages/prof-Files/ProfFilesBySubject";
-import ProfGradeRecordPage from "./pages/prof-GradeViewing/profgradeviewing.jsx";
-import ProfChatsPage from "./pages/prof-Chats/profchats.jsx";
-import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx";
-import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx";
-import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
+import ProfProfilePage from "./pages/prof-AccSettings/profaccsettingspage.jsx"; //done responsive//
+import ProfNotificationPage from "./pages/prof-Notifications/profnotification.jsx"; //done responsive//
+import ProfListActivityPage from "./pages/prof-ListActivities/proflistactivitypage.jsx"; //done responsive//
+import ProfFilePage from "./pages/prof-Files/proffiles.jsx"; //done responsive//
+import ProfFilesBySubject from "./pages/prof-Files/ProfFilesBySubject"; //done responsive//
+import ProfGradeRecordPage from "./pages/prof-GradeViewing/profgradeviewing.jsx"; //done responsive//
+import ProfChatsPage from "./pages/prof-Chats/profchats.jsx"; //done responsive//
+import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx"; //done responsive//
+import ProfMainSpace from "./pages/Prof-MainSpace/profmainspace.jsx"; //done responsive//
+import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx"; //done responsive//
+import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx"; 
 
 import ThesisSpace from "./pages/Prof-Space/Thesis-space.jsx";
 import ProfTaskPage from "./pages/Prof-Space/ProfTaskPage";
@@ -53,7 +51,7 @@ import ProfFilesShared from "./pages/Prof-Space/ProfFilesShared";
 import ProfPeoplePage from "./pages/Prof-Space/ProfPeoplePage";
 
 import CreateFileAdmin from "./pages/CreateFile-Admin/createfile.jsx";
-import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx";
+import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx"; //done responsive//
 
 {/* DDOCUMENT EDITOR */}
 import CreateDocumentPage from "./pages/Create-Document/CreateDocument.jsx";
@@ -68,24 +66,16 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 export default function Routes() {
   return (
-    <>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        pauseOnHover
-        closeOnClick
-      />
-      <ReactRoutes>
-        
+    <ReactRoutes>
 
-        <Route path="/test-page" element={<SignInPageWithOAuth />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/oauth/callback" element={<OAuthCallback />} />
+      <Route path="/test-page" element={<SignInPageWithOAuth />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/oauth/callback" element={<OAuthCallback />} />
 
-        {/* ADMIN ROUTES */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin-students" element={<AdminStudents />} />
-        <Route path="/admin-teachers" element={<AdminTeachers />} />
+      {/* ADMIN ROUTES */}
+      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/admin-students" element={<AdminStudents />} />
+      <Route path="/admin-teachers" element={<AdminTeachers />} />
 
         {/* STUDENT ROUTES */}
         <Route path="/" element={<LandingPage />} />
@@ -94,33 +84,35 @@ export default function Routes() {
         <Route path="/initial-create-space" element={<SpaceCreationPage />} />
         <Route path="/initial-invite" element={<InitialInvitePage />} />
 
-        <Route path="/home" element={
+      
+      
+      <Route path="/home" element={
           <ProtectedRoute>
             <HomePage />
           </ProtectedRoute>
-        } />
-        
-        <Route path="/accsettings" element={<ProfilePage />} />
-        <Route path="/grade-viewing" element={<GradeViewing />} />
-        <Route path="/task" element={<TaskPage />} />
-        <Route path="/notifications" element={<NotificationPage />} />
-        <Route path="/files" element={<FilePage />} />
-        <Route path="/view-files" element={<ViewFilePage/>} />
-        <Route path="/space" element={<SpacePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/view-all-files" element={<ViewAllFilesPage />} />
+      } />
+      
+      <Route path="/accsettings" element={<ProfilePage />} />
+      <Route path="/grade-viewing" element={<GradeViewing />} />
+      <Route path="/task" element={<TaskPage />} />
+      <Route path="/notifications" element={<NotificationPage />} />
+      <Route path="/files" element={<FilePage />} />
+      <Route path="/view-files" element={<ViewFilePage/>} />
+      <Route path="/space" element={<SpacePage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/view-all-files" element={<ViewAllFilesPage />} />
 
-        {/* USER SPACE (example si zj,this is also the home or stream of the space) same rin to sa home ng admin, naiiba lang pagdating sa ibang buttons /navigation */}
-        <Route path="/user-space-zj" element={<UserPage />} />
+      {/* USER SPACE (example si zj,this is also the home or stream of the space) same rin to sa home ng admin, naiiba lang pagdating sa ibang buttons /navigation */}
+      <Route path="/user-space-zj" element={<UserPage />} />
 
 
-        {/* USER SPACE SUBPAGES */}
-        <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
-        <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
-        <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
+      {/* USER SPACE SUBPAGES */}
+      <Route path="/user-space-zj/tasks" element={<UserTaskPage />} />
+      <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
+      <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
 
-        <Route path="/admintaskpage" element={<AdminTaskPage />} />
-        <Route path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />
+      <Route path="/admintaskpage" element={<AdminTaskPage />} />
+      <Route path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />
 
         {/* ADMIN STUDENT ROUTES */}
         <Route path="/task-view" element={<TaskViewPage />} />
@@ -140,23 +132,23 @@ export default function Routes() {
         <Route path="/prof-chats" element={<ProfChatsPage /> }/>
         <Route path="/prof-home" element={<ProfHomePage />} />
         <Route path="/prof-settings" element={<ProfSettingsPage />} />
+        <Route path="/prof-main-space" element={<ProfMainSpace />} />
 
-        {/* PROFESSOR SPACE ROUTES */}
-        <Route path="/prof-space-thesis" element={<ThesisSpace />} />
-        <Route path="/prof-space-thesis/tasks" element={<ProfTaskPage />} />
-        <Route path="/prof-space-thesis/files-shared" element={<ProfFilesShared />} />
-        <Route path="/prof-space-thesis/people" element={<ProfPeoplePage />} />
+      {/* PROFESSOR SPACE ROUTES */}
+      <Route path="/prof-space-thesis" element={<ThesisSpace />} />
+      <Route path="/prof-space-thesis/tasks" element={<ProfTaskPage />} />
+      <Route path="/prof-space-thesis/files-shared" element={<ProfFilesShared />} />
+      <Route path="/prof-space-thesis/people" element={<ProfPeoplePage />} />
 
-        {/* PARENT ROUTES */}
-        <Route path="/parent-grade-login" element={<ParentLogin />} />
-        <Route path="/parent-grade-view" element={<ParentGradeView />} />
+      {/* PARENT ROUTES */}
+      <Route path="/parent-grade-login" element={<ParentLogin />} />
+      <Route path="/parent-grade-view" element={<ParentGradeView />} />
 
-        {/* DOCUMENT EDITOR ROUTE */}
-        <Route path="/create-document" element={<CreateDocumentPage />} />
+      {/* DOCUMENT EDITOR ROUTE */}
+      <Route path="/create-document" element={<CreateDocumentPage />} />
 
-        <Route path="*" element={<PageNotFound />} />
+      <Route path="*" element={<PageNotFound />} />
 
-      </ReactRoutes>
-    </>
+    </ReactRoutes>
   );
 }
