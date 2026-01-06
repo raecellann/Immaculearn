@@ -7,6 +7,7 @@ import { Link } from "react-router";
 const LandingPage = () => {
   const [showMainPage, setShowMainPage] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const cardsData = [
     {
@@ -37,29 +38,43 @@ const LandingPage = () => {
   return (
     <div className="font-sans min-h-screen relative overflow-hidden bg-[#FDFBEE]">
       {/* NAVBAR */}
-      <div className="w-full text-white py-4 px-10 relative overflow-hidden z-10">
+      <div className="w-full text-white py-4 px-4 sm:px-10 relative overflow-hidden z-10">
         <header className="flex justify-between items-center w-full relative z-20">
           <div className="flex items-center gap-2 mt-2">
             <img
               src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379259/LOGO_ozziow.png"
               alt="Logo"
-              className="w-[80px] h-[60px]"
+              className="w-[60px] h-[45px] sm:w-[80px] sm:h-[60px]"
             />
           </div>
 
-          <nav className="hidden md:flex gap-10 font-medium text-white absolute left-1/2 transform -translate-x-1/2">
-            <a href="#about">About</a>
-            <a href="#feature">Feature</a>
-            <a href="#contact">Contact Us</a>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex gap-6 sm:gap-10 font-medium text-white absolute left-1/2 transform -translate-x-1/2">
+            <a href="#about" className="hover:text-blue-200 transition">About</a>
+            <a href="#feature" className="hover:text-blue-200 transition">Feature</a>
+            <a href="#contact" className="hover:text-blue-200 transition">Contact Us</a>
           </nav>
 
-          <Link to="login">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-white text-2xl focus:outline-none z-50 relative transition-transform duration-300 ease-in-out"
+          >
+            <div className="w-6 h-5 flex flex-col justify-center items-center">
+              <span className={`block h-0.5 w-6 bg-white transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+              <span className={`block h-0.5 w-6 bg-white my-1 transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
+              <span className={`block h-0.5 w-6 bg-white transition-all duration-300 ease-in-out ${mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+            </div>
+          </button>
+
+          {/* Desktop Login Button */}
+          <Link to="login" className="hidden md:block">
             <Button
-              className="px-5 py-2"
+              className="px-4 sm:px-5 py-2"
               style={{
                 background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
                 borderRadius: "10px",
-                fontSize: "15px",
+                fontSize: "14px sm:15px",
               }}
             >
               Log In
@@ -74,30 +89,68 @@ const LandingPage = () => {
         />
       </div>
 
+      {/* Mobile Navigation Menu - Moved outside navbar */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed top-0 left-0 right-0 bg-[#1D4ED8] bg-opacity-95 backdrop-blur-sm z-50 animate-slide-down-menu">
+          <div className="flex justify-between items-center p-4 border-b border-white/20">
+            <div className="flex items-center gap-2">
+              <img
+                src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379259/LOGO_ozziow.png"
+                alt="Logo"
+                className="w-[60px] h-[45px]"
+              />
+            </div>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-white text-2xl focus:outline-none hover:text-blue-200 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+          <nav className="flex flex-col py-4 px-4 space-y-3">
+            <a href="#about" className="text-white hover:text-blue-200 transition py-2 animate-slide-up-item" onClick={() => setMobileMenuOpen(false)}>About</a>
+            <a href="#feature" className="text-white hover:text-blue-200 transition py-2 animate-slide-up-item" onClick={() => setMobileMenuOpen(false)}>Feature</a>
+            <a href="#contact" className="text-white hover:text-blue-200 transition py-2 animate-slide-up-item" onClick={() => setMobileMenuOpen(false)}>Contact Us</a>
+            <Link to="login" onClick={() => setMobileMenuOpen(false)}>
+              <Button
+                className="px-4 py-2 w-full animate-slide-up-item"
+                style={{
+                  background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
+                  borderRadius: "10px",
+                  fontSize: "14px",
+                }}
+              >
+                Log In
+              </Button>
+            </Link>
+          </nav>
+        </div>
+      )}
+
       {/* HERO SECTION */}
-      <main className="flex flex-col md:flex-row justify-between items-center px-10 lg:px-28 mt-2 relative z-20">
-        <div className="w-full md:w-1/2 max-w-[550px]">
-          <h1 className="text-5xl md:text-4xl font-extrabold leading-tight">
+      <main className="flex flex-col md:flex-row justify-between items-center px-4 sm:px-10 lg:px-28 mt-2 relative z-20 text-center md:text-left">
+        <div className="w-full md:w-1/2 max-w-[550px] mx-auto md:mx-0">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">
             <span className="text-[#1D4ED8]">Wherever</span>
             <span className="text-black"> you are,</span>
             <br />
             <span className="text-[#3B82F6]">Learn Together!</span>
           </h1>
 
-          <p className="mt-6 text-gray-800 text-lg leading-relaxed">
+          <p className="mt-4 sm:mt-6 text-gray-800 text-sm sm:text-base leading-relaxed">
             ImmacuLearn transforms the way you experience education by offering
             a seamless, engaging, and collaborative platform designed for both
             students and educators.
           </p>
 
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6 flex justify-center md:justify-start">
             <Button
               onClick={() => setShowMainPage(true)}
-              className="px-7 py-3 shadow-lg"
+              className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
               style={{
                 background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
                 borderRadius: "10px",
-                fontSize: "1.1rem",
+                fontSize: "0.9rem sm:1rem",
               }}
             >
               Explore Now
@@ -105,11 +158,11 @@ const LandingPage = () => {
           </div>
         </div>
 
-        <div className="relative w-full md:w-1/2 flex justify-end mt-5 md:mt-0">
+        <div className="relative w-full md:w-1/2 flex justify-center md:justify-end mt-8 md:mt-0">
           <img
             src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379654/sample_lwkfab.svg"
             alt="Students"
-            className="relative w-[600px] z-10"
+            className="relative w-full max-w-[350px] sm:max-w-[450px] md:max-w-[600px] z-10 h-auto mx-auto md:mx-0"
           />
         </div>
       </main>
@@ -119,79 +172,85 @@ const LandingPage = () => {
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379976/school_g07n2t.jpg"
           alt="School"
-          className="w-full h-auto object-cover"
+          className="w-full h-[200px] sm:h-[300px] md:h-auto object-cover"
         />
 
-        <div className="absolute top-10 ml-10 text-left font-grotesque">
-          <h2 className="text-3xl md:text-4xl text-white leading-tight">
+        <div className="absolute top-4 sm:top-10 left-4 sm:left-10 text-left font-grotesque max-w-[90%] sm:max-w-none md:max-w-md lg:max-w-lg">
+          <h2 className="text-xl sm:text-2xl md:text-3xl text-white leading-tight text-center md:text-left">
             Improve your <span className="font-bold">study habit</span> with us!
           </h2>
-          <p className="mt-2 text-lg md:text-xl text-white">
+          <p className="mt-2 text-sm sm:text-base md:text-lg text-white text-center md:text-left">
             Connect with your classmates and teachers!
           </p>
 
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 border-2 border-white text-white font-bold text-[18px] rounded-lg cursor-pointer hover:bg-white hover:text-black transition duration-300">
-            Create account now
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 12h14M12 5l7 7-7 7"
-              />
-            </svg>
+          <div className="mt-4 flex justify-center md:justify-start">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 border-2 border-white text-white font-bold text-[12px] sm:text-[14px] md:text-[16px] rounded-lg cursor-pointer hover:bg-white hover:text-black transition duration-300">
+              <span className="hidden sm:inline">Create account now</span>
+              <span className="sm:hidden">Sign up</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 sm:h-5 sm:w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 12h14M12 5l7 7-7 7"
+                />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
 
       {/* FEATURE SECTION */}
       <section
-        className="w-full bg-[#FDFBEE] py-16 px-10 lg:px-28 flex flex-col md:flex-row items-start gap-10 font-grotesque relative"
+        className="w-full bg-[#FDFBEE] py-12 sm:py-16 px-4 sm:px-10 lg:px-28 flex flex-col lg:flex-row items-center gap-6 sm:gap-10 font-grotesque relative"
         id="feature"
       >
+        {/* Decorative Images - Hidden on mobile */}
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380042/Asterisk_itnvzs.png"
-          className="absolute left-[-10px] top-[350px] w-[180px] z-0"
+          className="hidden md:block absolute left-[-10px] top-[350px] w-[180px] z-0"
           alt="asterisk"
         />
 
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380049/arrow_q9xp1c.png"
-          className="absolute left-[200px] top-[360px] w-[120px] z-20"
+          className="hidden md:block absolute left-[200px] top-[360px] w-[120px] z-20"
           alt="arrow"
         />
 
         {/* LEFT TEXT */}
-        <div className="md:w-1/2 text-left relative z-30">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1D4ED8]">
+        <div className="w-full lg:w-1/2 text-center lg:text-left relative z-30 mb-8 lg:mb-0">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1D4ED8]">
             Make your teamwork more organized with us.
           </h2>
 
-          <p className="text-black mt-4 text-sm font-inter">
+          <p className="text-black mt-4 text-sm sm:text-base font-inter">
             Designed to enhance your learning experience through intuitive and
             collaborative tools. Learn faster, collaborate smarter, and stay
             organized effortlessly.
           </p>
 
-          <Button
-            className="mt-6 px-7 py-3 shadow-lg"
-            style={{
-              background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
-              borderRadius: "10px",
-              fontSize: "1.1rem",
-            }}
-          >
-            Learn More
-          </Button>
+          <div className="mt-6 flex justify-center lg:justify-start">
+            <Button
+              className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
+              style={{
+                background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
+                borderRadius: "10px",
+                fontSize: "0.9rem sm:1rem",
+              }}
+            >
+              Learn More
+            </Button>
+          </div>
         </div>
 
         {/* RIGHT SIDE – STACKED CARDS */}
-        <div className="md:w-1/2 flex justify-center items-center relative h-64 z-20">
+        <div className="w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20">
           {/* Left Arrow */}
           <button
             onClick={() =>
@@ -199,9 +258,9 @@ const LandingPage = () => {
                 (prev) => (prev - 1 + cardsData.length) % cardsData.length
               )
             }
-            className="absolute left-0 z-40 p-2 rounded-full shadow-md
+            className="absolute left-0 z-40 p-1 sm:p-2 rounded-full shadow-md
              bg-black text-white 
-             hover:bg-[#1D4ED8] transition"
+             hover:bg-[#1D4ED8] transition text-xs sm:text-base"
           >
             &#8592;
           </button>
@@ -215,7 +274,7 @@ const LandingPage = () => {
             return (
               <div
                 key={index}
-                className={`absolute w-80 h-52 rounded-xl shadow-lg border-2 flex flex-row items-center justify-between p-6 cursor-pointer transition-all duration-500
+                className={`absolute w-48 sm:w-56 md:w-64 lg:w-72 h-32 sm:h-40 md:h-44 lg:h-48 rounded-xl shadow-lg border-2 flex flex-row items-center justify-between p-3 sm:p-4 md:p-6 cursor-pointer transition-all duration-500
             ${
               isActive
                 ? "z-30 bg-[#1D4ED8] text-white scale-100 translate-y-0 rotate-0"
@@ -223,33 +282,33 @@ const LandingPage = () => {
             }
             ${
               isNext
-                ? "z-20 translate-x-12 translate-y-4 rotate-3 scale-95"
+                ? "z-20 translate-x-4 sm:translate-x-6 md:translate-x-8 lg:translate-x-12 translate-y-1 sm:translate-y-2 md:translate-y-3 lg:translate-y-4 rotate-1 sm:rotate-2 md:rotate-2 lg:rotate-3 scale-90 sm:scale-92 md:scale-95 lg:scale-95"
                 : ""
             }
             ${
               isPrev
-                ? "z-10 -translate-x-12 -translate-y-4 -rotate-3 scale-95 opacity-50"
+                ? "z-10 -translate-x-4 sm:-translate-x-6 md:-translate-x-8 lg:-translate-x-12 -translate-y-1 sm:-translate-y-2 md:-translate-y-3 lg:-translate-y-4 -rotate-1 sm:-rotate-2 md:-rotate-2 lg:-rotate-3 scale-90 sm:scale-92 md:scale-95 lg:scale-95 opacity-50"
                 : ""
             }
           `}
               >
                 <div>
                   <h3
-                    className={`font-bold text-xl ${
+                    className={`font-bold text-xs sm:text-sm md:text-base lg:text-lg ${
                       isActive ? "text-white" : "text-black"
                     }`}
                   >
                     {card.front}
                   </h3>
                   <p
-                    className={`text-base ${
+                    className={`text-xs sm:text-xs md:text-sm ${
                       isActive ? "text-white" : "text-gray-700"
                     }`}
                   >
                     {card.back}
                   </p>
                 </div>
-                <img src={card.icon} alt={card.front} className="w-20 h-20" />
+                <img src={card.icon} alt={card.front} className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16" />
               </div>
             );
           })}
@@ -259,9 +318,9 @@ const LandingPage = () => {
             onClick={() =>
               setActiveIndex((prev) => (prev + 1) % cardsData.length)
             }
-            className="absolute right-0 z-40 p-2 rounded-full shadow-md
+            className="absolute right-0 z-40 p-1 sm:p-2 rounded-full shadow-md
              bg-black text-white 
-             hover:bg-[#1D4ED8] transition"
+             hover:bg-[#1D4ED8] transition text-xs sm:text-base"
           >
             &#8594;
           </button>
@@ -269,22 +328,22 @@ const LandingPage = () => {
       </section>
 
       {/* BLUE MARQUEE */}
-      <div className="relative w-full mt-16">
+      <div className="relative w-full mt-8 sm:mt-16">
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380095/violet_z9udug.svg"
           alt="Background Accent"
-          className="absolute right-0 w-[200px] opacity-80 z-10 hidden lg:block"
+          className="absolute right-0 w-[120px] sm:w-[150px] md:w-[200px] opacity-80 z-10 hidden lg:block"
         />
 
-        <div className="w-full h-12 bg-[#4D9BEF] flex items-center justify-center overflow-hidden relative z-40">
+        <div className="w-full h-8 sm:h-10 md:h-12 bg-[#4D9BEF] flex items-center justify-center overflow-hidden relative z-40">
           <div className="absolute whitespace-nowrap animate-marquee">
             {Array(10)
               .fill(
                 <>
-                  <span className="text-white text-xl font-bold mx-4">
+                  <span className="text-white text-sm sm:text-base md:text-lg font-bold mx-2 sm:mx-4">
                     Create your account for free!
                   </span>
-                  <span className="text-white text-xl font-bold mx-2">•</span>
+                  <span className="text-white text-sm sm:text-base md:text-lg font-bold mx-1 sm:mx-2">•</span>
                 </>
               )
               .map((el, i) => (
@@ -412,21 +471,21 @@ const LandingPage = () => {
       </section>
 
       {/* ====================== SIGN-UP SECTION (above footer) ====================== */}
-      <section className="w-full bg-[#FDFBEE] py-16 px-10 lg:px-20 flex justify-center">
-        <div className=" p-10 max-w-3xl w-full text-center">
-          <h2 className="text-3xl font-bold text-black">
+      <section className="w-full bg-[#FDFBEE] py-8 sm:py-12 lg:py-16 px-4 sm:px-10 lg:px-20 flex justify-center">
+        <div className="p-6 sm:p-8 lg:p-10 max-w-2xl lg:max-w-3xl w-full text-center">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-black">
             GET STARTED WITH <span className="text-[#1D4ED8]">IMMACULEARN</span>{" "}
             TODAY
           </h2>
 
-          <div className="flex flex-col md:flex-row gap-4 justify-center mt-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-4 sm:mt-6">
             <InputField
               placeholder="Email"
-              className="w-full md:w-[450px] h-12 bg-white border-2 border-black rounded-lg px-4"
+              className="w-full sm:w-80 md:w-96 lg:w-[450px] h-10 sm:h-12 bg-white border-2 border-black rounded-lg px-3 sm:px-4 text-sm sm:text-base"
             />
 
             <Button
-              className="px-8 py-3 font-semibold shadow"
+              className="px-4 sm:px-6 lg:px-8 py-2 sm:py-3 font-semibold shadow text-sm sm:text-base"
               style={{
                 background: "#4D9BEF",
                 color: "white",
@@ -440,7 +499,7 @@ const LandingPage = () => {
       </section>
 
       {/* ====================== FOOTER SECTION ====================== */}
-      <div className="w-full mt-20 relative">
+      <div className="w-full mt-10 sm:mt-16 lg:mt-20 relative">
         {/* Background Image */}
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380309/schoolfooter_f2viek.png"
@@ -449,7 +508,7 @@ const LandingPage = () => {
         />
 
         {/* Footer Content */}
-        <div className="absolute top-0 left-0 w-full h-full px-10 lg:px-20 py-16 flex flex-col lg:flex-row justify-between text-black">
+        <div className="absolute top-0 left-0 w-full h-full px-4 sm:px-10 lg:px-20 py-8 sm:py-12 lg:py-16 flex flex-col lg:flex-row justify-between text-black">
           {/* LOGO + BRAND */}
           <div className="flex flex-col items-start">
             <img
@@ -472,7 +531,7 @@ const LandingPage = () => {
                 </li>
                 <li>
                   <a href="#about" className="hover:underline">
-                    About the system
+                    About system
                   </a>
                 </li>
                 <li>
@@ -531,5 +590,40 @@ const LandingPage = () => {
     </div>
   );
 };
+
+<style jsx>{`
+  @keyframes slide-down-menu {
+    0% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up-item {
+    0% {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-down-menu {
+    animation: slide-down-menu 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-slide-up-item {
+    animation: slide-up-item 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+  }
+`}</style>
 
 export default LandingPage;
