@@ -15,12 +15,35 @@ import {
 const UserPage = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [showInvitePopup, setShowInvitePopup] = useState(false);
+  const [showPendingInvitations, setShowPendingInvitations] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
   const navigate = useNavigate();
+
+  // Mock pending invitations data
+  const pendingInvitations = [
+    {
+      id: 1,
+      userName: "John Doe",
+      userEmail: "john@example.com",
+      userAvatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
+      message: "John Doe wants to join your space",
+      date: "2024-01-15",
+      timeJoined: "10:30 AM"
+    },
+    {
+      id: 2,
+      userName: "Jane Smith",
+      userEmail: "jane@example.com",
+      userAvatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
+      message: "Jane Smith wants to join your space",
+      date: "2024-01-14",
+      timeJoined: "2:45 PM"
+    },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,6 +80,22 @@ const UserPage = () => {
       setInviteEmail("");
       setShowInvitePopup(false);
     }
+  };
+
+  const handleAcceptInvitation = (invitationId) => {
+    console.log(`Accepting invitation: ${invitationId}`);
+    // Here you would typically accept the invitation via API
+    alert("Invitation accepted!");
+    // Remove from pending invitations
+    // In real app, this would update the state or refetch data
+  };
+
+  const handleDeclineInvitation = (invitationId) => {
+    console.log(`Declining invitation: ${invitationId}`);
+    // Here you would typically decline the invitation via API
+    alert("Invitation declined!");
+    // Remove from pending invitations
+    // In real app, this would update the state or refetch data
   };
 
   return (
@@ -146,6 +185,12 @@ const UserPage = () => {
               >
                 Add Member
               </button>
+              <button 
+                onClick={() => setShowPendingInvitations(true)} 
+                className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
+              >
+                Pending Invites
+              </button>
             </div>
           </div>
 
@@ -179,12 +224,18 @@ const UserPage = () => {
           </div>
           
           {/* Add Member Button - Mobile */}
-          <div className="md:hidden flex justify-end mb-6">
+          <div className="md:hidden flex justify-end gap-2 mb-6">
             <button 
               onClick={handleInviteMember} 
               className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
             >
               Add Member
+            </button>
+            <button 
+              onClick={() => setShowPendingInvitations(true)} 
+              className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
+            >
+              Pending Invites
             </button>
           </div>
 
@@ -467,6 +518,63 @@ const UserPage = () => {
     </div>
   </div>
 )}
+
+      {/* PENDING INVITATIONS POPUP */}
+      {showPendingInvitations && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-[500px] max-w-[90%] max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-black">Pending Invitations</h3>
+              <button
+                onClick={() => setShowPendingInvitations(false)}
+                className="text-white hover:text-gray-300"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+            
+            {pendingInvitations.length > 0 ? (
+              <div className="space-y-4">
+                {pendingInvitations.map((invitation) => (
+                  <div key={invitation.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <img
+                        src={invitation.userAvatar}
+                        alt={invitation.userName}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-black">{invitation.userName}</h4>
+                        <p className="text-sm text-gray-600">{invitation.userEmail}</p>
+                        <p className="text-xs text-gray-500">Joined: {invitation.date} at {invitation.timeJoined}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-700 mb-3">{invitation.message}</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleAcceptInvitation(invitation.id)}
+                        className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => handleDeclineInvitation(invitation.id)}
+                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No pending invitations</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       </div>
 
