@@ -11,6 +11,8 @@ import {
 
 const UserPage = () => {
   const [isFocused, setIsFocused] = useState(false);
+  const [showInvitePopup, setShowInvitePopup] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
   const editorRef = useRef(null);
   const navigate = useNavigate();
 
@@ -19,6 +21,21 @@ const UserPage = () => {
     const selection = window.getSelection();
     if (!selection || selection.toString() === "") return;
     document.execCommand(command, false, null);
+  };
+
+  const handleInviteMember = () => {
+    setShowInvitePopup(true);
+  };
+
+  const sendInvite = () => {
+    if (inviteEmail.trim()) {
+      // Here you would typically send an invitation via API
+      console.log(`Inviting member: ${inviteEmail}`);
+      // For demo purposes, we'll just show a success message
+      alert(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail("");
+      setShowInvitePopup(false);
+    }
   };
 
   return (
@@ -55,7 +72,7 @@ const UserPage = () => {
             <h1 className="text-3xl font-bold">Zeldrick’s Space</h1>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-xs text-gray-400">(3 Members)</span>
-              <button className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition">
+              <button onClick={handleInviteMember} className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition">
                 Add Member
               </button>
             </div>
@@ -264,6 +281,108 @@ const UserPage = () => {
             </div>
           </div>
         </div>
+
+{/* INVITE POPUP */}
+{showInvitePopup && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+    <div className="bg-[#E6E6E6] rounded-2xl w-[420px] max-w-[90vw] p-6 shadow-xl">
+      
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-black">Add Member</h2>
+        <button
+          onClick={() => setShowInvitePopup(false)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* INVITATION LINK */}
+      <div className="mb-4">
+        <p className="text-sm font-medium text-black mb-1">
+          Invitation Link
+        </p>
+        <div className="flex items-center justify-between bg-white px-3 py-1 rounded-md border border-gray-300">
+          <span className="text-xs text-gray-600 truncate flex-1">
+            immaculearn.collab.app/spaces/sample92629
+          </span>
+          <button className="text-gray-500 hover:text-black text-sm ml-2">
+            Copy Link
+          </button>
+        </div>
+      </div>
+
+      {/* INPUT */}
+      <div className="mb-4">
+        <p className="text-sm font-medium text-black mb-1">
+          Type username or email
+        </p>
+        <input
+          type="text"
+          value={inviteEmail}
+          onChange={(e) => setInviteEmail(e.target.value)}
+          className="
+            w-full
+            px-3
+            py-2
+            rounded-md
+            border
+            border-purple-500
+            bg-white
+            text-black
+            outline-none
+            focus:ring-2
+            focus:ring-purple-500
+          "
+        />
+      </div>
+
+      {/* SUGGESTED USERS */}
+      <div>
+        <p className="text-sm font-medium text-black mb-2">
+          Suggested Users
+        </p>
+
+        <div className="space-y-3">
+          {[
+            {
+              name: "Raecell Ann Galvez",
+              email: "raecellanngalvez@gmail.com",
+              avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
+            },
+            {
+              name: "Nathaniel Faborada",
+              email: "faboradanathaniel@gmail.com",
+              avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
+            },
+            {
+              name: "Wilson Esmabe",
+              email: "wilsonesmabe2003@gmail.com",
+              avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/wilson_fw2qoz.jpg",
+            },
+          ].map((user, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-3 bg-transparent hover:bg-gray-200 px-2 py-2 rounded-lg cursor-pointer"
+            >
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-8 h-8 rounded-full"
+              />
+              <div className="text-sm">
+                <p className="font-medium text-black">{user.name}</p>
+                <p className="text-xs text-gray-600">{user.email}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
 
       {/* PLACEHOLDER STYLE */}
