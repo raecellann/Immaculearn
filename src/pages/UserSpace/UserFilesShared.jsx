@@ -30,26 +30,29 @@ const UserFilesShared = () => {
 
         {/* TABS */}
         <div className="flex justify-center gap-[120px] border-b border-gray-700 pb-4 mb-6">
-          <button className="text-white text-xl font-semibold border-b-2 border-white pb-2">
+          <button 
+            className="text-gray-400 hover:text-white text-xl transition bg-transparent"
+            onClick={() => navigate("/user-space-zj")}
+          >
             Stream
           </button>
 
           <button
-            className="text-gray-400 text-xl hover:text-white transition"
+            className="text-gray-400 text-xl hover:text-white transition bg-transparent"
             onClick={() => navigate("/user-space-zj/tasks")}
           >
             Tasks
           </button>
 
           <button
-            className="text-gray-400 text-xl hover:text-white transition"
+            className="text-white font-semibold border-b-2 border-white pb-2 text-xl bg-transparent"
             onClick={() => navigate("/user-space-zj/files-shared")}
           >
             Files Shared
           </button>
 
           <button
-            className="text-gray-400 text-xl hover:text-white transition"
+            className="text-gray-400 text-xl hover:text-white transition bg-transparent"
             onClick={() => navigate("/user-space-zj/people")}
           >
             People

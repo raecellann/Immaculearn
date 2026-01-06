@@ -49,6 +49,18 @@ const TaskPage = () => {
       space: "Nathaniel's Space",
       status: "Missing",
     },
+        {
+      name: "Individual Activity 📄",
+      deadline: "May 1, 2025",
+      space: "Keziah's Space",
+      status: "Done",
+    },
+        {
+      name: "Personal Reflection 📄",
+      deadline: "April 12, 2025",
+      space: "Zeldrick's Space",
+      status: "Missing",
+    },
   ]);
 
   const handleStatusChange = (index, newStatus) => {

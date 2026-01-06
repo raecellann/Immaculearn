@@ -72,25 +72,25 @@ const UserTaskPage = () => {
         {/* TABS */}
         <div className="flex justify-center gap-[120px] border-b border-white/10 mb-6 text-xl">
           <button
-            className="pb-3 text-white/70 hover:text-white"
+            className="pb-3 text-white/70 hover:text-white bg-transparent"
             onClick={() => navigate("/user-space-zj")}
           >
             Stream
           </button>
           <button
-            className="pb-3 border-b-2 border-white font-medium"
+            className="pb-3 border-b-2 border-white font-medium bg-transparent"
             onClick={() => navigate("/user-space-zj/tasks")}
           >
             Tasks
           </button>
           <button
-            className="pb-3 text-white/70 hover:text-white"
+            className="pb-3 text-white/70 hover:text-white bg-transparent"
             onClick={() => navigate("/user-space-zj/files-shared")}
           >
             Files Shared
           </button>
           <button
-            className="pb-3 text-white/70 hover:text-white"
+            className="pb-3 text-white/70 hover:text-white bg-transparent"
             onClick={() => navigate("/user-space-zj/people")}
           >
             People

@@ -36,7 +36,7 @@ const UserPeoplePage = () => {
 
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition"
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition bg-transparent"
             >
               <FiChevronLeft />
               Back
