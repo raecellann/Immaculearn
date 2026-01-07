@@ -333,7 +333,7 @@ const AdminFilesSharedPage = () => {
               {/* CREATE FILE BUTTON */}
               <button 
                 onClick={() => {
-                  navigate("/create-file-admin");
+                  navigate("/create-document");
                   setShowCreateUploadModal(false);
                 }}
                 className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center space-x-2 bg-white mb-6"

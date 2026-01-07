@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
 import {
   FiArrowLeft,
@@ -25,6 +26,7 @@ import {
 } from "react-icons/fi";
 
 const CreateDocumentPage = () => {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("Thesis Chapter 2 Participation");
   const [isAlignmentDropdownOpen, setIsAlignmentDropdownOpen] = useState(false);
   const [selectedAlignment, setSelectedAlignment] = useState("left");
@@ -529,7 +531,10 @@ const CreateDocumentPage = () => {
         <div className="hidden lg:block bg-white px-8 py-5 border-b">
         {/* ================= HEADER ================= */}
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <div 
+              className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
+              onClick={() => navigate(-1)}
+            >
               <FiArrowLeft />
               <span>Back</span>
             </div>
