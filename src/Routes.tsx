@@ -111,7 +111,7 @@ export default function Routes() {
       <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
       <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
 
-      <Route path="/admintaskpage" element={<AdminTaskPage />} />
+      <Route path="/admin-task-page" element={<AdminTaskPage />} />
       <Route path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />
 
         {/* ADMIN STUDENT ROUTES */}
