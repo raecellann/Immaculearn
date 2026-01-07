@@ -643,19 +643,19 @@ const CreateDocumentPage = () => {
               className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${isClient && document.queryCommandState('bold') ? 'text-blue-500 bg-blue-100' : ''}`}
               onMouseDown={(e) => handleMouseDown(e, applyBold)}
               title="Bold"
-              size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16}
+              size={windowWidth < 640 ? 32 : windowWidth < 768 ? 28 : 24}
             />
             <FiItalic
               className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${isClient && document.queryCommandState('italic') ? 'text-blue-500 bg-blue-100' : ''}`}
               onMouseDown={(e) => handleMouseDown(e, applyItalic)}
               title="Italic"
-              size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16}
+              size={windowWidth < 640 ? 32 : windowWidth < 768 ? 28 : 24}
             />
             <FiUnderline
               className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${isClient && document.queryCommandState('underline') ? 'text-blue-500 bg-blue-100' : ''}`}
               onMouseDown={(e) => handleMouseDown(e, applyUnderline)}
               title="Underline"
-              size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16}
+              size={windowWidth < 640 ? 32 : windowWidth < 768 ? 28 : 24}
             />
             <div className="relative">
               <div
