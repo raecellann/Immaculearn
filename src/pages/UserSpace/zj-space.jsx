@@ -15,12 +15,35 @@ import {
 const UserPage = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [showInvitePopup, setShowInvitePopup] = useState(false);
+  const [showPendingInvitations, setShowPendingInvitations] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
   const navigate = useNavigate();
+
+  // Mock pending invitations data
+  const [pendingInvitations, setPendingInvitations] = useState([
+    {
+      id: 1,
+      userName: "John Doe",
+      userEmail: "john@example.com",
+      userAvatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
+      message: "John Doe wants to join your space",
+      date: "2024-01-15",
+      timeJoined: "10:30 AM"
+    },
+    {
+      id: 2,
+      userName: "Jane Smith",
+      userEmail: "jane@example.com",
+      userAvatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
+      message: "Jane Smith wants to join your space",
+      date: "2024-01-14",
+      timeJoined: "2:45 PM"
+    },
+  ]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,6 +69,22 @@ const UserPage = () => {
 
   const handleInviteMember = () => {
     setShowInvitePopup(true);
+  };
+
+  const handleAcceptInvitation = (invitationId) => {
+    console.log(`Accepting invitation: ${invitationId}`);
+    // Here you would typically accept the invitation via API
+    alert("Invitation accepted!");
+    // Remove from pending invitations
+    setPendingInvitations(prev => prev.filter(invite => invite.id !== invitationId));
+  };
+
+  const handleDeclineInvitation = (invitationId) => {
+    console.log(`Declining invitation: ${invitationId}`);
+    // Here you would typically decline the invitation via API
+    alert("Invitation declined!");
+    // Remove from pending invitations
+    setPendingInvitations(prev => prev.filter(invite => invite.id !== invitationId));
   };
 
   const sendInvite = () => {
@@ -146,6 +185,12 @@ const UserPage = () => {
               >
                 Add Member
               </button>
+              <button 
+                onClick={() => setShowPendingInvitations(true)} 
+                className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
+              >
+                Pending Invites
+              </button>
             </div>
           </div>
 
@@ -179,12 +224,18 @@ const UserPage = () => {
           </div>
           
           {/* Add Member Button - Mobile */}
-          <div className="md:hidden flex justify-end mb-6">
+          <div className="md:hidden flex justify-end gap-2 mb-6">
             <button 
               onClick={handleInviteMember} 
               className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
             >
               Add Member
+            </button>
+            <button 
+              onClick={() => setShowPendingInvitations(true)} 
+              className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
+            >
+              Pending Invites
             </button>
           </div>
 
@@ -367,106 +418,165 @@ const UserPage = () => {
           </div>
         </div>
 
-{/* INVITE POPUP */}
-{showInvitePopup && (
-  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-    <div className="bg-[#E6E6E6] rounded-2xl w-[420px] max-w-[90vw] p-6 shadow-xl">
-      
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-black">Add Member</h2>
-        <button
-          onClick={() => setShowInvitePopup(false)}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          ✕
-        </button>
-      </div>
+        {/* PENDING INVITATIONS POPUP */}
+        {showPendingInvitations && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Pending Invitations</h2>
+                <button
+                  onClick={() => setShowPendingInvitations(false)}
+                  className="text-gray-400 hover:text-white p-1 bg-transparent"
+                >
+                  <FiX size={24} />
+                </button>
+              </div>
 
-      {/* INVITATION LINK */}
-      <div className="mb-4">
-        <p className="text-sm font-medium text-black mb-1">
-          Invitation Link
-        </p>
-        <div className="flex items-center justify-between bg-white px-3 py-1 rounded-md border border-gray-300">
-          <span className="text-xs text-gray-600 truncate flex-1">
-            immaculearn.collab.app/spaces/sample92629
-          </span>
-          <button className="text-gray-500 hover:text-black text-sm ml-2">
-            Copy Link
-          </button>
-        </div>
-      </div>
-
-      {/* INPUT */}
-      <div className="mb-4">
-        <p className="text-sm font-medium text-black mb-1">
-          Type username or email
-        </p>
-        <input
-          type="text"
-          value={inviteEmail}
-          onChange={(e) => setInviteEmail(e.target.value)}
-          className="
-            w-full
-            px-3
-            py-2
-            rounded-md
-            border
-            border-purple-500
-            bg-white
-            text-black
-            outline-none
-            focus:ring-2
-            focus:ring-purple-500
-          "
-        />
-      </div>
-
-      {/* SUGGESTED USERS */}
-      <div>
-        <p className="text-sm font-medium text-black mb-2">
-          Suggested Users
-        </p>
-
-        <div className="space-y-3">
-          {[
-            {
-              name: "Raecell Ann Galvez",
-              email: "raecellanngalvez@gmail.com",
-              avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
-            },
-            {
-              name: "Nathaniel Faborada",
-              email: "faboradanathaniel@gmail.com",
-              avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
-            },
-            {
-              name: "Wilson Esmabe",
-              email: "wilsonesmabe2003@gmail.com",
-              avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/wilson_fw2qoz.jpg",
-            },
-          ].map((user, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 bg-transparent hover:bg-gray-200 px-2 py-2 rounded-lg cursor-pointer"
-            >
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-8 h-8 rounded-full"
-              />
-              <div className="text-sm">
-                <p className="font-medium text-black">{user.name}</p>
-                <p className="text-xs text-gray-600">{user.email}</p>
+              {/* Invitations List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {pendingInvitations.length === 0 ? (
+                  <p className="text-gray-400 text-center py-4">No pending invitations</p>
+                ) : (
+                  pendingInvitations.map((invitation) => (
+                    <div key={invitation.id} className="bg-[#2A2F3A] rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={invitation.userAvatar}
+                          alt={invitation.userName}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-medium">{invitation.userName}</h3>
+                          <p className="text-sm text-gray-400">{invitation.userEmail}</p>
+                          <p className="text-sm mt-1">{invitation.message}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs text-gray-500">{invitation.date} • {invitation.timeJoined}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3 mt-3">
+                        <button
+                          onClick={() => handleDeclineInvitation(invitation.id)}
+                          className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition"
+                        >
+                          Decline
+                        </button>
+                        <button
+                          onClick={() => handleAcceptInvitation(invitation.id)}
+                          className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition"
+                        >
+                          Accept
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+          </div>
+        )}
+
+        {/* INVITE POPUP */}
+        {showInvitePopup && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-[#E6E6E6] rounded-2xl w-[420px] max-w-[90vw] p-6 shadow-xl">
+              
+              {/* HEADER */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-black">Add Member</h2>
+                <button
+                  onClick={() => setShowInvitePopup(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* INVITATION LINK */}
+              <div className="mb-4">
+                <p className="text-sm font-medium text-black mb-1">
+                  Invitation Link
+                </p>
+                <div className="flex items-center justify-between bg-white px-3 py-1 rounded-md border border-gray-300">
+                  <span className="text-xs text-gray-600 truncate flex-1">
+                    immaculearn.collab.app/spaces/sample92629
+                  </span>
+                  <button className="text-gray-500 hover:text-black text-sm ml-2">
+                    Copy Link
+                  </button>
+                </div>
+              </div>
+
+              {/* INPUT */}
+              <div className="mb-4">
+                <p className="text-sm font-medium text-black mb-1">
+                  Type username or email
+                </p>
+                <input
+                  type="text"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="
+                    w-full
+                    px-3
+                    py-2
+                    rounded-md
+                    border
+                    border-purple-500
+                    bg-white
+                    text-black
+                    outline-none
+                    focus:ring-2
+                    focus:ring-purple-500
+                  "
+                />
+              </div>
+
+              {/* SUGGESTED USERS */}
+              <div>
+                <p className="text-sm font-medium text-black mb-2">
+                  Suggested Users
+                </p>
+
+                <div className="space-y-3">
+                  {[
+                    {
+                      name: "Raecell Ann Galvez",
+                      email: "raecellanngalvez@gmail.com",
+                      avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
+                    },
+                    {
+                      name: "Nathaniel Faborada",
+                      email: "faboradanathaniel@gmail.com",
+                      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
+                    },
+                    {
+                      name: "Wilson Esmabe",
+                      email: "wilsonesmabe2003@gmail.com",
+                      avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/wilson_fw2qoz.jpg",
+                    },
+                  ].map((user, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 bg-transparent hover:bg-gray-200 px-2 py-2 rounded-lg cursor-pointer"
+                    >
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <div className="text-sm">
+                        <p className="font-medium text-black">{user.name}</p>
+                        <p className="text-xs text-gray-600">{user.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
 
