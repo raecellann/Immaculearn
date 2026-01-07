@@ -56,6 +56,8 @@ import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx"; //done r
 {/* DDOCUMENT EDITOR */}
 import CreateDocumentPage from "./pages/Create-Document/CreateDocument.jsx";
 
+import CalendarPage from "./pages/Calendar/Calendar.jsx";
+
 import ParentLogin from "./pages/parent-login/parentlogin.jsx";
 import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
 import { SignInPageWithOAuth } from "./pages/test-page/signInPageWithOAuth.jsx";
@@ -93,6 +95,7 @@ export default function Routes() {
       } />
       
       <Route path="/accsettings" element={<ProfilePage />} />
+      <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/grade-viewing" element={<GradeViewing />} />
       <Route path="/task" element={<TaskPage />} />
       <Route path="/notifications" element={<NotificationPage />} />

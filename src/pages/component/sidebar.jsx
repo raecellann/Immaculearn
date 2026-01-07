@@ -40,6 +40,11 @@ const Sidebar = () => {
 
   const privateItems = [
     {
+      icon: <Calendar size={20} />,
+      label: "Calendar",
+      path: "/calendar",
+    },
+    {
       icon: <ClipboardList size={20} />,
       label: "Grade Viewing",
       path: "/grade-viewing",
