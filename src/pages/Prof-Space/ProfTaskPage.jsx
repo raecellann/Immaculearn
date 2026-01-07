@@ -1,10 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import ProfSidebar from "../component/profsidebar";
+import { FiMenu, FiX } from "react-icons/fi";
 
 const ProfTaskPage = () => {
   const navigate = useNavigate();
   
+  /* ================= HEADER + SIDEBAR ================= */
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Task status styles
   const statusStyles = {
     Done: "border-2 border-[#00B865] text-[#10E164]",
@@ -56,131 +76,228 @@ const ProfTaskPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
-      {/* PROFESSOR SIDEBAR */}
-      <ProfSidebar />
+    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <div className="hidden lg:block">
+        <ProfSidebar />
+      </div>
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        {/* HEADER / BANNER */}
-        <div className="relative mb-6">
+      {/* ================= MOBILE OVERLAY ================= */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* ================= MOBILE/TABLET SIDEBAR ================= */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        md:block lg:hidden`}
+      >
+        <ProfSidebar />
+      </div>
+
+      {/* ================= MAIN ================= */}
+      <div className="flex-1 flex flex-col w-full">
+        {/* ================= HEADER ================= */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
+          flex items-center gap-4 fixed top-0 left-0 right-0 z-30
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+        >
+          <button
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            className="bg-transparent border-none text-white text-2xl p-0"
+          >
+            {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
+          <h1 className="text-xl font-bold">CS Thesis 2 Space</h1>
+        </div>
+
+        {/* HEADER SPACER */}
+        <div className="lg:hidden h-16" />
+
+        {/* ================= COVER ================= */}
+        <div className="relative">
           <img
             src="/src/assets/UserSpace/cover.png"
-            alt="Space Banner"
-            className="w-full h-48 object-cover opacity-90 rounded-b-xl rounded-t-none"
+            className="w-full h-32 sm:h-40 md:h-48 object-cover"
+            alt="cover"
           />
+          <div className="absolute inset-0 bg-black/50" />
+        </div>
 
-          {/* TITLE */}
-          <div className="absolute top-0 z-10">
-            <div className="bg-black text-white px-10 py-3 rounded-b-[1rem] rounded-t-none shadow-lg text-2xl font-extrabold text-left">
-              CS Thesis 2 Space
+        <div className="p-4 sm:p-6">
+          {/* ================= DESKTOP TITLE ================= */}
+          <div className="hidden md:block mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold">CS Thesis 2 Space</h1>
+          </div>
+
+          {/* ================= TABS ================= */}
+          <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
+            <div className="flex justify-center min-w-max mx-auto px-4">
+              <div className="flex space-x-4 sm:space-x-8 md:space-x-12 lg:space-x-16 xl:gap-[120px]">
+                <button
+                  className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
+                  onClick={() => navigate("/prof-space-thesis")}
+                >
+                  Stream
+                </button>
+                <button className="text-white text-base sm:text-lg md:text-xl font-semibold border-b-2 border-white pb-2 px-1 whitespace-nowrap bg-transparent">
+                  Tasks
+                </button>
+                <button
+                  className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
+                  onClick={() => navigate("/prof-space-thesis/files-shared")}
+                >
+                  Files Shared
+                </button>
+                <button
+                  className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
+                  onClick={() => navigate("/prof-space-thesis/people")}
+                >
+                  People
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* TABS */}
-        <div className="flex justify-center gap-[120px] border-b border-white/10 mb-6 text-xl">
-          <button
-            className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/prof-space-thesis")}
-          >
-            Stream
-          </button>
-          <button
-            className="pb-3 border-b-2 border-white font-medium"
-            onClick={() => navigate("/prof-space-thesis/tasks")}
-          >
-            Tasks
-          </button>
-          <button
-            className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/prof-space-thesis/files-shared")}
-          >
-            Files Shared
-          </button>
-          <button
-            className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/prof-space-thesis/people")}
-          >
-            People
-          </button>
-        </div>
+          {/* ================= TASKS ================= */}
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-xl font-semibold mb-6">Assigned Tasks</h2>
 
-        {/* TASK TABLE */}
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            Assigned Tasks 
-          </h2>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-gray-600 text-left text-gray-400">
-                <th className="py-3 px-4 font-medium">Status</th>
-                <th className="py-3 px-4 font-medium">Task Name</th>
-                <th className="py-3 px-4 font-medium">Assigned To</th>
-                <th className="py-3 px-4 font-medium">Deadline</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tasks.map((task, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-700 hover:bg-[#1E222A] transition"
-                >
-                  <td className="py-3 px-4">
-                    <div className="relative inline-block">
-                      <button
-                        onClick={() =>
-                          setOpenIndex(openIndex === index ? null : index)
-                        }
-                        className={`bg-black px-4 py-1 rounded-full ${
-                          statusStyles[task.status] || 'border-2 border-gray-500 text-gray-300'
-                        } flex items-center gap-2 text-sm`}
-                      >
-                        <span className="font-medium">{task.status}</span>
-                        <span className="text-xs">▼</span>
-                      </button>
-
-                      {openIndex === index && (
-                        <div className="absolute left-0 mt-2 w-44 bg-black border border-gray-700 rounded-lg p-3 z-50">
-                          <div className="flex flex-col gap-2">
-                            {Object.keys(statusStyles).map((st) => (
-                              <button
-                                key={st}
-                                onClick={() => handleStatusChange(index, st)}
-                                className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
-                              >
-                                {st}
-                              </button>
-                            ))}
-                          </div>
+            {/* DESKTOP TABLE */}
+            <div className="hidden md:block">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-600 text-gray-400 text-left">
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Task Name</th>
+                    <th className="py-3 px-4">Assigned To</th>
+                    <th className="py-3 px-4">Deadline</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map((task, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-gray-700 hover:bg-[#1E222A]"
+                    >
+                      <td className="py-3 px-4">
+                        <div className="relative inline-block">
+                          <button
+                            onClick={() =>
+                              setOpenIndex(openIndex === index ? null : index)
+                            }
+                            className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.status]}`}
+                          >
+                            {task.status} ▼
+                          </button>
+                          {openIndex === index && (
+                            <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50">
+                              <div className="flex flex-col gap-2">
+                                {Object.keys(statusStyles).map((st) => (
+                                  <button
+                                    key={st}
+                                    onClick={() => handleStatusChange(index, st)}
+                                    className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
+                                  >
+                                    {st}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </td>
+                      </td>
+                      <td className="py-3 px-4 text-blue-400 hover:underline">
+                        <a href="/prof-task-view">
+                          {task.name}
+                        </a>
+                      </td>
+                      <td className="py-3 px-4">{task.assignedTo}</td>
+                      <td className="py-3 px-4">{task.deadline}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              <div className="mt-6 flex justify-end">
+                <button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                  onClick={() => navigate("/prof-space-susan/create-task")}
+                >
+                  + Create Task
+                </button>
+              </div>
+            </div>
 
-                  <td className="py-3 px-4">
+            {/* MOBILE / TABLET CARDS */}
+            <div className="md:hidden space-y-4">
+              {tasks.map((task, index) => (
+                <div
+                  key={index}
+                  className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <p className="text-sm font-semibold">{task.name}</p>
+                    <button
+                      onClick={() =>
+                        setOpenIndex(openIndex === index ? null : index)
+                      }
+                      className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.status]}`}
+                    >
+                      {task.status}
+                    </button>
+                  </div>
+
+                  <p className="text-sm text-gray-400">
+                    Assigned To: <span className="text-white">{task.assignedTo}</span>
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Deadline: <span className="text-white">{task.deadline}</span>
+                  </p>
+                  
+                  {openIndex === index && (
+                    <div className="mt-3 pt-3 border-t border-gray-700">
+                      <div className="flex flex-col gap-2">
+                        {Object.keys(statusStyles).map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => {
+                              handleStatusChange(index, st);
+                              setOpenIndex(null);
+                            }}
+                            className={`w-full text-center px-4 py-2 rounded-full ${statusStyles[st]} text-sm font-medium`}
+                          >
+                            Mark as {st}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="mt-3 pt-3 border-t border-gray-700">
                     <a
                       href="/prof-task-view"
-                      className="text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-2"
+                      className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
                     >
-                      {task.name}
+                      View Details
                     </a>
-                  </td>
-
-                  <td className="py-3 px-4">{task.assignedTo}</td>
-                  <td className="py-3 px-4">{task.deadline}</td>
-                </tr>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-          
-          <div className="mt-6 flex justify-end">
-            <button 
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-              onClick={() => navigate("/prof-space-susan/create-task")}
-            >
-              + Create Task
-            </button>
+              
+              <button 
+                className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                onClick={() => navigate("/prof-space-susan/create-task")}
+              >
+                <span className="text-lg">+</span> Create New Task
+              </button>
+            </div>
           </div>
         </div>
       </div>
