@@ -20,6 +20,8 @@ import {
   FiDownload,
   FiSave,
   FiCheck,
+  FiMenu,
+  FiX,
 } from "react-icons/fi";
 
 const CreateDocumentPage = () => {
@@ -48,6 +50,9 @@ const CreateDocumentPage = () => {
   const [customMargins, setCustomMargins] = useState({ top: '2.54', right: '2.54', bottom: '2.54', left: '2.54' });
   const [showCustomSizeDialog, setShowCustomSizeDialog] = useState(false);
   const [showCustomMarginDialog, setShowCustomMarginDialog] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(0);
 
   const paperSizes = {
     Letter: { width: "8.5in", height: "11in" },
@@ -74,7 +79,6 @@ const CreateDocumentPage = () => {
 
   const editorRef = useRef(null);
   const saveTimeoutRef = useRef(null);
-  const [isClient, setIsClient] = useState(false);
 
   const applyFormatting = (command, value = null) => {
     if (!isClient) return;
@@ -471,18 +475,59 @@ const CreateDocumentPage = () => {
     }, 2000); // Auto-save after 2 seconds of inactivity
   };
 
-  // Set client-side flag
+  // Set client-side flag and window width
   useEffect(() => {
     setIsClient(true);
+    setWindowWidth(window.innerWidth);
+    
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
     <div className="flex min-h-screen bg-[#F3F4F6]">
-      <Sidebar />
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
 
-      <div className="flex-1">
+      {/* ================= MOBILE OVERLAY ================= */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* ================= MOBILE/TABLET SIDEBAR ================= */}
+      <div
+        className={"fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 " + 
+        (mobileSidebarOpen ? "translate-x-0" : "-translate-x-full") + 
+        " md:block lg:hidden"}
+      >
+        <Sidebar />
+      </div>
+
+      {/* ================= MAIN ================= */}
+      <div className="flex-1 lg:ml-0">
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-white px-4 py-3 border-b flex items-center justify-between">
+          <button
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            className="p-2 text-gray-600 hover:text-gray-900"
+          >
+            {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
+          <h1 className="text-lg font-semibold text-gray-900">Document Editor</h1>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:block bg-white px-8 py-5 border-b">
         {/* ================= HEADER ================= */}
-        <div className="bg-white px-8 py-5 border-b">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
               <FiArrowLeft />
@@ -554,25 +599,25 @@ const CreateDocumentPage = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
             <label className="text-sm font-medium text-gray-700">
               Document Title
             </label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full max-w-3xl px-5 py-3 border-2 rounded-xl text-lg font-semibold focus:outline-none focus:border-blue-500"
+              className="w-full sm:max-w-3xl px-3 sm:px-5 py-3 border-2 rounded-xl text-base sm:text-lg font-semibold focus:outline-none focus:border-blue-500"
             />
           </div>
 
           {/* Active Editors - Google Docs Style */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">Active editors:</span>
-            <div className="flex items-center -space-x-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-xs sm:text-sm text-gray-600">Active editors:</span>
+            <div className="flex items-center -space-x-1 sm:-space-x-2">
               <div className="relative">
                 <img
                   src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/zj_ouikks.jpg"
-                  className="w-7 h-7 rounded-full object-cover border-2 border-white"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border-2 border-white"
                   title="Zeldrick Jesus"
                 />
                 <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white"></div>
@@ -580,53 +625,56 @@ const CreateDocumentPage = () => {
               <div className="relative">
                 <img
                   src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/nath_tzkpl5.jpg"
-                  className="w-7 h-7 rounded-full object-cover border-2 border-white"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border-2 border-white"
                   title="Nathaniel"
                 />
                 <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white"></div>
               </div>
             </div>
-            <span className="text-xs text-gray-500">2 people editing</span>
+            <span className="text-xs sm:text-sm text-gray-500">2 people editing</span>
           </div>
         </div>
 
         {/* ================= TOOLBAR ================= */}
-        <div className="bg-[#EFEFEF] px-8 py-3 flex items-center gap-6 border-b text-gray-800">
+        <div className="bg-[#EFEFEF] px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 flex flex-wrap items-center justify-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 border-b text-gray-800">
           {/* TEXT STYLE */}
-          <div className="flex items-center gap-4 text-lg">
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3 text-lg sm:text-xl md:text-lg lg:text-lg">
             <FiBold
-              className={`cursor-pointer ${isClient && document.queryCommandState('bold') ? 'text-blue-500 bg-blue-100 rounded' : ''}`}
+              className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${isClient && document.queryCommandState('bold') ? 'text-blue-500 bg-blue-100' : ''}`}
               onMouseDown={(e) => handleMouseDown(e, applyBold)}
               title="Bold"
+              size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16}
             />
             <FiItalic
-              className={`cursor-pointer ${isClient && document.queryCommandState('italic') ? 'text-blue-500 bg-blue-100 rounded' : ''}`}
+              className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${isClient && document.queryCommandState('italic') ? 'text-blue-500 bg-blue-100' : ''}`}
               onMouseDown={(e) => handleMouseDown(e, applyItalic)}
               title="Italic"
+              size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16}
             />
             <FiUnderline
-              className={`cursor-pointer ${isClient && document.queryCommandState('underline') ? 'text-blue-500 bg-blue-100 rounded' : ''}`}
+              className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${isClient && document.queryCommandState('underline') ? 'text-blue-500 bg-blue-100' : ''}`}
               onMouseDown={(e) => handleMouseDown(e, applyUnderline)}
               title="Underline"
+              size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16}
             />
             <div className="relative">
               <div
-                className="flex items-center gap-1 text-lg cursor-pointer"
+                className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors"
                 onClick={() =>
                   setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)
                 }
               >
-                <span className="text-sm">{selectedFontSize}</span>
-                <FiChevronDown className="text-sm" />
+                <span className="text-xs sm:text-sm md:text-sm lg:text-sm font-medium">{selectedFontSize}</span>
+                <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
               </div>
 
               {isFontSizeDropdownOpen && (
-                <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-48">
+                <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-48 sm:w-56">
                   {[8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72].map(
                     (size) => (
                       <div
                         key={size}
-                        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                        className="flex items-center gap-2 px-2 sm:px-3 py-2 cursor-pointer hover:bg-gray-100"
                         onMouseDown={(e) =>
                           handleMouseDown(e, () => {
                             applyFontSize(size);
@@ -635,16 +683,16 @@ const CreateDocumentPage = () => {
                         }
                       >
                         <span
-                          className="text-sm font-medium"
+                          className="text-xs sm:text-sm font-medium"
                           style={{ 
                             fontSize: `${Math.max(size, 12)}px`,
-                            minWidth: '20px',
+                            minWidth: '16px',
                             display: 'inline-block'
                           }}
                         >
                           T
                         </span>
-                        <span className="text-sm text-gray-600">{size}px</span>
+                        <span className="text-xs sm:text-sm text-gray-600">{size}px</span>
                       </div>
                     )
                   )}
@@ -658,16 +706,16 @@ const CreateDocumentPage = () => {
           {/* ALIGNMENT */}
           <div className="relative">
             <div
-              className="flex items-center gap-1 text-lg cursor-pointer"
+              className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors"
               onClick={() =>
                 setIsAlignmentDropdownOpen(!isAlignmentDropdownOpen)
               }
             >
-              {selectedAlignment === "left" && <FiAlignLeft />}
-              {selectedAlignment === "center" && <FiAlignCenter />}
-              {selectedAlignment === "right" && <FiAlignRight />}
-              {selectedAlignment === "justify" && <FiAlignJustify />}
-              <FiChevronDown className="text-sm" />
+              {selectedAlignment === "left" && <FiAlignLeft size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />}
+              {selectedAlignment === "center" && <FiAlignCenter size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />}
+              {selectedAlignment === "right" && <FiAlignRight size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />}
+              {selectedAlignment === "justify" && <FiAlignJustify size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />}
+              <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
             </div>
 
             {isAlignmentDropdownOpen && (
@@ -702,24 +750,32 @@ const CreateDocumentPage = () => {
           {/* COLOR */}
           <div className="relative">
             <div
-              className={`flex items-center gap-2 text-lg cursor-pointer ${selectedTextColor !== 'black' ? 'text-blue-500 bg-blue-100 rounded px-2 py-1' : ''}`}
+              className={`flex items-center gap-2 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${selectedTextColor !== 'black' ? 'text-blue-500 bg-blue-100' : ''}`}
               onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
               title="Text Color"
             >
               <div
-                className="w-4 h-4 rounded border border-gray-400"
+                className="w-4 h-4 sm:w-4 sm:h-4 rounded border border-gray-400"
                 style={{ backgroundColor: selectedTextColor }}
               />
-              <FiChevronDown className="text-sm" />
+              <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
             </div>
 
             {isColorDropdownOpen && (
-              <div className="absolute top-full mt-2 bg-white border rounded-xl shadow-lg z-20 p-3 w-[300px]">
+              <div className={`absolute top-full mt-2 bg-white border rounded-xl shadow-lg z-20 p-3 ${
+                windowWidth < 640 ? 'w-[280px] left-1/2 transform -translate-x-1/2' : 
+                windowWidth < 768 ? 'w-[300px] left-1/2 transform -translate-x-1/2' : 
+                'w-[320px] right-0'
+              }`}>
                 <div className="text-xs font-semibold mb-2 text-gray-700">
                   Text Color
                 </div>
 
-                <div className="grid grid-cols-6 gap-2 mb-3">
+                <div className={`grid gap-2 ${
+                  windowWidth < 640 ? 'grid-cols-3' : 
+                  windowWidth < 768 ? 'grid-cols-4' : 
+                  'grid-cols-6'
+                }`}>
                   {[
                     "black",
                     "green",
@@ -736,49 +792,19 @@ const CreateDocumentPage = () => {
                   ].map((color) => (
                     <button
                       key={color}
-                      className="w-8 h-8 rounded border border-black bg-white"
+                      className={`w-6 h-6 sm:w-8 sm:h-8 rounded border border-black bg-white ${
+                        windowWidth < 640 ? 'text-xs' : 'text-sm sm:text-base'
+                      }`}
+                      style={{
+                        backgroundColor: color === "transparent" ? "white" : color,
+                      }}
                       onMouseDown={(e) =>
                         handleMouseDown(e, () => applyTextColor(color))
                       }
                     >
-                      <span className="font-bold" style={{ color }}>
+                      <span className="font-bold" style={{ color: color === "transparent" ? "black" : "white" }}>
                         A
                       </span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="text-xs font-semibold mb-2 text-gray-700">
-                  Highlight
-                </div>
-
-                <div className="grid grid-cols-6 gap-2">
-                  {[
-                    "transparent",
-                    "yellow",
-                    "lime",
-                    "cyan",
-                    "pink",
-                    "orange",
-                    "purple",
-                    "red",
-                    "blue",
-                    "green",
-                    "gold",
-                    "gray",
-                  ].map((color) => (
-                    <button
-                      key={color}
-                      className="w-8 h-8 rounded border"
-                      style={{
-                        backgroundColor:
-                          color === "transparent" ? "white" : color,
-                      }}
-                      onMouseDown={(e) =>
-                        handleMouseDown(e, () => applyHighlight(color))
-                      }
-                    >
-                      <span className="font-bold text-black">A</span>
                     </button>
                   ))}
                 </div>
@@ -791,12 +817,12 @@ const CreateDocumentPage = () => {
           {/* IMAGE */}
           <div className="relative">
             <div
-              className="flex items-center gap-1 text-lg cursor-pointer"
+              className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors"
               onClick={() => setIsImageDropdownOpen(!isImageDropdownOpen)}
               title="Crop and Rotate"
             >
-              <FiImage />
-              <FiChevronDown className="text-sm" />
+              <FiImage size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />
+              <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
             </div>
 
             {isImageDropdownOpen && (
@@ -824,12 +850,12 @@ const CreateDocumentPage = () => {
           </div>
           <div className="relative">
             <div
-              className={`flex items-center gap-1 text-lg cursor-pointer ${selectedPaperSize !== 'A4' ? 'text-blue-500 bg-blue-100 rounded px-2 py-1' : ''}`}
+              className={`flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${selectedPaperSize !== 'A4' ? 'text-blue-500 bg-blue-100' : ''}`}
               onClick={() => setIsPaperSizeDropdownOpen(!isPaperSizeDropdownOpen)}
               title="Paper Size"
             >
-              <FiFile className="text-sm" />
-              <FiChevronDown className="text-sm" />
+              <FiFile className="text-sm" size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />
+              <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
             </div>
 
             {isPaperSizeDropdownOpen && (
@@ -851,12 +877,12 @@ const CreateDocumentPage = () => {
           </div>
           <div className="relative">
             <div
-              className={`flex items-center gap-1 text-lg cursor-pointer ${selectedMargin !== 'Normal' ? 'text-blue-500 bg-blue-100 rounded px-2 py-1' : ''}`}
+              className={`flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${selectedMargin !== 'Normal' ? 'text-blue-500 bg-blue-100' : ''}`}
               onClick={() => setIsMarginDropdownOpen(!isMarginDropdownOpen)}
               title="Margins"
             >
-              <FiColumns className="text-sm" />
-              <FiChevronDown className="text-sm" />
+              <FiColumns className="text-sm" size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />
+              <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
             </div>
 
             {isMarginDropdownOpen && (
@@ -884,14 +910,14 @@ const CreateDocumentPage = () => {
           {/* FONT FAMILY */}
           <div className="relative">
             <div
-              className={`flex items-center gap-1 text-lg cursor-pointer ${selectedFont !== 'Inter' ? 'text-blue-500 bg-blue-100 rounded px-2 py-1' : ''}`}
+              className={`flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${selectedFont !== 'Inter' ? 'text-blue-500 bg-blue-100' : ''}`}
               onClick={() => setIsFontDropdownOpen(!isFontDropdownOpen)}
               title="Font Family"
             >
-              <span className="text-sm" style={{ fontFamily: selectedFont }}>
+              <span className="text-xs sm:text-sm font-medium" style={{ fontFamily: selectedFont }}>
                 {selectedFont}
               </span>
-              <FiChevronDown className="text-sm" />
+              <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
             </div>
 
             {isFontDropdownOpen && (
@@ -929,12 +955,12 @@ const CreateDocumentPage = () => {
           {/* LIST */}
           <div className="relative">
             <div
-              className="flex items-center gap-1 text-lg cursor-pointer"
+              className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors"
               onClick={() => setIsListDropdownOpen(!isListDropdownOpen)}
               title="Lists"
             >
-              <FiList />
-              <FiChevronDown className="text-sm" />
+              <FiList size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />
+              <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
             </div>
 
             {isListDropdownOpen && (
@@ -1016,13 +1042,13 @@ const CreateDocumentPage = () => {
         </div>
 
         {/* ================= CONTENT ================= */}
-        <div className="p-8 overflow-x-auto">
+        <div className="p-2 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
           {/* Custom Paper Size Dialog */}
           {showCustomSizeDialog && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 w-96">
-                <h3 className="text-lg font-semibold mb-4">Custom Paper Size (cm)</h3>
-                <div className="flex gap-4 mb-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg p-4 sm:p-6 w-96 sm:w-full max-w-[90vw]">
+                <h3 className="text-base sm:text-lg font-semibold mb-4">Custom Paper Size (cm)</h3>
+                <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Width (cm)</label>
                     <input
@@ -1048,7 +1074,7 @@ const CreateDocumentPage = () => {
                     />
                   </div>
                 </div>
-                <div className="flex gap-3 justify-end">
+                <div className="flex gap-3 sm:gap-4 justify-end">
                   <button
                     onClick={() => setShowCustomSizeDialog(false)}
                     className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
@@ -1068,10 +1094,10 @@ const CreateDocumentPage = () => {
 
           {/* Custom Margin Dialog */}
           {showCustomMarginDialog && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 w-96">
-                <h3 className="text-lg font-semibold mb-4">Custom Margins (cm)</h3>
-                <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg p-4 sm:p-6 w-96 sm:w-full max-w-[90vw]">
+                <h3 className="text-base sm:text-lg font-semibold mb-4">Custom Margins (cm)</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Top (cm)</label>
                     <input
@@ -1121,7 +1147,7 @@ const CreateDocumentPage = () => {
                     />
                   </div>
                 </div>
-                <div className="flex gap-3 justify-end">
+                <div className="flex gap-3 sm:gap-4 justify-end">
                   <button
                     onClick={() => setShowCustomMarginDialog(false)}
                     className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
@@ -1139,29 +1165,90 @@ const CreateDocumentPage = () => {
             </div>
           )}
 
-          <div className="flex justify-center">
+          {/* CENTERED EDITOR CONTAINER */}
+          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
             <div
               ref={editorRef}
               contentEditable
               suppressContentEditableWarning
-              className="bg-white rounded-lg shadow min-h-[500px] text-black focus:outline-none transition-all duration-200"
+              className="bg-white rounded-lg shadow-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 p-6 sm:p-8"
               onInput={handleContentChange}
               style={{
-                width: paperSizes[selectedPaperSize].width,
-                height: paperSizes[selectedPaperSize].height,
+                width: isClient && windowWidth < 768 ? '95vw' : paperSizes[selectedPaperSize].width,
+                height: isClient && windowWidth < 768 ? '60vh' : paperSizes[selectedPaperSize].height,
                 maxWidth: '100%',
                 overflow: 'auto',
-                padding: `${marginOptions[selectedMargin].top} ${marginOptions[selectedMargin].right} ${marginOptions[selectedMargin].bottom} ${marginOptions[selectedMargin].left}`,
-                lineHeight: '1.5'
+                lineHeight: '1.6',
+                minHeight: isClient && windowWidth < 768 ? '400px' : 'auto',
+                margin: '0 auto',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                fontSize: '16px',
+                fontFamily: selectedFont
               }}
             >
-              <div>Nathaniel: DFD & Database</div>
-              <br />
-              <div>Zeldrick: Papers and Front-End</div>
-              <br />
-              <div>Wilson: DFD & Back-End</div>
-              <br />
-              <div>Raecell: Survey & Prototype</div>
+              <h1 className="text-3xl font-bold mb-6 text-center">
+                Thesis Chapter 2 Participation
+              </h1>
+              
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-4">Team Members</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">N</div>
+                    <div>
+                      <strong>Nathaniel:</strong> DFD & Database
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">Z</div>
+                    <div>
+                      <strong>Zeldrick:</strong> Papers and Front-End
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">W</div>
+                    <div>
+                      <strong>Wilson:</strong> DFD & Back-End
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">R</div>
+                    <div>
+                      <strong>Raecell:</strong> Survey & Prototype
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t pt-6">
+                <h2 className="text-xl font-semibold mb-4">Project Overview</h2>
+                <p className="mb-4">
+                  This document outlines the participation and responsibilities of each team member in the development of our thesis project. Each member brings unique skills and expertise to ensure the successful completion of our research and implementation.
+                </p>
+                
+                <h3 className="text-lg font-medium mb-3">Key Responsibilities</h3>
+                <ul className="list-disc pl-6 space-y-2 mb-4">
+                  <li>Database Design and Implementation</li>
+                  <li>Front-End Development and User Interface</li>
+                  <li>Back-End Development and System Architecture</li>
+                  <li>Survey Design and Prototype Development</li>
+                </ul>
+                
+                <h3 className="text-lg font-medium mb-3">Timeline and Milestones</h3>
+                <p>
+                  The project is divided into several phases, with each team member contributing to different aspects of the development process. Regular meetings and progress reviews ensure that we stay on track and meet our deadlines.
+                </p>
+              </div>
+              
+              <div className="border-t pt-6 mt-6">
+                <h2 className="text-xl font-semibold mb-4">Technical Specifications</h2>
+                <p>
+                  Our technical approach involves modern web development technologies, database management systems, and user-centered design principles. The implementation focuses on scalability, performance, and user experience.
+                </p>
+              </div>
             </div>
           </div>
         </div>

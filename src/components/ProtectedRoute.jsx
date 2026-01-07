@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }) => {
   // console.log(isLoading, isAuthenticated)
 
   if (isLoading) return <div className="flex h-screen justify-center items-center"><MainLoading /></div>;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  // if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 };
 
