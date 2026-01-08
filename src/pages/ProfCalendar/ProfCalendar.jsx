@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
-import { FiCalendar, FiClock, FiCheck, FiAlertCircle, FiMenu, FiX, FiChevronLeft, FiChevronRight, FiEdit } from "react-icons/fi";
+import { FiCalendar, FiClock, FiCheck, FiAlertCircle, FiMenu, FiX, FiChevronLeft, FiChevronRight, FiEdit, FiPlus } from "react-icons/fi";
 
 const ProfCalendarPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -9,6 +9,73 @@ const ProfCalendarPage = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatistic, setSelectedStatistic] = useState(null);
+  const [showCreateDropdown, setShowCreateDropdown] = useState(false);
+  const [selectedSpace, setSelectedSpace] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newActivity, setNewActivity] = useState({
+    title: "",
+    description: "",
+    dueDate: "",
+    dueTime: "",
+    priority: "medium",
+    type: "Assignment"
+  });
+
+  // Mock spaces for dropdown
+  const spaces = [
+    "Thesis and Research",
+    "Operating System", 
+    "Data Structure",
+    "Understanding the Self",
+    "Physical Education 2",
+    "Businteg",
+    "Modtech",
+    "CS-ELEC 2"
+  ];
+
+  // Handle create activity
+  const handleCreateActivity = () => {
+    if (selectedSpace && newActivity.title && newActivity.description) {
+      const activity = {
+        id: activities.length + 1,
+        title: newActivity.title,
+        description: newActivity.description,
+        dueDate: newActivity.dueDate,
+        dueTime: newActivity.dueTime,
+        priority: newActivity.priority,
+        status: "pending",
+        subject: selectedSpace,
+        type: newActivity.type,
+        studentsCount: Math.floor(Math.random() * 50) + 20,
+        yearLevel: "4th Year"
+      };
+      
+      setActivities([...activities, activity]);
+      setShowCreateModal(false);
+      setNewActivity({
+        title: "",
+        description: "",
+        dueDate: "",
+        dueTime: "",
+        priority: "medium",
+        type: "Assignment"
+      });
+      setSelectedSpace("");
+    }
+  };
+
+  const handleCancelCreate = () => {
+    setShowCreateModal(false);
+    setNewActivity({
+      title: "",
+      description: "",
+      dueDate: "",
+      dueTime: "",
+      priority: "medium",
+      type: "Assignment"
+    });
+    setSelectedSpace("");
+  };
 
   // Mock data for professor activities with due dates
   const mockActivities = [
@@ -306,8 +373,128 @@ const ProfCalendarPage = () => {
         <div className="p-4 sm:p-6">
           {/* Desktop Header */}
           <div className="hidden lg:block mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Activity Calendar</h1>
-            <p className="text-gray-600 mt-1">Track all activity due dates and manage your class schedules</p>
+            <div className="flex justify-between items-center">
+              <h1 className="text-2xl font-bold text-gray-900">Activity Calendar</h1>
+              <p className="text-gray-600 mt-1">Track all activity due dates and manage your class schedules</p>
+            </div>
+          </div>
+
+          {/* Create Activity Button */}
+          <div className="mb-6">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    if (selectedSpace) {
+                      setShowCreateModal(true);
+                    } else {
+                      setShowCreateDropdown(true);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  <FiPlus size={16} />
+                  Create Activity
+                </button>
+                
+                {/* Dropdown */}
+                {showCreateDropdown && (
+                  <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+                    <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm font-semibold text-blue-900 flex items-center gap-2">
+                          <div className="w-4 h-4 bg-blue-600 rounded flex items-center justify-center">
+                            <FiCalendar className="text-white" size={10} />
+                          </div>
+                          Select Space
+                        </p>
+                        <button
+                          onClick={() => setShowCreateDropdown(false)}
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full p-1.5 transition-colors"
+                        >
+                          <FiX size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto" style={{
+                      scrollbarWidth: 'none', /* Firefox */
+                      msOverflowStyle: 'none', /* IE and Edge */
+                      WebkitScrollbar: {
+                        display: 'none' /* Chrome, Safari, Opera */
+                      }
+                    }}>
+                      <style jsx>{`
+                        div::-webkit-scrollbar {
+                          display: none;
+                        }
+                      `}</style>
+                      <div className="p-2 space-y-1">
+                        {spaces.map((space, index) => {
+                          const colors = [
+                            'bg-gradient-to-r from-blue-500 to-blue-600',
+                            'bg-gradient-to-r from-green-500 to-green-600',
+                            'bg-gradient-to-r from-purple-500 to-purple-600',
+                            'bg-gradient-to-r from-orange-500 to-orange-600',
+                            'bg-gradient-to-r from-pink-500 to-pink-600',
+                            'bg-gradient-to-r from-indigo-500 to-indigo-600',
+                            'bg-gradient-to-r from-teal-500 to-teal-600',
+                            'bg-gradient-to-r from-red-500 to-red-600'
+                          ];
+                          const icons = [
+                            '📚', '💻', '🔬', '🧠', '⚽', '💼', '🔧', '📊'
+                          ];
+                          
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                setSelectedSpace(space);
+                                setShowCreateDropdown(false);
+                                setShowCreateModal(true);
+                              }}
+                              className="w-full group relative overflow-hidden rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+                            >
+                              <div className={`absolute inset-0 ${colors[index]} opacity-10 group-hover:opacity-20 transition-opacity`}></div>
+                              <div className="relative flex items-center gap-3 px-4 py-3 text-left">
+                                <div className={`w-10 h-10 ${colors[index]} rounded-lg flex items-center justify-center text-white font-bold shadow-md group-hover:scale-110 transition-transform`}>
+                                  {icons[index]}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-white group-hover:text-blue-200 transition-colors">
+                                    {space}
+                                  </p>
+                                  <p className="text-xs text-gray-300 group-hover:text-gray-200 transition-colors">
+                                    Click to create activity
+                                  </p>
+                                </div>
+                                <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                                  <FiPlus className="text-white group-hover:text-blue-200 transition-colors" size={12} />
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {selectedSpace && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-md text-sm">
+                  <span>Selected: {selectedSpace}</span>
+                  <button
+                    onClick={() => {
+                      setSelectedSpace("");
+                      setShowCreateDropdown(true);
+                    }}
+                    className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-full p-1 transition-colors"
+                  >
+                    <FiX size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {loading ? (
@@ -443,7 +630,18 @@ const ProfCalendarPage = () => {
                     </p>
                   </div>
                   
-                  <div className="max-h-96 overflow-y-auto">
+                  <div className="max-h-96 overflow-y-auto" style={{
+                      scrollbarWidth: 'none', /* Firefox */
+                      msOverflowStyle: 'none', /* IE and Edge */
+                      WebkitScrollbar: {
+                        display: 'none' /* Chrome, Safari, Opera */
+                      }
+                    }}>
+                    <style jsx>{`
+                      div::-webkit-scrollbar {
+                        display: none;
+                      }
+                    `}</style>
                     {selectedStatistic ? (
                       getActivitiesByStatistic(selectedStatistic).length === 0 ? (
                         <div className="p-8 text-center">
@@ -553,6 +751,182 @@ const ProfCalendarPage = () => {
           )}
         </div>
       </div>
+
+      {/* Create Activity Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-gray-200">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-2xl border-b border-blue-700">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                    <FiPlus className="text-white" size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Create New Activity</h3>
+                    <p className="text-blue-100 text-sm">Add a new activity for {selectedSpace}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCancelCreate}
+                  className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg p-2 transition-colors"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-5">
+                  {/* Space Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <div className="w-5 h-5 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <FiCalendar className="text-blue-600" size={12} />
+                      </div>
+                      Space
+                    </label>
+                    <div className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-blue-900 font-medium">
+                      {selectedSpace || "Select a space"}
+                    </div>
+                  </div>
+
+                  {/* Activity Title */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <div className="w-5 h-5 bg-green-100 rounded-lg flex items-center justify-center">
+                        <FiEdit className="text-green-600" size={12} />
+                      </div>
+                      Activity Title
+                    </label>
+                    <input
+                      type="text"
+                      value={newActivity.title}
+                      onChange={(e) => setNewActivity({...newActivity, title: e.target.value})}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      placeholder="Enter activity title"
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <div className="w-5 h-5 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <FiEdit className="text-purple-600" size={12} />
+                      </div>
+                      Description
+                    </label>
+                    <textarea
+                      value={newActivity.description}
+                      onChange={(e) => setNewActivity({...newActivity, description: e.target.value})}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+                      rows="4"
+                      placeholder="Enter activity description"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-5">
+                  {/* Due Date and Time */}
+                  <div className="space-y-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <div className="w-5 h-5 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <FiClock className="text-orange-600" size={12} />
+                      </div>
+                      Due Date & Time
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                        <input
+                          type="date"
+                          value={newActivity.dueDate}
+                          onChange={(e) => setNewActivity({...newActivity, dueDate: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Time</label>
+                        <input
+                          type="time"
+                          value={newActivity.dueTime}
+                          onChange={(e) => setNewActivity({...newActivity, dueTime: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Priority and Type */}
+                  <div className="space-y-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <div className="w-5 h-5 bg-red-100 rounded-lg flex items-center justify-center">
+                        <FiAlertCircle className="text-red-600" size={12} />
+                      </div>
+                      Priority & Type
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Priority</label>
+                        <select
+                          value={newActivity.priority}
+                          onChange={(e) => setNewActivity({...newActivity, priority: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="low">🟢 Low Priority</option>
+                          <option value="medium">🟡 Medium Priority</option>
+                          <option value="high">🔴 High Priority</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Activity Type</label>
+                        <select
+                          value={newActivity.type}
+                          onChange={(e) => setNewActivity({...newActivity, type: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="Assignment">📝 Assignment</option>
+                          <option value="Exam">📋 Exam</option>
+                          <option value="Lab Activity">🔬 Lab Activity</option>
+                          <option value="Paper">📄 Paper</option>
+                          <option value="Practical Exam">⚽ Practical Exam</option>
+                          <option value="Presentation">🎯 Presentation</option>
+                          <option value="Project Demo">💻 Project Demo</option>
+                          <option value="Coding Challenge">💡 Coding Challenge</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={handleCancelCreate}
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateActivity}
+                  disabled={!selectedSpace || !newActivity.title || !newActivity.description}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 font-medium transition-all disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <FiPlus size={16} />
+                    Create Activity
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
