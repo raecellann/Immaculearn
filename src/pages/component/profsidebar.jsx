@@ -44,6 +44,11 @@ const ProfSidebar = () => {
 
   const privateItems = [
     {
+      icon: <Calendar size={20} />,
+      label: "Calendar",
+      path: "/prof-calendar",
+    },
+    {
       icon: <ClipboardList size={20} />,
       label: "Grade Viewing",
       path: "/prof-grade-viewing",

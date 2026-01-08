@@ -57,6 +57,7 @@ import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx"; //done r
 import CreateDocumentPage from "./pages/Create-Document/CreateDocument.jsx";
 
 import CalendarPage from "./pages/Calendar/Calendar.jsx";
+import ProfCalendarPage from "./pages/ProfCalendar/ProfCalendar.jsx";
 
 import ParentLogin from "./pages/parent-login/parentlogin.jsx";
 import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
@@ -136,6 +137,7 @@ export default function Routes() {
         <Route path="/prof-home" element={<ProfHomePage />} />
         <Route path="/prof-settings" element={<ProfSettingsPage />} />
         <Route path="/prof-main-space" element={<ProfMainSpace />} />
+        <Route path="/prof-calendar" element={<ProfCalendarPage />} />
 
       {/* PROFESSOR SPACE ROUTES */}
       <Route path="/prof-space-thesis" element={<ThesisSpace />} />
