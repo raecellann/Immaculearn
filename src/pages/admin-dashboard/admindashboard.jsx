@@ -44,57 +44,43 @@ const AdminDashboard = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen bg-[#161A20] text-white relative">
 
-      {/* ===== DESKTOP SIDEBAR ===== */}
-      <div className="hidden lg:flex h-screen sticky top-0">
-        <div className="h-full overflow-y-auto">
-          <AdminSidebar />
-        </div>
-      </div>
-
-      {/* ===== MOBILE OVERLAY ===== */}
+      {/* MOBILE OVERLAY */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* ===== MOBILE SIDEBAR ===== */}
-      <div
-        className={`fixed top-0 left-0 h-screen w-[260px] z-50 transform transition-transform duration-300 lg:hidden
-        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
-        <div className="h-full overflow-y-auto bg-[#1E222A]">
-          <AdminSidebar />
-        </div>
+      {/* SIDEBAR */}
+      <div className="fixed top-0 left-0 h-full z-40 lg:static">
+        <AdminSidebar />
       </div>
 
-      {/* ===== MAIN CONTENT ===== */}
-      <div className="flex-1 flex flex-col">
+      {/* MAIN CONTENT */}
+      <div className="flex-1 ml-60 flex flex-col">
 
-        {/* 🔹 STICKY MOBILE HEADER (RESTORED) */}
+        {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-white/10 transition-transform duration-300
-          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] transition-transform ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
         >
-          <div className="flex items-center gap-4 px-4 h-14">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent p-0 border-none"
-            >
-              <Menu className="w-7 h-7 text-white" />
+          <div className="flex items-center px-4 h-14">
+            <button onClick={() => setMobileSidebarOpen(true)}>
+              <Menu />
             </button>
-            <h1 className="text-lg font-semibold">Admin Dashboard</h1>
+            <h1 className="ml-4 font-semibold">Admin Dashboard</h1>
           </div>
         </div>
 
         {/* HEADER SPACER */}
-        <div className="lg:hidden h-14" />
+        <div className="lg:hidden h-16" />
 
-        {/* ===== PAGE CONTENT (WINDOW SCROLL ENABLED) ===== */}
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
+        {/* PAGE CONTENT */}
+        <div className="flex-1 p-6">
 
           <h1 className="hidden lg:block text-2xl font-bold mb-8">
             Admin Dashboard
@@ -157,16 +143,24 @@ const AdminDashboard = () => {
 };
 
 /* 🔹 REUSABLE STAT CARD */
-const StatCard = ({ icon: Icon, label, value, color }) => (
-  <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl flex items-center gap-4 hover:bg-[#242B38] transition">
-    <div className={`bg-${color}-500/20 p-3 rounded-lg`}>
-      <Icon className={`text-${color}-400 w-6 h-6 sm:w-7 sm:h-7`} />
+const StatCard = ({ icon: Icon, label, value, color }) => {
+  const colorClasses = {
+    blue: 'bg-blue-500/20 text-blue-400',
+    green: 'bg-green-500/20 text-green-400',
+    yellow: 'bg-yellow-500/20 text-yellow-400'
+  };
+
+  return (
+    <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl flex items-center gap-4 hover:bg-[#242B38] transition">
+      <div className={`${colorClasses[color]} p-3 rounded-lg`}>
+        <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
+      </div>
+      <div>
+        <p className="text-gray-400 text-sm">{label}</p>
+        <h2 className="text-xl sm:text-2xl font-bold">{value}</h2>
+      </div>
     </div>
-    <div>
-      <p className="text-gray-400 text-sm">{label}</p>
-      <h2 className="text-xl sm:text-2xl font-bold">{value}</h2>
-    </div>
-  </div>
-);
+  );
+};
 
 export default AdminDashboard;
