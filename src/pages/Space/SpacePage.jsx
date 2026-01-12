@@ -115,6 +115,142 @@ const SpacePage = () => {
   const yourSpaces = spaces.filter((s) => s.category === "Your Space");
   const friendsSpaces = spaces.filter((s) => s.category === "Friends Space");
 
+  // Navigation handler for enrolled classes
+  const handleClassClick = (classItem) => {
+    // Map class titles to user-accessible professor space routes
+    const routeMap = {
+      "Thesis and Research": "/user-prof-space/thesis",
+      "Operating System": "/user-prof-space/os",
+      "CS-ELEC 2": "/user-prof-space/cselec2",
+      "Businteg": "/user-prof-space/businteg",
+      "Modtech": "/user-prof-space/modtech",
+      "Data Structure": "/user-prof-space/datastructure",
+      "Physical Education 2": "/user-prof-space/pe2",
+      "Understanding the Self": "/user-prof-space/uts",
+      "MMW": "/user-prof-space/mmw"
+    };
+    
+    const route = routeMap[classItem.title];
+    if (route) {
+      navigate(route);
+    }
+  };
+
+  // Slider state for enrolled classes
+  const [enrolledClassSlideIndex, setEnrolledClassSlideIndex] = useState(0);
+
+  // User's enrolled classes (from professor space subjects)
+  const enrolledClasses = [
+    {
+      id: 9,
+      title: "Thesis and Research",
+      image: "/src/assets/SpacesCover/thesis.jpg",
+      time: "Class in progress",
+      category: "Enrolled Classes",
+      members: 32,
+      yearLevel: "4th Year",
+      instructor: "Prof. Smith",
+      schedule: "MWF 10:00-11:30 AM",
+      description: "Advanced research methodology and thesis writing"
+    },
+    {
+      id: 10,
+      title: "Operating System",
+      image: "/src/assets/SpacesCover/os.jpg",
+      time: "Class in progress",
+      category: "Enrolled Classes",
+      members: 40,
+      yearLevel: "3rd Year",
+      instructor: "Prof. Johnson",
+      schedule: "TTH 2:00-3:30 PM",
+      description: "Operating system concepts and implementation"
+    },
+    {
+      id: 11,
+      title: "CS-ELEC 2",
+      image: "/src/assets/SpacesCover/code.jpg",
+      time: "Class in progress",
+      category: "Enrolled Classes",
+      members: 28,
+      yearLevel: "3rd Year",
+      instructor: "Prof. Davis",
+      schedule: "MWF 8:00-9:30 AM",
+      description: "Advanced programming concepts"
+    },
+    {
+      id: 12,
+      title: "Businteg",
+      image: "/src/assets/SpacesCover/businteg.jpg",
+      time: "Class in progress",
+      category: "Enrolled Classes",
+      members: 35,
+      yearLevel: "4th Year",
+      instructor: "Prof. Wilson",
+      schedule: "TTH 10:00-11:30 AM",
+      description: "Business integration and systems analysis"
+    },
+    {
+      id: 13,
+      title: "Modtech",
+      image: "/src/assets/SpacesCover/modtech.jpg",
+      time: "Class in progress",
+      category: "Enrolled Classes",
+      members: 30,
+      yearLevel: "4th Year",
+      instructor: "Prof. Brown",
+      schedule: "MWF 2:00-3:30 PM",
+      description: "Modern technology and innovation"
+    },
+    {
+      id: 14,
+      title: "Data Structure",
+      image: "/src/assets/SpacesCover/datastructure.jpg",
+      time: "Class in progress",
+      category: "Enrolled Classes",
+      members: 41,
+      yearLevel: "1st Year",
+      instructor: "Prof. Miller",
+      schedule: "TTH 8:00-9:30 AM",
+      description: "Data structures and algorithms"
+    },
+    {
+      id: 15,
+      title: "Physical Education 2",
+      image: "/src/assets/SpacesCover/pe.jpg",
+      time: "Class in progress",
+      category: "Enrolled Classes",
+      members: 45,
+      yearLevel: "2nd Year",
+      instructor: "Prof. Garcia",
+      schedule: "WF 1:00-2:30 PM",
+      description: "Physical fitness and sports activities"
+    },
+    {
+      id: 16,
+      title: "Understanding the Self",
+      image: "/src/assets/SpacesCover/uts.jpg",
+      time: "Class in progress",
+      category: "Enrolled Classes",
+      members: 52,
+      yearLevel: "2nd Year",
+      instructor: "Prof. Martinez",
+      schedule: "MWF 11:00-12:30 PM",
+      description: "Personal development and self-awareness"
+    },
+    {
+      id: 17,
+      title: "MMW",
+      image: "/src/assets/SpacesCover/mmw.jpg",
+      time: "Class in progress",
+      category: "Enrolled Classes",
+      members: 28,
+      yearLevel: "1st Year",
+      instructor: "Prof. Anderson",
+      schedule: "TTH 3:00-4:30 PM",
+      description: "Mathematics in the modern world"
+    }
+  ];
+
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
       {/* ================= Desktop Sidebar (Laptop+) ================= */}
@@ -271,7 +407,7 @@ const SpacePage = () => {
           </div>
 
           {/* ================= Friends Space Section ================= */}
-          <div>
+          <div className="mb-12">
             <h2 className="text-2xl font-bold mb-4">Friends Space</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {friendsSpaces.map((space) => (
@@ -319,6 +455,88 @@ const SpacePage = () => {
                       {space.members} Members
                     </p>
                     <p className="text-gray-500 text-xs">{space.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ================= Enrolled Classes Section ================= */}
+          <div className="mb-12">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Enrolled Classes</h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEnrolledClassSlideIndex(Math.max(0, enrolledClassSlideIndex - 1))}
+                  disabled={enrolledClassSlideIndex === 0}
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={() => setEnrolledClassSlideIndex(Math.min(Math.ceil(enrolledClasses.length / 6) - 1, enrolledClassSlideIndex + 1))}
+                  disabled={enrolledClassSlideIndex >= Math.ceil(enrolledClasses.length / 6) - 1}
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ›
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {enrolledClasses.slice(enrolledClassSlideIndex * 6, (enrolledClassSlideIndex + 1) * 6).map((classItem) => (
+                <div
+                  key={classItem.id}
+                  onClick={() => handleClassClick(classItem)}
+                  className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457]"
+                >
+                  <div className="relative h-40 bg-gray-800">
+                    <img
+                      src={classItem.image}
+                      alt={classItem.title}
+                      className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
+                    />
+
+                    <div className="absolute top-3 right-3 z-20">
+                      <button
+                        onClick={() =>
+                          setShowMenu(showMenu === `class-${classItem.id}` ? null : `class-${classItem.id}`)
+                        }
+                        className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
+                      >
+                        <span className="text-lg font-bold">...</span>
+                      </button>
+
+                      {showMenu === `class-${classItem.id}` && (
+                        <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                          <div className="flex flex-col gap-2">
+                            <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
+                              View Details
+                            </button>
+                            <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
+                              Drop Class
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Year Level Badge */}
+                    <div className="absolute top-3 left-3 z-20">
+                      <div className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                        {classItem.yearLevel}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4">
+                    <h3 className="font-semibold text-white text-sm mb-1">
+                      {classItem.title}
+                    </h3>
+                    <p className="text-gray-400 text-xs mb-1">
+                      {classItem.instructor} • {classItem.members} Students
+                    </p>
+                    <p className="text-gray-500 text-xs mb-2">{classItem.schedule}</p>
+                    <p className="text-gray-400 text-xs line-clamp-2">{classItem.description}</p>
                   </div>
                 </div>
               ))}

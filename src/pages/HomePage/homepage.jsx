@@ -14,6 +14,7 @@ const HomePage1 = () => {
   const [today, setToday] = useState(new Date());
   const [slideIndexYourSpace, setSlideIndexYourSpace] = useState(0);
   const [slideIndexSpaces, setSlideIndexSpaces] = useState(0);
+  const [slideIndexSchoolSpace, setSlideIndexSchoolSpace] = useState(0);
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showMenu, setShowMenu] = useState(null);
 
@@ -187,6 +188,151 @@ const HomePage1 = () => {
                           <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
                             <div className="flex flex-col gap-2">
                               <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
+                                View Details
+                              </button>
+                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
+                                Leave Space
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-medium text-sm">{space.title}</h3>
+                      <p className="text-gray-400 text-xs mt-1">{space.members}</p>
+                      <p className="text-gray-500 text-xs mt-1">{space.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* School Space Section */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-xl font-semibold">School Space</h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSlideIndexSchoolSpace(Math.max(0, slideIndexSchoolSpace - 1))}
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
+                  disabled={slideIndexSchoolSpace === 0}
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={() => setSlideIndexSchoolSpace(Math.min(2, slideIndexSchoolSpace + 1))}
+                  className="text-gray-400 hover:text-white text-sm px-2 py-1 rounded bg-transparent"
+                  disabled={slideIndexSchoolSpace === 2}
+                >
+                  ›
+                </button>
+                <button className="text-[#007AFF] hover:underline text-sm ml-2 bg-transparent">View All</button>
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden" style={{ width: '632px' }}>
+              <div
+                className="flex gap-4 transition-transform duration-300 ease-in-out"
+                style={{ transform: `translateX(-${slideIndexSchoolSpace * 648}px)` }}
+              >
+                {[
+                  { 
+                    title: "Thesis and Research", 
+                    members: "32 Students", 
+                    time: "Opened 1 min ago", 
+                    image: "/src/assets/SpacesCover/thesis.jpg",
+                    route: "/user-prof-space-thesis"
+                  },
+                  { 
+                    title: "Operating System", 
+                    members: "40 Students", 
+                    time: "Opened 3 mins ago", 
+                    image: "/src/assets/SpacesCover/os.jpg",
+                    route: "/user-prof-space-os"
+                  },
+                  { 
+                    title: "CS-ELEC 2", 
+                    members: "28 Students", 
+                    time: "Opened 5 mins ago", 
+                    image: "/src/assets/SpacesCover/code.jpg",
+                    route: "/user-prof-space-cselec2"
+                  },
+                  { 
+                    title: "Businteg", 
+                    members: "35 Students", 
+                    time: "Opened just now", 
+                    image: "/src/assets/SpacesCover/businteg.jpg",
+                    route: "/user-prof-space-businteg"
+                  },
+                  { 
+                    title: "Modtech", 
+                    members: "30 Students", 
+                    time: "Opened just now", 
+                    image: "/src/assets/SpacesCover/modtech.jpg",
+                    route: "/user-prof-space-modtech"
+                  },
+                  { 
+                    title: "Data Structure", 
+                    members: "41 Students", 
+                    time: "Opened 5 days ago", 
+                    image: "/src/assets/SpacesCover/datastructure.jpg",
+                    route: "/user-prof-space-datastructure"
+                  },
+                  { 
+                    title: "Physical Education 2", 
+                    members: "45 Students", 
+                    time: "Opened 1 week ago", 
+                    image: "/src/assets/SpacesCover/pe.jpg",
+                    route: "/user-prof-space-pe2"
+                  },
+                  { 
+                    title: "Understanding the Self", 
+                    members: "52 Students", 
+                    time: "Opened 4 weeks ago", 
+                    image: "/src/assets/SpacesCover/uts.jpg",
+                    route: "/user-prof-space-uts"
+                  },
+                  { 
+                    title: "MMW", 
+                    members: "28 Students", 
+                    time: "Opened 2 days ago", 
+                    image: "/src/assets/SpacesCover/mmw.jpg",
+                    route: "/user-prof-space-mmw"
+                  }
+                ].map((space, i) => (
+                  <div
+                    key={i}
+                    className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg min-w-[200px] cursor-pointer"
+                    onClick={() => window.location.href = space.route}
+                  >
+                    <div className="relative">
+                      <img
+                        src={space.image}
+                        alt={space.title}
+                        className="h-32 w-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowMenu(showMenu === `school-${i}` ? null : `school-${i}`);
+                          }}
+                          className="bg-black/60 hover:bg-black text-white w-6 h-6 flex items-center justify-center rounded-md"
+                        >
+                          ...
+                        </button>
+                        {showMenu === `school-${i}` && (
+                          <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                            <div className="flex flex-col gap-2">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.location.href = space.route;
+                                }}
+                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm"
+                              >
                                 View Details
                               </button>
                               <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">

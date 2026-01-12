@@ -57,12 +57,14 @@ import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx"; //done r
 import CreateDocumentPage from "./pages/Create-Document/CreateDocument.jsx";
 
 import CalendarPage from "./pages/Calendar/Calendar.jsx";
-
-
 import ProfCalendarPage from "./pages/ProfCalendar/ProfCalendar.jsx";
 
 import ParentLogin from "./pages/parent-login/parentlogin.jsx";
 import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
+
+// User-accessible professor spaces
+import UserThesisSpace from "./pages/UserProfSpace/UserThesisSpace.jsx";
+
 import { SignInPageWithOAuth } from "./pages/test-page/signInPageWithOAuth.jsx";
 import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
 import Onboarding from "./pages/SignIn/onBoardingPage.jsx";
@@ -146,6 +148,9 @@ export default function Routes() {
       <Route path="/prof-space-thesis/tasks" element={<ProfTaskPage />} />
       <Route path="/prof-space-thesis/files-shared" element={<ProfFilesShared />} />
       <Route path="/prof-space-thesis/people" element={<ProfPeoplePage />} />
+
+      {/* USER-ACCESSIBLE PROFESSOR SPACE ROUTES */}
+      <Route path="/user-prof-space-thesis" element={<UserThesisSpace />} />
 
       {/* PARENT ROUTES */}
       <Route path="/parent-grade-login" element={<ParentLogin />} />
