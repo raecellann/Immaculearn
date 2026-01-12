@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Home,
   Users,
@@ -13,37 +13,26 @@ import {
 } from "lucide-react";
 
 import { Link, useLocation } from "react-router";
-
 import Logout from "./logout";
 import logo from "../../assets/HomePage/logo.png";
 import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
 import { useUser } from "../../contexts/user/useUser";
 
 const Sidebar = () => {
-  const { user } = useUser();
+  const { user, logout } = useUser();
   const [showLogout, setShowLogout] = useState(false);
-  const [hoveredItem, setHoveredItem] = useState(null);
-
   const location = useLocation();
 
   const menuItems = [
     { icon: <Home size={20} />, label: "Home", path: "/home" },
     { icon: <Users size={20} />, label: "Spaces", path: "/space" },
-    {
-      icon: <Bell size={20} />,
-      label: "Notifications",
-      path: "/notifications",
-    },
+    { icon: <Bell size={20} />, label: "Notifications", path: "/notifications" },
     { icon: <Calendar size={20} />, label: "Tasks", path: "/task" },
     { icon: <Folder size={20} />, label: "Files", path: "/files" },
   ];
 
   const privateItems = [
-    {
-      icon: <ClipboardList size={20} />,
-      label: "Grade Viewing",
-      path: "/grade-viewing",
-    },
+    { icon: <ClipboardList size={20} />, label: "Grade Viewing", path: "/grade-viewing" },
     { icon: <MessageCircle size={20} />, label: "Chats", path: "/chatlist" },
   ];
 
@@ -51,6 +40,7 @@ const Sidebar = () => {
     { icon: <User size={20} />, label: "Account", path: "/accsettings" },
     { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
   ];
+
 
   return (
     <div
@@ -60,18 +50,9 @@ const Sidebar = () => {
           "linear-gradient(to bottom, #4d9bef, #3d8ee8, #2c81e1, #1a73da, #0066d2)",
       }}
     >
-      <style>{`
-        .sidebar-scroll::-webkit-scrollbar { display: none; }
-        .sidebar-scroll { scrollbar-width: none; -ms-overflow-style: none; }
-      `}</style>
-
-      <div className="flex-1 flex flex-col items-start p-5 overflow-y-auto sidebar-scroll">
+      <div className="flex-1 flex flex-col items-start p-5 overflow-y-auto">
         <h1 className="font-bold text-lg flex items-center space-x-2 mb-6">
-          <img
-            src={logo}
-            alt="ImmacuLearn Logo"
-            className="w-5 h-5 inline-block"
-          />
+          <img src={logo} alt="ImmacuLearn Logo" className="w-5 h-5" />
           <span>ImmacuLearn</span>
         </h1>
 
@@ -79,29 +60,21 @@ const Sidebar = () => {
           {menuItems.map((item) => (
             <SidebarItem
               key={item.label}
-              icon={item.icon}
-              label={item.label}
-              path={item.path}
-              active={location.pathname === item.path} // ← FIX
-              isHovered={hoveredItem === item.label}
-              onHover={() => setHoveredItem(item.label)}
+              {...item}
+              active={location.pathname === item.path}
             />
           ))}
         </nav>
 
         <div className="w-full border-t border-blue-300/40 pt-3 mb-5">
-          <p className="text-[11px] uppercase text-gray-100 tracking-wide mb-2 font-semibold">
+          <p className="text-[11px] uppercase tracking-wide mb-2 font-semibold">
             Private
           </p>
           {privateItems.map((item) => (
             <SidebarItem
               key={item.label}
-              icon={item.icon}
-              label={item.label}
-              path={item.path}
+              {...item}
               active={location.pathname === item.path}
-              isHovered={hoveredItem === item.label}
-              onHover={() => setHoveredItem(item.label)}
             />
           ))}
         </div>
@@ -110,12 +83,8 @@ const Sidebar = () => {
           {accountItems.map((item) => (
             <SidebarItem
               key={item.label}
-              icon={item.icon}
-              label={item.label}
-              path={item.path}
+              {...item}
               active={location.pathname === item.path}
-              isHovered={hoveredItem === item.label}
-              onHover={() => setHoveredItem(item.label)}
             />
           ))}
 
@@ -123,65 +92,46 @@ const Sidebar = () => {
             icon={<LogOut size={20} />}
             label="Log Out Account"
             onClick={() => setShowLogout(true)}
-            isHovered={hoveredItem === "Log Out Account"}
-            onHover={() => setHoveredItem("Log Out Account")}
           />
         </div>
       </div>
 
-      <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0">
+      <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3">
         <img
           src={user ? user.profile_pic : frierenAvatar}
           alt="Profile"
           className="w-9 h-9 rounded-full object-cover border border-white/20"
         />
-        <span className="text-sm font-semibold">{user && user.name}</span>
+        <span className="text-sm font-semibold">{user?.name}</span>
       </div>
 
       {showLogout && (
         <Logout
           onClose={() => setShowLogout(false)}
-          onLogOut={() => setShowLogout(true)}
+          onLogOut={() => logout(user?.id)}
         />
       )}
     </div>
   );
 };
 
-const SidebarItem = ({
-  icon,
-  label,
-  path,
-  onClick,
-  active,
-  isHovered,
-  onHover,
-}) => {
+const SidebarItem = ({ icon, label, path, onClick, active }) => {
   const Component = path ? Link : "div";
 
   return (
     <Component
       to={path}
       onClick={onClick}
-      onMouseEnter={onHover}
-      className={`relative flex items-center space-x-3 px-5 py-2.5 text-xs font-medium
-                  transition-all duration-150 rounded-md cursor-pointer
-                  text-white hover:text-white
-                  ${isHovered ? "bg-black" : ""}
-                  ${active ? "bg-black/25" : ""}
-                 `}
+      className={`
+        flex items-center space-x-3 px-5 py-2.5 text-xs font-medium
+        rounded-md cursor-pointer transition-all duration-150
+        text-white
+        hover:bg-black
+        ${active ? "bg-black/25" : ""}
+      `}
     >
-      {/* <div
-        className={`absolute left-3 top-0 bottom-0 w-[88%] rounded-full
-                    transition-all duration-200
-                    ${isHovered ? "bg-black" : ""}
-        `}
-      ></div> */}
-
-      <div className="relative flex items-center space-x-3 z-10">
-        {icon}
-        <span>{label}</span>
-      </div>
+      {icon}
+      <span>{label}</span>
     </Component>
   );
 };

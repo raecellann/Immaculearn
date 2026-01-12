@@ -7,7 +7,7 @@ export const SignInPageWithOAuth = () => {
     setRole(selectedRole);
 
     // Redirect to backend Google OAuth endpoint with role query
-    window.location.href = `http://localhost:3000/v1/account/oauth/google/redirect?role=${selectedRole}`;
+    window.location.href = `https://immaculearnapi-template-production.up.railway.app/v1/account/oauth/google/redirect?role=${selectedRole}`;
   };
 
   return (

@@ -16,7 +16,7 @@ export default function PageNotFound() {
         </p>
 
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/home")}
           className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 text-white font-medium shadow-md transition transform hover:scale-105 active:scale-95 hover:bg-indigo-700"
         >
           Take me home

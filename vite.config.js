@@ -8,6 +8,13 @@ import path from "path";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  ssr: {
+    noExternal: [
+      "yjs",
+      "y-websocket",
+      "y-indexeddb"
+    ]
+  },
   server: {
     hmr: {
       // Compute HMR port from PORT env when available; otherwise fall back to a safe default.

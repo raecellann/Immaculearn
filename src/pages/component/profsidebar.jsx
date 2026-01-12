@@ -122,7 +122,7 @@ const Sidebar = () => {
       </div>
 
       {/* Logout Modal */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+      {/* {showLogout && <Logout onClose={() => setShowLogout(false)} onLogOut={} />} */}
     </div>
   );
 };

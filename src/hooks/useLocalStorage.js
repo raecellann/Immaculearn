@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 // const secret_key = process.env.VITE_SECRET
 const secret_key = import.meta.env.VITE_SECRET
-console.log(secret_key)
 
 // Helper: convert text <-> buffer
 const enc = new TextEncoder();

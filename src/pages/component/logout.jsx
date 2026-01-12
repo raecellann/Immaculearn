@@ -1,6 +1,6 @@
 import React from "react";
 
-const Logout = ({ onClose }) => {
+const Logout = ({ onClose, onLogOut }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
       <div className="bg-neutral-800 p-8 rounded-2xl shadow-xl text-center w-[350px] animate-fadeIn">
@@ -18,7 +18,10 @@ const Logout = ({ onClose }) => {
           </button>
 
           {/* Confirm Logout Button */}
-          <button className="flex-1 px-6 py-2 bg-red-600 rounded-full text-white font-semibold shadow-md hover:bg-red-700 transition-colors">
+          <button 
+            onClick={onLogOut}
+            className="flex-1 px-6 py-2 bg-red-600 rounded-full text-white font-semibold shadow-md hover:bg-red-700 transition-colors"
+          >
             Yes
           </button>
         </div>

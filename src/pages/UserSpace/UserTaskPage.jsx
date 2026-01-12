@@ -1,9 +1,13 @@
-import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import Sidebar from "../component/sidebar";
+import MainLoading from "../../components/LoadingComponents/mainLoading";
 
 const UserTaskPage = () => {
   const navigate = useNavigate();
+
+  const { space_uuid, space_name } = useParams();
+
   // Task status styles
   const statusStyles = {
     Done: "border-2 border-[#00B865] text-[#10E164]",
@@ -41,6 +45,8 @@ const UserTaskPage = () => {
     setOpenIndex(null);
   };
 
+
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
       {/* SIDEBAR */}
@@ -73,25 +79,25 @@ const UserTaskPage = () => {
         <div className="flex justify-center gap-[120px] border-b border-white/10 mb-6 text-xl">
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/user-space-zj")}
+            onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}
           >
             Stream
           </button>
           <button
             className="pb-3 border-b-2 border-white font-medium"
-            onClick={() => navigate("/user-space-zj/tasks")}
+            onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}
           >
             Tasks
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/user-space-zj/files-shared")}
+            onClick={() => navigate(`/space/${space_uuid}/${space_name}/files-shared`)}
           >
             Files Shared
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/user-space-zj/people")}
+            onClick={() => navigate(`/space/${space_uuid}/${space_name}/people`)}
           >
             People
           </button>

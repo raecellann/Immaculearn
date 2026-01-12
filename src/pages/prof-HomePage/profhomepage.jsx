@@ -248,8 +248,22 @@ const ProfHomePage = () => {
         <div className="w-80 bg-[#1E242E] rounded-xl p-6 flex flex-col justify-between">
           {/* Profile */}
           <div className="flex flex-col items-center text-center mb-4">
+            {/* {
+              user 
+              ? <img
+                  src="/src/assets/HomePage-prof/prof-avatar.jpg"
+                  alt="Prof Avatar"
+                  className="w-20 h-20 rounded-full object-cover mb-3"
+                />
+              : <img
+                src={user && user.profile_pic}
+                alt="Prof Avatar"
+                className="w-20 h-20 rounded-full object-cover mb-3"
+              />
+            } */}
             <img
-              src="/src/assets/HomePage-prof/prof-avatar.jpg"
+              // src="/src/assets/HomePage-prof/prof-avatar.jpg"
+              src={user && user.profile_pic || "/src/assets/HomePage-prof/prof-avatar.jpg"}
               alt="Prof Avatar"
               className="w-20 h-20 rounded-full object-cover mb-3"
             />

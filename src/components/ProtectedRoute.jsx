@@ -7,8 +7,6 @@ import MainLoading from "./LoadingComponents/mainLoading";
 const ProtectedRoute = ({ children }) => {
   const { isLoading, isAuthenticated } = useUser();
 
-  console.log(isLoading, isAuthenticated)
-
   // No need for separate auth check here since UserProvider already does it
   // The UserProvider will have already checked auth on mount
 

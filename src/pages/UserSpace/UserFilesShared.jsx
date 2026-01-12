@@ -1,10 +1,14 @@
-import React from "react";
-import { useNavigate } from "react-router";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import Sidebar from "../component/sidebar";
 import { FiFileText } from "react-icons/fi";
+import MainLoading from "../../components/LoadingComponents/mainLoading";
 
 const UserFilesShared = () => {
   const navigate = useNavigate(); // ✅ REQUIRED
+  const [searchParams] = useSearchParams();
+  const { space_uuid, space_name } = useParams();
+
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
@@ -36,21 +40,21 @@ const UserFilesShared = () => {
 
           <button
             className="text-gray-400 text-xl hover:text-white transition"
-            onClick={() => navigate("/user-space-zj/tasks")}
+            onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}
           >
             Tasks
           </button>
 
           <button
             className="text-gray-400 text-xl hover:text-white transition"
-            onClick={() => navigate("/user-space-zj/files-shared")}
+            onClick={() => navigate(`/space/${space_uuid}/${space_name}/files-shared`)}
           >
             Files Shared
           </button>
 
           <button
             className="text-gray-400 text-xl hover:text-white transition"
-            onClick={() => navigate("/user-space-zj/people")}
+            onClick={() => navigate(`/space/${space_uuid}/${space_name}/people`)}
           >
             People
           </button>

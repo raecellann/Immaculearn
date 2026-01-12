@@ -22,8 +22,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     try {
       // Try profile
       const profileRes = await api.get("/auth/profile");
-
-      console.log(profileRes)
+      // console.log(profileRes.data?.data)
       if (profileRes.data?.data) {
         setUser(profileRes.data.data);
         setIsAuthenticated(true);
@@ -82,9 +81,10 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   };
 
   // Logout function
-  const logout = async (): Promise<void> => {
+  const logout = async (account_id: number): Promise<void> => {
     try {
-      await api.post("/auth/logout"); // API should clear refresh token cookie
+      await api.post("/auth/logout", {user_id: account_id}); // API should clear refresh token cookie
+      await checkAuth();
     } catch (err) {
       console.error("Logout error:", err);
     } finally {

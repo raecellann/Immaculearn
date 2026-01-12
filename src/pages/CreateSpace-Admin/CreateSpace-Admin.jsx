@@ -4,8 +4,16 @@ import Sidebar from "../component/sidebar";
 import InputField from "../component/InputField";
 import Button from "../component/Button";
 import { ChevronDown, X } from "lucide-react";
+// import { useSpace } from "../../contexts/space/spaceContext";
+import { useNavigate } from "react-router";
+import { useSpace } from "../../contexts/space/useSpace";
+
 
 const CreateSpaceAdmin = () => {
+  const { createSpace } = useSpace();
+  const navigate = useNavigate();
+
+
   const [spaceName, setSpaceName] = useState("");
   const [numMembers, setNumMembers] = useState(5);
   const [people, setPeople] = useState(Array(5).fill(""));
@@ -48,11 +56,37 @@ const CreateSpaceAdmin = () => {
     setPeople(Array(numMembers).fill(""));
   }, [numMembers]);
 
-  const handleCreateSpace = () => {
+  const handleCreateSpace = async () => {
     if (spaceName.trim()) {
-      alert(`Space "${spaceName}" created with ${numMembers} members!`);
-      setSpaceName("");
-      setNumMembers(5);
+      try {
+        // Prepare data for API
+        const spaceData = {
+          space_name: spaceName,
+          max_members: numMembers,
+          invited_emails: people.filter(email => email.trim() !== ""),
+          cover_image: coverImage
+        };
+
+        // Call the API
+        const result = await createSpace(spaceData);
+
+        if (result.success) {
+          const space_uuid = result.space_uuid;
+          alert(`Space "${spaceName}" created successfully!`);
+          
+          // Reset form
+          setSpaceName("");
+          setNumMembers(5);
+          setPeople(Array(5).fill(""));
+          setCoverImage("/src/assets/HomePage/spaces-cover/cover1.jpg");
+          navigate(`/space/${space_uuid}/${spaceName}`)
+        } else {
+          alert(result.message || "Failed to create space. Please try again.");
+        }
+      } catch (error) {
+        console.error("Create space error:", error);
+        alert("An error occurred while creating the space.");
+      }
     } else {
       alert("Please enter a space name.");
     }

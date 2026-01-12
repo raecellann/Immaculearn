@@ -2,16 +2,20 @@ import React, { useEffect, useState } from "react";
 import InputField from "@/pages/component/InputField";
 import Button from "@/pages/component/Button";
 import { Mail } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import { useUser } from "../../contexts/user/useUser";
+import MainLoading from "../../components/LoadingComponents/mainLoading";
 
 const LoginPage = () => {
+  const {isAuthenticated, user, isLoading} = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState(""); // ✅ track selected role
   const [error, setError] = useState("")
 
   const navigate = useNavigate();
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,33 +26,78 @@ const LoginPage = () => {
     alert(`Logging in as ${role}`);
   };
 
-  const handleGmailLogin = async() => {
-    // if (!role) {
-    //   alert("Please select whether you are a Student or a Professor.");
-    //   return;
-    // }
-
-    window.open(
+  const handleGmailLogin = async () => {
+    const popup = window.open(
       `http://localhost:3000/v1/account/oauth/google/redirect`,
-      "_blank",
+      "oauthPopup",
       `width=500,height=600,top=${(screen.height-600)/2},left=${(screen.width-500)/2},resizable=yes,scrollbars=yes`
     );
+
+    // Set up message listener for the popup
+    const messageHandler = (event) => {
+      // Verify the message is from our domain
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data.type === 'OAUTH_SUCCESS') {
+        const { role, needsOnboarding } = event.data;
+        
+        // Store the authentication data
+        // localStorage.setItem('isAuthenticated', 'true');
+        // localStorage.setItem('userRole', role);
+
+        // Redirect based on role and onboarding status
+        if (needsOnboarding) {
+          navigate(`/onboarding?role=${role}`);
+        } else {
+          if (role === 'student') {
+            window.location.href = `/home?role=${role}`;
+          } else if (role === 'professor') {
+            window.location.href = `/prof/home?role=${role}`;
+          } else if (role === 'admin') {
+            window.location.href = `/admin-dashboard?role=${role}`;
+          } else {
+            navigate('/');
+          }
+        }
+      } else if (event.data.type === 'OAUTH_ERROR') {
+        console.error('OAuth error:', event.data.error);
+        toast.error('Failed to sign in with Google. Please try again.');
+      }
+    };
+
+    // Add event listener for messages
+    window.addEventListener('message', messageHandler);
+
+    // Clean up the event listener when component unmounts or popup is closed
+    const checkPopup = setInterval(() => {
+      if (!popup || popup.closed) {
+        clearInterval(checkPopup);
+        window.removeEventListener('message', messageHandler);
+      }
+    }, 1000);
   };
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const handleMessage = (event) => {
       if (event.origin !== "http://localhost:5173") return;
+
       if (!event.data.success) {
         setError(event.data.error)
       }
       if (event.data.success) {
+
+        console.log(event.data)
         if (event.data.needsOnboarding) {
           navigate(`/onboarding?role=${event.data.role}`)
         } else {
-          if (role === "student") {
+
+          // console.log(event.data.role)
+          if (event.data.role === "student") {
             navigate(`/home?role=${event.data.role}`); // or onboarding
           } else {
-            navigate(`/prof-home?role=${event.data.role}`); // or onboarding
+            navigate(`/prof/home?role=${event.data.role}`); // or onboarding
           }
         }
       }
@@ -67,6 +116,27 @@ const LoginPage = () => {
       toast.error("Google login failed. Please try again.");
     }
   }, [error]); // run only when `error` changes
+
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.role) return;
+
+    if (user.role === "student") {
+      navigate(`/home?role=${user.role}`);
+    } else if (user.role === "professor") {
+      navigate(`/prof/home?role=${user.role}`);
+    }
+  }, [isAuthenticated, user, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen justify-center items-center">
+        <MainLoading />
+      </div>
+    );
+  }
+
+
 
   return (
     <div

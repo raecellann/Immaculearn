@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../component/sidebar";
 import { useUser } from "../../contexts/user/useUser";
+import { useNavigate } from "react-router";
+
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
 
-  const { user } = useUser();
+  const { user, isAuthenticated } = useUser();
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const profileName = user && user.name; // fixed name
+
 
   // Upload profile picture
   const handleImageChange = (e) => {
@@ -20,10 +24,11 @@ const ProfilePage = () => {
 
 
   useEffect(() => {
+    if (!isAuthenticated) return navigate('/login')
     if (user?.profile_pic) {
       setProfileImage(user.profile_pic);
     }
-  }, [user]);
+  }, [user, isAuthenticated]);
 
 
   return (
@@ -98,7 +103,7 @@ const ProfilePage = () => {
                 >
                   {profileImage ? (
                     <img
-                      src={profileImage}
+                      src={profileImage || 'image.png'}
                       alt="Profile"
                       className="w-32 h-32 lg:w-40 lg:h-40 mx-auto rounded-xl object-cover border-4 border-[#3A7BFF] group-hover:opacity-80 transition"
                     />
@@ -129,13 +134,15 @@ const ProfilePage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <input
                     type="text"
-                    value={user && user.name}
+                    readOnly
+                    value={user && user.name || ""}
                     placeholder="First Name"
                     className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white"
                   />
                   <input
                     type="text"
-                    value={user && user.name}
+                    readOnly
+                    value={user && user.name || ""}
                     placeholder="Last Name"
                     className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white"
                   />

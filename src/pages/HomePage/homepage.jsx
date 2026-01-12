@@ -3,9 +3,18 @@ import Sidebar from "../component/sidebar";
 import Button from "../component/Button";
 import { BookOpen, User, GraduationCap, FileText, Calendar } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
+import { useSpace } from "../../contexts/space/useSpace";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { useNavigate } from "react-router";
+import { SpaceCover } from "../component/spaceCover";
+// import { useSpace } from "../../contexts/space/spaceContext";
 
 const HomePage1 = () => {
   const { user } = useUser();
+  const { userSpaces, friendSpaces } = useSpace();
+
+  const navigate = useNavigate();
+
 
   const [currentDate, setCurrentDate] = useState('');
   const [greeting, setGreeting] = useState('');
@@ -29,6 +38,7 @@ const HomePage1 = () => {
     const weekday = now.toLocaleString('default', { weekday: 'long' });
     setCurrentDate(`${month} ${day}, ${year} (${weekday})`);
 
+
     const hour = now.getHours();
     if (hour < 12) setGreeting('Good Morning');
     else if (hour < 18) setGreeting('Good Afternoon');
@@ -38,6 +48,14 @@ const HomePage1 = () => {
     setCurrentYear(now.getFullYear());
     setToday(now);
   }, []);
+
+  const userSpaceUUIDs = new Set(
+    (userSpaces || []).map(space => space.space_uuid)
+  );
+
+  const sharedSpaces = (friendSpaces || []).filter(
+    space => !userSpaceUUIDs.has(space.space_uuid)
+  );
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
@@ -112,21 +130,33 @@ const HomePage1 = () => {
                 className="flex gap-4 transition-transform duration-300 ease-in-out"
                 style={{ transform: `translateX(-${slideIndexYourSpace * 648}px)` }}
               >
-                {[
+                {/* {[
                   { title: "Lectures", time: "Opened 1 min ago", image: "/src/assets/HomePage/spaces-cover/lectures.jpg" },
                   { title: "Todo-Lists", time: "Opened 5 mins ago", image: "/src/assets/HomePage/spaces-cover/space-board.jpg" },
                   { title: "Subject Grades", time: "Opened 10 mins ago", image: "/src/assets/HomePage/spaces-cover/grades.jpg" },
                   { title: "Notes", time: "Opened 20 mins ago", image: "/src/assets/HomePage/spaces-cover/cover1.jpg" },
                   { title: "Projects", time: "Opened 30 mins ago", image: "/src/assets/HomePage/spaces-cover/cover2.jpg" }
-                ].map((space, i) => (
-                  <div key={i} className="bg-[#1E242E] p-4 rounded-lg hover:bg-[#242B38] transition min-w-[200px]">
-                    <img
-                      src={space.image}
-                      alt={space.title}
+                ]} */}
+                {userSpaces?.map((space, i) => (
+                  <div key={i}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate(`/space/${space.space_uuid}/${space.space_name}`)}
+                    className="bg-[#1E242E] rounded-lg hover:bg-[#242B38] transition min-w-[200px]">
+                    {/* <img
+                      src={space.image || "/src/assets/HomePage/spaces-cover/lectures.jpg"}
+                      alt={space.space_name || "SAMPLE NAME"}
                       className="h-28 w-full object-cover rounded-lg mb-3"
+                    /> */}
+                    <SpaceCover 
+                      image={space.image}
+                      name={space.space_name}
+                      className="h-32 w-full"
                     />
-                    <h3 className="font-medium">{space.title}</h3>
-                    <p className="text-gray-500 text-xs mt-1">{space.time}</p>
+                    <div className="p-4">
+                      <h3 className="font-medium truncate">{capitalizeWords(space.space_name) + "'s Space" || "SAMPLE SPACE NAME"}</h3>
+                      <p className="text-gray-500 text-xs mt-1">{space.time || "2038-01-01"}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -161,21 +191,23 @@ const HomePage1 = () => {
                 className="flex gap-4 transition-transform duration-300 ease-in-out"
                 style={{ transform: `translateX(-${slideIndexSpaces * 648}px)` }}
               >
-                {[
-                  { title: "Zeldrick's Spaces", members: "3 Members", time: "Opened just now", image: "/src/assets/HomePage/spaces-cover/cover1.jpg" },
-                  { title: "Wilson Space", members: "4 Members", time: "Opened 1 min ago", image: "/src/assets/HomePage/spaces-cover/cover2.jpg" },
-                  { title: "Nath Space", members: "5 Members", time: "Opened 5 min ago", image: "/src/assets/HomePage/spaces-cover/cover3.jpg" },
-                ].map((space, i) => (
+                {sharedSpaces.map((space, i) => (
                   <div
                     key={i}
                     className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg min-w-[200px]"
                   >
                     <div className="relative">
-                      <img
+                      {/* <img
                         src={space.image}
                         alt={space.title}
                         className="h-32 w-full object-cover"
+                      /> */}
+                      <SpaceCover 
+                        image={space.background_img}
+                        name={space.space_name}
+                        className="h-32 w-full"
                       />
+
                       <div className="absolute top-2 right-2">
                         <button
                           onClick={() => setShowMenu(showMenu === i ? null : i)}
@@ -197,10 +229,11 @@ const HomePage1 = () => {
                         )}
                       </div>
                     </div>
+                    
                     <div className="p-4">
-                      <h3 className="font-medium text-sm">{space.title}</h3>
-                      <p className="text-gray-400 text-xs mt-1">{space.members}</p>
-                      <p className="text-gray-500 text-xs mt-1">{space.time}</p>
+                      <h3 className="font-medium text-sm">{capitalizeWords(space.space_name) + "'s Space"}</h3>
+                      <p className="text-gray-400 text-xs mt-1">{space.members != null ? `${space?.members?.length} Members` : "No members"}</p>
+                      <p className="text-gray-500 text-xs mt-1">{space.time || "Opened just now"}</p>
                     </div>
                   </div>
                 ))}
@@ -229,7 +262,7 @@ const HomePage1 = () => {
               className="w-20 h-20 rounded-full object-cover mb-3"
             />
             <h3 className="text-lg font-semibold">{user && user.name}</h3>
-            <p className="text-gray-400 text-sm">{role}</p>
+            <p className="text-gray-400 text-sm">{user && user.role}</p>
             <Button className="homepage-edit-button mt-2">Edit Profile</Button>
           </div>
 
