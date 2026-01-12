@@ -34,19 +34,14 @@ const AdminSidebar = () => {
 
   return (
     <div
-      className="h-screen w-60 text-white flex flex-col justify-between font-inter sticky top-0"
+      className="h-screen w-60 text-white flex flex-col justify-between font-inter fixed left-0 top-0 overflow-hidden z-50"
       style={{
         backgroundImage:
           "linear-gradient(to bottom, #4d9bef, #3d8ee8, #2c81e1, #1a73da, #0066d2)",
       }}
     >
-      <style>{`
-        .sidebar-scroll::-webkit-scrollbar { display: none; }
-        .sidebar-scroll { scrollbar-width: none; -ms-overflow-style: none; }
-      `}</style>
-
       {/* TOP SECTION */}
-      <div className="flex-1 flex flex-col items-start p-5 overflow-y-auto sidebar-scroll">
+      <div className="flex-1 flex flex-col items-start p-5 overflow-hidden">
         {/* TITLE */}
         <h1 className="font-bold text-lg flex items-center space-x-2 mb-6">
           <img
@@ -85,7 +80,7 @@ const AdminSidebar = () => {
       </div>
 
       {/* PROFILE */}
-      <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0">
+      <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0 overflow-hidden">
         <img
           src="/src/assets/HomePage/frieren-avatar.jpg"
           alt="Profile"

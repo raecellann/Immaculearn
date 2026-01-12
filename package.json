@@ -26,7 +26,8 @@
     "react-toastify": "^11.0.5",
     "socket.io": "4.8.1",
     "socket.io-client": "4.8.1",
-    "styled-components": "^6.1.19"
+    "styled-components": "^6.1.19",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "9.21.0",
