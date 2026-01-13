@@ -126,38 +126,52 @@ const AdminTeachers = () => {
   /* ================= RENDER ================= */
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white relative">
+    <div className="flex min-h-screen bg-[#161A20] text-white">
 
+      {/* DESKTOP SIDEBAR */}
+      <div className="hidden lg:block">
+        <AdminSidebar />
+      </div>
+
+      {/* MOBILE OVERLAY */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      <div className="fixed top-0 left-0 h-full z-40 lg:static">
+      {/* MOBILE SIDEBAR */}
+      <div
+        className={`fixed top-0 left-0 h-screen w-64 z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
         <AdminSidebar />
       </div>
 
-      <div className="flex-1 ml-60 flex flex-col">
+      {/* MAIN CONTENT */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-60">
 
         {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] transition-transform ${
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
         >
-          <div className="flex items-center px-4 h-14">
-            <button onClick={() => setMobileSidebarOpen(true)}>
-              <Menu />
-            </button>
-            <h1 className="ml-4 font-semibold">Teachers</h1>
-          </div>
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Teachers</h1>
         </div>
 
-        <div className="lg:hidden h-16" />
+        {/* HEADER SPACER */}
+        <div className="lg:hidden h-16"></div>
 
-        <div className="flex-1 p-6">
+        {/* PAGE CONTENT */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
 
           {/* DESKTOP TITLE */}
           <h1 className="hidden lg:block text-2xl font-bold mb-6">
@@ -185,7 +199,7 @@ const AdminTeachers = () => {
             </div>
           </div>
 
-          {/* MOBILE BUTTONS */}
+          {/* MOBILE / TABLET */}
           <div className="lg:hidden mb-4 flex gap-3">
             <button
               onClick={() => setShowAddModal(true)}
@@ -203,19 +217,58 @@ const AdminTeachers = () => {
             </button>
           </div>
 
-          <div className="bg-[#1E242E] rounded-xl p-6">
-            {teachers.map((t) => (
+          {/* MOBILE / TABLET CARDS */}
+          <div className="flex flex-col gap-4 lg:hidden">
+            {teachers.map((teacher) => (
               <div
-                key={t.id}
-                className="flex justify-between py-3 border-b border-gray-700"
+                key={teacher.id}
+                className="bg-[#1E242E] border border-gray-700 rounded-xl p-4"
               >
-                <span>{t.name}</span>
-                <span>{t.email}</span>
-                <span className="flex items-center gap-1 text-green-400">
-                  <CheckCircle size={14} /> Verified
-                </span>
+                <p className="text-base font-semibold mb-1">
+                  {teacher.name}
+                </p>
+
+                <p className="text-gray-400 text-sm mb-3">
+                  {teacher.email}
+                </p>
+
+                <div className="flex items-center gap-2 text-green-400 text-sm">
+                  <CheckCircle className="w-4 h-4" />
+                  Verified
+                </div>
               </div>
             ))}
+          </div>
+
+          {/* DESKTOP TABLE */}
+          <div className="hidden lg:block bg-[#1E242E] p-6 rounded-xl">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-gray-400 border-b border-gray-700">
+                  <th className="py-3">Name</th>
+                  <th className="py-3">Email</th>
+                  <th className="py-3">Verified</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {teachers.map((teacher) => (
+                  <tr
+                    key={teacher.id}
+                    className="border-b border-gray-800 hover:bg-[#242B38]"
+                  >
+                    <td className="py-4">{teacher.name}</td>
+                    <td className="py-4">{teacher.email}</td>
+                    <td className="py-4">
+                      <div className="flex items-center gap-2 text-green-400">
+                        <CheckCircle className="w-4 h-4" />
+                        Verified
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

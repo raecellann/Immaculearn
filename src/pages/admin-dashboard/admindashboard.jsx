@@ -44,43 +44,52 @@ const AdminDashboard = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white relative">
+    <div className="flex min-h-screen bg-[#161A20] text-white">
+
+      {/* DESKTOP SIDEBAR */}
+      <div className="hidden lg:block">
+        <AdminSidebar />
+      </div>
 
       {/* MOBILE OVERLAY */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* SIDEBAR */}
-      <div className="fixed top-0 left-0 h-full z-40 lg:static">
+      {/* MOBILE SIDEBAR */}
+      <div
+        className={`fixed top-0 left-0 h-screen w-64 z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
         <AdminSidebar />
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 ml-60 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-60">
 
         {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] transition-transform ${
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
         >
-          <div className="flex items-center px-4 h-14">
-            <button onClick={() => setMobileSidebarOpen(true)}>
-              <Menu />
-            </button>
-            <h1 className="ml-4 font-semibold">Admin Dashboard</h1>
-          </div>
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Admin Dashboard</h1>
         </div>
 
         {/* HEADER SPACER */}
-        <div className="lg:hidden h-16" />
+        <div className="lg:hidden h-16"></div>
 
         {/* PAGE CONTENT */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
 
           <h1 className="hidden lg:block text-2xl font-bold mb-8">
             Admin Dashboard

@@ -34,16 +34,21 @@ const AdminSidebar = () => {
 
   return (
     <div
-      className="h-screen w-60 text-white flex flex-col justify-between font-inter fixed left-0 top-0 overflow-hidden z-50"
+      className="h-screen w-60 text-white flex flex-col justify-between font-inter overflow-hidden z-50 fixed top-0 left-0"
       style={{
         backgroundImage:
           "linear-gradient(to bottom, #4d9bef, #3d8ee8, #2c81e1, #1a73da, #0066d2)",
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        overflow: 'hidden'
       }}
     >
       {/* TOP SECTION */}
-      <div className="flex-1 flex flex-col items-start p-5 overflow-hidden">
+      <div className="flex-1 flex flex-col items-start p-5 overflow-y-hidden overflow-x-hidden">
         {/* TITLE */}
-        <h1 className="font-bold text-lg flex items-center space-x-2 mb-6">
+        <h1 className="font-bold text-lg flex items-center space-x-2 mb-6 flex-shrink-0">
           <img
             src="/src/assets/HomePage/logo.png"
             alt="ImmacuLearn Logo"
@@ -53,7 +58,7 @@ const AdminSidebar = () => {
         </h1>
 
         {/* MAIN MENU */}
-        <nav className="w-full space-y-1 mb-5">
+        <nav className="w-full space-y-1 mb-5 overflow-y-hidden overflow-x-hidden">
           {menuItems.map((item) => (
             <SidebarItem
               key={item.label}
@@ -68,7 +73,7 @@ const AdminSidebar = () => {
         </nav>
 
         {/* LOGOUT */}
-        <div className="w-full border-t border-blue-300/40 pt-3 space-y-1">
+        <div className="w-full border-t border-blue-300/40 pt-3 space-y-1 overflow-y-hidden overflow-x-hidden">
           <SidebarItem
             icon={<LogOut size={20} />}
             label="Log Out"
@@ -80,7 +85,7 @@ const AdminSidebar = () => {
       </div>
 
       {/* PROFILE */}
-      <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0 overflow-hidden">
+      <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0 overflow-y-hidden overflow-x-hidden">
         <img
           src="/src/assets/HomePage/frieren-avatar.jpg"
           alt="Profile"
