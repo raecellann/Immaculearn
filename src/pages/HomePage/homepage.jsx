@@ -214,9 +214,9 @@ const HomePage1 = () => {
                   <p className="text-gray-400 text-sm">
                     Join space or create your own.
                   </p>
-                  <div className="flex flex-col xs:flex-row gap-3 mt-4">
-                    <Button>Create Space</Button>
-                    <Button>Join Space</Button>
+                  <div className="mt-4">
+                    <Button className="text-sm py-1.5 px-4 mr-2">Create Space</Button>
+                    <Button className="text-sm py-1.5 px-4">Join Space</Button>
                   </div>
                 </div>
                 <div className="hidden sm:block flex-shrink-0">

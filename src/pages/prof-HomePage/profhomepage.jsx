@@ -161,9 +161,8 @@ const ProfHomePage = () => {
                   <p className="text-gray-400 text-sm">
                     Create spaces or join existing ones.
                   </p>
-                  <div className="flex flex-col xs:flex-row gap-3 mt-4">
-                    <Button>Create Space</Button>
-                    <Button>Join Space</Button>
+                  <div className="mt-4">
+                    <Button className="text-sm py-2 px-4">Create Space</Button>
                   </div>
                 </div>
                 <div className="hidden sm:block flex-shrink-0">
