@@ -167,7 +167,15 @@ const ProfTaskPage = () => {
 
           {/* ================= TASKS ================= */}
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-xl font-semibold mb-6">Assigned Tasks</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Assigned Tasks</h2>
+              <button 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                onClick={() => navigate("")}
+              >
+                + Create Task
+              </button>
+            </div>
 
             {/* DESKTOP TABLE */}
             <div className="hidden md:block">
@@ -213,26 +221,13 @@ const ProfTaskPage = () => {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-blue-400 hover:underline">
-                        <a href="/prof-task-view">
-                          {task.name}
-                        </a>
-                      </td>
+                      <td className="py-3 px-4">{task.name}</td>
                       <td className="py-3 px-4">{task.assignedTo}</td>
                       <td className="py-3 px-4">{task.deadline}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              
-              <div className="mt-6 flex justify-end">
-                <button 
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                  onClick={() => navigate("/")}
-                >
-                  + Create Task
-                </button>
-              </div>
             </div>
 
             {/* MOBILE / TABLET CARDS */}

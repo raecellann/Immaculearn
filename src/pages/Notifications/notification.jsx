@@ -32,9 +32,11 @@ const NotificationPage = ({ notifications = [] }) => {
     { id: 1, type: "invite", sender: "Zeldrick", message: "Zeldrick invited you to join their space" },
     { id: 2, type: "file", sender: "Nathaniel", message: "Nathaniel shared a file with you" },
     { id: 3, type: "task", sender: "Wilson", message: "Wilson assigned you a task in their space" },
-    { id: 4, type: "invite", sender: "Zeldrick", message: "Zeldrick invited you to join their space" },
-    { id: 5, type: "file", sender: "Nathaniel", message: "Nathaniel shared a file with you" },
-    { id: 6, type: "task", sender: "Wilson", message: "Wilson assigned you a task in their space" },
+    { id: 4, type: "comment", sender: "Raecell", message: "Raecell commented on your activity" },
+    { id: 5, type: "invite", sender: "Zeldrick", message: "Zeldrick invited you to join their space" },
+    { id: 6, type: "file", sender: "Nathaniel", message: "Nathaniel shared a file with you" },
+    { id: 7, type: "comment", sender: "John", message: "John commented on your post" },
+    { id: 8, type: "task", sender: "Wilson", message: "Wilson assigned you a task in their space" },
   ];
 
   const notificationList = notifications.length > 0 ? notifications : defaultNotifications;
@@ -44,6 +46,7 @@ const NotificationPage = ({ notifications = [] }) => {
       case "invite": return "👥";
       case "file": return "📁";
       case "task": return "📋";
+      case "comment": return "💬";
       default: return "🔔";
     }
   };
@@ -52,6 +55,7 @@ const NotificationPage = ({ notifications = [] }) => {
   const handleDecline = (id) => console.log("Declined", id);
   const handleOpenFile = (id) => console.log("Opened file", id);
   const handleOpenTask = (id) => console.log("Opened task", id);
+  const handleViewComment = (id) => console.log("Viewed comment", id);
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
@@ -145,6 +149,13 @@ const NotificationPage = ({ notifications = [] }) => {
                       onClick={() => handleOpenTask(notif.id)}
                     >
                       View Task
+                    </button>
+                  ) : notif.type === "comment" ? (
+                    <button
+                      className="text-blue-400 hover:underline bg-transparent text-sm whitespace-nowrap"
+                      onClick={() => handleViewComment(notif.id)}
+                    >
+                      View Comment
                     </button>
                   ) : null}
                 </div>
