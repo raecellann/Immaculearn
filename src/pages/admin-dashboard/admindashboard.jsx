@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
-import { Users, GraduationCap, UserCheck, Menu } from "lucide-react";
+import { Users, GraduationCap } from "lucide-react";
+
+/*
+ API USED:
+ GET http://localhost:3000/v1/register_student/all_emails
+*/
 
 const AdminDashboard = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -9,23 +14,89 @@ const AdminDashboard = () => {
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
+  /* 🔹 STATS STATE */
   const [stats, setStats] = useState({
-    teachers: 12,
-    students: 240,
+    teachers: 0,
+    students: 0,
     pending: 3,
   });
 
+  /* 🔹 RECENT ACTIVITY */
   const [recentActivity, setRecentActivity] = useState([]);
 
+  /* 🔹 FETCH STUDENT EMAIL COUNT */
+  useEffect(() => {
+  const fetchStudentCount = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:3000/v1/register_student/all_emails_student"
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch student emails");
+      }
+
+      const data = await res.json();
+
+      // ✅ MATCHED TO YOUR API RESPONSE
+      const studentCount = Array.isArray(data.emails)
+        ? data.emails.length
+        : 0;
+
+      setStats((prev) => ({
+        ...prev,
+        students: studentCount,
+      }));
+    } catch (error) {
+      console.error("Error fetching student count:", error);
+    }
+  };
+
+  fetchStudentCount();
+}, []);
+
+/* 🔹 FETCH STUDENT EMAIL COUNT */
+  useEffect(() => {
+  const fetchprofCount = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:3000/v1/register_prof/all_emails_prof"
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch student emails");
+      }
+
+      const data = await res.json();
+
+      // ✅ MATCHED TO YOUR API RESPONSE
+      const profCount = Array.isArray(data.emails)
+        ? data.emails.length
+        : 0;
+
+      setStats((prev) => ({
+        ...prev,
+        teachers: profCount,
+      }));
+    } catch (error) {
+      console.error("Error fetching student count:", error);
+    }
+  };
+
+  fetchprofCount();
+}, []);
+
+
+  /* 🔹 MOCK RECENT ACTIVITY */
   useEffect(() => {
     setRecentActivity([
       { id: 1, message: "New student account registered", time: "2 min ago" },
       { id: 2, message: "Teacher account verified", time: "10 min ago" },
-      { id: 3, message: "Student changed profile info", time: "30 min ago" },
+      { id: 3, message: "Student updated profile information", time: "30 min ago" },
     ]);
   }, []);
 
-  /* 🔹 SCROLL BEHAVIOR (RESTORED) */
+  /* 🔹 SCROLL BEHAVIOR */
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -43,15 +114,13 @@ const AdminDashboard = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Navigation handlers
+  /* 🔹 NAVIGATION */
   const navigateToTeachers = () => {
-    // This will navigate to the teachers page
-    window.location.href = '/admin-teachers';
+    window.location.href = "/admin-teachers";
   };
 
   const navigateToStudents = () => {
-    // This will navigate to the students page
-    window.location.href = '/admin-students';
+    window.location.href = "/admin-students";
   };
 
   return (
@@ -72,7 +141,7 @@ const AdminDashboard = () => {
 
       {/* MOBILE SIDEBAR */}
       <div
-        className={`fixed top-0 left-0 h-screen w-64 z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
+        className={`fixed top-0 left-0 h-screen w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <AdminSidebar />
@@ -89,52 +158,47 @@ const AdminDashboard = () => {
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            className="text-2xl"
           >
             ☰
           </button>
           <h1 className="text-xl font-bold">Admin Dashboard</h1>
         </div>
 
-        {/* HEADER SPACER */}
         <div className="lg:hidden h-16"></div>
 
         {/* PAGE CONTENT */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-
           <h1 className="hidden lg:block text-2xl font-bold mb-8">
             Admin Dashboard
           </h1>
 
-          {/* ===== STAT CARDS ===== */}
+          {/* STAT CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
-            <StatCard 
-              icon={GraduationCap} 
-              label="Teachers" 
-              value={stats.teachers} 
-              color="blue" 
+            <StatCard
+              icon={GraduationCap}
+              label="Teachers"
+              value={stats.teachers}
+              color="blue"
               onClick={navigateToTeachers}
             />
-            <StatCard 
-              icon={Users} 
-              label="Students" 
-              value={stats.students} 
-              color="green" 
+            <StatCard
+              icon={Users}
+              label="Students"
+              value={stats.students}
+              color="green"
               onClick={navigateToStudents}
             />
           </div>
 
-          {/* ===== RECENT ACTIVITY ===== */}
-          <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">
-              Recent Activity
-            </h2>
-
+          {/* RECENT ACTIVITY */}
+          <div className="bg-[#1E242E] p-6 rounded-xl">
+            <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
             <div className="space-y-3">
               {recentActivity.map((log) => (
                 <div
                   key={log.id}
-                  className="bg-[#2E3440] p-4 rounded-lg flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 hover:bg-[#363D4A] transition"
+                  className="bg-[#2E3440] p-4 rounded-lg flex justify-between items-center"
                 >
                   <p className="text-sm">{log.message}</p>
                   <span className="text-xs text-gray-400">{log.time}</span>
@@ -143,49 +207,37 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-
         </div>
       </div>
     </div>
   );
 };
 
-/* 🔹 REUSABLE STAT CARD */
+/* 🔹 STAT CARD COMPONENT */
 const StatCard = ({ icon: Icon, label, value, color, onClick }) => {
-  const colorGradients = {
-    blue: 'from-blue-600 to-indigo-700',
-    green: 'from-emerald-600 to-teal-700',
-    yellow: 'from-yellow-500 to-amber-600',
+  const gradients = {
+    blue: "from-blue-600 to-indigo-700",
+    green: "from-emerald-600 to-teal-700",
   };
 
-  const iconBackgrounds = {
-    blue: 'bg-blue-500/20 text-blue-200',
-    green: 'bg-emerald-500/20 text-emerald-200',
-    yellow: 'bg-amber-500/20 text-amber-200',
+  const iconBg = {
+    blue: "bg-blue-500/20 text-blue-200",
+    green: "bg-emerald-500/20 text-emerald-200",
   };
 
   return (
-    <button 
+    <button
       onClick={onClick}
-      className={`w-full text-left p-6 rounded-xl flex items-center gap-5 
-        bg-gradient-to-br ${colorGradients[color]} 
-        shadow-lg hover:shadow-xl hover:shadow-${color}-500/20 
-        transition-all duration-300 transform hover:-translate-y-1 
-        active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 
-        focus:ring-offset-[#1E242E] focus:ring-${color}-400
-        border border-${color}-400/20`}
+      className={`w-full p-6 rounded-xl flex items-center gap-5
+      bg-gradient-to-br ${gradients[color]}
+      hover:scale-[1.02] transition`}
     >
-      <div className={`${iconBackgrounds[color]} p-3.5 rounded-xl backdrop-blur-sm`}>
-        <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
+      <div className={`${iconBg[color]} p-3 rounded-xl`}>
+        <Icon className="w-7 h-7" />
       </div>
-      <div className="text-white">
-        <p className="text-opacity-80 text-sm font-medium">{label}</p>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{value}</h2>
-      </div>
-      <div className="ml-auto opacity-80">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-        </svg>
+      <div>
+        <p className="text-sm opacity-80">{label}</p>
+        <h2 className="text-3xl font-bold">{value}</h2>
       </div>
     </button>
   );

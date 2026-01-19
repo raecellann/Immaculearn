@@ -22,15 +22,33 @@ const AdminTeachers = () => {
   const lastScrollY = useRef(0);
 
   useEffect(() => {
-    setTeachers([
-      { id: 1, name: "Jober Reyes", email: "joberreyes@gmail.com" },
-      { id: 2, name: "Nathaniel Cruz", email: "nathanielcruz@gmail.com" },
-      { id: 3, name: "Wilson James", email: "wilsonjames@gmail.com" },
-      { id: 4, name: "Shiela Sta. Maria", email: "shengstamaria@gmail.com" },
-      { id: 5, name: "Cecilia Cruz", email: "ceciliacruz@gmail.com" },
-      { id: 6, name: "Juan Dela Cruz", email: "juandelacruz@gmail.com" },
-    ]);
-  }, []);
+  const fetchProf = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:3000/v1/register_prof/all_emails_prof"
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch professor emails");
+      }
+
+      const data = await res.json();
+
+      const mappedTeachers = data.emails.map((email, index) => ({
+        id: index + 1,
+        name: null,
+        email,
+        verified: false,
+      }));
+
+      setTeachers(mappedTeachers);
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+    }
+  };
+
+  fetchProf();
+}, []);
 
   /* ================= FILE IMPORT ================= */
 

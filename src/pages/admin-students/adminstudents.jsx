@@ -23,63 +23,37 @@ const AdminStudents = () => {
   const lastScrollY = useRef(0);
 
   useEffect(() => {
-    setStudents([
-      { 
-        id: 1, 
-        name: "Raecell Ann Galvez", 
-        studentNumber: "2021-001",
-        email: "raecell@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 2, 
-        name: "Zeldrick Jesus Delos Santos", 
-        studentNumber: "2021-002",
-        email: "zeldrickjesus@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 3, 
-        name: "Wilson Esmabe", 
-        studentNumber: "2021-003",
-        email: "wesmabe1920@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 4, 
-        name: "Nathaniel Faburada", 
-        studentNumber: "2021-004",
-        email: "faburadanathaniel@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 5, 
-        name: "Christian Joy Bedana", 
-        studentNumber: "2021-005",
-        email: "gimple20@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 6, 
-        name: "Keziah Tangco", 
-        studentNumber: "2021-006",
-        email: "keziahtangco@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-    ]);
-  }, []);
+  const fetchStudents = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:3000/v1/register_student/all_emails_student"
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch student emails");
+      }
+
+      const data = await res.json();
+
+      const mappedStudents = data.emails.map((email, index) => ({
+        id: index + 1,
+        name: null,
+        studentNumber: null,
+        email,
+        yearLevel: null,
+        course: null,
+        verified: false,
+      }));
+
+      setStudents(mappedStudents);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    }
+  };
+
+  fetchStudents();
+}, []);
+
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
