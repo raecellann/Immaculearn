@@ -87,7 +87,7 @@ const AdminSidebar = () => {
       {/* PROFILE */}
       <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0 overflow-y-hidden overflow-x-hidden">
         <img
-          src="/src/assets/HomePage/frieren-avatar.jpg"
+          src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990130/frieren-avatar_bmbb5g.jpg"
           alt="Profile"
           className="w-9 h-9 rounded-full object-cover border border-white/20"
         />

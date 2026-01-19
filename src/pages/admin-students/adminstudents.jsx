@@ -10,6 +10,7 @@ const AdminStudents = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [importPreview, setImportPreview] = useState([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const fileInputRef = useRef(null);
 
   // Manual student entry form state
@@ -216,6 +217,11 @@ const AdminStudents = () => {
     alert('Student added successfully!');
   };
 
+  const handleDeleteStudent = (studentId) => {
+    setStudents(students.filter(student => student.id !== studentId));
+    setShowDeleteConfirm(null);
+  };
+
   const handleCancelAdd = () => {
     setShowAddModal(false);
     setNewStudent({
@@ -357,9 +363,13 @@ const AdminStudents = () => {
                   {student.yearLevel}
                 </p>
 
-                <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
-                  <CheckCircle className="w-5 h-5" />
-                  {student.verified ? 'Verified' : 'Not Verified'}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowDeleteConfirm(student.id)}
+                    className="flex items-center gap-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
@@ -375,7 +385,7 @@ const AdminStudents = () => {
                   <th className="py-3">Email</th>
                   <th className="py-3">Course</th>
                   <th className="py-3">Year Level</th>
-                  <th className="py-3">Verified</th>
+                  <th className="py-3">Actions</th>
                 </tr>
               </thead>
 
@@ -391,10 +401,12 @@ const AdminStudents = () => {
                     <td className="py-4">{student.course}</td>
                     <td className="py-4">{student.yearLevel}</td>
                     <td className="py-4">
-                      <div className="flex items-center gap-2 text-green-400">
-                        <CheckCircle className="w-5 h-5" />
-                        {student.verified ? 'Verified' : 'Not Verified'}
-                      </div>
+                      <button
+                        onClick={() => setShowDeleteConfirm(student.id)}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -595,6 +607,32 @@ const AdminStudents = () => {
                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
               >
                 Add Student
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Delete Student Account</h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this student account? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteStudent(showDeleteConfirm)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                Delete
               </button>
             </div>
           </div>
