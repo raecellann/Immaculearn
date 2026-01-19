@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Upload, ChevronDown, X, FileText, Trash2 } from "lucide-react";
 import AdminSidebar from "../component/sidebar";
+import { useNavigate } from "react-router";
 
 const CreateFileAdmin = () => {
   const [files, setFiles] = useState([
@@ -26,6 +27,8 @@ const CreateFileAdmin = () => {
       isNew: false,
     },
   ]);
+
+  const navigate = useNavigate();
 
   const [showModal, setShowModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -281,7 +284,10 @@ const CreateFileAdmin = () => {
               </div>
 
               {/* CREATE FILE BUTTON */}
-              <button className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center space-x-2 bg-white mb-6">
+              <button 
+                onClick={() => navigate('/create-document-admin')}
+                className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center space-x-2 bg-white mb-6"
+              >
                 <FileText size={20} />
                 <span>Create File</span>
               </button>

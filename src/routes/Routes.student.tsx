@@ -10,6 +10,18 @@ import NotificationPage from "../pages/Notifications/notification.jsx";
 import FilePage from "../pages/Files/files.jsx";
 import ChatList from "../pages/User_chats/user_chats";
 import ViewFilePage from "../pages/ViewFiles/ViewFiles.jsx";
+import { useUser } from "../contexts/user/useUser.js";
+import { useSpace } from "../contexts/space/useSpace.js";
+
+
+const ChatRouteWrapper = () => {
+  const { user } = useUser();
+  const { currentSpace } = useSpace();
+
+  return (
+      <ChatList />
+  );
+};
 
 export const StudentRoutes = [
 
@@ -46,7 +58,7 @@ export const StudentRoutes = [
   {
     key: "/chatlist",
     path: "/chatlist",
-    element: <ChatList />,
+    element: <ChatRouteWrapper />,
   },
   {
     key: "/view-files",

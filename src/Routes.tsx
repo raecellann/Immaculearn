@@ -84,9 +84,11 @@ export default function Routes() {
             key={route.key}
             path={route.props.path}
             element={
-              <SpaceProvider>
-                {route.props.element}
-              </SpaceProvider>
+              <UserProvider>
+                <SpaceProvider>
+                  {route.props.element}
+                </SpaceProvider>
+              </UserProvider>
             }
           />
         ))}

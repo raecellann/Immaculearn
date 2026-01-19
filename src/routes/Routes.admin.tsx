@@ -10,6 +10,7 @@ import TaskViewPage from "../pages/Task-View/TaskViewPage.jsx";
 import TaskViewPageAdmin from "../pages/Task-view Admin/Task-View-Admin.jsx";
 import TaskViewAll from "../pages/Task-view Admin/Task-View-All.jsx";
 import CreateFileAdmin from "../pages/CreateFile-Admin/createfile.jsx";
+import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
 
 export const AdminRoutes = [
   <Route key="dashboard" path="/admin-dashboard" element={<AdminDashboard />} />,
@@ -21,5 +22,6 @@ export const AdminRoutes = [
   <Route key="task-view" path="/task-view" element={<TaskViewPage />} />,
   <Route key="task-view-admin" path="/task-view-admin" element={<TaskViewPageAdmin />} />,
   <Route key="task-view-all" path="/task-view-all" element={<TaskViewAll />} />,
-  <Route key="create-file" path="/create-file-admin" element={<CreateFileAdmin />} />,
+  <Route key="create-file" path="/create-file-admin" element={<CreateFileAdmin />} />, 
+  <Route key="create-document" path="/create-document-admin" element={<CreateDocumentPage />} />, 
 ];

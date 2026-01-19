@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
 import Button from "../component/Button";
 import { FiEdit, FiSend, FiMoreVertical } from "react-icons/fi";
@@ -14,72 +14,80 @@ const ChatList = () => {
   const [activeSpaceUuid, setActiveSpaceUuid] = useState(null);
   const [input, setInput] = useState("");
   const [showMobileChat, setShowMobileChat] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Combine all spaces
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
 
-  // Flatten unique members for private chats
-  const uniqueMembers = useMemo(() => {
-    const allMembers = allSpaces.flatMap((s) => s.members || []);
+  const uniqueSpaces = useMemo(() => {
     const map = new Map();
-    allMembers.forEach((m) => {
-      if (m.account_id && m.account_id !== user.id && !map.has(m.account_id)) {
+    allSpaces.forEach((s) => map.set(s.space_uuid, s));
+    return Array.from(map.values());
+  }, [allSpaces]);
+
+  const uniqueMembers = useMemo(() => {
+    const map = new Map();
+    allSpaces.flatMap((s) => s.members || []).forEach((m) => {
+      if (m.account_id !== user.id && !map.has(m.account_id)) {
         map.set(m.account_id, m);
       }
     });
     return Array.from(map.values());
   }, [allSpaces, user.id]);
 
-  // Unique spaces (groups)
-  const uniqueSpaces = useMemo(() => {
-    const map = new Map();
-    allSpaces.forEach((space) => map.set(space.space_uuid, space));
-    return Array.from(map.values());
-  }, [allSpaces]);
+  // 🚀 Our hook to manage messages and online users
+  const { messages, sendMessage, spaceOnlineUsers } =
+    useSpaceChat(activeSpaceUuid, user);
 
-  // Initialize chat messages for the active space
-  const { messages, sendMessage } = useSpaceChat(activeSpaceUuid, user);
-
-  // Map messages for display
+  // Map messages to render-friendly format
   const chatMessages = useMemo(() => {
     return messages.map((m) => ({
       from: m.senderId === user.id ? "me" : "them",
+      senderId: m.senderId,
       text: m.content,
       avatar: m.senderAvatar,
-      name: m.senderName,
       time: new Date(m.timestamp).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
     }));
-  }, [messages, user]);
+  }, [messages, user.id]);
 
-  // Deterministic UUID for 1-on-1 private chat
-  const getPrivateSpaceUuid = (userId1, userId2) => [userId1, userId2].sort().join("-");
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
-  // Determine if current chat is private
-  const isPrivateChat = !uniqueSpaces.find((s) => s.space_uuid === activeSpaceUuid);
+  // Auto-scroll to latest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
-  // Build active space object for display
-  const activeSpaceDisplay = isPrivateChat
-    ? (() => {
-        const memberIds = activeSpaceUuid?.split("-");
-        const otherMember = uniqueMembers.find(
-          (m) => String(m.account_id) === memberIds?.find((id) => id !== String(user.id))
-        );
-        return {
-          space_name: otherMember?.full_name || "Private Chat",
-          members: otherMember ? [otherMember] : [],
-        };
-      })()
-    : uniqueSpaces.find((s) => s.space_uuid === activeSpaceUuid);
+  const getPrivateSpaceUuid = (a, b) => [a, b].sort().join("-");
 
+  const getOnlineCountForSpace = (space) => {
+    return spaceOnlineUsers[space.space_uuid]?.filter(id => id !== user.id).length || 0;
+  };
+
+  const activeSpace = useMemo(() => {
+    if (!activeSpaceUuid) return null;
+
+    // Check if it's a private chat (between two users)
+    const member = uniqueMembers.find(
+      (m) => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid
+    );
+    if (member) {
+      return { space_name: member.full_name }; // 1:1 chat
+    }
+
+    // Otherwise, group chat
+    return uniqueSpaces.find((s) => s.space_uuid === activeSpaceUuid) || null;
+  }, [activeSpaceUuid, uniqueSpaces, uniqueMembers, user.id]);
+
+  // Send message helper
   const handleSend = () => {
-    if (!input.trim() || !activeSpaceUuid) return;
+    if (!input.trim()) return;
     sendMessage(input);
     setInput("");
+    inputRef.current?.focus();
   };
+  
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
@@ -89,47 +97,41 @@ const ChatList = () => {
 
       <div className="flex-1 flex px-6 py-6 gap-6 h-screen overflow-hidden">
         {/* CHAT LIST */}
-        <div className={`${showMobileChat ? "hidden lg:block" : "block"} w-full lg:w-[420px] flex flex-col min-h-0`}>
-          <div className="flex items-center justify-between h-14">
-            <h1 className="text-lg font-bold">Chats</h1>
-            <Button style={{ padding: "0.4rem", backgroundColor: "#3B82F6", borderRadius: "8px" }}>
+        <div className={`${showMobileChat ? "hidden lg:block" : "block"} w-full lg:w-[420px] flex flex-col`}>
+          <div className="flex justify-between mb-4">
+            <h1 className="font-bold text-lg">Chats</h1>
+            <Button>
               <FiEdit />
             </Button>
           </div>
 
-          <input
-            placeholder="Search People"
-            className="w-full mb-4 px-4 py-2 rounded-full bg-[#EDEAF0] text-black text-sm"
-          />
-
-          {/* PEOPLE (Private Messages) */}
-          <div className="bg-white rounded-xl p-4 text-black mb-4 overflow-y-auto h-48">
-            <h2 className="text-sm font-semibold mb-3">People</h2>
-            {uniqueMembers.length > 0 ? (
-              uniqueMembers.map((member) => {
-                const privateUuid = getPrivateSpaceUuid(user.id, member.account_id);
-                return (
-                  <div
-                    key={member.account_id}
-                    className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-100 rounded-lg px-2"
-                    onClick={() => {
-                      setActiveSpaceUuid(privateUuid);
-                      setShowMobileChat(true);
-                    }}
-                  >
-                    <img src={member.profile_pic || "/default-avatar.png"} className="w-10 h-10 rounded-full" />
-                    <p className="font-semibold text-sm">{member.full_name}</p>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-gray-400">No people found.</p>
-            )}
+          {/* PEOPLE */}
+          <div className="bg-white rounded-xl p-4 text-black mb-4 h-48 overflow-y-auto">
+            <h2 className="font-semibold text-sm mb-3">People</h2>
+            {uniqueMembers.map((m) => {
+              const uuid = getPrivateSpaceUuid(user.id, m.account_id);
+              return (
+                <div
+                  key={m.account_id}
+                  onClick={() => {
+                    setActiveSpaceUuid(uuid);
+                    setShowMobileChat(true);
+                  }}
+                  className="flex items-center gap-3 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                >
+                  <img
+                    src={m.profile_pic || "/default-avatar.png"}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <p className="font-semibold text-sm">{m.full_name}</p>
+                </div>
+              );
+            })}
           </div>
 
           {/* GROUPS */}
-          <div className="bg-white rounded-xl p-4 text-black overflow-y-auto h-48">
-            <h2 className="text-sm font-semibold mb-3">Groups</h2>
+          <div className="bg-white rounded-xl p-4 text-black h-48 overflow-y-auto">
+            <h2 className="font-semibold text-sm mb-3">Groups</h2>
             {uniqueSpaces.map((space) => (
               <div
                 key={space.space_uuid}
@@ -137,83 +139,75 @@ const ChatList = () => {
                   setActiveSpaceUuid(space.space_uuid);
                   setShowMobileChat(true);
                 }}
-                className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-100 rounded-lg px-2"
+                className="flex items-center gap-3 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
               >
                 <GroupCover
                   image={space.image}
                   name={space.space_name}
-                  members={space.members?.slice(0, 2)} // first 2 members only
-                  className="w-10 h-10 rounded-full"
+                  members={space.members.filter((m) => m.account_id !== user.id)}
+                  className="w-10 h-10"
                 />
-                <p className="font-semibold text-sm">{space.space_name}</p>
+                <div>
+                  <p className="font-semibold text-sm">{space.space_name}</p>
+                  <p className="text-xs text-gray-500">
+                    {getOnlineCountForSpace(space)} online
+                  </p>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
         {/* CHAT PANEL */}
-        <div className="flex-1 flex">
+        <div className="flex-1 bg-white rounded-xl flex flex-col">
           {!activeSpaceUuid ? (
-            <div className="flex-1 bg-white rounded-xl flex items-center justify-center text-gray-400">
-              Select a Message
+            <div className="flex-1 flex items-center justify-center text-gray-400">
+              Select a chat
             </div>
           ) : (
-            <div className="bg-white rounded-xl w-full flex flex-col">
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b">
-                <h2 className="font-semibold text-black text-lg">
-                  {activeSpaceDisplay?.space_name}
-                </h2>
-                <button onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                  <FiMoreVertical />
-                </button>
+            <>
+              <div className="p-4 border-b flex justify-between">
+                <h2 className="font-semibold text-black">{activeSpace?.space_name || "Chat"}</h2>
+                <FiMoreVertical />
               </div>
 
               {/* Messages */}
               <div className="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50">
                 {chatMessages.map((m, i) => (
                   <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-                    <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-                      {m.from === "them" && (
-                        <img
-                          src={m.avatar || "/default-avatar.png"}
-                          className="w-8 h-8 rounded-full mr-2"
-                        />
-                      )}
-                      <div
-                        className={`max-w-xs px-4 py-3 rounded-2xl ${
-                          m.from === "me" ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
-                        }`}
-                      >
-                        <p className="text-sm">{m.text}</p>
-                        <div className="flex justify-end text-[10px] mt-1">{m.time}</div>
-                      </div>
+                    {m.from === "them" && (
+                      <img src={m.avatar || "/default-avatar.png"} className="w-6 h-6 rounded-full mr-2" />
+                    )}
+                    <div className={`px-4 py-3 rounded-2xl max-w-xs ${m.from === "me" ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}>
+                      <p className="text-sm">{m.text}</p>
+                      <div className="text-[10px] text-right">{m.time}</div>
                     </div>
                   </div>
                 ))}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Input */}
               <div className="p-4 border-t">
-                <div className="flex items-center gap-3 bg-gray-100 rounded-full px-4 py-3">
+                <div className="flex gap-2 bg-gray-100 rounded-full px-4 py-2">
                   <input
+                    ref={inputRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type your message here..."
-                    className="flex-1 bg-transparent outline-none text-sm text-gray-700"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSend();
+                    }}
+                    className="flex-1 bg-transparent outline-none text-black"
+                    placeholder="Type message..."
                   />
-                  <button
-                    onClick={handleSend}
-                    className="bg-blue-500 text-white p-2 rounded-full"
-                  >
+                  <button onClick={handleSend} className="text-blue-500">
                     <FiSend />
                   </button>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </div>
-
       </div>
     </div>
   );

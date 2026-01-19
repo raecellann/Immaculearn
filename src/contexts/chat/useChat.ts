@@ -1,4 +1,4 @@
-// hooks/useChat.ts
+// contexts/chat/useChat.ts
 import { useContext } from "react";
 import { ChatContext, ChatContextType } from "./chatContext";
 

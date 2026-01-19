@@ -9,7 +9,6 @@ import ThesisSpace from "../pages/Prof-Space/Thesis-space.jsx";
 import ProfTaskPage from "../pages/Prof-Space/ProfTaskPage";
 import ProfFilesShared from "../pages/Prof-Space/ProfFilesShared";
 import ProfPeoplePage from "../pages/Prof-Space/ProfPeoplePage";
-import { ChatProvider } from "../contexts/chat/chatContextProvider";
 import { SpaceProvider } from "../contexts/space/spaceContextProvider";
 import { useUser } from "../contexts/user/useUser";
 
@@ -31,22 +30,19 @@ export const ProfRoutes = () => {
       />
       <Route path="acc-settings" element={<ProfProfilePage />} />
       <Route path="files-by-subject" element={<ProfFilesBySubject />} />
+      {/* <Route path="files-by-subject" element={<ProfMain />} /> */}
 
       <Route
         path="chats"
         element={
-          <ChatProvider spaceUuid={spaceUuid} userId={user.id}>
             <ProfChatsPage />
-          </ChatProvider>
         }
       />
       <Route
         path="space-thesis"
         element={
           <SpaceProvider>
-            <ChatProvider spaceUuid={spaceUuid} userId={user.id}>
               <ThesisSpace />
-            </ChatProvider>
           </SpaceProvider>
         }
       />
@@ -54,9 +50,7 @@ export const ProfRoutes = () => {
         path="space-thesis/tasks"
         element={
           <SpaceProvider>
-            <ChatProvider spaceUuid={spaceUuid} userId={user.id}>
               <ProfTaskPage />
-            </ChatProvider>
           </SpaceProvider>
         }
       />
@@ -64,9 +58,7 @@ export const ProfRoutes = () => {
         path="space-thesis/files"
         element={
           <SpaceProvider>
-            <ChatProvider spaceUuid={spaceUuid} userId={user.id}>
               <ProfFilesShared />
-            </ChatProvider>
           </SpaceProvider>
         }
       />
@@ -74,9 +66,7 @@ export const ProfRoutes = () => {
         path="space-thesis/people"
         element={
           <SpaceProvider>
-            <ChatProvider spaceUuid={spaceUuid} userId={user.id}>
               <ProfPeoplePage />
-            </ChatProvider>
           </SpaceProvider>
         }
       />

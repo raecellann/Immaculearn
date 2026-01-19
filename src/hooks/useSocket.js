@@ -25,7 +25,7 @@ export default function useSocket() {
       return;
     }
 
-    window.__IO__ = io();
+    window.__IO__ = io("http://localhost:3000");
     setSocket(window.__IO__);
 
     window.addEventListener('beforeunload', () => {
@@ -43,3 +43,10 @@ export default function useSocket() {
     isConnected
   }
 }
+
+
+
+
+
+
+

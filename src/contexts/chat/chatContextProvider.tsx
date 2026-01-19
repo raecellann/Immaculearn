@@ -1,91 +1,67 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useCallback, useEffect } from "react";
 import { ChatContext } from "./chatContext";
 import { ChatMessage, SendMessageData } from "../../types/chat";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { chatKeys, fetchMessages, sendChatMessage } from "../../services/chatService";
+import useSocket from "../../hooks/useSocket";
+// import { useS } from "../../hooks/useSocket";
+
+
 
 interface ChatProviderProps {
-  spaceUuid: string;
-  userId: string;
+  spaceUuid: string | null;
+  userId: string | null;
   children: ReactNode;
 }
 
 export const ChatProvider = ({ spaceUuid, userId, children }: ChatProviderProps) => {
   const queryClient = useQueryClient();
 
-  // ------------------------
-  // MESSAGES QUERY
-  // ------------------------
-  const {
-    data: messages = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: chatKeys.messages(spaceUuid),
-    queryFn: () => fetchMessages(spaceUuid),
-    enabled: !!spaceUuid,
-    staleTime: 30_000,
+  const { socket } = useSocket();
+
+  const handleNewMessage = useCallback(
+    (message: ChatMessage) => {
+      queryClient.setQueryData<ChatMessage[]>(
+        spaceUuid ? chatKeys.messages(spaceUuid) : chatKeys.all,
+        (old = []) => [...old, message]
+      );
+    },
+    [spaceUuid, queryClient]
+  );
+
+  const { connect, disconnect, isConnected } = socket({
+    spaceUuid,
+    onMessage: handleNewMessage,
+    onError: console.error,
   });
 
-  // ------------------------
-  // SEND MESSAGE MUTATION
-  // ------------------------
+  // 🔌 socket lifecycle
+  useEffect(() => {
+    if (!userId || !spaceUuid) return;
+
+    connect(userId);
+
+    return () => {
+      disconnect();
+    };
+  }, [userId, spaceUuid, connect, disconnect]);
+
+  // 📥 fetch history
+  const { data: messages = [], isLoading, isError } = useQuery({
+    queryKey: spaceUuid ? chatKeys.messages(spaceUuid) : chatKeys.all,
+    queryFn: () => fetchMessages(spaceUuid!),
+    enabled: !!spaceUuid,
+  });
+
+  // 📤 send message (REST → socket broadcast)
   const sendMessageMutation = useMutation({
     mutationFn: (data: SendMessageData) => sendChatMessage(data),
-
-    // Optimistic UI
-    onMutate: async (data) => {
-      await queryClient.cancelQueries({
-        queryKey: chatKeys.messages(spaceUuid),
-      });
-
-      const previousMessages = queryClient.getQueryData<ChatMessage[]>(
-        chatKeys.messages(spaceUuid)
-      );
-
-      const tempMessage: ChatMessage = {
-        id: "temp-" + Date.now(),
-        content: data.content,
-        senderId: userId,
-        senderName: "Me",
-        timestamp: new Date().toISOString(),
-        status: "sending",
-      };
-
-      queryClient.setQueryData<ChatMessage[]>(
-        chatKeys.messages(spaceUuid),
-        (old = []) => [...old, tempMessage]
-      );
-
-      return { previousMessages, tempId: tempMessage.id };
-    },
-
-    onSuccess: (saved, _, context) => {
-      queryClient.setQueryData<ChatMessage[]>(
-        chatKeys.messages(spaceUuid),
-        (old = []) =>
-          old.map((msg) => (msg.id === context?.tempId ? saved : msg))
-      );
-    },
-
-    onError: (_, __, context) => {
-      queryClient.setQueryData(
-        chatKeys.messages(spaceUuid),
-        context?.previousMessages
-      );
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: chatKeys.messages(spaceUuid),
-      });
-    },
   });
 
   const sendMessage = async (data: Omit<SendMessageData, "senderId">) => {
     await sendMessageMutation.mutateAsync({
       ...data,
-      senderId: userId,
+      senderId: userId!,
     });
   };
 
@@ -96,11 +72,11 @@ export const ChatProvider = ({ spaceUuid, userId, children }: ChatProviderProps)
         sendMessage,
         loading: isLoading,
         error: isError ? "Failed to load messages" : null,
-        fetchMessages: async () => {
-          await queryClient.invalidateQueries({
-            queryKey: chatKeys.messages(spaceUuid),
-          });
-        },
+        fetchMessages: () =>
+          queryClient.invalidateQueries({
+            queryKey: spaceUuid ? chatKeys.messages(spaceUuid) : chatKeys.all,
+          }),
+        isConnected,
       }}
     >
       {children}

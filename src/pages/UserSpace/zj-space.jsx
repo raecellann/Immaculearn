@@ -1,8 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import Sidebar from "../component/sidebar";
-
-
 import {
   FiFileText,
   FiCheckCircle,
@@ -28,6 +26,7 @@ import MainLoading from "../../components/LoadingComponents/mainLoading";
 import PageNotFound from "../PageNotFound/pageNotFound";
 import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { useSpaceChat } from "../../hooks/useSpaceChat"; // ✅ new hook
 
 const UserPage = () => {
   // ALL hooks go here - MUST BE AT THE TOP
@@ -36,233 +35,59 @@ const UserPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
+
   const { user, isLoading } = useUser();
-  const { userSpaces, friendSpaces, useJoinRequests, isLoading: spaceLoading, joinRequests, acceptJoinRequest, declineJoinRequest, deleteSpace } = useSpace();
+  const {
+    userSpaces,
+    friendSpaces,
+    useJoinRequests,
+    isLoading: spaceLoading,
+    joinRequests,
+    acceptJoinRequest,
+    declineJoinRequest,
+    deleteSpace
+  } = useSpace();
+
   const [isFocused, setIsFocused] = useState(false);
   const editorRef = useRef(null);
-  const requestRef = useRef(false);
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams();
+
   const [showChat, setShowChat] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(false);
   const [isChatMaximized, setIsChatMaximized] = useState(false);
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState("");
 
-
-  
-
-  // Inside your UserPage component, add these state variables
-  const [messages, setMessages] = useState([]);
+  // =======================
+  // Chat Hook
+  // =======================
+  const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } = useSpaceChat(space_uuid, user);
   const [newMessage, setNewMessage] = useState('');
-  const [isConnected, setIsConnected] = useState(false);
-  const messagesEndRef = useRef(null)
-  const ydoc = useRef(null);
-  const provider = useRef(null);
+  const messagesEndRef = useRef(null);
 
-  const [isSending, setIsSending] = useState(false);
-  const [sendError, setSendError] = useState(null);
-
-  // Add this effect to initialize Yjs and WebSocket connection
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
-  const reconnectAttempts = useRef(0);
-  const reconnectTimeout = useRef(null);
-
-  useEffect(() => {
-    if (!space_uuid || !user) return;
-    if (typeof window === "undefined") return;
-
-    let yMessages;
-    let wsProvider;
-    let isMounted = true;
-
-    const connect = async () => {
-      try {
-        setConnectionStatus('connecting');
-        
-        const Y = await import("yjs");
-        const { WebsocketProvider } = await import("y-websocket");
-        const { IndexeddbPersistence } = await import("y-indexeddb");
-
-        const doc = new Y.Doc();
-        ydoc.current = doc;
-
-        wsProvider = new WebsocketProvider(
-          "ws://localhost:3000",
-          `space-${space_uuid}`,
-          doc,
-          {
-            connect: true,
-          }
-        );
-
-        provider.current = wsProvider;
-
-        // Enable offline persistence
-        new IndexeddbPersistence(`space-${space_uuid}`, doc);
-
-        yMessages = doc.getArray("messages");
-
-        const updateMessages = () => {
-          if (isMounted) {
-            setMessages([...yMessages.toArray()]);
-            // Auto-scroll to bottom
-            setTimeout(() => {
-              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-          }
-        };
-
-        yMessages.observe(updateMessages);
-        updateMessages();
-
-        // Connection status handling
-        wsProvider.on('status', ({ status }) => {
-          if (!isMounted) return;
-          
-          setConnectionStatus(status);
-          
-          if (status === 'connected') {
-            reconnectAttempts.current = 0;
-          } else if (status === 'disconnected') {
-            // Attempt to reconnect with exponential backoff
-            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-            reconnectAttempts.current++;
-            reconnectTimeout.current = setTimeout(connect, delay);
-          }
-        });
-
-        // Error handling
-        wsProvider.on('sync', (isSynced) => {
-          if (isSynced) {
-            console.log('Synced with server');
-          }
-        });
-
-      } catch (error) {
-        console.error('WebSocket connection error:', error);
-        if (isMounted) {
-          setConnectionStatus('error');
-          // Retry connection
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
-          reconnectAttempts.current++;
-          reconnectTimeout.current = setTimeout(connect, delay);
-        }
-      }
-    };
-
-    connect();
-
-    return () => {
-      isMounted = false;
-      if (reconnectTimeout.current) {
-        clearTimeout(reconnectTimeout.current);
-      }
-      if (wsProvider) {
-        wsProvider.destroy();
-      }
-      if (ydoc.current) {
-        ydoc.current.destroy();
-      }
-    };
-  }, [space_uuid, user]);
-
-
-
-
-
-  const handleSendMessage = useCallback(async (e) => {
+  const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !ydoc.current || isSending) return;
+    if (!newMessage.trim()) return;
 
-    const messageId = Date.now().toString();
-    const tempMessage = {
-      id: messageId,
-      content: newMessage.trim(),
-      senderId: user.id,
-      senderName: user.fullname,
-      senderAvatar: user.profile_pic,
-      timestamp: new Date().toISOString(),
-      status: 'sending'
-    };
+    sendMessage(newMessage.trim());
+    setNewMessage('');
 
-    try {
-      setIsSending(true);
-      setSendError(null);
-      
-      // Optimistic update
-      const yMessages = ydoc.current.getArray('messages');
-      yMessages.push([tempMessage]);
-      setNewMessage('');
+    // Auto-scroll
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  };
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Update message status
-      const messageIndex = yMessages.toArray().findIndex(m => m.id === messageId);
-      if (messageIndex !== -1) {
-        yMessages.delete(messageIndex, 1);
-        yMessages.insert(messageIndex, [{ ...tempMessage, status: 'sent' }]);
-      }
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      setSendError('Failed to send message. Please try again.');
-      
-      // Update message status to error
-      const yMessages = ydoc.current.getArray('messages');
-      const messageIndex = yMessages.toArray().findIndex(m => m.id === messageId);
-      if (messageIndex !== -1) {
-        yMessages.delete(messageIndex, 1);
-        yMessages.insert(messageIndex, [{ ...tempMessage, status: 'error' }]);
-      }
-    } finally {
-      setIsSending(false);
-    }
-  }, [newMessage, user, isSending]);
-
-  // Format time helper function
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-
-
-  // const [pendingInvitations, setPendingInvitations] = useState([]);
-
-  // const [pendingInvitations, setPendingInvitations] = useState([
-  //   {
-  //     id: 1,
-  //     userName: "John Doe",
-  //     userEmail: "john@example.com",
-  //     userAvatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
-  //     message: "John Doe wants to join your space",
-  //     date: "2024-01-15",
-  //     timeJoined: "10:30 AM"
-  //   },
-  //   {
-  //     id: 2,
-  //     userName: "Jane Smith",
-  //     userEmail: "jane@example.com",
-  //     userAvatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
-  //     message: "Jane Smith wants to join your space",
-  //     date: "2024-01-14",
-  //     timeJoined: "2:45 PM"
-  //   },
-  // ]);
-
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-  // Remove this conditional return - it's in the wrong place
-  // if (!uuidPattern.test(space_uuid) || !userSpaces?.some(space => space.space_link.split('/').pop() === space_uuid)) {
-  //   return <PageNotFound />;
-  // }
-
-
   const { data: joinRequestsData = [], isLoading: joinRequestsLoading } = useJoinRequests(space_uuid || "");
-
-
 
   useEffect(() => {
     const handleScroll = () => {
@@ -274,16 +99,10 @@ const UserPage = () => {
       }
       lastScrollY.current = currentScrollY;
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-
-  
-
-
-  // Define missing function
   const handleInviteMember = () => {
     setShowInvitePopup(true);
   };
@@ -296,37 +115,30 @@ const UserPage = () => {
   };
 
   const handleAcceptJoinRequest = async (userId) => {
-  try {
-    await acceptJoinRequest(userId, space_uuid);
-  } catch (error) {
-    console.error("Failed to accept join request:", error);
-  }
-};
+    try {
+      await acceptJoinRequest(userId, space_uuid);
+    } catch (error) {
+      console.error("Failed to accept join request:", error);
+    }
+  };
 
-const handleDeclineJoinRequest = async (userId) => {
-  try {
-    await declineJoinRequest(userId, space_uuid);
-  } catch (error) {
-    console.error("Failed to decline join request:", error);
-  }
-};
-
+  const handleDeclineJoinRequest = async (userId) => {
+    try {
+      await declineJoinRequest(userId, space_uuid);
+    } catch (error) {
+      console.error("Failed to decline join request:", error);
+    }
+  };
 
   const sendInvite = () => {
     if (inviteEmail.trim()) {
-      console.log(`Inviting member: ${inviteEmail}`);
       alert(`Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
       setShowInvitePopup(false);
     }
   };
 
-  
-
-
   const handleCopyLink = (space_link) => {
-    // const link = "immaculearn.collab.app/spaces/sample92629";
-
     navigator.clipboard.writeText(space_link)
       .then(() => {
         setCopyFeedback("Copied!");
@@ -339,35 +151,17 @@ const handleDeclineJoinRequest = async (userId) => {
       });
   };
 
-  // 1. First check loading state
+  // 1️⃣ First check loading state
   if (isLoading || spaceLoading) {
     return <div className="flex h-screen justify-center items-center"><MainLoading /></div>;
   }
 
-  // 2. Check if userSpaces is available
-  // if (!userSpaces) {
-  //   return <div className="flex h-screen justify-center items-center">
-  //     <div className="text-white">Loading spaces...</div>
-  //   </div>;
-  // }
-
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
-
-
-  // 3. Validate space_uuid and check if space exists
   const isValidUuid = uuidPattern.test(space_uuid);
-
-  
-  
-  
-  // Now we can safely calculate derived values
-  const currentSpace = allSpaces.find(
-    space => space.space_uuid === space_uuid
-  );
-  
+  const currentSpace = allSpaces.find(space => space.space_uuid === space_uuid);
   const isOwnerSpace = currentSpace?.creator === user.id;
   const isFriendSpace = !isOwnerSpace;
-  
+
   if (!isValidUuid || !currentSpace) {
     return <PageNotFound />;
   }
@@ -375,39 +169,13 @@ const handleDeclineJoinRequest = async (userId) => {
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
   const userAvatar = user?.profile_pic || "/src/assets/HomePage/frieren-avatar.jpg";
 
-
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
-
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`
-    );
-
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`);
     if (!confirmDelete) return;
-
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-
-      if (provider.current) {
-        provider.current.destroy();
-        provider.current = null;
-      }
-
-      // Destroy Ydoc safely
-      if (ydoc.current) {
-        ydoc.current.destroy();
-        console.log("Ydoc destroyed?", ydoc.current.destroyed);
-        ydoc.current = null;
-      }
-
-      console.log("Ydoc destroyed?", ydoc.current?.destroyed);
-      console.log("Provider exists?", !!provider.current);  
-
-
-      console.log(`Deleting space: ${currentSpace.space_uuid}`);
-
       alert(`Space "${currentSpace.space_name}" deleted successfully.`);
-      // Redirect user to home or spaces list
       navigate("/space");
     } catch (error) {
       console.error("Failed to delete space:", error);
@@ -415,78 +183,49 @@ const handleDeclineJoinRequest = async (userId) => {
     }
   };
 
+  // =======================
+  // JSX Return
+  // =======================
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
-      {/* Desktop Sidebar (Laptop+) */}
+      {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* Mobile + Tablet Overlay */}
-      {mobileSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* Tablet Sidebar */}
-      <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 
-        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        md:block lg:hidden`}
-      >
+      {/* Mobile Sidebar */}
+      {mobileSidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
+      <div className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:block lg:hidden`}>
         <Sidebar />
       </div>
 
       {/* MAIN */}
       <div className="flex-1 flex flex-col w-full">
-        {/* Header (Mobile + Tablet) */}
-        <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
-            showHeader ? "translate-y-0" : "-translate-y-full"
-          }`}
-        >
-          <button
-            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
-          >
+        {/* Header */}
+        <div className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${showHeader ? "translate-y-0" : "-translate-y-full"}`}>
+          <button onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)} className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none">
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
           <h1 className="text-xl font-bold">{spaceName}</h1>
         </div>
-
-        {/* Spacer for fixed header */}
         <div className="lg:hidden h-16"></div>
-        
+
         {/* COVER */}
         <div className="relative">
-          <img
-            src="/src/assets/UserSpace/cover.png"
-            alt="Cover"
-            className="w-full h-32 sm:h-40 md:h-48 object-cover"
-          />
+          <img src="/src/assets/UserSpace/cover.png" alt="Cover" className="w-full h-32 sm:h-40 md:h-48 object-cover" />
           <div className="absolute inset-0 bg-black/50" />
-
-          {/* SEARCH - Desktop */}
+          {/* Search Desktop */}
           <div className="hidden md:block absolute top-4 right-6">
             <div className="relative">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                placeholder="Search"
-                className="pl-10 pr-4 py-2 bg-[#1B1F26] border border-gray-700 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 w-64"
-              />
+              <input placeholder="Search" className="pl-10 pr-4 py-2 bg-[#1B1F26] border border-gray-700 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 w-64" />
             </div>
           </div>
-
-          {/* SEARCH - Mobile */}
+          {/* Search Mobile */}
           <div className="md:hidden absolute bottom-4 left-4 right-4">
             <div className="relative">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                placeholder="Search"
-                className="w-full pl-10 pr-4 py-2 bg-[#1B1F26] border border-gray-700 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500"
-              />
+              <input placeholder="Search" className="w-full pl-10 pr-4 py-2 bg-[#1B1F26] border border-gray-700 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500" />
             </div>
           </div>
         </div>
@@ -749,19 +488,10 @@ const handleDeclineJoinRequest = async (userId) => {
               {/* Chat Popup */}
               {showChat && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0">
-                  {/* Backdrop */}
-                  <div 
-                    className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-                    onClick={() => !isChatMinimized && setShowChat(false)}
-                  />
-                  
-                  {/* Chat Container */}
+                  <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !isChatMinimized && setShowChat(false)} />
                   <div className={`relative w-full ${isChatMaximized ? 'h-screen max-w-full' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
                     {/* Chat Header */}
-                    <div 
-                      className="flex items-center justify-between bg-[#1B1F26] rounded-t-lg p-3 border-b border-gray-700 cursor-pointer"
-                      onClick={() => isChatMinimized && setIsChatMinimized(false)}
-                    >
+                    <div className="flex items-center justify-between bg-[#1E222A] rounded-t-lg p-3 border-b border-gray-700 cursor-pointer">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
                           <FiUser className="text-white text-sm" />
@@ -769,112 +499,40 @@ const handleDeclineJoinRequest = async (userId) => {
                         <div>
                           <h3 className="font-medium text-white text-sm">{spaceName}</h3>
                           <div className="flex items-center py-2 text-sm text-gray-400">
-                            <div className={`w-2 h-2 rounded-full mr-2 ${
-                              connectionStatus === 'connected' ? 'bg-green-500' : 
-                              connectionStatus === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
-                            }`} />
-                            <span>
-                              {connectionStatus === 'connected' ? 'Connected' : 
-                              connectionStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}
-                            </span>
+                            <div className={`w-2 h-2 rounded-full mr-2 ${spaceOnlineUsers[space_uuid]?.length ? 'bg-green-500' : 'bg-red-500'}`} />
+                            <span>{spaceOnlineUsers[space_uuid]?.length || 0} online</span>
                           </div>
-                          {/* <p className="text-xs text-gray-400">{isChatMinimized ? 'Click to expand' : 'Online'}</p> */}
                         </div>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsChatMaximized(!isChatMaximized);
-                          }}
-                          className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700"
-                          title={isChatMaximized ? 'Restore' : 'Maximize'}
-                        >
+                        <button onClick={(e) => { e.stopPropagation(); setIsChatMaximized(!isChatMaximized); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title={isChatMaximized ? 'Restore' : 'Maximize'}>
                           {isChatMaximized ? <FiMinimize2 size={14} /> : <FiMaximize2 size={14} />}
                         </button>
-                        {/* <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsChatMinimized(!isChatMinimized);
-                          }}
-                          className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700"
-                          title={isChatMinimized ? 'Restore' : 'Minimize'}
-                        >
-                          {isChatMinimized ? <FiChevronUp size={16} /> : <FiMinus size={16} />}
-                        </button> */}
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowChat(false);
-                            setIsChatMinimized(false);
-                            setIsChatMaximized(false);
-                          }}
-                          className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700"
-                          title="Close"
-                        >
+                        <button onClick={(e) => { e.stopPropagation(); setShowChat(false); setIsChatMinimized(false); setIsChatMaximized(false); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title="Close">
                           <FiX size={16} />
                         </button>
                       </div>
                     </div>
-                    
+
                     {/* Chat Messages */}
-                    {/* Inside your chat popup */}
                     {!isChatMinimized && (
                       <>
-                        {/* Chat Messages */}
                         <div className={`bg-[#141820] overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}>
-                          {messages.reduce((acc, message, index) => {
-                            const prev = messages[index - 1];
-                            const isSameSenderAsPrev = prev && prev.senderId === message.senderId;
-
-                            acc.push(
-                              <div
-                                key={message.id}
-                                className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
-                              >
-                                {/* Show avatar only if this is the first message in a group */}
-                                {!isSameSenderAsPrev && message.senderId !== user?.id && (
-                                  <div className="w-8 h-8 rounded-full bg-gray-500 flex-shrink-0 overflow-hidden mr-2">
-                                    <img 
-                                      src={message.senderAvatar || '/default-avatar.png'} 
-                                      alt={message.senderName} 
-                                      className="w-full h-full object-cover"
-                                      onError={(e) => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
-                                    />
-                                  </div>
-                                )}
-
-                                <div className={`flex flex-col pl2 ${message.senderId === user?.id ? 'items-end' : 'items-start'}`}>
-                                  {/* Show name only if not same sender as previous */}
-                                  {!isSameSenderAsPrev && message.senderId !== user?.id && (
-                                    <p className="text-xs font-medium text-gray-300 mb-1">{message.senderName}</p>
-                                  )}
-
-                                  <div 
-                                    className={`p-3 rounded-lg max-w-xs break-words ${
-                                      message.senderId === user?.id
-                                        ? 'bg-blue-500 rounded-tr-none text-white'
-                                        : 'bg-gray-700 rounded-tl-none text-gray-200'
-                                    }`}
-                                  >
-                                    {message.content}
-                                  </div>
-                                  <p className={`text-xs mt-2 ${
-                                    message.senderId === user?.id ? 'text-blue-100 text-right' : 'text-gray-400 text-left'
-                                  }`}>
-                                    {formatTime(message.timestamp)}
-                                  </p>
+                          {messages.map((message) => (
+                            <div key={message.id} className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`flex flex-col pl-2 ${message.senderId === user?.id ? 'items-end' : 'items-start'}`}>
+                                <div className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'bg-blue-500 rounded-tr-none text-white' : 'bg-gray-700 rounded-tl-none text-gray-200'}`}>
+                                  {message.content}
                                 </div>
+                                <p className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-blue-100 text-right' : 'text-gray-400 text-left'}`}>
+                                  {formatTime(message.timestamp)}
+                                </p>
                               </div>
-                            );
-
-                            return acc;
-                          }, [])}
-
+                            </div>
+                          ))}
                           <div ref={messagesEndRef} />
                         </div>
 
-                        
                         {/* Chat Input */}
                         <form onSubmit={handleSendMessage} className="bg-[#1B1F26] p-3 rounded-b-lg border-t border-gray-700">
                           <div className="flex items-center space-x-2">
@@ -888,11 +546,7 @@ const handleDeclineJoinRequest = async (userId) => {
                               placeholder="Type a message..."
                               className="flex-1 bg-[#141820] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
-                            <button 
-                              type="submit" 
-                              className="text-blue-400 hover:text-blue-300 p-2"
-                              disabled={!newMessage.trim()}
-                            >
+                            <button type="submit" className="text-blue-400 hover:text-blue-300 p-2" disabled={!newMessage.trim()}>
                               <FiSend />
                             </button>
                           </div>

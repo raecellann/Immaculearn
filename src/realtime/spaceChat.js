@@ -1,24 +1,35 @@
-import * as Y from "yjs";
-import { WebsocketProvider } from "y-websocket";
-import { IndexeddbPersistence } from "y-indexeddb";
+import { io } from "socket.io-client";
 
-const rooms = {};
+const sockets = {};
 
 export function getSpaceChat(spaceUuid) {
-  if (rooms[spaceUuid]) return rooms[spaceUuid];
+  if (sockets[spaceUuid]) return sockets[spaceUuid];
 
-  const doc = new Y.Doc();
+  const socket = io("http://localhost:3000", {
+    transports: ["websocket"],
+  });
 
-  const ws = new WebsocketProvider(
-    "ws://localhost:3000",
-    `space-chat-${spaceUuid}`,
-    doc
-  );
+  socket.emit("join-space", spaceUuid);
 
-  const persistence = new IndexeddbPersistence(`space-${spaceUuid}`, doc);
+  const api = {
+    socket,
 
-  const messages = doc.getArray("messages");
+    sendMessage(message) {
+      socket.emit("space-message", {
+        spaceUuid,
+        message,
+      });
+    },
 
-  rooms[spaceUuid] = { doc, ws, persistence, messages };
-  return rooms[spaceUuid];
+    onMessage(cb) {
+      socket.on("space-message", cb);
+    },
+
+    destroy() {
+      socket.disconnect();
+    },
+  };
+
+  sockets[spaceUuid] = api;
+  return api;
 }

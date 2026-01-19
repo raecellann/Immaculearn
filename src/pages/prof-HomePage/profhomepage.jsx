@@ -263,7 +263,7 @@ const ProfHomePage = () => {
             } */}
             <img
               // src="/src/assets/HomePage-prof/prof-avatar.jpg"
-              src={user && user.profile_pic || "/src/assets/HomePage-prof/prof-avatar.jpg"}
+              src={user && user.profile_pic}
               alt="Prof Avatar"
               className="w-20 h-20 rounded-full object-cover mb-3"
             />
