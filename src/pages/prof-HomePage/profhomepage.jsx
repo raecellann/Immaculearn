@@ -15,6 +15,8 @@ const ProfHomePage = () => {
   const [slideIndexYourSpace, setSlideIndexYourSpace] = useState(0);
   const [slideIndexSpaces, setSlideIndexSpaces] = useState(0);
   const [showMenu, setShowMenu] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
 
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -62,11 +64,11 @@ const ProfHomePage = () => {
   }, []);
 
   const yourSpaceData = [
-    { title: "Lectures", time: "Opened 1 min ago", image: "/src/assets/HomePage/spaces-cover/lectures.jpg" },
-    { title: "Todo-Lists", time: "Opened 5 mins ago", image: "/src/assets/HomePage/spaces-cover/space-board.jpg" },
-    { title: "Subject Grades", time: "Opened 10 mins ago", image: "/src/assets/HomePage/spaces-cover/grades.jpg" },
-    { title: "Notes", time: "Opened 20 mins ago", image: "/src/assets/HomePage/spaces-cover/cover1.jpg" },
-    { title: "Projects", time: "Opened 30 mins ago", image: "/src/assets/HomePage/spaces-cover/cover2.jpg" }
+    { title: "Lectures", image: "/src/assets/HomePage/spaces-cover/lectures.jpg", members: Math.floor(Math.random() * 10) + 1 },
+    { title: "Todo-Lists", image: "/src/assets/HomePage/spaces-cover/space-board.jpg", members: Math.floor(Math.random() * 10) + 1 },
+    { title: "Subject Grades", image: "/src/assets/HomePage/spaces-cover/grades.jpg", members: Math.floor(Math.random() * 10) + 1 },
+    { title: "Notes", image: "/src/assets/HomePage/spaces-cover/cover1.jpg", members: Math.floor(Math.random() * 10) + 1 },
+    { title: "Projects", image: "/src/assets/HomePage/spaces-cover/cover2.jpg", members: Math.floor(Math.random() * 10) + 1 }
   ];
 
   const spacesData = [
@@ -74,21 +76,18 @@ const ProfHomePage = () => {
       title: "Thesis and Research",
       students: "36 Students",
       section: "BSCS - 4A",
-      time: "Opened just now",
       image: "/src/assets/HomePage/spaces-cover/cover1.jpg",
     },
     {
       title: "Operating System",
       students: "36 Students",
       section: "BSCS - 3A",
-      time: "Opened 1 min ago",
       image: "/src/assets/HomePage/spaces-cover/cover2.jpg",
     },
     {
       title: "BUSINTEG",
       students: "36 Students",
       section: "BSCS - 3A",
-      time: "Opened 5 min ago",
       image: "/src/assets/HomePage/spaces-cover/cover3.jpg",
     },
   ];
@@ -255,14 +254,45 @@ const ProfHomePage = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {yourSpaceData.slice(slideIndexYourSpace * 3, (slideIndexYourSpace + 1) * 3).map((space, i) => (
-                  <div key={i} className="bg-[#1E242E] p-4 rounded-lg hover:bg-[#242B38] transition">
-                    <img
-                      src={space.image}
-                      alt={space.title}
-                      className="h-32 w-full object-cover rounded-lg mb-3"
-                    />
-                    <h3 className="font-medium text-sm">{space.title}</h3>
-                    <p className="text-gray-500 text-xs mt-1">{space.time}</p>
+                  <div
+                    key={i}
+                    className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
+                  >
+                    <div className="relative h-40 bg-gray-800">
+                      <img
+                        src={space.image}
+                        alt={space.title}
+                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
+                      />
+                      <div className="absolute top-3 right-3 z-20">
+                        <button
+                          onClick={() => setShowMenu(showMenu === `your-${i}` ? null : `your-${i}`)}
+                          className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
+                        >
+                          <span className="text-lg font-bold">...</span>
+                        </button>
+                        {showMenu === `your-${i}` && (
+                          <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                            <div className="flex flex-col gap-2">
+                              <button 
+                                onClick={() => setShowDeleteConfirm(`your-${i}`)}
+                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                              >
+                                Delete Space
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-white text-sm truncate">
+                        {space.title}
+                      </h3>
+                      <p className="text-gray-400 text-xs mt-1">
+                        {space.members} Members
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -313,10 +343,10 @@ const ProfHomePage = () => {
                         {showMenu === i && (
                           <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
                             <div className="flex flex-col gap-2">
-                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
-                                View Details
-                              </button>
-                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
+                              <button 
+                                onClick={() => setShowLeaveConfirm(i)}
+                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                              >
                                 Leave Space
                               </button>
                             </div>
@@ -328,7 +358,6 @@ const ProfHomePage = () => {
                       <h3 className="font-medium text-sm">{space.title}</h3>
                       <p className="text-gray-400 text-xs mt-1">{space.students}</p>
                       <p className="text-gray-400 text-xs">{space.section}</p>
-                      <p className="text-gray-500 text-xs mt-1">{space.time}</p>
                     </div>
                   </div>
                 ))}
@@ -400,6 +429,68 @@ const ProfHomePage = () => {
               <button className="mt-4 text-[#007AFF] hover:underline text-sm bg-transparent">See All</button>
             </div>
           </div>
+
+          {/* Delete Space Confirmation Dialog */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
+                <h3 className="text-lg font-semibold text-white mb-2">Delete Space</h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Are you sure you want to delete this space? This action cannot be undone.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowDeleteConfirm(null)}
+                    className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Handle delete action here
+                      console.log('Space deleted:', showDeleteConfirm);
+                      setShowDeleteConfirm(null);
+                      setShowMenu(null);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Leave Space Confirmation Dialog */}
+          {showLeaveConfirm && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
+                <h3 className="text-lg font-semibold text-white mb-2">Leave Space</h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Are you sure you want to leave this space? You'll need to be re-invited to join again.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowLeaveConfirm(null)}
+                    className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Handle leave action here
+                      console.log('Space left:', showLeaveConfirm);
+                      setShowLeaveConfirm(null);
+                      setShowMenu(null);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                  >
+                    Leave
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

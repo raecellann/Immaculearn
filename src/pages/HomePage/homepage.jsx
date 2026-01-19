@@ -17,6 +17,8 @@ const HomePage1 = () => {
   const [slideIndexSchoolSpace, setSlideIndexSchoolSpace] = useState(0);
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showMenu, setShowMenu] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
 
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -67,80 +69,71 @@ const HomePage1 = () => {
   }, []);
 
   const yourSpaceData = [
-    { title: "Lectures", time: "Opened 1 min ago", image: "/src/assets/HomePage/spaces-cover/lectures.jpg" },
-    { title: "Todo-Lists", time: "Opened 5 mins ago", image: "/src/assets/HomePage/spaces-cover/space-board.jpg" },
-    { title: "Subject Grades", time: "Opened 10 mins ago", image: "/src/assets/HomePage/spaces-cover/grades.jpg" },
-    { title: "Notes", time: "Opened 20 mins ago", image: "/src/assets/HomePage/spaces-cover/cover1.jpg" },
-    { title: "Projects", time: "Opened 30 mins ago", image: "/src/assets/HomePage/spaces-cover/cover2.jpg" }
+    { title: "Lectures", members: "3 Members", image: "/src/assets/HomePage/spaces-cover/lectures.jpg" },
+    { title: "Todo-Lists", members: "1 Member", image: "/src/assets/HomePage/spaces-cover/space-board.jpg" },
+    { title: "Subject Grades", members: "5 Members", image: "/src/assets/HomePage/spaces-cover/grades.jpg" },
+    { title: "Notes", members: "2 Members", image: "/src/assets/HomePage/spaces-cover/cover1.jpg" },
+    { title: "Projects", members: "4 Members", image: "/src/assets/HomePage/spaces-cover/cover2.jpg" }
   ];
 
   const spacesData = [
-    { title: "Zeldrick's Spaces", members: "3 Members", time: "Opened just now", image: "/src/assets/HomePage/spaces-cover/cover1.jpg" },
-    { title: "Wilson Space", members: "4 Members", time: "Opened 1 min ago", image: "/src/assets/HomePage/spaces-cover/cover2.jpg" },
-    { title: "Nath Space", members: "5 Members", time: "Opened 5 min ago", image: "/src/assets/HomePage/spaces-cover/cover3.jpg" },
+    { title: "Zeldrick's Spaces", members: "3 Members", image: "/src/assets/HomePage/spaces-cover/cover1.jpg" },
+    { title: "Wilson Space", members: "4 Members", image: "/src/assets/HomePage/spaces-cover/cover2.jpg" },
+    { title: "Nath Space", members: "5 Members", image: "/src/assets/HomePage/spaces-cover/cover3.jpg" },
   ];
 
   const schoolSpaceData = [
     { 
       title: "Thesis and Research", 
       members: "32 Students", 
-      time: "Opened 1 min ago", 
       image: "/src/assets/SpacesCover/thesis.jpg",
       route: "/user-prof-space-thesis"
     },
     { 
       title: "Operating System", 
       members: "40 Students", 
-      time: "Opened 3 mins ago", 
       image: "/src/assets/SpacesCover/os.jpg",
       route: "/user-prof-space-os"
     },
     { 
       title: "CS-ELEC 2", 
       members: "28 Students", 
-      time: "Opened 5 mins ago", 
       image: "/src/assets/SpacesCover/code.jpg",
       route: "/user-prof-space-cselec2"
     },
     { 
       title: "Businteg", 
       members: "35 Students", 
-      time: "Opened just now", 
       image: "/src/assets/SpacesCover/businteg.jpg",
       route: "/user-prof-space-businteg"
     },
     { 
       title: "Modtech", 
       members: "30 Students", 
-      time: "Opened just now", 
       image: "/src/assets/SpacesCover/modtech.jpg",
       route: "/user-prof-space-modtech"
     },
     { 
       title: "Data Structure", 
       members: "41 Students", 
-      time: "Opened 5 days ago", 
       image: "/src/assets/SpacesCover/datastructure.jpg",
       route: "/user-prof-space-datastructure"
     },
     { 
       title: "Physical Education 2", 
       members: "45 Students", 
-      time: "Opened 1 week ago", 
       image: "/src/assets/SpacesCover/pe.jpg",
       route: "/user-prof-space-pe2"
     },
     { 
       title: "Understanding the Self", 
       members: "52 Students", 
-      time: "Opened 4 weeks ago", 
       image: "/src/assets/SpacesCover/uts.jpg",
       route: "/user-prof-space-uts"
     },
     { 
       title: "MMW", 
       members: "28 Students", 
-      time: "Opened 2 days ago", 
       image: "/src/assets/SpacesCover/mmw.jpg",
       route: "/user-prof-space-mmw"
     }
@@ -214,9 +207,9 @@ const HomePage1 = () => {
                   <p className="text-gray-400 text-sm">
                     Join space or create your own.
                   </p>
-                  <div className="mt-4">
-                    <Button className="text-sm py-1.5 px-4 mr-2">Create Space</Button>
-                    <Button className="text-sm py-1.5 px-4">Join Space</Button>
+                  <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                    <Button className="text-sm py-1.5 px-4 w-full sm:w-auto">Create Space</Button>
+                    <Button className="text-sm py-1.5 px-4 w-full sm:w-auto">Join Space</Button>
                   </div>
                 </div>
                 <div className="hidden sm:block flex-shrink-0">
@@ -309,44 +302,6 @@ const HomePage1 = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {yourSpaceData.slice(slideIndexYourSpace * 3, (slideIndexYourSpace + 1) * 3).map((space, i) => (
-                  <div key={i} className="bg-[#1E242E] p-4 rounded-lg hover:bg-[#242B38] transition">
-                    <img
-                      src={space.image}
-                      alt={space.title}
-                      className="h-32 w-full object-cover rounded-lg mb-3"
-                    />
-                    <h3 className="font-medium text-sm">{space.title}</h3>
-                    <p className="text-gray-500 text-xs mt-1">{space.time}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Spaces Section */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-3">
-                <h2 className="text-lg sm:text-xl font-semibold">Spaces</h2>
-                <div className="flex gap-2 items-center">
-                  <button
-                    onClick={() => setSlideIndexSpaces(Math.max(0, slideIndexSpaces - 1))}
-                    className="text-gray-400 hover:text-white text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
-                    disabled={slideIndexSpaces === 0}
-                  >
-                    ‹
-                  </button>
-                  <button
-                    onClick={() => setSlideIndexSpaces(Math.min(Math.ceil(spacesData.length / 3) - 1, slideIndexSpaces + 1))}
-                    className="text-gray-400 hover:text-white text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
-                    disabled={slideIndexSpaces >= Math.ceil(spacesData.length / 3) - 1}
-                  >
-                    ›
-                  </button>
-                  <button className="hidden sm:inline text-[#007AFF] hover:underline text-sm ml-2 bg-transparent">View All</button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {spacesData.slice(slideIndexSpaces * 3, (slideIndexSpaces + 1) * 3).map((space, i) => (
                   <div
                     key={i}
                     className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg"
@@ -359,19 +314,19 @@ const HomePage1 = () => {
                       />
                       <div className="absolute top-2 right-2">
                         <button
-                          onClick={() => setShowMenu(showMenu === i ? null : i)}
+                          onClick={() => setShowMenu(showMenu === `your-${i}` ? null : `your-${i}`)}
                           className="bg-black/60 hover:bg-black text-white w-6 h-6 flex items-center justify-center rounded-md"
                         >
                           ...
                         </button>
-                        {showMenu === i && (
+                        {showMenu === `your-${i}` && (
                           <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
                             <div className="flex flex-col gap-2">
-                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
-                                View Details
-                              </button>
-                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
-                                Leave Space
+                              <button 
+                                onClick={() => setShowDeleteConfirm(`your-${i}`)}
+                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                              >
+                                Delete Space
                               </button>
                             </div>
                           </div>
@@ -391,7 +346,7 @@ const HomePage1 = () => {
             {/* School Space Section */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-3">
-                <h2 className="text-lg sm:text-xl font-semibold">School Space</h2>
+                <h2 className="text-lg sm:text-xl font-semibold">Course Space</h2>
                 <div className="flex gap-2 items-center">
                   <button
                     onClick={() => setSlideIndexSchoolSpace(Math.max(0, slideIndexSchoolSpace - 1))}
@@ -438,15 +393,75 @@ const HomePage1 = () => {
                           <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
                             <div className="flex flex-col gap-2">
                               <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  window.location.href = space.route;
-                                }}
-                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm"
+                                onClick={() => setShowLeaveConfirm(`school-${i}`)}
+                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
                               >
-                                View Details
+                                Leave Space
                               </button>
-                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-medium text-sm">{space.title}</h3>
+                      <p className="text-gray-400 text-xs mt-1">{space.members}</p>
+                      <p className="text-gray-500 text-xs mt-1">{space.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Spaces Section */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-lg sm:text-xl font-semibold">Friends Space</h2>
+                <div className="flex gap-2 items-center">
+                  <button
+                    onClick={() => setSlideIndexSpaces(Math.max(0, slideIndexSpaces - 1))}
+                    className="text-gray-400 hover:text-white text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
+                    disabled={slideIndexSpaces === 0}
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={() => setSlideIndexSpaces(Math.min(Math.ceil(spacesData.length / 3) - 1, slideIndexSpaces + 1))}
+                    className="text-gray-400 hover:text-white text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
+                    disabled={slideIndexSpaces >= Math.ceil(spacesData.length / 3) - 1}
+                  >
+                    ›
+                  </button>
+                  <button className="hidden sm:inline text-[#007AFF] hover:underline text-sm ml-2 bg-transparent">View All</button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {spacesData.slice(slideIndexSpaces * 3, (slideIndexSpaces + 1) * 3).map((space, i) => (
+                  <div
+                    key={i}
+                    className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg"
+                  >
+                    <div className="relative">
+                      <img
+                        src={space.image}
+                        alt={space.title}
+                        className="h-32 w-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <button
+                          onClick={() => setShowMenu(showMenu === i ? null : i)}
+                          className="bg-black/60 hover:bg-black text-white w-6 h-6 flex items-center justify-center rounded-md"
+                        >
+                          ...
+                        </button>
+                        {showMenu === i && (
+                          <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                            <div className="flex flex-col gap-2">
+                              <button 
+                                onClick={() => setShowLeaveConfirm(i)}
+                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                              >
                                 Leave Space
                               </button>
                             </div>
@@ -530,6 +545,68 @@ const HomePage1 = () => {
             </div>
           </div>
         </div>
+
+        {/* Delete Space Confirmation Dialog */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
+              <h3 className="text-lg font-semibold text-white mb-2">Delete Space</h3>
+              <p className="text-gray-400 text-sm mb-6">
+                Are you sure you want to delete this space? This action cannot be undone.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowDeleteConfirm(null)}
+                  className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // Handle delete action here
+                    console.log('Space deleted:', showDeleteConfirm);
+                    setShowDeleteConfirm(null);
+                    setShowMenu(null);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Leave Space Confirmation Dialog */}
+        {showLeaveConfirm && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
+              <h3 className="text-lg font-semibold text-white mb-2">Leave Space</h3>
+              <p className="text-gray-400 text-sm mb-6">
+                Are you sure you want to leave this space? You'll need to be re-invited to join again.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowLeaveConfirm(null)}
+                  className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // Handle leave action here
+                    console.log('Space left:', showLeaveConfirm);
+                    setShowLeaveConfirm(null);
+                    setShowMenu(null);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                >
+                  Leave
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

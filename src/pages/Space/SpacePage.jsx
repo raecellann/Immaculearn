@@ -7,6 +7,8 @@ import { useUser } from "../../contexts/user/useUser";
 const SpacePage = () => {
   const { user } = useUser();
   const [showMenu, setShowMenu] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
   const navigate = useNavigate();
 
   // 🔹 ADDED: mobile sidebar state
@@ -40,45 +42,40 @@ const SpacePage = () => {
   const spaces = [
     {
       id: 1,
-      title: "My Space Board",
+      title: "Os activities",
       image: "/src/assets/HomePage/spaces-cover/space-board.jpg",
-      time: "Opened 1 min ago",
       category: "Your Space",
       members: 3,
       description: "Manage your personal space and board",
     },
     {
       id: 2,
-      title: "Lectures",
+      title: "Modtech",
       image: "/src/assets/HomePage/spaces-cover/lectures.jpg",
-      time: "Opened 1 min ago",
       category: "Your Space",
       members: 5,
       description: "View and organize lecture materials",
     },
     {
       id: 3,
-      title: "Subject Grades",
+      title: "IAS acts",
       image: "/src/assets/HomePage/spaces-cover/grades.jpg",
-      time: "Opened 10 mins ago",
       category: "Your Space",
       members: 4,
       description: "Track your grades by subject",
     },
     {
       id: 4,
-      title: "Todo List",
+      title: "Parallel",
       image: "/src/assets/HomePage/spaces-cover/cover1.jpg",
-      time: "Opened 5 min ago",
       category: "Your Space",
       members: 2,
       description: "Manage your daily tasks",
     },
     {
       id: 5,
-      title: "Todo List",
+      title: "CS Thesis 2",
       image: "/src/assets/HomePage/spaces-cover/cover2.jpg",
-      time: "Opened 5 min ago",
       category: "Your Space",
       members: 2,
       description: "Additional task management",
@@ -87,7 +84,6 @@ const SpacePage = () => {
       id: 6,
       title: "Zeldrick's Spaces",
       image: "/src/assets/HomePage/spaces-cover/cover1.jpg",
-      time: "Opened just now",
       category: "Friends Space",
       members: 3,
       description: "Collaborate with Zeldrick",
@@ -96,7 +92,6 @@ const SpacePage = () => {
       id: 7,
       title: "Wilson Space",
       image: "/src/assets/HomePage/spaces-cover/cover2.jpg",
-      time: "Opened 1 min ago",
       category: "Friends Space",
       members: 4,
       description: "Collaborate with Wilson",
@@ -105,7 +100,6 @@ const SpacePage = () => {
       id: 8,
       title: "Nath Space",
       image: "/src/assets/HomePage/spaces-cover/cover3.jpg",
-      time: "Opened 5 min ago",
       category: "Friends Space",
       members: 5,
       description: "Collaborate with Nath",
@@ -383,11 +377,11 @@ const SpacePage = () => {
                       {showMenu === `your-${space.id}` && (
                         <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
                           <div className="flex flex-col gap-2">
-                            <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
-                              View Details
-                            </button>
-                            <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
-                              Leave Space
+                            <button 
+                              onClick={() => setShowDeleteConfirm(`your-${space.id}`)}
+                              className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                            >
+                              Delete Space
                             </button>
                           </div>
                         </div>
@@ -399,7 +393,9 @@ const SpacePage = () => {
                     <h3 className="font-semibold text-white text-sm truncate">
                       {space.title}
                     </h3>
-                    <p className="text-gray-500 text-xs mt-1">{space.time}</p>
+                    <p className="text-gray-400 text-xs mt-1">
+                      {space.members} Members
+                    </p>
                   </div>
                 </div>
               ))}
@@ -435,10 +431,10 @@ const SpacePage = () => {
                       {showMenu === space.id && (
                         <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
                           <div className="flex flex-col gap-2">
-                            <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
-                              View Details
-                            </button>
-                            <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
+                            <button 
+                              onClick={() => setShowLeaveConfirm(space.id)}
+                              className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                            >
                               Leave Space
                             </button>
                           </div>
@@ -454,7 +450,6 @@ const SpacePage = () => {
                     <p className="text-gray-400 text-xs mb-1">
                       {space.members} Members
                     </p>
-                    <p className="text-gray-500 text-xs">{space.time}</p>
                   </div>
                 </div>
               ))}
@@ -509,10 +504,10 @@ const SpacePage = () => {
                       {showMenu === `class-${classItem.id}` && (
                         <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
                           <div className="flex flex-col gap-2">
-                            <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
-                              View Details
-                            </button>
-                            <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
+                            <button 
+                              onClick={() => setShowLeaveConfirm(`class-${classItem.id}`)}
+                              className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                            >
                               Drop Class
                             </button>
                           </div>
@@ -542,6 +537,73 @@ const SpacePage = () => {
               ))}
             </div>
           </div>
+
+          {/* Delete Space Confirmation Dialog */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
+                <h3 className="text-lg font-semibold text-white mb-2">Delete Space</h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Are you sure you want to delete this space? This action cannot be undone.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowDeleteConfirm(null)}
+                    className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Handle delete action here
+                      console.log('Space deleted:', showDeleteConfirm);
+                      setShowDeleteConfirm(null);
+                      setShowMenu(null);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Leave Space Confirmation Dialog */}
+          {showLeaveConfirm && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {showLeaveConfirm.toString().startsWith('class-') ? 'Drop Class' : 'Leave Space'}
+                </h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  {showLeaveConfirm.toString().startsWith('class-') 
+                    ? 'Are you sure you want to drop this class? You may need to re-enroll to access it again.'
+                    : 'Are you sure you want to leave this space? You\'ll need to be re-invited to join again.'
+                  }
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowLeaveConfirm(null)}
+                    className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Handle leave action here
+                      console.log('Space left:', showLeaveConfirm);
+                      setShowLeaveConfirm(null);
+                      setShowMenu(null);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                  >
+                    {showLeaveConfirm.toString().startsWith('class-') ? 'Drop' : 'Leave'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

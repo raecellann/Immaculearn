@@ -3,6 +3,8 @@ import Sidebar from "../component/profsidebar";
 
 const ProfSpacePage = () => {
   const [showMenu, setShowMenu] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("All");
 
@@ -30,35 +32,34 @@ const ProfSpacePage = () => {
       id: 1,
       title: "My Space Board",
       image: "/src/assets/SpacesCover/spaceboard.jpg",
-      time: "Opened 1 min ago",
       category: "Your Space",
+      members: Math.floor(Math.random() * 10) + 1,
     },
     {
       id: 2,
       title: "Lectures",
       image: "/src/assets/SpacesCover/lecture.jpg",
-      time: "Opened 5 mins ago",
       category: "Your Space",
+      members: Math.floor(Math.random() * 10) + 1,
     },
     {
       id: 3,
       title: "Subject Grades",
       image: "/src/assets/SpacesCover/grades.jpg",
-      time: "Opened 10 mins ago",
       category: "Your Space",
+      members: Math.floor(Math.random() * 10) + 1,
     },
     {
       id: 4,
       title: "List of Activities",
       image: "/src/assets/SpacesCover/listactivity.jpg",
-      time: "Opened just now",
       category: "Your Space",
+      members: Math.floor(Math.random() * 10) + 1,
     },
     {
       id: 5,
       title: "Thesis and Research",
       image: "/src/assets/SpacesCover/thesis.jpg",
-      time: "Opened 1 min ago",
       category: "Classroom Space",
       members: 32,
       yearLevel: "4th Year",
@@ -67,7 +68,6 @@ const ProfSpacePage = () => {
       id: 6,
       title: "Operating System",
       image: "/src/assets/SpacesCover/os.jpg",
-      time: "Opened 3 mins ago",
       category: "Classroom Space",
       members: 40,
       yearLevel: "3rd Year",
@@ -76,7 +76,6 @@ const ProfSpacePage = () => {
       id: 7,
       title: "CS-ELEC 2",
       image: "/src/assets/SpacesCover/code.jpg",
-      time: "Opened 5 mins ago",
       category: "Classroom Space",
       members: 28,
       yearLevel: "3rd Year",
@@ -85,7 +84,6 @@ const ProfSpacePage = () => {
       id: 8,
       title: "Businteg",
       image: "/src/assets/SpacesCover/businteg.jpg",
-      time: "Opened just now",
       category: "Classroom Space",
       members: 35,
       yearLevel: "4th Year",
@@ -94,7 +92,6 @@ const ProfSpacePage = () => {
       id: 9,
       title: "Modtech",
       image: "/src/assets/SpacesCover/modtech.jpg",
-      time: "Opened just now",
       category: "Classroom Space",
       members: 30,
       yearLevel: "4th Year",
@@ -103,7 +100,6 @@ const ProfSpacePage = () => {
       id: 10,
       title: "MMW",
       image: "/src/assets/SpacesCover/mmw.jpg",
-      time: "Opened 2 days ago",
       category: "Classroom Space",
       members: 28,
       yearLevel: "1st Year",
@@ -112,7 +108,6 @@ const ProfSpacePage = () => {
       id: 11,
       title: "Data Structure",
       image: "/src/assets/SpacesCover/datastructure.jpg",
-      time: "Opened 5 days ago",
       category: "Classroom Space",
       members: 41,
       yearLevel: "1st Year",
@@ -121,7 +116,6 @@ const ProfSpacePage = () => {
       id: 12,
       title: "Physical Education 2",
       image: "/src/assets/SpacesCover/pe.jpg",
-      time: "Opened 1 week ago",
       category: "Classroom Space",
       members: 45,
       yearLevel: "2nd Year",
@@ -130,7 +124,6 @@ const ProfSpacePage = () => {
       id: 13,
       title: "Understanding the Self",
       image: "/src/assets/SpacesCover/uts.jpg",
-      time: "Opened 4 weeks ago",
       category: "Classroom Space",
       members: 52,
       yearLevel: "2nd Year",
@@ -235,12 +228,34 @@ const ProfSpacePage = () => {
                       alt={space.title}
                       className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                     />
+                    <div className="absolute top-3 right-3 z-20">
+                      <button
+                        onClick={() => setShowMenu(showMenu === `your-${space.id}` ? null : `your-${space.id}`)}
+                        className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
+                      >
+                        <span className="text-lg font-bold">...</span>
+                      </button>
+                      {showMenu === `your-${space.id}` && (
+                        <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                          <div className="flex flex-col gap-2">
+                            <button 
+                              onClick={() => setShowDeleteConfirm(`your-${space.id}`)}
+                              className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                            >
+                              Delete Space
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-white text-sm truncate">
                       {space.title}
                     </h3>
-                    <p className="text-gray-500 text-xs mt-1">{space.time}</p>
+                    <p className="text-gray-400 text-xs mt-1">
+                      {space.members} Members
+                    </p>
                   </div>
                 </div>
               ))}
@@ -280,6 +295,26 @@ const ProfSpacePage = () => {
                       alt={space.title}
                       className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                     />
+                    <div className="absolute top-3 right-3 z-20">
+                      <button
+                        onClick={() => setShowMenu(showMenu === space.id ? null : space.id)}
+                        className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
+                      >
+                        <span className="text-lg font-bold">...</span>
+                      </button>
+                      {showMenu === space.id && (
+                        <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                          <div className="flex flex-col gap-2">
+                            <button 
+                              onClick={() => setShowLeaveConfirm(space.id)}
+                              className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                            >
+                              Leave Space
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-white text-sm">
@@ -288,13 +323,73 @@ const ProfSpacePage = () => {
                     <p className="text-gray-400 text-xs">
                       {space.members} Students
                     </p>
-                    <p className="text-gray-500 text-xs">{space.time}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Delete Space Confirmation Dialog */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
+                <h3 className="text-lg font-semibold text-white mb-2">Delete Space</h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Are you sure you want to delete this space? This action cannot be undone.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowDeleteConfirm(null)}
+                    className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Handle delete action here
+                      console.log('Space deleted:', showDeleteConfirm);
+                      setShowDeleteConfirm(null);
+                      setShowMenu(null);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Leave Space Confirmation Dialog */}
+          {showLeaveConfirm && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
+                <h3 className="text-lg font-semibold text-white mb-2">Leave Space</h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Are you sure you want to leave this space? You'll need to be re-invited to join again.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => setShowLeaveConfirm(null)}
+                    className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Handle leave action here
+                      console.log('Space left:', showLeaveConfirm);
+                      setShowLeaveConfirm(null);
+                      setShowMenu(null);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                  >
+                    Leave
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
