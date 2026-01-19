@@ -15,11 +15,7 @@ const AdminStudents = () => {
   // Manual student entry form state
   const [newStudent, setNewStudent] = useState({
     name: '',
-    studentNumber: '',
-    email: '',
-    yearLevel: '',
-    course: '',
-    verified: true
+    email: ''
   });
 
   /* 🔹 STICKY HEADER STATE */
@@ -193,15 +189,19 @@ const AdminStudents = () => {
 
   const handleAddStudent = () => {
     // Validate required fields
-    if (!newStudent.name || !newStudent.studentNumber || !newStudent.email) {
-      alert('Please fill in all required fields (Name, Student Number, Email)');
+    if (!newStudent.name || !newStudent.email) {
+      alert('Please fill in all required fields (Name and Email)');
       return;
     }
 
     // Add new student to the list
     const studentToAdd = {
       id: students.length + 1,
-      ...newStudent
+      ...newStudent,
+      studentNumber: 'N/A',
+      yearLevel: 'N/A',
+      course: 'N/A',
+      verified: true
     };
 
     setStudents([...students, studentToAdd]);
@@ -209,11 +209,7 @@ const AdminStudents = () => {
     // Reset form and close modal
     setNewStudent({
       name: '',
-      studentNumber: '',
-      email: '',
-      yearLevel: '',
-      course: '',
-      verified: true
+      email: ''
     });
     setShowAddModal(false);
     
@@ -224,11 +220,7 @@ const AdminStudents = () => {
     setShowAddModal(false);
     setNewStudent({
       name: '',
-      studentNumber: '',
-      email: '',
-      yearLevel: '',
-      course: '',
-      verified: true
+      email: ''
     });
   };
 
@@ -299,10 +291,13 @@ const AdminStudents = () => {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
 
           {/* DESKTOP TITLE */}
+          <h1 className="hidden lg:block text-2xl font-bold mb-6">
+            Students List
+          </h1>
+          
+          {/* DESKTOP BUTTONS */}
           <div className="hidden lg:flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">
-              Students List
-            </h1>
+            <div></div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddModal(true)}
@@ -571,21 +566,6 @@ const AdminStudents = () => {
                 />
               </div>
 
-              {/* Student Number */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Student Number *
-                </label>
-                <input
-                  type="text"
-                  name="studentNumber"
-                  value={newStudent.studentNumber}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="e.g., 2021-001"
-                />
-              </div>
-
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -599,55 +579,6 @@ const AdminStudents = () => {
                   className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   placeholder="student@example.com"
                 />
-              </div>
-
-              {/* Course */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Course
-                </label>
-                <input
-                  type="text"
-                  name="course"
-                  value={newStudent.course}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="e.g., BS Computer Science"
-                />
-              </div>
-
-              {/* Year Level */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Year Level
-                </label>
-                <select
-                  name="yearLevel"
-                  value={newStudent.yearLevel}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                >
-                  <option value="">Select Year Level</option>
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year">3rd Year</option>
-                  <option value="4th Year">4th Year</option>
-                </select>
-              </div>
-
-              {/* Verified Status */}
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  name="verified"
-                  id="verified"
-                  checked={newStudent.verified}
-                  onChange={handleInputChange}
-                  className="w-4 h-4 bg-[#242B38] border border-gray-600 rounded focus:outline-none focus:border-blue-500"
-                />
-                <label htmlFor="verified" className="text-sm font-medium text-gray-300">
-                  Verified (Enrolled)
-                </label>
               </div>
             </div>
 

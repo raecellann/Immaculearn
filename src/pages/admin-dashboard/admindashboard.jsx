@@ -43,6 +43,17 @@ const AdminDashboard = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Navigation handlers
+  const navigateToTeachers = () => {
+    // This will navigate to the teachers page
+    window.location.href = '/admin-teachers';
+  };
+
+  const navigateToStudents = () => {
+    // This will navigate to the students page
+    window.location.href = '/admin-students';
+  };
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
 
@@ -96,10 +107,21 @@ const AdminDashboard = () => {
           </h1>
 
           {/* ===== STAT CARDS ===== */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-            <StatCard icon={GraduationCap} label="Teachers" value={stats.teachers} color="blue" />
-            <StatCard icon={Users} label="Students" value={stats.students} color="green" />
-            <StatCard icon={UserCheck} label="Pending Verifications" value={stats.pending} color="yellow" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+            <StatCard 
+              icon={GraduationCap} 
+              label="Teachers" 
+              value={stats.teachers} 
+              color="blue" 
+              onClick={navigateToTeachers}
+            />
+            <StatCard 
+              icon={Users} 
+              label="Students" 
+              value={stats.students} 
+              color="green" 
+              onClick={navigateToStudents}
+            />
           </div>
 
           {/* ===== RECENT ACTIVITY ===== */}
@@ -121,29 +143,6 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* ===== ACCOUNTS PENDING ===== */}
-          <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">
-              Accounts Pending Verification
-            </h2>
-
-            <div className="space-y-3">
-              {[1, 2, 3].map((id) => (
-                <div
-                  key={id}
-                  className="bg-[#2E3440] p-4 rounded-lg flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 hover:bg-[#363D4A] transition"
-                >
-                  <div>
-                    <p className="font-medium text-sm">User {id}</p>
-                    <p className="text-gray-400 text-xs">email{id}@school.edu</p>
-                  </div>
-                  <button className="text-[#007AFF] text-sm hover:underline">
-                    Verify
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
 
         </div>
       </div>
@@ -152,23 +151,43 @@ const AdminDashboard = () => {
 };
 
 /* 🔹 REUSABLE STAT CARD */
-const StatCard = ({ icon: Icon, label, value, color }) => {
-  const colorClasses = {
-    blue: 'bg-blue-500/20 text-blue-400',
-    green: 'bg-green-500/20 text-green-400',
-    yellow: 'bg-yellow-500/20 text-yellow-400'
+const StatCard = ({ icon: Icon, label, value, color, onClick }) => {
+  const colorGradients = {
+    blue: 'from-blue-600 to-indigo-700',
+    green: 'from-emerald-600 to-teal-700',
+    yellow: 'from-yellow-500 to-amber-600',
+  };
+
+  const iconBackgrounds = {
+    blue: 'bg-blue-500/20 text-blue-200',
+    green: 'bg-emerald-500/20 text-emerald-200',
+    yellow: 'bg-amber-500/20 text-amber-200',
   };
 
   return (
-    <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl flex items-center gap-4 hover:bg-[#242B38] transition">
-      <div className={`${colorClasses[color]} p-3 rounded-lg`}>
+    <button 
+      onClick={onClick}
+      className={`w-full text-left p-6 rounded-xl flex items-center gap-5 
+        bg-gradient-to-br ${colorGradients[color]} 
+        shadow-lg hover:shadow-xl hover:shadow-${color}-500/20 
+        transition-all duration-300 transform hover:-translate-y-1 
+        active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 
+        focus:ring-offset-[#1E242E] focus:ring-${color}-400
+        border border-${color}-400/20`}
+    >
+      <div className={`${iconBackgrounds[color]} p-3.5 rounded-xl backdrop-blur-sm`}>
         <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
       </div>
-      <div>
-        <p className="text-gray-400 text-sm">{label}</p>
-        <h2 className="text-xl sm:text-2xl font-bold">{value}</h2>
+      <div className="text-white">
+        <p className="text-opacity-80 text-sm font-medium">{label}</p>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{value}</h2>
       </div>
-    </div>
+      <div className="ml-auto opacity-80">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      </div>
+    </button>
   );
 };
 

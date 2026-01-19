@@ -275,36 +275,66 @@ const AdminTeachers = () => {
 
       {/* ADD MODAL */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#1E242E] p-6 rounded-xl w-full max-w-md">
-            <div className="flex justify-between mb-4">
-              <h2 className="text-xl font-bold">Add Teacher</h2>
-              <button onClick={() => setShowAddModal(false)}>
-                <X />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white">Add New Teacher</h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            <input
-              name="name"
-              value={newTeacher.name}
-              onChange={handleInputChange}
-              placeholder="Name"
-              className="w-full mb-3 p-2 bg-[#242B38]"
-            />
-            <input
-              name="email"
-              value={newTeacher.email}
-              onChange={handleInputChange}
-              placeholder="Email"
-              className="w-full mb-4 p-2 bg-[#242B38]"
-            />
+            {/* Teacher Form */}
+            <div className="space-y-4">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={newTeacher.name}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  placeholder="Enter teacher's full name"
+                />
+              </div>
 
-            <button
-              onClick={handleAddTeacher}
-              className="bg-green-600 w-full py-2 rounded"
-            >
-              Add Teacher
-            </button>
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={newTeacher.email}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  placeholder="teacher@example.com"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddTeacher}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+              >
+                Add Teacher
+              </button>
+            </div>
           </div>
         </div>
       )}
