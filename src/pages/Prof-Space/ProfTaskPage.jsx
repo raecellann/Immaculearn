@@ -1,15 +1,29 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import ProfSidebar from "../component/profsidebar";
-import { FiMenu, FiX } from "react-icons/fi";
+import {
+  FiMenu,
+  FiX,
+  FiBold,
+  FiItalic,
+  FiUnderline,
+  FiUploadCloud,
+  FiArrowLeft,
+  FiFileText
+} from "react-icons/fi";
 
 const ProfTaskPage = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const instructionRef = useRef(null);
   
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
+
+  /* ================= CREATE TASK MODE ================= */
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +38,15 @@ const ProfTaskPage = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const applyFormat = (command) => {
+    instructionRef.current?.focus();
+    document.execCommand(command, false, null);
+  };
 
   // Task status styles
   const statusStyles = {
@@ -165,135 +188,279 @@ const ProfTaskPage = () => {
             </div>
           </div>
 
-          {/* ================= TASKS ================= */}
-          <div className="max-w-5xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold">Assigned Tasks</h2>
+          {!isCreatingTask ? (
+            /* ================= TASKS LIST VIEW ================= */
+            <div className="max-w-5xl mx-auto">
               <button 
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                onClick={() => navigate("")}
+                className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
+                onClick={() => setIsCreatingTask(true)}
               >
-                + Create Task
+                <FiFileText size={16} />
+                Create or Upload File
               </button>
-            </div>
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold">Assigned Tasks</h2>
+              </div>
 
-            {/* DESKTOP TABLE */}
-            <div className="hidden md:block">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-600 text-gray-400 text-left">
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Task Name</th>
-                    <th className="py-3 px-4">Assigned To</th>
-                    <th className="py-3 px-4">Deadline</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tasks.map((task, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-gray-700 hover:bg-[#1E222A]"
-                    >
-                      <td className="py-3 px-4">
-                        <div className="relative inline-block">
-                          <button
-                            onClick={() =>
-                              setOpenIndex(openIndex === index ? null : index)
-                            }
-                            className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.status]}`}
-                          >
-                            {task.status} ▼
-                          </button>
-                          {openIndex === index && (
-                            <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50">
-                              <div className="flex flex-col gap-2">
-                                {Object.keys(statusStyles).map((st) => (
-                                  <button
-                                    key={st}
-                                    onClick={() => handleStatusChange(index, st)}
-                                    className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
-                                  >
-                                    {st}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">{task.name}</td>
-                      <td className="py-3 px-4">{task.assignedTo}</td>
-                      <td className="py-3 px-4">{task.deadline}</td>
+              {/* DESKTOP TABLE */}
+              <div className="hidden md:block">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-600 text-gray-400 text-left">
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4">Task Name</th>
+                      <th className="py-3 px-4">Assigned To</th>
+                      <th className="py-3 px-4">Deadline</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {tasks.map((task, index) => (
+                      <tr
+                        key={index}
+                        className="border-b border-gray-700 hover:bg-[#1E222A]"
+                      >
+                        <td className="py-3 px-4">
+                          <div className="relative inline-block">
+                            <button
+                              onClick={() =>
+                                setOpenIndex(openIndex === index ? null : index)
+                              }
+                              className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.status]}`}
+                            >
+                              {task.status} ▼
+                            </button>
+                            {openIndex === index && (
+                              <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50">
+                                <div className="flex flex-col gap-2">
+                                  {Object.keys(statusStyles).map((st) => (
+                                    <button
+                                      key={st}
+                                      onClick={() => handleStatusChange(index, st)}
+                                      className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
+                                    >
+                                      {st}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">{task.name}</td>
+                        <td className="py-3 px-4">{task.assignedTo}</td>
+                        <td className="py-3 px-4">{task.deadline}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* MOBILE / TABLET CARDS */}
-            <div className="md:hidden space-y-4">
-              {tasks.map((task, index) => (
-                <div
-                  key={index}
-                  className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
-                >
-                  <div className="flex justify-between items-center mb-3">
-                    <p className="text-sm font-semibold">{task.name}</p>
-                    <button
-                      onClick={() =>
-                        setOpenIndex(openIndex === index ? null : index)
-                      }
-                      className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.status]}`}
-                    >
-                      {task.status}
-                    </button>
-                  </div>
+              {/* MOBILE / TABLET CARDS */}
+              <div className="md:hidden space-y-4">
+                {tasks.map((task, index) => (
+                  <div
+                    key={index}
+                    className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                  >
+                    <div className="flex justify-between items-center mb-3">
+                      <p className="text-sm font-semibold">{task.name}</p>
+                      <button
+                        onClick={() =>
+                          setOpenIndex(openIndex === index ? null : index)
+                        }
+                        className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.status]}`}
+                      >
+                        {task.status}
+                      </button>
+                    </div>
 
-                  <p className="text-sm text-gray-400">
-                    Assigned To: <span className="text-white">{task.assignedTo}</span>
-                  </p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Deadline: <span className="text-white">{task.deadline}</span>
-                  </p>
-                  
-                  {openIndex === index && (
+                    <p className="text-sm text-gray-400">
+                      Assigned To: <span className="text-white">{task.assignedTo}</span>
+                    </p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Deadline: <span className="text-white">{task.deadline}</span>
+                    </p>
+                    
+                    {openIndex === index && (
+                      <div className="mt-3 pt-3 border-t border-gray-700">
+                        <div className="flex flex-col gap-2">
+                          {Object.keys(statusStyles).map((st) => (
+                            <button
+                              key={st}
+                              onClick={() => {
+                                handleStatusChange(index, st);
+                                setOpenIndex(null);
+                              }}
+                              className={`w-full text-center px-4 py-2 rounded-full ${statusStyles[st]} text-sm font-medium`}
+                            >
+                              Mark as {st}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="mt-3 pt-3 border-t border-gray-700">
-                      <div className="flex flex-col gap-2">
-                        {Object.keys(statusStyles).map((st) => (
-                          <button
-                            key={st}
-                            onClick={() => {
-                              handleStatusChange(index, st);
-                              setOpenIndex(null);
-                            }}
-                            className={`w-full text-center px-4 py-2 rounded-full ${statusStyles[st]} text-sm font-medium`}
-                          >
-                            Mark as {st}
-                          </button>
-                        ))}
+                      <a
+                        href="/prof-task-view"
+                        className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                      >
+                        View Details
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* ================= CREATE TASK FORM ================= */
+            <div className="max-w-5xl mx-auto">
+              {/* BACK BUTTON */}
+              <div className="flex justify-end mb-6">
+                <button
+                  className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
+                  onClick={() => setIsCreatingTask(false)}
+                >
+                  <FiArrowLeft size={16} /> 
+                  <span className="hidden sm:inline">Back to Tasks</span>
+                  <span className="sm:hidden">Back</span>
+                </button>
+              </div>
+
+              {/* FORM CARD */}
+              <div className="bg-black rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border border-white">
+                <div className="flex flex-col lg:flex-row gap-6">
+                  {/* LEFT SECTION */}
+                  <div className="flex-1 flex flex-col gap-4">
+                    <label className="font-semibold text-lg">
+                      Title: <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      placeholder="Enter task title"
+                    />
+
+                    {/* INSTRUCTION */}
+                    <label className="font-semibold">Instruction (optional)</label>
+
+                    <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
+                      {/* Editable Instruction Area */}
+                      <div
+                        ref={instructionRef}
+                        contentEditable
+                        className="min-h-[140px] px-4 py-3 outline-none"
+                        suppressContentEditableWarning
+                      />
+
+                      {/* Divider */}
+                      <div className="border-t border-[#2F3440]" />
+
+                      {/* Formatting Toolbar (BOTTOM) */}
+                      <div className="flex gap-4 px-4 py-2 text-gray-300">
+                        <button
+                          type="button"
+                          onClick={() => applyFormat("bold")}
+                          className="hover:text-white"
+                        >
+                          <FiBold />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applyFormat("italic")}
+                          className="hover:text-white"
+                        >
+                          <FiItalic />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => applyFormat("underline")}
+                          className="hover:text-white"
+                        >
+                          <FiUnderline />
+                        </button>
                       </div>
                     </div>
-                  )}
-                  
-                  <div className="mt-3 pt-3 border-t border-gray-700">
-                    <a
-                      href="/prof-task-view"
-                      className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
-                    >
-                      View Details
-                    </a>
+
+                    {/* FILE UPLOAD */}
+                    <div className="mt-6">
+                      <label className="block font-semibold mb-2">
+                        Choose a file or drag & drop it here.
+                      </label>
+
+                      <div
+                        onClick={handleFileClick}
+                        className="border border-dashed border-gray-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer bg-[#0F1115] hover:border-blue-500 transition"
+                      >
+                        <FiUploadCloud size={36} className="mb-3 text-gray-300" />
+
+                        <p className="text-sm text-gray-300 mb-2">
+                          Choose a file or drag & drop it here.
+                        </p>
+
+                        <p className="text-xs text-gray-500 mb-4">
+                          DOCS, PDF, PPT AND EXCEL, UP TO 10 MB
+                        </p>
+
+                        <button
+                          type="button"
+                          className="px-4 py-1.5 border border-gray-400 rounded-md text-sm hover:bg-gray-800"
+                        >
+                          Browse Files
+                        </button>
+
+                        <input ref={fileInputRef} type="file" className="hidden" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* RIGHT SECTION */}
+                  <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
+                    <label className="font-semibold">Grades:</label>
+                    <input
+                      type="text"
+                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      placeholder="e.g. 95/100"
+                    />
+
+                    <label className="font-semibold">Assignees:</label>
+                    <select className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500">
+                      <option>Individual</option>
+                      <option>Group</option>
+                    </select>
+
+                    <label className="font-semibold">Due Date:</label>
+                    <input
+                      type="date"
+                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                    />
                   </div>
                 </div>
-              ))}
-              
-              <button 
-                className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
-                onClick={() => navigate("/prof-space-susan/create-task")}
-              >
-                <span className="text-lg">+</span> Create New Task
-              </button>
+
+                {/* ACTION BUTTONS */}
+                <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
+                  <button 
+                    className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
+                    onClick={() => {
+                      // Handle publish logic here
+                      setIsCreatingTask(false);
+                    }}
+                  >
+                    Publish Task
+                  </button>
+                  <button 
+                    className="bg-gray-700 hover:bg-gray-800 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
+                    onClick={() => {
+                      // Handle save as draft logic here
+                      setIsCreatingTask(false);
+                    }}
+                  >
+                    Save as Draft
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
