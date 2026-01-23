@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../../component/sidebar";
+import Logout from "../../component/logout";
 import { FiFileText, FiMenu, FiX } from "react-icons/fi";
 
 const AdminTaskPage = () => {
@@ -8,6 +9,7 @@ const AdminTaskPage = () => {
 
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -66,7 +68,7 @@ const AdminTaskPage = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MOBILE OVERLAY ================= */}
@@ -83,7 +85,7 @@ const AdminTaskPage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MAIN ================= */}
@@ -301,6 +303,9 @@ const AdminTaskPage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

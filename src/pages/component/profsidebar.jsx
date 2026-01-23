@@ -14,14 +14,12 @@ import {
 
 import { Link, useLocation } from "react-router";
 
-import Logout from "./logout";
 import logo from "../../assets/HomePage/logo.png";
 import profAvatar from "../../assets/HomePage/jober.jpg";
 import { useUser } from "../../contexts/user/useUser";
 
-const ProfSidebar = () => {
+const ProfSidebar = ({ onLogoutClick }) => {
   const { user } = useUser();
-  const [showLogout, setShowLogout] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
 
   const location = useLocation();
@@ -135,7 +133,7 @@ const ProfSidebar = () => {
           <SidebarItem
             icon={<LogOut size={20} />}
             label="Log Out Account"
-            onClick={() => setShowLogout(true)}
+            onClick={onLogoutClick}
             isHovered={hoveredItem === "Log Out Account"}
             onHover={() => setHoveredItem("Log Out Account")}
           />
@@ -145,15 +143,12 @@ const ProfSidebar = () => {
       {/* Profile Account */}
       <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0">
         <img
-          src={user?.profile_pic || profAvatar}
+          src={profAvatar}
           alt="Profile"
           className="w-9 h-9 rounded-full object-cover border border-white/20"
         />
         <span className="text-sm font-semibold">Jober Reyes</span>
       </div>
-
-      {/* Logout Modal */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

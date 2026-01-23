@@ -11,6 +11,7 @@ import {
   FiArrowLeft,
   FiFileText,
 } from "react-icons/fi";
+import Logout from "../component/logout";
 
 const ProfTaskPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const ProfTaskPage = () => {
 
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -102,7 +104,7 @@ const ProfTaskPage = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <ProfSidebar />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MOBILE OVERLAY ================= */}
@@ -119,7 +121,7 @@ const ProfTaskPage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <ProfSidebar />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MAIN ================= */}
@@ -478,6 +480,9 @@ const ProfTaskPage = () => {
           )}
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

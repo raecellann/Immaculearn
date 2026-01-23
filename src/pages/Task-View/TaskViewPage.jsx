@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import Sidebar from "../component/sidebar";
 import InputField from "@/pages/component/InputField";
+import Logout from "../component/logout";
 
 const TaskViewPage = () => {
+  const [showLogout, setShowLogout] = useState(false);
   const [spaceComment, setSpaceComment] = useState("");
   const [privateComment, setPrivateComment] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -43,7 +45,7 @@ const TaskViewPage = () => {
     <div className="flex bg-[#0F0F0F] min-h-screen text-white">
 
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar onLogoutClick={() => setShowLogout(true)} />
 
       {/* Main Content */}
       <div className="flex-1 p-8">
@@ -178,6 +180,9 @@ const TaskViewPage = () => {
 
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

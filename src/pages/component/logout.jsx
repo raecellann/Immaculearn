@@ -1,6 +1,15 @@
 import React from "react";
 
 const Logout = ({ onClose }) => {
+  const handleLogout = () => {
+    // Clear any authentication tokens/user data
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Redirect to login page
+    window.location.href = '/';
+  };
+
   return (
     <>
       {/* Backdrop - Lower z-index */}
@@ -25,7 +34,10 @@ const Logout = ({ onClose }) => {
               No
             </button>
 
-            <button className="flex-1 px-6 py-2 bg-red-600 rounded-full text-white font-semibold hover:bg-red-700">
+            <button 
+              onClick={handleLogout}
+              className="flex-1 px-6 py-2 bg-red-600 rounded-full text-white font-semibold hover:bg-red-700"
+            >
               Yes
             </button>
           </div>

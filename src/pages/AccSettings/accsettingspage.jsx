@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import Sidebar from "../component/sidebar";
 import { useUser } from "../../contexts/user/useUser";
+import Logout from "../component/logout";
 
 const ProfilePage = () => {
   const { user } = useUser();
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   const profileName = user && user.name; // fixed name
 
@@ -47,7 +49,7 @@ const ProfilePage = () => {
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile + Tablet Sidebar Overlay */}
@@ -63,7 +65,7 @@ const ProfilePage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -175,6 +177,9 @@ const ProfilePage = () => {
         </div>
 
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

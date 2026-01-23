@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../component/sidebar";
 import Button from "../component/Button";
+import Logout from "../component/logout";
 import {
   BookOpen,
   User,
@@ -28,6 +29,7 @@ const HomePage1 = () => {
 
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   // Hide-on-scroll state
   const [showHeader, setShowHeader] = useState(true);
@@ -181,7 +183,7 @@ const HomePage1 = () => {
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white w-full">
       {/* ================= Desktop Sidebar (Laptop+) ================= */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= Mobile + Tablet Overlay ================= */}
@@ -197,7 +199,7 @@ const HomePage1 = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= Main Content ================= */}
@@ -780,6 +782,9 @@ const HomePage1 = () => {
           </div>
         )}
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

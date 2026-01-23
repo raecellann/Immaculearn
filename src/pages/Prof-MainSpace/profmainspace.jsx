@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
+import Logout from "../component/logout";
 
 const ProfSpacePage = () => {
   const [showMenu, setShowMenu] = useState(null);
@@ -7,6 +8,7 @@ const ProfSpacePage = () => {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("All");
+  const [showLogout, setShowLogout] = useState(false);
 
   /* 🔹 ADDED — STICKY HEADER LOGIC */
   const [showHeader, setShowHeader] = useState(true);
@@ -142,7 +144,7 @@ const ProfSpacePage = () => {
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile Overlay */}
@@ -159,7 +161,7 @@ const ProfSpacePage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -392,6 +394,9 @@ const ProfSpacePage = () => {
           )}
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

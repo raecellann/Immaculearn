@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
+import Logout from "../component/logout";
 
 const ViewFilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [title, setTitle] = useState("Calculus: Lecture 3");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [content, setContent] = useState(`Today we covered integration by parts. The formula for integration by parts is given by:
@@ -38,7 +40,7 @@ We also discussed the method of partial fractions, which allows us to break down
 
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MOBILE + TABLET OVERLAY ================= */}
@@ -54,7 +56,7 @@ We also discussed the method of partial fractions, which allows us to break down
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
           ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MAIN CONTENT ================= */}
@@ -208,6 +210,9 @@ We also discussed the method of partial fractions, which allows us to break down
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Upload, ChevronDown, X, FileText, Trash2 } from "lucide-react";
 import AdminSidebar from "../component/sidebar";
+import Logout from "../component/logout";
 
 const CreateFileAdmin = () => {
+  const [showLogout, setShowLogout] = useState(false);
   const [files, setFiles] = useState([
     {
       status: "Posted",
@@ -130,7 +132,7 @@ const CreateFileAdmin = () => {
   return (
     <div className="flex h-screen bg-black">
       {/* SIDEBAR */}
-      <AdminSidebar />
+      <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
 
       {/* MAIN CONTENT */}
       <div className="flex-1 overflow-auto">
@@ -369,6 +371,9 @@ const CreateFileAdmin = () => {
           </div>
         </div>
       )}
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

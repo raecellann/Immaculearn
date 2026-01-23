@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../component/profsidebar";
 import Button from "../component/Button";
+import Logout from "../component/logout";
 
 const ProfFilePage = () => {
   const [showModal, setShowModal] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   const headerRef = useRef(null);
   const lastScroll = useRef(0);
@@ -57,7 +59,7 @@ const ProfFilePage = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile Overlay */}
@@ -73,7 +75,7 @@ const ProfFilePage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -257,6 +259,9 @@ const ProfFilePage = () => {
           </div>
         </div>
       )}
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };
