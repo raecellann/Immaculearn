@@ -9,7 +9,7 @@ import {
   FiMessageCircle,
   FiMenu,
   FiX,
-  FiChevronLeft
+  FiChevronLeft,
 } from "react-icons/fi";
 
 const ThesisSpace = () => {
@@ -85,7 +85,7 @@ const ThesisSpace = () => {
 
         {/* Spacer for fixed header */}
         <div className="lg:hidden h-16"></div>
-        
+
         {/* COVER */}
         <div className="relative">
           <img
@@ -121,7 +121,9 @@ const ThesisSpace = () => {
         <div className="p-4 sm:p-6">
           {/* HEADER */}
           <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">CS Thesis 2 Space</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">
+              CS Thesis 2 Space
+            </h1>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-xs text-gray-400">(5 Members)</span>
               <button className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition">
@@ -158,12 +160,10 @@ const ThesisSpace = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Manage Class Button - Mobile */}
           <div className="md:hidden flex justify-end mb-6">
-            <button 
-              className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
-            >
+            <button className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm">
               Manage Class
             </button>
           </div>
@@ -260,7 +260,9 @@ const ThesisSpace = () => {
                       </button>
                       <button className="flex items-center gap-1.5 sm:gap-2 bg-white hover:text-black px-2 py-1.5 sm:px-0 sm:py-0">
                         <FiCheckCircle className="flex-shrink-0" />
-                        <span className="text-xs sm:text-sm">Create Assignment</span>
+                        <span className="text-xs sm:text-sm">
+                          Create Assignment
+                        </span>
                       </button>
                     </div>
 
@@ -286,27 +288,28 @@ const ThesisSpace = () => {
 
           {/* ANNOUNCEMENTS */}
           <div className="mt-8">
-              <h2 className="text-xl font-semibold">Recent Announcements</h2>
-              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700">
-                <div className="flex items-center gap-3 mb-2">
-                  <img
-                    src="/src/assets/HomePage/frieren-avatar.jpg"
-                    alt="Professor Susan"
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div>
-                    <p className="font-medium">Professor Susan</p>
-                    <p className="text-xs text-gray-400">2 hours ago</p>
-                  </div>
+            <h2 className="text-xl font-semibold">Recent Announcements</h2>
+            <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700">
+              <div className="flex items-center gap-3 mb-2">
+                <img
+                  src="/src/assets/HomePage/frieren-avatar.jpg"
+                  alt="Professor Susan"
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <p className="font-medium">Professor Susan</p>
+                  <p className="text-xs text-gray-400">2 hours ago</p>
                 </div>
-                <p className="text-sm text-gray-300 mt-2">
-                  Don't forget to submit your research proposals by Friday. Make sure to include your methodology and expected outcomes.
-                </p>
               </div>
+              <p className="text-sm text-gray-300 mt-2">
+                Don't forget to submit your research proposals by Friday. Make
+                sure to include your methodology and expected outcomes.
+              </p>
             </div>
           </div>
         </div>
       </div>
+    </div>
   );
 };
 

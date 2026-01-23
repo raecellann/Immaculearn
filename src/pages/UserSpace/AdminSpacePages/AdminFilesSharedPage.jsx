@@ -5,7 +5,7 @@ import { FiFileText, FiX, FiUpload, FiMenu } from "react-icons/fi";
 
 const AdminFilesSharedPage = () => {
   const navigate = useNavigate();
-  
+
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -24,7 +24,7 @@ const AdminFilesSharedPage = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  
+
   // File upload states
   const [showCreateUploadModal, setShowCreateUploadModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -48,9 +48,9 @@ const AdminFilesSharedPage = () => {
       const newFile = {
         id: Date.now(),
         name: e.dataTransfer.files[0].name,
-        size: e.dataTransfer.files[0].size
+        size: e.dataTransfer.files[0].size,
       };
-      setUploadedFiles(prev => [...prev, newFile]);
+      setUploadedFiles((prev) => [...prev, newFile]);
     }
   };
 
@@ -59,9 +59,9 @@ const AdminFilesSharedPage = () => {
       const newFile = {
         id: Date.now(),
         name: e.target.files[0].name,
-        size: e.target.files[0].size
+        size: e.target.files[0].size,
       };
-      setUploadedFiles(prev => [...prev, newFile]);
+      setUploadedFiles((prev) => [...prev, newFile]);
     }
   };
 
@@ -143,9 +143,7 @@ const AdminFilesSharedPage = () => {
                 >
                   Tasks
                 </button>
-                <button 
-                  className="text-white text-base sm:text-lg md:text-xl font-semibold pb-2 px-1 whitespace-nowrap bg-transparent"
-                >
+                <button className="text-white text-base sm:text-lg md:text-xl font-semibold pb-2 px-1 whitespace-nowrap bg-transparent">
                   Files Shared
                 </button>
                 <button
@@ -185,20 +183,20 @@ const AdminFilesSharedPage = () => {
                   name: "Calculus: Lecture 3",
                   date: "October 8, 2025",
                   by: "Admin",
-                  folder: "Math"
+                  folder: "Math",
                 },
                 {
                   name: "Biology: Lecture 1",
                   date: "October 8, 2025",
                   by: "Admin",
-                  folder: "Science"
+                  folder: "Science",
                 },
                 {
                   name: "Fallacies: Lecture 4",
                   date: "October 8, 2025",
                   by: "Admin",
-                  folder: "Law"
-                }
+                  folder: "Law",
+                },
               ].map((file, index) => (
                 <div
                   key={index}
@@ -224,20 +222,20 @@ const AdminFilesSharedPage = () => {
                   name: "Calculus: Lecture 3",
                   date: "October 8, 2025",
                   by: "Admin",
-                  folder: "Math"
+                  folder: "Math",
                 },
                 {
                   name: "Biology: Lecture 1",
                   date: "October 8, 2025",
                   by: "Admin",
-                  folder: "Science"
+                  folder: "Science",
                 },
                 {
                   name: "Fallacies: Lecture 4",
                   date: "October 8, 2025",
                   by: "Admin",
-                  folder: "Law"
-                }
+                  folder: "Law",
+                },
               ].map((file, index) => (
                 <div
                   key={index}
@@ -331,7 +329,7 @@ const AdminFilesSharedPage = () => {
               </div>
 
               {/* CREATE FILE BUTTON */}
-              <button 
+              <button
                 onClick={() => {
                   navigate("/create-document");
                   setShowCreateUploadModal(false);
@@ -357,9 +355,7 @@ const AdminFilesSharedPage = () => {
                         {/* FILE HEADER */}
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-start space-x-3 flex-1">
-                            <span className="text-2xl">
-                              📄
-                            </span>
+                            <span className="text-2xl">📄</span>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-gray-900 truncate">
                                 {file.name.toUpperCase()}

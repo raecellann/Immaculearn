@@ -9,14 +9,14 @@ import {
   FiUnderline,
   FiUploadCloud,
   FiArrowLeft,
-  FiFileText
+  FiFileText,
 } from "react-icons/fi";
 
 const ProfTaskPage = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const instructionRef = useRef(null);
-  
+
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -52,7 +52,7 @@ const ProfTaskPage = () => {
   const statusStyles = {
     Done: "border-2 border-[#00B865] text-[#10E164]",
     "In Progress": "border-[#0066D2] text-[#4D9BEF]",
-    "Missing": "border-[#FF5252] text-[#FF5252]"
+    Missing: "border-[#FF5252] text-[#FF5252]",
   };
 
   // Example tasks
@@ -61,32 +61,32 @@ const ProfTaskPage = () => {
       name: "Review Thesis Papers ",
       assignedTo: "All Students",
       deadline: "April 20, 2025",
-      status: "In Progress"
+      status: "In Progress",
     },
     {
       name: "Grade OS Assignments ",
       assignedTo: "Section A",
       deadline: "April 18, 2025",
-      status: "Missing"
+      status: "Missing",
     },
     {
       name: "Submit Midterm Grades ",
       assignedTo: "All Sections",
       deadline: "April 15, 2025",
-      status: "Done"
+      status: "Done",
     },
     {
       name: "Prepare Lecture Slides ",
       assignedTo: "Section B",
       deadline: "April 25, 2025",
-      status: "In Progress"
+      status: "In Progress",
     },
     {
       name: "Hold Office Hours ",
       assignedTo: "All Students",
       deadline: "April 22, 2025",
-      status: "In Progress"
-    }
+      status: "In Progress",
+    },
   ]);
 
   const [openIndex, setOpenIndex] = useState(null);
@@ -156,7 +156,9 @@ const ProfTaskPage = () => {
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">CS Thesis 2 Space</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">
+              CS Thesis 2 Space
+            </h1>
           </div>
 
           {/* ================= TABS ================= */}
@@ -191,7 +193,7 @@ const ProfTaskPage = () => {
           {!isCreatingTask ? (
             /* ================= TASKS LIST VIEW ================= */
             <div className="max-w-5xl mx-auto">
-              <button 
+              <button
                 className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
                 onClick={() => setIsCreatingTask(true)}
               >
@@ -235,7 +237,9 @@ const ProfTaskPage = () => {
                                   {Object.keys(statusStyles).map((st) => (
                                     <button
                                       key={st}
-                                      onClick={() => handleStatusChange(index, st)}
+                                      onClick={() =>
+                                        handleStatusChange(index, st)
+                                      }
                                       className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
                                     >
                                       {st}
@@ -275,12 +279,14 @@ const ProfTaskPage = () => {
                     </div>
 
                     <p className="text-sm text-gray-400">
-                      Assigned To: <span className="text-white">{task.assignedTo}</span>
+                      Assigned To:{" "}
+                      <span className="text-white">{task.assignedTo}</span>
                     </p>
                     <p className="text-sm text-gray-400 mt-1">
-                      Deadline: <span className="text-white">{task.deadline}</span>
+                      Deadline:{" "}
+                      <span className="text-white">{task.deadline}</span>
                     </p>
-                    
+
                     {openIndex === index && (
                       <div className="mt-3 pt-3 border-t border-gray-700">
                         <div className="flex flex-col gap-2">
@@ -299,7 +305,7 @@ const ProfTaskPage = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="mt-3 pt-3 border-t border-gray-700">
                       <a
                         href="/prof-task-view"
@@ -321,7 +327,7 @@ const ProfTaskPage = () => {
                   className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
                   onClick={() => setIsCreatingTask(false)}
                 >
-                  <FiArrowLeft size={16} /> 
+                  <FiArrowLeft size={16} />
                   <span className="hidden sm:inline">Back to Tasks</span>
                   <span className="sm:hidden">Back</span>
                 </button>
@@ -342,7 +348,9 @@ const ProfTaskPage = () => {
                     />
 
                     {/* INSTRUCTION */}
-                    <label className="font-semibold">Instruction (optional)</label>
+                    <label className="font-semibold">
+                      Instruction (optional)
+                    </label>
 
                     <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
                       {/* Editable Instruction Area */}
@@ -392,7 +400,10 @@ const ProfTaskPage = () => {
                         onClick={handleFileClick}
                         className="border border-dashed border-gray-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer bg-[#0F1115] hover:border-blue-500 transition"
                       >
-                        <FiUploadCloud size={36} className="mb-3 text-gray-300" />
+                        <FiUploadCloud
+                          size={36}
+                          className="mb-3 text-gray-300"
+                        />
 
                         <p className="text-sm text-gray-300 mb-2">
                           Choose a file or drag & drop it here.
@@ -409,7 +420,11 @@ const ProfTaskPage = () => {
                           Browse Files
                         </button>
 
-                        <input ref={fileInputRef} type="file" className="hidden" />
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          className="hidden"
+                        />
                       </div>
                     </div>
                   </div>
@@ -439,7 +454,7 @@ const ProfTaskPage = () => {
 
                 {/* ACTION BUTTONS */}
                 <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
-                  <button 
+                  <button
                     className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
                     onClick={() => {
                       // Handle publish logic here
@@ -448,7 +463,7 @@ const ProfTaskPage = () => {
                   >
                     Publish Task
                   </button>
-                  <button 
+                  <button
                     className="bg-gray-700 hover:bg-gray-800 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
                     onClick={() => {
                       // Handle save as draft logic here

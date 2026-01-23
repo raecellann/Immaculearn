@@ -34,9 +34,9 @@ const ProfFilesShared = () => {
       const newFile = {
         id: Date.now(),
         name: e.dataTransfer.files[0].name,
-        size: e.dataTransfer.files[0].size
+        size: e.dataTransfer.files[0].size,
       };
-      setUploadedFiles(prev => [...prev, newFile]);
+      setUploadedFiles((prev) => [...prev, newFile]);
     }
   };
 
@@ -45,9 +45,9 @@ const ProfFilesShared = () => {
       const newFile = {
         id: Date.now(),
         name: e.target.files[0].name,
-        size: e.target.files[0].size
+        size: e.target.files[0].size,
       };
-      setUploadedFiles(prev => [...prev, newFile]);
+      setUploadedFiles((prev) => [...prev, newFile]);
     }
   };
 
@@ -145,7 +145,9 @@ const ProfFilesShared = () => {
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">CS Thesis 2 Space</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">
+              CS Thesis 2 Space
+            </h1>
           </div>
 
           {/* ================= TABS ================= */}
@@ -312,7 +314,7 @@ const ProfFilesShared = () => {
               </div>
 
               {/* CREATE FILE BUTTON */}
-              <button 
+              <button
                 onClick={() => {
                   navigate("/create-document");
                   setShowCreateUploadModal(false);
@@ -338,9 +340,7 @@ const ProfFilesShared = () => {
                         {/* FILE HEADER */}
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-start space-x-3 flex-1">
-                            <span className="text-2xl">
-                              📄
-                            </span>
+                            <span className="text-2xl">📄</span>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-gray-900 truncate">
                                 {file.name.toUpperCase()}
