@@ -122,9 +122,7 @@ const UserTaskPage = () => {
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">
-              Zeldrick's Space
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold">Zeldrick's Space</h1>
           </div>
 
           {/* ================= TABS (COPIED FROM ZJ) ================= */}
@@ -221,7 +219,8 @@ const UserTaskPage = () => {
                   </div>
 
                   <p className="text-sm text-gray-400">
-                    Deadline: <span className="text-white">{task.deadline}</span>
+                    Deadline:{" "}
+                    <span className="text-white">{task.deadline}</span>
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
                     Space: <span className="text-white">{task.space}</span>

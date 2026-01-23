@@ -139,8 +139,9 @@ const HomePage1 = () => {
     }
   ];
 
+
   return (
-    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
+    <div className="flex font-sans min-h-screen bg-[#161A20] text-white w-full">
       {/* ================= Desktop Sidebar (Laptop+) ================= */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -163,7 +164,7 @@ const HomePage1 = () => {
       </div>
 
       {/* ================= Main Content ================= */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 w-full">
         {/* ================= Header (Mobile + Tablet) ================= */}
         <div
           className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
@@ -183,9 +184,9 @@ const HomePage1 = () => {
         <div className="lg:hidden h-16"></div>
 
         {/* ================= Page Content Wrapper ================= */}
-        <div className="flex-1 flex flex-col xl:flex-row gap-6 overflow-y-auto">
+        <div className="flex-1 flex flex-col xl:flex-row gap-6 overflow-y-auto w-full max-w-none">
           {/* CENTER CONTENT */}
-          <div className="flex-1 p-4 md:p-6 lg:p-8 min-w-0">
+          <div className="flex-1 min-w-0 w-full px-2 sm:px-4 md:px-8 lg:px-12 py-4">
             {/* Title and Date ABOVE the card */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
               <h2 className="text-xl sm:text-2xl font-bold text-white font-grotesque">
@@ -300,11 +301,11 @@ const HomePage1 = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                 {yourSpaceData.slice(slideIndexYourSpace * 3, (slideIndexYourSpace + 1) * 3).map((space, i) => (
                   <div
                     key={i}
-                    className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg"
+                    className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg min-w-0 w-full"
                   >
                     <div className="relative">
                       <img
@@ -366,11 +367,11 @@ const HomePage1 = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                 {schoolSpaceData.slice(slideIndexSchoolSpace * 3, (slideIndexSchoolSpace + 1) * 3).map((space, i) => (
                   <div
                     key={i}
-                    className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg cursor-pointer"
+                    className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg cursor-pointer min-w-0 w-full"
                     onClick={() => window.location.href = space.route}
                   >
                     <div className="relative">

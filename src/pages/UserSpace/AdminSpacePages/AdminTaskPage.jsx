@@ -5,7 +5,7 @@ import { FiFileText, FiMenu, FiX } from "react-icons/fi";
 
 const AdminTaskPage = () => {
   const navigate = useNavigate();
-  
+
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -134,7 +134,7 @@ const AdminTaskPage = () => {
                 >
                   Stream
                 </button>
-                <button 
+                <button
                   className="text-white text-base sm:text-lg md:text-xl font-semibold pb-2 px-1 whitespace-nowrap bg-transparent"
                   onClick={() => navigate("/admin-task-page")}
                 >
@@ -205,7 +205,9 @@ const AdminTaskPage = () => {
                                 {Object.keys(statusStyles).map((st) => (
                                   <button
                                     key={st}
-                                    onClick={() => handleStatusChange(index, st)}
+                                    onClick={() =>
+                                      handleStatusChange(index, st)
+                                    }
                                     className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
                                   >
                                     {st}
@@ -282,7 +284,8 @@ const AdminTaskPage = () => {
                   </div>
 
                   <p className="text-xs text-gray-400">
-                    Deadline: <span className="text-white">{task.deadline}</span>
+                    Deadline:{" "}
+                    <span className="text-white">{task.deadline}</span>
                   </p>
                   <div className="mt-2">
                     <a
