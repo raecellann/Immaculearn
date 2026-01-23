@@ -45,7 +45,7 @@ const ProfilePage = () => {
   }, []);
 
   return (
-    <div className="flex font-grotesque min-h-screen bg-[#161A20] text-white leading-[1.2] font-semibold">
+    <div className="flex font-sans min-h-screen bg-[#161A20] text-white leading-[1.2] font-semibold">
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
@@ -83,7 +83,7 @@ const ProfilePage = () => {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">Your Profile</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Your Profile</h1>
         </div>
 
         {/* Spacer for fixed header */}
@@ -95,7 +95,7 @@ const ProfilePage = () => {
 
             {/* Title (Laptop & Desktop only) */}
             <div className="hidden lg:block mb-8 text-center">
-              <h1 className="text-3xl lg:text-4xl font-bold mb-2">
+              <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
                 Your Profile
               </h1>
               <p className="text-gray-300">

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 import Logout from "../component/logout";
+import Button from "../component/Button";
 
 const ProfSpacePage = () => {
   const [showMenu, setShowMenu] = useState(null);
@@ -208,9 +209,9 @@ const ProfSpacePage = () => {
                 </p>
               </div>
               <div className="flex md:justify-end">
-                <button className="px-6 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition w-full md:w-auto">
+                <Button onClick={() => console.log('Create Space Click!')}>
                   Create Space
-                </button>
+                </Button>
               </div>
             </div>
           </div>
