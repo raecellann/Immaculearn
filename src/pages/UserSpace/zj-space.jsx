@@ -198,7 +198,7 @@ const UserPage = () => {
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex space-x-4 sm:space-x-8 md:space-x-12 lg:space-x-16 xl:gap-[120px]">
-                <button className="text-white text-base sm:text-lg md:text-xl font-semibold border-b-2 border-white pb-2 px-1 whitespace-nowrap bg-transparent">
+                <button className="text-white text-base sm:text-lg md:text-xl font-semibold pb-2 px-1 whitespace-nowrap bg-transparent">
                   Stream
                 </button>
                 <button

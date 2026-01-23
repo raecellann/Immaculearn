@@ -9,41 +9,22 @@ import {
   FiMessageCircle,
   FiMenu,
   FiX,
-  FiChevronLeft
+  FiChevronLeft,
 } from "react-icons/fi";
 
 const UserThesisSpace = () => {
-  const [isFocused, setIsFocused] = useState(false);
-  const [showInvitePopup, setShowInvitePopup] = useState(false);
-  const [showPendingInvitations, setShowPendingInvitations] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
+  // Removed Add Member, Pending Invitations, and Post field for student view
+  // const [isFocused, setIsFocused] = useState(false);
+  // const [showInvitePopup, setShowInvitePopup] = useState(false);
+  // const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+  // const [inviteEmail, setInviteEmail] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
   const navigate = useNavigate();
 
-  // Mock pending invitations data
-  const [pendingInvitations, setPendingInvitations] = useState([
-    {
-      id: 1,
-      userName: "John Doe",
-      userEmail: "john@example.com",
-      userAvatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
-      message: "John Doe wants to join your space",
-      date: "2024-01-15",
-      timeJoined: "10:30 AM"
-    },
-    {
-      id: 2,
-      userName: "Jane Smith",
-      userEmail: "jane@example.com",
-      userAvatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
-      message: "Jane Smith wants to join your space",
-      date: "2024-01-14",
-      timeJoined: "2:45 PM"
-    },
-  ]);
+  // Removed pending invitations data for student view
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,29 +46,10 @@ const UserThesisSpace = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleInviteMember = () => {
-    setShowInvitePopup(true);
-  };
-
-  const handleSendInvite = () => {
-    if (inviteEmail.trim()) {
-      console.log("Inviting:", inviteEmail);
-      setInviteEmail("");
-      setShowInvitePopup(false);
-    }
-  };
-
-  const applyFormat = (format) => {
-    if (editorRef.current) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        document.execCommand(format, false, null);
-      }
-    }
-  };
+  // Removed invite and post field handlers for student view
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen bg-[#1B1F26] text-white font-sans">
       {/* Desktop Sidebar (Laptop+) */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -162,24 +124,17 @@ const UserThesisSpace = () => {
           </div>
         </div>
 
-        <div className="p-4 sm:p-6">
-          {/* HEADER */}
+        <div className="p-4 sm:p-6 font-sans">
+          {/* HEADER (no Add Member or Pending Invites for students) */}
           <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">Thesis and Research</h1>
+            <h1
+              className="text-2xl md:text-3xl font-bold text-white"
+              style={{ fontFamily: "Inter, Arial, sans-serif" }}
+            >
+              Thesis and Research
+            </h1>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-400">(32 Students)</span>
-              <button 
-                onClick={handleInviteMember} 
-                className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition"
-              >
-                Add Member
-              </button>
-              <button 
-                onClick={() => setShowPendingInvitations(true)} 
-                className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
-              >
-                Pending Invites
-              </button>
+              <span className="text-xs text-gray-400">(3 Members)</span>
             </div>
           </div>
 
@@ -187,23 +142,31 @@ const UserThesisSpace = () => {
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex space-x-4 sm:space-x-8 md:space-x-12 lg:space-x-16 xl:gap-[120px]">
-                <button className="text-white text-base sm:text-lg md:text-xl font-semibold border-b-2 border-white pb-2 px-1 whitespace-nowrap bg-transparent">
+                <button
+                  className="text-white text-base sm:text-lg md:text-xl font-semibold pb-2 px-1 whitespace-nowrap bg-transparent"
+                  style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                >
                   Stream
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
+                  style={{ fontFamily: "Inter, Arial, sans-serif" }}
                   onClick={() => navigate("/user-prof-space-thesis/tasks")}
                 >
                   Tasks
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/user-prof-space-thesis/files-shared")}
+                  style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                  onClick={() =>
+                    navigate("/user-prof-space-thesis/files-shared")
+                  }
                 >
                   Files Shared
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
+                  style={{ fontFamily: "Inter, Arial, sans-serif" }}
                   onClick={() => navigate("/user-prof-space-thesis/people")}
                 >
                   People
@@ -212,159 +175,112 @@ const UserThesisSpace = () => {
             </div>
           </div>
 
-          {/* Add Member Button - Mobile */}
-          <div className="md:hidden flex justify-end gap-2 mb-6">
-            <button 
-              onClick={handleInviteMember} 
-              className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
-            >
-              Add Member
-            </button>
-            <button 
-              onClick={() => setShowPendingInvitations(true)} 
-              className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
-            >
-              Pending Invites
-            </button>
-          </div>
-
-          {/* POST BOX */}
-          <div
-            className={`bg-white rounded-xl border cursor-text transition
-              ${isFocused ? "border-black" : "border-transparent"}
-              hover:border-black
-            `}
-            onClick={() => editorRef.current?.focus()}
-          >
-            <div className="relative p-6">
-              {/* AVATAR */}
-              <img
-                src="/src/assets/HomePage/frieren-avatar.jpg"
-                alt="Avatar"
-                className="absolute left-6 top-6 w-10 h-10 rounded-full"
-              />
-
-              {/* EDITOR */}
-              <div
-                ref={editorRef}
-                contentEditable
-                suppressContentEditableWarning
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => {
-                  if (editorRef.current.innerText.trim() === "") {
-                    setIsFocused(false);
-                  }
-                }}
-                className="editor w-full min-h-[40px] bg-white text-black text-sm pl-14 pr-4 py-2 outline-none"
-              />
-
-              {/* ACTIONS */}
-              {isFocused && (
-                <>
-                  {/* FORMAT */}
-                  <div className="flex gap-8 mt-4 text-black">
-                    <button
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        applyFormat("bold");
-                      }}
-                      className="font-bold text-lg bg-white"
+          {/* STREAM CONTENT FOR STUDENT VIEW - ZJ Space Style */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
+            {/* Reminders Section */}
+            <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4 md:p-5">
+              <h2
+                className="font-bold mb-4 text-white"
+                style={{ fontFamily: "Inter, Arial, sans-serif" }}
+              >
+                Reminders
+              </h2>
+              <div className="space-y-3">
+                <div className="bg-[#141820] p-3 rounded-lg">
+                  <p
+                    className="font-semibold text-sm text-white"
+                    style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                  >
+                    Week 7 Reflection Paper
+                  </p>
+                  <p
+                    className="text-xs text-gray-400"
+                    style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                  >
+                    Operating System • Oct 15
+                  </p>
+                </div>
+                <div className="bg-[#141820] p-3 rounded-lg">
+                  <p
+                    className="font-semibold text-sm text-white"
+                    style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                  >
+                    Week 7 Individual Activity
+                  </p>
+                  <p
+                    className="text-xs text-gray-400"
+                    style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                  >
+                    Operating System • Oct 15
+                  </p>
+                </div>
+              </div>
+              <button
+                className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-black border border-gray-700 hover:bg-gray-900 text-white"
+                style={{ fontFamily: "Inter, Arial, sans-serif" }}
+              >
+                <FiMessageCircle /> Enter Chat
+              </button>
+            </div>
+            {/* Shared Files/Tasks Section */}
+            <div className="lg:col-span-2 space-y-3 md:space-y-4">
+              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="flex gap-4">
+                  <FiFileText className="text-blue-400" size={24} />
+                  <div>
+                    <p
+                      className="font-semibold text-white"
+                      style={{ fontFamily: "Inter, Arial, sans-serif" }}
                     >
-                      B
-                    </button>
-                    <button
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        applyFormat("italic");
-                      }}
-                      className="italic text-lg bg-white"
+                      Zeldrick shared a file with you
+                    </p>
+                    <p
+                      className="text-sm text-gray-400"
+                      style={{ fontFamily: "Inter, Arial, sans-serif" }}
                     >
-                      I
-                    </button>
-                    <button
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        applyFormat("underline");
-                      }}
-                      className="underline text-lg bg-white"
-                    >
-                      U
-                    </button>
+                      OS • Week 7 Lecture
+                    </p>
                   </div>
-                </>
-              )}
+                </div>
+                <button
+                  className="text-blue-400 hover:underline bg-transparent"
+                  style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                >
+                  See File
+                </button>
+              </div>
+
+              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="flex gap-4">
+                  <FiCheckCircle className="text-blue-400" size={24} />
+                  <div>
+                    <p
+                      className="font-semibold text-white"
+                      style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                    >
+                      Zeldrick assigned task with you
+                    </p>
+                    <p
+                      className="text-sm text-gray-400"
+                      style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                    >
+                      Thesis • Survey Revision
+                    </p>
+                  </div>
+                </div>
+                <button
+                  className="text-blue-400 hover:underline bg-transparent"
+                  style={{ fontFamily: "Inter, Arial, sans-serif" }}
+                >
+                  See Task
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* INVITE POPUP */}
-      {showInvitePopup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-96 max-w-[90%]">
-            <h2 className="text-xl font-bold mb-4 text-black">Invite Member</h2>
-            <input
-              type="email"
-              placeholder="Enter email address"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black placeholder-gray-500 focus:outline-none focus:border-blue-500 mb-4"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowInvitePopup(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSendInvite}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                Send Invite
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PENDING INVITATIONS POPUP */}
-      {showPendingInvitations && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-96 max-w-[90%] max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-black">Pending Invitations</h2>
-              <button
-                onClick={() => setShowPendingInvitations(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <FiX size={24} />
-              </button>
-            </div>
-            <div className="space-y-3">
-              {pendingInvitations.map((invite) => (
-                <div key={invite.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
-                  <img
-                    src={invite.userAvatar}
-                    alt={invite.userName}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div className="flex-1">
-                    <p className="font-semibold text-black">{invite.userName}</p>
-                    <p className="text-sm text-gray-600">{invite.userEmail}</p>
-                    <p className="text-xs text-gray-500">{invite.message}</p>
-                  </div>
-                  <div className="text-right">
-                    <button className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
-                      Accept
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Removed Invite and Pending Invitations popups for student view */}
     </div>
   );
 };

@@ -144,7 +144,7 @@ const AdminFilesSharedPage = () => {
                   Tasks
                 </button>
                 <button 
-                  className="text-white text-base sm:text-lg md:text-xl font-semibold border-b-2 border-white pb-2 px-1 whitespace-nowrap bg-transparent"
+                  className="text-white text-base sm:text-lg md:text-xl font-semibold pb-2 px-1 whitespace-nowrap bg-transparent"
                 >
                   Files Shared
                 </button>
