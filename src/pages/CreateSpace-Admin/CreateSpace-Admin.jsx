@@ -4,8 +4,10 @@ import Sidebar from "../component/sidebar";
 import InputField from "../component/InputField";
 import Button from "../component/Button";
 import { ChevronDown, X } from "lucide-react";
+import Logout from "../component/logout";
 
 const CreateSpaceAdmin = () => {
+  const [showLogout, setShowLogout] = useState(false);
   const [spaceName, setSpaceName] = useState("");
   const [numMembers, setNumMembers] = useState(5);
   const [people, setPeople] = useState(Array(5).fill(""));
@@ -120,7 +122,7 @@ const CreateSpaceAdmin = () => {
 
   return (
     <div className="flex min-h-screen bg-[#1A1E24] text-white font-inter">
-      <Sidebar />
+      <Sidebar onLogoutClick={() => setShowLogout(true)} />
 
       <div className="flex-1 px-20 py-10 overflow-y-auto">
         <h1 className="text-2xl font-bold text-center mb-6">Create New Space, Here!</h1>
@@ -358,6 +360,9 @@ const CreateSpaceAdmin = () => {
 
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

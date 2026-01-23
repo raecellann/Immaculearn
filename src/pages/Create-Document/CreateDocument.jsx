@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
+import Logout from "../component/logout";
 import {
   FiArrowLeft,
   FiBold,
@@ -53,6 +54,7 @@ const CreateDocumentPage = () => {
   const [showCustomSizeDialog, setShowCustomSizeDialog] = useState(false);
   const [showCustomMarginDialog, setShowCustomMarginDialog] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
 
@@ -494,7 +496,7 @@ const CreateDocumentPage = () => {
     <div className="flex min-h-screen bg-[#F3F4F6]">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MOBILE OVERLAY ================= */}
@@ -511,7 +513,7 @@ const CreateDocumentPage = () => {
         (mobileSidebarOpen ? "translate-x-0" : "-translate-x-full") + 
         " md:block lg:hidden"}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MAIN ================= */}
@@ -1258,6 +1260,9 @@ const CreateDocumentPage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import Sidebar from "../component/sidebar";
 import { Edit } from "lucide-react";
+import Logout from "../component/logout";
 
 const TaskViewAll = () => {
+  const [showLogout, setShowLogout] = useState(false);
   const [members, setMembers] = useState([
     { name: "Abesamis, Aaron", file: "Answers.pdf", grade: "15/20", isEditing: false },
     { name: "Adriano, Mary Ann", file: "Answers.pdf", grade: "19/20", isEditing: false },
@@ -36,7 +38,7 @@ const TaskViewAll = () => {
   return (
     <div className="flex bg-[#0F0F0F] min-h-screen text-white">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar onLogoutClick={() => setShowLogout(true)} />
 
       {/* Main Content */}
       <div className="flex-1 p-8">
@@ -114,6 +116,9 @@ const TaskViewAll = () => {
           ))}
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

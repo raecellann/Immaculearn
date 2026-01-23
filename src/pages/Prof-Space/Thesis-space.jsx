@@ -11,10 +11,12 @@ import {
   FiX,
   FiChevronLeft,
 } from "react-icons/fi";
+import Logout from "../component/logout";
 
 const ThesisSpace = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
@@ -46,7 +48,7 @@ const ThesisSpace = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* Desktop Sidebar (Laptop+) */}
       <div className="hidden lg:block">
-        <ProfSidebar />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile + Tablet Overlay */}
@@ -63,7 +65,7 @@ const ThesisSpace = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <ProfSidebar />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN */}
@@ -309,6 +311,9 @@ const ThesisSpace = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };
