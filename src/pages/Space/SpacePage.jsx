@@ -3,6 +3,7 @@ import Sidebar from "../component/sidebar";
 import { ArrowLeft, MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useUser } from "../../contexts/user/useUser";
+import Logout from "../component/logout";
 
 const SpacePage = () => {
   const { user } = useUser();
@@ -13,6 +14,7 @@ const SpacePage = () => {
 
   // 🔹 ADDED: mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   // 🔹 ADDED: hide-on-scroll state
   const [showHeader, setShowHeader] = useState(true);
@@ -249,7 +251,7 @@ const SpacePage = () => {
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
       {/* ================= Desktop Sidebar (Laptop+) ================= */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= Mobile + Tablet Overlay ================= */}
@@ -266,7 +268,7 @@ const SpacePage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= Main Content ================= */}
@@ -606,6 +608,9 @@ const SpacePage = () => {
           )}
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

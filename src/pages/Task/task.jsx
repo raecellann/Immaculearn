@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../component/sidebar";
+import Logout from "../component/logout";
 
 const statusStyles = {
   Done: "border-2 border-[#00B865] text-[#10E164]",
@@ -9,6 +10,7 @@ const statusStyles = {
 
 const TaskPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
 
   // 🔹 ADDED: hide-on-scroll state
@@ -75,7 +77,7 @@ const TaskPage = () => {
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile + Tablet Overlay */}
@@ -91,7 +93,7 @@ const TaskPage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -260,6 +262,9 @@ const TaskPage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

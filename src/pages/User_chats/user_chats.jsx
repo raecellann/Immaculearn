@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import Sidebar from "../component/sidebar";
 import Button from "../component/Button";
+import Logout from "../component/logout";
 import { FiEdit, FiSend, FiImage, FiMoreVertical, FiPaperclip, FiSmile, FiUser, FiTrash2 } from "react-icons/fi";
 import { BsCheck2 } from "react-icons/bs";
 
 const ChatList = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [activeChatId, setActiveChatId] = useState(null);
   const [input, setInput] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -229,7 +231,7 @@ const ChatList = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white">
       {/* Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile Overlay */}
@@ -245,7 +247,7 @@ const ChatList = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transition-transform lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN */}
@@ -627,6 +629,9 @@ const ChatList = () => {
           )}
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

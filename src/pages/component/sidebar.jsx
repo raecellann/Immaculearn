@@ -14,14 +14,12 @@ import {
 
 import { Link, useLocation } from "react-router";
 
-import Logout from "./logout";
 import logo from "../../assets/HomePage/logo.png";
 import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
 import { useUser } from "../../contexts/user/useUser";
 
-const Sidebar = () => {
+const Sidebar = ({ onLogoutClick }) => {
   const { user } = useUser();
-  const [showLogout, setShowLogout] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
 
   const location = useLocation();
@@ -130,7 +128,7 @@ const Sidebar = () => {
           <SidebarItem
             icon={<LogOut size={20} />}
             label="Log Out Account"
-            onClick={() => setShowLogout(true)}
+            onClick={onLogoutClick}
             isHovered={hoveredItem === "Log Out Account"}
             onHover={() => setHoveredItem("Log Out Account")}
           />
@@ -145,13 +143,6 @@ const Sidebar = () => {
         />
         <span className="text-sm font-semibold">{displayName}</span>
       </div>
-
-      {showLogout && (
-        <Logout
-          onClose={() => setShowLogout(false)}
-          onLogOut={() => setShowLogout(true)}
-        />
-      )}
     </div>
   );
 };

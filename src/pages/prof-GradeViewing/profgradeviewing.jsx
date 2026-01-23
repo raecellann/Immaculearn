@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
+import Logout from "../component/logout";
 
 const ProfGradeRecordPage = () => {
   const [yearLevel, setYearLevel] = useState("1ST YEAR");
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   const subjectsByYear = {
     "1ST YEAR": [
@@ -60,7 +62,7 @@ const ProfGradeRecordPage = () => {
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile / Tablet Overlay */}
@@ -76,7 +78,7 @@ const ProfGradeRecordPage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -215,6 +217,9 @@ const ProfGradeRecordPage = () => {
           </>
         )}
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

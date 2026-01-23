@@ -3,6 +3,7 @@ import ProfSidebar from "../component/profsidebar";
 import Button from "../component/Button";
 import { BookOpen, User, GraduationCap, FileText, Calendar } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
+import Logout from "../component/logout";
 
 const ProfHomePage = () => {
   const { user } = useUser();
@@ -20,6 +21,7 @@ const ProfHomePage = () => {
 
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   // Hide-on-scroll state
   const [showHeader, setShowHeader] = useState(true);
@@ -96,7 +98,7 @@ const ProfHomePage = () => {
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
       {/* ================= Desktop Sidebar (Laptop+) ================= */}
       <div className="hidden lg:block">
-        <ProfSidebar />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= Mobile + Tablet Overlay ================= */}
@@ -112,7 +114,7 @@ const ProfHomePage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <ProfSidebar />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= Main Content ================= */}
@@ -493,6 +495,9 @@ const ProfHomePage = () => {
           )}
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };
