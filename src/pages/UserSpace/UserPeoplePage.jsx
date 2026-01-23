@@ -77,7 +77,7 @@ const UserPeoplePage = () => {
         {/* ================= COVER ================= */}
         <div className="relative">
           <img
-            src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b"
+            src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1769190537/cover_vwmkbn.png"
             alt="cover"
             className="w-full h-32 sm:h-40 md:h-48 object-cover"
           />
