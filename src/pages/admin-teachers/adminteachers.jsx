@@ -203,6 +203,15 @@ const AdminTeachers = () => {
   }
 };
 
+const handleCancelImport = () => {
+    setShowImportModal(false);
+    setImportFile(null);
+    setImportPreview([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
 
   /* ================= SCROLL HEADER ================= */
 
@@ -435,31 +444,77 @@ const AdminTeachers = () => {
 
       {/* IMPORT MODAL */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#1E242E] p-6 rounded-xl w-full max-w-2xl">
-            <div className="flex justify-between mb-4">
-              <h2 className="text-xl font-bold">Import Teachers</h2>
-              <button onClick={() => setShowImportModal(false)}>
-                <X />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white">Import Teacher from Excel</h2>
+              <button
+                onClick={handleCancelImport}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              onChange={handleFileUpload}
-            />
+            {/* File Upload Area */}
+            <div className="mb-6">
+              <div
+                className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-gray-500 transition-colors cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-300 mb-2">
+                  Click to upload CSV or Excel file or drag and drop
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Supported formats: .csv, .xlsx, .xls
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
 
-            <button
-              onClick={handleImportTeachers}
-              className="bg-blue-600 px-4 py-2 mt-4 rounded"
-            >
-              Import
-            </button>
+            {/* File Info */}
+            {importFile && (
+              <div className="mb-6 p-4 bg-[#242B38] rounded-lg">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <p className="text-white font-medium">{importFile.name}</p>
+                    <p className="text-gray-400 text-sm">
+                      {(importFile.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleCancelImport}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleImportTeachers}
+                disabled={importPreview.length === 0}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Import {importPreview.length} Teacher Email
+              </button>
+            </div>
           </div>
         </div>
       )}
+     
     </div>
   );
 };

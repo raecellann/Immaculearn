@@ -434,64 +434,7 @@ const AdminStudents = () => {
               </div>
             )}
 
-            {/* Preview */}
-            {importPreview.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Preview ({importPreview.length} students found)
-                </h3>
-                <div className="max-h-60 overflow-y-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="text-gray-400 border-b border-gray-700">
-                        <th className="py-2 text-sm">Name</th>
-                        <th className="py-2 text-sm">Student Number</th>
-                        <th className="py-2 text-sm">Email</th>
-                        <th className="py-2 text-sm">Course</th>
-                        <th className="py-2 text-sm">Year</th>
-                        <th className="py-2 text-sm">Verified</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {importPreview.slice(0, 5).map((student, index) => (
-                        <tr key={index} className="border-b border-gray-800">
-                          <td className="py-2 text-sm">{student.name}</td>
-                          <td className="py-2 text-sm">{student.studentNumber}</td>
-                          <td className="py-2 text-sm">{student.email}</td>
-                          <td className="py-2 text-sm">{student.course}</td>
-                          <td className="py-2 text-sm">{student.yearLevel}</td>
-                          <td className="py-2 text-sm">
-                            {student.verified ? 'Yes' : 'No'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {importPreview.length > 5 && (
-                    <p className="text-gray-400 text-sm mt-2 text-center">
-                      ... and {importPreview.length - 5} more students
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Excel Format Instructions */}
-            <div className="mb-6 p-4 bg-[#242B38] rounded-lg">
-              <h3 className="text-white font-medium mb-2">Excel Format Required:</h3>
-              <p className="text-gray-300 text-sm mb-2">
-                Your Excel file should have the following columns in the first row:
-              </p>
-              <ul className="text-gray-400 text-sm space-y-1">
-                <li>• Name (Student's full name)</li>
-                <li>• Student Number (Unique ID)</li>
-                <li>• Email (Email address)</li>
-                <li>• Course (Program/Department)</li>
-                <li>• Year Level (1st Year, 2nd Year, etc.)</li>
-                <li>• Verified (Yes/No or true/false)</li>
-              </ul>
-            </div>
-
+            
             {/* Action Buttons */}
             <div className="flex justify-end gap-3">
               <button
