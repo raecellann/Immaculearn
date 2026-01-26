@@ -11,6 +11,8 @@ const AdminTeachers = () => {
   const [importFile, setImportFile] = useState(null);
   const [importPreview, setImportPreview] = useState([]);
   const fileInputRef = useRef(null);
+  
+
 
   const [newTeacher, setNewTeacher] = useState({
     name: "",
@@ -98,13 +100,55 @@ const AdminTeachers = () => {
       : reader.readAsArrayBuffer(file);
   };
 
-  const handleImportTeachers = () => {
-    setTeachers([...teachers, ...importPreview]);
+  const handleImportTeachers = async () => {
+  if (!importFile) return;
+
+  const formData = new FormData();
+  formData.append("file", importFile);
+
+  try {
+    const res = await fetch(
+      "http://localhost:3000/v1/register_prof/bulk_email",
+      {
+        method: "POST",
+        body: formData, // ⚠️ no Content-Type header
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Bulk import failed");
+    }
+
+    // Optional: backend response
+    const data = await res.json();
+    console.log(data);
+
+    // Refresh list from backend (source of truth)
+    const refreshed = await fetch(
+      "http://localhost:3000/v1/register_prof/all_emails_prof"
+    );
+    const refreshedData = await refreshed.json();
+
+    setTeachers(
+      refreshedData.emails.map((email, index) => ({
+        id: index + 1,
+        name: null,
+        email,
+        verified: false,
+      }))
+    );
+
+    // Reset UI
     setShowImportModal(false);
     setImportFile(null);
     setImportPreview([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  } catch (error) {
+    console.error("Import error:", error);
+    alert("Failed to import teachers");
+  }
+};
+
 
   /* ================= ADD TEACHER ================= */
 
@@ -116,17 +160,49 @@ const AdminTeachers = () => {
     }));
   };
 
-  const handleAddTeacher = () => {
-    if (!newTeacher.name || !newTeacher.email) return;
+  const handleAddTeacher = async () => {
+  if (!newTeacher.email) return;
 
-    setTeachers([
-      ...teachers,
-      { id: teachers.length + 1, ...newTeacher },
+  try {
+    const res = await fetch(
+      "http://localhost:3000/v1/register_prof/email",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: newTeacher.email,
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to add teacher");
+    }
+
+    // OPTIONAL: backend response
+    // const data = await res.json();
+
+    // Update UI only after success
+    setTeachers((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        name: newTeacher.name || null,
+        email: newTeacher.email,
+        verified: false,
+      },
     ]);
 
     setNewTeacher({ name: "", email: "", verified: true });
     setShowAddModal(false);
-  };
+  } catch (error) {
+    console.error("Error adding teacher:", error);
+    alert("Failed to add teacher email");
+  }
+};
+
 
   /* ================= SCROLL HEADER ================= */
 
