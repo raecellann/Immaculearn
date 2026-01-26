@@ -174,7 +174,7 @@ const AdminTaskPage = () => {
             <h2 className="text-xl font-semibold mb-6">Activities 📚</h2>
 
             {/* DESKTOP TABLE - HIDDEN ON MOBILE */}
-            <div className="hidden md:block">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-600 text-gray-400 text-left">
@@ -196,13 +196,12 @@ const AdminTaskPage = () => {
                             onClick={() =>
                               setOpenIndex(openIndex === index ? null : index)
                             }
-                            className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.status]} flex items-center gap-1`}
+                            className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.status]}`}
                           >
-                            {task.status}
-                            <span className="text-xs">▼</span>
+                            {task.status} ▼
                           </button>
                           {openIndex === index && (
-                            <div className="absolute left-0 mt-2 w-44 bg-black border border-gray-700 rounded-lg p-3 z-50">
+                            <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50 shadow-lg">
                               <div className="flex flex-col gap-2">
                                 {Object.keys(statusStyles).map((st) => (
                                   <button
@@ -210,7 +209,7 @@ const AdminTaskPage = () => {
                                     onClick={() =>
                                       handleStatusChange(index, st)
                                     }
-                                    className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
+                                    className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90 whitespace-nowrap`}
                                   >
                                     {st}
                                   </button>
@@ -232,9 +231,9 @@ const AdminTaskPage = () => {
                       <td className="py-3 px-4">
                         <a
                           href="/task-view-admin"
-                          className="text-blue-400 hover:text-blue-300 hover:underline"
+                          className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
                         >
-                          See Activity
+                          View Details
                         </a>
                       </td>
                     </tr>
@@ -257,44 +256,46 @@ const AdminTaskPage = () => {
                     >
                       {task.name}
                     </a>
-                    <div className="relative">
-                      <button
-                        onClick={() =>
-                          setOpenIndex(openIndex === index ? null : index)
-                        }
-                        className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.status]} flex items-center gap-1`}
-                      >
-                        {task.status}
-                        <span className="text-[10px]">▼</span>
-                      </button>
-                      {openIndex === index && (
-                        <div className="absolute right-0 mt-1 w-40 bg-black border border-gray-700 rounded-lg p-2 z-50">
-                          <div className="flex flex-col gap-1">
-                            {Object.keys(statusStyles).map((st) => (
-                              <button
-                                key={st}
-                                onClick={() => handleStatusChange(index, st)}
-                                className={`w-full text-center px-3 py-1.5 rounded-full bg-black ${statusStyles[st]} text-xs font-medium hover:opacity-90`}
-                              >
-                                {st}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <button
+                      onClick={() =>
+                        setOpenIndex(openIndex === index ? null : index)
+                      }
+                      className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.status]}`}
+                    >
+                      {task.status}
+                    </button>
                   </div>
 
                   <p className="text-xs text-gray-400">
                     Deadline:{" "}
                     <span className="text-white">{task.deadline}</span>
                   </p>
-                  <div className="mt-2">
+
+                  {openIndex === index && (
+                    <div className="mt-3 pt-3 border-t border-gray-700">
+                      <div className="flex flex-col gap-2">
+                        {Object.keys(statusStyles).map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => {
+                              handleStatusChange(index, st);
+                              setOpenIndex(null);
+                            }}
+                            className={`w-full text-center px-4 py-2 rounded-full ${statusStyles[st]} text-sm font-medium`}
+                          >
+                            Mark as {st}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-3 pt-3 border-t border-gray-700">
                     <a
                       href="/task-view-admin"
-                      className="text-blue-400 hover:text-blue-300 hover:underline text-xs"
+                      className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
                     >
-                      See Activity →
+                      View Details
                     </a>
                   </div>
                 </div>

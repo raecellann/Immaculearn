@@ -89,7 +89,7 @@ const TaskViewPageAdmin = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Mobile + Tablet Header with hide-on-scroll */}
         <div
@@ -110,13 +110,13 @@ const TaskViewPageAdmin = () => {
         <div className="lg:hidden h-16"></div>
 
         {/* Page Content */}
-        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
+        <div className="flex-1 p-4 lg:p-10 overflow-y-auto overflow-x-hidden">
           <h1 className="hidden lg:block text-4xl font-bold text-center mb-10">
             Task
           </h1>
 
-          <div className="max-w-5xl mx-auto">
-            <div className="p-4 lg:p-8 rounded-2xl shadow-lg">
+          <div className="max-w-5xl mx-auto w-full">
+            <div className="p-4 lg:p-8 rounded-2xl shadow-lg w-full overflow-hidden">
               <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6 font-inter">
                 Task Information:
               </h2>
@@ -135,11 +135,11 @@ const TaskViewPageAdmin = () => {
                         onKeyDown={(e) =>
                           e.key === "Enter" && setIsEditingTask(false)
                         }
-                        className="bg-[#2A2A2A] text-white px-2 py-1 rounded font-semibold font-inter w-full lg:w-auto"
+                        className="bg-[#2A2A2A] text-white px-2 py-1 rounded font-semibold font-inter w-full max-w-full box-border"
                         autoFocus
                       />
                     ) : (
-                      <p className="font-semibold font-inter text-xl lg:text-3xl">
+                      <p className="font-semibold font-inter text-xl lg:text-3xl break-words">
                         {taskTitle}
                       </p>
                     )}
@@ -154,10 +154,10 @@ const TaskViewPageAdmin = () => {
                           onKeyDown={(e) =>
                             e.key === "Enter" && setIsEditingTask(false)
                           }
-                          className="bg-[#2A2A2A] text-white px-2 py-1 rounded"
+                          className="bg-[#2A2A2A] text-white px-2 py-1 rounded w-full max-w-full box-border"
                         />
                       ) : (
-                        <span className="opacity-100">{dueDate}</span>
+                        <span className="opacity-100 break-words">{dueDate}</span>
                       )}
                     </p>
 
@@ -198,7 +198,7 @@ const TaskViewPageAdmin = () => {
                         onKeyDown={(e) =>
                           e.key === "Enter" && setIsEditingTask(false)
                         }
-                        className="bg-[#2A2A2A] text-white px-2 py-1 rounded text-2xl font-bold mt-2 w-16"
+                        className="bg-[#2A2A2A] text-white px-2 py-1 rounded text-2xl font-bold mt-2 w-16 max-w-full box-border"
                         autoFocus
                       />
                     ) : (

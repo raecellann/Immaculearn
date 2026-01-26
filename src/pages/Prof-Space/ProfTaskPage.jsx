@@ -205,18 +205,17 @@ const ProfTaskPage = () => {
               <div className="mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>
               </div>
-
               {/* DESKTOP TABLE */}
-              <div className="hidden md:block">
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-600 text-gray-400 text-left">
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Task Name</th>
-                      <th className="py-3 px-4">Assigned To</th>
-                      <th className="py-3 px-4">Deadline</th>
-                    </tr>
-                  </thead>
+                  <tr className="border-b border-gray-600 text-gray-400 text-left">
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Task Name</th>
+                    <th className="py-3 px-4">Deadline</th>
+                    <th className="py-3 px-4">Category</th>
+                  </tr>
+                </thead>
                   <tbody>
                     {tasks.map((task, index) => (
                       <tr
@@ -234,7 +233,7 @@ const ProfTaskPage = () => {
                               {task.status} ▼
                             </button>
                             {openIndex === index && (
-                              <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50">
+                              <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50 shadow-lg">
                                 <div className="flex flex-col gap-2">
                                   {Object.keys(statusStyles).map((st) => (
                                     <button
@@ -242,7 +241,7 @@ const ProfTaskPage = () => {
                                       onClick={() =>
                                         handleStatusChange(index, st)
                                       }
-                                      className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
+                                      className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90 whitespace-nowrap`}
                                     >
                                       {st}
                                     </button>
@@ -253,8 +252,15 @@ const ProfTaskPage = () => {
                           </div>
                         </td>
                         <td className="py-3 px-4">{task.name}</td>
-                        <td className="py-3 px-4">{task.assignedTo}</td>
                         <td className="py-3 px-4">{task.deadline}</td>
+                        <td className="py-3 px-4">
+                          <a
+                            href="/prof-task-view"
+                            className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                          >
+                            View Details
+                          </a>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -281,10 +287,6 @@ const ProfTaskPage = () => {
                     </div>
 
                     <p className="text-sm text-gray-400">
-                      Assigned To:{" "}
-                      <span className="text-white">{task.assignedTo}</span>
-                    </p>
-                    <p className="text-sm text-gray-400 mt-1">
                       Deadline:{" "}
                       <span className="text-white">{task.deadline}</span>
                     </p>

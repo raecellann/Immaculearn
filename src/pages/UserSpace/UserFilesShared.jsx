@@ -148,10 +148,9 @@ const UserFilesShared = () => {
             {/* DESKTOP TABLE */}
             <div className="hidden md:block bg-[#0F1115] rounded-xl p-6">
               <div className="grid grid-cols-4 text-sm text-gray-400 pb-3 border-b border-gray-700">
-                <div>File Name</div>
+                <div className="col-span-2">File Name</div>
                 <div>Date Posted</div>
                 <div>Posted By</div>
-                <div>Folder Saved</div>
               </div>
 
               {files.map((file, index) => (
@@ -159,7 +158,7 @@ const UserFilesShared = () => {
                   key={index}
                   className="grid grid-cols-4 items-center bg-[#161A20] rounded-lg px-4 py-3 mt-4"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 col-span-2">
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
@@ -167,7 +166,6 @@ const UserFilesShared = () => {
                   </div>
                   <div>{file.date}</div>
                   <div>{file.by}</div>
-                  <div>{file.folder}</div>
                 </div>
               ))}
             </div>
@@ -191,9 +189,6 @@ const UserFilesShared = () => {
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
                     Posted by: <span className="text-white">{file.by}</span>
-                  </p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Folder: <span className="text-white">{file.folder}</span>
                   </p>
                 </div>
               ))}
