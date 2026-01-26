@@ -471,20 +471,6 @@ const AdminStudents = () => {
 
             {/* Student Form */}
             <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={newStudent.name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter student's full name"
-                />
-              </div>
 
               {/* Email */}
               <div>
