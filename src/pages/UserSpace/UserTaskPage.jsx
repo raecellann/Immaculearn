@@ -208,7 +208,7 @@ const UserTaskPage = () => {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-blue-400 hover:underline">
+                      <td className="py-3 px-4">
                         {task.name}
                       </td>
                       <td className="py-3 px-4">{task.deadline}</td>
