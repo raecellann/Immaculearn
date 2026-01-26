@@ -21,9 +21,16 @@ const UserPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+  // User role state - in real app, this would come from authentication context
+  const [userRole, setUserRole] = useState("user"); // "user", "prof", or "admin"
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
   const navigate = useNavigate();
+
+  // Helper function to check if user has permission
+  const hasPermission = () => {
+    return userRole === "admin" || userRole === "prof";
+  };
 
   // Mock pending invitations data
   const [pendingInvitations, setPendingInvitations] = useState([
@@ -181,18 +188,22 @@ const UserPage = () => {
             <h1 className="text-2xl md:text-3xl font-bold">Zeldrick's Space</h1>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-xs text-gray-400">(3 Members)</span>
-              <button 
-                onClick={handleInviteMember} 
-                className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition"
-              >
-                Add Member
-              </button>
-              <button 
-                onClick={() => setShowPendingInvitations(true)} 
-                className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
-              >
-                Pending Invites
-              </button>
+              {hasPermission() && (
+                <>
+                  <button 
+                    onClick={handleInviteMember} 
+                    className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition"
+                  >
+                    Add Member
+                  </button>
+                  <button 
+                    onClick={() => setShowPendingInvitations(true)} 
+                    className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
+                  >
+                    Pending Invites
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -226,20 +237,22 @@ const UserPage = () => {
           </div>
           
           {/* Add Member Button - Mobile */}
-          <div className="md:hidden flex justify-end gap-2 mb-6">
-            <button 
-              onClick={handleInviteMember} 
-              className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
-            >
-              Add Member
-            </button>
-            <button 
-              onClick={() => setShowPendingInvitations(true)} 
-              className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
-            >
-              Pending Invites
-            </button>
-          </div>
+          {hasPermission() && (
+            <div className="md:hidden flex justify-end gap-2 mb-6">
+              <button 
+                onClick={handleInviteMember} 
+                className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
+              >
+                Add Member
+              </button>
+              <button 
+                onClick={() => setShowPendingInvitations(true)} 
+                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
+              >
+                Pending Invites
+              </button>
+            </div>
+          )}
 
           {/* POST BOX */}
           <div
