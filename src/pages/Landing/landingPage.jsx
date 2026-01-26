@@ -36,26 +36,44 @@ const LandingPage = () => {
   run();
 
   // Animation states for sections
-  const [heroVisible, setHeroVisible] = useState(typeof window === 'undefined' ? true : false);
-  const [heroImgVisible, setHeroImgVisible] = useState(typeof window === 'undefined' ? true : false);
-  const [featureTextVisible, setFeatureTextVisible] = useState(typeof window === 'undefined' ? true : false);
-  const [featureCardsVisible, setFeatureCardsVisible] = useState(typeof window === 'undefined' ? true : false);
+  const [heroVisible, setHeroVisible] = useState(
+    typeof window === "undefined" ? true : false,
+  );
+  const [heroImgVisible, setHeroImgVisible] = useState(
+    typeof window === "undefined" ? true : false,
+  );
+  const [featureTextVisible, setFeatureTextVisible] = useState(
+    typeof window === "undefined" ? true : false,
+  );
+  const [featureCardsVisible, setFeatureCardsVisible] = useState(
+    typeof window === "undefined" ? true : false,
+  );
+  const [benefitsVisible, setBenefitsVisible] = useState(
+    typeof window === "undefined" ? true : false,
+  );
+  const [signupVisible, setSignupVisible] = useState(
+    typeof window === "undefined" ? true : false,
+  );
   const heroRef = useRef();
   const heroImgRef = useRef();
   const featureTextRef = useRef();
   const featureCardsRef = useRef();
+  const benefitsRef = useRef();
+  const signupRef = useRef();
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
       setHeroVisible(true);
       setHeroImgVisible(true);
       setFeatureTextVisible(true);
       setFeatureCardsVisible(true);
+      setBenefitsVisible(true);
+      setSignupVisible(true);
       return;
     }
 
     const handleObserver = (entries, observer, setVisible) => {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           setVisible(true);
           observer.unobserve(entry.target);
@@ -63,26 +81,51 @@ const LandingPage = () => {
       });
     };
 
-    const heroObs = new window.IntersectionObserver((e, o) => handleObserver(e, o, setHeroVisible), { threshold: 0.3 });
-    const heroImgObs = new window.IntersectionObserver((e, o) => handleObserver(e, o, setHeroImgVisible), { threshold: 0.3 });
-    const featureTextObs = new window.IntersectionObserver((e, o) => handleObserver(e, o, setFeatureTextVisible), { threshold: 0.3 });
-    const featureCardsObs = new window.IntersectionObserver((e, o) => handleObserver(e, o, setFeatureCardsVisible), { threshold: 0.3 });
+    const heroObs = new window.IntersectionObserver(
+      (entries) => handleObserver(entries, heroObs, setHeroVisible),
+      { threshold: 0.1 }
+    );
+    const heroImgObs = new window.IntersectionObserver(
+      (entries) => handleObserver(entries, heroImgObs, setHeroImgVisible),
+      { threshold: 0.1 }
+    );
+    const featureTextObs = new window.IntersectionObserver(
+      (entries) => handleObserver(entries, featureTextObs, setFeatureTextVisible),
+      { threshold: 0.1 }
+    );
+    const featureCardsObs = new window.IntersectionObserver(
+      (entries) => handleObserver(entries, featureCardsObs, setFeatureCardsVisible),
+      { threshold: 0.1 }
+    );
+    const benefitsObs = new window.IntersectionObserver(
+      (entries) => handleObserver(entries, benefitsObs, setBenefitsVisible),
+      { threshold: 0.1 }
+    );
+    const signupObs = new window.IntersectionObserver(
+      (entries) => handleObserver(entries, signupObs, setSignupVisible),
+      { threshold: 0.1 }
+    );
 
     if (heroRef.current) heroObs.observe(heroRef.current);
     if (heroImgRef.current) heroImgObs.observe(heroImgRef.current);
     if (featureTextRef.current) featureTextObs.observe(featureTextRef.current);
-    if (featureCardsRef.current) featureCardsObs.observe(featureCardsRef.current);
+    if (featureCardsRef.current)
+      featureCardsObs.observe(featureCardsRef.current);
+    if (benefitsRef.current) benefitsObs.observe(benefitsRef.current);
+    if (signupRef.current) signupObs.observe(signupRef.current);
 
     return () => {
       heroObs.disconnect();
       heroImgObs.disconnect();
       featureTextObs.disconnect();
       featureCardsObs.disconnect();
+      benefitsObs.disconnect();
+      signupObs.disconnect();
     };
   }, []);
 
   return (
-    <div className="font-sans min-h-screen relative overflow-hidden bg-[#FDFBEE]">
+    <div id="top" className="font-sans min-h-screen relative overflow-hidden bg-[#FDFBEE]">
       {/* NAVBAR */}
       <div className="w-full text-white py-4 px-4 sm:px-10 relative overflow-hidden z-10">
         <header className="flex justify-between items-center w-full relative z-20">
@@ -175,36 +218,36 @@ const LandingPage = () => {
               ✕
             </button>
           </div>
-          <nav className="flex flex-col py-4 px-4 space-y-3">
+          <nav className="flex flex-row justify-between items-center py-4 px-4 space-x-4">
             <a
               href="#about"
-              className="text-white hover:text-blue-200 transition py-2 animate-slide-up-item"
+              className="text-white hover:text-blue-200 transition py-2 animate-slide-up-item text-sm"
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </a>
             <a
               href="#feature"
-              className="text-white hover:text-blue-200 transition py-2 animate-slide-up-item"
+              className="text-white hover:text-blue-200 transition py-2 animate-slide-up-item text-sm"
               onClick={() => setMobileMenuOpen(false)}
             >
               Feature
             </a>
             <a
               href="#contact"
-              className="text-white hover:text-blue-200 transition py-2 animate-slide-up-item"
+              className="text-white hover:text-blue-200 transition py-2 animate-slide-up-item text-sm"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact Us
             </a>
             <Link to="login" onClick={() => setMobileMenuOpen(false)}>
               <Button
-                className="px-4 py-2 w-full animate-slide-up-item"
+                className="px-3 py-2 animate-slide-up-item text-sm"
                 style={{
                   background:
                     "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
                   borderRadius: "10px",
-                  fontSize: "14px",
+                  fontSize: "12px",
                 }}
               >
                 Log In
@@ -215,10 +258,10 @@ const LandingPage = () => {
       )}
 
       {/* HERO SECTION */}
-      <main className="flex flex-col md:flex-row justify-between items-center px-4 sm:px-10 lg:px-28 mt-2 relative z-20 text-center md:text-left">
+      <main id="hero" className="flex flex-col md:flex-row justify-between items-center px-4 sm:px-10 lg:px-28 mt-2 relative z-20 text-center md:text-left">
         <div
           ref={heroRef}
-          className={`w-full md:w-1/2 max-w-[550px] mx-auto md:mx-0 transition-transform duration-500 ${heroVisible ? 'animate-landing-left' : 'opacity-0 translate-x-[-60px]'}`}
+          className={`w-full md:w-1/2 max-w-[550px] mx-auto md:mx-0 transition-transform duration-500 ${heroVisible ? "animate-landing-left" : "opacity-0 translate-x-[-60px]"}`}
         >
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">
             <span className="text-[#1D4ED8]">Wherever</span>
@@ -250,7 +293,7 @@ const LandingPage = () => {
 
         <div
           ref={heroImgRef}
-          className={`relative w-full md:w-1/2 flex justify-center md:justify-end mt-8 md:mt-0 transition-transform duration-500 ${heroImgVisible ? 'animate-landing-right' : 'opacity-0 translate-x-[60px]'}`}
+          className={`relative w-full md:w-1/2 flex justify-center md:justify-end mt-8 md:mt-0 transition-transform duration-500 ${heroImgVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
         >
           <img
             src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379654/sample_lwkfab.svg"
@@ -316,7 +359,10 @@ const LandingPage = () => {
         />
 
         {/* LEFT TEXT */}
-        <div ref={featureTextRef} className={`w-full lg:w-1/2 text-center lg:text-left relative z-30 mb-8 lg:mb-0 transition-transform duration-500 ${featureTextVisible ? 'animate-landing-left' : 'opacity-0 translate-x-[-60px]'}`}>
+        <div
+          ref={featureTextRef}
+          className={`w-full lg:w-1/2 text-center lg:text-left relative z-30 mb-8 lg:mb-0 transition-transform duration-500 ${featureTextVisible ? "animate-landing-left" : "opacity-0 translate-x-[-60px]"}`}
+        >
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1D4ED8]">
             Make your teamwork more organized with us.
           </h2>
@@ -342,7 +388,10 @@ const LandingPage = () => {
         </div>
 
         {/* RIGHT SIDE – STACKED CARDS */}
-        <div ref={featureCardsRef} className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20 transition-transform duration-500 ${featureCardsVisible ? 'animate-landing-right' : 'opacity-0 translate-x-[60px]'}`}>
+        <div
+          ref={featureCardsRef}
+          className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20 transition-transform duration-500 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
+        >
           {/* Left Arrow */}
           <button
             onClick={() =>
@@ -482,7 +531,11 @@ const LandingPage = () => {
       </style>
 
       {/* BENEFITS SECTION */}
-      <section className="w-full bg-[#FDFBEE] py-8 px-10 lg:px-24 relative">
+      <section 
+        ref={benefitsRef}
+        id="benefits" 
+        className={`w-full bg-[#FDFBEE] py-8 px-10 lg:px-24 relative transition-transform duration-500 ${benefitsVisible ? "animate-landing-left" : "opacity-0 translate-x-[-60px]"}`}
+      >
         <div className="mb-10 w-max">
           <div className="bg-[#FFE486] px-8 py-3 rounded-full shadow-md text-left border-2 border-black">
             <h2 className="text-xl md:text-2xl font-bold font-grotesque text-black">
@@ -567,7 +620,9 @@ const LandingPage = () => {
           </div>
 
           {/* LAPTOP MOCKUP */}
-          <div className="hidden lg:flex justify-center items-center relative">
+          <div
+            className={`hidden lg:flex justify-center items-center relative transition-transform duration-500 animate-landing-right`}
+          >
             <div className="absolute -top-14 -left-10 w-48 h-48 bg-[#4D9BEF] rounded-full blur-3xl opacity-60"></div>
             <div className="absolute top-10 -right-8 w-40 h-40 bg-[#7FB3FF] rounded-full blur-3xl opacity-70"></div>
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-56 h-56 bg-[#9EC9FF] rounded-full blur-2xl opacity-50"></div>
@@ -586,7 +641,7 @@ const LandingPage = () => {
       </section>
 
       {/* ====================== SIGN-UP SECTION (above footer) ====================== */}
-      <section className="w-full bg-[#FDFBEE] py-8 sm:py-12 lg:py-16 px-4 sm:px-10 lg:px-20 flex justify-center">
+      <section id="signup" className="w-full bg-[#FDFBEE] py-8 sm:py-12 lg:py-16 px-4 sm:px-10 lg:px-20 flex justify-center">
         <div className="p-6 sm:p-8 lg:p-10 max-w-2xl lg:max-w-3xl w-full text-center">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-black">
             GET STARTED WITH <span className="text-[#1D4ED8]">IMMACULEARN</span>{" "}
@@ -624,86 +679,140 @@ const LandingPage = () => {
           alt="Footer Background"
         />
 
-        {/* Footer Content */}
-        <div className="absolute top-0 left-0 w-full h-full px-4 sm:px-10 lg:px-20 py-8 sm:py-12 lg:py-16 flex flex-col lg:flex-row justify-start items-start text-black">
-          {/* LOGO + BRAND */}
-          <div className="flex flex-col items-start mr-10">
-            <img
-              src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379259/LOGO_ozziow.png"
-              className="w-[120px]"
-              alt="Logo"
-            />
-          </div>
+        {/* Footer Content - Responsive and always visible */}
+        <div className="absolute top-0 left-0 w-full h-full min-h-[450px] sm:min-h-[260px] flex flex-row items-center justify-start z-20 pt-8 sm:pt-8 lg:pt-12 px-4 lg:px-10">
+          <div className="flex flex-row items-center justify-start gap-8 sm:gap-12 lg:gap-20">
+            {/* LOGO - Left side of text */}
+            <div className="flex flex-col items-center">
+              {/* Logo for desktop, text for mobile */}
+              <img
+                src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379259/LOGO_ozziow.png"
+                className="hidden sm:block w-[100px] sm:w-[110px] lg:w-[120px] h-auto"
+                alt="Logo"
+              />
+              <div className="sm:hidden text-white font-bold text-xl bg-black bg-opacity-50 px-3 py-2 rounded">
+                IMMACULEARN
+              </div>
+            </div>
 
-          {/* LINKS */}
-          <div>
-            <h4 className="font-bold text-lg mb-2">Links</h4>
-            <ul className="space-y-1 text-sm">
-              <li>
-                <a href="#home" className="hover:underline">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href="#feature" className="hover:underline">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#benefits" className="hover:underline">
-                  Benefits
-                </a>
-              </li>
-              <li>
-                <a href="#signup" className="hover:underline">
-                  Sign-up
-                </a>
-              </li>
-            </ul>
-          </div>
+            {/* LINKS AND ABOUT - Right beside logo */}
+            <div className="flex flex-col sm:flex-row justify-center items-start sm:items-start gap-6 sm:gap-12 lg:gap-16">
+              {/* LINKS */}
+              <div className="flex flex-col items-start">
+                <h4 className="font-bold text-base sm:text-lg mb-2">Links</h4>
+                <ul className="space-y-1 text-xs sm:text-sm">
+                  <li>
+                    <a href="#top" className="hover:underline flex items-center gap-2 scroll-smooth">
+                      <span>Home</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 sm:h-4 sm:w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                        />
+                      </svg>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#feature" className="hover:underline flex items-center gap-2 scroll-smooth">
+                      <span>Features</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 sm:h-4 sm:w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        />
+                      </svg>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#benefits" className="hover:underline flex items-center gap-2 scroll-smooth">
+                      <span>Benefits</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 sm:h-4 sm:w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#signup" className="hover:underline flex items-center gap-2 scroll-smooth">
+                      <span>Sign-up</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 sm:h-4 sm:w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                        />
+                      </svg>
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-          {/* GITHUB USERNAMES */}
-          <div className="ml-16">
-            <h4 className="font-bold text-lg mb-2">GitHub</h4>
-            <ul className="space-y-1 text-sm">
-              <li>
-                <a
-                  href="https://github.com/username1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  username1
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/username2"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  username2
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/username3"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  username3
-                </a>
-              </li>
-            </ul>
+              {/* ABOUT */}
+              <div className="flex flex-col items-start">
+                <h4 className="font-bold text-base sm:text-lg mb-2">About</h4>
+                <ul className="space-y-1 text-xs sm:text-sm">
+                  <li>
+                    <a href="#" className="hover:underline">
+                      Username1
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:underline">
+                      Username2
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:underline">
+                      Username3
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:underline">
+                      Username4
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
 
 <style jsx>{`
   @keyframes slide-down-menu {
@@ -740,22 +849,34 @@ const LandingPage = () => {
   }
 
   .animate-landing-left {
-    animation: landing-left 0.6s cubic-bezier(0.4,0,0.2,1);
+    animation: landing-left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 1 !important;
     transform: translateX(0) !important;
   }
   .animate-landing-right {
-    animation: landing-right 0.6s cubic-bezier(0.4,0,0.2,1);
+    animation: landing-right 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 1 !important;
     transform: translateX(0) !important;
   }
   @keyframes landing-left {
-    0% { transform: translateX(-60px); opacity: 0.7; }
-    100% { transform: translateX(0); opacity: 1; }
+    0% {
+      transform: translateX(-60px);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
   }
   @keyframes landing-right {
-    0% { transform: translateX(60px); opacity: 0.7; }
-    100% { transform: translateX(0); opacity: 1; }
+    0% {
+      transform: translateX(60px);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
   }
 `}</style>;
 
