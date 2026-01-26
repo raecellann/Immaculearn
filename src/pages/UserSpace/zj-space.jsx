@@ -146,7 +146,7 @@ const UserPage = () => {
         {/* COVER */}
         <div className="relative">
           <img
-            src="/src/assets/UserSpace/cover.png"
+            src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1769190537/cover_vwmkbn.png"
             alt="Cover"
             className="w-full h-32 sm:h-40 md:h-48 object-cover"
           />

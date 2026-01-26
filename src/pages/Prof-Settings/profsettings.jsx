@@ -44,7 +44,7 @@ const ProfSettingsPage = () => {
   }, []);
 
   return (
-    <div className="flex font-grotesque min-h-screen bg-[#161A20] text-white">
+    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -81,7 +81,7 @@ const ProfSettingsPage = () => {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold truncate">Settings</h1>
+          <h1 className="text-xl sm:text-2xl font-bold truncate">Settings</h1>
         </div>
 
         {/* 🔹 Spacer for fixed header */}
@@ -89,7 +89,7 @@ const ProfSettingsPage = () => {
 
         {/* Desktop Header */}
         <div className="hidden lg:block px-10 pt-10">
-          <h1 className="text-4xl font-bold text-center mb-2">Settings</h1>
+          <h1 className="text-4xl font-bold text-center mb-6 lg:mb-10 font-grotesque">Settings</h1>
           <p className="text-gray-300 mb-8 text-center">
             Manage your professor profile, course settings, and account preferences.
           </p>

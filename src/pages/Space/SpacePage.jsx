@@ -4,6 +4,7 @@ import { ArrowLeft, MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useUser } from "../../contexts/user/useUser";
 import Logout from "../component/logout";
+import Button from "../component/Button";
 
 const SpacePage = () => {
   const { user } = useUser();
@@ -315,12 +316,9 @@ const SpacePage = () => {
                   Join space or create your own.
                 </p>
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => navigate("/create-space-admin")}
-                    className="px-6 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition"
-                  >
+                  <Button onClick={() => navigate("/create-space-admin")}>
                     Create Space
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -335,12 +333,11 @@ const SpacePage = () => {
                     placeholder="Enter join code..."
                     className="w-full bg-transparent border-b border-[#3B4457] text-white placeholder-gray-500 pb-2 focus:outline-none focus:border-[#0EA5E9]"
                   />
-                  <button
-                    onClick={() => alert("Join Space Click!")}
-                    className="mt-4 w-full px-4 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition"
-                  >
-                    Join Space
-                  </button>
+                  <div className="mt-6">
+                    <Button onClick={() => alert("Join Space Click!")}>
+                      Join Space
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

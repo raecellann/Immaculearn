@@ -93,11 +93,35 @@ const ProfTaskPage = () => {
 
   const [openIndex, setOpenIndex] = useState(null);
 
+  // Draft activities state
+  const [draftActivities, setDraftActivities] = useState([
+    {
+      name: "Research Paper Draft 📝",
+      deadline: "May 15, 2025",
+      assignedTo: "All Students",
+      status: "Draft",
+    },
+    {
+      name: "Lab Report Outline 🧪",
+      deadline: "May 20, 2025",
+      assignedTo: "Section A",
+      status: "Draft",
+    },
+  ]);
+  const [openDraftIndex, setOpenDraftIndex] = useState(null);
+
   const handleStatusChange = (index, newStatus) => {
     const updated = [...tasks];
     updated[index].status = newStatus;
     setTasks(updated);
     setOpenIndex(null);
+  };
+
+  const handleDraftStatusChange = (index, newStatus) => {
+    const updated = [...draftActivities];
+    updated[index].status = newStatus;
+    setDraftActivities(updated);
+    setOpenDraftIndex(null);
   };
 
   return (
@@ -200,23 +224,22 @@ const ProfTaskPage = () => {
                 onClick={() => setIsCreatingTask(true)}
               >
                 <FiFileText size={16} />
-                Create or Upload File
+                Create File
               </button>
               <div className="mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>
               </div>
-
               {/* DESKTOP TABLE */}
-              <div className="hidden md:block">
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-600 text-gray-400 text-left">
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Task Name</th>
-                      <th className="py-3 px-4">Assigned To</th>
-                      <th className="py-3 px-4">Deadline</th>
-                    </tr>
-                  </thead>
+                  <tr className="border-b border-gray-600 text-gray-400 text-left">
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Task Name</th>
+                    <th className="py-3 px-4">Deadline</th>
+                    <th className="py-3 px-4">Details</th>
+                  </tr>
+                </thead>
                   <tbody>
                     {tasks.map((task, index) => (
                       <tr
@@ -234,7 +257,7 @@ const ProfTaskPage = () => {
                               {task.status} ▼
                             </button>
                             {openIndex === index && (
-                              <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50">
+                              <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50 shadow-lg">
                                 <div className="flex flex-col gap-2">
                                   {Object.keys(statusStyles).map((st) => (
                                     <button
@@ -242,7 +265,7 @@ const ProfTaskPage = () => {
                                       onClick={() =>
                                         handleStatusChange(index, st)
                                       }
-                                      className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90`}
+                                      className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90 whitespace-nowrap`}
                                     >
                                       {st}
                                     </button>
@@ -253,8 +276,15 @@ const ProfTaskPage = () => {
                           </div>
                         </td>
                         <td className="py-3 px-4">{task.name}</td>
-                        <td className="py-3 px-4">{task.assignedTo}</td>
                         <td className="py-3 px-4">{task.deadline}</td>
+                        <td className="py-3 px-4">
+                          <a
+                            href="/prof-task-view"
+                            className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                          >
+                            View Details
+                          </a>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -281,10 +311,6 @@ const ProfTaskPage = () => {
                     </div>
 
                     <p className="text-sm text-gray-400">
-                      Assigned To:{" "}
-                      <span className="text-white">{task.assignedTo}</span>
-                    </p>
-                    <p className="text-sm text-gray-400 mt-1">
                       Deadline:{" "}
                       <span className="text-white">{task.deadline}</span>
                     </p>
@@ -319,6 +345,82 @@ const ProfTaskPage = () => {
                   </div>
                 ))}
               </div>
+
+            {/* DRAFT ACTIVITIES TABLE */}
+            <div className="max-w-5xl mx-auto w-full mt-12">
+              <h2 className="text-xl font-semibold mb-6">Draft Activities 📝</h2>
+
+              {/* DESKTOP TABLE - HIDDEN ON MOBILE */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-600 text-gray-400 text-left">
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4">Task Name</th>
+                      <th className="py-3 px-4">Deadline</th>
+                      <th className="py-3 px-4">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {draftActivities.map((draft, index) => (
+                      <tr
+                        key={index}
+                        className="border-b border-gray-700 hover:bg-[#1E222A]"
+                      >
+                        <td className="py-3 px-4">
+                          <span className="px-6 py-1 rounded-full bg-black text-sm font-bold border-2 border-gray-500 text-gray-400 inline-block min-w-[120px] text-center">
+                            Draft
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          {draft.name}
+                        </td>
+                        <td className="py-3 px-4">{draft.deadline}</td>
+                        <td className="py-3 px-4">
+                          <a
+                            href="/prof-task-view"
+                            className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                          >
+                            View Details
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARDS - SHOWN ON MOBILE */}
+              <div className="md:hidden space-y-4">
+                {draftActivities.map((draft, index) => (
+                  <div
+                    key={index}
+                    className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                  >
+                    <div className="flex justify-between items-center mb-3">
+                      <p className="text-sm font-semibold">{draft.name}</p>
+                      <span className="px-3 py-1 rounded-full bg-black text-xs border-2 border-gray-500 text-gray-400 font-bold">
+                        Draft
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-gray-400">
+                      Deadline:{" "}
+                      <span className="text-white">{draft.deadline}</span>
+                    </p>
+
+                    <div className="mt-3 pt-3 border-t border-gray-700">
+                      <a
+                        href="/prof-task-view"
+                        className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                      >
+                        View Details
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
             </div>
           ) : (
             /* ================= CREATE TASK FORM ================= */
@@ -433,11 +535,11 @@ const ProfTaskPage = () => {
 
                   {/* RIGHT SECTION */}
                   <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
-                    <label className="font-semibold">Grades:</label>
+                    <label className="font-semibold">Score:</label>
                     <input
                       type="text"
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
-                      placeholder="e.g. 95/100"
+                      placeholder="20/20"
                     />
 
                     <label className="font-semibold">Assignees:</label>

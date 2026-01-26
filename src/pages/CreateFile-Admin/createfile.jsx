@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Upload, ChevronDown, X, FileText, Trash2 } from "lucide-react";
 import AdminSidebar from "../component/sidebar";
 import Logout from "../component/logout";
 
 const CreateFileAdmin = () => {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [files, setFiles] = useState([
     {
@@ -32,6 +33,25 @@ const CreateFileAdmin = () => {
   const [showModal, setShowModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  /* 🔹 ADDED — SAME STICKY HEADER LOGIC */
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -130,90 +150,167 @@ const CreateFileAdmin = () => {
   };
 
   return (
-    <div className="flex h-screen bg-black">
-      {/* SIDEBAR */}
-      <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
+    <div className="flex min-h-screen bg-[#161A20] text-white">
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-8">
-          {/* HEADER */}
-          <div className="flex items-center justify-center mb-8 relative">
-            <h1 className="text-3xl font-bold text-white">Files</h1>
-            <button
-              onClick={() => setShowModal(true)}
-              className="absolute right-0 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition"
-            >
-              <span>Create or Upload File</span>
-            </button>
-          </div>
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <div className="hidden lg:block">
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
 
-          {/* FILES TABLE */}
-          <div className="bg-gray-900 rounded-lg overflow-hidden">
-            <table className="w-full">
-              {/* TABLE HEADER */}
-              <thead>
-                <tr className="border-b border-gray-700">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    File Name
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Date Posted
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Space Name
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Action
-                  </th>
-                </tr>
-              </thead>
+      {/* ================= MOBILE + TABLET OVERLAY ================= */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
 
-              {/* TABLE BODY */}
-              <tbody className="divide-y divide-gray-700">
-                {files.map((file, index) => (
-                  <tr key={index} className="hover:bg-gray-800/50 transition">
-                    {/* STATUS */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-green-400 flex items-center space-x-1">
-                          {file.status}
-                          <ChevronDown size={14} />
-                        </span>
-                      </div>
-                    </td>
+      {/* ================= MOBILE + TABLET SIDEBAR ================= */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
 
-                    {/* FILE NAME */}
-                    <td className="px-6 py-4 text-sm text-white font-medium">
-                      {file.name}
-                    </td>
+      {/* ================= MAIN CONTENT ================= */}
+      <div className="flex-1 flex flex-col">
 
-                    {/* DATE POSTED */}
-                    <td className="px-6 py-4 text-sm text-gray-300">
-                      {file.datePosted}
-                    </td>
+        {/* 🔹 MOBILE + TABLET STICKY HEADER */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Files</h1>
+        </div>
 
-                    {/* SPACE NAME */}
-                    <td className="px-6 py-4 text-sm text-gray-300">
+        {/* 🔹 Spacer for fixed header */}
+        <div className="lg:hidden h-16" />
+
+        {/* ================= PAGE CONTENT ================= */}
+        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
+          <div className="max-w-6xl mx-auto">
+            {/* HEADER */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-center mb-6 lg:mb-8 relative">
+              <h1 className="hidden lg:block text-4xl font-bold text-center mb-4 lg:mb-0">Files</h1>
+              <button
+                onClick={() => setShowModal(true)}
+                className="lg:absolute lg:right-0 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs lg:text-sm font-medium rounded-lg transition"
+              >
+                <span>Create or Upload File</span>
+              </button>
+            </div>
+
+            {/* ================= MOBILE + TABLET (CARD VIEW) ================= */}
+            <div className="flex flex-col gap-4 lg:hidden">
+              {files.map((file, index) => (
+                <div
+                  key={index}
+                  className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex flex-col gap-3"
+                >
+                  <p className="text-sm text-green-400 font-medium">
+                    ● {file.status}
+                  </p>
+
+                  <p className="text-blue-400 font-medium">
+                    {file.name}
+                  </p>
+
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-400">Date Posted:</span>{" "}
+                    {file.datePosted}
+                  </p>
+
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-300">
+                      <span className="text-gray-400">Space:</span>{" "}
                       {file.spaceName}
-                    </td>
+                    </p>
 
-                    {/* ACTION */}
-                    <td className="px-6 py-4">
-                      {file.isNew && (
-                        <span className="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md">
-                          View File
-                        </span>
-                      )}
-                    </td>
+                    {file.isNew && (
+                      <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition">
+                        View File
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ================= LAPTOP & DESKTOP (TABLE VIEW) ================= */}
+            <div className="hidden lg:block bg-gray-900 rounded-lg overflow-hidden">
+              <table className="w-full border-collapse">
+                {/* TABLE HEADER */}
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      File Name
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Date Posted
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Space Name
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Action
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+
+                {/* TABLE BODY */}
+                <tbody className="divide-y divide-gray-700">
+                  {files.map((file, index) => (
+                    <tr key={index} className="hover:bg-gray-800/50 transition">
+                      {/* STATUS */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-sm font-medium text-green-400 flex items-center space-x-1">
+                            {file.status}
+                            <ChevronDown size={14} />
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* FILE NAME */}
+                      <td className="px-6 py-4 text-sm text-white font-medium">
+                        {file.name}
+                      </td>
+
+                      {/* DATE POSTED */}
+                      <td className="px-6 py-4 text-sm text-gray-300">
+                        {file.datePosted}
+                      </td>
+
+                      {/* SPACE NAME */}
+                      <td className="px-6 py-4 text-sm text-gray-300">
+                        {file.spaceName}
+                      </td>
+
+                      {/* ACTION */}
+                      <td className="px-6 py-4">
+                        {file.isNew && (
+                          <span className="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md">
+                            View File
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

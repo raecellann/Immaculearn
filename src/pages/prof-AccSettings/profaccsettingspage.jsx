@@ -40,7 +40,7 @@ const ProfProfilePage = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-grotesque">
+    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -88,7 +88,7 @@ const ProfProfilePage = () => {
             </button>
 
             {/* Title */}
-            <h1 className="ml-4 text-lg font-bold truncate">
+            <h1 className="ml-4 text-xl sm:text-2xl font-bold truncate">
               Your Profile
             </h1>
           </div>
@@ -96,7 +96,7 @@ const ProfProfilePage = () => {
 
         {/* Desktop Header */}
         <div className="hidden lg:block px-10 pt-10">
-          <h1 className="text-4xl font-bold text-center mb-2">
+          <h1 className="text-4xl font-bold text-center mb-6 lg:mb-10 font-grotesque">
             Your Profile
           </h1>
           <p className="text-gray-300 mb-8 text-center">

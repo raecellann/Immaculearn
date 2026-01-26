@@ -114,7 +114,7 @@ const UserTaskPage = () => {
         {/* ================= COVER (ZJ STYLE) ================= */}
         <div className="relative">
           <img
-            src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b"
+            src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1769190537/cover_vwmkbn.png"
             className="w-full h-32 sm:h-40 md:h-48 object-cover"
             alt="cover"
           />
@@ -164,14 +164,13 @@ const UserTaskPage = () => {
             <h2 className="text-xl font-semibold mb-6">To Do Lists 📚</h2>
 
             {/* DESKTOP TABLE */}
-            <div className="hidden md:block">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-600 text-gray-400 text-left">
                     <th className="py-3 px-4">Status</th>
                     <th className="py-3 px-4">Task Name</th>
                     <th className="py-3 px-4">Deadline</th>
-                    <th className="py-3 px-4">Space Name</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -181,20 +180,38 @@ const UserTaskPage = () => {
                       className="border-b border-gray-700 hover:bg-[#1E222A]"
                     >
                       <td className="py-3 px-4">
-                        <button
-                          onClick={() =>
-                            setOpenIndex(openIndex === index ? null : index)
-                          }
-                          className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.status]}`}
-                        >
-                          {task.status} ▼
-                        </button>
+                        <div className="relative inline-block">
+                          <button
+                            onClick={() =>
+                              setOpenIndex(openIndex === index ? null : index)
+                            }
+                            className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.status]}`}
+                          >
+                            {task.status} ▼
+                          </button>
+                          {openIndex === index && (
+                            <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50 shadow-lg">
+                              <div className="flex flex-col gap-2">
+                                {Object.keys(statusStyles).map((st) => (
+                                  <button
+                                    key={st}
+                                    onClick={() =>
+                                      handleStatusChange(index, st)
+                                    }
+                                    className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90 whitespace-nowrap`}
+                                  >
+                                    {st}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </td>
-                      <td className="py-3 px-4 text-blue-400 hover:underline">
+                      <td className="py-3 px-4">
                         {task.name}
                       </td>
                       <td className="py-3 px-4">{task.deadline}</td>
-                      <td className="py-3 px-4">{task.space}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -224,9 +241,25 @@ const UserTaskPage = () => {
                     Deadline:{" "}
                     <span className="text-white">{task.deadline}</span>
                   </p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Space: <span className="text-white">{task.space}</span>
-                  </p>
+
+                  {openIndex === index && (
+                    <div className="mt-3 pt-3 border-t border-gray-700">
+                      <div className="flex flex-col gap-2">
+                        {Object.keys(statusStyles).map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => {
+                              handleStatusChange(index, st);
+                              setOpenIndex(null);
+                            }}
+                            className={`w-full text-center px-4 py-2 rounded-full ${statusStyles[st]} text-sm font-medium`}
+                          >
+                            Mark as {st}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

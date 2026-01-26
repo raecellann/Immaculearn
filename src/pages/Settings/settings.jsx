@@ -42,7 +42,7 @@ const SettingsPage = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-grotesque">
+    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
@@ -80,7 +80,7 @@ const SettingsPage = () => {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">Settings</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Settings</h1>
         </div>
 
         {/* Spacer for fixed header */}
@@ -91,7 +91,7 @@ const SettingsPage = () => {
           <div className="w-full max-w-5xl">
 
             {/* Title (Laptop & Desktop only) */}
-            <h1 className="hidden lg:block text-4xl font-bold text-center mb-2">
+            <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
               Settings
             </h1>
             <p className="text-gray-300 mb-6 lg:mb-10 text-center text-sm lg:text-base">
