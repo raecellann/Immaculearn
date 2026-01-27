@@ -499,48 +499,44 @@ const LandingPage = () => {
       </section>
 
       {/* ====================== FOOTER SECTION ====================== */}
-      <div className="w-full mt-10 sm:mt-16 lg:mt-20 relative">
-        {/* Background Image */}
-        <img
-          src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380309/schoolfooter_f2viek.png"
-          className="w-full h-auto object-cover"
-          alt="Footer Background"
-        />
-
+      <div className="w-full mt-10 sm:mt-16 lg:mt-20 relative bg-cover bg-center bg-no-repeat" 
+           style={{backgroundImage: "url('https://res.cloudinary.com/diws5bcu6/image/upload/v1766380309/schoolfooter_f2viek.png')"}}>
+        
         {/* Footer Content */}
-        <div className="absolute top-0 left-0 w-full h-full px-4 sm:px-10 lg:px-20 py-8 sm:py-12 lg:py-16 flex flex-col lg:flex-row justify-between text-black">
+        <div className="w-full px-4 sm:px-6 md:px-10 lg:px-20 py-8 sm:py-12 lg:py-16 flex flex-col lg:flex-row justify-between items-start lg:items-center text-black bg-black/10 backdrop-blur-[1px]">
+          
           {/* LOGO + BRAND */}
-          <div className="flex flex-col items-start">
+          <div className="flex flex-col items-start mb-6 lg:mb-0 w-full lg:w-auto">
             <img
               src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766379259/LOGO_ozziow.png"
-              className="w-[120px]"
+              className="w-[80px] sm:w-[100px] lg:w-[120px] h-auto"
               alt="Logo"
             />
           </div>
 
           {/* LINKS + RESOURCES */}
-          <div className="flex gap-20 mt-8 lg:mt-0">
+          <div className="flex gap-6 sm:gap-8 lg:gap-12 lg:mt-0 w-full lg:w-auto">
             {/* LINKS */}
-            <div>
-              <h4 className="font-bold text-lg mb-2">Links</h4>
-              <ul className="space-y-1 text-sm">
+            <div className="flex-1 lg:flex-none">
+              <h4 className="font-bold text-base sm:text-lg mb-2 sm:mb-3">Links</h4>
+              <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
                 <li>
-                  <a href="#home" className="hover:underline">
+                  <a href="#home" className="hover:underline transition-colors">
                     Home
                   </a>
                 </li>
                 <li>
-                  <a href="#about" className="hover:underline">
+                  <a href="#about" className="hover:underline transition-colors">
                     About system
                   </a>
                 </li>
                 <li>
-                  <a href="#benefits" className="hover:underline">
+                  <a href="#benefits" className="hover:underline transition-colors">
                     Benefits
                   </a>
                 </li>
                 <li>
-                  <a href="#signup" className="hover:underline">
+                  <a href="#signup" className="hover:underline transition-colors">
                     Sign-up
                   </a>
                 </li>
@@ -548,16 +544,16 @@ const LandingPage = () => {
             </div>
 
             {/* RESOURCES */}
-            <div>
-              <h4 className="font-bold text-lg mb-2">Resources</h4>
-              <ul className="space-y-1 text-sm">
+            <div className="flex-1 lg:flex-none">
+              <h4 className="font-bold text-base sm:text-lg mb-2 sm:mb-3">Resources</h4>
+              <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
                 <li>
-                  <a href="#" className="hover:underline">
+                  <a href="#" className="hover:underline transition-colors">
                     Source Code
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:underline">
+                  <a href="#" className="hover:underline transition-colors">
                     Paper
                   </a>
                 </li>
@@ -566,16 +562,16 @@ const LandingPage = () => {
           </div>
 
           {/* CONTACT FORM */}
-          <div className="mt-8 lg:mt-0">
-            <h4 className="font-bold text-lg mb-2">Get in touch</h4>
+          <div className="mt-6 lg:mt-0 w-full lg:w-auto">
+            <h4 className="font-bold text-base sm:text-lg mb-2 sm:mb-3">Get in touch</h4>
 
             <InputField
               placeholder="Enter your message here"
-              className="w-[280px] h-12 bg-white border-2 border-black rounded-lg px-4"
+              className="w-full sm:w-[250px] md:w-[280px] h-10 sm:h-12 bg-white border-2 border-gray-800 rounded-lg px-3 sm:px-4 text-sm shadow-md"
             />
 
             <Button
-              className="mt-3 px-5 py-2 font-semibold shadow"
+              className="mt-3 ml-0 sm:ml-2 px-4 sm:px-5 py-2 font-semibold shadow text-sm sm:text-base"
               style={{
                 background: "#1D4ED8",
                 color: "white",
