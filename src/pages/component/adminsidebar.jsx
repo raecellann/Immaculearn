@@ -6,10 +6,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
-import Logout from "./logout";
 
-const AdminSidebar = () => {
-  const [showLogout, setShowLogout] = useState(false);
+const AdminSidebar = ({ onLogoutClick }) => {
   const [hoveredItem, setHoveredItem] = useState(null);
 
   const location = useLocation();
@@ -77,7 +75,7 @@ const AdminSidebar = () => {
           <SidebarItem
             icon={<LogOut size={20} />}
             label="Log Out"
-            onClick={() => setShowLogout(true)}
+            onClick={onLogoutClick}
             isHovered={hoveredItem === "Log Out"}
             onHover={() => setHoveredItem("Log Out")}
           />
@@ -93,9 +91,6 @@ const AdminSidebar = () => {
         />
         <span className="text-sm font-semibold">Admin Account</span>
       </div>
-
-      {/* LOGOUT MODAL */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

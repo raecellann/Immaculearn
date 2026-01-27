@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
 import { Menu, CheckCircle, Upload, X, FileText, UserPlus } from "lucide-react";
 import * as XLSX from 'xlsx';
+import Logout from "../component/logout";
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [importFile, setImportFile] = useState(null);
@@ -253,7 +255,7 @@ const AdminStudents = () => {
 
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <AdminSidebar />
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -269,7 +271,7 @@ const AdminStudents = () => {
         className={`fixed top-0 left-0 h-screen w-64 z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <AdminSidebar />
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN CONTENT */}
@@ -638,6 +640,9 @@ const AdminStudents = () => {
           </div>
         </div>
       )}
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

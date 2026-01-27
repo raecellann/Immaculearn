@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 import { FiCalendar, FiClock, FiCheck, FiAlertCircle, FiMenu, FiX, FiChevronLeft, FiChevronRight, FiEdit, FiPlus } from "react-icons/fi";
+import Logout from "../component/logout";
 
 const ProfCalendarPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [activities, setActivities] = useState([]);
@@ -336,7 +338,7 @@ const ProfCalendarPage = () => {
     <div className="flex min-h-screen bg-gray-50">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MOBILE OVERLAY ================= */}
@@ -353,7 +355,7 @@ const ProfCalendarPage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MAIN ================= */}
@@ -927,6 +929,9 @@ const ProfCalendarPage = () => {
           </div>
         </div>
       )}
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
+import Logout from "../component/logout";
 import { FiMenu, FiX, FiChevronLeft } from "react-icons/fi";
 
 const UserPeoplePage = () => {
@@ -8,6 +9,7 @@ const UserPeoplePage = () => {
 
   /* ================= HEADER + SIDEBAR (MATCHED) ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -30,7 +32,7 @@ const UserPeoplePage = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MOBILE OVERLAY ================= */}
@@ -47,7 +49,7 @@ const UserPeoplePage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MAIN ================= */}
@@ -75,7 +77,7 @@ const UserPeoplePage = () => {
         {/* ================= COVER ================= */}
         <div className="relative">
           <img
-            src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b"
+            src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1769190537/cover_vwmkbn.png"
             alt="cover"
             className="w-full h-32 sm:h-40 md:h-48 object-cover"
           />
@@ -153,6 +155,9 @@ const UserPeoplePage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

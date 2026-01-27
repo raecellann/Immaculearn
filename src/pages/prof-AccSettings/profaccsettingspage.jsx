@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../component/profsidebar";
 import Button from "../component/Button";
+import Logout from "../component/logout";
 
 const ProfProfilePage = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const profileName = "Jober Reyes";
 
   const headerRef = useRef(null);
@@ -38,10 +40,10 @@ const ProfProfilePage = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-grotesque">
+    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile Overlay */}
@@ -57,7 +59,7 @@ const ProfProfilePage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -86,7 +88,7 @@ const ProfProfilePage = () => {
             </button>
 
             {/* Title */}
-            <h1 className="ml-4 text-lg font-bold truncate">
+            <h1 className="ml-4 text-xl sm:text-2xl font-bold truncate">
               Your Profile
             </h1>
           </div>
@@ -94,7 +96,7 @@ const ProfProfilePage = () => {
 
         {/* Desktop Header */}
         <div className="hidden lg:block px-10 pt-10">
-          <h1 className="text-4xl font-bold text-center mb-2">
+          <h1 className="text-4xl font-bold text-center mb-6 lg:mb-10 font-grotesque">
             Your Profile
           </h1>
           <p className="text-gray-300 mb-8 text-center">
@@ -195,6 +197,9 @@ const ProfProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

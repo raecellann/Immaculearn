@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
+import Logout from "../component/logout";
 import { FiFileText, FiMenu, FiX } from "react-icons/fi";
 
 const UserFilesShared = () => {
@@ -8,6 +9,7 @@ const UserFilesShared = () => {
 
   /* ================= HEADER + SIDEBAR (ZJ MATCH) ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -51,7 +53,7 @@ const UserFilesShared = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MOBILE OVERLAY ================= */}
@@ -68,7 +70,7 @@ const UserFilesShared = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MAIN ================= */}
@@ -96,7 +98,7 @@ const UserFilesShared = () => {
         {/* ================= COVER ================= */}
         <div className="relative">
           <img
-            src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b"
+            src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1769190537/cover_vwmkbn.png"
             alt="cover"
             className="w-full h-32 sm:h-40 md:h-48 object-cover"
           />
@@ -106,9 +108,7 @@ const UserFilesShared = () => {
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">
-              Zeldrick's Space
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold">Zeldrick's Space</h1>
           </div>
 
           {/* ================= TABS (ZJ COPY) ================= */}
@@ -148,10 +148,9 @@ const UserFilesShared = () => {
             {/* DESKTOP TABLE */}
             <div className="hidden md:block bg-[#0F1115] rounded-xl p-6">
               <div className="grid grid-cols-4 text-sm text-gray-400 pb-3 border-b border-gray-700">
-                <div>File Name</div>
+                <div className="col-span-2">File Name</div>
                 <div>Date Posted</div>
                 <div>Posted By</div>
-                <div>Folder Saved</div>
               </div>
 
               {files.map((file, index) => (
@@ -159,7 +158,7 @@ const UserFilesShared = () => {
                   key={index}
                   className="grid grid-cols-4 items-center bg-[#161A20] rounded-lg px-4 py-3 mt-4"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 col-span-2">
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
@@ -167,7 +166,6 @@ const UserFilesShared = () => {
                   </div>
                   <div>{file.date}</div>
                   <div>{file.by}</div>
-                  <div>{file.folder}</div>
                 </div>
               ))}
             </div>
@@ -192,15 +190,15 @@ const UserFilesShared = () => {
                   <p className="text-sm text-gray-400 mt-1">
                     Posted by: <span className="text-white">{file.by}</span>
                   </p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Folder: <span className="text-white">{file.folder}</span>
-                  </p>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

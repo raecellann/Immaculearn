@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
 import { Users, GraduationCap, UserCheck, Menu } from "lucide-react";
+import Logout from "../component/logout";
 
 const AdminDashboard = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   /* 🔹 STICKY HEADER STATE */
   const [showHeader, setShowHeader] = useState(true);
@@ -59,7 +61,7 @@ const AdminDashboard = () => {
 
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <AdminSidebar />
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -75,7 +77,7 @@ const AdminDashboard = () => {
         className={`fixed top-0 left-0 h-screen w-64 z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <AdminSidebar />
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN CONTENT */}
@@ -146,6 +148,9 @@ const AdminDashboard = () => {
 
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

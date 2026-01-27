@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import Sidebar from "../component/profsidebar";
 import Button from "../component/Button";
+import Logout from "../component/logout";
 
 const ProfChatsPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   const chats = [
     {id: 1,name: "Wilson Esmabe",message:"Good Evening po, Sir Jober. Nakapag-pasa na po ako ng OJT Paper.",time: "1m",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990149/wilson_gjdkdm.jpg", },
@@ -15,7 +17,7 @@ const ProfChatsPage = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile Overlay */}
@@ -31,7 +33,7 @@ const ProfChatsPage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -132,6 +134,9 @@ const ProfChatsPage = () => {
           ))}
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

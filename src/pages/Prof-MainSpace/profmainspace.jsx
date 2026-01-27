@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
+import Logout from "../component/logout";
+import Button from "../component/Button";
 
 const ProfSpacePage = () => {
   const [showMenu, setShowMenu] = useState(null);
@@ -7,6 +9,7 @@ const ProfSpacePage = () => {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("All");
+  const [showLogout, setShowLogout] = useState(false);
 
   /* 🔹 ADDED — STICKY HEADER LOGIC */
   const [showHeader, setShowHeader] = useState(true);
@@ -142,7 +145,7 @@ const ProfSpacePage = () => {
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile Overlay */}
@@ -159,7 +162,7 @@ const ProfSpacePage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -206,9 +209,9 @@ const ProfSpacePage = () => {
                 </p>
               </div>
               <div className="flex md:justify-end">
-                <button className="px-6 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg font-medium text-sm transition w-full md:w-auto">
+                <Button onClick={() => console.log('Create Space Click!')}>
                   Create Space
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -392,6 +395,9 @@ const ProfSpacePage = () => {
           )}
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

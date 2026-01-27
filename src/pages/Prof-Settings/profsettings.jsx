@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
+import Logout from "../component/logout";
 
 const ProfSettingsPage = () => {
   const [activeAccount, setActiveAccount] = useState("Jober Reyes");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   const accounts = [
     {
@@ -42,10 +44,10 @@ const ProfSettingsPage = () => {
   }, []);
 
   return (
-    <div className="flex font-grotesque min-h-screen bg-[#161A20] text-white">
+    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile Overlay */}
@@ -61,7 +63,7 @@ const ProfSettingsPage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -79,7 +81,7 @@ const ProfSettingsPage = () => {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold truncate">Settings</h1>
+          <h1 className="text-xl sm:text-2xl font-bold truncate">Settings</h1>
         </div>
 
         {/* 🔹 Spacer for fixed header */}
@@ -87,7 +89,7 @@ const ProfSettingsPage = () => {
 
         {/* Desktop Header */}
         <div className="hidden lg:block px-10 pt-10">
-          <h1 className="text-4xl font-bold text-center mb-2">Settings</h1>
+          <h1 className="text-4xl font-bold text-center mb-6 lg:mb-10 font-grotesque">Settings</h1>
           <p className="text-gray-300 mb-8 text-center">
             Manage your professor profile, course settings, and account preferences.
           </p>
@@ -164,6 +166,9 @@ const ProfSettingsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

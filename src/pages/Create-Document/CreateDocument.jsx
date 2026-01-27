@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
+import Logout from "../component/logout";
 import {
   FiArrowLeft,
   FiBold,
@@ -53,6 +54,7 @@ const CreateDocumentPage = () => {
   const [showCustomSizeDialog, setShowCustomSizeDialog] = useState(false);
   const [showCustomMarginDialog, setShowCustomMarginDialog] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
 
@@ -402,49 +404,80 @@ const CreateDocumentPage = () => {
   };
 
   const downloadDocument = (format) => {
+    // Get plain text content to ensure reliable export
     const content = editorRef.current?.innerText || '';
-    const title = title || 'Document';
+    const documentTitle = title || 'Document';
     
     if (format === 'txt') {
-      // Download as text file
+      // Download as text file (NOTE format)
       const blob = new Blob([content], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${title}.txt`;
+      a.download = `${documentTitle}.txt`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } else if (format === 'html') {
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>${title}</title>
-          <style>
-            body { font-family: ${selectedFont}, Arial, sans-serif; line-height: 1.5; }
-            @page { size: ${paperSizes[selectedPaperSize].width} ${paperSizes[selectedPaperSize].height}; margin: ${marginOptions[selectedMargin].top} ${marginOptions[selectedMargin].right} ${marginOptions[selectedMargin].bottom} ${marginOptions[selectedMargin].left}; }
-          </style>
-        </head>
-        <body>
-          ${editorRef.current?.innerHTML || ''}
-        </body>
-        </html>
-      `;
-      const blob = new Blob([htmlContent], { type: 'text/html' });
+    } else if (format === 'docx') {
+      // Download as RTF format (reliable and compatible)
+      const rtfContent = `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Times New Roman;}}\\f0\\fs24 ${content.replace(/\n/g, '\\par ')}}`;
+      const blob = new Blob([rtfContent], { type: 'application/rtf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${title}.html`;
+      a.download = `${documentTitle}.rtf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } else if (format === 'pdf') {
-      // For PDF, we'll use window.print() as a fallback
-      // In a real app, you'd use a library like jsPDF or puppeteer
-      window.print();
+      // For PDF, use the most reliable method - print dialog
+      // This is the most compatible way to generate PDFs without external libraries
+      const printContent = `
+        <html>
+        <head>
+          <title>${documentTitle}</title>
+          <meta charset="utf-8">
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              line-height: 1.6; 
+              margin: 1in;
+              white-space: pre-wrap;
+              font-size: 12pt;
+            }
+            @page { 
+              size: A4; 
+              margin: 1in; 
+            }
+            @media print {
+              body { margin: 1in; }
+              @page { margin: 1in; }
+            }
+          </style>
+        </head>
+        <body>
+          <pre style="font-family: Arial, sans-serif; white-space: pre-wrap; margin: 0; font-size: 12pt;">${content}</pre>
+          <script>
+            // Auto-print when page loads
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 100);
+            }
+          </script>
+        </body>
+        </html>
+      `;
+      
+      // Create a new window for printing
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      
+      // Focus on the new window
+      printWindow.focus();
     }
     
     setIsDownloadDropdownOpen(false);
@@ -494,7 +527,7 @@ const CreateDocumentPage = () => {
     <div className="flex min-h-screen bg-[#F3F4F6]">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MOBILE OVERLAY ================= */}
@@ -511,7 +544,7 @@ const CreateDocumentPage = () => {
         (mobileSidebarOpen ? "translate-x-0" : "-translate-x-full") + 
         " md:block lg:hidden"}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MAIN ================= */}
@@ -576,24 +609,24 @@ const CreateDocumentPage = () => {
                   <div className="absolute top-full mt-2 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-10 w-40">
                     <div
                       className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:bg-gray-100"
-                      onClick={() => downloadDocument('html')}
+                      onClick={() => downloadDocument('docx')}
                     >
                       <FiDownload size={16} className="text-gray-800" />
-                      <span className="text-sm text-gray-800">Word (.docx)</span>
+                      <span className="text-sm text-gray-800">Document (.rtf)</span>
                     </div>
                     <div
                       className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:bg-gray-100"
                       onClick={() => downloadDocument('pdf')}
                     >
                       <FiDownload size={16} className="text-gray-800" />
-                      <span className="text-sm text-gray-800">PDF</span>
+                      <span className="text-sm text-gray-800">PDF (Print)</span>
                     </div>
                     <div
                       className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:bg-gray-100"
                       onClick={() => downloadDocument('txt')}
                     >
                       <FiDownload size={16} className="text-gray-800" />
-                      <span className="text-sm text-gray-800">Text (.txt)</span>
+                      <span className="text-sm text-gray-800">Note (.txt)</span>
                     </div>
                   </div>
                 )}
@@ -1258,6 +1291,9 @@ const CreateDocumentPage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

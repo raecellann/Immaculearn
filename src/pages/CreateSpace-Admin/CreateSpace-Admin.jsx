@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Cropper from "react-easy-crop";
 import Sidebar from "../component/sidebar";
 import InputField from "../component/InputField";
 import Button from "../component/Button";
 import { ChevronDown, X } from "lucide-react";
+import Logout from "../component/logout";
 
 const CreateSpaceAdmin = () => {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [spaceName, setSpaceName] = useState("");
   const [numMembers, setNumMembers] = useState(5);
   const [people, setPeople] = useState(Array(5).fill(""));
@@ -21,6 +24,25 @@ const CreateSpaceAdmin = () => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isCropping, setIsCropping] = useState(false);
+
+  /* 🔹 ADDED — SAME STICKY HEADER LOGIC */
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const memberOptions = [2,3, 4, 5, 6, 7, 8, 9];
 
@@ -119,18 +141,60 @@ const CreateSpaceAdmin = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#1A1E24] text-white font-inter">
-      <Sidebar />
+    <div className="flex min-h-screen bg-[#161A20] text-white font-inter">
 
-      <div className="flex-1 px-20 py-10 overflow-y-auto">
-        <h1 className="text-2xl font-bold text-center mb-6">Create New Space, Here!</h1>
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <div className="hidden lg:block">
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
 
-        <div className="bg-[#2A2A2A] rounded-xl p-6 w-full mx-auto">
+      {/* ================= MOBILE + TABLET OVERLAY ================= */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* ================= MOBILE + TABLET SIDEBAR ================= */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
+
+      {/* ================= MAIN CONTENT ================= */}
+      <div className="flex-1 flex flex-col">
+
+        {/* 🔹 MOBILE + TABLET STICKY HEADER */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Create Space</h1>
+        </div>
+
+        {/* 🔹 Spacer for fixed header */}
+        <div className="lg:hidden h-16" />
+
+        {/* ================= PAGE CONTENT ================= */}
+        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
+          <h1 className="hidden lg:block text-4xl font-bold text-center mb-6 lg:mb-10">Create New Space, Here!</h1>
+
+          <div className="bg-[#2A2A2A] rounded-xl p-4 lg:p-6 w-full mx-auto max-w-4xl">
 
           {/* 🔵 TWITTER-STYLE CROP MODAL */}
           {isCropping && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-              <div className="bg-[#1E1E1E] rounded-xl p-4 w-[90%] max-w-4xl relative">
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+              <div className="bg-[#1E1E1E] rounded-xl p-4 w-full max-w-4xl relative">
 
                 {/* Close btn */}
                 <button
@@ -144,7 +208,7 @@ const CreateSpaceAdmin = () => {
                 </button>
 
                 {/* Cropper area */}
-                <div className="relative w-full h-[350px] md:h-[420px] rounded-lg overflow-hidden bg-black">
+                <div className="relative w-full h-[300px] sm:h-[350px] md:h-[420px] rounded-lg overflow-hidden bg-black">
                   <Cropper
                     image={uploadedImage}
                     crop={crop}
@@ -166,7 +230,7 @@ const CreateSpaceAdmin = () => {
                     step={0.01}
                     value={zoom}
                     onChange={(e) => setZoom(e.target.value)}
-                    className="w-1/2"
+                    className="w-1/2 sm:w-2/3"
                   />
                 </div>
 
@@ -198,13 +262,13 @@ const CreateSpaceAdmin = () => {
             <img
               src={coverImage}
               alt="Cover"
-              className="w-full h-40 object-cover rounded-lg"
+              className="w-full h-32 sm:h-40 object-cover rounded-lg"
               style={{ background: coverImage.includes("gradient") ? coverImage : "" }}
             />
 
-            <div className="absolute top-2 right-3 flex space-x-2 text-xs">
+            <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
               <button
-                className="text-white bg-black/50 px-2 py-1 rounded"
+                className="text-white bg-black/50 px-2 py-1 rounded text-xs"
                 onClick={() => setIsCoverModalOpen(true)}
               >
                 Change Cover
@@ -212,7 +276,7 @@ const CreateSpaceAdmin = () => {
 
               {!coverImage.includes("gradient") && coverImage && (
                 <button
-                  className="text-white bg-black/50 px-2 py-1 rounded"
+                  className="text-white bg-black/50 px-2 py-1 rounded text-xs"
                   onClick={() => {
                     setUploadedImage(coverImage);
                     setIsCropping(true);
@@ -223,7 +287,7 @@ const CreateSpaceAdmin = () => {
               )}
 
               <button
-                className="text-white bg-black/50 px-2 py-1 rounded"
+                className="text-white bg-black/50 px-2 py-1 rounded text-xs"
                 onClick={() => setCoverImage("")}
               >
                 Delete Cover
@@ -233,8 +297,8 @@ const CreateSpaceAdmin = () => {
 
           {/* Cover Modal */}
           {isCoverModalOpen && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
-              <div className="bg-[#2A2A2A] rounded-lg p-6 w-[600px] relative">
+            <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4">
+              <div className="bg-[#2A2A2A] rounded-lg p-4 sm:p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
                 <button className="absolute top-2 right-2" onClick={() => setIsCoverModalOpen(false)}>
                   <X size={20} />
                 </button>
@@ -243,7 +307,7 @@ const CreateSpaceAdmin = () => {
 
                 {/* Color Gradient */}
                 <p className="text-sm mb-2">Color & Gradient</p>
-                <div className="grid grid-cols-4 gap-2 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                   {colorOptions.map((color, i) => (
                     <div
                       key={i}
@@ -259,7 +323,7 @@ const CreateSpaceAdmin = () => {
 
                 {/* Gallery */}
                 <p className="text-sm mb-2">Gallery</p>
-                <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                   {galleryImages.map((img, i) => (
                     <img
                       key={i}
@@ -286,8 +350,8 @@ const CreateSpaceAdmin = () => {
           )}
 
           {/* Space Name + Members */}
-          <div className="mt-6 grid grid-cols-4 gap-4">
-            <div className="col-span-3">
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="lg:col-span-3">
               <label className="block text-sm mb-1">Space Name:</label>
               <InputField
                 placeholder="Enter space name"
@@ -297,36 +361,41 @@ const CreateSpaceAdmin = () => {
               />
             </div>
 
-            <div className="col-span-1">
+            <div className="lg:col-span-1">
               <label className="block text-sm mb-1">Maximum No. of Members:</label>
-              <div
-                className="bg-[#1E1E1E] rounded-lg px-4 py-2 flex justify-between items-center cursor-pointer"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              >
-                <span>({numMembers})</span>
-                <ChevronDown size={18} />
-              </div>
-
-              {isDropdownOpen && (
-                <div className="absolute bg-[#1E1E1E] mt-1 rounded-lg max-h-40 overflow-auto z-10">
-                  {memberOptions.map((option) => (
-                    <div
-                      key={option}
-                      className="px-4 py-2 hover:bg-[#3E3E3E] cursor-pointer"
-                      onClick={() => setNumMembers(option)}
-                    >
-                      {option}
-                    </div>
-                  ))}
+              <div className="relative">
+                <div
+                  className="bg-[#1E1E1E] rounded-lg px-4 py-2 flex justify-between items-center cursor-pointer"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <span>({numMembers})</span>
+                  <ChevronDown size={18} />
                 </div>
-              )}
+
+                {isDropdownOpen && (
+                  <div className="absolute bg-[#1E1E1E] mt-1 rounded-lg max-h-40 overflow-auto z-10 w-full">
+                    {memberOptions.map((option) => (
+                      <div
+                        key={option}
+                        className="px-4 py-2 hover:bg-[#3E3E3E] cursor-pointer"
+                        onClick={() => {
+                          setNumMembers(option);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        {option}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Add People */}
           <div className="mt-6">
             <label className="text-sm">Add People:</label>
-            <div className="grid grid-cols-2 gap-3 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
               {people.map((person, index) => (
                 <InputField
                   key={index}
@@ -346,18 +415,22 @@ const CreateSpaceAdmin = () => {
           </div>
 
           {/* Buttons */}
-          <div className="flex justify-end gap-3 mt-8">
-            <button className="bg-[#3E3E3E] px-6 py-2 rounded-lg hover:bg-[#4A4A4A] text-xs ">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
+            <button className="bg-[#3E3E3E] px-6 py-2 rounded-lg hover:bg-[#4A4A4A] text-xs w-full sm:w-auto">
               Cancel
             </button>
 
-            <Button onClick={handleCreateSpace} className="bg-[#007AFF] hover:bg-[#2563eb] text-xs">
+            <Button onClick={handleCreateSpace} className="bg-[#007AFF] hover:bg-[#2563eb] text-xs w-full sm:w-auto">
               Create Space
             </Button>
           </div>
 
         </div>
       </div>
+    </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };
