@@ -236,10 +236,10 @@ const LandingPage = () => {
       )}
 
       {/* HERO SECTION */}
-      <main className="flex flex-col md:flex-row justify-between items-center px-4 sm:px-10 lg:px-28 mt-2 relative z-20 text-center md:text-left">
+      <main className="flex flex-col md:flex-row justify-between items-center px-4 sm:px-10 lg:px-28 mt-2 md:mt-4 relative z-20 text-center md:text-left">
         <div
           ref={heroRef}
-          className={`w-full md:w-1/2 max-w-[550px] mx-auto md:mx-0 transition-transform duration-500 ${heroVisible ? "animate-landing-left" : "opacity-0 translate-x-[-60px]"}`}
+          className={`w-full md:w-1/2 max-w-[550px] mx-auto md:mx-0 mt-0 md:mt-10 transition-transform duration-500 ${heroVisible ? "animate-landing-left" : "opacity-0 translate-x-[-60px]"}`}
         >
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">
             <span className="text-[#1D4ED8]">Wherever</span>
@@ -286,7 +286,7 @@ const LandingPage = () => {
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1769180611/Group_124_u66wsj.png"
           alt="School"
-          className="w-full h-[200px] sm:h-[300px] md:h-auto object-cover"
+          className="w-full h-[200px] sm:h-[300px] md:h-[260px] lg:h-auto object-cover"
         />
 
         <div className="absolute top-4 sm:top-6 md:top-8 lg:top-10 left-2 sm:left-6 md:left-8 lg:left-10 text-left font-grotesque max-w-[90%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-md mt-4 sm:mt-0 md:mt-4 lg:mt-0">
@@ -320,21 +320,62 @@ const LandingPage = () => {
 
       {/* FEATURE SECTION */}
       <section
-        className="w-full bg-[#FDFBEE] py-12 sm:py-16 px-4 sm:px-10 lg:px-28 flex flex-col lg:flex-row items-center gap-6 sm:gap-10 font-grotesque relative"
+        className="w-full bg-[#FDFBEE] py-12 sm:py-16 px-4 sm:px-10 lg:px-28 flex flex-col md:flex-col lg:flex-row items-center gap-6 sm:gap-10 font-grotesque relative"
         id="feature"
       >
         {/* Decorative Images - Hidden on mobile */}
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380042/Asterisk_itnvzs.png"
-          className="hidden md:block absolute left-[-10px] top-[350px] w-[180px] z-0"
+          className="absolute 
+          left-[-20px] top-[220px] 
+          sm:left-[-10px] sm:top-[260px] 
+          md:left-[-10px] md:top-[320px] 
+          lg:top-[350px] 
+          w-[100px] sm:w-[140px] md:w-[160px] lg:w-[180px] 
+          z-0"
           alt="asterisk"
         />
 
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380049/arrow_q9xp1c.png"
-          className="hidden md:block absolute left-[200px] top-[360px] w-[120px] z-20"
+          className="absolute 
+          left-[110px] top-[240px] 
+          sm:left-[150px] sm:top-[280px] 
+          md:left-[180px] md:top-[330px] 
+          lg:left-[200px] lg:top-[360px] 
+          w-[70px] sm:w-[90px] md:w-[100px] lg:w-[120px] 
+          z-20"
           alt="arrow"
         />
+
+        {/* BLUE MARQUEE - Tablet and Mobile Only */}
+          <div className="
+            w-full md:block lg:hidden absolute 
+            top-[320px] 
+            sm:top-[480px] 
+            md:top-[500px] 
+            left-0 sm:left-[200px] 
+            z-30
+          ">          
+            <div className="w-full h-8 sm:h-10 bg-[#4D9BEF] flex items-center justify-center overflow-hidden relative">
+            <div className="absolute whitespace-nowrap animate-marquee">
+              {Array(10)
+                .fill(
+                  <>
+                    <span className="text-white text-sm sm:text-base font-bold mx-2 sm:mx-4">
+                      Create your account for free!
+                    </span>
+                    <span className="text-white text-sm sm:text-base font-bold mx-1 sm:mx-2">
+                      •
+                    </span>
+                  </>,
+                )
+                .map((el, i) => (
+                  <React.Fragment key={i}>{el}</React.Fragment>
+                ))}
+            </div>
+          </div>
+        </div>
 
         {/* LEFT TEXT */}
         <div
@@ -368,7 +409,7 @@ const LandingPage = () => {
         {/* RIGHT SIDE – STACKED CARDS */}
         <div
           ref={featureCardsRef}
-          className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20 transition-transform duration-500 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
+          className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20 mt-12 sm:mt-16 md:mt-20 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
         >
           {/* Left Arrow */}
           <button
@@ -449,8 +490,8 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* BLUE MARQUEE */}
-      <div className="relative w-full mt-8 sm:mt-16">
+      {/* BLUE MARQUEE - Desktop Only */}
+      <div className="relative w-full mt-8 sm:mt-16 hidden lg:block">
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380095/violet_z9udug.svg"
           alt="Background Accent"
@@ -509,7 +550,10 @@ const LandingPage = () => {
       </style>
 
       {/* BENEFITS SECTION */}
-      <section className="w-full bg-[#FDFBEE] py-8 px-10 lg:px-24 relative">
+      <section className="w-full bg-[#FDFBEE] 
+      py-8 sm:py-12 md:py-14 lg:py-16 
+      px-4 sm:px-8 md:px-12 lg:px-24 
+      relative">
         <div className="mb-10 w-max">
           <div className="bg-[#FFE486] px-8 py-3 rounded-full shadow-md text-left border-2 border-black">
             <h2 className="text-xl md:text-2xl font-bold font-grotesque text-black">
@@ -524,7 +568,11 @@ const LandingPage = () => {
           className="absolute left-0 bottom-0 w-48 z-0 hidden lg:block"
         />
 
-        <div className="flex flex-col lg:flex-row justify-start items-start gap-10 relative z-10">
+        <div className="flex flex-col md:flex-row flex-wrap lg:flex-nowrap 
+        justify-start items-start 
+        gap-6 md:gap-8 lg:gap-10 
+        relative z-10">
+
           {/* LEFT COLUMN */}
           <div className="grid grid-cols-1 gap-5">
             {[
