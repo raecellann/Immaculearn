@@ -29,9 +29,11 @@ import TaskViewPageAdmin from "./pages/Task-view Admin/Task-View-Admin.jsx";
 import TaskViewAll from "./pages/Task-view Admin/Task-View-All.jsx"; 
 import ViewFilePage from "./pages/ViewFiles/ViewFiles.jsx"; //done responsive//
 
+import AdminStreamPage from "./pages/UserSpace/AdminSpacePages/AdminStream.jsx";
 import AdminTaskPage from "./pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
 import AdminCreateActivityPage from "./pages/UserSpace/AdminSpacePages/AdminCreateActivityPage.jsx";
 import AdminFilesSharedPage from "./pages/UserSpace/AdminSpacePages/AdminFilesSharedPage.jsx";
+import AdminPeoplePage from "./pages/UserSpace/AdminSpacePages/AdminPeople.jsx";
 
 import ProfProfilePage from "./pages/prof-AccSettings/profaccsettingspage.jsx"; //done responsive//
 import ProfNotificationPage from "./pages/prof-Notifications/profnotification.jsx"; //done responsive//
@@ -122,29 +124,30 @@ export default function Routes() {
       <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
       <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
 
+      <Route path="/admin-stream" element={<AdminStreamPage /> } />
       <Route path="/admin-task-page" element={<AdminTaskPage />} />
       <Route path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />
+      <Route path="/admin-files-shared" element={<AdminFilesSharedPage />} />
+      <Route path="/admin-people" element={<AdminPeoplePage />} />
+      {/* ADMIN STUDENT ROUTES */}
+      <Route path="/task-view" element={<TaskViewPage />} />
+      <Route path="/task-view-admin" element={<TaskViewPageAdmin />} />
+      <Route path="/task-view-all" element={<TaskViewAll />} />
+      <Route path="/create-space" element={<CreateSpaceAdmin />} />
+      <Route path="/create-file-admin" element={<CreateFileAdmin />} />
 
-        {/* ADMIN STUDENT ROUTES */}
-        <Route path="/task-view" element={<TaskViewPage />} />
-        <Route path="/task-view-admin" element={<TaskViewPageAdmin />} />
-        <Route path="/task-view-all" element={<TaskViewAll />} />
-        <Route path="/create-space" element={<CreateSpaceAdmin />} />
-        <Route path="/create-file-admin" element={<CreateFileAdmin />} />
-        <Route path="/admin-files-shared" element={<AdminFilesSharedPage />} />
-
-        {/* PROFESSOR ROUTES */}
-        <Route path="/prof-acc-settings" element={<ProfProfilePage />} />
-        <Route path="/prof-notifications" element={<ProfNotificationPage />} />
-        <Route path="/prof-list-activity" element={<ProfListActivityPage />} />
-        <Route path="/prof-files" element={<ProfFilePage />} />
-        <Route path="/prof-files-by-subject" element={<ProfFilesBySubject />} />
-        <Route path="/prof-grade-viewing" element={<ProfGradeRecordPage />} />
-        <Route path="/prof-chats" element={<ProfChatsPage /> }/>
-        <Route path="/prof-home" element={<ProfHomePage />} />
-        <Route path="/prof-settings" element={<ProfSettingsPage />} />
-        <Route path="/prof-main-space" element={<ProfMainSpace />} />
-        <Route path="/prof-calendar" element={<ProfCalendarPage />} />
+      {/* PROFESSOR ROUTES */}
+      <Route path="/prof-acc-settings" element={<ProfProfilePage />} />
+      <Route path="/prof-notifications" element={<ProfNotificationPage />} />
+      <Route path="/prof-list-activity" element={<ProfListActivityPage />} />
+      <Route path="/prof-files" element={<ProfFilePage />} />
+      <Route path="/prof-files-by-subject" element={<ProfFilesBySubject />} />
+      <Route path="/prof-grade-viewing" element={<ProfGradeRecordPage />} />
+      <Route path="/prof-chats" element={<ProfChatsPage /> }/>
+      <Route path="/prof-home" element={<ProfHomePage />} />
+      <Route path="/prof-settings" element={<ProfSettingsPage />} />
+      <Route path="/prof-main-space" element={<ProfMainSpace />} />
+      <Route path="/prof-calendar" element={<ProfCalendarPage />} />
 
       {/* PROFESSOR SPACE ROUTES */}
       <Route path="/prof-space-thesis" element={<ThesisSpace />} />
