@@ -323,7 +323,7 @@ const LandingPage = () => {
 
       {/* FEATURE SECTION */}
       <section
-        className="w-full bg-[#FDFBEE] pt-2 pb-12 sm:pt-4 sm:pb-16 lg:pt-0 px-4 sm:px-10 lg:px-28 flex flex-col md:flex-col lg:flex-row items-center gap-6 sm:gap-10 font-grotesque relative"
+        className="w-full bg-[#FDFBEE] pt-6 pb-4 sm:pt-4 sm:pb-8 lg:pt-0 lg:pb-12 px-4 sm:px-10 lg:px-28 font-grotesque relative"
         id="feature"
       >
         {/* Decorative Images - Hidden on mobile */}
@@ -351,39 +351,45 @@ const LandingPage = () => {
           alt="arrow"
         />
 
-        {/* BLUE MARQUEE - Tablet and Mobile Only */}
-          <div className="
-            w-full md:block lg:hidden absolute 
-            top-[320px] 
-            sm:top-[480px] 
-            md:top-[500px] 
-            left-0 sm:left-[200px] 
-            z-30
-          ">          
-            <div className="w-full h-8 sm:h-10 bg-[#4D9BEF] flex items-center justify-center overflow-hidden relative">
-            <div className="absolute whitespace-nowrap animate-marquee">
-              {Array(10)
-                .fill(
-                  <>
-                    <span className="text-white text-sm sm:text-base font-bold mx-2 sm:mx-4">
-                      Create your account for free!
-                    </span>
-                    <span className="text-white text-sm sm:text-base font-bold mx-1 sm:mx-2">
-                      •
-                    </span>
-                  </>,
-                )
-                .map((el, i) => (
-                  <React.Fragment key={i}>{el}</React.Fragment>
-                ))}
-            </div>
-          </div>
-        </div>
+{/* BLUE MARQUEE - Tablet & Mobile */}
+<div
+  className="
+    w-full md:block lg:hidden 
+    absolute 
+    top-[320px] 
+    sm:top-[480px] 
+    
+    md:top-[460px]   /* ✅ TABLET FIX */
+    md:left-0        /* ✅ TABLET FIX */
 
-        {/* LEFT TEXT */}
+    left-0 sm:left-[200px] 
+    z-40
+  "
+>
+  <div className="w-full h-8 sm:h-10 bg-[#4D9BEF] flex items-center justify-center overflow-hidden relative">
+    <div className="absolute whitespace-nowrap animate-marquee">
+      {Array(10)
+        .fill(
+          <>
+            <span className="text-white text-sm sm:text-base font-bold mx-2 sm:mx-4">
+              Create your account for free!
+            </span>
+            <span className="text-white text-sm sm:text-base font-bold mx-1 sm:mx-2">
+              •
+            </span>
+          </>,
+        )
+        .map((el, i) => (
+          <React.Fragment key={i}>{el}</React.Fragment>
+        ))}
+    </div>
+  </div>
+</div>
+
+        {/* LEFT TEXT SECTION */}
         <div
           ref={featureTextRef}
-          className={`w-full lg:w-1/2 text-center lg:text-left relative z-30 mb-4 lg:mb-0 transition-transform duration-500 ${featureTextVisible ? "animate-landing-left" : "opacity-0 translate-x-[-60px]"}`}
+          className={`w-full text-center lg:text-left relative z-30 mb-4 md:mt-8 transition-transform duration-500 ${featureTextVisible ? "animate-landing-left" : "opacity-0 translate-x[-60px]"}`}
         >
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1D4ED8]">
             Make your teamwork more organized with us.
@@ -414,7 +420,7 @@ const LandingPage = () => {
         {/* RIGHT SIDE – STACKED CARDS */}
         <div
           ref={featureCardsRef}
-          className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20 mt-4 sm:mt-6 md:mt-8 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
+          className={`w-full flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20 mt-16 sm:mt-20 md:mt-48 lg:mt-0 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
         >
           {/* Left Arrow */}
           <button
@@ -559,7 +565,7 @@ const LandingPage = () => {
       py-8 sm:py-12 md:py-14 lg:py-16 
       px-4 sm:px-8 md:px-12 lg:px-24 
       relative">
-        <div className="mb-10 w-max">
+        <div className="mb-6 w-max">
           <div className="bg-[#FFE486] px-8 py-3 rounded-full shadow-md text-left border-2 border-black">
             <h2 className="text-xl md:text-2xl font-bold font-grotesque text-black">
               Benefits of using the website
