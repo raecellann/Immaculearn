@@ -255,17 +255,18 @@ const LandingPage = () => {
           </p>
 
           <div className="mt-4 sm:mt-6 flex justify-center md:justify-start">
-            <Button
-              onClick={() => setShowMainPage(true)}
-              className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
-              style={{
-                background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
-                borderRadius: "10px",
-                fontSize: "0.9rem sm:1rem",
-              }}
-            >
-              Explore Now
-            </Button>
+            <a href="#feature" className="inline-block">
+              <Button
+                className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
+                style={{
+                  background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
+                  borderRadius: "10px",
+                  fontSize: "0.9rem sm:1rem",
+                }}
+              >
+                Explore Now
+              </Button>
+            </a>
           </div>
         </div>
 
@@ -298,29 +299,31 @@ const LandingPage = () => {
           </p>
 
           <div className="mt-4 flex justify-start">
-            <div className="inline-flex items-center gap-2 px-3 py-2 border-2 border-white text-white font-bold text-[12px] sm:text-[12px] md:text-[14px] rounded-lg cursor-pointer hover:bg-white hover:text-black transition duration-300">
-              <span className="inline">Create account now</span>{" "}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-3 w-3 sm:h-4 w-4 md:h-5 sm:w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 12h14M12 5l7 7-7 7"
-                />
-              </svg>
-            </div>
+            <Link to="login">
+              <div className="inline-flex items-center gap-2 px-3 py-2 border-2 border-white text-white font-bold text-[12px] sm:text-[12px] md:text-[14px] rounded-lg cursor-pointer hover:bg-white hover:text-black transition duration-300">
+                <span className="inline">Create account now</span>{" "}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3 w-3 sm:h-4 w-4 md:h-5 sm:w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 12h14M12 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </Link>
           </div>
         </div>
       </div>
 
       {/* FEATURE SECTION */}
       <section
-        className="w-full bg-[#FDFBEE] py-12 sm:py-16 px-4 sm:px-10 lg:px-28 flex flex-col md:flex-col lg:flex-row items-center gap-6 sm:gap-10 font-grotesque relative"
+        className="w-full bg-[#FDFBEE] pt-2 pb-12 sm:pt-4 sm:pb-16 lg:pt-0 px-4 sm:px-10 lg:px-28 flex flex-col md:flex-col lg:flex-row items-center gap-6 sm:gap-10 font-grotesque relative"
         id="feature"
       >
         {/* Decorative Images - Hidden on mobile */}
@@ -380,36 +383,38 @@ const LandingPage = () => {
         {/* LEFT TEXT */}
         <div
           ref={featureTextRef}
-          className={`w-full lg:w-1/2 text-center lg:text-left relative z-30 mb-8 lg:mb-0 transition-transform duration-500 ${featureTextVisible ? "animate-landing-left" : "opacity-0 translate-x-[-60px]"}`}
+          className={`w-full lg:w-1/2 text-center lg:text-left relative z-30 mb-4 lg:mb-0 transition-transform duration-500 ${featureTextVisible ? "animate-landing-left" : "opacity-0 translate-x-[-60px]"}`}
         >
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1D4ED8]">
             Make your teamwork more organized with us.
           </h2>
 
-          <p className="text-black mt-4 text-sm sm:text-base font-inter">
+          <p className="text-black mt-2 text-sm sm:text-base font-inter">
             Designed to enhance your learning experience through intuitive and
             collaborative tools. Learn faster, collaborate smarter, and stay
             organized effortlessly.
           </p>
 
           <div className="mt-6 flex justify-center lg:justify-start">
-            <Button
-              className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
-              style={{
-                background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
-                borderRadius: "10px",
-                fontSize: "0.9rem sm:1rem",
-              }}
-            >
-              Learn More
-            </Button>
+            <a href="#benefits" className="inline-block">
+              <Button
+                className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
+                style={{
+                  background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
+                  borderRadius: "10px",
+                  fontSize: "0.9rem sm:1rem",
+                }}
+              >
+                Learn More
+              </Button>
+            </a>
           </div>
         </div>
 
         {/* RIGHT SIDE – STACKED CARDS */}
         <div
           ref={featureCardsRef}
-          className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20 mt-12 sm:mt-16 md:mt-20 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
+          className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20 mt-4 sm:mt-6 md:mt-8 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
         >
           {/* Left Arrow */}
           <button
@@ -491,7 +496,7 @@ const LandingPage = () => {
       </section>
 
       {/* BLUE MARQUEE - Desktop Only */}
-      <div className="relative w-full mt-8 sm:mt-16 hidden lg:block">
+      <div className="relative w-full hidden lg:block mt-8">
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380095/violet_z9udug.svg"
           alt="Background Accent"
@@ -550,7 +555,7 @@ const LandingPage = () => {
       </style>
 
       {/* BENEFITS SECTION */}
-      <section className="w-full bg-[#FDFBEE] 
+      <section id="benefits" className="w-full bg-[#FDFBEE] 
       py-8 sm:py-12 md:py-14 lg:py-16 
       px-4 sm:px-8 md:px-12 lg:px-24 
       relative">
@@ -736,9 +741,9 @@ const LandingPage = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#signup" className="hover:underline text-black">
-                    Sign-up
-                  </a>
+                  <Link to="login" className="hover:underline text-black">
+                    Log in
+                  </Link>
                 </li>
               </ul>
             </div>

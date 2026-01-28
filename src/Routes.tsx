@@ -64,6 +64,9 @@ import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
 
 // User-accessible professor spaces
 import UserThesisSpace from "./pages/UserProfSpace/UserThesisSpace.jsx";
+import ThesisTaskPage from "./pages/UserProfSpace/ThesisComponents/ThesisTaskPage.jsx";
+import ThesisFilesShared from "./pages/UserProfSpace/ThesisComponents/ThesisFilesShared.jsx";
+import ThesisPeoplePage from "./pages/UserProfSpace/ThesisComponents/ThesisPeoplePage.jsx";
 
 import { SignInPageWithOAuth } from "./pages/test-page/signInPageWithOAuth.jsx";
 import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
@@ -151,6 +154,9 @@ export default function Routes() {
 
       {/* USER-ACCESSIBLE PROFESSOR SPACE ROUTES */}
       <Route path="/user-prof-space-thesis" element={<UserThesisSpace />} />
+      <Route path="/user-prof-space-thesis/tasks" element={<ThesisTaskPage />} />
+      <Route path="/user-prof-space-thesis/files-shared" element={<ThesisFilesShared />} />
+      <Route path="/user-prof-space-thesis/people" element={<ThesisPeoplePage />} />
 
       {/* PARENT ROUTES */}
       <Route path="/parent-grade-login" element={<ParentLogin />} />
