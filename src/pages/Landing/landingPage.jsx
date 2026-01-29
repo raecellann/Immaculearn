@@ -354,11 +354,11 @@ const LandingPage = () => {
         {/* BLUE MARQUEE - Tablet and Mobile Only */}
           <div className="
             w-full md:block lg:hidden absolute 
-            top-[320px] 
-            sm:top-[480px] 
-            md:top-[500px] 
-            left-0 sm:left-[200px] 
-            z-30
+            top-[450px] 
+            sm:top-[550px] 
+            md:top-[600px] 
+            left-0 
+            z-10
           ">          
             <div className="w-full h-8 sm:h-10 bg-[#4D9BEF] flex items-center justify-center overflow-hidden relative">
             <div className="absolute whitespace-nowrap animate-marquee">
@@ -414,7 +414,7 @@ const LandingPage = () => {
         {/* RIGHT SIDE – STACKED CARDS */}
         <div
           ref={featureCardsRef}
-          className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-20 mt-4 sm:mt-6 md:mt-8 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
+          className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-40 mt-4 sm:mt-6 md:mt-8 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
         >
           {/* Left Arrow */}
           <button
