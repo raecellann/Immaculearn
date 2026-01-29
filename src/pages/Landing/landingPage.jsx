@@ -323,18 +323,19 @@ const LandingPage = () => {
 
       {/* FEATURE SECTION */}
       <section
-        className="w-full bg-[#FDFBEE] pt-2 pb-12 sm:pt-4 sm:pb-16 lg:pt-0 px-4 sm:px-10 lg:px-28 flex flex-col md:flex-col lg:flex-row items-center gap-6 sm:gap-10 font-grotesque relative"
+        className="w-full bg-[#FDFBEE] pt-6 pb-4 sm:pt-4 sm:pb-8 lg:pt-0 lg:pb-12 px-4 sm:px-10 lg:px-28 font-grotesque relative"
         id="feature"
       >
-        {/* Decorative Images - Hidden on mobile */}
+        {/* Decorative Images - Hidden on mobile, small, medium, tablet */}
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380042/Asterisk_itnvzs.png"
           className="absolute 
-          left-[-20px] top-[220px] 
-          sm:left-[-10px] sm:top-[260px] 
-          md:left-[-10px] md:top-[320px] 
-          lg:top-[350px] 
+          left-[-20px] top-[280px]
+          sm:left-[-10px] sm:top-[420px]
+          md:left-[-10px] md:top-[400px]
+          lg:left-[-10px] lg:top-[350px]
           w-[100px] sm:w-[140px] md:w-[160px] lg:w-[180px] 
+          hidden lg:block
           z-0"
           alt="asterisk"
         />
@@ -342,25 +343,32 @@ const LandingPage = () => {
         <img
           src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766380049/arrow_q9xp1c.png"
           className="absolute 
-          left-[110px] top-[240px] 
-          sm:left-[150px] sm:top-[280px] 
-          md:left-[180px] md:top-[330px] 
-          lg:left-[200px] lg:top-[360px] 
+          left-[110px] top-[300px]
+          sm:left-[150px] sm:top-[440px]
+          md:left-[180px] md:top-[420px]
+          lg:left-[200px] lg:top-[360px]
           w-[70px] sm:w-[90px] md:w-[100px] lg:w-[120px] 
+          hidden lg:block
           z-20"
           alt="arrow"
         />
 
-        {/* BLUE MARQUEE - Tablet and Mobile Only */}
-          <div className="
-            w-full md:block lg:hidden absolute 
-            top-[450px] 
-            sm:top-[550px] 
-            md:top-[600px] 
-            left-0 
-            z-10
-          ">          
-            <div className="w-full h-8 sm:h-10 bg-[#4D9BEF] flex items-center justify-center overflow-hidden relative">
+        {/* BLUE MARQUEE - Tablet & Mobile */}
+        <div
+          className="
+            w-full md:block lg:hidden 
+            absolute 
+            top-[480px] 
+            sm:top-[640px] 
+            
+            md:top-[560px]   /* TABLET FIX */
+            md:left-0        /* TABLET FIX */
+
+            left-0 sm:left-[200px] 
+            z-40
+          "
+        >
+          <div className="w-full h-8 sm:h-10 bg-[#4D9BEF] flex items-center justify-center overflow-hidden relative">
             <div className="absolute whitespace-nowrap animate-marquee">
               {Array(10)
                 .fill(
@@ -380,65 +388,67 @@ const LandingPage = () => {
           </div>
         </div>
 
-        {/* LEFT TEXT */}
-        <div
-          ref={featureTextRef}
-          className={`w-full lg:w-1/2 text-center lg:text-left relative z-30 mb-4 lg:mb-0 transition-transform duration-500 ${featureTextVisible ? "animate-landing-left" : "opacity-0 translate-x-[-60px]"}`}
-        >
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1D4ED8]">
-            Make your teamwork more organized with us.
-          </h2>
-
-          <p className="text-black mt-2 text-sm sm:text-base font-inter">
-            Designed to enhance your learning experience through intuitive and
-            collaborative tools. Learn faster, collaborate smarter, and stay
-            organized effortlessly.
-          </p>
-
-          <div className="mt-6 flex justify-center lg:justify-start">
-            <a href="#benefits" className="inline-block">
-              <Button
-                className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
-                style={{
-                  background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
-                  borderRadius: "10px",
-                  fontSize: "0.9rem sm:1rem",
-                }}
-              >
-                Learn More
-              </Button>
-            </a>
-          </div>
-        </div>
-
-        {/* RIGHT SIDE – STACKED CARDS */}
-        <div
-          ref={featureCardsRef}
-          className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-80 z-40 mt-4 sm:mt-6 md:mt-8 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
-        >
-          {/* Left Arrow */}
-          <button
-            onClick={() =>
-              setActiveIndex(
-                (prev) => (prev - 1 + cardsData.length) % cardsData.length,
-              )
-            }
-            className="absolute left-0 z-40 p-1 sm:p-2 rounded-full shadow-md
-             bg-black text-white 
-             hover:bg-[#1D4ED8] transition text-xs sm:text-base"
+        {/* FEATURE SECTION - HORIZONTAL LAYOUT */}
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start relative z-30">
+          {/* LEFT TEXT SECTION */}
+          <div
+            ref={featureTextRef}
+            className={`w-full lg:w-1/2 text-center lg:text-left transition-transform duration-500 mt-8 lg:mt-16 ${featureTextVisible ? "animate-landing-left" : "opacity-0 translate-x[-60px]"}`}
           >
-            &#8592;
-          </button>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1D4ED8]">
+              Make your teamwork more organized with us.
+            </h2>
 
-          {/* Cards */}
-          {cardsData.map((card, index) => {
-            const isActive = index === activeIndex;
-            const isNext = index > activeIndex;
-            const isPrev = index < activeIndex;
-            return (
-              <div
-                key={index}
-                className={`card-landing-anim absolute w-48 sm:w-56 md:w-64 lg:w-72 h-32 sm:h-40 md:h-44 lg:h-48 rounded-xl shadow-lg border-2 flex flex-row items-center justify-between p-3 sm:p-4 md:p-6 cursor-pointer transition-all duration-500
+            <p className="text-black mt-2 text-sm sm:text-base font-inter">
+              Designed to enhance your learning experience through intuitive and
+              collaborative tools. Learn faster, collaborate smarter, and stay
+              organized effortlessly.
+            </p>
+
+            <div className="mt-6 flex justify-center lg:justify-start">
+              <a href="#benefits" className="inline-block">
+                <Button
+                  className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
+                  style={{
+                    background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
+                    borderRadius: "10px",
+                    fontSize: "0.9rem sm:1rem",
+                  }}
+                >
+                  Learn More
+                </Button>
+              </a>
+            </div>
+          </div>
+
+          {/* RIGHT SIDE – STACKED CARDS */}
+          <div
+            ref={featureCardsRef}
+            className={`w-full lg:w-1/2 flex justify-center items-center relative h-48 sm:h-64 md:h-96 mb-16 md:mb-20 z-20 ${featureCardsVisible ? "animate-landing-right" : "opacity-0 translate-x-[60px]"}`}
+          >
+            {/* Left Arrow */}
+            <button
+              onClick={() =>
+                setActiveIndex(
+                  (prev) => (prev - 1 + cardsData.length) % cardsData.length,
+                )
+              }
+              className="absolute left-0 z-40 p-1 sm:p-2 rounded-full shadow-md
+               bg-black text-white 
+               hover:bg-[#1D4ED8] transition text-xs sm:text-base"
+            >
+              &#8592;
+            </button>
+
+            {/* Cards */}
+            {cardsData.map((card, index) => {
+              const isActive = index === activeIndex;
+              const isNext = index > activeIndex;
+              const isPrev = index < activeIndex;
+              return (
+                <div
+                  key={index}
+                  className={`card-landing-anim absolute w-48 sm:w-56 md:w-64 lg:w-72 h-32 sm:h-40 md:h-44 lg:h-48 rounded-xl shadow-lg border-2 flex flex-row items-center justify-between p-3 sm:p-4 md:p-6 cursor-pointer transition-all duration-500
             ${
               isActive
                 ? "z-30 bg-[#1D4ED8] text-white scale-100 translate-y-0 rotate-0"
@@ -455,43 +465,44 @@ const LandingPage = () => {
                 : ""
             }
           `}
-              >
-                <div>
-                  <h3
-                    className={`font-bold text-xs sm:text-sm md:text-base lg:text-lg ${
-                      isActive ? "text-white" : "text-black"
-                    }`}
-                  >
-                    {card.front}
-                  </h3>
-                  <p
-                    className={`text-xs sm:text-xs md:text-sm ${
-                      isActive ? "text-white" : "text-gray-700"
-                    }`}
-                  >
-                    {card.back}
-                  </p>
+                >
+                  <div>
+                    <h3
+                      className={`font-bold text-xs sm:text-sm md:text-base lg:text-lg ${
+                        isActive ? "text-white" : "text-black"
+                      }`}
+                    >
+                      {card.front}
+                    </h3>
+                    <p
+                      className={`text-xs sm:text-xs md:text-sm ${
+                        isActive ? "text-white" : "text-gray-700"
+                      }`}
+                    >
+                      {card.back}
+                    </p>
+                  </div>
+                  <img
+                    src={card.icon}
+                    alt={card.front}
+                    className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16"
+                  />
                 </div>
-                <img
-                  src={card.icon}
-                  alt={card.front}
-                  className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16"
-                />
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {/* Right Arrow */}
-          <button
-            onClick={() =>
-              setActiveIndex((prev) => (prev + 1) % cardsData.length)
-            }
-            className="absolute right-0 z-40 p-1 sm:p-2 rounded-full shadow-md
-             bg-black text-white 
-             hover:bg-[#1D4ED8] transition text-xs sm:text-base"
-          >
-            &#8594;
-          </button>
+            {/* Right Arrow */}
+            <button
+              onClick={() =>
+                setActiveIndex((prev) => (prev + 1) % cardsData.length)
+              }
+              className="absolute right-0 z-40 p-1 sm:p-2 rounded-full shadow-md
+               bg-black text-white 
+               hover:bg-[#1D4ED8] transition text-xs sm:text-base"
+            >
+              &#8594;
+            </button>
+          </div>
         </div>
       </section>
 
@@ -559,7 +570,7 @@ const LandingPage = () => {
       py-8 sm:py-12 md:py-14 lg:py-16 
       px-4 sm:px-8 md:px-12 lg:px-24 
       relative">
-        <div className="mb-10 w-max">
+        <div className="mb-6 w-max">
           <div className="bg-[#FFE486] px-8 py-3 rounded-full shadow-md text-left border-2 border-black">
             <h2 className="text-xl md:text-2xl font-bold font-grotesque text-black">
               Benefits of using the website
