@@ -1,5 +1,5 @@
 export interface Space {
-    id: string;
+    space_id: string;
     space_uuid: string;
     space_name: string;
     members: [any];

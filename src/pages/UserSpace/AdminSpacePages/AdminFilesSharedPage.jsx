@@ -45,7 +45,7 @@ const AdminFilesSharedPage = () => {
           </button>
 
           <button className="text-white text-xl font-semibold border-b-2 border-white pb-2">
-            Files Shared
+            Files
           </button>
 
           <button

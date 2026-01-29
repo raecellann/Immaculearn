@@ -11,6 +11,7 @@ import ProfFilesShared from "../pages/Prof-Space/ProfFilesShared";
 import ProfPeoplePage from "../pages/Prof-Space/ProfPeoplePage";
 import { SpaceProvider } from "../contexts/space/spaceContextProvider";
 import { useUser } from "../contexts/user/useUser";
+import ProfSpacePage from "../pages/Prof-MainSpace/profmainspace.jsx";
 
 export const ProfRoutes = () => {
   const { user } = useUser();
@@ -28,6 +29,15 @@ export const ProfRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="spaces"
+        element={
+          <ProtectedRoute>
+            <ProfSpacePage />
+          </ProtectedRoute>
+        }
+      />
+      
       <Route path="acc-settings" element={<ProfProfilePage />} />
       <Route path="files-by-subject" element={<ProfFilesBySubject />} />
       {/* <Route path="files-by-subject" element={<ProfMain />} /> */}
@@ -38,8 +48,9 @@ export const ProfRoutes = () => {
             <ProfChatsPage />
         }
       />
+      
       <Route
-        path="space-thesis"
+        path="spaces-thesis"
         element={
           <SpaceProvider>
               <ThesisSpace />
@@ -47,7 +58,7 @@ export const ProfRoutes = () => {
         }
       />
       <Route
-        path="space-thesis/tasks"
+        path="spaces/tasks"
         element={
           <SpaceProvider>
               <ProfTaskPage />
@@ -55,7 +66,7 @@ export const ProfRoutes = () => {
         }
       />
       <Route
-        path="space-thesis/files"
+        path="spaces/files"
         element={
           <SpaceProvider>
               <ProfFilesShared />
@@ -63,7 +74,7 @@ export const ProfRoutes = () => {
         }
       />
       <Route
-        path="space-thesis/people"
+        path="spaces/people"
         element={
           <SpaceProvider>
               <ProfPeoplePage />

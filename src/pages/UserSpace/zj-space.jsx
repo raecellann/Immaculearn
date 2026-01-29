@@ -309,9 +309,9 @@ const UserPage = () => {
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate(`/space/${space_uuid}/${space_name}/files-shared`)}
+                  onClick={() => navigate(`/space/${space_uuid}/${space_name}/files`)}
                 >
-                  Files Shared
+                  Files
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"

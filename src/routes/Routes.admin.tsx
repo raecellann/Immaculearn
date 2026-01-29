@@ -18,7 +18,7 @@ export const AdminRoutes = [
   <Route key="teachers" path="/admin-teachers" element={<AdminTeachers />} />,
   <Route key="admintask" path="/admintaskpage" element={<AdminTaskPage />} />,
   <Route key="create-activity" path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />,
-  <Route key="files-shared" path="/admin-files-shared" element={<AdminFilesSharedPage />} />,
+  <Route key="files" path="/admin-files" element={<AdminFilesSharedPage />} />,
   <Route key="task-view" path="/task-view" element={<TaskViewPage />} />,
   <Route key="task-view-admin" path="/task-view-admin" element={<TaskViewPageAdmin />} />,
   <Route key="task-view-all" path="/task-view-all" element={<TaskViewAll />} />,

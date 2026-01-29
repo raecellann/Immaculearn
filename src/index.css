@@ -93,3 +93,144 @@ button:focus-visible {
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+
+
+@keyframes blink {
+
+  0%,
+  50%,
+  100% {
+    opacity: 1;
+  }
+
+  25%,
+  75% {
+    opacity: 0;
+  }
+}
+
+
+
+.custom-quill-editor {
+  height: 100%;
+}
+
+.custom-quill-editor .ql-container {
+  font-family: inherit;
+  font-size: 16px;
+  height: calc(100% - 42px);
+}
+
+.custom-quill-editor .ql-editor {
+  min-height: 300px;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  padding: 20px;
+}
+
+.custom-quill-editor .ql-toolbar {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-color: #e5e7eb;
+}
+
+.custom-quill-editor .ql-container {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-color: #e5e7eb;
+}
+
+.custom-quill-editor .ql-editor.ql-blank::before {
+  color: #9ca3af;
+  font-style: normal;
+  font-family: 'Inter', sans-serif;
+}
+
+
+/* Add to your global CSS */
+.collaborative-tiptap-editor .ProseMirror {
+  min-height: 500px;
+  padding: 20px;
+  outline: none;
+}
+
+.collaborative-tiptap-editor .ProseMirror>*+* {
+  margin-top: 0.75em;
+}
+
+.collaborative-tiptap-editor .ProseMirror ul,
+.collaborative-tiptap-editor .ProseMirror ol {
+  padding: 0 1rem;
+}
+
+.collaborative-tiptap-editor .ProseMirror h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.collaborative-tiptap-editor .ProseMirror h2 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.collaborative-tiptap-editor .ProseMirror h3 {
+  font-size: 1.75rem;
+  font-weight: bold;
+}
+
+.collaborative-tiptap-editor .ProseMirror h4 {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.collaborative-tiptap-editor .ProseMirror h5 {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.collaborative-tiptap-editor .ProseMirror h6 {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.collaborative-tiptap-editor .ProseMirror code {
+  background-color: rgba(97, 97, 97, 0.1);
+  color: #616161;
+  padding: 0.2em 0.4em;
+  border-radius: 0.3em;
+}
+
+.collaborative-tiptap-editor .ProseMirror pre {
+  background: #0d0d0d;
+  color: #fff;
+  font-family: 'JetBrainsMono', monospace;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.collaborative-tiptap-editor .ProseMirror pre code {
+  color: inherit;
+  padding: 0;
+  background: none;
+  font-size: 0.8rem;
+}
+
+.collaborative-tiptap-editor .ProseMirror blockquote {
+  padding-left: 1rem;
+  border-left: 2px solid rgba(13, 13, 13, 0.1);
+}
+
+.collaborative-tiptap-editor .ProseMirror hr {
+  border: none;
+  border-top: 2px solid rgba(13, 13, 13, 0.1);
+  margin: 2rem 0;
+}
+
+/* Placeholder styling */
+.collaborative-tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}

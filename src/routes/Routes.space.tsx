@@ -6,6 +6,7 @@ import UserFilesShared from "../pages/UserSpace/UserFilesShared.jsx";
 import UserPeoplePage from "../pages/UserSpace/UserPeoplePage.jsx";
 import SpacePage from "../pages/Space/SpacePage.jsx";
 import CreateSpaceAdmin from "../pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
+import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
 
 export const SpaceRoutes = [
 
@@ -30,9 +31,14 @@ export const SpaceRoutes = [
     element: <UserTaskPage />,
   },
   {
-    key: "/files-shared",
-    path: "/space/:space_uuid/:space_name/files-shared",
+    key: "/files",
+    path: "/space/:space_uuid/:space_name/files",
     element: <UserFilesShared />,
+  },
+  {
+    key: "/files",
+    path: "/space/:space_uuid/:space_name/files/:file_uuid/:file_name",
+    element: <CreateDocumentPage />,
   },
   {
     key: "/people",

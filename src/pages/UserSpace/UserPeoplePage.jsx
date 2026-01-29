@@ -76,7 +76,7 @@ const UserPeoplePage = () => {
           {/* CREATOR / ADMIN SECTION */}
           {creator && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">Admin</h2>
+              <h2 className="text-xl font-semibold mb-4">Adviser</h2>
               <div className="border-t border-gray-600 pt-4">
                 <div className="flex items-center gap-4">
                   <img
@@ -92,7 +92,7 @@ const UserPeoplePage = () => {
 
           {/* MEMBERS SECTION */}
           <div>
-            <h2 className="text-xl font-semibold mb-4">Members</h2>
+            <h2 className="text-xl font-semibold mb-4">Students</h2>
             <div className="border-t border-gray-600 pt-4 space-y-4">
               {otherMembers.length > 0 ? (
                 otherMembers.map((member) => (

@@ -28,16 +28,16 @@ const ProfSidebar = () => {
 
   const menuItems = [
     { icon: <Home size={20} />, label: "Home", path: "/prof/home" },
-    { icon: <Users size={20} />, label: "Spaces", path: "/prof/main-space" },
+    { icon: <Users size={20} />, label: "Spaces", path: "/prof/spaces" },
     {
       icon: <Bell size={20} />,
       label: "Notifications",
-      path: "/prof/notifications",
+      path: "/prof/spaces/notifications",
     },
     {
       icon: <Calendar size={20} />,
       label: "List of Activities",
-      path: "/prof/list-activity",
+      path: "/prof/spaces/list-activity",
     },
     { icon: <Folder size={20} />, label: "Files", path: "/prof-files" },
   ];

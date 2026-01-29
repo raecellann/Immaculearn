@@ -54,31 +54,31 @@ const ProfFilesShared = () => {
         <div className="flex justify-center gap-[120px] border-b border-white/10 mb-6 text-xl">
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/prof-space-thesis")}
+            onClick={() => navigate("/prof/spaces-thesis")}
           >
             Stream
           </button>
           <button
             className="pb-3 border-b-2 border-white font-medium"
-            onClick={() => navigate("/prof-space-thesis/tasks")}
+            onClick={() => navigate("/prof/spaces/tasks")}
           >
             Tasks
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/prof-space-thesis/files-shared")}
+            onClick={() => navigate("/prof/spaces/files")}
           >
-            Files Shared
+            Files
           </button>
           <button
             className="pb-3 text-white/70 hover:text-white"
-            onClick={() => navigate("/prof-space-thesis/people")}
+            onClick={() => navigate("/prof/spaces/people")}
           >
             People
           </button>
         </div>
 
-        {/* FILES SHARED BODY */}
+        {/* Files BODY */}
         <div className="px-10 mt-6">
           {/* ACTION BUTTONS */}
           <div className="flex justify-end items-center gap-4 mb-4">
