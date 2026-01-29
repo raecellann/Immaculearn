@@ -133,18 +133,54 @@ const AdminStudents = () => {
     return data;
   };
 
-  const handleImportStudents = () => {
-    if (importPreview.length > 0) {
-      setStudents([...students, ...importPreview]);
-      setShowImportModal(false);
-      setImportFile(null);
-      setImportPreview([]);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+  const handleImportStudents = async () => {
+  if (!importFile) return;
+
+  const formData = new FormData();
+  formData.append("file", importFile);
+
+  try {
+    const res = await fetch(
+      "http://localhost:3000/v1/register_student/bulk_email",
+      {
+        method: "POST",
+        body: formData, // ⚠️ no Content-Type header
       }
-      alert(`Successfully imported ${importPreview.length} students!`);
+    );
+
+    if (!res.ok) {
+      throw new Error("Bulk import failed");
     }
-  };
+
+    // Optional: backend response
+    const data = await res.json();
+    console.log(data);
+
+    // Refresh list from backend (source of truth)
+    const refreshed = await fetch(
+      "http://localhost:3000/v1/register_student/all_emails_student"
+    );
+    const refreshedData = await refreshed.json();
+
+    setTeachers(
+      refreshedData.emails.map((email, index) => ({
+        id: index + 1,
+        name: null,
+        email,
+        verified: false,
+      }))
+    );
+
+    // Reset UI
+    setShowImportModal(false);
+    setImportFile(null);
+    setImportPreview([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  } catch (error) {
+    console.error("Import error:", error);
+    alert("Failed to import teachers");
+  }
+};
 
   const handleCancelImport = () => {
     setShowImportModal(false);
@@ -164,39 +200,56 @@ const AdminStudents = () => {
     }));
   };
 
-  const handleAddStudent = () => {
-    // Validate required fields
-    if (!newStudent.name || !newStudent.email) {
-      alert('Please fill in all required fields (Name and Email)');
-      return;
+  const handleAddStudent = async () => {
+  if (!newStudent.email) {
+    alert("Email is required");
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      "http://localhost:3000/v1/register_student/email",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: newStudent.email,
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to add student");
     }
 
-    // Add new student to the list
-    const studentToAdd = {
-      id: students.length + 1,
-      ...newStudent,
-      studentNumber: 'N/A',
-      yearLevel: 'N/A',
-      course: 'N/A',
-      verified: true
-    };
+    // Update UI after backend success
+    setStudents((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        name: newStudent.name || null,
+        email: newStudent.email,
+        verified: false,
+      },
+    ]);
 
-    setStudents([...students, studentToAdd]);
-    
-    // Reset form and close modal
-    setNewStudent({
-      name: '',
-      email: ''
-    });
+    // Reset form + close modal
+    setNewStudent({ name: "", email: "" });
     setShowAddModal(false);
-    
-    alert('Student added successfully!');
-  };
+
+  } catch (error) {
+    console.error("Error adding student:", error);
+    alert("Failed to add student email");
+  }
+};
+
 
   const handleCancelAdd = () => {
     setShowAddModal(false);
     setNewStudent({
-      name: '',
+
       email: ''
     });
   };
