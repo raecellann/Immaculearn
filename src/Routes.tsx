@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthRoutes } from "./routes/Routes.auth";
 import { StudentRoutes } from "./routes/Routes.student";
 import { SpaceRoutes } from "./routes/Routes.space";
+
+import { AdminDataRoutes } from "./routes/routes.adminData.tsx";
+
 import { AdminRoutes } from "./routes/Routes.admin";
 import { ProfRoutes } from "./routes/Routes.professor.js";
 import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
@@ -87,6 +90,20 @@ export default function Routes() {
               <UserProvider>
                 <SpaceProvider>
                   {route.props.element}
+                </SpaceProvider>
+              </UserProvider>
+            }
+          />
+        ))}
+
+        {AdminDataRoutes.map(route => (
+          <Route
+            key={route.key}
+            path={route.path}
+            element={
+              <UserProvider>
+                <SpaceProvider>
+                  {route.element}
                 </SpaceProvider>
               </UserProvider>
             }
