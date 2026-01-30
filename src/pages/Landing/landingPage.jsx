@@ -764,32 +764,42 @@ const LandingPage = () => {
               <ul className=" space-y-1 text-[10px] sm:text-sm lg:text-base text-center lg:text-left">
                 <li>
                   <a
-                    href="https://github.com/username1"
+                    href="https://github.com/Wesmabe1129"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:underline text-black"
                   >
-                    username1
+                    Wesmabe1129
                   </a>
                 </li>
                 <li>
                   <a
-                    href="https://github.com/username2"
+                    href="https://github.com/raecellann"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:underline text-black"
                   >
-                    username2
+                    raecellann
                   </a>
                 </li>
                 <li>
                   <a
-                    href="https://github.com/username3"
+                    href="https://github.com/zjdelossantos"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:underline text-black"
                   >
-                    username3
+                    zjdelossantos
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/nathanielfaborada"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline text-black"
+                  >
+                    nathanielfaborada
                   </a>
                 </li>
               </ul>
