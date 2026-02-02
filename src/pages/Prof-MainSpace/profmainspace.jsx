@@ -267,22 +267,30 @@ const ProfSpacePage = () => {
 
           {/* Classroom Spaces */}
           <div>
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="mb-4 flex flex-col gap-3">
               <h2 className="text-2xl font-bold">Classroom Spaces</h2>
 
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">Year Level:</span>
-                <select
-                  value={yearFilter}
-                  onChange={(e) => setYearFilter(e.target.value)}
-                  className="bg-[#1E242E] border border-[#3B4457] text-sm text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#0EA5E9]"
+              <div className="flex flex-wrap items-start gap-2 sm:gap-3 justify-end">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">Year Level:</span>
+                  <select
+                    value={yearFilter}
+                    onChange={(e) => setYearFilter(e.target.value)}
+                    className="bg-[#1E242E] border border-[#3B4457] text-xs sm:text-sm text-white rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-1 focus:ring-[#0EA5E9]"
+                  >
+                    <option value="All">All Years</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                  </select>
+                </div>
+                <Button 
+                  onClick={() => console.log('Create Classroom Space Click!')}
+                  className="px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm"
                 >
-                  <option value="All">All Years</option>
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year">3rd Year</option>
-                  <option value="4th Year">4th Year</option>
-                </select>
+                  Create Space
+                </Button>
               </div>
             </div>
 
