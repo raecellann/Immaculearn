@@ -132,19 +132,19 @@ const OnBoarding = () => {
                   <InputField type="text" placeholder="First Name" value={studentFn} onChange={(e) => setStudentFn(e.target.value)} />
                   <InputField type="text" placeholder="Last Name" value={studentLn} onChange={(e) => setStudentLn(e.target.value)} />
                   <InputField type="date" placeholder="Birthdate" value={studentBd} onChange={(e) => setStudentBd(e.target.value)} />
-                  <select className="border rounded-lg px-4 py-2 w-full" value={studentGender} onChange={(e) => setStudentGender(e.target.value)}>
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                  <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={studentGender} onChange={(e) => setStudentGender(e.target.value)}>
+                    <option value="" className="text-black">Select Gender</option>
+                    <option value="Male" className="text-black">Male</option>
+                    <option value="Female" className="text-black">Female</option>
+                    <option value="Other" className="text-black">Other</option>
                   </select>
                   <InputField type="text" placeholder="Course ex: BSCS" value={studentCourse} onChange={(e) => setStudentCourse(e.target.value)} />
-                  <select className="border rounded-lg px-4 py-2 w-full" value={studentYrLvl} onChange={(e) => setStudentYrLvl(e.target.value)}>
-                    <option value="">Select Year Level</option>
-                    <option value="1">1st Year</option>
-                    <option value="2">2nd Year</option>
-                    <option value="3">3rd Year</option>
-                    <option value="4">4th Year</option>
+                  <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={studentYrLvl} onChange={(e) => setStudentYrLvl(e.target.value)}>
+                    <option value="" className="text-black">Select Year Level</option>
+                    <option value="1" className="text-black">1st Year</option>
+                    <option value="2" className="text-black">2nd Year</option>
+                    <option value="3" className="text-black">3rd Year</option>
+                    <option value="4" className="text-black">4th Year</option>
                   </select>
                 </>
               )}
@@ -154,11 +154,11 @@ const OnBoarding = () => {
                   <InputField type="text" placeholder="First Name" value={profFn} onChange={(e) => setProfFn(e.target.value)} />
                   <InputField type="text" placeholder="Last Name" value={profLn} onChange={(e) => setProfLn(e.target.value)} />
                   <InputField type="date" placeholder="Birthdate" value={profBd} onChange={(e) => setProfBd(e.target.value)} />
-                  <select className="border rounded-lg px-4 py-2 w-full" value={profGender} onChange={(e) => setProfGender(e.target.value)}>
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                  <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={profGender} onChange={(e) => setProfGender(e.target.value)}>
+                    <option value="" className="text-black">Select Gender</option>
+                    <option value="Male" className="text-black">Male</option>
+                    <option value="Female" className="text-black">Female</option>
+                    <option value="Other" className="text-black">Other</option>
                   </select>
                   <InputField type="text" placeholder="Department" value={profDept} onChange={(e) => setProfDept(e.target.value)} />
                 </>
