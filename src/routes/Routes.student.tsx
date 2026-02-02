@@ -10,6 +10,7 @@ import NotificationPage from "../pages/Notifications/notification.jsx";
 import FilePage from "../pages/Files/files.jsx";
 import ChatList from "../pages/User_chats/user_chats";
 import ViewFilePage from "../pages/ViewFiles/ViewFiles.jsx";
+import SettingsPage from "../pages/Settings/settings.jsx";
 import { useUser } from "../contexts/user/useUser.js";
 import { useSpace } from "../contexts/space/useSpace.js";
 
@@ -65,5 +66,9 @@ export const StudentRoutes = [
     path: "/view-files",
     element: <ViewFilePage />,
   },
-  
+  {
+    key: "/settigs",
+    path: "/settings",
+    element: <SettingsPage />,
+  },
 ];

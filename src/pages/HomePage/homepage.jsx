@@ -88,8 +88,10 @@ const HomePage1 = () => {
                   Join space or create your own.
                 </p>
                 <div className="flex gap-3 mt-4">
-                  <Button>Create Space</Button>
-                  <Button>Join Space</Button>
+                  <Button onClick={() => navigate("/space/create")} >Create Space
+                    
+                  </Button>
+                  <Button onClick={() => navigate("/space")} >Join Space</Button>
                 </div>
               </div>
               <div>
@@ -194,6 +196,8 @@ const HomePage1 = () => {
                 {sharedSpaces.map((space, i) => (
                   <div
                     key={i}
+                    role="button"
+                    onClick={() => navigate(`/space/${space?.space_uuid}/${space.space_name}`)}
                     className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg min-w-[200px]"
                   >
                     <div className="relative">
@@ -210,15 +214,21 @@ const HomePage1 = () => {
 
                       <div className="absolute top-2 right-2">
                         <button
-                          onClick={() => setShowMenu(showMenu === i ? null : i)}
-                          className="bg-black/60 hover:bg-black text-white w-6 h-6 flex items-center justify-center rounded-md"
-                        >
-                          ...
-                        </button>
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(showMenu === i ? null : i);
+              }}
+              className="bg-black/60 hover:bg-black text-white w-6 h-6 flex items-center justify-center rounded-md"
+            >
+              ...
+            </button>
                         {showMenu === i && (
                           <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
                             <div className="flex flex-col gap-2">
-                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
+                              <button 
+                              onClick={() => navigate(`/space/${space?.space_uuid}/${space.space_name}`)}
+                              
+                              className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
                                 View Details
                               </button>
                               <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
