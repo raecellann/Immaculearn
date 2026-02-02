@@ -123,12 +123,7 @@ const ViewAllFilesPage = () => {
                     {file.datePosted}
                   </p>
 
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-300">
-                      <span className="text-gray-400">Space:</span>{" "}
-                      {file.spaceName}
-                    </p>
-
+                  <div className="flex justify-end">
                     <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition">
                       View File
                     </span>
@@ -145,7 +140,6 @@ const ViewAllFilesPage = () => {
                     <th className="px-6 py-4 text-xs uppercase">Status</th>
                     <th className="px-6 py-4 text-xs uppercase">File Name</th>
                     <th className="px-6 py-4 text-xs uppercase">Date Posted</th>
-                    <th className="px-6 py-4 text-xs uppercase">Space Name</th>
                     <th className="px-6 py-4 text-xs uppercase">Action</th>
                   </tr>
                 </thead>
@@ -170,9 +164,6 @@ const ViewAllFilesPage = () => {
                         {file.datePosted}
                       </td>
 
-                      <td className="px-6 py-4 text-gray-300">
-                        {file.spaceName}
-                      </td>
 
                       <td className="px-6 py-4">
                         <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition">
