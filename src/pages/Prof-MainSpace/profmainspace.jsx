@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
 import Sidebar from "../component/profsidebar";
 import Logout from "../component/logout";
 import Button from "../component/Button";
 
 const ProfSpacePage = () => {
+  const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
@@ -209,7 +211,7 @@ const ProfSpacePage = () => {
                 </p>
               </div>
               <div className="flex md:justify-end">
-                <Button onClick={() => console.log('Create Space Click!')}>
+                <Button onClick={() => navigate('/prof-create-space')}>
                   Create Space
                 </Button>
               </div>
@@ -286,7 +288,7 @@ const ProfSpacePage = () => {
                   </select>
                 </div>
                 <Button 
-                  onClick={() => console.log('Create Classroom Space Click!')}
+                  onClick={() => navigate('/prof-create-classroom-space')}
                   className="px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm"
                 >
                   Create Space

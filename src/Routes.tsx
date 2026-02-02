@@ -44,6 +44,8 @@ import ProfHomePage from "./pages/prof-HomePage/profhomepage.jsx"; //done respon
 import ProfMainSpace from "./pages/Prof-MainSpace/profmainspace.jsx"; //done responsive//
 import ProfSettingsPage from "./pages/Prof-Settings/profsettings.jsx"; //done responsive//
 import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx"; 
+import ProfCreateSpace from "./pages/Prof-MainSpace/components/prof-create-space.jsx";
+import ProfCreateClassroomSpace from "./pages/Prof-MainSpace/components/prof-create-classroom-space.jsx";
 
 import ThesisSpace from "./pages/Prof-Space/Thesis-space.jsx";
 import ProfTaskPage from "./pages/Prof-Space/ProfTaskPage";
@@ -142,6 +144,8 @@ export default function Routes() {
         <Route path="/prof-settings" element={<ProfSettingsPage />} />
         <Route path="/prof-main-space" element={<ProfMainSpace />} />
         <Route path="/prof-calendar" element={<ProfCalendarPage />} />
+        <Route path="/prof-create-space" element={<ProfCreateSpace />} />
+        <Route path="/prof-create-classroom-space" element={<ProfCreateClassroomSpace />} />
 
       {/* PROFESSOR SPACE ROUTES */}
       <Route path="/prof-space-thesis" element={<ThesisSpace />} />
