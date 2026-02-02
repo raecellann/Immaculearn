@@ -16,6 +16,7 @@ export interface UserContextType {
     logout: (account_id: number) => Promise<void>;
     refreshUser: () => Promise<void>;
     checkAuth: () => Promise<boolean>;
+    createAccount: (payload: any) => Promise<boolean>;
 }
 
 export const UserContext = createContext<UserContextType | undefined>(

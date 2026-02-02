@@ -58,6 +58,39 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   };
 
+  // const create = async ()
+  // Add this inside UserProvider component
+
+  const createAccount = async (payload: any): Promise<boolean> => {
+    const tempToken = sessionStorage.getItem("tempToken");
+
+    console.log(tempToken)
+    if (!tempToken) return false;
+    try {
+      setIsLoading(true);
+
+      const response = await api.post("/account/register", payload, {
+        headers: {
+          Authorization: `Bearer ${tempToken}`,
+        },
+      });
+
+      if (response.data?.success) {
+        // After successful registration, fetch user profile
+        await checkAuth();
+        return true;
+      }
+
+      return false;
+    } catch (err) {
+      console.error("Create account error:", err);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
 
   // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -110,6 +143,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         isLoading,
         isAuthenticated,
         login,
+        createAccount,
         logout,
         refreshUser,
         checkAuth,

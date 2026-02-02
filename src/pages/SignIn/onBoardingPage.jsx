@@ -3,8 +3,12 @@ import InputField from "@/pages/component/InputField";
 import Button from "@/pages/component/Button";
 import { Eye, EyeOff } from "lucide-react"; 
 import { useNavigate, useSearchParams } from "react-router";
+import { useUser } from "../../contexts/user/useUser";
 
 const OnBoarding = () => {
+
+  const { createAccount, isLoading } = useUser();
+
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams(); // get role from URL params
@@ -49,21 +53,40 @@ const OnBoarding = () => {
 
   const handlePrev = () => setStep(step - 1);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = {
+    const payload = {
       role,
       password,
       ...(role === "student"
-        ? { studentFn, studentLn, studentBd, studentGender, studentCourse, studentYrLvl }
-        : { profFn, profLn, profBd, profGender, profDept }),
+        ? {
+            first_name: studentFn,
+            last_name: studentLn,
+            birthdate: studentBd,
+            gender: studentGender,
+            course: studentCourse,
+            year_level: studentYrLvl,
+          }
+        : {
+            first_name: profFn,
+            last_name: profLn,
+            birthdate: profBd,
+            gender: profGender,
+            department: profDept,
+          }),
     };
-    
 
-    console.log("Form Data Submitted:", formData);
-    navigate("/home");
+    const success = await createAccount(payload);
+
+    if (success) {
+      navigate("/home");
+    } else {
+      alert("Account creation failed. Please try again.");
+    }
   };
+
+
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden px-4" style={{ backgroundColor: "#FDFBEE" }}>

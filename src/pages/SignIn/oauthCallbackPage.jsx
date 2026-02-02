@@ -14,6 +14,9 @@ const OAuthCallback = () => {
       const error = urlParams.get("error");
       const needsOnboarding = urlParams.get("needsOnboarding") === 'true';
       const role = urlParams.get("role")?.toLowerCase();
+      const token = urlParams.get("tempToken");
+
+      console.log(token)
 
       if (error) {
         console.error("OAuth error:", error);
@@ -39,7 +42,8 @@ const OAuthCallback = () => {
       window.opener.postMessage({
         type: 'OAUTH_SUCCESS',
         role: role,
-        needsOnboarding: needsOnboarding
+        needsOnboarding: needsOnboarding,
+        token: token
       }, window.location.origin);
 
       // Close the popup

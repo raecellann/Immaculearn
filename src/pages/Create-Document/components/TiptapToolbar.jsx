@@ -1,4 +1,4 @@
-// src/components/TipTapToolbar.jsx
+// components/TiptapToolbar.jsx
 import React from "react";
 import {
   FiBold,
@@ -9,63 +9,58 @@ import {
   FiAlignRight,
   FiAlignJustify,
   FiChevronDown,
-  FiImage,
-  FiCrop,
-  FiRotateCw,
-  FiFile,
-  FiColumns,
   FiList,
 } from "react-icons/fi";
 
-const TipTapToolbar = ({
+const TiptapToolbar = ({
   editor,
-  windowWidth,
   selectedAlignment,
   selectedTextColor,
   selectedHighlightColor,
   selectedFont,
   selectedFontSize,
-  selectedPaperSize,
-  selectedMargin,
+  applyAlignment,
+  applyTextColor,
+  applyHighlightColor,
+  applyFontFamily,
+  applyFontSize,
+  applyBold,
+  applyItalic,
+  applyUnderline,
+  applyList,
   isAlignmentDropdownOpen,
   isColorDropdownOpen,
   isFontDropdownOpen,
   isFontSizeDropdownOpen,
-  isImageDropdownOpen,
   isListDropdownOpen,
   setIsAlignmentDropdownOpen,
   setIsColorDropdownOpen,
   setIsFontDropdownOpen,
   setIsFontSizeDropdownOpen,
-  setIsImageDropdownOpen,
   setIsListDropdownOpen,
-  handleImageAction,
-  paperSizes,
-  marginOptions,
 }) => {
-  if (!editor) return null;
+  // Safeguard: return null if editor is not available
+  if (!editor) {
+    console.log("Editor is not available yet");
+    return <div className="bg-[#EFEFEF] px-4 py-3">Loading toolbar...</div>;
+  }
 
+  const windowWidth = window.innerWidth;
   const iconSize = windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16;
   const chevronSize = windowWidth < 640 ? 14 : 16;
 
-  const applyBold = () => editor.chain().focus().toggleBold().run();
-  const applyItalic = () => editor.chain().focus().toggleItalic().run();
-  const applyUnderline = () => editor.chain().focus().toggleUnderline().run();
-  const applyAlignment = (alignment) =>
-    editor.chain().focus().setTextAlign(alignment).run();
-  const applyFontSize = (size) =>
-    editor.chain().focus().setFontSize(size).run();
-  const applyFontFamily = (font) =>
-    editor.chain().focus().setFontFamily(font).run();
-  const applyTextColor = (color) =>
-    editor.chain().focus().setColor(color).run();
-  const applyHighlightColor = (color) =>
-    editor.chain().focus().setHighlight({ color }).run();
-  const applyList = (type, style) => {
-    if (type === "bullet") editor.chain().focus().toggleBulletList().run();
-    else if (type === "number")
-      editor.chain().focus().toggleOrderedList({ order: style || "decimal" }).run();
-    else if (type === "none") editor.chain().focus().clearNodes().run();
+  // Check if editor methods are available
+  const isEditorActive = (format) => {
+    try {
+      // Try to check if the format is active
+      if (typeof editor.isActive === 'function') {
+        return editor.isActive(format);
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking editor active state:', error);
+      return false;
+    }
   };
 
   return (
@@ -74,7 +69,7 @@ const TipTapToolbar = ({
       <div className="flex items-center gap-1 sm:gap-2 md:gap-3 text-lg sm:text-xl md:text-lg lg:text-lg">
         <FiBold
           className={`cursor-pointer p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive("bold") ? "text-blue-500 bg-blue-100" : ""
+            isEditorActive("bold") ? "text-blue-500 bg-blue-100" : ""
           }`}
           onClick={applyBold}
           title="Bold"
@@ -82,7 +77,7 @@ const TipTapToolbar = ({
         />
         <FiItalic
           className={`cursor-pointer p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive("italic") ? "text-blue-500 bg-blue-100" : ""
+            isEditorActive("italic") ? "text-blue-500 bg-blue-100" : ""
           }`}
           onClick={applyItalic}
           title="Italic"
@@ -90,7 +85,7 @@ const TipTapToolbar = ({
         />
         <FiUnderline
           className={`cursor-pointer p-2 rounded hover:bg-gray-200 transition-colors ${
-            editor.isActive("underline") ? "text-blue-500 bg-blue-100" : ""
+            isEditorActive("underline") ? "text-blue-500 bg-blue-100" : ""
           }`}
           onClick={applyUnderline}
           title="Underline"
@@ -233,4 +228,4 @@ const TipTapToolbar = ({
   );
 };
 
-export default TipTapToolbar;
+export default TiptapToolbar;

@@ -17,7 +17,7 @@ const EditorHeader = ({
   const activeEditors = connectedUsers.map((user, index) => ({
     id: user.id || index,
     name: user.name || `User ${index + 1}`,
-    image: user.profile_pic
+    image: user.avatar
   }));
 
 
@@ -47,12 +47,10 @@ const EditorHeader = ({
               <>
                 <FiCheck className="text-green-500" />
                 <span className="text-gray-600">
-                  {lastSaved
-                    ? `Saved at ${lastSaved.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}`
-                    : "Saved"}
+                  {lastSaved ? `Saved at ${new Date(lastSaved).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}` : "Saved"}
                 </span>
               </>
             )}

@@ -13,7 +13,7 @@ export function getYjsProvider(roomName) {
 
     // Connect to Yjs server using roomName
     const wsUrl = "ws://localhost:3001/crdt"; // just /crdt
-    const provider = new WebsocketProvider(`${wsUrl}?room=${roomName}`, roomName, doc);
+    const provider = new WebsocketProvider(`${wsUrl}`, roomName, doc);
 
     // const provider = new WebsocketProvider(`${wsUrl}/crdt`, roomName, doc);
 

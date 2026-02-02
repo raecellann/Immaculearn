@@ -4,479 +4,290 @@ import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
 import EditorHeader from "./components/EditorHeader";
 import MobileHeader from "./components/MobileHeader";
-import TiptapEditor from "./components/TiptapEditor";
-import { getYjsProvider, cleanupProvider } from "../../crdt/yjsProvider";
+import CollaborativeEditor from "./components/CollaborativeEditor";
 import TiptapToolbar from "./components/TiptapToolbar";
 import { useUser } from "../../contexts/user/useUser";
+import { useFileManager } from "../../hooks/useFileManager";
+
+import * as Y from "yjs";
+import { WebsocketProvider } from "y-websocket";
+import Toolbar from "./components/Toolbar";
+import { useSpace } from "../../contexts/space/useSpace";
 
 const CreateDocumentPage = () => {
   const navigate = useNavigate();
   const { user } = useUser();
-  const { file_uuid } = useParams();
+  const { space_uuid, file_uuid, file_name } = useParams();
 
+
+  const { userSpaces, friendSpaces } = useSpace();
+
+  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  const currentSpace = allSpaces.find((space) => space.space_uuid === space_uuid);
 
   
-  // State declarations
-  const [title, setTitle] = useState("Thesis Chapter 2 Participation");
-  const [selectedAlignment, setSelectedAlignment] = useState("left");
-  const [selectedTextColor, setSelectedTextColor] = useState("#000000");
-  const [selectedHighlightColor, setSelectedHighlightColor] = useState("transparent");
-  const [selectedFontSize, setSelectedFontSize] = useState(16);
-  const [selectedPaperSize, setSelectedPaperSize] = useState("A4");
-  const [selectedMargin, setSelectedMargin] = useState("Normal");
-  const [selectedFont, setSelectedFont] = useState("Inter");
-  const [isDownloadDropdownOpen, setIsDownloadDropdownOpen] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('saved');
+  const { draft, list } = useFileManager(currentSpace?.space_id);
+  const file = list.data?.find(f => f.file_uuid === file_uuid) || {};
+
+
+  const [title, setTitle] = useState(file_name);
+  const [saveStatus, setSaveStatus] = useState("saved");
   const [lastSaved, setLastSaved] = useState(null);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [showLogout, setShowLogout] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(0);
-  
-  // Toolbar dropdown states
-  const [isAlignmentDropdownOpen, setIsAlignmentDropdownOpen] = useState(false);
-  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
-  const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
-  const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
-  const [isListDropdownOpen, setIsListDropdownOpen] = useState(false);
-  
-  // Collaboration states
   const [connectedUsers, setConnectedUsers] = useState([]);
   const [isOnline, setIsOnline] = useState(false);
   const [collaborationEnabled, setCollaborationEnabled] = useState(false);
-  const [collaborationLoading, setCollaborationLoading] = useState(false);
 
-  // Refs
   const editorRef = useRef(null);
+  const [windowWidth, setWindowWidth] = useState(0);
+  const [paperSize, setPaperSize] = useState({ width: "8.27in", height: "11.69in" });
+  const [margins, setMargins] = useState({ top: "1in", right: "1in", bottom: "1in", left: "1in" });
+  const [fontFamily, setFontFamily] = useState("Inter");
+
+
   const saveTimeoutRef = useRef(null);
-  const yjsRef = useRef(null);
+  const ydocRef = useRef(null);
+  const providerRef = useRef(null);
   const awarenessRef = useRef(null);
 
-  // Constants
-  const paperSizes = {
-    Letter: { width: "8.5in", height: "11in" },
-    Tabloid: { width: "11in", height: "17in" },
-    Legal: { width: "8.5in", height: "14in" },
-    Statement: { width: "5.5in", height: "8.5in" },
-    Executive: { width: "7.25in", height: "10.5in" },
-    A3: { width: "11.69in", height: "16.53in" },
-    A4: { width: "8.27in", height: "11.69in" },
-    A5: { width: "5.83in", height: "8.27in" },
-    "B4 (JIS)": { width: "10.12in", height: "14.33in" },
-    "B5 (JIS)": { width: "7.16in", height: "10.12in" },
-    Custom: { width: "21cm", height: "29.7cm" },
+  // === Generate consistent user color ===
+  const getUserColor = (userId) => {
+    const colors = [
+      '#3b82f6', '#ef4444', '#10b981', '#f59e0b',
+      '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+    ];
+    return colors[userId % colors.length];
   };
 
-  const marginOptions = {
-    Normal: { top: "1in", right: "1in", bottom: "1in", left: "1in" },
-    Narrow: { top: "0.5in", right: "0.5in", bottom: "0.5in", left: "0.5in" },
-    Moderate: { top: "1in", right: "0.75in", bottom: "1in", left: "0.75in" },
-    Wide: { top: "1in", right: "2in", bottom: "1in", left: "2in" },
-    Mirrored: { top: "1in", right: "1.25in", bottom: "1in", left: "1.25in" },
-    Custom: { top: "2.54cm", right: "2.54cm", bottom: "2.54cm", left: "2.54cm" },
-  };
+  // === Update connected users from awareness ===
+  const updateUsers = useCallback(() => {
+    if (!awarenessRef.current) return;
+    const states = Array.from(awarenessRef.current.getStates().entries() || []);
+    const users = states
+      .map(([clientId, state]) => state.user ? {
+        clientId,
+        id: state.user.id,
+        name: state.user.name,
+        color: state.user.color,
+        avatar: state.user.avatar,
+        cursor: state.user.cursor,
+      } : null)
+       // Exclude current user
+    setConnectedUsers(users);
+  }, [user?.id]);
 
-  // Initialize Yjs collaboration
-
+  // === Initialize Yjs + WebSocket Provider ===
   useEffect(() => {
     if (!file_uuid || !user || typeof window === "undefined") return;
 
-    const initializeCollaboration = async () => {
-      try {
-        setCollaborationLoading(true);
+    console.log('Initializing Yjs document for file:', file_uuid);
 
-        const providerData = getYjsProvider(file_uuid);
-        if (!providerData) return;
-
-        yjsRef.current = providerData;
-
-        // Awareness
-        awarenessRef.current = providerData.provider.awareness;
-        const localUser = {
-          id: user.id,           // use real user id
-          name: user.name,
-          color: "#3b82f6",
-          avatar: user.profile_pic
-        };
-        awarenessRef.current.setLocalStateField("user", localUser);
-
-        // Track connected users
-        awarenessRef.current.on("change", () => {
-          const states = Array.from(awarenessRef.current.getStates().values());
-          const users = states
-            .map(state => state.user)
-            .filter(u => u && u.id)
-            .map(u => ({
-              id: u.id,
-              name: u.name,
-              color: u.color,
-              avatar: u.avatar,
-            }))
-            .filter((u, index, self) => index === self.findIndex(x => x.id === u.id));
-
-          setConnectedUsers(users);
-        });
-
-        // Online status
-        providerData.provider.on("status", (event) => {
-          setIsOnline(event.status === "connected");
-        });
-
-        setCollaborationEnabled(true);
-        setCollaborationLoading(false);
-      } catch (error) {
-        console.error("Failed to initialize Yjs collaboration:", error);
-        setCollaborationEnabled(false);
-        setCollaborationLoading(false);
+    const ydoc = new Y.Doc();
+    const provider = new WebsocketProvider(
+      "ws://localhost:3001/crdt",
+      file_uuid,
+      ydoc,
+      { 
+        connect: true, 
+        params: { userId: user?.id, userName: user?.name }
       }
+    );
+
+    ydocRef.current = ydoc;
+    providerRef.current = provider;
+    awarenessRef.current = provider.awareness;
+
+    // Set local awareness state
+    const localUserState = {
+      user: {
+        id: user?.id,
+        name: user?.name,
+        color: getUserColor(user?.id),
+        avatar: user?.profile_pic || `https://i.pravatar.cc/40?u=${user?.id}`,
+        cursor: null,
+      },
     };
+    
+    awarenessRef.current.setLocalState(localUserState);
+    awarenessRef.current.on("change", updateUsers);
 
-    initializeCollaboration();
+    // WebSocket status listener
+    provider.on("status", (event) => {
+      const connected = event.status === "connected";
+      console.log('WebSocket status:', event.status);
+      setIsOnline(connected);
+      if (connected) {
+        setCollaborationEnabled(true);
+        awarenessRef.current.setLocalState(localUserState);
+        updateUsers();
+      }
+    });
 
-    return () => cleanupCollaboration();
-  }, [file_uuid, user]); // run only after user and file_uuid are available
+    // Sync event
+    provider.on("sync", (isSynced) => {
+      console.log('Document synced:', isSynced);
+      if (isSynced) {
+        setCollaborationEnabled(true);
+        updateUsers();
+      }
+    });
 
-  console.log(connectedUsers)
+    // Connection status
+    provider.on("connection-close", () => {
+      console.log('Connection closed');
+      setIsOnline(false);
+    });
 
-  const cleanupCollaboration = () => {
-    if (yjsRef.current && file_uuid) {
-      cleanupProvider(file_uuid);
-      yjsRef.current = null;
-      awarenessRef.current = null;
+    provider.on("connection-error", (error) => {
+      console.error('Connection error:', error);
+      setIsOnline(false);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      console.log('Cleaning up Yjs document');
+      awarenessRef.current?.off("change", updateUsers);
+      provider.disconnect();
+      ydoc.destroy();
       setConnectedUsers([]);
       setCollaborationEnabled(false);
-    }
-  };
+      setIsOnline(false);
+    };
+  }, [file_uuid, user, updateUsers]);
 
-  // Set editor reference
+  // === Editor ref ===
   const setEditorReference = useCallback((editor) => {
     editorRef.current = editor;
   }, []);
 
-  // Formatting functions
-  const applyBold = () => {
-    editorRef.current?.chain().focus().toggleBold().run();
-    handleEditorUpdate();
-  };
+  // === Editor update handler - for auto-save only ===
+  const handleEditorUpdate = useCallback((htmlContent) => {
+    setSaveStatus("unsaved");
 
-  const applyItalic = () => {
-    editorRef.current?.chain().focus().toggleItalic().run();
-    handleEditorUpdate();
-  };
-
-  const applyUnderline = () => {
-    editorRef.current?.chain().focus().toggleUnderline().run();
-    handleEditorUpdate();
-  };
-
-  const applyAlignment = (alignment) => {
-    editorRef.current?.chain().focus().setTextAlign(alignment).run();
-    setSelectedAlignment(alignment);
-    handleEditorUpdate();
-  };
-
-  const applyTextColor = (color) => {
-    editorRef.current?.chain().focus().setColor(color).run();
-    setSelectedTextColor(color);
-    handleEditorUpdate();
-  };
-
-  const applyHighlightColor = (color) => {
-    editorRef.current?.chain().focus().toggleHighlight({ color }).run();
-    setSelectedHighlightColor(color);
-    handleEditorUpdate();
-  };
-
-  const applyFontSize = (size) => {
-    editorRef.current?.chain().focus().setMark('textStyle', { fontSize: `${size}px` }).run();
-    setSelectedFontSize(size);
-    handleEditorUpdate();
-  };
-
-  const applyPaperSize = (size) => {
-    setSelectedPaperSize(size);
-    handleEditorUpdate();
-  };
-
-  const applyMargin = (margin) => {
-    setSelectedMargin(margin);
-    handleEditorUpdate();
-  };
-
-  const applyFontFamily = (font) => {
-    editorRef.current?.chain().focus().setFontFamily(font).run();
-    setSelectedFont(font);
-    handleEditorUpdate();
-  };
-
-  const applyList = (listType) => {
-    if (listType === "bullet") {
-      editorRef.current?.chain().focus().toggleBulletList().run();
-    } else if (listType === "number") {
-      editorRef.current?.chain().focus().toggleOrderedList().run();
-    }
-    handleEditorUpdate();
-  };
-
-  // Handle editor updates
-  const handleEditorUpdate = () => {
-    setSaveStatus('unsaved');
-    
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    
-    saveTimeoutRef.current = setTimeout(() => {
-      setSaveStatus('saved');
-      setLastSaved(new Date());
+    // Auto-save to backend (debounced)
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (!file?.file_id) return;
+      try {
+        await draft.mutateAsync({
+          file_id: file.file_id,
+          content: htmlContent,
+          title,
+        });
+        setSaveStatus("saved");
+        setLastSaved(new Date().toLocaleTimeString());
+      } catch (err) {
+        console.error('Save error:', err);
+        setSaveStatus("error");
+      }
     }, 2000);
-  };
+  }, [file?.file_id, draft, title]);
 
-  // Download document function - ADDED THIS FUNCTION
-  const downloadDocument = (format) => {
-    if (!editorRef.current) return;
-    
-    const content = editorRef.current.getText();
-    const htmlContent = editorRef.current.getHTML();
-    const docTitle = title || 'Document';
-    
-    if (format === 'txt') {
-      const blob = new Blob([content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${docTitle}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } else if (format === 'html') {
-      const fullHtmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>${docTitle}</title>
-          <meta charset="UTF-8">
-          <style>
-            body { 
-              font-family: ${selectedFont}, Arial, sans-serif; 
-              line-height: 1.5;
-              margin: 0;
-              padding: 0;
-            }
-            .tiptap-editor {
-              max-width: ${paperSizes[selectedPaperSize].width};
-              margin: 0 auto;
-              padding: ${marginOptions[selectedMargin].top} ${marginOptions[selectedMargin].right} ${marginOptions[selectedMargin].bottom} ${marginOptions[selectedMargin].left};
-              box-sizing: border-box;
-            }
-            @media print {
-              @page {
-                size: ${paperSizes[selectedPaperSize].width} ${paperSizes[selectedPaperSize].height};
-                margin: 0;
-              }
-              body {
-                padding: 0;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="tiptap-editor">
-            ${htmlContent}
-          </div>
-        </body>
-        </html>
-      `;
-      
-      const blob = new Blob([fullHtmlContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${docTitle}.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } else if (format === 'pdf') {
-      window.print();
-    }
-    
-    setIsDownloadDropdownOpen(false);
-  };
 
-  // Share document function - ADDED THIS FUNCTION
-  const shareDocument = () => {
-    const shareUrl = `${window.location.origin}/document/${file_uuid || 'new'}`;
-    
-    if (navigator.share) {
-      navigator.share({
-        title: title,
-        text: 'Collaborate on this document with me!',
-        url: shareUrl,
-      });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      alert('Share link copied to clipboard!');
-    }
-  };
 
-  // Effects
+
+
   useEffect(() => {
+    setWindowWidth(window.innerWidth);
+    
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
     };
     
     window.addEventListener('resize', handleResize);
-    handleResize();
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-      cleanupCollaboration();
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-
+  // Handle format changes
+  const handleFormatChange = (format) => {
+    console.log('Format changed:', format);
+    // You can trigger auto-save or other actions here
+  };
 
   return (
     <div className="flex min-h-screen bg-[#F3F4F6]">
-      {/* Desktop Sidebar */}
+      {/* Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar />
       </div>
 
-      {/* Mobile Overlay */}
-      {mobileSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* Mobile Sidebar */}
-      <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 ${
-          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:block lg:hidden`}
-      >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 lg:ml-0">
-        {/* Mobile Header */}
-        <MobileHeader
-          mobileSidebarOpen={mobileSidebarOpen}
-          setMobileSidebarOpen={setMobileSidebarOpen}
-        />
-
-        {/* Desktop Header */}
+      {/* Main content */}
+      <div className="flex-1">
+        <MobileHeader />
         <EditorHeader
-          navigate={navigate}
           saveStatus={saveStatus}
           lastSaved={lastSaved}
           title={title}
           setTitle={setTitle}
-          isDownloadDropdownOpen={isDownloadDropdownOpen}
-          setIsDownloadDropdownOpen={setIsDownloadDropdownOpen}
-          downloadDocument={downloadDocument}
           connectedUsers={connectedUsers}
           isOnline={isOnline}
           collaborationEnabled={collaborationEnabled}
-          collaborationLoading={collaborationLoading}
-          shareDocument={shareDocument}
+        />
+        
+        {/* Optional: Toolbar for formatting */}
+        {/* <TiptapToolbar editor={editorRef.current} /> */}
+
+        <Toolbar
+          editorRef={editorRef}
+          paperSize={paperSize}
+          margins={margins}
+          fontFamily={fontFamily}
+          onFormatChange={handleFormatChange}
+          onPaperSizeChange={(size) => setPaperSize(size)}
+          onMarginChange={(margin) => setMargins(margin)}
+          onFontChange={(font) => setFontFamily(font)}
+          isClient={typeof window !== 'undefined'}
+          windowWidth={windowWidth}
         />
 
-        {/* Toolbar */}
-        <TiptapToolbar
-          editor={editorRef.current}
-          selectedAlignment={selectedAlignment}
-          selectedTextColor={selectedTextColor}
-          selectedHighlightColor={selectedHighlightColor}
-          selectedFont={selectedFont}
-          selectedFontSize={selectedFontSize}
-          applyAlignment={applyAlignment}
-          applyTextColor={applyTextColor}
-          applyHighlightColor={applyHighlightColor}
-          applyFontFamily={applyFontFamily}
-          applyFontSize={applyFontSize}
-          applyBold={applyBold}
-          applyItalic={applyItalic}
-          applyUnderline={applyUnderline}
-          applyList={applyList}
-          isAlignmentDropdownOpen={isAlignmentDropdownOpen}
-          isColorDropdownOpen={isColorDropdownOpen}
-          isFontDropdownOpen={isFontDropdownOpen}
-          isFontSizeDropdownOpen={isFontSizeDropdownOpen}
-          isListDropdownOpen={isListDropdownOpen}
-          setIsAlignmentDropdownOpen={setIsAlignmentDropdownOpen}
-          setIsColorDropdownOpen={setIsColorDropdownOpen}
-          setIsFontDropdownOpen={setIsFontDropdownOpen}
-          setIsFontSizeDropdownOpen={setIsFontSizeDropdownOpen}
-          setIsListDropdownOpen={setIsListDropdownOpen}
-        />
-
-        {/* TipTap Editor */}
         <div className="flex justify-center py-6 px-4">
-          {collaborationEnabled && yjsRef.current ? (
-            <TiptapEditor
-              ref={setEditorReference}
-              ydoc={yjsRef.current.doc}
-              provider={yjsRef.current.provider}
-              user={{
-                id: `user-${Date.now()}`, // can be a real user id
-                name: "Current User",
-                color: "#3b82f6",
-                avatar: user.profile_pic
-              }}
-              paperSize={paperSizes[selectedPaperSize]}
-              margins={marginOptions[selectedMargin]}
-              fontFamily={selectedFont}
-              onUpdate={handleEditorUpdate}
-            />
-          ) : (
-            <TiptapEditor
-              ref={setEditorReference}
-              paperSize={paperSizes[selectedPaperSize]}
-              margins={marginOptions[selectedMargin]}
-              fontFamily={selectedFont}
-              onUpdate={handleEditorUpdate}
-            />
-          )}
+          <CollaborativeEditor
+            ref={setEditorReference}
+            ydoc={ydocRef.current}
+            provider={providerRef.current}
+            user={{ 
+              id: user?.id, 
+              name: user?.name, 
+              color: getUserColor(user?.id),
+              avatar: user?.profile_pic || `https://i.pravatar.cc/40?u=${user?.id}`
+            }}
+            onUpdate={handleEditorUpdate}
+            initialContent={file?.content || ""}
+          />
         </div>
 
-        {/* Collaboration Status Indicator */}
+        {/* Connection status indicator */}
+        <div className="fixed top-20 right-4 z-50">
+          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+            isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {isOnline ? '● Online' : '● Offline'}
+          </div>
+        </div>
+
+        {/* Connected users */}
         {collaborationEnabled && connectedUsers.length > 0 && (
-          <div className="flex gap-2 items-center mb-2 overflow-x-auto py-1 px-2">
-            {connectedUsers && connectedUsers.map(user => (
-              <div 
-                key={user.id} 
-                className="flex items-center gap-2 bg-white/90 px-2 py-1 rounded-full shadow-sm"
-              >
-                {/* User Avatar */}
-                <img
-                  src={user.avatar || `https://i.pravatar.cc/40?u=${user.id}`}
-                  alt={user.name}
-                  className="w-6 h-6 rounded-full object-cover border border-gray-300"
-                />
-                {/* User Name */}
-                <span className="text-sm font-medium text-gray-800">{user.name}</span>
-                {/* User Color Indicator */}
-                <span 
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: user.color || "#ccc" }}
-                />
+          <div className="fixed bottom-4 right-4 z-50">
+            <div className="bg-white rounded-lg shadow-lg p-3">
+              <div className="text-xs text-gray-600 mb-2 font-medium">
+                {connectedUsers.length} {connectedUsers.length === 1 ? "other person" : "other people"} editing
               </div>
-            ))}
+              <div className="flex flex-col gap-2">
+                {connectedUsers.map((u) => (
+                  <div key={u.clientId} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-full">
+                    <img 
+                      src={u.avatar} 
+                      alt={u.name} 
+                      className="w-6 h-6 rounded-full border-2" 
+                      style={{ borderColor: u.color }} 
+                    />
+                    <span className="text-sm font-medium text-gray-800">{u.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
-
       </div>
-
-      {/* Logout Modal */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

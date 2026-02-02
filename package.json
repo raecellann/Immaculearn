@@ -11,6 +11,13 @@
     "start": "ENV=production PORT=5173 node server.js",
     "lint": "eslint ."
   },
+  "keywords": [
+    "yjs",
+    "websocket",
+    "collaboration",
+    "real-time",
+    "crdt"
+  ],
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@tanstack/react-query": "^5.90.16",
@@ -19,6 +26,7 @@
     "@tiptap/extension-color": "^3.18.0",
     "@tiptap/extension-font-family": "^3.18.0",
     "@tiptap/extension-highlight": "^3.18.0",
+    "@tiptap/extension-placeholder": "^3.18.0",
     "@tiptap/extension-text-align": "^3.18.0",
     "@tiptap/extension-text-style": "^3.18.0",
     "@tiptap/extension-typography": "^3.18.0",

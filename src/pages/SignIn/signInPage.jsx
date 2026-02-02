@@ -39,22 +39,19 @@ const LoginPage = () => {
       if (event.origin !== window.location.origin) return;
 
       if (event.data.type === 'OAUTH_SUCCESS') {
-        const { role, needsOnboarding } = event.data;
-        
-        // Store the authentication data
-        // localStorage.setItem('isAuthenticated', 'true');
-        // localStorage.setItem('userRole', role);
+        const { role, needsOnboarding, token } = event.data;
 
-        // Redirect based on role and onboarding status
-        if (needsOnboarding) {
+        if (needsOnboarding && token) {
+          // 🔐 store tempToken for onboarding
+          sessionStorage.setItem("tempToken", token);
           navigate(`/onboarding?role=${role}`);
         } else {
           if (role === 'student') {
-            window.location.href = `/home?role=${role}`;
+            navigate(`/home?role=${role}`);
           } else if (role === 'professor') {
-            window.location.href = `/prof/home?role=${role}`;
+            navigate(`/prof/home?role=${role}`);
           } else if (role === 'admin') {
-            window.location.href = `/admin-dashboard?role=${role}`;
+            navigate(`/admin-dashboard?role=${role}`);
           } else {
             navigate('/');
           }
