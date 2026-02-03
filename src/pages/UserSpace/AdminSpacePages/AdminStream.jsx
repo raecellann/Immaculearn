@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
-import Sidebar from "../component/sidebar";
-import Logout from "../component/logout";
+import Sidebar from "../../component/sidebar";
+import Logout from "../../component/logout";
 import {
   FiSearch,
   FiFileText,
@@ -13,7 +13,7 @@ import {
   FiChevronLeft
 } from "react-icons/fi";
 
-const UserPage = () => {
+const AdminStreamPage = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [showInvitePopup, setShowInvitePopup] = useState(false);
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
@@ -153,7 +153,7 @@ const UserPage = () => {
         {/* COVER */}
         <div className="relative">
           <img
-            src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1769190537/cover_vwmkbn.png"
+            src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b"
             alt="Cover"
             className="w-full h-32 sm:h-40 md:h-48 object-cover"
           />
@@ -216,19 +216,19 @@ const UserPage = () => {
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/user-space-zj/tasks")}
+                  onClick={() => navigate("/admin-task-page")}
                 >
                   Tasks
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/user-space-zj/files-shared")}
+                  onClick={() => navigate("/admin-files-shared")}
                 >
                   Files Shared
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/user-space-zj/people")}
+                  onClick={() => navigate("/admin-people")}
                 >
                   People
                 </button>
@@ -266,7 +266,7 @@ const UserPage = () => {
             <div className="relative p-6">
               {/* AVATAR */}
               <img
-                src="/src/assets/HomePage/frieren-avatar.jpg"
+                src="/src/assets/SpacePeoplePage/zj.jpg"
                 alt="Avatar"
                 className="absolute left-6 top-6 w-10 h-10 rounded-full"
               />
@@ -403,7 +403,7 @@ const UserPage = () => {
                   <FiFileText className="text-blue-400" size={24} />
                   <div>
                     <p className="font-semibold">
-                      Zeldrick shared a file with you
+                      You postedf a file on this space
                     </p>
                     <p className="text-sm text-gray-400">OS • Week 7 Lecture</p>
                   </div>
@@ -418,7 +418,7 @@ const UserPage = () => {
                   <FiCheckCircle className="text-blue-400" size={24} />
                   <div>
                     <p className="font-semibold">
-                      Zeldrick assigned task with you
+                      You assigned a task on this space
                     </p>
                     <p className="text-sm text-gray-400">
                       Thesis • Survey Revision
@@ -612,4 +612,4 @@ const UserPage = () => {
   );
 };
 
-export default UserPage;
+export default AdminStreamPage;

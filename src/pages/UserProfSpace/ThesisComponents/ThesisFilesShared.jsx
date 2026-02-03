@@ -2,12 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../../component/sidebar";
 import Logout from "../../component/logout";
-import { FiFileText, FiX, FiUpload, FiMenu } from "react-icons/fi";
+import { FiFileText, FiMenu, FiX } from "react-icons/fi";
 
-const AdminFilesSharedPage = () => {
+const ThesisFilesShared = () => {
   const navigate = useNavigate();
 
-  /* ================= HEADER + SIDEBAR ================= */
+  /* ================= HEADER + SIDEBAR (ZJ MATCH) ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -23,9 +23,49 @@ const AdminFilesSharedPage = () => {
       }
       lastScrollY.current = currentScrollY;
     };
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const files = [
+    {
+      name: "Thesis Proposal Draft",
+      date: "April 10, 2025",
+      by: "Jober Reyes",
+      folder: "Thesis Documents",
+    },
+    {
+      name: "Literature Review Matrix",
+      date: "April 8, 2025",
+      by: "Jober Reyes",
+      folder: "Research Materials",
+    },
+    {
+      name: "Data Collection Form",
+      date: "April 5, 2025",
+      by: "Jober Reyes",
+      folder: "Research Tools",
+    },
+    {
+      name: "Methodology Chapter",
+      date: "April 3, 2025",
+      by: "Jober Reyes",
+      folder: "Thesis Chapters",
+    },
+    {
+      name: "Survey Questionnaire",
+      date: "April 1, 2025",
+      by: "Jober Reyes",
+      folder: "Research Tools",
+    },
+    {
+      name: "Bibliography References",
+      date: "March 28, 2025",
+      by: "Jober Reyes",
+      folder: "Research Materials",
+    },
+  ];
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
@@ -53,7 +93,7 @@ const AdminFilesSharedPage = () => {
 
       {/* ================= MAIN ================= */}
       <div className="flex-1 flex flex-col w-full">
-        {/* ================= HEADER ================= */}
+        {/* ================= HEADER (EXACT ZJ) ================= */}
         <div
           className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
@@ -67,7 +107,7 @@ const AdminFilesSharedPage = () => {
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
 
-          <h1 className="text-xl font-bold">Zeldrick's Space</h1>
+          <h1 className="text-xl font-bold">Jober Reyes' Thesis</h1>
         </div>
 
         {/* HEADER SPACER */}
@@ -76,9 +116,9 @@ const AdminFilesSharedPage = () => {
         {/* ================= COVER ================= */}
         <div className="relative">
           <img
-            src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b"
-            className="w-full h-32 sm:h-40 md:h-48 object-cover"
+            src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1769190537/cover_vwmkbn.png"
             alt="cover"
+            className="w-full h-32 sm:h-40 md:h-48 object-cover"
           />
           <div className="absolute inset-0 bg-black/50" />
         </div>
@@ -86,31 +126,34 @@ const AdminFilesSharedPage = () => {
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">Zeldrick's Space</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">Jober Reyes' Thesis</h1>
           </div>
 
-          {/* ================= TABS ================= */}
+          {/* ================= TABS (ZJ COPY) ================= */}
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex space-x-4 sm:space-x-8 md:space-x-12 lg:space-x-16 xl:gap-[120px]">
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/admin-stream")}
+                  onClick={() => navigate("/user-prof-space-thesis")}
                 >
                   Stream
                 </button>
+
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/admin-task-page")}
+                  onClick={() => navigate("/user-prof-space-thesis/tasks")}
                 >
                   Tasks
                 </button>
+
                 <button className="text-white text-base sm:text-lg md:text-xl font-semibold pb-2 px-1 whitespace-nowrap bg-transparent">
                   Files Shared
                 </button>
+
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/admin-people")}
+                  onClick={() => navigate("/user-prof-space-thesis/people")}
                 >
                   People
                 </button>
@@ -118,20 +161,9 @@ const AdminFilesSharedPage = () => {
             </div>
           </div>
 
-          {/* FILES SECTION */}
-          <div className="max-w-5xl mx-auto w-full">
-            {/* BUTTON */}
-            <div className="flex justify-end mb-4">
-              <button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                onClick={() => navigate("/create-document")}
-              >
-                <FiFileText size={16} />
-                Create File
-              </button>
-            </div>
-
-            {/* DESKTOP TABLE - HIDDEN ON MOBILE */}
+          {/* ================= FILES ================= */}
+          <div className="max-w-5xl mx-auto">
+            {/* DESKTOP TABLE */}
             <div className="hidden md:block bg-[#0F1115] rounded-xl p-6">
               <div className="grid grid-cols-4 text-sm text-gray-400 pb-3 border-b border-gray-700">
                 <div className="col-span-2">File Name</div>
@@ -139,26 +171,7 @@ const AdminFilesSharedPage = () => {
                 <div>Posted By</div>
               </div>
 
-              {[
-                {
-                  name: "Calculus: Lecture 3",
-                  date: "October 8, 2025",
-                  by: "Admin",
-                  folder: "Math",
-                },
-                {
-                  name: "Biology: Lecture 1",
-                  date: "October 8, 2025",
-                  by: "Admin",
-                  folder: "Science",
-                },
-                {
-                  name: "Fallacies: Lecture 4",
-                  date: "October 8, 2025",
-                  by: "Admin",
-                  folder: "Law",
-                },
-              ].map((file, index) => (
+              {files.map((file, index) => (
                 <div
                   key={index}
                   className="grid grid-cols-4 items-center bg-[#161A20] rounded-lg px-4 py-3 mt-4"
@@ -175,28 +188,9 @@ const AdminFilesSharedPage = () => {
               ))}
             </div>
 
-            {/* MOBILE CARDS - SHOWN ON MOBILE */}
+            {/* MOBILE / TABLET CARDS */}
             <div className="md:hidden space-y-4">
-              {[
-                {
-                  name: "Calculus: Lecture 3",
-                  date: "October 8, 2025",
-                  by: "Admin",
-                  folder: "Math",
-                },
-                {
-                  name: "Biology: Lecture 1",
-                  date: "October 8, 2025",
-                  by: "Admin",
-                  folder: "Science",
-                },
-                {
-                  name: "Fallacies: Lecture 4",
-                  date: "October 8, 2025",
-                  by: "Admin",
-                  folder: "Law",
-                },
-              ].map((file, index) => (
+              {files.map((file, index) => (
                 <div
                   key={index}
                   className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
@@ -227,4 +221,4 @@ const AdminFilesSharedPage = () => {
   );
 };
 
-export default AdminFilesSharedPage;
+export default ThesisFilesShared;

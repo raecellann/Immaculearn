@@ -179,7 +179,7 @@ const AdminTaskPage = () => {
               <div className="flex space-x-4 sm:space-x-8 md:space-x-12 lg:space-x-16 xl:gap-[120px]">
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/admin-space-zj")}
+                  onClick={() => navigate("/admin-stream")}
                 >
                   Stream
                 </button>
@@ -197,7 +197,7 @@ const AdminTaskPage = () => {
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/user-space-zj/people")}
+                  onClick={() => navigate("/admin-people")}
                 >
                   People
                 </button>
