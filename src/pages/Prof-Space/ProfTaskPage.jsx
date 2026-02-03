@@ -185,6 +185,12 @@ const ProfTaskPage = () => {
             <h1 className="text-2xl md:text-3xl font-bold">
               CS Thesis 2 Space
             </h1>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs text-gray-400">(5 Members)</span>
+              <button className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition">
+                Manage Class
+              </button>
+            </div>
           </div>
 
           {/* ================= TABS ================= */}
@@ -193,7 +199,7 @@ const ProfTaskPage = () => {
               <div className="flex space-x-4 sm:space-x-8 md:space-x-12 lg:space-x-16 xl:gap-[120px]">
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof-space-thesis")}
+                  onClick={() => navigate("/prof-stream")}
                 >
                   Stream
                 </button>
@@ -202,13 +208,13 @@ const ProfTaskPage = () => {
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof-space-thesis/files-shared")}
+                  onClick={() => navigate("/prof-stream/files-shared")}
                 >
                   Files Shared
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof-space-thesis/people")}
+                  onClick={() => navigate("/prof-stream/people")}
                 >
                   People
                 </button>
@@ -224,7 +230,7 @@ const ProfTaskPage = () => {
                 onClick={() => setIsCreatingTask(true)}
               >
                 <FiFileText size={16} />
-                Create File
+                Create Task
               </button>
               <div className="mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>

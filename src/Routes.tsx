@@ -47,7 +47,9 @@ import CreateSpaceAdmin from "./pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
 import ProfCreateSpace from "./pages/Prof-MainSpace/components/prof-create-space.jsx";
 import ProfCreateClassroomSpace from "./pages/Prof-MainSpace/components/prof-create-classroom-space.jsx";
 
-import ThesisSpace from "./pages/Prof-Space/Thesis-space.jsx";
+// import ProfStreamPage from "./pages/Prof-Space/ProfStream.jsx";
+// ProfStreamPage
+import ProfStreamPage from "./pages/Prof-Space/ProfStream.jsx";
 import ProfTaskPage from "./pages/Prof-Space/ProfTaskPage";
 import ProfFilesShared from "./pages/Prof-Space/ProfFilesShared";
 import ProfPeoplePage from "./pages/Prof-Space/ProfPeoplePage";
@@ -59,7 +61,7 @@ import ViewAllFilesPage from "./pages/ViewAllFiles/view-all-files.jsx"; //done r
 import CreateDocumentPage from "./pages/Create-Document/CreateDocument.jsx";
 
 import CalendarPage from "./pages/Calendar/Calendar.jsx";
-import ProfCalendarPage from "./pages/ProfCalendar/ProfCalendar.jsx";
+import ProfCalendarPage from "./pages/Prof-Calendar/ProfCalendar.jsx";
 
 import ParentLogin from "./pages/parent-login/parentlogin.jsx";
 import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
@@ -148,10 +150,10 @@ export default function Routes() {
         <Route path="/prof-create-classroom-space" element={<ProfCreateClassroomSpace />} />
 
       {/* PROFESSOR SPACE ROUTES */}
-      <Route path="/prof-space-thesis" element={<ThesisSpace />} />
-      <Route path="/prof-space-thesis/tasks" element={<ProfTaskPage />} />
-      <Route path="/prof-space-thesis/files-shared" element={<ProfFilesShared />} />
-      <Route path="/prof-space-thesis/people" element={<ProfPeoplePage />} />
+      <Route path="/prof-stream" element={<ProfStreamPage />} />
+      <Route path="/prof-stream/tasks" element={<ProfTaskPage />} />
+      <Route path="/prof-stream/files-shared" element={<ProfFilesShared />} />
+      <Route path="/prof-stream/people" element={<ProfPeoplePage />} />
 
       {/* USER-ACCESSIBLE PROFESSOR SPACE ROUTES */}
       <Route path="/user-prof-space-thesis" element={<UserThesisSpace />} />
