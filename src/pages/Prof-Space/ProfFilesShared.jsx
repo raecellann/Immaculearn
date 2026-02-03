@@ -110,6 +110,12 @@ const ProfFilesShared = () => {
             <h1 className="text-2xl md:text-3xl font-bold">
               CS Thesis 2 Space
             </h1>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs text-gray-400">(5 Members)</span>
+              <button className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition">
+                Manage Class
+              </button>
+            </div>
           </div>
 
           {/* ================= TABS ================= */}
@@ -118,13 +124,13 @@ const ProfFilesShared = () => {
               <div className="flex space-x-4 sm:space-x-8 md:space-x-12 lg:space-x-16 xl:gap-[120px]">
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof-space-thesis")}
+                  onClick={() => navigate("/prof-stream")}
                 >
                   Stream
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof-space-thesis/tasks")}
+                  onClick={() => navigate("/prof-stream/tasks")}
                 >
                   Tasks
                 </button>
@@ -133,7 +139,7 @@ const ProfFilesShared = () => {
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof-space-thesis/people")}
+                  onClick={() => navigate("/prof-stream/people")}
                 >
                   People
                 </button>

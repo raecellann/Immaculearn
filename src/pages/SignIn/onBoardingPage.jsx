@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import InputField from "@/pages/component/InputField";
 import Button from "@/pages/component/Button";
-import { Eye, EyeOff } from "lucide-react"; 
+import { Eye, EyeOff, ChevronDown } from "lucide-react"; 
 import { useNavigate, useSearchParams } from "react-router";
 
 const OnBoarding = () => {
@@ -33,6 +33,18 @@ const OnBoarding = () => {
   const [profBd, setProfBd] = useState("");
   const [profGender, setProfGender] = useState("");
   const [profDept, setProfDept] = useState("");
+
+  const [showDeptDropdown, setShowDeptDropdown] = useState(false);
+
+  const departments = [
+    { code: "BSCS", name: "Bachelor of Science in Computer Science" },
+    { code: "BSBA", name: "Bachelor of Science in Business Administration major in Operations Management" },
+    { code: "BSA", name: "Bachelor of Science in Accountancy" },
+    { code: "BSHM", name: "Bachelor of Science in Hospitality Management" },
+    { code: "BSTM", name: "Bachelor of Science in Tourism Management" },
+    { code: "BSED", name: "Bachelor of Secondary Education" },
+    { code: "BEED", name: "Bachelor of Elementary Education" },
+  ];
 
   const handleNext = () => {
     if (!password || !passwordConfirm) {
@@ -132,19 +144,19 @@ const OnBoarding = () => {
                   <InputField type="text" placeholder="First Name" value={studentFn} onChange={(e) => setStudentFn(e.target.value)} />
                   <InputField type="text" placeholder="Last Name" value={studentLn} onChange={(e) => setStudentLn(e.target.value)} />
                   <InputField type="date" placeholder="Birthdate" value={studentBd} onChange={(e) => setStudentBd(e.target.value)} />
-                  <select className="border rounded-lg px-4 py-2 w-full" value={studentGender} onChange={(e) => setStudentGender(e.target.value)}>
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
                   <InputField type="text" placeholder="Course ex: BSCS" value={studentCourse} onChange={(e) => setStudentCourse(e.target.value)} />
-                  <select className="border rounded-lg px-4 py-2 w-full" value={studentYrLvl} onChange={(e) => setStudentYrLvl(e.target.value)}>
-                    <option value="">Select Year Level</option>
-                    <option value="1">1st Year</option>
-                    <option value="2">2nd Year</option>
-                    <option value="3">3rd Year</option>
-                    <option value="4">4th Year</option>
+                  <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={studentYrLvl} onChange={(e) => setStudentYrLvl(e.target.value)}>
+                    <option value="" className="text-black">Select Year Level</option>
+                    <option value="1" className="text-black">1st Year</option>
+                    <option value="2" className="text-black">2nd Year</option>
+                    <option value="3" className="text-black">3rd Year</option>
+                    <option value="4" className="text-black">4th Year</option>
+                  </select>
+                  <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={studentGender} onChange={(e) => setStudentGender(e.target.value)}>
+                    <option value="" className="text-black">Select Gender</option>
+                    <option value="Male" className="text-black">Male</option>
+                    <option value="Female" className="text-black">Female</option>
+                    <option value="Other" className="text-black">Other</option>
                   </select>
                 </>
               )}
@@ -153,19 +165,51 @@ const OnBoarding = () => {
                 <>
                   <InputField type="text" placeholder="First Name" value={profFn} onChange={(e) => setProfFn(e.target.value)} />
                   <InputField type="text" placeholder="Last Name" value={profLn} onChange={(e) => setProfLn(e.target.value)} />
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="border border-black rounded-lg px-4 py-2 w-full text-gray-900 bg-white flex items-center justify-between hover:bg-gray-50 transition"
+                      onClick={() => setShowDeptDropdown(!showDeptDropdown)}
+                    >
+                      <span className="text-gray-900">
+                        {profDept 
+                          ? departments.find(d => d.code === profDept)?.name || "Select Department"
+                          : "Select Department"
+                        }
+                      </span>
+                      <ChevronDown size={20} className={`transition-transform ${showDeptDropdown ? "rotate-180" : ""}`} />
+                    </button>
+                    
+                    {showDeptDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-black rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                        {departments.map((dept) => (
+                          <button
+                            key={dept.code}
+                            type="button"
+                            className="w-full px-4 py-2 text-left text-gray-900 hover:bg-gray-100 transition border-b border-gray-200 last:border-b-0 bg-white"
+                            onClick={() => {
+                              setProfDept(dept.code);
+                              setShowDeptDropdown(false);
+                            }}
+                          >
+                            <span className="font-medium">{dept.code}:</span> {dept.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <InputField type="date" placeholder="Birthdate" value={profBd} onChange={(e) => setProfBd(e.target.value)} />
-                  <select className="border rounded-lg px-4 py-2 w-full" value={profGender} onChange={(e) => setProfGender(e.target.value)}>
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                  <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={profGender} onChange={(e) => setProfGender(e.target.value)}>
+                    <option value="" className="text-black">Select Gender</option>
+                    <option value="Male" className="text-black">Male</option>
+                    <option value="Female" className="text-black">Female</option>
+                    <option value="Other" className="text-black">Other</option>
                   </select>
-                  <InputField type="text" placeholder="Department" value={profDept} onChange={(e) => setProfDept(e.target.value)} />
                 </>
               )}
 
               <div className="flex justify-between mt-4">
-                <Button type="button" style={{ padding: "10px 20px", borderRadius: "8px", backgroundColor: "#6B7280", color: "#fff" }} onClick={handlePrev}>
+                <Button type="button" style={{ padding: "10px 20px", borderRadius: "8px", backgroundColor: "#9CA3AF", color: "#fff", border: "none" }} onClick={handlePrev}>
                   Previous
                 </Button>
                 <Button type="submit" style={{ padding: "10px 20px", borderRadius: "8px", backgroundColor: "#0066D2", color: "#fff" }}>

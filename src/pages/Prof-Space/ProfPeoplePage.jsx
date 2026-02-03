@@ -121,7 +121,7 @@ const ProfPeoplePage = () => {
           <div className="max-w-4xl mx-auto space-y-8">
             {/* ADMIN */}
             <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Admin</h2>
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Professor</h2>
               <div className="border-t border-gray-700 pt-4">
                 <div className="flex items-center gap-4">
                   <img
@@ -136,7 +136,7 @@ const ProfPeoplePage = () => {
 
             {/* MEMBERS */}
             <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Members</h2>
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Students</h2>
               <div className="border-t border-gray-700 pt-4 space-y-4">
                 {members.map((member, index) => (
                   <div key={index} className="flex items-center gap-4">
