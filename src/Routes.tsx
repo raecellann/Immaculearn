@@ -29,9 +29,11 @@ import TaskViewPageAdmin from "./pages/Task-view Admin/Task-View-Admin.jsx";
 import TaskViewAll from "./pages/Task-view Admin/Task-View-All.jsx"; 
 import ViewFilePage from "./pages/ViewFiles/ViewFiles.jsx"; //done responsive//
 
+import AdminStreamPage from "./pages/UserSpace/AdminSpacePages/AdminStream.jsx";
 import AdminTaskPage from "./pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
 import AdminCreateActivityPage from "./pages/UserSpace/AdminSpacePages/AdminCreateActivityPage.jsx";
 import AdminFilesSharedPage from "./pages/UserSpace/AdminSpacePages/AdminFilesSharedPage.jsx";
+import AdminPeoplePage from "./pages/UserSpace/AdminSpacePages/AdminPeople.jsx";
 
 import ProfProfilePage from "./pages/prof-AccSettings/profaccsettingspage.jsx"; //done responsive//
 import ProfNotificationPage from "./pages/prof-Notifications/profnotification.jsx"; //done responsive//
@@ -68,6 +70,9 @@ import ParentGradeView from "./pages/parent-grade-view/parentgradeview.jsx";
 
 // User-accessible professor spaces
 import UserThesisSpace from "./pages/UserProfSpace/UserThesisSpace.jsx";
+import ThesisTaskPage from "./pages/UserProfSpace/ThesisComponents/ThesisTaskPage.jsx";
+import ThesisFilesShared from "./pages/UserProfSpace/ThesisComponents/ThesisFilesShared.jsx";
+import ThesisPeoplePage from "./pages/UserProfSpace/ThesisComponents/ThesisPeoplePage.jsx";
 
 import { SignInPageWithOAuth } from "./pages/test-page/signInPageWithOAuth.jsx";
 import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
@@ -123,31 +128,30 @@ export default function Routes() {
       <Route path="/user-space-zj/files-shared" element={<UserFilesShared />} />
       <Route path="/user-space-zj/people" element={<UserPeoplePage />} />
 
+      <Route path="/admin-stream" element={<AdminStreamPage /> } />
       <Route path="/admin-task-page" element={<AdminTaskPage />} />
       <Route path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />
+      <Route path="/admin-files-shared" element={<AdminFilesSharedPage />} />
+      <Route path="/admin-people" element={<AdminPeoplePage />} />
+      {/* ADMIN STUDENT ROUTES */}
+      <Route path="/task-view" element={<TaskViewPage />} />
+      <Route path="/task-view-admin" element={<TaskViewPageAdmin />} />
+      <Route path="/task-view-all" element={<TaskViewAll />} />
+      <Route path="/create-space" element={<CreateSpaceAdmin />} />
+      <Route path="/create-file-admin" element={<CreateFileAdmin />} />
 
-        {/* ADMIN STUDENT ROUTES */}
-        <Route path="/task-view" element={<TaskViewPage />} />
-        <Route path="/task-view-admin" element={<TaskViewPageAdmin />} />
-        <Route path="/task-view-all" element={<TaskViewAll />} />
-        <Route path="/create-space" element={<CreateSpaceAdmin />} />
-        <Route path="/create-file-admin" element={<CreateFileAdmin />} />
-        <Route path="/admin-files-shared" element={<AdminFilesSharedPage />} />
-
-        {/* PROFESSOR ROUTES */}
-        <Route path="/prof-acc-settings" element={<ProfProfilePage />} />
-        <Route path="/prof-notifications" element={<ProfNotificationPage />} />
-        <Route path="/prof-list-activity" element={<ProfListActivityPage />} />
-        <Route path="/prof-files" element={<ProfFilePage />} />
-        <Route path="/prof-files-by-subject" element={<ProfFilesBySubject />} />
-        <Route path="/prof-grade-viewing" element={<ProfGradeRecordPage />} />
-        <Route path="/prof-chats" element={<ProfChatsPage /> }/>
-        <Route path="/prof-home" element={<ProfHomePage />} />
-        <Route path="/prof-settings" element={<ProfSettingsPage />} />
-        <Route path="/prof-main-space" element={<ProfMainSpace />} />
-        <Route path="/prof-calendar" element={<ProfCalendarPage />} />
-        <Route path="/prof-create-space" element={<ProfCreateSpace />} />
-        <Route path="/prof-create-classroom-space" element={<ProfCreateClassroomSpace />} />
+      {/* PROFESSOR ROUTES */}
+      <Route path="/prof-acc-settings" element={<ProfProfilePage />} />
+      <Route path="/prof-notifications" element={<ProfNotificationPage />} />
+      <Route path="/prof-list-activity" element={<ProfListActivityPage />} />
+      <Route path="/prof-files" element={<ProfFilePage />} />
+      <Route path="/prof-files-by-subject" element={<ProfFilesBySubject />} />
+      <Route path="/prof-grade-viewing" element={<ProfGradeRecordPage />} />
+      <Route path="/prof-chats" element={<ProfChatsPage /> }/>
+      <Route path="/prof-home" element={<ProfHomePage />} />
+      <Route path="/prof-settings" element={<ProfSettingsPage />} />
+      <Route path="/prof-main-space" element={<ProfMainSpace />} />
+      <Route path="/prof-calendar" element={<ProfCalendarPage />} />
 
       {/* PROFESSOR SPACE ROUTES */}
       <Route path="/prof-stream" element={<ProfStreamPage />} />
@@ -157,6 +161,9 @@ export default function Routes() {
 
       {/* USER-ACCESSIBLE PROFESSOR SPACE ROUTES */}
       <Route path="/user-prof-space-thesis" element={<UserThesisSpace />} />
+      <Route path="/user-prof-space-thesis/tasks" element={<ThesisTaskPage />} />
+      <Route path="/user-prof-space-thesis/files-shared" element={<ThesisFilesShared />} />
+      <Route path="/user-prof-space-thesis/people" element={<ThesisPeoplePage />} />
 
       {/* PARENT ROUTES */}
       <Route path="/parent-grade-login" element={<ParentLogin />} />

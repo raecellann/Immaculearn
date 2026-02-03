@@ -13,46 +13,6 @@ const ProfFilesShared = () => {
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
-  // File upload states
-  const [showCreateUploadModal, setShowCreateUploadModal] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const newFile = {
-        id: Date.now(),
-        name: e.dataTransfer.files[0].name,
-        size: e.dataTransfer.files[0].size,
-      };
-      setUploadedFiles((prev) => [...prev, newFile]);
-    }
-  };
-
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const newFile = {
-        id: Date.now(),
-        name: e.target.files[0].name,
-        size: e.target.files[0].size,
-      };
-      setUploadedFiles((prev) => [...prev, newFile]);
-    }
-  };
-
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -193,10 +153,10 @@ const ProfFilesShared = () => {
             <div className="flex justify-end mb-4">
               <button
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                onClick={() => setShowCreateUploadModal(true)}
+                onClick={() => navigate("/create-document")}
               >
                 <FiFileText size={16} />
-                Create or Upload File
+                Create File
               </button>
             </div>
 
@@ -251,118 +211,6 @@ const ProfFilesShared = () => {
           </div>
         </div>
       </div>
-
-      {/* CREATE/UPLOAD POPUP MODAL */}
-      {showCreateUploadModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto relative">
-            {/* CLOSE BUTTON */}
-            <button
-              onClick={() => setShowCreateUploadModal(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10 bg-white rounded-full p-1"
-            >
-              <FiX size={24} />
-            </button>
-
-            {/* CONTENT */}
-            <div className="p-8 pt-12">
-              {/* TITLE */}
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Create file or Upload files here.
-              </h2>
-
-              {/* UPLOAD SECTION */}
-              <div
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-8 text-center mb-4 cursor-pointer transition relative ${
-                  dragActive
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-300 bg-gray-50"
-                }`}
-              >
-                <input
-                  type="file"
-                  id="file-upload"
-                  onChange={handleFileChange}
-                  multiple
-                  className="hidden"
-                />
-
-                <FiUpload size={40} className="mx-auto mb-3 text-gray-400" />
-
-                <p className="text-gray-900 font-medium text-sm">
-                  Choose a file or drag & drop it here.
-                </p>
-                <p className="text-gray-500 text-xs mt-1">
-                  DOCS, PDF, PPT AND EXCEL, UP TO 50 MB
-                </p>
-              </div>
-
-              {/* BROWSE BUTTON */}
-              <button
-                onClick={() => document.getElementById("file-upload").click()}
-                className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition mb-4 bg-white"
-              >
-                Browse Files
-              </button>
-
-              {/* DIVIDER */}
-              <div className="flex items-center my-4">
-                <div className="flex-1 border-t border-gray-300"></div>
-                <span className="px-3 text-gray-500 text-sm">Or</span>
-                <div className="flex-1 border-t border-gray-300"></div>
-              </div>
-
-              {/* CREATE FILE BUTTON */}
-              <button
-                onClick={() => {
-                  navigate("/create-document");
-                  setShowCreateUploadModal(false);
-                }}
-                className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center space-x-2 bg-white mb-6"
-              >
-                <FiFileText size={20} />
-                <span>Create File</span>
-              </button>
-
-              {/* UPLOADED FILES LIST */}
-              {uploadedFiles.length > 0 && (
-                <div className="pt-4 border-t border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                    Uploaded Files ({uploadedFiles.length})
-                  </h3>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {uploadedFiles.map((file) => (
-                      <div
-                        key={file.id}
-                        className="p-4 bg-gray-50 rounded-lg border border-gray-200"
-                      >
-                        {/* FILE HEADER */}
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-start space-x-3 flex-1">
-                            <span className="text-2xl">📄</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-gray-900 truncate">
-                                {file.name.toUpperCase()}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {(file.size / 1024).toFixed(0)}KB
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
