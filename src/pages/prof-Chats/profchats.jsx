@@ -2,20 +2,123 @@ import React, { useState } from "react";
 import Sidebar from "../component/profsidebar";
 import Button from "../component/Button";
 import Logout from "../component/logout";
+import { FiEdit, FiSend, FiImage, FiMoreVertical, FiPaperclip, FiSmile, FiUser, FiTrash2 } from "react-icons/fi";
+import { BsCheck2 } from "react-icons/bs";
 
 const ProfChatsPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [input, setInput] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showMobileChat, setShowMobileChat] = useState(false);
 
-  const chats = [
-    {id: 1,name: "Wilson Esmabe",message:"Good Evening po, Sir Jober. Nakapag-pasa na po ako ng OJT Paper.",time: "1m",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990149/wilson_gjdkdm.jpg", },
-    {id: 2,name: "Nathaniel Faburada.",message: "Okay na, nakita ko na output mo.",time: "2h",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",isYou: true,},
-    {id: 3,name: "CS THESIS 1 - 1SY2025-2026", message: "Good Evening mga AnaCS4... On-line consultation na lang muna tayo bukas.",time: "15m",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990871/thesis_hdfdkr.png",isYou: true,},
-  ];
+  const [conversations, setConversations] = useState({
+    wilson: {
+      id: "wilson",
+      name: "Wilson Esmabe",
+      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990149/wilson_gjdkdm.jpg",
+      type: "person",
+      messages: [
+        { from: "them", text: "Good Evening po, Sir Jober. Nakapag-pasa na po ako ng OJT Paper.", time: "08:34 PM" },
+        { from: "me", text: "Thank you Wilson! I'll review it tomorrow.", time: "08:36 PM" },
+        { from: "them", text: "Thank you po Sir!", time: "08:37 PM" },
+      ],
+    },
+    nathaniel: {
+      id: "nathaniel",
+      name: "Nathaniel Faburada",
+      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
+      type: "person",
+      messages: [
+        { from: "me", text: "Okay na, nakita ko na output mo.", time: "06:15 PM" },
+        { from: "them", text: "Thank you po Sir! May improvements pa ba po?", time: "06:20 PM" },
+        { from: "me", text: "Medyo lang. Add more details sa methodology.", time: "06:25 PM" },
+      ],
+    },
+    thesis_group: {
+      id: "thesis_group",
+      name: "CS THESIS 1 - 1SY2025-2026",
+      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990871/thesis_hdfdkr.png",
+      type: "group",
+      messages: [
+        { from: "me", text: "Good Evening mga AnaCS4... On-line consultation na lang muna tayo bukas.", time: "07:30 PM" },
+        { from: "them", text: "Noted po Sir!", time: "07:35 PM" },
+        { from: "them", text: "What time po Sir?", time: "07:40 PM" },
+        { from: "me", text: "2PM po. See you all tomorrow.", time: "07:45 PM" },
+      ],
+    },
+    raecell: {
+      id: "raecell",
+      name: "Raecell Ann Galvez",
+      avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
+      type: "person",
+      messages: [
+        { from: "them", text: "Good morning Sir! May question po regarding Chapter 2.", time: "09:00 AM" },
+        { from: "me", text: "Good morning! Yes, what's your question?", time: "09:05 AM" },
+        { from: "them", text: "About the literature review po. How many sources ba kailangan?", time: "09:10 AM" },
+        { from: "me", text: "Minimum of 15 related studies and 10 literature.", time: "09:15 AM" },
+      ],
+    },
+    zeldrick: {
+      id: "zeldrick",
+      name: "Zeldrick Jesus",
+      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1760087780/zj_lswba7.jpg",
+      type: "person",
+      messages: [
+        { from: "them", text: "Sir, approved na ba yung proposal namin?", time: "10:00 AM" },
+        { from: "me", text: "Yes! Approved na. Proceed to Chapter 2 na kayo.", time: "10:15 AM" },
+        { from: "them", text: "Thank you po Sir!", time: "10:20 AM" },
+      ],
+    },
+  });
+
+  const activeChat = activeChatId ? conversations[activeChatId] : null;
+
+  const handleMobileChatSelect = (chatId) => {
+    setActiveChatId(chatId);
+    setShowMobileChat(true);
+  };
+
+  const handleBackToChatList = () => {
+    setShowMobileChat(false);
+  };
+
+  const sendMessage = (type = "text", content = "") => {
+    if (!activeChat || (!input.trim() && type === "text")) return;
+
+    const time = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const newMsg =
+      type === "image"
+        ? { from: "me", image: content, time }
+        : { from: "me", text: input, time };
+
+    setConversations((prev) => ({
+      ...prev,
+      [activeChatId]: {
+        ...prev[activeChatId],
+        messages: [...prev[activeChatId].messages, newMsg],
+      },
+    }));
+
+    setInput("");
+  };
+
+  const handleImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => sendMessage("image", reader.result);
+    reader.readAsDataURL(file);
+  };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
-      {/* Desktop Sidebar */}
+    <div className="flex min-h-screen bg-[#161A20] text-white">
+      {/* Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
@@ -30,108 +133,388 @@ const ProfChatsPage = () => {
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transition-transform lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile / Tablet Header */}
-        <div
-          className="
-            lg:hidden
-            sticky top-0 z-30
-            bg-[#1E222A]
-            px-4
-            pt-[env(safe-area-inset-top)]
-            border-b border-[#3B4457]
-          "
-        >
-          <div className="flex items-center h-14">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="text-2xl leading-none bg-transparent p-0 border-none focus:outline-none"
-              style={{ WebkitTapHighlightColor: "transparent" }}
-            >
-              ☰
-            </button>
+      {/* MAIN */}
+      <div className="flex-1 flex px-6 py-6 gap-6 h-screen overflow-hidden">
+        {/* CHAT LIST - Hidden on mobile when chat is selected */}
+        <div className={`${showMobileChat ? 'hidden lg:block' : 'block'} w-full lg:w-[420px] flex flex-col min-h-0`}>
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="lg:hidden text-2xl leading-none bg-transparent p-0 border-none outline-none focus:outline-none focus:ring-0 active:bg-transparent"
+                style={{ WebkitTapHighlightColor: "transparent" }}
+              >
+                ☰
+              </button>
 
-            <h1 className="ml-4 text-lg font-bold truncate">Chats</h1>
+              <h1 className="text-lg font-bold truncate">Chats</h1>
+            </div>
 
             <div className="ml-auto">
               <Button
                 style={{
-                  padding: "0.25rem 0.7rem",
-                  fontSize: "0.75rem",
+                  padding: "0.4rem",
                   backgroundColor: "#3B82F6",
-                  borderRadius: "0.375rem",
+                  borderRadius: "8px",
                 }}
               >
-                New
+                <FiEdit />
               </Button>
             </div>
           </div>
-        </div>
 
-        {/* Desktop Header */}
-        <div className="hidden lg:flex relative items-center px-8 py-6">
-          <h1 className="absolute left-1/2 -translate-x-1/2 text-3xl font-bold">
-            Chats
-          </h1>
-          <div className="ml-auto">
-            <Button
+          <input
+            placeholder="Search People"
+            className="w-full mb-4 px-4 py-2 rounded-full bg-[#EDEAF0] text-black text-sm"
+          />
+
+          <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
+            <div 
+              className="bg-white rounded-xl p-4 text-black overflow-y-auto h-48"
               style={{
-                padding: "0.45rem 1.1rem",
-                fontSize: "0.9rem",
-                backgroundColor: "#3B82F6",
-                borderRadius: "0.375rem",
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none',
+                WebkitScrollbar: { display: 'none' }
               }}
             >
-              New Message
-            </Button>
+              <h2 className="text-sm font-semibold mb-3">Students</h2>
+              {["wilson", "nathaniel", "raecell", "zeldrick"].map((id) => (
+                <div
+                  key={id}
+                  onClick={() => handleMobileChatSelect(id)}
+                  className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-100 rounded-lg px-2"
+                >
+                  <img
+                    src={conversations[id].avatar}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <p className="font-semibold text-sm">
+                    {conversations[id].name}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div 
+              className="bg-white rounded-xl p-4 text-black overflow-y-auto h-48"
+              style={{
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none',
+                WebkitScrollbar: { display: 'none' }
+              }}
+            >
+              <h2 className="text-sm font-semibold mb-3">Groups</h2>
+              {["thesis_group"].map((id) => (
+                <div
+                  key={id}
+                  onClick={() => handleMobileChatSelect(id)}
+                  className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-100 rounded-lg px-2"
+                >
+                  <div className="relative w-10 h-10">
+                    <img
+                      src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1760087780/zj_lswba7.jpg"
+                      className="absolute top-0 left-2 w-6 h-6 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg"
+                      className="absolute top-0 right-2 w-6 h-6 rounded-full border-2 border-white"
+                    />
+                    <img
+                      src="https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg"
+                      className="absolute bottom-0 left-2 w-6 h-6 rounded-full border-2 border-white"
+                    />
+                  </div>
+                  <p className="font-semibold text-sm">
+                    {conversations[id].name}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Chat List */}
-        <div className="flex-1 overflow-y-auto pb-4">
-          {chats.map((chat) => (
-            <div
-              key={chat.id}
-              className="
-                flex items-center gap-3 sm:gap-4
-                px-3 sm:px-4
-                py-3 sm:p-4
-                border-b border-gray-700
-                hover:bg-[#1F242D]
-                transition
-                cursor-pointer
-              "
-            >
-              <img
-                src={chat.avatar}
-                alt={chat.name}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
-              />
+        {/* MOBILE CHAT VIEW */}
+        <div className={`${showMobileChat ? 'block' : 'hidden'} lg:hidden absolute inset-0 bg-[#161A20] p-6`}>
+          {/* Mobile Header - Outside conversation */}
+            <div className="flex items-center h-14 mb-4">
+              {/* LEFT SIDE: Back + Avatar + Name */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleBackToChatList}
+                  className="text-gray-400 hover:text-gray-200 bg-transparent p-0"
+                  style={{ WebkitTapHighlightColor: "transparent" }}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center">
-                  <h2 className="font-semibold text-sm sm:text-base truncate">
-                    {chat.name}
-                  </h2>
-                  <span className="text-xs text-gray-400 ml-2">
-                    {chat.time}
-                  </span>
+                {activeChat && (
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <img
+                        src={activeChat.avatar}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                    </div>
+
+                    <div className="leading-tight">
+                      <h2 className="font-semibold text-white text-sm truncate max-w-[140px]">
+                        {activeChat.name}
+                      </h2>
+                      <p className="text-[10px] text-green-400">Active now</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT SIDE: Menu */}
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="ml-auto text-gray-400 hover:text-gray-200 bg-transparent p-0"
+                style={{ WebkitTapHighlightColor: "transparent" }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+
+
+          {activeChat ? (
+            <div className="bg-white rounded-xl w-full flex flex-col h-[calc(100%-5rem)]">
+
+              {/* Messages */}
+              <div 
+                className="flex-1 p-3 space-y-2 overflow-y-auto bg-gray-50"
+                style={{
+                  msOverflowStyle: 'none',
+                  scrollbarWidth: 'none',
+                  WebkitScrollbar: { display: 'none' }
+                }}
+              >
+                {/* Unread messages separator */}
+                <div className="flex items-center justify-center my-3">
+                  <div className="bg-gray-300 text-gray-600 text-xs px-2 py-1 rounded-full">
+                    Unread messages
+                  </div>
                 </div>
+                
+                {activeChat.messages.map((m, i) => (
+                  <div
+                    key={i}
+                    className={`flex ${
+                      m.from === "me" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-xs px-3 py-2 rounded-2xl ${
+                        m.from === "me"
+                          ? "bg-blue-500 text-white rounded-br-sm"
+                          : "bg-gray-200 text-black rounded-bl-sm"
+                      }`}
+                    >
+                      {m.text && <p className="text-xs">{m.text}</p>}
+                      {m.image && (
+                        <img
+                          src={m.image}
+                          className="rounded-lg max-h-32"
+                        />
+                      )}
+                      <div className={`flex items-center justify-end gap-1 mt-1 ${
+                        m.from === "me" ? "text-blue-100" : "text-gray-500"
+                      }`}>
+                        <p className="text-[9px]">
+                          {m.time}
+                        </p>
+                        {m.from === "me" && (
+                          <BsCheck2 size={10} />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                <p className="text-xs sm:text-sm text-gray-400 truncate">
-                  {chat.isYou ? "You: " : ""}
-                  {chat.message}
-                </p>
+              {/* INPUT */}
+              <div className="p-3 border-t border-gray-200 bg-white">
+                <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Type your message here..."
+                    className="flex-1 bg-transparent outline-none text-xs text-gray-700 placeholder-gray-500"
+                  />
+                  <label className="cursor-pointer text-gray-500 hover:text-gray-700">
+                    <FiPaperclip size={16} />
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleImage}
+                    />
+                  </label>
+                  <button
+                    onClick={() => sendMessage()}
+                    className="bg-blue-500 text-white p-1.5 rounded-full hover:bg-blue-600 transition-colors"
+                  >
+                    <FiSend size={14} />
+                  </button>
+                </div>
               </div>
             </div>
-          ))}
+          ) : (
+            <div className="flex-1 bg-white rounded-xl flex items-center justify-center text-gray-400">
+              Select a conversation
+            </div>
+          )}
+        </div>
+
+        {/* CHAT PANEL */}
+        <div className="hidden lg:flex flex-1">
+          {activeChat ? (
+            <div className="bg-white rounded-xl w-full flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <img
+                      src={activeChat.avatar}
+                      className="w-12 h-12 rounded-full"
+                    />
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-black text-lg">
+                      {activeChat.name}
+                    </h2>
+                    <p className="text-xs text-green-500">Active now</p>
+                  </div>
+                </div>
+                <div className="relative">
+                  <button
+                    className="text-gray-600 hover:text-gray-900 transition-colors"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  >
+                    <FiMoreVertical size={20} />
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-10 text-white">
+                      <ul className="py-1">
+                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2 text-xs">
+                          <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                          Change Color Theme
+                        </li>
+                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2 text-xs">
+                          <FiEdit size={14} />
+                          Edit Nickname
+                        </li>
+                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2 text-xs">
+                          <FiUser size={14} />
+                          View Profile
+                        </li>
+                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-red-500 flex items-center gap-2 text-xs">
+                          <FiTrash2 size={14} />
+                          Delete Conversation
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div 
+                className="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50"
+                style={{
+                  msOverflowStyle: 'none',
+                  scrollbarWidth: 'none',
+                  WebkitScrollbar: { display: 'none' }
+                }}
+              >
+                {/* Unread messages separator */}
+                <div className="flex items-center justify-center my-4">
+                  <div className="bg-gray-300 text-gray-600 text-xs px-3 py-1 rounded-full">
+                    Unread messages
+                  </div>
+                </div>
+                
+                {activeChat.messages.map((m, i) => (
+                  <div
+                    key={i}
+                    className={`flex ${
+                      m.from === "me" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
+                        m.from === "me"
+                          ? "bg-blue-500 text-white rounded-br-sm"
+                          : "bg-gray-200 text-black rounded-bl-sm"
+                      }`}
+                    >
+                      {m.text && <p className="text-sm">{m.text}</p>}
+                      {m.image && (
+                        <img
+                          src={m.image}
+                          className="rounded-lg max-h-48"
+                        />
+                      )}
+                      <div className={`flex items-center justify-end gap-1 mt-2 ${
+                        m.from === "me" ? "text-blue-100" : "text-gray-500"
+                      }`}>
+                        <p className="text-[10px]">
+                          {m.time}
+                        </p>
+                        {m.from === "me" && (
+                          <BsCheck2 size={12} />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* INPUT */}
+              <div className="p-4 border-t border-gray-200 bg-white">
+                <div className="flex items-center gap-3 bg-gray-100 rounded-full px-4 py-3">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Type your message here..."
+                    className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-500"
+                  />
+                  <label className="cursor-pointer text-gray-500 hover:text-gray-700">
+                    <FiPaperclip size={20} />
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleImage}
+                    />
+                  </label>
+                  <button
+                    onClick={() => sendMessage()}
+                    className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors"
+                  >
+                    <FiSend size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 bg-white rounded-xl flex items-center justify-center text-gray-400">
+              Select a conversation
+            </div>
+          )}
         </div>
       </div>
 
