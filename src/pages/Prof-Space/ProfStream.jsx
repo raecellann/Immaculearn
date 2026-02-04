@@ -10,6 +10,7 @@ import {
   FiMenu,
   FiX,
   FiChevronLeft,
+  FiUpload,
 } from "react-icons/fi";
 import Logout from "../component/logout";
 
@@ -21,6 +22,52 @@ const ProfStreamPage = () => {
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
   const navigate = useNavigate();
+
+  // File upload states
+  const [showFileUploadModal, setShowFileUploadModal] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const newFile = {
+        id: Date.now(),
+        name: e.dataTransfer.files[0].name,
+        size: e.dataTransfer.files[0].size,
+      };
+      setUploadedFiles((prev) => [...prev, newFile]);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    console.log('File change triggered', e.target.files);
+    if (e.target.files && e.target.files[0]) {
+      const newFile = {
+        id: Date.now(),
+        name: e.target.files[0].name,
+        size: e.target.files[0].size,
+      };
+      console.log('New file added:', newFile);
+      setUploadedFiles((prev) => [...prev, newFile]);
+    }
+  };
+
+  useEffect(() => {
+    console.log('showFileUploadModal changed:', showFileUploadModal);
+  }, [showFileUploadModal]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -177,12 +224,12 @@ const ProfStreamPage = () => {
               ${isFocused ? "border-black" : "border-transparent"}
               hover:border-black
             `}
-            onClick={() => editorRef.current?.focus()}
+            onClick={() => !showFileUploadModal && editorRef.current?.focus()}
           >
             <div className="relative p-6">
               {/* AVATAR */}
               <img
-                src="/src/assets/HomePage/frieren-avatar.jpg"
+                src="/src/assets/HomePage/jober.jpg"
                 alt="Avatar"
                 className="absolute left-6 top-6 w-10 h-10 rounded-full"
               />
@@ -194,8 +241,14 @@ const ProfStreamPage = () => {
                 suppressContentEditableWarning
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => {
-                  if (editorRef.current.innerText.trim() === "") {
-                    setIsFocused(false);
+                  // Only close if editor is empty and no modal is open
+                  if (editorRef.current.innerText.trim() === "" && !showFileUploadModal) {
+                    // Don't close immediately - give user time to interact
+                    setTimeout(() => {
+                      if (editorRef.current.innerText.trim() === "" && !showFileUploadModal) {
+                        setIsFocused(false);
+                      }
+                    }, 200);
                   }
                 }}
                 className="
@@ -252,15 +305,39 @@ const ProfStreamPage = () => {
                   {/* FOOTER */}
                   <div className="mt-4 flex flex-col sm:flex-row justify-between gap-3 sm:items-center">
                     <div className="flex flex-wrap gap-4 sm:gap-6 text-sm text-gray-600">
-                      <button className="flex items-center gap-1.5 sm:gap-2 bg-white hover:text-black px-2 py-1.5 sm:px-0 sm:py-0">
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Add File button clicked');
+                          setShowFileUploadModal(true);
+                        }}
+                        className="flex items-center gap-1.5 sm:gap-2 bg-white hover:text-black px-2 py-1.5 sm:px-0 sm:py-0"
+                      >
                         <FiFileText className="flex-shrink-0" />
                         <span className="text-xs sm:text-sm">Add File</span>
                       </button>
-                      <button className="flex items-center gap-1.5 sm:gap-2 bg-white hover:text-black px-2 py-1.5 sm:px-0 sm:py-0">
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Add Link button clicked');
+                          // TODO: Add link modal functionality
+                        }}
+                        className="flex items-center gap-1.5 sm:gap-2 bg-white hover:text-black px-2 py-1.5 sm:px-0 sm:py-0"
+                      >
                         <FiLink className="flex-shrink-0" />
                         <span className="text-xs sm:text-sm">Add Link</span>
                       </button>
-                      <button className="flex items-center gap-1.5 sm:gap-2 bg-white hover:text-black px-2 py-1.5 sm:px-0 sm:py-0">
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Create Assignment button clicked');
+                          // TODO: Add assignment modal functionality
+                        }}
+                        className="flex items-center gap-1.5 sm:gap-2 bg-white hover:text-black px-2 py-1.5 sm:px-0 sm:py-0"
+                      >
                         <FiCheckCircle className="flex-shrink-0" />
                         <span className="text-xs sm:text-sm">
                           Create Assignment
@@ -290,27 +367,222 @@ const ProfStreamPage = () => {
 
           {/* ANNOUNCEMENTS */}
           <div className="mt-8">
-            <h2 className="text-xl font-semibold">Recent Announcements</h2>
-            <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700">
-              <div className="flex items-center gap-3 mb-2">
-                <img
-                  src="/src/assets/HomePage/frieren-avatar.jpg"
-                  alt="Professor Susan"
-                  className="w-10 h-10 rounded-full"
-                />
-                <div>
-                  <p className="font-medium">Professor Susan</p>
-                  <p className="text-xs text-gray-400">2 hours ago</p>
+            <h2 className="text-xl font-semibold mb-4">Recent Announcements</h2>
+            <div className="space-y-3 md:space-y-4">
+              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="flex gap-4">
+                  <img
+                    src="/src/assets/HomePage/jober.jpg"
+                    alt="Sir Jober"
+                    className="w-10 h-10 rounded-full flex-shrink-0"
+                  />
+                  <div>
+                    <p className="font-semibold">
+                      Sir Jober posted an announcement
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      Don't forget to submit your research proposals by Friday. Make sure to include your methodology and expected outcomes.
+                    </p>
+                  </div>
+                </div>
+                <button className="text-blue-400 hover:underline bg-transparent">
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* CONTENT GRID */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
+            {/* REMINDERS */}
+            <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4 md:p-5">
+              <h2 className="font-bold mb-4">Reminders</h2>
+              <div className="space-y-3">
+                <div className="bg-[#141820] p-3 rounded-lg">
+                  <p className="font-semibold text-sm">
+                    Week 7 Reflection Paper
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Operating System • Oct 15
+                  </p>
+                </div>
+                <div className="bg-[#141820] p-3 rounded-lg">
+                  <p className="font-semibold text-sm">
+                    Week 7 Individual Activity
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Operating System • Oct 15
+                  </p>
                 </div>
               </div>
-              <p className="text-sm text-gray-300 mt-2">
-                Don't forget to submit your research proposals by Friday. Make
-                sure to include your methodology and expected outcomes.
-              </p>
+
+              {/* CHAT */}
+              <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-black border border-gray-700 hover:bg-gray-900">
+                <FiMessageCircle />
+                Enter Chat
+              </button>
+            </div>
+
+            {/* ACTIVITY */}
+            <div className="lg:col-span-2 space-y-3 md:space-y-4">
+              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="flex gap-4">
+                  <FiFileText className="text-blue-400" size={24} />
+                  <div>
+                    <p className="font-semibold">
+                      Zeldrick shared a file with you
+                    </p>
+                    <p className="text-sm text-gray-400">OS • Week 7 Lecture</p>
+                  </div>
+                </div>
+                <button className="text-blue-400 hover:underline bg-transparent">
+                  See File
+                </button>
+              </div>
+
+              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="flex gap-4">
+                  <FiCheckCircle className="text-blue-400" size={24} />
+                  <div>
+                    <p className="font-semibold">
+                      Zeldrick assigned task with you
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      Thesis • Survey Revision
+                    </p>
+                  </div>
+                </div>
+                <button className="text-blue-400 hover:underline bg-transparent">
+                  See Task
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* FILE UPLOAD MODAL */}
+      {showFileUploadModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto relative">
+            {/* CLOSE BUTTON */}
+            <button
+              onClick={() => setShowFileUploadModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10 bg-white rounded-full p-1"
+            >
+              <FiX size={24} />
+            </button>
+
+            {/* CONTENT */}
+            <div className="p-8 pt-12">
+              {/* TITLE */}
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Create file or Upload files here.
+              </h2>
+
+              {/* UPLOAD SECTION */}
+              <div
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-lg p-8 text-center mb-4 cursor-pointer transition relative ${
+                  dragActive
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-300 bg-gray-50"
+                }`}
+              >
+                <input
+                  type="file"
+                  id="file-upload"
+                  onChange={handleFileChange}
+                  multiple
+                  className="hidden"
+                />
+
+                <FiUpload size={40} className="mx-auto mb-3 text-gray-400" />
+
+                <p className="text-gray-900 font-medium text-sm">
+                  Choose a file or drag & drop it here.
+                </p>
+                <p className="text-gray-500 text-xs mt-1">
+                  DOCS, PDF, PPT AND EXCEL, UP TO 50 MB
+                </p>
+              </div>
+
+              {/* BROWSE BUTTON */}
+              <button
+                onClick={() => document.getElementById("file-upload").click()}
+                className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition mb-4 bg-white"
+              >
+                Browse Files
+              </button>
+
+              {/* DIVIDER */}
+              <div className="flex items-center my-4">
+                <div className="flex-1 border-t border-gray-300"></div>
+                <span className="px-3 text-gray-500 text-sm">Or</span>
+                <div className="flex-1 border-t border-gray-300"></div>
+              </div>
+
+              {/* CREATE FILE BUTTON */}
+              <button
+                onClick={() => {
+                  navigate("/create-document");
+                  setShowFileUploadModal(false);
+                }}
+                className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center space-x-2 bg-white mb-6"
+              >
+                <FiFileText size={20} />
+                <span>Create File</span>
+              </button>
+
+              {/* UPLOADED FILES LIST */}
+              {uploadedFiles.length > 0 && (
+                <div className="pt-4 border-t border-gray-200">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                    Uploaded Files ({uploadedFiles.length})
+                  </h3>
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {uploadedFiles.map((file) => (
+                      <div
+                        key={file.id}
+                        className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                      >
+                        {/* FILE HEADER */}
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-start space-x-3 flex-1">
+                            <span className="text-2xl">📄</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 truncate">
+                                {file.name.toUpperCase()}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {(file.size / 1024).toFixed(0)}KB
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PLACEHOLDER STYLE */}
+      <style>
+        {`
+          .editor:empty:before {
+            content: "Announce something to your class...";
+            color: #9ca3af;
+            pointer-events: none;
+          }
+        `}
+      </style>
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
