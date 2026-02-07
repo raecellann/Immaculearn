@@ -22,7 +22,6 @@ import { useUser } from "../../contexts/user/useUser";
 const ProfSidebar = () => {
   const { user } = useUser();
   const [showLogout, setShowLogout] = useState(false);
-  const [hoveredItem, setHoveredItem] = useState(null);
 
   const location = useLocation();
 
@@ -32,14 +31,14 @@ const ProfSidebar = () => {
     {
       icon: <Bell size={20} />,
       label: "Notifications",
-      path: "/prof/spaces/notifications",
+      path: "/prof/notification",
     },
     {
       icon: <Calendar size={20} />,
       label: "List of Activities",
-      path: "/prof/spaces/list-activity",
+      path: "/prof/list-activity",
     },
-    { icon: <Folder size={20} />, label: "Files", path: "/prof-files" },
+    { icon: <Folder size={20} />, label: "Files", path: "/prof/files" },
   ];
 
   const privateItems = [
@@ -57,8 +56,8 @@ const ProfSidebar = () => {
   ];
 
   const accountItems = [
-    { icon: <User size={20} />, label: "Account", path: "/prof-acc-settings" },
-    { icon: <Settings size={20} />, label: "Settings", path: "/prof-settings" },
+    { icon: <User size={20} />, label: "Account", path: "/prof/account" },
+    { icon: <Settings size={20} />, label: "Settings", path: "/prof/settings" },
   ];
 
   return (
@@ -69,87 +68,68 @@ const ProfSidebar = () => {
           "linear-gradient(to bottom, #4d9bef, #3d8ee8, #2c81e1, #1a73da, #0066d2)",
       }}
     >
-      <style>{`
-        .sidebar-scroll::-webkit-scrollbar { display: none; }
-        .sidebar-scroll { scrollbar-width: none; -ms-overflow-style: none; }
-      `}</style>
+      {/* Logo Section */}
+      <div className="p-6">
+        <div className="flex items-center space-x-2">
+          <img src={logo} alt="ImmacuLearn Logo" className="w-8 h-8" />
+          <h1 className="text-lg font-bold">ImmacuLearn</h1>
+        </div>
+      </div>
 
-      <div className="flex-1 flex flex-col items-start p-5 overflow-y-auto sidebar-scroll">
-        <h1 className="font-bold text-lg flex items-center space-x-2 mb-6">
-          <img
-            src={logo}
-            alt="ImmacuLearn Logo"
-            className="w-5 h-5 inline-block"
-          />
-          <span>ImmacuLearn</span>
-        </h1>
-
-        {/* Main Menu */}
-        <nav className="w-full space-y-1 mb-5">
+      {/* Navigation Items */}
+      <div className="flex-1 pl-8 overflow-hidden">
+        <nav className="space-y-1">
           {menuItems.map((item) => (
             <SidebarItem
               key={item.label}
-              icon={item.icon}
-              label={item.label}
-              path={item.path}
+              {...item}
               active={location.pathname === item.path}
-              isHovered={hoveredItem === item.label}
-              onHover={() => setHoveredItem(item.label)}
             />
           ))}
         </nav>
 
         {/* Private Section */}
-        <div className="w-full border-t border-blue-300/40 pt-3 mb-5">
-          <p className="text-[11px] uppercase text-gray-100 tracking-wide mb-2 font-semibold">
-            Private
-          </p>
-
-          {privateItems.map((item) => (
-            <SidebarItem
-              key={item.label}
-              icon={item.icon}
-              label={item.label}
-              path={item.path}
-              active={location.pathname === item.path}
-              isHovered={hoveredItem === item.label}
-              onHover={() => setHoveredItem(item.label)}
-            />
-          ))}
+        <div className="mt-4">
+          <h2 className="text-sm font-semibold mb-3 text-blue-100">Private</h2>
+          <nav className="space-y-1">
+            {privateItems.map((item) => (
+              <SidebarItem
+                key={item.label}
+                {...item}
+                active={location.pathname === item.path}
+              />
+            ))}
+          </nav>
         </div>
 
         {/* Account Section */}
-        <div className="w-full border-t border-blue-300/40 pt-3 space-y-1">
+        <div className="mt-4 space-y-1">
           {accountItems.map((item) => (
             <SidebarItem
               key={item.label}
-              icon={item.icon}
-              label={item.label}
-              path={item.path}
+              {...item}
               active={location.pathname === item.path}
-              isHovered={hoveredItem === item.label}
-              onHover={() => setHoveredItem(item.label)}
             />
           ))}
-
+          
           <SidebarItem
             icon={<LogOut size={20} />}
             label="Log Out Account"
             onClick={() => setShowLogout(true)}
-            isHovered={hoveredItem === "Log Out Account"}
-            onHover={() => setHoveredItem("Log Out Account")}
           />
         </div>
       </div>
 
-      {/* Profile Account */}
-      <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0">
-        <img
-          src={user?.profile_pic || profAvatar}
-          alt="Profile"
-          className="w-9 h-9 rounded-full object-cover border border-white/20"
-        />
-        <span className="text-sm font-semibold">Jober Reyes</span>
+      {/* User Profile Section */}
+      <div className="px-6 py-2 pt-3 border-t border-blue-500">
+        <div className="flex items-center gap-3">
+          <img
+            src={user?.profile_pic || profAvatar}
+            alt="Profile"
+            className="w-8 h-8 rounded-full"
+          />
+          <span className="text-sm font-medium">{user?.name || "Jober Reyes"}</span>
+        </div>
       </div>
 
       {/* Logout Modal */}
@@ -158,40 +138,25 @@ const ProfSidebar = () => {
   );
 };
 
-const SidebarItem = ({
-  icon,
-  label,
-  path,
-  onClick,
-  active,
-  isHovered,
-  onHover,
-}) => {
+const SidebarItem = ({ icon, label, path, onClick, active }) => {
   const Component = path ? Link : "div";
 
   return (
     <Component
       to={path}
       onClick={onClick}
-      onMouseEnter={onHover}
-      className={`relative flex items-center space-x-3 px-5 py-2.5 text-xs font-medium
-                  transition-all duration-150 rounded-md cursor-pointer
-                  text-white hover:text-white
-                  ${isHovered ? "bg-black" : ""}
-                  ${active ? "bg-black/25" : ""}
-                 `}
+      className={`
+        flex items-center space-x-3 py-3 text-xs font-medium
+        rounded-l-full cursor-pointer transition-all duration-200
+        ${active 
+          ? "bg-[#161A20] text-white" 
+          : "text-blue-100 hover:bg-[#161A20] hover:text-white"
+        }
+      `}
+      style={{ paddingLeft: '1.25rem' }}
     >
-      {/* <div
-        className={`absolute left-3 top-0 bottom-0 w-[88%] rounded-full
-                    transition-all duration-200
-                    ${isHovered ? "bg-black" : ""}
-        `}
-      ></div> */}
-
-      <div className="relative flex items-center space-x-3 z-10">
-        {icon}
-        <span>{label}</span>
-      </div>
+      {icon}
+      <span>{label}</span>
     </Component>
   );
 };

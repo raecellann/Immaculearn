@@ -1,139 +1,420 @@
-import React, { useState } from "react";
-import Sidebar from "../component/profsidebar";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Button from "../component/Button";
+import { FiEdit, FiSend, FiMoreVertical, FiSearch, FiPaperclip } from "react-icons/fi";
+import { useSpace } from "../../contexts/space/useSpace";
+import { useSpaceChat } from "../../hooks/useSpaceChat";
+import { useUser } from "../../contexts/user/useUser";
+import { GroupCover } from "../component/groupCover";
+import ProfSidebar from "../component/profsidebar";
 
-const ProfChatsPage = () => {
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+const ProfChatPage = () => {
+  const { userSpaces, friendSpaces } = useSpace();
+  const { user } = useUser();
 
-  const chats = [
-    {id: 1,name: "Wilson Esmabe",message:"Good Evening po, Sir Jober. Nakapag-pasa na po ako ng OJT Paper.",time: "1m",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990149/wilson_gjdkdm.jpg", },
-    {id: 2,name: "Nathaniel Faburada.",message: "Okay na, nakita ko na output mo.",time: "2h",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",isYou: true,},
-    {id: 3,name: "CS THESIS 1 - 1SY2025-2026", message: "Good Evening mga AnaCS4... On-line consultation na lang muna tayo bukas.",time: "15m",avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990871/thesis_hdfdkr.png",isYou: true,},
-  ];
+  const [activeSpaceUuid, setActiveSpaceUuid] = useState(null);
+  const [input, setInput] = useState("");
+  const [showMobileChat, setShowMobileChat] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+
+  const uniqueSpaces = useMemo(() => {
+    const map = new Map();
+    allSpaces.forEach((s) => map.set(s.space_uuid, s));
+    return Array.from(map.values());
+  }, [allSpaces]);
+
+  const uniqueMembers = useMemo(() => {
+    const map = new Map();
+    allSpaces.flatMap((s) => s.members || []).forEach((m) => {
+      if (m.account_id !== user.id && !map.has(m.account_id)) {
+        map.set(m.account_id, m);
+      }
+    });
+    return Array.from(map.values());
+  }, [allSpaces, user.id]);
+
+  // 🚀 Our hook to manage messages and online users
+  const { messages, sendMessage, spaceOnlineUsers } =
+    useSpaceChat(activeSpaceUuid, user);
+
+  // Map messages to render-friendly format with date grouping
+  const chatMessages = useMemo(() => {
+    return messages.map((m) => ({
+      id: m.id || Math.random().toString(36).substr(2, 9),
+      from: m.senderId === user.id ? "me" : "them",
+      senderId: m.senderId,
+      text: m.content,
+      avatar: m.senderAvatar,
+      timestamp: new Date(m.timestamp),
+      time: new Date(m.timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      date: new Date(m.timestamp).toLocaleDateString(),
+    }));
+  }, [messages, user.id]);
+
+  // Group messages by date
+  const messagesByDate = useMemo(() => {
+    const groups = {};
+    chatMessages.forEach((message) => {
+      const today = new Date().toLocaleDateString();
+      const yesterday = new Date(Date.now() - 86400000).toLocaleDateString();
+      
+      let dateLabel = message.date;
+      if (message.date === today) {
+        dateLabel = "Today";
+      } else if (message.date === yesterday) {
+        dateLabel = "Yesterday";
+      } else {
+        dateLabel = new Date(message.timestamp).toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      }
+      
+      if (!groups[dateLabel]) {
+        groups[dateLabel] = [];
+      }
+      groups[dateLabel].push(message);
+    });
+    return groups;
+  }, [chatMessages]);
+
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Auto-scroll to latest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showDropdown && !event.target.closest('.dropdown-container')) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDropdown]);
+
+  const getPrivateSpaceUuid = (a, b) => [a, b].sort().join("-");
+
+  const getOnlineCountForSpace = (space) => {
+    return spaceOnlineUsers[space.space_uuid]?.filter(id => id !== user.id).length || 0;
+  };
+
+  const activeSpace = useMemo(() => {
+    if (!activeSpaceUuid) return null;
+
+    // Check if it's a private chat (between two users)
+    const member = uniqueMembers.find(
+      (m) => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid
+    );
+    if (member) {
+      return { space_name: member.full_name }; // 1:1 chat
+    }
+
+    // Otherwise, group chat
+    return uniqueSpaces.find((s) => s.space_uuid === activeSpaceUuid) || null;
+  }, [activeSpaceUuid, uniqueSpaces, uniqueMembers, user.id]);
+
+  const getParticipantStatus = (space) => {
+    if (!space || !user) return "Offline";
+
+    // For private chats, check if the other participant is online
+    const member = uniqueMembers.find(
+      (m) => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid
+    );
+    if (member) {
+      return spaceOnlineUsers[activeSpaceUuid]?.includes(member.account_id) ? "Online" : "Offline";
+    }
+
+    // For group chats, check if any member is online
+    if (space && space.members) {
+      const onlineMembers = spaceOnlineUsers[space.space_uuid] || [];
+      const otherOnlineMembers = space.members.filter(member =>
+        member.account_id !== user.id && onlineMembers.includes(member.account_id)
+      );
+      return otherOnlineMembers.length > 0 ? "Online" : "Offline";
+    }
+    return "Offline";
+  };
+
+  const participantStatus = getParticipantStatus(activeSpace);
+  const statusColorClass = participantStatus === "Online" ? "text-green-500" : "text-gray-500";
+  const statusDotClass = participantStatus === "Online" ? "bg-green-500" : "bg-gray-500";
+
+  // Send message helper
+  const handleSend = () => {
+    if (!input.trim()) return;
+    sendMessage(input);
+    setInput("");
+    inputRef.current?.focus();
+  };
+  
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
-      {/* Desktop Sidebar */}
+    <div className="flex min-h-screen bg-[#161A20] text-white">
       <div className="hidden lg:block">
-        <Sidebar />
+        <ProfSidebar />
       </div>
 
-      {/* Mobile Overlay */}
-      {mobileSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* Mobile Sidebar */}
-      <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
-        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
-        <Sidebar />
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile / Tablet Header */}
-        <div
-          className="
-            lg:hidden
-            sticky top-0 z-30
-            bg-[#1E222A]
-            px-4
-            pt-[env(safe-area-inset-top)]
-            border-b border-[#3B4457]
-          "
-        >
-          <div className="flex items-center h-14">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="text-2xl leading-none bg-transparent p-0 border-none focus:outline-none"
-              style={{ WebkitTapHighlightColor: "transparent" }}
-            >
-              ☰
-            </button>
-
-            <h1 className="ml-4 text-lg font-bold truncate">Chats</h1>
-
-            <div className="ml-auto">
-              <Button
-                style={{
-                  padding: "0.25rem 0.7rem",
-                  fontSize: "0.75rem",
-                  backgroundColor: "#3B82F6",
-                  borderRadius: "0.375rem",
-                }}
-              >
-                New
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Desktop Header */}
-        <div className="hidden lg:flex relative items-center px-8 py-6">
-          <h1 className="absolute left-1/2 -translate-x-1/2 text-3xl font-bold">
-            Chats
-          </h1>
-          <div className="ml-auto">
-            <Button
-              style={{
-                padding: "0.45rem 1.1rem",
-                fontSize: "0.9rem",
-                backgroundColor: "#3B82F6",
-                borderRadius: "0.375rem",
-              }}
-            >
-              New Message
+      <div className="flex-1 flex px-6 py-6 gap-6 h-screen overflow-hidden">
+        {/* CHAT LIST */}
+        <div className={`${showMobileChat ? "hidden lg:block" : "block"} w-full lg:w-[420px] flex flex-col`}>
+          <div className="flex justify-between mb-4">
+            <h1 className="font-bold text-lg">Chats</h1>
+            <Button>
+              <FiEdit />
             </Button>
           </div>
+
+          {/* SEARCH BAR */}
+          <div className="mb-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search People"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-5 pr-4 py-2 bg-gray-800 text-white rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <FiSearch className="absolute right-3 top-3 text-gray-400" />
+            </div>
+          </div>
+
+          {/* PEOPLE */}
+          <div className="bg-[#1E2330] rounded-xl p-4 mb-4 h-64 overflow-y-auto">
+            <h2 className="font-semibold text-sm mb-3 text-gray-300">Students</h2>
+            {uniqueMembers
+              .filter(m => m.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
+              .map((m) => {
+                const uuid = getPrivateSpaceUuid(user.id, m.account_id);
+                return (
+                  <div
+                    key={m.account_id}
+                    onClick={() => {
+                      setActiveSpaceUuid(uuid);
+                      setShowMobileChat(true);
+                    }}
+                    className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
+                  >
+                    <div className="relative">
+                      <img
+                        src={m.profile_pic || "/default-avatar.png"}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm text-white">{m.full_name}</p>
+                      <p className="text-xs text-gray-400">Online</p>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* GROUPS */}
+          <div className="bg-[#1E2330] rounded-xl p-4 h-64 overflow-y-auto">
+            <h2 className="font-semibold text-sm mb-3 text-gray-300">Courses</h2>
+            {uniqueSpaces.map((space) => (
+              <div
+                key={space.space_uuid}
+                onClick={() => {
+                  setActiveSpaceUuid(space.space_uuid);
+                  setShowMobileChat(true);
+                }}
+                className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
+              >
+                <div className="relative">
+                  <GroupCover
+                    image={space.image}
+                    name={space.space_name}
+                    members={space.members.filter((m) => m.account_id !== user.id)}
+                    className="w-10 h-10"
+                  />
+                  {getOnlineCountForSpace(space) > 0 && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm text-white">{space.space_name}</p>
+                  <p className="text-xs text-gray-400">
+                    {getOnlineCountForSpace(space)} online • {space.members?.length || 0} members
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Chat List */}
-        <div className="flex-1 overflow-y-auto pb-4">
-          {chats.map((chat) => (
-            <div
-              key={chat.id}
-              className="
-                flex items-center gap-3 sm:gap-4
-                px-3 sm:px-4
-                py-3 sm:p-4
-                border-b border-gray-700
-                hover:bg-[#1F242D]
-                transition
-                cursor-pointer
-              "
-            >
-              <img
-                src={chat.avatar}
-                alt={chat.name}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
-              />
-
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center">
-                  <h2 className="font-semibold text-sm sm:text-base truncate">
-                    {chat.name}
-                  </h2>
-                  <span className="text-xs text-gray-400 ml-2">
-                    {chat.time}
-                  </span>
-                </div>
-
-                <p className="text-xs sm:text-sm text-gray-400 truncate">
-                  {chat.isYou ? "You: " : ""}
-                  {chat.message}
-                </p>
-              </div>
+        {/* CHAT PANEL */}
+        <div className="flex-1 bg-[#1E2330] rounded-xl flex flex-col">
+          {!activeSpaceUuid ? (
+            <div className="flex-1 flex items-center justify-center text-gray-400">
+              Select a chat to start messaging
             </div>
-          ))}
+          ) : (
+            <>
+              <div className="p-4 border-b border-gray-700 flex justify-between items-center relative">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowMobileChat(false)}
+                    className="lg:hidden text-gray-400 hover:text-white"
+                  >
+                    ← Back
+                  </button>
+                  
+                  {/* Profile Picture and Status */}
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <img
+                        src={
+                          // For private chat, show the other person's profile
+                          uniqueMembers.find(m => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid)?.profile_pic ||
+                          // For group chat, show group cover
+                          uniqueSpaces.find(s => s.space_uuid === activeSpaceUuid)?.image ||
+                          "/default-avatar.png"
+                        }
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <div className={`absolute bottom-0 right-0 w-3 h-3 ${statusDotClass} rounded-full border-2 border-[#1E2330]`}></div>
+                    </div>
+                    <div>
+                      <h2 className="font-semibold text-white">{activeSpace?.space_name || "Chat"}</h2>
+                      <p className={`text-xs ${statusColorClass}`}>{participantStatus}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative dropdown-container">
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="text-gray-400 cursor-pointer hover:text-white"
+                  >
+                    <FiMoreVertical />
+                  </button>
+                  
+                  {/* Dropdown Menu */}
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-[#2A2F3E] rounded-lg shadow-lg border border-gray-600 z-50">
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          // Handle change color theme
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg"
+                      >
+                        Change Color Theme
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          // Handle edit nickname
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors"
+                      >
+                        Edit Nickname
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          // Handle view profile
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors"
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          // Handle delete conversation
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-900 hover:text-red-300 transition-colors rounded-b-lg"
+                      >
+                        Delete Conversation
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+                {Object.entries(messagesByDate).map(([dateLabel, dateMessages]) => (
+                  <div key={dateLabel}>
+                    {/* Date Separator */}
+                    <div className="flex items-center justify-center py-2">
+                      <div className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
+                        {dateLabel}
+                      </div>
+                    </div>
+                    
+                    {/* Messages for this date */}
+                    {dateMessages.map((m, i) => {
+                      const showUnreadSeparator = dateLabel === "Today" && i === 3; // Show after 4th message of today
+                      return (
+                        <React.Fragment key={m.id}>
+                          {showUnreadSeparator && (
+                            <div className="flex items-center justify-center py-2">
+                              <div className="bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
+                                Unread messages
+                              </div>
+                            </div>
+                          )}
+                          <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
+                            {m.from === "them" && (
+                              <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2" />
+                            )}
+                            <div className={`px-4 py-3 rounded-2xl max-w-xs ${m.from === "me" ? "bg-blue-500 text-white" : "bg-gray-700 text-white"}`}>
+                              <p className="text-sm">{m.text}</p>
+                              <div className="text-[10px] text-right mt-1 opacity-70">{m.time}</div>
+                            </div>
+                          </div>
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input */}
+              <div className="p-4 border-t border-gray-700">
+                <div className="flex gap-2 bg-gray-800 rounded-full px-4 py-3 items-center">
+                  <FiPaperclip className="text-gray-400 cursor-pointer hover:text-white" />
+                  <input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSend();
+                    }}
+                    className="flex-1 bg-transparent outline-none text-white placeholder-gray-400"
+                    placeholder="Type your message here..."
+                  />
+                  <button 
+                    onClick={handleSend} 
+                    className="text-blue-500 hover:text-blue-400 transition-colors"
+                    disabled={!input.trim()}
+                  >
+                    <FiSend />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default ProfChatsPage;
+export default ProfChatPage;

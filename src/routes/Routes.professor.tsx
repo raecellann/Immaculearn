@@ -5,13 +5,21 @@ import ProfHomePage from "../pages/prof-HomePage/profhomepage.jsx";
 import ProfChatsPage from "../pages/prof-Chats/profchats.jsx";
 import ProfProfilePage from "../pages/prof-AccSettings/profaccsettingspage.jsx";
 import ProfFilesBySubject from "../pages/prof-Files/ProfFilesBySubject";
-import ThesisSpace from "../pages/Prof-Space/Thesis-space.jsx";
+// import ThesisSpace from "../pages/Prof-Space/Thesis-space.jsx";
+import ProfStreamPage from "../pages/Prof-Space/ProfStreamPage.jsx";
 import ProfTaskPage from "../pages/Prof-Space/ProfTaskPage";
 import ProfFilesShared from "../pages/Prof-Space/ProfFilesShared";
 import ProfPeoplePage from "../pages/Prof-Space/ProfPeoplePage";
 import { SpaceProvider } from "../contexts/space/spaceContextProvider";
 import { useUser } from "../contexts/user/useUser";
 import ProfSpacePage from "../pages/Prof-MainSpace/profmainspace.jsx";
+import ProfCreateClassroomSpace from "../pages/Prof-MainSpace/components/prof-create-classroom-space.jsx";
+import ProfNotificationPage from "../pages/prof-Notifications/profnotification.jsx";
+import ProfListActivityPage from "../pages/prof-ListActivities/proflistactivitypage.jsx";
+import ProfFilePage from "../pages/prof-Files/proffiles.jsx";
+import ProfCalendarPage from "../pages/Prof-Calendar/ProfCalendar.jsx";
+import ProfGradeRecordPage from "../pages/prof-GradeViewing/profgradeviewing.jsx";
+import ProfSettingsPage from "../pages/Prof-Settings/profsettings.jsx";
 
 export const ProfRoutes = () => {
   const { user } = useUser();
@@ -37,6 +45,14 @@ export const ProfRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="spaces/classroom/create"
+        element={
+          <ProtectedRoute>
+            <ProfCreateClassroomSpace />
+          </ProtectedRoute>
+        }
+      />
       
       <Route path="acc-settings" element={<ProfProfilePage />} />
       <Route path="files-by-subject" element={<ProfFilesBySubject />} />
@@ -48,12 +64,68 @@ export const ProfRoutes = () => {
             <ProfChatsPage />
         }
       />
+
+      <Route
+        path="notification"
+        element={
+            <ProfNotificationPage />
+        }
+      />
+      
+      <Route
+        path="list-activity"
+        element={
+            <ProfListActivityPage />
+        }
+      />
+      
+      <Route
+        path="notification"
+        element={
+            <ProfNotificationPage />
+        }
+      />
+      
+      <Route
+        path="files"
+        element={
+            <ProfFilePage />
+        }
+      />
+      
+      <Route
+        path="calendar"
+        element={
+            <ProfCalendarPage />
+        }
+      />
+      
+      <Route
+        path="grade-viewing"
+        element={
+            <ProfGradeRecordPage />
+        }
+      />
+
+      <Route
+        path="account"
+        element={
+            <ProfProfilePage />
+        }
+      />
+      
+      <Route
+        path="settings"
+        element={
+            <ProfSettingsPage />
+        }
+      />
       
       <Route
         path="spaces-thesis"
         element={
           <SpaceProvider>
-              <ThesisSpace />
+              <ProfStreamPage />
           </SpaceProvider>
         }
       />

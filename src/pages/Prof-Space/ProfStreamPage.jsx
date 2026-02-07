@@ -13,7 +13,7 @@ import {
 } from "react-icons/fi";
 import Logout from "../component/logout";
 
-const ThesisSpace = () => {
+const ProfStreamPage = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -143,24 +143,19 @@ const ThesisSpace = () => {
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  // onClick={() => navigate("/prof/spaces/tasks")}
-                  onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/tasks`)}
+                  onClick={() => navigate("/prof/spaces/tasks")}
                 >
                   Tasks
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  // onClick={() => navigate("/prof/spaces/files")}
-                  onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/files`)}
-
+                  onClick={() => navigate("/prof/spaces/files")}
                 >
-                  Files
+                  Files Shared
                 </button>
                 <button
                   className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  // onClick={() => navigate("/prof/spaces/people")}
-                  onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/people`)}
-
+                  onClick={() => navigate("/prof/spaces/people")}
                 >
                   People
                 </button>
@@ -323,4 +318,4 @@ const ThesisSpace = () => {
   );
 };
 
-export default ThesisSpace;
+export default ProfStreamPage;

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
 import Button from "../component/Button";
-import { FiEdit, FiSend, FiMoreVertical } from "react-icons/fi";
+import { FiEdit, FiSend, FiMoreVertical, FiSearch, FiPaperclip } from "react-icons/fi";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
@@ -14,6 +14,8 @@ const ChatList = () => {
   const [activeSpaceUuid, setActiveSpaceUuid] = useState(null);
   const [input, setInput] = useState("");
   const [showMobileChat, setShowMobileChat] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
 
@@ -37,19 +39,50 @@ const ChatList = () => {
   const { messages, sendMessage, spaceOnlineUsers } =
     useSpaceChat(activeSpaceUuid, user);
 
-  // Map messages to render-friendly format
+  // Map messages to render-friendly format with date grouping
   const chatMessages = useMemo(() => {
     return messages.map((m) => ({
+      id: m.id || Math.random().toString(36).substr(2, 9),
       from: m.senderId === user.id ? "me" : "them",
       senderId: m.senderId,
       text: m.content,
       avatar: m.senderAvatar,
+      timestamp: new Date(m.timestamp),
       time: new Date(m.timestamp).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
+      date: new Date(m.timestamp).toLocaleDateString(),
     }));
   }, [messages, user.id]);
+
+  // Group messages by date
+  const messagesByDate = useMemo(() => {
+    const groups = {};
+    chatMessages.forEach((message) => {
+      const today = new Date().toLocaleDateString();
+      const yesterday = new Date(Date.now() - 86400000).toLocaleDateString();
+      
+      let dateLabel = message.date;
+      if (message.date === today) {
+        dateLabel = "Today";
+      } else if (message.date === yesterday) {
+        dateLabel = "Yesterday";
+      } else {
+        dateLabel = new Date(message.timestamp).toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      }
+      
+      if (!groups[dateLabel]) {
+        groups[dateLabel] = [];
+      }
+      groups[dateLabel].push(message);
+    });
+    return groups;
+  }, [chatMessages]);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -58,6 +91,18 @@ const ChatList = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showDropdown && !event.target.closest('.dropdown-container')) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDropdown]);
 
   const getPrivateSpaceUuid = (a, b) => [a, b].sort().join("-");
 
@@ -79,6 +124,32 @@ const ChatList = () => {
     // Otherwise, group chat
     return uniqueSpaces.find((s) => s.space_uuid === activeSpaceUuid) || null;
   }, [activeSpaceUuid, uniqueSpaces, uniqueMembers, user.id]);
+
+  const getParticipantStatus = (space) => {
+    if (!space || !user) return "Offline";
+
+    // For private chats, check if the other participant is online
+    const member = uniqueMembers.find(
+      (m) => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid
+    );
+    if (member) {
+      return spaceOnlineUsers[activeSpaceUuid]?.includes(member.account_id) ? "Online" : "Offline";
+    }
+
+    // For group chats, check if any member is online
+    if (space && space.members) {
+      const onlineMembers = spaceOnlineUsers[space.space_uuid] || [];
+      const otherOnlineMembers = space.members.filter(member =>
+        member.account_id !== user.id && onlineMembers.includes(member.account_id)
+      );
+      return otherOnlineMembers.length > 0 ? "Online" : "Offline";
+    }
+    return "Offline";
+  };
+
+  const participantStatus = getParticipantStatus(activeSpace);
+  const statusColorClass = participantStatus === "Online" ? "text-green-500" : "text-gray-500";
+  const statusDotClass = participantStatus === "Online" ? "bg-green-500" : "bg-gray-500";
 
   // Send message helper
   const handleSend = () => {
@@ -105,33 +176,55 @@ const ChatList = () => {
             </Button>
           </div>
 
+          {/* SEARCH BAR */}
+          <div className="mb-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search People"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-5 pr-4 py-2 bg-gray-800 text-white rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <FiSearch className="absolute right-3 top-3 text-gray-400" />
+            </div>
+          </div>
+
           {/* PEOPLE */}
-          <div className="bg-white rounded-xl p-4 text-black mb-4 h-48 overflow-y-auto">
-            <h2 className="font-semibold text-sm mb-3">People</h2>
-            {uniqueMembers.map((m) => {
-              const uuid = getPrivateSpaceUuid(user.id, m.account_id);
-              return (
-                <div
-                  key={m.account_id}
-                  onClick={() => {
-                    setActiveSpaceUuid(uuid);
-                    setShowMobileChat(true);
-                  }}
-                  className="flex items-center gap-3 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
-                >
-                  <img
-                    src={m.profile_pic || "/default-avatar.png"}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <p className="font-semibold text-sm">{m.full_name}</p>
-                </div>
-              );
-            })}
+          <div className="bg-[#1E2330] rounded-xl p-4 mb-4 h-64 overflow-y-auto">
+            <h2 className="font-semibold text-sm mb-3 text-gray-300">People</h2>
+            {uniqueMembers
+              .filter(m => m.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
+              .map((m) => {
+                const uuid = getPrivateSpaceUuid(user.id, m.account_id);
+                return (
+                  <div
+                    key={m.account_id}
+                    onClick={() => {
+                      setActiveSpaceUuid(uuid);
+                      setShowMobileChat(true);
+                    }}
+                    className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
+                  >
+                    <div className="relative">
+                      <img
+                        src={m.profile_pic || "/default-avatar.png"}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm text-white">{m.full_name}</p>
+                      <p className="text-xs text-gray-400">Online</p>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
 
           {/* GROUPS */}
-          <div className="bg-white rounded-xl p-4 text-black h-48 overflow-y-auto">
-            <h2 className="font-semibold text-sm mb-3">Groups</h2>
+          <div className="bg-[#1E2330] rounded-xl p-4 h-64 overflow-y-auto">
+            <h2 className="font-semibold text-sm mb-3 text-gray-300">Groups</h2>
             {uniqueSpaces.map((space) => (
               <div
                 key={space.space_uuid}
@@ -139,18 +232,23 @@ const ChatList = () => {
                   setActiveSpaceUuid(space.space_uuid);
                   setShowMobileChat(true);
                 }}
-                className="flex items-center gap-3 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
               >
-                <GroupCover
-                  image={space.image}
-                  name={space.space_name}
-                  members={space.members.filter((m) => m.account_id !== user.id)}
-                  className="w-10 h-10"
-                />
-                <div>
-                  <p className="font-semibold text-sm">{space.space_name}</p>
-                  <p className="text-xs text-gray-500">
-                    {getOnlineCountForSpace(space)} online
+                <div className="relative">
+                  <GroupCover
+                    image={space.image}
+                    name={space.space_name}
+                    members={space.members.filter((m) => m.account_id !== user.id)}
+                    className="w-10 h-10"
+                  />
+                  {getOnlineCountForSpace(space) > 0 && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm text-white">{space.space_name}</p>
+                  <p className="text-xs text-gray-400">
+                    {getOnlineCountForSpace(space)} online • {space.members?.length || 0} members
                   </p>
                 </div>
               </div>
@@ -159,37 +257,139 @@ const ChatList = () => {
         </div>
 
         {/* CHAT PANEL */}
-        <div className="flex-1 bg-white rounded-xl flex flex-col">
+        <div className="flex-1 bg-[#1E2330] rounded-xl flex flex-col">
           {!activeSpaceUuid ? (
             <div className="flex-1 flex items-center justify-center text-gray-400">
-              Select a chat
+              Select a chat to start messaging
             </div>
           ) : (
             <>
-              <div className="p-4 border-b flex justify-between">
-                <h2 className="font-semibold text-black">{activeSpace?.space_name || "Chat"}</h2>
-                <FiMoreVertical />
+              <div className="p-4 border-b border-gray-700 flex justify-between items-center relative">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowMobileChat(false)}
+                    className="lg:hidden text-gray-400 hover:text-white"
+                  >
+                    ← Back
+                  </button>
+                  
+                  {/* Profile Picture and Status */}
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <img
+                        src={
+                          // For private chat, show the other person's profile
+                          uniqueMembers.find(m => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid)?.profile_pic ||
+                          // For group chat, show group cover
+                          uniqueSpaces.find(s => s.space_uuid === activeSpaceUuid)?.image ||
+                          "/default-avatar.png"
+                        }
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <div className={`absolute bottom-0 right-0 w-3 h-3 ${statusDotClass} rounded-full border-2 border-[#1E2330]`}></div>
+                    </div>
+                    <div>
+                      <h2 className="font-semibold text-white">{activeSpace?.space_name || "Chat"}</h2>
+                      <p className={`text-xs ${statusColorClass}`}>{participantStatus}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative dropdown-container">
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="text-gray-400 cursor-pointer hover:text-white"
+                  >
+                    <FiMoreVertical />
+                  </button>
+                  
+                  {/* Dropdown Menu */}
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-[#2A2F3E] rounded-lg shadow-lg border border-gray-600 z-50">
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          // Handle change color theme
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg"
+                      >
+                        Change Color Theme
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          // Handle edit nickname
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors"
+                      >
+                        Edit Nickname
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          // Handle view profile
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors"
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          // Handle delete conversation
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-900 hover:text-red-300 transition-colors rounded-b-lg"
+                      >
+                        Delete Conversation
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Messages */}
-              <div className="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50">
-                {chatMessages.map((m, i) => (
-                  <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-                    {m.from === "them" && (
-                      <img src={m.avatar || "/default-avatar.png"} className="w-6 h-6 rounded-full mr-2" />
-                    )}
-                    <div className={`px-4 py-3 rounded-2xl max-w-xs ${m.from === "me" ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}>
-                      <p className="text-sm">{m.text}</p>
-                      <div className="text-[10px] text-right">{m.time}</div>
+              <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+                {Object.entries(messagesByDate).map(([dateLabel, dateMessages]) => (
+                  <div key={dateLabel}>
+                    {/* Date Separator */}
+                    <div className="flex items-center justify-center py-2">
+                      <div className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
+                        {dateLabel}
+                      </div>
                     </div>
+                    
+                    {/* Messages for this date */}
+                    {dateMessages.map((m, i) => {
+                      const showUnreadSeparator = dateLabel === "Today" && i === 3; // Show after 4th message of today
+                      return (
+                        <React.Fragment key={m.id}>
+                          {showUnreadSeparator && (
+                            <div className="flex items-center justify-center py-2">
+                              <div className="bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
+                                Unread messages
+                              </div>
+                            </div>
+                          )}
+                          <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
+                            {m.from === "them" && (
+                              <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2" />
+                            )}
+                            <div className={`px-4 py-3 rounded-2xl max-w-xs ${m.from === "me" ? "bg-blue-500 text-white" : "bg-gray-700 text-white"}`}>
+                              <p className="text-sm">{m.text}</p>
+                              <div className="text-[10px] text-right mt-1 opacity-70">{m.time}</div>
+                            </div>
+                          </div>
+                        </React.Fragment>
+                      );
+                    })}
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
               </div>
 
               {/* Input */}
-              <div className="p-4 border-t">
-                <div className="flex gap-2 bg-gray-100 rounded-full px-4 py-2">
+              <div className="p-4 border-t border-gray-700">
+                <div className="flex gap-2 bg-gray-800 rounded-full px-4 py-3 items-center">
+                  <FiPaperclip className="text-gray-400 cursor-pointer hover:text-white" />
                   <input
                     ref={inputRef}
                     value={input}
@@ -197,10 +397,14 @@ const ChatList = () => {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
-                    className="flex-1 bg-transparent outline-none text-black"
-                    placeholder="Type message..."
+                    className="flex-1 bg-transparent outline-none text-white placeholder-gray-400"
+                    placeholder="Type your message here..."
                   />
-                  <button onClick={handleSend} className="text-blue-500">
+                  <button 
+                    onClick={handleSend} 
+                    className="text-blue-500 hover:text-blue-400 transition-colors"
+                    disabled={!input.trim()}
+                  >
                     <FiSend />
                   </button>
                 </div>

@@ -1,10 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 import Button from "../component/Button";
+import Logout from "../component/logout";
 
 const ProfListActivityPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+
+  // sticky header scroll state
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setShowHeader(false); // scrolling down
+      } else {
+        setShowHeader(true); // scrolling up
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   const activities = [
     { id: 1, status: "On Going", name: "Week 8 Personal Reflection", dueDate: "October 30", space: "Operating System" },
@@ -18,9 +41,7 @@ const ProfListActivityPage = () => {
 
   const getStatusColor = (status) => {
     const base =
-      "inline-flex items-center justify-center whitespace-nowrap rounded-full " +
-      "text-[10px] sm:text-[11px] lg:text-base px-2 " +
-      "transition-all duration-300";
+      "inline-flex items-center justify-center whitespace-nowrap rounded-full text-[10px] sm:text-[11px] lg:text-base px-2 transition-all duration-300";
 
     if (status === "On Going") return `${base} text-green-400 bg-green-900/30 animate-pulse`;
     if (status === "To be Deployed") return `${base} text-blue-400 bg-blue-900/30`;
@@ -30,12 +51,12 @@ const ProfListActivityPage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-      {/* Desktop Sidebar (lg+) */}
+      {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* Mobile / Tablet Overlay */}
+      {/* Mobile Overlay */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -43,41 +64,45 @@ const ProfListActivityPage = () => {
         />
       )}
 
-      {/* Mobile / Tablet Sidebar */}
+      {/* Mobile Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile / Tablet Header */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
-          >
-            ☰
-          </button>
-          <h1 className="text-xl font-bold">List of Activities</h1>
-          <button
-            onClick={() => setShowModal(true)}
-            className="ml-auto bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors"
-          >
-            Create
-          </button>
+        {/* 🔥 Sticky Mobile Header */}
+        <div
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+        >
+          <div className="p-4 flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-bold">List of Activities</h1>
+            <button
+              onClick={() => setShowModal(true)}
+              className="ml-auto bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-md text-sm"
+            >
+              Create
+            </button>
+          </div>
         </div>
 
-        <div className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto">
-          {/* Mobile / Tablet Cards */}
+        {/* 🔽 Added spacing here (pt-20) */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 lg:pt-10 overflow-y-auto">
+          {/* Mobile Cards */}
           <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
             {activities.map((activity) => (
-              <div
-                key={activity.id}
-                className="bg-[#1E222A] border border-gray-700 rounded-lg p-4"
-              >
+              <div key={activity.id} className="bg-[#1E222A] border border-gray-700 rounded-lg p-4">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-medium text-blue-400">{activity.name}</h3>
                   <span className={getStatusColor(activity.status)}>{activity.status}</span>
@@ -138,7 +163,7 @@ const ProfListActivityPage = () => {
                       <td>{activity.dueDate}</td>
                       <td>{activity.space}</td>
                       <td>
-                        <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors whitespace-nowrap">
+                        <button className="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-md text-sm">
                           View Activity
                         </button>
                       </td>
@@ -179,6 +204,9 @@ const ProfListActivityPage = () => {
           </div>
         )}
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

@@ -1,10 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
+import { useSpace } from "../../contexts/space/useSpace";
+import { useUser } from "../../contexts/user/useUser";
+import { useFileManager } from "../../hooks/useFileManager";
 
 const FilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
+
+  const { isAuthenticated } = useUser();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+
+
+  const { userSpaces, friendSpaces } = useSpace();
+  // const { space_uuid, space_name } = useParams();
+
+  
+  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  // Remove duplicates by space_id
+  const uniqueSpaces = allSpaces.filter(
+    (space, index, self) =>
+      index === self.findIndex(s => s.space_id === space.space_id)
+  );
+  // const currentSpace = allSpaces.find((space) => space.space_uuid === space_uuid);
+
+  console.log(uniqueSpaces);
+
+
+  // const { list } = useFileManager(currentSpace?.space_id);
+  // const files = list.data || [];
 
   const spaces = [
     { name: "ZJ’s Space" },
@@ -58,18 +88,14 @@ const FilePage = () => {
           </h1>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-            {spaces.map((space, index) => (
+            {uniqueSpaces.map((space, index) => (
               <div
                 key={index}
                 className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                onClick={() => {
-                  if (space.name === "ZJ’s Space") navigate("/view-all-files");
-                  if (space.name === "Raecell’s Space")
-                    navigate("/create-file-admin");
-                }}
+                onClick={() => navigate(`/files/${space.space_name}/${space.space_uuid}`)}
               >
                 <span className="text-xl">📁</span>
-                <p className="text-lg">{space.name}</p>
+                <p className="text-lg">{space.space_name}</p>
               </div>
             ))}
           </div>

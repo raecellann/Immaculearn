@@ -10,13 +10,10 @@ import NotificationPage from "../pages/Notifications/notification.jsx";
 import FilePage from "../pages/Files/files.jsx";
 import ChatList from "../pages/User_chats/user_chats";
 import ViewFilePage from "../pages/ViewFiles/ViewFiles.jsx";
-import { useUser } from "../contexts/user/useUser.js";
-import { useSpace } from "../contexts/space/useSpace.js";
-
+import Calendar from "../pages/Calendar/Calendar.jsx";
+import Setting from "../pages/Settings/settings.jsx";
 
 const ChatRouteWrapper = () => {
-  const { user } = useUser();
-  const { currentSpace } = useSpace();
 
   return (
       <ChatList />
@@ -36,6 +33,11 @@ export const StudentRoutes = [
     element: <ProfilePage />,
   },
   {
+    key: "/calendar",
+    path: "/calendar",
+    element: <Calendar />,
+  },
+  {
     key: "/grade-viewing",
     path: "/grade-viewing",
     element: <GradeViewing />,
@@ -50,20 +52,16 @@ export const StudentRoutes = [
     path: "/notifications",
     element: <NotificationPage />,
   },
-  {
-    key: "/files",
-    path: "/files",
-    element: <FilePage />,
-  },
+  
   {
     key: "/chatlist",
     path: "/chatlist",
     element: <ChatRouteWrapper />,
   },
   {
-    key: "/view-files",
-    path: "/view-files",
-    element: <ViewFilePage />,
+    key: "/settings",
+    path: "/settings",
+    element: <Setting  />,
   },
   
 ];
