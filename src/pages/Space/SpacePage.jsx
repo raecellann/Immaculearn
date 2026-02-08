@@ -167,7 +167,7 @@ const SpacePage = () => {
                   Join space or create your own.
                 </p>
 
-                <Button onClick={() => navigate("/create-space-admin")}>
+                <Button onClick={() => navigate("/space/create")}>
                   Create Space
                 </Button>
               </div>

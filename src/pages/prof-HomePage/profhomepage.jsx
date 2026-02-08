@@ -303,7 +303,7 @@ const ProfHomePage = () => {
             {/* Spaces Section */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-3">
-                <h2 className="text-lg sm:text-xl font-semibold">Spaces</h2>
+                <h2 className="text-lg sm:text-xl font-semibold">Course Spaces</h2>
                 <div className="flex gap-2 items-center">
                   <button
                     onClick={() => setSlideIndexSpaces(Math.max(0, slideIndexSpaces - 1))}

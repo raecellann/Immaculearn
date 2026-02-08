@@ -16,8 +16,8 @@ export const SpaceRoutes = [
     element: <SpacePage />,
   },
   {
-    key: "/space-create",
-    path: "/space-create",
+    key: "/space/create",
+    path: "/space/create",
     element: <CreateSpaceAdmin />,
   },
   {

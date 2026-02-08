@@ -27,7 +27,7 @@ const Sidebar = () => {
     { icon: <Home size={20} />, label: "Home", path: "/home" },
     { icon: <Users size={20} />, label: "Spaces", path: "/space" },
     { icon: <Bell size={20} />, label: "Notifications", path: "/notifications" },
-    { icon: <Calendar size={20} />, label: "List of Activities", path: "/task" },
+    { icon: <Calendar size={20} />, label: "Tasks", path: "/task" },
     { icon: <Folder size={20} />, label: "Files", path: "/files" },
   ];
 
@@ -136,17 +136,29 @@ const SidebarItem = ({ icon, label, path, onClick, active }) => {
       to={path}
       onClick={onClick}
       className={`
-        flex items-center space-x-3 py-3 text-xs font-medium
-        rounded-l-full cursor-pointer transition-all duration-200
+        relative flex items-center space-x-3 py-3 text-xs font-medium
+        rounded-l-full cursor-pointer overflow-hidden
+        transition-all duration-1000
+
+        before:absolute before:inset-0
+        before:bg-[#161A20]
+        before:origin-right before:scale-x-0
+        before:transition-transform before:duration-1000
+
+        hover:before:scale-x-100
+
         ${active 
-          ? "bg-[#161A20] text-white" 
-          : "text-blue-100 hover:bg-[#161A20] hover:text-white"
+          ? "bg-[#161A20] text-white shadow-lg" 
+          : "text-blue-100 hover:bg-[#161A20] hover:text-white hover:shadow-md"
         }
       `}
+
       style={{ paddingLeft: '1.25rem' }}
     >
-      {icon}
-      <span>{label}</span>
+      <div className="relative z-10 flex items-center space-x-3">
+        {icon}
+        <span>{label}</span>
+      </div>
     </Component>
   );
 };

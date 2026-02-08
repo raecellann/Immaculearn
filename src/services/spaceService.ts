@@ -8,6 +8,7 @@ class SpaceService {
             const response = await api.post<ApiResponse<Space>>("/spaces/", {
                 space_name: spaceData.space_name,
                 description: spaceData.description || "",
+                settings: spaceData.settings || { space_cover: null, max_member: 10 },
             });
 
             return response.data;

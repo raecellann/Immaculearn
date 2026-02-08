@@ -21,7 +21,7 @@ const CreateSpaceAdmin = () => {
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
 
   // Cover image state
-  const [coverImage, setCoverImage] = useState("/src/assets/HomePage/spaces-cover/cover1.jpg");
+  const [coverImage, setCoverImage] = useState("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
   const [uploadedImage, setUploadedImage] = useState(null);
 
   // Cropper states
@@ -44,12 +44,12 @@ const CreateSpaceAdmin = () => {
   ];
 
   const galleryImages = [
-    "/src/assets/HomePage/spaces-cover/cover1.jpg",
-    "/src/assets/HomePage/spaces-cover/cover2.jpg",
-    "/src/assets/HomePage/spaces-cover/cover3.jpg",
-    "/src/assets/HomePage/spaces-cover/grades.jpg",
-    "/src/assets/HomePage/spaces-cover/lectures.jpg",
-    "/src/assets/HomePage/spaces-cover/space-board.jpg",
+    "/src/assets/HomePage/Spaces-Cover/cover1.jpg",
+    "/src/assets/HomePage/Spaces-Cover/cover2.jpg",
+    "/src/assets/HomePage/Spaces-Cover/cover3.jpg",
+    "/src/assets/HomePage/Spaces-Cover/grades.jpg",
+    "/src/assets/HomePage/Spaces-Cover/lectures.jpg",
+    "/src/assets/HomePage/Spaces-Cover/space-board.jpg",
   ];
 
   useEffect(() => {
@@ -78,7 +78,7 @@ const CreateSpaceAdmin = () => {
           setSpaceName("");
           setNumMembers(5);
           setPeople(Array(5).fill(""));
-          setCoverImage("/src/assets/HomePage/spaces-cover/cover1.jpg");
+          setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
           navigate(`/space/${space_uuid}/${spaceName}`)
         } else {
           alert(result.message || "Failed to create space. Please try again.");

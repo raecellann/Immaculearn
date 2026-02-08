@@ -65,7 +65,7 @@ const ProfSidebar = () => {
       className="h-screen w-60 text-white flex flex-col justify-between font-inter sticky top-0"
       style={{
         backgroundImage:
-          "linear-gradient(to bottom, #4d9bef, #3d8ee8, #2c81e1, #1a73da, #0066d2)",
+          "linear-gradient(to bottom, #6cadf3ff, #2c81e1, #2c81e1, #1a73da, #0066d2)",
       }}
     >
       {/* Logo Section */}
@@ -146,17 +146,28 @@ const SidebarItem = ({ icon, label, path, onClick, active }) => {
       to={path}
       onClick={onClick}
       className={`
-        flex items-center space-x-3 py-3 text-xs font-medium
-        rounded-l-full cursor-pointer transition-all duration-200
+        relative flex items-center space-x-3 py-3 text-xs font-medium
+        rounded-l-full cursor-pointer overflow-hidden
+        transition-all duration-1000
+
+        before:absolute before:inset-0
+        before:bg-[#161A20]
+        before:origin-right before:scale-x-0
+        before:transition-transform before:duration-1000 
+
+        hover:before:scale-x-100
+
         ${active 
-          ? "bg-[#161A20] text-white" 
-          : "text-blue-100 hover:bg-[#161A20] hover:text-white"
+          ? "bg-[#161A20] text-white shadow-lg" 
+          : "text-blue-100 hover:bg-[#161A20] hover:text-white hover:shadow-md"
         }
       `}
       style={{ paddingLeft: '1.25rem' }}
     >
-      {icon}
-      <span>{label}</span>
+      <div className="relative z-10 flex items-center space-x-3">
+        {icon}
+        <span>{label}</span>
+      </div>
     </Component>
   );
 };

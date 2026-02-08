@@ -65,7 +65,7 @@ const ProfSpacePage = () => {
       id: 5,
       title: "Thesis and Research",
       image: "/src/assets/SpacesCover/thesis.jpg",
-      category: "Classroom Space",
+      category: "Course Space",
       members: 32,
       yearLevel: "4th Year",
     },
@@ -73,7 +73,7 @@ const ProfSpacePage = () => {
       id: 6,
       title: "Operating System",
       image: "/src/assets/SpacesCover/os.jpg",
-      category: "Classroom Space",
+      category: "Course Space",
       members: 40,
       yearLevel: "3rd Year",
     },
@@ -81,7 +81,7 @@ const ProfSpacePage = () => {
       id: 7,
       title: "CS-ELEC 2",
       image: "/src/assets/SpacesCover/code.jpg",
-      category: "Classroom Space",
+      category: "Course Space",
       members: 28,
       yearLevel: "3rd Year",
     },
@@ -89,7 +89,7 @@ const ProfSpacePage = () => {
       id: 8,
       title: "Businteg",
       image: "/src/assets/SpacesCover/businteg.jpg",
-      category: "Classroom Space",
+      category: "Course Space",
       members: 35,
       yearLevel: "4th Year",
     },
@@ -97,7 +97,7 @@ const ProfSpacePage = () => {
       id: 9,
       title: "Modtech",
       image: "/src/assets/SpacesCover/modtech.jpg",
-      category: "Classroom Space",
+      category: "Course Space",
       members: 30,
       yearLevel: "4th Year",
     },
@@ -105,7 +105,7 @@ const ProfSpacePage = () => {
       id: 10,
       title: "MMW",
       image: "/src/assets/SpacesCover/mmw.jpg",
-      category: "Classroom Space",
+      category: "Course Space",
       members: 28,
       yearLevel: "1st Year",
     },
@@ -113,7 +113,7 @@ const ProfSpacePage = () => {
       id: 11,
       title: "Data Structure",
       image: "/src/assets/SpacesCover/datastructure.jpg",
-      category: "Classroom Space",
+      category: "Course Space",
       members: 41,
       yearLevel: "1st Year",
     },
@@ -121,7 +121,7 @@ const ProfSpacePage = () => {
       id: 12,
       title: "Physical Education 2",
       image: "/src/assets/SpacesCover/pe.jpg",
-      category: "Classroom Space",
+      category: "Course Space",
       members: 45,
       yearLevel: "2nd Year",
     },
@@ -129,16 +129,16 @@ const ProfSpacePage = () => {
       id: 13,
       title: "Understanding the Self",
       image: "/src/assets/SpacesCover/uts.jpg",
-      category: "Classroom Space",
+      category: "Course Space",
       members: 52,
       yearLevel: "2nd Year",
     },
   ];
 
   const yourSpaces = spaces.filter((s) => s.category === "Your Space");
-  const classroomSpaces = spaces.filter(
+  const courseSpaces = spaces.filter(
     (s) =>
-      s.category === "Classroom Space" &&
+      s.category === "Course Space" &&
       (yearFilter === "All" || s.yearLevel === yearFilter)
   );
 
@@ -267,10 +267,10 @@ const ProfSpacePage = () => {
             </div>
           </div>
 
-          {/* Classroom Spaces */}
+          {/* Course Spaces */}
           <div>
             <div className="mb-4 flex flex-col gap-3">
-              <h2 className="text-2xl font-bold">Classroom Spaces</h2>
+              <h2 className="text-2xl font-bold">Course Spaces</h2>
 
               <div className="flex flex-wrap items-start gap-2 sm:gap-3 justify-end">
                 <div className="flex items-center gap-1 sm:gap-2">
@@ -297,7 +297,7 @@ const ProfSpacePage = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {classroomSpaces.map((space) => (
+              {courseSpaces.map((space) => (
                 <div
                   key={space.id}
                   className="group bg-[#1E242E] rounded-xl overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer"
