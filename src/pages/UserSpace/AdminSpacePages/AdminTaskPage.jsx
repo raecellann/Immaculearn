@@ -26,6 +26,16 @@ const AdminTaskPage = () => {
 
   /* ================= CREATE TASK MODE ================= */
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [showManualGroups, setShowManualGroups] = useState(false);
+  const [showGenerateGroups, setShowGenerateGroups] = useState(false);
+  const [showResetConfirmation, setShowResetConfirmation] = useState(false);
+  const [numberOfGroups, setNumberOfGroups] = useState(1);
+  const [groups, setGroups] = useState([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+  const [activeGroup, setActiveGroup] = useState(1);
+  const [isTablet, setIsTablet] = useState(false);
+  const [groupsConfigured, setGroupsConfigured] = useState(false);
+  const [groupCreationMethod, setGroupCreationMethod] = useState(null);
+  const [generatedGroupsPreview, setGeneratedGroupsPreview] = useState([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +51,16 @@ const AdminTaskPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const checkTablet = () => {
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+    
+    checkTablet();
+    window.addEventListener('resize', checkTablet);
+    return () => window.removeEventListener('resize', checkTablet);
+  }, []);
+
   const handleFileClick = () => {
     fileInputRef.current?.click();
   };
@@ -48,6 +68,91 @@ const AdminTaskPage = () => {
   const applyFormat = (command) => {
     instructionRef.current?.focus();
     document.execCommand(command, false, null);
+  };
+
+  // Example available members in the admin's space
+  const availableMembers = [
+    "John Smith",
+    "Emily Johnson", 
+    "Michael Brown",
+    "Sarah Davis",
+    "James Wilson",
+    "Lisa Anderson",
+    "Robert Taylor",
+    "Maria Garcia",
+    "David Martinez",
+    "Jennifer Lopez"
+  ];
+
+  const handleManualGroups = () => {
+    if (groupsConfigured) {
+      if (groupCreationMethod === 'generate') {
+        setShowGenerateGroups(true);
+      } else {
+        setActiveGroup(1);
+        setShowManualGroups(true);
+      }
+    } else {
+      const input = document.getElementById('groups-input');
+      const numGroups = parseInt(input.value) || 1;
+      setNumberOfGroups(numGroups);
+      setGroupCreationMethod('manual');
+      
+      const newGroups = Array.from({ length: numGroups }, (_, index) => ({
+        id: index + 1,
+        members: [''],
+        leader: '',
+        showInputs: false,
+        isSaved: false,
+        wasPreviouslySaved: false
+      }));
+      setGroups(newGroups);
+      setActiveGroup(1);
+      setShowManualGroups(true);
+    }
+  };
+
+  const handleGenerateGroups = () => {
+    const input = document.getElementById('groups-input');
+    const numGroups = parseInt(input.value) || 1;
+    setNumberOfGroups(numGroups);
+    
+    shuffleGroups(numGroups);
+    setShowGenerateGroups(true);
+  };
+
+  const shuffleGroups = (numGroups) => {
+    const shuffledMembers = [...availableMembers].sort(() => Math.random() - 0.5);
+    
+    const totalMembers = shuffledMembers.length;
+    const baseMembersPerGroup = Math.floor(totalMembers / numGroups);
+    const remainder = totalMembers % numGroups;
+    
+    const newGroups = Array.from({ length: numGroups }, (_, index) => {
+      const membersCount = baseMembersPerGroup + (index < remainder ? 1 : 0);
+      
+      let startIndex = 0;
+      for (let i = 0; i < index; i++) {
+        startIndex += baseMembersPerGroup + (i < remainder ? 1 : 0);
+      }
+      const endIndex = startIndex + membersCount;
+      
+      const groupMembers = shuffledMembers.slice(startIndex, endIndex);
+      
+      const leader = groupMembers[0] || '';
+      const members = groupMembers.slice(1);
+      
+      return {
+        id: index + 1,
+        leader: leader,
+        members: members,
+        showInputs: false,
+        isSaved: true,
+        wasPreviouslySaved: true
+      };
+    });
+    
+    setGeneratedGroupsPreview(newGroups);
   };
 
   // Task status styles
@@ -109,6 +214,151 @@ const AdminTaskPage = () => {
     updated[index].status = newStatus;
     setDraftActivities(updated);
     setOpenDraftIndex(null);
+  };
+
+  const handleGroupMemberChange = (groupId, memberIndex, value) => {
+    const updatedGroups = [...groups];
+    updatedGroups[groupId - 1].members[memberIndex] = value;
+    setGroups(updatedGroups);
+  };
+
+  const handleGroupLeaderChange = (groupId, value) => {
+    const updatedGroups = [...groups];
+    updatedGroups[groupId - 1].leader = value;
+    setGroups(updatedGroups);
+  };
+
+  const toggleGroupInputs = (groupId) => {
+    const updatedGroups = [...groups];
+    updatedGroups[groupId - 1].showInputs = !updatedGroups[groupId - 1].showInputs;
+    setGroups(updatedGroups);
+  };
+
+  const editGroup = (groupId) => {
+    const updatedGroups = [...groups];
+    const group = updatedGroups[groupId - 1];
+    
+    updatedGroups[groupId - 1].originalData = {
+      leader: group.leader,
+      members: [...group.members]
+    };
+    
+    updatedGroups[groupId - 1].showInputs = true;
+    updatedGroups[groupId - 1].isSaved = false;
+    setGroups(updatedGroups);
+  };
+
+  const resetGroupInputs = (groupId) => {
+    const updatedGroups = [...groups];
+    updatedGroups[groupId - 1] = {
+      ...updatedGroups[groupId - 1],
+      leader: '',
+      members: [''],
+      showInputs: false,
+      isSaved: false
+    };
+    setGroups(updatedGroups);
+  };
+
+  const addMemberToGroup = (groupId) => {
+    const updatedGroups = [...groups];
+    updatedGroups[groupId - 1].members.push('');
+    setGroups(updatedGroups);
+  };
+
+  const saveMemberToGroup = (groupId, memberIndex) => {
+    const updatedGroups = [...groups];
+    const currentMember = updatedGroups[groupId - 1].members[memberIndex];
+    
+    if (currentMember.trim()) {
+      console.log(`Member "${currentMember}" saved to Group ${groupId}`);
+    }
+  };
+
+  const addMemberFromAvailable = (memberName) => {
+    const activeGroupData = groups[activeGroup - 1];
+    if (!activeGroupData.showInputs) {
+      console.log('Cannot add member: Group inputs are not visible. Click "Add People" first.');
+      return;
+    }
+
+    const updatedGroups = [...groups];
+    const activeGroupDataUpdated = updatedGroups[activeGroup - 1];
+    
+    if (!activeGroupDataUpdated.leader || activeGroupDataUpdated.leader.trim() === '') {
+      activeGroupDataUpdated.leader = memberName;
+      console.log(`Added "${memberName}" as leader of Group ${activeGroup}`);
+    } else {
+      const activeGroupMembers = activeGroupDataUpdated.members;
+      const firstEmptyIndex = activeGroupMembers.findIndex(member => !member || member.trim() === '');
+      
+      if (firstEmptyIndex !== -1) {
+        activeGroupMembers[firstEmptyIndex] = memberName;
+      } else {
+        activeGroupMembers.push(memberName);
+        activeGroupMembers.push('');
+      }
+      console.log(`Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`);
+    }
+    
+    setGroups(updatedGroups);
+  };
+
+  const getAssignedMembers = () => {
+    const allAssignedMembers = new Set();
+    groups.forEach(group => {
+      if (group.leader && group.leader.trim()) {
+        allAssignedMembers.add(group.leader.trim());
+      }
+      group.members.forEach(member => {
+        if (member && member.trim()) {
+          allAssignedMembers.add(member.trim());
+        }
+      });
+    });
+    return allAssignedMembers;
+  };
+
+  const isMemberAssigned = (memberName) => {
+    return getAssignedMembers().has(memberName);
+  };
+
+  const getMemberRole = (memberName) => {
+    for (const group of groups) {
+      if (group.leader && group.leader.trim() === memberName) {
+        return 'leader';
+      }
+      if (group.members.some(member => member && member.trim() === memberName)) {
+        return 'member';
+      }
+    }
+    return null;
+  };
+
+  const saveGroup = (groupId) => {
+    const group = groups.find(g => g.id === groupId);
+    const validMembers = group.members.filter(member => member.trim());
+    console.log(`Group ${groupId} saved with leader: ${group.leader}, members:`, validMembers);
+    
+    const updatedGroups = [...groups];
+    updatedGroups[groupId - 1].isSaved = true;
+    updatedGroups[groupId - 1].showInputs = false;
+    updatedGroups[groupId - 1].wasPreviouslySaved = true;
+    setGroups(updatedGroups);
+  };
+
+  const removeMemberFromGroup = (groupId, memberIndex) => {
+    const updatedGroups = [...groups];
+    const groupMembers = updatedGroups[groupId - 1].members;
+    
+    groupMembers.splice(memberIndex, 1);
+    
+    const hasEmptyField = groupMembers.some(member => !member || member.trim() === '');
+    if (!hasEmptyField) {
+      groupMembers.push('');
+    }
+    
+    setGroups(updatedGroups);
   };
 
   return (
@@ -213,7 +463,7 @@ const AdminTaskPage = () => {
                 onClick={() => setIsCreatingTask(true)}
               >
                 <FiFileText size={16} />
-                Create File
+                Create Task
               </button>
             </div>
           )}
@@ -535,17 +785,116 @@ const AdminTaskPage = () => {
                       placeholder="20/20"
                     />
 
-                    <label className="font-semibold">Assignees:</label>
-                    <select className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500">
-                      <option>Individual</option>
-                      <option>Group</option>
-                    </select>
-
+                    
                     <label className="font-semibold">Due Date:</label>
                     <input
                       type="date"
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
                     />
+
+                    {groupsConfigured ? (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex justify-between items-center">
+                          <label className="font-semibold">View Groups:</label>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              className="px-3 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                              onClick={() => setShowResetConfirmation(true)}
+                            >
+                              Reset
+                            </button>
+                            <button
+                              type="button"
+                              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                              onClick={handleManualGroups}
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </div>
+                        <div className="bg-[#23272F] rounded-lg p-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {groups.filter(group => group.leader.trim() || group.members.filter(m => m.trim()).length > 0).map((group) => (
+                              <div key={group.id} className="bg-[#161A20] rounded-lg p-3">
+                                <div className="font-semibold text-blue-400 mb-2">Group {group.id}</div>
+                                <div className="space-y-1">
+                                  <div>
+                                    <span className="text-xs font-medium text-yellow-400">Leader:</span>
+                                    <div className="text-white text-sm mt-1">
+                                      {group.leader.trim() ? group.leader : 'No leader'}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs font-medium text-green-400">Members:</span>
+                                    <div className="text-white text-sm mt-1">
+                                      {group.members.filter(m => m.trim()).length > 0 ? (
+                                        group.members.filter(m => m.trim()).map((member, index) => (
+                                          <div key={index}>{member}</div>
+                                        ))
+                                      ) : (
+                                        'No members'
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-3">
+                          <label className="font-semibold">Assign Groups:</label>
+                          <div className="flex items-center bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
+                            <button
+                              type="button"
+                              className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
+                              onClick={() => {
+                                const input = document.getElementById('groups-input');
+                                if (input.value > 1) input.value = parseInt(input.value) - 1;
+                              }}
+                            >
+                              -
+                            </button>
+                            <input
+                              id="groups-input"
+                              type="number"
+                              className="bg-transparent w-12 text-center outline-none text-white text-sm [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+                              defaultValue={1}
+                              min="1"
+                            />
+                            <button
+                              type="button"
+                              className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
+                              onClick={() => {
+                                const input = document.getElementById('groups-input');
+                                input.value = parseInt(input.value) + 1;
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="px-4 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-500 transition"
+                            onClick={handleManualGroups}
+                          >
+                            Manual
+                          </button>
+                          <button
+                            type="button"
+                            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                            onClick={handleGenerateGroups}
+                          >
+                            Generate
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -578,6 +927,444 @@ const AdminTaskPage = () => {
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+
+      {/* MANUAL GROUPS MODAL */}
+      {showManualGroups && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white">
+                Manual Groups ({numberOfGroups} {numberOfGroups === 1 ? 'Group' : 'Groups'})
+              </h2>
+              <button
+                onClick={() => setShowManualGroups(false)}
+                className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="flex flex-col md:flex-row lg:flex-row gap-6">
+              <div className="flex-1 md:order-1 lg:order-1 order-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {groups.map((group) => (
+                    <div 
+                      key={group.id} 
+                      className={`bg-[#23272F] rounded-lg p-4 cursor-pointer transition-all ${
+                        activeGroup === group.id ? 'ring-2 ring-blue-500' : 'hover:bg-[#2a2f38]'
+                      }`}
+                      onClick={() => {
+                        if (activeGroup && activeGroup !== group.id) {
+                          const prevGroup = groups.find(g => g.id === activeGroup);
+                          if (prevGroup && prevGroup.showInputs && !prevGroup.isSaved) {
+                            const updatedGroups = [...groups];
+                            
+                            if (prevGroup.wasPreviouslySaved && prevGroup.originalData) {
+                              updatedGroups[activeGroup - 1].leader = prevGroup.originalData.leader;
+                              updatedGroups[activeGroup - 1].members = [...prevGroup.originalData.members];
+                              updatedGroups[activeGroup - 1].showInputs = false;
+                              updatedGroups[activeGroup - 1].isSaved = true;
+                              delete updatedGroups[activeGroup - 1].originalData;
+                            } else {
+                              updatedGroups[activeGroup - 1].leader = '';
+                              updatedGroups[activeGroup - 1].members = [''];
+                              updatedGroups[activeGroup - 1].showInputs = false;
+                              updatedGroups[activeGroup - 1].isSaved = false;
+                            }
+                            
+                            setGroups(updatedGroups);
+                          }
+                        }
+                        
+                        setActiveGroup(group.id);
+                      }}
+                    >
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-semibold text-white">
+                          Group {group.id}
+                        </h3>
+                        {group.showInputs && group.wasPreviouslySaved && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const updatedGroups = [...groups];
+                              
+                              if (updatedGroups[group.id - 1].originalData) {
+                                updatedGroups[group.id - 1].leader = updatedGroups[group.id - 1].originalData.leader;
+                                updatedGroups[group.id - 1].members = [...updatedGroups[group.id - 1].originalData.members];
+                                delete updatedGroups[group.id - 1].originalData;
+                              }
+                              
+                              updatedGroups[group.id - 1].showInputs = false;
+                              updatedGroups[group.id - 1].isSaved = true;
+                              setGroups(updatedGroups);
+                            }}
+                            className="text-gray-400 text-xl bg-transparent border-none outline-none hover:bg-transparent hover:text-red-400 focus:outline-none focus:ring-0"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                      
+                      {group.isSaved ? (
+                        <div className="space-y-2">
+                          {group.leader && group.leader.trim() && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium text-yellow-400">Leader:</span>
+                              <span className="text-sm text-white">{group.leader}</span>
+                            </div>
+                          )}
+                          {group.members.filter(m => m.trim()).length > 0 && (
+                            <div>
+                              <span className="text-xs font-medium text-green-400">Members:</span>
+                              <div className="mt-1 space-y-1">
+                                {group.members.filter(m => m.trim()).map((member, index) => (
+                                  <div key={index} className="text-sm text-white pl-2">
+                                    • {member}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              editGroup(group.id);
+                            }}
+                            className="w-full px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm mt-3"
+                          >
+                            Edit Group
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          {!group.showInputs ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleGroupInputs(group.id);
+                              }}
+                              className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                            >
+                              Add People
+                            </button>
+                          ) : (
+                            <>
+                              <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                  Leader:
+                                </label>
+                                <div className="flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+                                  <input
+                                    type="text"
+                                    value={group.leader}
+                                    onChange={(e) => handleGroupLeaderChange(group.id, e.target.value)}
+                                    placeholder="Enter leader name"
+                                    className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
+                                  />
+                                  {group.leader.trim() && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const updatedGroups = [...groups];
+                                        updatedGroups[group.id - 1].leader = '';
+                                        setGroups(updatedGroups);
+                                      }}
+                                      disabled={group.members.filter(member => member.trim()).length > 0}
+                                      className={`px-2 py-1 text-xs rounded flex-shrink-0 ${
+                                        group.members.filter(member => member.trim()).length > 0
+                                          ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                                          : 'bg-red-600 text-white hover:bg-red-700'
+                                      }`}
+                                    >
+                                      ×
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                  Members:
+                                </label>
+                                <div className="space-y-2 mb-3">
+                                  {group.members.map((member, memberIndex) => (
+                                    <div key={memberIndex} className="flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+                                      <input
+                                        type="text"
+                                        value={member}
+                                        onChange={(e) => handleGroupMemberChange(group.id, memberIndex, e.target.value)}
+                                        placeholder="Enter member name"
+                                        className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
+                                      />
+                                      {member.trim() && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeMemberFromGroup(group.id, memberIndex);
+                                          }}
+                                          className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs flex-shrink-0"
+                                        >
+                                          ×
+                                        </button>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                {!group.wasPreviouslySaved && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      resetGroupInputs(group.id);
+                                    }}
+                                    className="flex-1 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                                  >
+                                    Cancel
+                                  </button>
+                                )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    saveGroup(group.id);
+                                  }}
+                                  disabled={!group.leader.trim() && group.members.filter(member => member.trim()).length === 0}
+                                  className={`${group.wasPreviouslySaved ? 'w-full' : 'flex-1'} px-3 py-2 text-sm rounded ${
+                                    !group.leader.trim() && group.members.filter(member => member.trim()).length === 0
+                                      ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                                  }`}
+                                >
+                                  Save Group
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      )}
+                      
+                      {activeGroup !== group.id && !group.isSaved && group.members.filter(m => m.trim()).length > 0 && (
+                        <div className="text-gray-400 text-sm">
+                          {group.members.filter(m => m.trim()).length} members
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="lg:w-80 md:w-72 sm:w-64 bg-[#23272F] rounded-lg p-4 h-fit max-h-[300px] md:max-h-[280px] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:order-2 lg:order-2 order-1">
+                <h3 className="font-semibold text-white mb-4">
+                  Available Members ({availableMembers.length - getAssignedMembers().size})
+                </h3>
+                <div className="space-y-2">
+                  {availableMembers.slice(0, isTablet ? 5 : availableMembers.length).map((member, index) => {
+                    const isAssigned = isMemberAssigned(member);
+                    const role = getMemberRole(member);
+                    return (
+                      <div 
+                        key={index} 
+                        className={`rounded p-3 text-white text-sm transition cursor-pointer ${
+                          isAssigned 
+                            ? 'bg-[#1a1f29] opacity-50 cursor-not-allowed' 
+                            : 'bg-[#161A20] hover:bg-[#1a1f29]'
+                        }`}
+                        onClick={() => !isAssigned && addMemberFromAvailable(member)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={isAssigned ? 'line-through' : ''}>{member}</span>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${
+                              role === 'leader' ? 'bg-yellow-500' : 
+                              role === 'member' ? 'bg-green-500' : 
+                              'bg-green-500'
+                            }`}></div>
+                            <span className="text-xs text-gray-400">
+                              {role === 'leader' ? 'Leader' : 
+                               role === 'member' ? 'Member' : 
+                               'Click to add'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => {
+                  const groupsData = groups.map(group => ({
+                    groupId: group.id,
+                    leader: group.leader.trim(),
+                    members: group.members.filter(member => member.trim())
+                  }));
+                  console.log('All groups saved:', groupsData);
+                  setGroupsConfigured(true);
+                  setGroupCreationMethod('manual');
+                  setShowManualGroups(false);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Save Groups
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GENERATE GROUPS MODAL */}
+      {showGenerateGroups && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-[#1E222A] rounded-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl max-h-[90vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-bold text-white">
+                Generate Groups ({numberOfGroups} {numberOfGroups === 1 ? 'Group' : 'Groups'})
+              </h2>
+              <button
+                onClick={() => setShowGenerateGroups(false)}
+                className="text-gray-400 text-xl sm:text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0 p-1"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mb-4 sm:mb-6">
+              <p className="text-gray-300 text-sm sm:text-base mb-3 sm:mb-4">
+                The system will automatically generate {numberOfGroups} groups and randomly assign students to them.
+              </p>
+              
+              <div className="bg-[#23272F] rounded-lg p-3 sm:p-4">
+                <div className="flex justify-between items-center mb-2 sm:mb-3">
+                  <h3 className="font-semibold text-white text-sm sm:text-base">Generated Groups Preview:</h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        if (numberOfGroups > 1) {
+                          const newNumGroups = numberOfGroups - 1;
+                          setNumberOfGroups(newNumGroups);
+                          shuffleGroups(newNumGroups);
+                        }
+                      }}
+                      disabled={numberOfGroups <= 1}
+                      className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
+                        numberOfGroups <= 1 
+                          ? 'bg-gray-700 text-gray-500 cursor-not-allowed' 
+                          : 'bg-gray-600 text-white hover:bg-gray-500'
+                      }`}
+                    >
+                      -
+                    </button>
+                    <span className="text-white font-medium min-w-[2rem] text-center">{numberOfGroups}</span>
+                    <button
+                      onClick={() => {
+                        const newNumGroups = numberOfGroups + 1;
+                        setNumberOfGroups(newNumGroups);
+                        shuffleGroups(newNumGroups);
+                      }}
+                      disabled={numberOfGroups >= availableMembers.length}
+                      className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
+                        numberOfGroups >= availableMembers.length
+                          ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                          : 'bg-gray-600 text-white hover:bg-gray-500'
+                      }`}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
+                  {generatedGroupsPreview.map((group, index) => (
+                    <div key={index} className="bg-[#161A20] rounded p-2 sm:p-3">
+                      <div className="text-blue-400 font-semibold text-xs sm:text-sm mb-1 sm:mb-2">Group {group.id}</div>
+                      <div className="text-xs space-y-0.5 sm:space-y-1">
+                        <div className="text-yellow-400">
+                          <span className="font-medium">Leader:</span>
+                          <span className="block xs:inline xs:ml-1">{group.leader}</span>
+                        </div>
+                        <div className="text-green-400">
+                          <span className="font-medium">Members:</span>
+                          <span className="block xs:inline xs:ml-1">{group.members.join(", ")}</span>
+                        </div>
+                      </div>
+                      <div className="text-gray-500 text-xs mt-1 sm:mt-2">Auto-assigned</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => shuffleGroups(numberOfGroups)}
+                className="mr-2 px-3 sm:px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm sm:text-base font-medium"
+              >
+                Shuffle
+              </button>
+              <button
+                onClick={() => {
+                  setGroups(generatedGroupsPreview);
+                  setGroupsConfigured(true);
+                  setGroupCreationMethod('generate');
+                  console.log(`Generated ${numberOfGroups} groups:`, generatedGroupsPreview);
+                  setShowGenerateGroups(false);
+                }}
+                className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:text-base font-medium"
+              >
+                Confirm Generate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESET CONFIRMATION MODAL */}
+      {showResetConfirmation && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">Reset Groups</h2>
+              <button
+                onClick={() => setShowResetConfirmation(false)}
+                className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-300 text-sm">
+                Are you sure you want to reset all groups? This will remove all group assignments and you'll need to configure them again.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowResetConfirmation(false)}
+                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setGroups([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+                  setNumberOfGroups(1);
+                  setGroupsConfigured(false);
+                  setGroupCreationMethod(null);
+                  setShowResetConfirmation(false);
+                }}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
