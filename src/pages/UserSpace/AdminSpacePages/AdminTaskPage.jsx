@@ -12,6 +12,7 @@ import {
   FiUploadCloud,
   FiArrowLeft,
 } from "react-icons/fi";
+import mammoth from 'mammoth';
 
 const AdminTaskPage = () => {
   const navigate = useNavigate();
@@ -43,6 +44,90 @@ const AdminTaskPage = () => {
 
   const handleFileClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const fileName = file.name.toLowerCase();
+      
+      try {
+        if (fileName.endsWith('.txt')) {
+          // For .txt files - read as text
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const content = e.target.result;
+            if (instructionRef.current) {
+              instructionRef.current.innerText = content.substring(0, 2000);
+            }
+          };
+          reader.readAsText(file);
+          
+        } else if (fileName.endsWith('.docx')) {
+          // For .docx files - use mammoth library
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          const text = result.value;
+          
+          if (instructionRef.current) {
+            instructionRef.current.innerText = text.substring(0, 2000);
+          }
+          
+        } else if (fileName.endsWith('.pdf')) {
+          // For PDF files - use a simpler client-side approach
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            try {
+              const typedarray = new Uint8Array(e.target.result);
+              
+              // Load PDF.js dynamically to avoid SSR issues
+              const pdfjsLib = await import('pdfjs-dist');
+              pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+              
+              const pdf = await pdfjsLib.getDocument(typedarray).promise;
+              let extractedText = '';
+              
+              // Extract text from all pages
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                extractedText += pageText + ' ';
+              }
+              
+              if (instructionRef.current) {
+                instructionRef.current.innerText = extractedText.substring(0, 2000);
+              }
+            } catch (pdfError) {
+              console.error('PDF extraction error:', pdfError);
+              alert('Could not extract text from this PDF. Please try copying and pasting the text manually.');
+            }
+          };
+          reader.readAsArrayBuffer(file);
+          
+        } else if (fileName.endsWith('.doc')) {
+          // For older .doc files
+          alert('Older Word document (.doc) format requires special handling. Please save as .docx or .txt file, or copy and paste the text manually.');
+          
+        } else {
+          // For other files, try basic text extraction
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const content = e.target.result;
+            const text = content.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 2000);
+            if (instructionRef.current && text.length > 10) {
+              instructionRef.current.innerText = text;
+            } else {
+              alert('This file type may not contain readable text. Please try a .txt file or copy and paste the content manually.');
+            }
+          };
+          reader.readAsText(file);
+        }
+      } catch (error) {
+        console.error('Error extracting text:', error);
+        alert('Error extracting text from file. Please try copying and pasting the text manually.');
+      }
+    }
   };
 
   const applyFormat = (command) => {
@@ -447,7 +532,7 @@ const AdminTaskPage = () => {
                     />
 
                     {/* INSTRUCTION */}
-                    <label className="font-semibold">Instruction (optional)</label>
+                    <label className="font-semibold">Instruction <span className="text-red-500">*</span></label>
 
                     <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
                       {/* Editable Instruction Area */}
@@ -490,7 +575,7 @@ const AdminTaskPage = () => {
                     {/* FILE UPLOAD */}
                     <div className="mt-6">
                       <label className="block font-semibold mb-2">
-                        Choose a file or drag & drop it here.
+                        File Upload (Optional)
                       </label>
 
                       <div
@@ -521,6 +606,7 @@ const AdminTaskPage = () => {
                           ref={fileInputRef}
                           type="file"
                           className="hidden"
+                          onChange={handleFileUpload}
                         />
                       </div>
                     </div>
