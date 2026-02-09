@@ -4,82 +4,130 @@ import {
   GraduationCap,
   Users,
   LogOut,
+  Home,
+  Bell,
+  Calendar,
+  Folder,
+  ClipboardList,
+  MessageCircle,
+  User,
+  Settings,
 } from "lucide-react";
+import { Link, useLocation } from "react-router";
 import Logout from "./logout";
+import logo from "../../assets/HomePage/logo.png";
+import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
+import { useUser } from "../../contexts/user/useUser";
 
 const AdminSidebar = () => {
+  const { user, logout } = useUser();
   const [showLogout, setShowLogout] = useState(false);
-  const [activeItem, setActiveItem] = useState("Dashboard");
+  const location = useLocation();
 
   const menuItems = [
-    { icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-    { icon: <GraduationCap size={20} />, label: "Teachers" },
-    { icon: <Users size={20} />, label: "Students" },
+    { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin-dashboard" },
+    { icon: <GraduationCap size={20} />, label: "Teachers", path: "/admin-teachers" },
+    { icon: <Users size={20} />, label: "Students", path: "/admin-students" },
+    { icon: <Calendar size={20} />, label: "Tasks", path: "/admintaskpage" },
+    { icon: <Folder size={20} />, label: "Files", path: "/admin-files" },
+  ];
+
+  const privateItems = [
+    {
+      icon: <Calendar size={20} />,
+      label: "Calendar",
+      path: "/calendar",
+    },
+    { icon: <ClipboardList size={20} />, label: "Grade Viewing", path: "/grade-viewing" },
+    { icon: <MessageCircle size={20} />, label: "Chats", path: "/chatlist" },
+  ];
+
+  const accountItems = [
+    { icon: <User size={20} />, label: "Account", path: "/accsettings" },
+    { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
   ];
 
   return (
-    <div
-      className="h-screen w-60 text-white flex flex-col justify-between font-inter sticky top-0"
+    <div 
+      className="h-screen w-60 text-white flex flex-col font-inter sticky top-0 overflow-hidden"
       style={{
         backgroundImage:
-          "linear-gradient(to bottom, #4d9bef, #3d8ee8, #2c81e1, #1a73da, #0066d2)",
+          "linear-gradient(to bottom, #6cadf3ff, #2c81e1, #2c81e1, #1a73da, #0066d2)",
       }}
     >
-      <style>{`
-        .sidebar-scroll::-webkit-scrollbar {
-          display: none;
-        }
-        .sidebar-scroll {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-      `}</style>
+      {/* Logo Section */}
+      <div className="p-6">
+        <div className="flex items-center space-x-2">
+          <img src={logo} alt="ImmacuLearn Logo" className="w-8 h-8" />
+          <h1 className="text-lg font-bold">ImmacuLearn</h1>
+        </div>
+      </div>
 
-      {/* TOP SECTION */}
-      <div className="flex-1 flex flex-col items-start p-5 overflow-y-auto sidebar-scroll">
-
-        {/* ADMIN TITLE */}
-        <h1 className="font-bold text-lg flex items-center space-x-2 mb-6">
-          <img
-            src="src/assets/HomePage/logo.png"
-            alt="ImmacuLearn Logo"
-            className="w-5 h-5 inline-block"
-          />
-          <span>Immaculearn</span>
-        </h1>
-
-        {/* MAIN MENU */}
-        <nav className="w-full space-y-1 mb-5">
+      {/* Navigation Items */}
+      <div 
+        className="flex-1 pl-8 overflow-y-auto"
+        style={{
+          scrollbarWidth: 'none',  /* Firefox */
+          msOverflowStyle: 'none',  /* IE and Edge */
+        }}
+      >
+        <style jsx>{`
+          div::-webkit-scrollbar {
+            display: none;  /* Chrome, Safari, Opera */
+          }
+        `}</style>
+        <nav className="space-y-1">
           {menuItems.map((item) => (
             <SidebarItem
               key={item.label}
-              icon={item.icon}
-              label={item.label}
-              isActive={activeItem === item.label}
-              onClick={() => setActiveItem(item.label)}
+              {...item}
+              active={location.pathname === item.path}
             />
           ))}
         </nav>
 
-        {/* LOGOUT BUTTON */}
-        <div className="w-full border-t border-blue-300/40 pt-3 space-y-1">
+        {/* Private Section */}
+        <div className="mt-4">
+          <h2 className="text-sm font-semibold mb-3 text-blue-100">Private</h2>
+          <nav className="space-y-1">
+            {privateItems.map((item) => (
+              <SidebarItem
+                key={item.label}
+                {...item}
+                active={location.pathname === item.path}
+              />
+            ))}
+          </nav>
+        </div>
+
+        {/* Account Section */}
+        <div className="mt-4 space-y-1">
+          {accountItems.map((item) => (
+            <SidebarItem
+              key={item.label}
+              {...item}
+              active={location.pathname === item.path}
+            />
+          ))}
+          
           <SidebarItem
             icon={<LogOut size={20} />}
-            label="Log Out"
-            isActive={activeItem === "Log Out"}
+            label="Log Out Account"
             onClick={() => setShowLogout(true)}
           />
         </div>
       </div>
 
-      {/* PROFILE PREVIEW (same design as user sidebar) */}
-      <div className="p-4 border-t border-blue-300/40 flex items-center space-x-3 flex-shrink-0">
-        <img
-          src="/src/assets/HomePage/frieren-avatar.jpg"
-          alt="Profile"
-          className="w-9 h-9 rounded-full object-cover border border-white/20"
-        />
-        <span className="text-sm font-semibold">Admin Account</span>
+      {/* User Profile Section */}
+      <div className="px-6 py-2 pt-3 border-t border-blue-500">
+        <div className="flex items-center gap-3">
+          <img
+            src={user ? user.profile_pic : frierenAvatar}
+            alt="Profile"
+            className="w-8 h-8 rounded-full"
+          />
+          <span className="text-sm font-medium">{user?.name || "Admin"}</span>
+        </div>
       </div>
 
       {/* LOGOUT MODAL */}
