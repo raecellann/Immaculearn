@@ -2,7 +2,7 @@ import React from "react";
 
 const Logout = ({ onClose, onLogOut }) => {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-70">
       <div className="bg-neutral-800 p-8 rounded-2xl shadow-xl text-center w-[350px] animate-fadeIn">
         <h1 className="text-xl font-semibold mb-6 text-white">
           Are you sure you want to Logout?

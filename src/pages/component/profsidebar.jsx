@@ -62,7 +62,7 @@ const ProfSidebar = () => {
 
   return (
     <div
-      className="h-screen w-60 text-white flex flex-col justify-between font-inter sticky top-0"
+      className="h-screen w-60 text-white flex flex-col font-inter sticky top-0 overflow-hidden"
       style={{
         backgroundImage:
           "linear-gradient(to bottom, #6cadf3ff, #2c81e1, #2c81e1, #1a73da, #0066d2)",
@@ -77,7 +77,18 @@ const ProfSidebar = () => {
       </div>
 
       {/* Navigation Items */}
-      <div className="flex-1 pl-8 overflow-hidden">
+      <div 
+        className="flex-1 pl-8 overflow-y-auto"
+        style={{
+          scrollbarWidth: 'none',  /* Firefox */
+          msOverflowStyle: 'none',  /* IE and Edge */
+        }}
+      >
+        <style jsx>{`
+          div::-webkit-scrollbar {
+            display: none;  /* Chrome, Safari, Opera */
+          }
+        `}</style>
         <nav className="space-y-1">
           {menuItems.map((item) => (
             <SidebarItem
@@ -133,7 +144,11 @@ const ProfSidebar = () => {
       </div>
 
       {/* Logout Modal */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+      {showLogout && (
+        <div className="fixed inset-0 z-50">
+          <Logout onClose={() => setShowLogout(false)} />
+        </div>
+      )}
     </div>
   );
 };
