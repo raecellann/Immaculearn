@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
 import { Users, GraduationCap, UserCheck, Menu } from "lucide-react";
+import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 
 const AdminDashboard = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+  const navigate = useNavigate();
 
   /* STICKY HEADER STATE */
   const [showHeader, setShowHeader] = useState(true);
@@ -27,6 +29,15 @@ const AdminDashboard = () => {
     ]);
   }, []);
 
+  /* NAVIGATION FUNCTIONS */
+  const navigateToTeachers = () => {
+    navigate('/admin-teachers');
+  };
+
+  const navigateToStudents = () => {
+    navigate('/admin-students');
+  };
+
   /* SCROLL BEHAVIOR (RESTORED) */
   useEffect(() => {
     const handleScroll = () => {
@@ -44,17 +55,6 @@ const AdminDashboard = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Navigation handlers
-  const navigateToTeachers = () => {
-    // This will navigate to the teachers page
-    window.location.href = '/admin-teachers';
-  };
-
-  const navigateToStudents = () => {
-    // This will navigate to the students page
-    window.location.href = '/admin-students';
-  };
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">

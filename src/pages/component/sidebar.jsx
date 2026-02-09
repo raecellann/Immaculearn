@@ -24,27 +24,13 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: <Home size={20} />, label: "Home", path: "/home" },
-    { icon: <Users size={20} />, label: "Spaces", path: "/space" },
-    { icon: <Bell size={20} />, label: "Notifications", path: "/notifications" },
-    { icon: <Calendar size={20} />, label: "Tasks", path: "/task" },
-    { icon: <Folder size={20} />, label: "Files", path: "/files" },
+    { icon: <Home size={20} />, label: "Dashboard", path: "/home" },
+    { icon: <Users size={20} />, label: "Students", path: "/space" },
+    { icon: <GraduationCap size={20} />, label: "Teachers", path: "/files" },
   ];
 
-  const privateItems = [
-    {
-      icon: <Calendar size={20} />,
-      label: "Calendar",
-      path: "/calendar",
-    },
-    { icon: <ClipboardList size={20} />, label: "Grade Viewing", path: "/grade-viewing" },
-    { icon: <MessageCircle size={20} />, label: "Chats", path: "/chatlist" },
-  ];
-
-  const accountItems = [
-    { icon: <User size={20} />, label: "Account", path: "/accsettings" },
-    { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
-  ];
+  const privateItems = [];
+  const accountItems = [];
 
   return (
     <div 

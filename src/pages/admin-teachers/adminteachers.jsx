@@ -1,71 +1,248 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
-import { Menu, CheckCircle } from "lucide-react";
+import { Menu, CheckCircle, Upload, X, FileText, UserPlus } from "lucide-react";
+import * as XLSX from "xlsx";
+import { useNavigate } from "react-router";
+import Logout from "../component/logout";
 
 const AdminTeachers = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [teachers, setTeachers] = useState([]);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importPreview, setImportPreview] = useState([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const fileInputRef = useRef(null);
+  const navigate = useNavigate();
+
+  const [newTeacher, setNewTeacher] = useState({
+    name: "",
+    email: "",
+    verified: true,
+  });
+
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  /* NAVIGATION FUNCTIONS */
+  const navigateToDashboard = () => {
+    navigate('/admin-dashboard');
+  };
+
+  const navigateToStudents = () => {
+    navigate('/admin-students');
+  };
 
   useEffect(() => {
     setTeachers([
       { id: 1, name: "Jober Reyes", email: "joberreyes@gmail.com" },
       { id: 2, name: "Nathaniel Cruz", email: "nathanielcruz@gmail.com" },
+      { id: 3, name: "Wilson James", email: "wilsonjames@gmail.com" },
+      { id: 4, name: "Shiela Sta. Maria", email: "shengstamaria@gmail.com" },
+      { id: 5, name: "Cecilia Cruz", email: "ceciliacruz@gmail.com" },
+      { id: 6, name: "Juan Dela Cruz", email: "juandelacruz@gmail.com" },
     ]);
   }, []);
 
-  return (
-    <div className="flex min-h-screen bg-[#161A20] text-white relative">
+  /* ================= FILE IMPORT ================= */
 
-      {/* OVERLAY (Mobile & Tablet) */}
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setImportFile(file);
+    const reader = new FileReader();
+    const fileName = file.name.toLowerCase();
+
+    reader.onload = (e) => {
+      let data = [];
+
+      if (fileName.endsWith(".csv")) {
+        const lines = e.target.result.split("\n").filter(Boolean);
+        const headers = lines[0].split(",");
+
+        for (let i = 1; i < lines.length; i++) {
+          const row = {};
+          lines[i].split(",").forEach((val, idx) => {
+            row[headers[idx]] = val;
+          });
+          data.push(row);
+        }
+      } else {
+        const workbook = XLSX.read(e.target.result, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        data = XLSX.utils.sheet_to_json(sheet);
+      }
+
+      setImportPreview(
+        data.map((row, index) => ({
+          id: teachers.length + index + 1,
+          name: row.Name || row.name || "",
+          email: row.Email || row.email || "",
+          verified:
+            row.Verified === "Yes" ||
+            row.verified === true ||
+            row.Enrolled === "Yes",
+        }))
+      );
+    };
+
+    fileName.endsWith(".csv")
+      ? reader.readAsText(file)
+      : reader.readAsArrayBuffer(file);
+  };
+
+  const handleImportTeachers = () => {
+    setTeachers([...teachers, ...importPreview]);
+    setShowImportModal(false);
+    setImportFile(null);
+    setImportPreview([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  /* ================= ADD TEACHER ================= */
+
+  const handleInputChange = (e) => {
+    const { name, value, checked, type } = e.target;
+    setNewTeacher((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleDeleteTeacher = (teacherId) => {
+    setTeachers(teachers.filter((teacher) => teacher.id !== teacherId));
+    setShowDeleteConfirm(null);
+  };
+
+  const handleAddTeacher = () => {
+    if (!newTeacher.name || !newTeacher.email) return;
+
+    setTeachers([
+      ...teachers,
+      { id: teachers.length + 1, ...newTeacher },
+    ]);
+
+    setNewTeacher({ name: "", email: "", verified: true });
+    setShowAddModal(false);
+  };
+
+  /* ================= SCROLL HEADER ================= */
+
+  useEffect(() => {
+    const onScroll = () => {
+      const current = window.scrollY;
+      setShowHeader(!(current > lastScrollY.current && current > 50));
+      lastScrollY.current = current;
+    };
+
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* ================= RENDER ================= */
+
+  return (
+    <div className="flex min-h-screen bg-[#161A20] text-white">
+
+      {/* DESKTOP SIDEBAR */}
+      <div className="hidden lg:block">
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
+
+      {/* MOBILE OVERLAY */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* SIDEBAR */}
+      {/* MOBILE SIDEBAR */}
       <div
-        className={`
-          fixed lg:static z-40 h-full
-          transform transition-transform duration-300
-          ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0
-        `}
+        className={`fixed top-0 left-0 h-screen w-64 z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <AdminSidebar />
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 w-full flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
 
         {/* MOBILE HEADER */}
-        <div className="lg:hidden flex items-center gap-4 p-4 border-b border-white/10">
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent p-0 border-none outline-none"
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
           >
-            <Menu className="w-7 h-7 text-white" />
+            ☰
           </button>
-          <h1 className="text-lg font-semibold">Teachers</h1>
+          <h1 className="text-xl font-bold">Teachers</h1>
         </div>
 
+        {/* HEADER SPACER */}
+        <div className="lg:hidden h-16"></div>
+
         {/* PAGE CONTENT */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
 
           {/* DESKTOP TITLE */}
           <h1 className="hidden lg:block text-2xl font-bold mb-6">
             Teachers List
           </h1>
 
-          {/* ================= MOBILE & TABLET (CARD VIEW) ================= */}
+          {/* DESKTOP BUTTONS */}
+          <div className="hidden lg:flex justify-between items-center mb-6">
+            <div></div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+              >
+                <UserPlus className="w-4 h-4" />
+                Add Teacher
+              </button>
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Import Excel
+              </button>
+            </div>
+          </div>
+
+          {/* MOBILE / TABLET */}
+          <div className="lg:hidden mb-4 flex gap-3">
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
+            >
+              <UserPlus className="w-4 h-4" />
+              Add Teacher
+            </button>
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
+            >
+              <Upload className="w-4 h-4" />
+              Import Excel
+            </button>
+          </div>
+
+          {/* MOBILE / TABLET CARDS */}
           <div className="flex flex-col gap-4 lg:hidden">
             {teachers.map((teacher) => (
               <div
                 key={teacher.id}
                 className="bg-[#1E242E] border border-gray-700 rounded-xl p-4"
               >
-                {/* 🔥 FIXED FONT SIZE (MATCHES STUDENT PAGE) */}
                 <p className="text-base font-semibold mb-1">
                   {teacher.name}
                 </p>
@@ -74,22 +251,26 @@ const AdminTeachers = () => {
                   {teacher.email}
                 </p>
 
-                <div className="flex items-center gap-2 text-green-400 text-sm">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Verified</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowDeleteConfirm(teacher.id)}
+                    className="flex items-center gap-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* ================= LAPTOP & DESKTOP (TABLE VIEW) ================= */}
+          {/* DESKTOP TABLE */}
           <div className="hidden lg:block bg-[#1E242E] p-6 rounded-xl">
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-400 border-b border-gray-700">
                   <th className="py-3">Name</th>
                   <th className="py-3">Email</th>
-                  <th className="py-3">Verified</th>
+                  <th className="py-3">Actions</th>
                 </tr>
               </thead>
 
@@ -97,24 +278,148 @@ const AdminTeachers = () => {
                 {teachers.map((teacher) => (
                   <tr
                     key={teacher.id}
-                    className="border-b border-gray-800 hover:bg-[#242B38] transition"
+                    className="border-b border-gray-800 hover:bg-[#242B38]"
                   >
                     <td className="py-4">{teacher.name}</td>
                     <td className="py-4">{teacher.email}</td>
                     <td className="py-4">
-                      <div className="flex items-center gap-2 text-green-400">
-                        <CheckCircle className="w-4 h-4" />
-                        <span className="text-sm">Verified</span>
-                      </div>
+                      <button
+                        onClick={() => setShowDeleteConfirm(teacher.id)}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
         </div>
       </div>
+
+      {/* ADD MODAL */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white">Add New Teacher</h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Teacher Form */}
+            <div className="space-y-4">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={newTeacher.name}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  placeholder="Enter teacher's full name"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={newTeacher.email}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  placeholder="teacher@example.com"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddTeacher}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+              >
+                Add Teacher
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* IMPORT MODAL */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E242E] p-6 rounded-xl w-full max-w-2xl">
+            <div className="flex justify-between mb-4">
+              <h2 className="text-xl font-bold">Import Teachers</h2>
+              <button onClick={() => setShowImportModal(false)}>
+                <X />
+              </button>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={handleFileUpload}
+            />
+
+            <button
+              onClick={handleImportTeachers}
+              className="bg-blue-600 px-4 py-2 mt-4 rounded"
+            >
+              Import
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Delete Teacher Account</h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this teacher account? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteTeacher(showDeleteConfirm)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

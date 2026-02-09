@@ -26,26 +26,12 @@ const AdminSidebar = () => {
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin-dashboard" },
-    { icon: <GraduationCap size={20} />, label: "Teachers", path: "/admin-teachers" },
     { icon: <Users size={20} />, label: "Students", path: "/admin-students" },
-    { icon: <Calendar size={20} />, label: "Tasks", path: "/admintaskpage" },
-    { icon: <Folder size={20} />, label: "Files", path: "/admin-files" },
+    { icon: <GraduationCap size={20} />, label: "Teachers", path: "/admin-teachers" },
   ];
 
-  const privateItems = [
-    {
-      icon: <Calendar size={20} />,
-      label: "Calendar",
-      path: "/calendar",
-    },
-    { icon: <ClipboardList size={20} />, label: "Grade Viewing", path: "/grade-viewing" },
-    { icon: <MessageCircle size={20} />, label: "Chats", path: "/chatlist" },
-  ];
-
-  const accountItems = [
-    { icon: <User size={20} />, label: "Account", path: "/accsettings" },
-    { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
-  ];
+  const privateItems = [];
+  const accountItems = [];
 
   return (
     <div 
@@ -88,7 +74,7 @@ const AdminSidebar = () => {
 
         {/* Private Section */}
         <div className="mt-4">
-          <h2 className="text-sm font-semibold mb-3 text-blue-100">Private</h2>
+          <h2 className="text-sm font-semibold mb-3 text-white">Private</h2>
           <nav className="space-y-1">
             {privateItems.map((item) => (
               <SidebarItem
@@ -119,7 +105,7 @@ const AdminSidebar = () => {
       </div>
 
       {/* User Profile Section */}
-      <div className="px-6 py-2 pt-3 border-t border-blue-500">
+      <div className="px-6 py-2 pt-3 border-t border-white">
         <div className="flex items-center gap-3">
           <img
             src={user ? user.profile_pic : frierenAvatar}
@@ -136,11 +122,11 @@ const AdminSidebar = () => {
   );
 };
 
-const SidebarItem = ({ icon, label, isActive, onClick }) => (
+const SidebarItem = ({ icon, label, isActive, onClick, path }) => (
   <div
     onClick={onClick}
     className={`relative flex items-center space-x-3 px-5 py-2.5 text-xs font-medium cursor-pointer transition-all duration-150 rounded-md ${
-      isActive ? "text-white" : "text-white/90"
+      isActive ? "text-white" : "text-white"
     }`}
   >
     {/* Active Background */}
@@ -152,7 +138,13 @@ const SidebarItem = ({ icon, label, isActive, onClick }) => (
 
     <div className="relative flex items-center space-x-3 z-10">
       {icon}
-      <span>{label}</span>
+      {path ? (
+        <Link to={path} className="block w-full">
+          <span>{label}</span>
+        </Link>
+      ) : (
+        <span>{label}</span>
+      )}
     </div>
   </div>
 );
