@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
+import { useUser } from "../../contexts/user/useUser";
 
 const statusStyles = {
   Done: "border-2 border-[#00B865] text-[#10E164]",
@@ -10,74 +12,60 @@ const statusStyles = {
 
 const TaskPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [showLogout, setShowLogout] = useState(false);
-  const [openIndex, setOpenIndex] = useState(null);
-
-  // 🔹 ADDED: hide-on-scroll state
-  const [showHeader, setShowHeader] = useState(true);
-  const lastScrollY = useRef(0);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useUser();
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-        setShowHeader(false);
-      } else {
-        setShowHeader(true);
-      }
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
   const [tasks, setTasks] = useState([
     {
-      name: "Thesis Paper 🧑‍🎓",
-      deadline: "April 12, 2025",
-      space: "Zeldrick's Space",
-      status: "Done",
-    },
-    {
-      name: "OS Activity 🎓",
+      name: "OS Activity",
       deadline: "April 12, 2025",
       space: "Your Space",
       status: "In Progress",
+      category: "your-space"
     },
     {
-      name: "Personal Reflection 📄",
+      name: "Thesis Paper",
+      deadline: "April 12, 2025",
+      space: "Course Space",
+      status: "Done",
+      category: "course-space"
+    },
+    {
+      name: "Individual Activity",
+      deadline: "May 1, 2025",
+      space: "Course Space",
+      status: "Done",
+      category: "course-space"
+    },
+    {
+      name: "Personal Reflection",
       deadline: "April 12, 2025",
       space: "Nathaniel's Space",
       status: "Missing",
-    },
-        {
-      name: "Individual Activity 📄",
-      deadline: "May 1, 2025",
-      space: "Keziah's Space",
-      status: "Done",
-    },
-        {
-      name: "Personal Reflection 📄",
-      deadline: "April 12, 2025",
-      space: "Zeldrick's Space",
-      status: "Missing",
+      category: "friends-space"
     },
   ]);
 
-  const handleStatusChange = (index, newStatus) => {
-    const updated = [...tasks];
-    updated[index].status = newStatus;
-    setTasks(updated);
-    setOpenIndex(null);
-  };
+  const tasksByCategory = tasks.reduce((acc, task) => {
+    if (!acc[task.category]) {
+      acc[task.category] = [];
+    }
+    acc[task.category].push(task);
+    return acc;
+  }, {});
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar />
       </div>
 
       {/* Mobile + Tablet Overlay */}
@@ -93,178 +81,101 @@ const TaskPage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative">
 
-        {/* Mobile + Tablet Header with hide-on-scroll */}
-        <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
-            showHeader ? "translate-y-0" : "-translate-y-full"
-          }`}
-        >
+        {/* Fixed Desktop Title */}
+        <div className="hidden lg:flex justify-center mb-8 absolute top-0 left-0 right-0 bg-[#161A20] py-4 z-10">
+          <h1 className="text-4xl font-bold text-white">Tasks</h1>
+        </div>
+
+        {/* Spacer for fixed title */}
+        <div className="hidden lg:block h-20"></div>
+
+        {/* Mobile + Tablet Header */}
+        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">Task</h1>
+          <h1 className="text-xl font-bold">Tasks</h1>
         </div>
-
-        {/* Spacer for fixed header */}
-        <div className="lg:hidden h-16"></div>
 
         {/* Page Content */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
-          <h1 className="hidden lg:block text-4xl font-bold text-center mb-10">
-            Task
-          </h1>
-
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-lg lg:text-xl font-semibold mb-4 lg:mb-6">
-              To Do Lists 📚
-            </h2>
-
-            {/* ================= MOBILE + TABLET (CARD VIEW) ================= */}
-            <div className="flex flex-col gap-4 lg:hidden">
-              {tasks.map((task, index) => (
-                <div
-                  key={index}
-                  className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex flex-col gap-3"
-                >
-                  <a
-                    href="/task-view"
-                    className="text-blue-400 hover:underline text-sm font-medium"
+          {/* Your Space Tasks */}
+          {tasksByCategory['your-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {tasksByCategory['your-space'].map((task, index) => (
+                  <div
+                    key={`your-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => navigate(`/task-view/${task.name}`)}
                   >
-                    {task.name}
-                  </a>
-
-                  <p className="text-sm text-gray-300">
-                    <strong className="text-gray-400">Deadline:</strong>{" "}
-                    {task.deadline}
-                  </p>
-
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm text-gray-300">
-                      <strong className="text-gray-400">Space:</strong>{" "}
-                      {task.space}
-                    </p>
-
-                    <div className="relative">
-                      <button
-                        onClick={() =>
-                          setOpenIndex(openIndex === index ? null : index)
-                        }
-                        className={`bg-black px-3 py-1 rounded-full ${
-                          statusStyles[task.status]
-                        } flex items-center gap-2 text-xs`}
-                      >
-                        <span className="font-medium">{task.status}</span>
-                        <span className="text-xs">▼</span>
-                      </button>
-
-                      {openIndex === index && (
-                        <div className="absolute right-0 mt-2 w-40 bg-black border border-gray-700 rounded-lg p-2 z-50">
-                          <div className="flex flex-col gap-2">
-                            {Object.keys(statusStyles).map((st) => (
-                              <button
-                                key={st}
-                                onClick={() =>
-                                  handleStatusChange(index, st)
-                                }
-                                className={`w-full text-center px-3 py-1.5 rounded-full bg-black ${
-                                  statusStyles[st]
-                                } text-xs font-medium`}
-                              >
-                                {st}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                    <span className="text-xl">📋</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{task.name}</p>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <div className="border-b border-gray-700 my-6"></div>
             </div>
+          )}
 
-            {/* ================= LAPTOP & DESKTOP (TABLE VIEW) ================= */}
-            <div className="hidden lg:block">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-600 text-left text-gray-400">
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Task Name</th>
-                    <th className="py-3 px-4">Deadline</th>
-                    <th className="py-3 px-4">Space Name</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {tasks.map((task, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-gray-700 hover:bg-[#1E222A]"
-                    >
-                      <td className="py-3 px-4">
-                        <div className="relative inline-block">
-                          <button
-                            onClick={() =>
-                              setOpenIndex(openIndex === index ? null : index)
-                            }
-                            className={`bg-black px-4 py-1 rounded-full ${
-                              statusStyles[task.status]
-                            } flex items-center gap-2 text-sm`}
-                          >
-                            {task.status}
-                            <span className="text-xs">▼</span>
-                          </button>
-
-                          {openIndex === index && (
-                            <div className="absolute left-0 mt-2 w-44 bg-black border border-gray-700 rounded-lg p-3 z-50">
-                              <div className="flex flex-col gap-2">
-                                {Object.keys(statusStyles).map((st) => (
-                                  <button
-                                    key={st}
-                                    onClick={() =>
-                                      handleStatusChange(index, st)
-                                    }
-                                    className={`w-full rounded-full px-4 py-2 text-sm ${statusStyles[st]}`}
-                                  >
-                                    {st}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <a
-                          href="/task-view"
-                          className="text-blue-400 hover:underline"
-                        >
-                          {task.name}
-                        </a>
-                      </td>
-                      <td className="py-3 px-4">{task.deadline}</td>
-                      <td className="py-3 px-4">{task.space}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Course Space Tasks */}
+          {tasksByCategory['course-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {tasksByCategory['course-space'].map((task, index) => (
+                  <div
+                    key={`course-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => navigate(`/task-view/${task.name}`)}
+                  >
+                    <span className="text-xl">📋</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{task.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-b border-gray-700 my-6"></div>
             </div>
+          )}
 
-          </div>
+          {/* Friends Space Tasks */}
+          {tasksByCategory['friends-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {tasksByCategory['friends-space'].map((task, index) => (
+                  <div
+                    key={`friends-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => navigate(`/task-view/${task.name}`)}
+                  >
+                    <span className="text-xl">📋</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{task.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-b border-gray-700 my-6"></div>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* LOGOUT MODAL */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+      </div>
     </div>
   );
 };

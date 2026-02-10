@@ -37,11 +37,23 @@ const FilePage = () => {
   // const files = list.data || [];
 
   const spaces = [
-    { name: "ZJ’s Space" },
-    { name: "Wilson’s Space" },
-    { name: "Nath’s Space" },
-    { name: "Raecell’s Space" },
+    { name: "Your Space", category: "your-space" },
+    { name: "Thesis and Research", category: "course-space" },
+    { name: "Operating System", category: "course-space" },
+    { name: "CS-ELEC 2", category: "course-space" },
+    { name: "ZJ's Space", category: "friends-space" },
+    { name: "Wilson's Space", category: "friends-space" },
+    { name: "Nath's Space", category: "friends-space" },
+    { name: "Raecell's Space", category: "friends-space" },
   ];
+
+  const spacesByCategory = spaces.reduce((acc, space) => {
+    if (!acc[space.category]) {
+      acc[space.category] = [];
+    }
+    acc[space.category].push(space);
+    return acc;
+  }, {});
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
@@ -87,18 +99,71 @@ const FilePage = () => {
             Files
           </h1>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-            {uniqueSpaces.map((space, index) => (
-              <div
-                key={index}
-                className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                onClick={() => navigate(`/files/${space.space_name}/${space.space_uuid}`)}
-              >
-                <span className="text-xl">📁</span>
-                <p className="text-lg">{space.space_name}</p>
+          {/* Your Space Files */}
+          {spacesByCategory['your-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {spacesByCategory['your-space'].map((space, index) => (
+                  <div
+                    key={`your-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => navigate(`/files/${space.name}/${space.space_uuid || ''}`)}
+                  >
+                    <span className="text-xl">📁</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.name}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+              <div className="border-b border-gray-700 my-6"></div>
+            </div>
+          )}
+
+          {/* Course Space Files */}
+          {spacesByCategory['course-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {spacesByCategory['course-space'].map((space, index) => (
+                  <div
+                    key={`course-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => navigate(`/files/${space.name}/${space.space_uuid || ''}`)}
+                  >
+                    <span className="text-xl">📁</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-b border-gray-700 my-6"></div>
+            </div>
+          )}
+
+          {/* Friends Space Files */}
+          {spacesByCategory['friends-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {spacesByCategory['friends-space'].map((space, index) => (
+                  <div
+                    key={`friends-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => navigate(`/files/${space.name}/${space.space_uuid || ''}`)}
+                  >
+                    <span className="text-xl">📁</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-b border-gray-700 my-6"></div>
+            </div>
+          )}
         </div>
 
       </div>

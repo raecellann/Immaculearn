@@ -30,14 +30,22 @@ const ProfListActivityPage = () => {
   }, [lastScrollY]);
 
   const activities = [
-    { id: 1, status: "On Going", name: "Week 8 Personal Reflection", dueDate: "October 30", space: "Operating System" },
-    { id: 2, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026" },
-    { id: 3, status: "Already Ended", name: "Week 5 Individual Activity", dueDate: "September 12", space: "Businteg" },
-    { id: 4, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026" },
-    { id: 5, status: "Already Ended", name: "Week 5 Individual Activity", dueDate: "September 12", space: "Businteg" },
-    { id: 6, status: "On Going", name: "Week 8 Personal Reflection", dueDate: "October 30", space: "Operating System" },
-    { id: 7, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026" },
+    { id: 1, status: "On Going", name: "Week 8 Personal Reflection", dueDate: "October 30", space: "Operating System", category: "your-space" },
+    { id: 2, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026", category: "your-space" },
+    { id: 3, status: "Already Ended", name: "Week 5 Individual Activity", dueDate: "September 12", space: "Businteg", category: "course-space" },
+    { id: 4, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026", category: "course-space" },
+    { id: 5, status: "Already Ended", name: "Week 5 Individual Activity", dueDate: "September 12", space: "Businteg", category: "course-space" },
+    { id: 6, status: "On Going", name: "Week 8 Personal Reflection", dueDate: "October 30", space: "Operating System", category: "your-space" },
+    { id: 7, status: "To be Deployed", name: "dfefefefefefefdededededeeefOJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026", category: "your-space" },
   ];
+
+  const activitiesByCategory = activities.reduce((acc, activity) => {
+    if (!acc[activity.category]) {
+      acc[activity.category] = [];
+    }
+    acc[activity.category].push(activity);
+    return acc;
+  }, {});
 
   const getStatusColor = (status) => {
     const base =
@@ -99,80 +107,51 @@ const ProfListActivityPage = () => {
 
         {/* 🔽 Added spacing here (pt-20) */}
         <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 lg:pt-10 overflow-y-auto">
-          {/* Mobile Cards */}
-          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {activities.map((activity) => (
-              <div key={activity.id} className="bg-[#1E222A] border border-gray-700 rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-medium text-blue-400">{activity.name}</h3>
-                  <span className={getStatusColor(activity.status)}>{activity.status}</span>
-                </div>
+          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
+            List of Activities
+          </h1>
 
-                <div className="text-sm text-gray-300 space-y-1 mb-3">
-                  <p><span className="text-gray-400">Due:</span> {activity.dueDate}</p>
-                  <p><span className="text-gray-400">Space:</span> {activity.space}</p>
-                </div>
-
-                <button className="w-full bg-blue-500 hover:bg-blue-600 py-1.5 rounded-md text-sm">
-                  View Activity
-                </button>
+          {/* Your Space Activities */}
+          {activitiesByCategory['your-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {activitiesByCategory['your-space'].map((activity, index) => (
+                  <div
+                    key={`your-space-${index}`}
+                    className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                  >
+                    <span className="text-xl">📋</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{activity.name}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+              <div className="border-b border-gray-700 my-6"></div>
+            </div>
+          )}
 
-          {/* Desktop Table */}
-          <div className="hidden lg:block">
-            <div className="mb-10 relative">
-              <h1 className="text-4xl font-bold text-center mb-3">List of Activities</h1>
-              <div className="absolute right-0 top-0">
-                <Button
-                  onClick={() => setShowModal(true)}
-                  style={{
-                    padding: "0.4rem 1rem",
-                    fontSize: "0.9rem",
-                    borderRadius: "0.375rem",
-                    backgroundColor: "#3B82F6",
-                    borderColor: "#3B82F6",
-                  }}
-                >
-                  Create Activity
-                </Button>
+          {/* Course Space Activities */}
+          {activitiesByCategory['course-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {activitiesByCategory['course-space'].map((activity, index) => (
+                  <div
+                    key={`course-space-${index}`}
+                    className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                  >
+                    <span className="text-xl">📋</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{activity.name}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
+              <div className="border-b border-gray-700 my-6"></div>
             </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-center">
-                <thead>
-                  <tr className="border-b border-gray-600 text-gray-300 text-sm">
-                    <th className="py-3">Status</th>
-                    <th>Activity Name</th>
-                    <th>Due Date</th>
-                    <th>Space</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activities.map((activity) => (
-                    <tr key={activity.id} className="border-b border-gray-700 hover:bg-[#1F242D]">
-                      <td className="py-3">
-                        <span className={getStatusColor(activity.status)}>
-                          {activity.status}
-                        </span>
-                      </td>
-                      <td>{activity.name}</td>
-                      <td>{activity.dueDate}</td>
-                      <td>{activity.space}</td>
-                      <td>
-                        <button className="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-md text-sm">
-                          View Activity
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Modal */}
