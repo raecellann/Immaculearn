@@ -4,6 +4,7 @@ import { Menu, CheckCircle, Upload, X, FileText, UserPlus } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
+import { adminDashboardService } from "../../adminServices/adminDashboard";
 
 const AdminTeachers = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -36,14 +37,17 @@ const AdminTeachers = () => {
   };
 
   useEffect(() => {
-    setTeachers([
-      { id: 1, name: "Jober Reyes", email: "joberreyes@gmail.com" },
-      { id: 2, name: "Nathaniel Cruz", email: "nathanielcruz@gmail.com" },
-      { id: 3, name: "Wilson James", email: "wilsonjames@gmail.com" },
-      { id: 4, name: "Shiela Sta. Maria", email: "shengstamaria@gmail.com" },
-      { id: 5, name: "Cecilia Cruz", email: "ceciliacruz@gmail.com" },
-      { id: 6, name: "Juan Dela Cruz", email: "juandelacruz@gmail.com" },
-    ]);
+    const fetchStudents = async () => {
+      const res = await adminDashboardService.getAllProfEmails();
+  
+      if (res.success && res.data) {
+        setTeachers(res.data.emails.map(email => ({ email })));
+      } else {
+        console.error(res.message);
+      }
+    };
+  
+    fetchStudents();
   }, []);
 
   /* ================= FILE IMPORT ================= */
@@ -94,12 +98,41 @@ const AdminTeachers = () => {
       : reader.readAsArrayBuffer(file);
   };
 
-  const handleImportTeachers = () => {
-    setTeachers([...teachers, ...importPreview]);
+  const handleImportTeachers = async () => {
+    if (!importFile) {
+      alert("CSV or Excel file is required");
+      return;
+    }
+  
+    try {
+      const res = await adminDashboardService.bulkRegisterProfFile(importFile);
+  
+      if (!res.success) {
+        alert(res.message);
+        return;
+      }
+  
+      setShowImportModal(false);
+      setImportFile(null);
+      setImportPreview([]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+  
+      alert(`Successfully imported ${res.data.total} Teacher!`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to import Teacher");
+    }
+  };
+
+
+
+  const handleCancelImport = () => {
     setShowImportModal(false);
     setImportFile(null);
     setImportPreview([]);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   /* ================= ADD TEACHER ================= */
@@ -117,17 +150,33 @@ const AdminTeachers = () => {
     setShowDeleteConfirm(null);
   };
 
-  const handleAddTeacher = () => {
-    if (!newTeacher.name || !newTeacher.email) return;
+  const handleAddTeacher = async () => {
+  if (!newTeacher.email) {
+    alert("Email is required");
+    return;
+  }
 
-    setTeachers([
-      ...teachers,
-      { id: teachers.length + 1, ...newTeacher },
-    ]);
+  try {
+    const res = await adminDashboardService.registerProfEmail({
+      email: newTeacher.email,
+    });
 
-    setNewTeacher({ name: "", email: "", verified: true });
+    if (!res.success) {
+      alert(res.message);
+      return;
+    }
+
+
+    setNewTeacher({email: "", verified: true });
     setShowAddModal(false);
-  };
+    alert("Teacher registered successfully!");
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong");
+  }
+};
+
+
 
   /* ================= SCROLL HEADER ================= */
 
@@ -314,21 +363,6 @@ const AdminTeachers = () => {
 
             {/* Teacher Form */}
             <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={newTeacher.name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter teacher's full name"
-                />
-              </div>
-
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -375,19 +409,111 @@ const AdminTeachers = () => {
               </button>
             </div>
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              onChange={handleFileUpload}
-            />
+            {/* File Upload Area */}
+            <div className="mb-6">
+              <div
+                className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-gray-500 transition-colors cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-300 mb-2">
+                  Click to upload CSV or Excel file or drag and drop
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Supported formats: .csv, .xlsx, .xls
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
 
-            <button
-              onClick={handleImportTeachers}
-              className="bg-blue-600 px-4 py-2 mt-4 rounded"
-            >
-              Import
-            </button>
+
+            {/* File Info */}
+            {importFile && (
+              <div className="mb-6 p-4 bg-[#242B38] rounded-lg">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <p className="text-white font-medium">{importFile.name}</p>
+                    <p className="text-gray-400 text-sm">
+                      {(importFile.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            
+            {/* Excel Format Instructions */}
+            <div className="mb-6 p-4 bg-[#242B38] rounded-lg">
+              <h3 className="text-white font-medium mb-2">Excel Format Required:</h3>
+              <p className="text-gray-300 text-sm mb-2">
+                Your Excel / CSV file should have the following column in the first row:
+              </p>
+              <ul className="text-gray-400 text-sm space-y-1">
+                <li>• Gmail (Gmail only — must end with <b>@gmail.com</b>)</li>
+              </ul>
+            </div>
+
+
+
+            {/* Preview */}
+            {importPreview.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Preview ({importPreview.length} teachers found)
+                </h3>
+                <div className="max-h-60 overflow-y-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-gray-400 border-b border-gray-700">
+                        <th className="py-2 text-sm">Email</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importPreview.slice(0, 5).map((student, index) => (
+                        <tr key={index} className="border-b border-gray-800">
+                          <td className="py-2 text-sm">{student.email}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {importPreview.length > 5 && (
+                    <p className="text-gray-400 text-sm mt-2 text-center">
+                      ... and {importPreview.length - 5} more teachers
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+
+
+            
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleCancelImport}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleImportTeachers}
+                disabled={importPreview.length === 0}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Import {importPreview.length} Students
+              </button>
+            </div>
+
+            
+            
           </div>
         </div>
       )}

@@ -3,6 +3,8 @@ import AdminSidebar from "../component/adminsidebar";
 import { Users, GraduationCap, UserCheck, Menu } from "lucide-react";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
+import { adminDashboardService } from "../../adminServices/adminDashboard";
+
 
 const AdminDashboard = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -13,30 +15,55 @@ const AdminDashboard = () => {
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
+  const [students, setStudents] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+
   const [stats, setStats] = useState({
-    teachers: 12,
-    students: 240,
-    pending: 3,
+    teachers: 0,
+    students: 0,
+    pending: 0,
   });
+  const fetchStudents = async () => {
+  const res = await adminDashboardService.getAllStudentEmails();
 
-  // Sample data for students and teachers
-  const [students] = useState([
-    { id: 1, name: "Raecell Ann Galvez", email: "raecell@gmail.com" },
-    { id: 2, name: "Zeldrick Jesus Delos Santos", email: "zeldrickjesus@gmail.com" },
-    { id: 3, name: "Wilson Esmabe", email: "wesmabe1920@gmail.com" },
-    { id: 4, name: "Nathaniel Faburada", email: "faburadanathaniel@gmail.com" },
-    { id: 5, name: "Christian Joy Bedana", email: "gimple20@gmail.com" },
-  ]);
+  if (res.success && res.data) {
+    const mapped = res.data.emails.map((email, index) => ({
+      id: index + 1,
+      name: email.split("@")[0], // temporary display name
+      email,
+    }));
 
-  const [teachers] = useState([
-    { id: 1, name: "Jober Reyes", email: "joberreyes@gmail.com" },
-    { id: 2, name: "Nathaniel Cruz", email: "nathanielcruz@gmail.com" },
-    { id: 3, name: "Wilson James", email: "wilsonjames@gmail.com" },
-    { id: 4, name: "Shiela Sta. Maria", email: "shengstamaria@gmail.com" },
-    { id: 5, name: "Cecilia Cruz", email: "ceciliacruz@gmail.com" },
-  ]);
+    setStudents(mapped);
+    setStats(prev => ({
+      ...prev,
+      students: mapped.length,
+    }));
+  }
+};
+const fetchTeachers = async () => {
+  const res = await adminDashboardService.getAllProfEmails();
 
-  
+  if (res.success && res.data) {
+    const mapped = res.data.emails.map((email, index) => ({
+      id: index + 1,
+      name: email.split("@")[0],
+      email,
+    }));
+
+    setTeachers(mapped);
+    setStats(prev => ({
+      ...prev,
+      teachers: mapped.length,
+    }));
+  }
+};
+
+
+  useEffect(() => {
+  fetchStudents();
+  fetchTeachers();
+}, []);
+
   /* NAVIGATION FUNCTIONS */
   const navigateToTeachers = () => {
     navigate('/admin-teachers');

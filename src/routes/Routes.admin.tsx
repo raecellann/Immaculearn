@@ -1,8 +1,5 @@
 // Routes.admin.tsx
 import { Route } from "react-router";
-import AdminDashboard from "../pages/admin-dashboard/admindashboard.jsx";
-import AdminStudents from "../pages/admin-students/adminstudents.jsx";
-import AdminTeachers from "../pages/admin-teachers/adminteachers.jsx";
 import AdminTaskPage from "../pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
 import AdminCreateActivityPage from "../pages/UserSpace/AdminSpacePages/AdminCreateActivityPage.jsx";
 import AdminFilesSharedPage from "../pages/UserSpace/AdminSpacePages/AdminFilesSharedPage.jsx";
@@ -13,9 +10,6 @@ import CreateFileAdmin from "../pages/CreateFile-Admin/createfile.jsx";
 import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
 
 export const AdminRoutes = [
-  <Route key="dashboard" path="/admin-dashboard" element={<AdminDashboard />} />,
-  <Route key="students" path="/admin-students" element={<AdminStudents />} />,
-  <Route key="teachers" path="/admin-teachers" element={<AdminTeachers />} />,
   <Route key="admintask" path="/admintaskpage" element={<AdminTaskPage />} />,
   <Route key="create-activity" path="/admin-create-activity-page" element={<AdminCreateActivityPage />} />,
   <Route key="files" path="/admin-files" element={<AdminFilesSharedPage />} />,

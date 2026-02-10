@@ -4,6 +4,7 @@ import { Menu, CheckCircle, Upload, X, FileText, UserPlus } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
+import { adminDashboardService } from "../../adminServices/adminDashboard";
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
@@ -19,7 +20,6 @@ const AdminStudents = () => {
 
   // Manual student entry form state
   const [newStudent, setNewStudent] = useState({
-    name: '',
     email: ''
   });
 
@@ -37,63 +37,19 @@ const AdminStudents = () => {
   };
 
   useEffect(() => {
-    setStudents([
-      { 
-        id: 1, 
-        name: "Raecell Ann Galvez", 
-        studentNumber: "2021-001",
-        email: "raecell@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 2, 
-        name: "Zeldrick Jesus Delos Santos", 
-        studentNumber: "2021-002",
-        email: "zeldrickjesus@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 3, 
-        name: "Wilson Esmabe", 
-        studentNumber: "2021-003",
-        email: "wesmabe1920@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 4, 
-        name: "Nathaniel Faburada", 
-        studentNumber: "2021-004",
-        email: "faburadanathaniel@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 5, 
-        name: "Christian Joy Bedana", 
-        studentNumber: "2021-005",
-        email: "gimple20@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-      { 
-        id: 6, 
-        name: "Keziah Tangco", 
-        studentNumber: "2021-006",
-        email: "keziahtangco@gmail.com",
-        yearLevel: "4th Year",
-        course: "BS Computer Science",
-        verified: true
-      },
-    ]);
-  }, []);
+  const fetchStudents = async () => {
+    const res = await adminDashboardService.getAllStudentEmails();
+
+    if (res.success && res.data) {
+      setStudents(res.data.emails.map(email => ({ email })));
+    } else {
+      console.error(res.message);
+    }
+  };
+
+  fetchStudents();
+}, []);
+
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -124,16 +80,6 @@ const AdminStudents = () => {
           data = XLSX.utils.sheet_to_json(worksheet);
         }
         
-        // Map data to student structure
-        const mappedData = data.map((row, index) => ({
-          id: students.length + index + 1,
-          name: row.Name || row.name || '',
-          studentNumber: row['Student Number'] || row.studentNumber || row['Student Num'] || '',
-          email: row.Email || row.email || '',
-          yearLevel: row['Year Level'] || row.yearLevel || row.Year || '',
-          course: row.Course || row.course || '',
-          verified: row.Verified === 'Yes' || row.verified === true || row.Enrolled === 'Yes'
-        }));
         
         setImportPreview(mappedData);
       } catch (error) {
@@ -170,18 +116,34 @@ const AdminStudents = () => {
     return data;
   };
 
-  const handleImportStudents = () => {
-    if (importPreview.length > 0) {
-      setStudents([...students, ...importPreview]);
-      setShowImportModal(false);
-      setImportFile(null);
-      setImportPreview([]);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      alert(`Successfully imported ${importPreview.length} students!`);
+  const handleImportStudents = async () => {
+  if (!importFile) {
+    alert("CSV or Excel file is required");
+    return;
+  }
+
+  try {
+    const res = await adminDashboardService.bulkRegisterStudentFile(importFile);
+
+    if (!res.success) {
+      alert(res.message);
+      return;
     }
-  };
+
+    setShowImportModal(false);
+    setImportFile(null);
+    setImportPreview([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    alert(`Successfully imported ${res.data.total} students!`);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to import students");
+  }
+};
+
+
+
 
   const handleCancelImport = () => {
     setShowImportModal(false);
@@ -201,34 +163,33 @@ const AdminStudents = () => {
     }));
   };
 
-  const handleAddStudent = () => {
-    // Validate required fields
-    if (!newStudent.name || !newStudent.email) {
-      alert('Please fill in all required fields (Name and Email)');
+  const handleAddStudent = async () => {
+  if (!newStudent.email) {
+    alert("Email is required");
+    return;
+  }
+
+  try {
+    const res = await adminDashboardService.registerStudentEmail({
+      email: newStudent.email,
+    });
+
+    if (!res.success) {
+      alert(res.message);
       return;
     }
 
-    // Add new student to the list
-    const studentToAdd = {
-      id: students.length + 1,
-      ...newStudent,
-      studentNumber: 'N/A',
-      yearLevel: 'N/A',
-      course: 'N/A',
-      verified: true
-    };
+    
 
-    setStudents([...students, studentToAdd]);
-    
-    // Reset form and close modal
-    setNewStudent({
-      name: '',
-      email: ''
-    });
+    setNewStudent({ name: "", email: "" });
     setShowAddModal(false);
-    
-    alert('Student added successfully!');
-  };
+    alert("Student registered successfully!");
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong");
+  }
+};
+
 
   const handleDeleteStudent = (studentId) => {
     setStudents(students.filter(student => student.id !== studentId));
@@ -393,11 +354,8 @@ const AdminStudents = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-400 border-b border-gray-700">
-                  <th className="py-3">Name</th>
-                  <th className="py-3">Student Number</th>
+                  
                   <th className="py-3">Email</th>
-                  <th className="py-3">Course</th>
-                  <th className="py-3">Year Level</th>
                   <th className="py-3">Actions</th>
                 </tr>
               </thead>
@@ -408,11 +366,8 @@ const AdminStudents = () => {
                     key={student.id}
                     className="border-b border-gray-800 hover:bg-[#242B38]"
                   >
-                    <td className="py-4">{student.name}</td>
-                    <td className="py-4">{student.studentNumber}</td>
                     <td className="py-4 text-sm">{student.email}</td>
-                    <td className="py-4">{student.course}</td>
-                    <td className="py-4">{student.yearLevel}</td>
+                   
                     <td className="py-4">
                       <button
                         onClick={() => setShowDeleteConfirm(student.id)}
@@ -492,25 +447,13 @@ const AdminStudents = () => {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="text-gray-400 border-b border-gray-700">
-                        <th className="py-2 text-sm">Name</th>
-                        <th className="py-2 text-sm">Student Number</th>
                         <th className="py-2 text-sm">Email</th>
-                        <th className="py-2 text-sm">Course</th>
-                        <th className="py-2 text-sm">Year</th>
-                        <th className="py-2 text-sm">Verified</th>
                       </tr>
                     </thead>
                     <tbody>
                       {importPreview.slice(0, 5).map((student, index) => (
                         <tr key={index} className="border-b border-gray-800">
-                          <td className="py-2 text-sm">{student.name}</td>
-                          <td className="py-2 text-sm">{student.studentNumber}</td>
                           <td className="py-2 text-sm">{student.email}</td>
-                          <td className="py-2 text-sm">{student.course}</td>
-                          <td className="py-2 text-sm">{student.yearLevel}</td>
-                          <td className="py-2 text-sm">
-                            {student.verified ? 'Yes' : 'No'}
-                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -528,15 +471,10 @@ const AdminStudents = () => {
             <div className="mb-6 p-4 bg-[#242B38] rounded-lg">
               <h3 className="text-white font-medium mb-2">Excel Format Required:</h3>
               <p className="text-gray-300 text-sm mb-2">
-                Your Excel file should have the following columns in the first row:
+                Your Excel / CSV file should have the following column in the first row:
               </p>
               <ul className="text-gray-400 text-sm space-y-1">
-                <li>• Name (Student's full name)</li>
-                <li>• Student Number (Unique ID)</li>
-                <li>• Email (Email address)</li>
-                <li>• Course (Program/Department)</li>
-                <li>• Year Level (1st Year, 2nd Year, etc.)</li>
-                <li>• Verified (Yes/No or true/false)</li>
+                <li>• Gmail (Gmail only — must end with <b>@gmail.com</b>)</li>
               </ul>
             </div>
 
@@ -576,20 +514,6 @@ const AdminStudents = () => {
 
             {/* Student Form */}
             <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={newStudent.name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter student's full name"
-                />
-              </div>
 
               {/* Email */}
               <div>
