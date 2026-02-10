@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
+import { toast } from "react-toastify";
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
@@ -118,7 +119,7 @@ const AdminStudents = () => {
 
   const handleImportStudents = async () => {
   if (!importFile) {
-    alert("CSV or Excel file is required");
+    toast.error("CSV or Excel file is required");
     return;
   }
 
@@ -135,10 +136,10 @@ const AdminStudents = () => {
     setImportPreview([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
 
-    alert(`Successfully imported ${res.data.total} students!`);
+    toast.success(`Successfully imported ${res.data.total} students!`);
   } catch (err) {
     console.error(err);
-    alert("Failed to import students");
+    toast.err("Failed to import students");
   }
 };
 
@@ -165,7 +166,7 @@ const AdminStudents = () => {
 
   const handleAddStudent = async () => {
   if (!newStudent.email) {
-    alert("Email is required");
+    toast.success("Email is required");
     return;
   }
 
@@ -183,10 +184,10 @@ const AdminStudents = () => {
 
     setNewStudent({ name: "", email: "" });
     setShowAddModal(false);
-    alert("Student registered successfully!");
+    toast.success("Student registered successfully!");
   } catch (err) {
     console.error(err);
-    alert("Something went wrong");
+    toast.error("Something went wrong");
   }
 };
 

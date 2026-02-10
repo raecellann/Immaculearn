@@ -11,7 +11,6 @@ const LoginPage = () => {
   const {isAuthenticated, user, isLoading} = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState(""); // ✅ track selected role
   const [error, setError] = useState("")
 
   const navigate = useNavigate();
@@ -189,32 +188,7 @@ const LoginPage = () => {
             style={{ width: "100%" }}
           />
 
-          {/* ✅ Checkbox Section */}
-          <div className="flex justify-center gap-6 mt-2 w-full">
-            <label className="flex items-center gap-2 text-gray-800 font-medium">
-              <input
-                type="radio"
-                name="role"
-                value="Student"
-                checked={role === "Student"}
-                onChange={(e) => setRole(e.target.value)}
-              />
-              Student
-            </label>
-
-            <label className="flex items-center gap-2 text-gray-800 font-medium">
-              <input
-                type="radio"
-                name="role"
-                value="Professor"
-                checked={role === "Professor"}
-                onChange={(e) => setRole(e.target.value)}
-              />
-              Professor
-            </label>
-          </div>
-
-
+          
           {/* Log in Button */}
           <Button
             type="submit"
@@ -279,8 +253,9 @@ const LoginPage = () => {
         </button>
 
         <p className="text-center text-gray-600 text-sm mt-4">
-          Check your email inbox for log in credentials.
+          Need access? Reach out to your administrator for login details.
         </p>
+
       </div>
     </div>
   );

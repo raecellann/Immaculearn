@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
+import { toast } from "react-toastify";
 
 const AdminTeachers = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -19,9 +20,7 @@ const AdminTeachers = () => {
   const navigate = useNavigate();
 
   const [newTeacher, setNewTeacher] = useState({
-    name: "",
     email: "",
-    verified: true,
   });
 
   const [showHeader, setShowHeader] = useState(true);
@@ -100,7 +99,7 @@ const AdminTeachers = () => {
 
   const handleImportTeachers = async () => {
     if (!importFile) {
-      alert("CSV or Excel file is required");
+      toast.error("CSV or Excel file is required");
       return;
     }
   
@@ -117,10 +116,10 @@ const AdminTeachers = () => {
       setImportPreview([]);
       if (fileInputRef.current) fileInputRef.current.value = "";
   
-      alert(`Successfully imported ${res.data.total} Teacher!`);
+      toast.success(`Successfully imported ${res.data.total} Teacher!`);
     } catch (err) {
       console.error(err);
-      alert("Failed to import Teacher");
+      toast.error("Failed to import Teacher");
     }
   };
 
@@ -152,7 +151,7 @@ const AdminTeachers = () => {
 
   const handleAddTeacher = async () => {
   if (!newTeacher.email) {
-    alert("Email is required");
+    toast.error("Email is required");
     return;
   }
 
@@ -169,10 +168,10 @@ const AdminTeachers = () => {
 
     setNewTeacher({email: "", verified: true });
     setShowAddModal(false);
-    alert("Teacher registered successfully!");
+    toast.success("Teacher registered successfully!");
   } catch (err) {
     console.error(err);
-    alert("Something went wrong");
+    toast.error("Something went wrong");
   }
 };
 
