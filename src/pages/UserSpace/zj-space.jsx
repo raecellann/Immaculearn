@@ -74,10 +74,15 @@ const UserPage = () => {
 
   // Find current space
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+
   const currentSpace = allSpaces.find(space => space.space_uuid === space_uuid);
+
+  console.log("current space:", currentSpace)
   
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
+
+  console.log(isOwnerSpace)
   const isFriendSpace = !isOwnerSpace;
 
   // Loading state
