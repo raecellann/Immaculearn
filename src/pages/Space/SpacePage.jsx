@@ -13,6 +13,7 @@ const SpacePage = () => {
   const { user } = useUser();
   const { userSpaces, friendSpaces, joinSpace } = useSpace();
 
+
   const [showMenu, setShowMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);

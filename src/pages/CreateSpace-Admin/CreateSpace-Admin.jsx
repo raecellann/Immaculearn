@@ -7,6 +7,7 @@ import { ChevronDown, X } from "lucide-react";
 // import { useSpace } from "../../contexts/space/spaceContext";
 import { useNavigate } from "react-router";
 import { useSpace } from "../../contexts/space/useSpace";
+import { toast } from "react-toastify";
 
 
 const CreateSpaceAdmin = () => {
@@ -72,7 +73,8 @@ const CreateSpaceAdmin = () => {
 
         if (result.success) {
           const space_uuid = result.space_uuid;
-          alert(`Space "${spaceName}" created successfully!`);
+          toast.success(`Space "${spaceName}" created successfully!`)
+          // alert(`Space "${spaceName}" created successfully!`);
           
           // Reset form
           setSpaceName("");

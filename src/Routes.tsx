@@ -13,7 +13,6 @@ import { UserProvider } from "./contexts/user/userContextProvider.tsx";
 import { SpaceProvider } from "./contexts/space/spaceContextProvider.tsx";
 import LandingPage from "./pages/Landing/landingPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import { FileRoutes } from "./routes/Routes.file.tsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,31 +41,11 @@ export default function Routes() {
           />
         ))}
 
-        {SpaceRoutes.map(route => (
+        {AuthRoutes.map(route => (
           <Route
             key={route.key}
             path={route.path}
-            element={
-              <UserProvider>
-                <SpaceProvider>
-                  {route.element}
-                </SpaceProvider>
-              </UserProvider>
-            }
-          />
-        ))}
-
-        {FileRoutes.map(route => (
-          <Route
-            key={route.key}
-            path={route.path}
-            element={
-              <UserProvider>
-                <SpaceProvider>
-                  {route.element}
-                </SpaceProvider>
-              </UserProvider>
-            }
+            element={route.element}
           />
         ))}
 
@@ -80,6 +59,20 @@ export default function Routes() {
                   <ProtectedRoute>
                       {route.element}
                   </ProtectedRoute>
+                </SpaceProvider>
+              </UserProvider>
+            }
+          />
+        ))}
+
+        {SpaceRoutes.map(route => (
+          <Route
+            key={route.key}
+            path={route.path}
+            element={
+              <UserProvider>
+                <SpaceProvider>
+                  {route.element}
                 </SpaceProvider>
               </UserProvider>
             }

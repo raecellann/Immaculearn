@@ -18,6 +18,7 @@ const ProfFilePage = () => {
       datePosted: "July 24",
       spaceName: "CS THESIS 1 - 1SY2025-2026",
       posted: true,
+      category: "your-space"
     },
     {
       status: "To be Uploaded",
@@ -25,6 +26,7 @@ const ProfFilePage = () => {
       datePosted: "Oct 30",
       spaceName: "BUSINTEG - 1SY2025-2026",
       posted: false,
+      category: "course-space"
     },
     {
       status: "Posted",
@@ -32,8 +34,17 @@ const ProfFilePage = () => {
       datePosted: "Oct 10",
       spaceName: "BUSINTEG - 1SY2025-2026",
       posted: true,
+      category: "course-space"
     },
   ];
+
+  const filesByCategory = files.reduce((acc, file) => {
+    if (!acc[file.category]) {
+      acc[file.category] = [];
+    }
+    acc[file.category].push(file);
+    return acc;
+  }, {});
 
   // 🔹 Hide-on-scroll header
   useEffect(() => {
@@ -102,113 +113,77 @@ const ProfFilePage = () => {
             </button>
 
             <h1 className="text-lg font-bold flex-1 truncate">Files</h1>
-
-            <Button
-              onClick={() => setShowModal(true)}
-              style={{
-                padding: "0.35rem 0.75rem",
-                fontSize: "0.75rem",
-                borderRadius: "0.375rem",
-                backgroundColor: "#3B82F6",
-              }}
-            >
-              Upload
-            </Button>
           </div>
         </div>
 
-        {/* Desktop Header */}
-        <div className="hidden lg:flex justify-between items-center px-10 pt-10 mb-6 relative">
-          <h1 className="text-4xl font-bold text-center flex-1">Files</h1>
-          <div className="absolute right-10 top-10">
-            <Button
-              onClick={() => setShowModal(true)}
-              style={{
-                padding: "0.35rem 1rem",
-                fontSize: "0.8rem",
-                borderRadius: "0.375rem",
-                backgroundColor: "#3B82F6",
-              }}
-            >
-              Create or Upload File
-            </Button>
-          </div>
-        </div>
+        {/* ✅ CONTENT (FOLDER-LIKE DISPLAY) */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
+          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
+            Files
+          </h1>
 
-        {/* ✅ CONTENT (ADDED SPACE HERE) */}
-        <div className="flex-1 px-4 sm:px-6 lg:px-10 pb-10 mt-4 sm:mt-6">
-          {/* Mobile / Tablet Cards */}
-          <div className="lg:hidden space-y-4">
-            {files.map((file, idx) => (
-              <div
-                key={idx}
-                className="bg-[#1E222A] p-4 rounded-lg border border-gray-700"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-medium text-blue-400">
-                    {file.fileName}
-                  </h3>
-                  <span
-                    className={`text-sm px-2 py-1 rounded ${
-                      file.posted
-                        ? "text-green-400 bg-green-900/30"
-                        : "text-blue-400 bg-blue-900/30"
-                    }`}
+          {/* Your Space Files */}
+          {filesByCategory['your-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {filesByCategory['your-space'].map((file, index) => (
+                  <div
+                    key={`your-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
                   >
-                    {file.status}
-                  </span>
-                </div>
-                <p className="text-gray-400 text-sm">
-                  <b>Date:</b> {file.datePosted}
-                </p>
-                <p className="text-gray-400 text-sm mb-2">
-                  <b>Space:</b> {file.spaceName}
-                </p>
-                <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-1.5 rounded-md text-sm">
-                  {file.posted ? "View File" : "Upload"}
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Table */}
-          <div className="hidden lg:block overflow-x-auto mt-4">
-            <table className="w-full text-center border-collapse">
-              <thead>
-                <tr className="border-b border-gray-600 text-gray-300 text-sm">
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">File Name</th>
-                  <th className="py-3 px-4">Date Posted</th>
-                  <th className="py-3 px-4">Space Name</th>
-                  <th className="py-3 px-4"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {files.map((file, idx) => (
-                  <tr
-                    key={idx}
-                    className="border-b border-gray-700 hover:bg-[#1F242D] transition"
-                  >
-                    <td
-                      className={`py-3 px-4 ${
-                        file.posted ? "text-green-400" : "text-blue-400"
-                      }`}
-                    >
-                      {file.status}
-                    </td>
-                    <td className="py-3 px-4">{file.fileName}</td>
-                    <td className="py-3 px-4">{file.datePosted}</td>
-                    <td className="py-3 px-4">{file.spaceName}</td>
-                    <td className="py-3 px-4">
-                      <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm">
-                        {file.posted ? "View File" : "Upload"}
-                      </button>
-                    </td>
-                  </tr>
+                    <span className="text-xl">📁</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{file.fileName}</p>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+              <div className="border-b border-gray-700 my-6"></div>
+            </div>
+          )}
+
+          {/* Course Space Files */}
+          {filesByCategory['course-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {filesByCategory['course-space'].map((file, index) => (
+                  <div
+                    key={`course-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                  >
+                    <span className="text-xl">📁</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{file.fileName}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-b border-gray-700 my-6"></div>
+            </div>
+          )}
+
+          {/* Friends Space Files */}
+          {filesByCategory['friends-space'] && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {filesByCategory['friends-space'].map((file, index) => (
+                  <div
+                    key={`friends-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                  >
+                    <span className="text-xl">📁</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{file.fileName}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-b border-gray-700 my-6"></div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -244,13 +219,48 @@ const ProfFilePage = () => {
 
             <div className="flex justify-end mt-5 gap-3">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={(e) => {
+                  // Clear form
+                  const form = e.target.closest('form');
+                  if (form) {
+                    form.reset();
+                  }
+                }}
                 className="px-3 py-1 bg-gray-600 rounded-md hover:bg-gray-700"
               >
                 Cancel
               </button>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={(e) => {
+                  // Handle form submission
+                  const form = e.target.closest('form');
+                  if (form) {
+                    const formData = new FormData();
+                    formData.append('fileName', form.querySelector('input[placeholder="File Name"]').value);
+                    formData.append('datePosted', form.querySelector('input[placeholder*="Date"]').value);
+                    formData.append('spaceName', form.querySelector('input[placeholder*="Space"]').value);
+                    formData.append('status', form.querySelector('select').value);
+                    
+                    // Here you would typically make an API call to save the file
+                    console.log('New file:', {
+                      fileName: form.querySelector('input[placeholder="File Name"]').value,
+                      datePosted: form.querySelector('input[placeholder*="Date"]').value,
+                      spaceName: form.querySelector('input[placeholder*="Space"]').value,
+                      status: form.querySelector('select').value
+                    });
+                    
+                    // Add to files array and close modal
+                    setFiles([...files, {
+                      fileName: form.querySelector('input[placeholder="File Name"]').value,
+                      datePosted: form.querySelector('input[placeholder*="Date"]').value,
+                      spaceName: form.querySelector('input[placeholder*="Space"]').value,
+                      status: form.querySelector('select').value === "To be Uploaded" ? "Posted" : "Posted",
+                      posted: form.querySelector('select').value === "Posted",
+                      category: form.querySelector('select').value === "To be Uploaded" ? "your-space" : "course-space"
+                    }]);
+                    setShowModal(false);
+                  }
+                }}
                 className="px-3 py-1 bg-blue-500 rounded-md hover:bg-blue-600"
               >
                 Save

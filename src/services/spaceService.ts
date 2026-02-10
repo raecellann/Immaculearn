@@ -211,6 +211,72 @@ class SpaceService {
             };
         }
     }
+
+
+
+
+
+    // Tasks
+    async uploadTask(spaceId: string, title: string, instruction: string, scoring: number, dueDate: string, groupsData: any[]) {
+        try {
+            const response = await api.post(`/tasks/upload`, {
+                space_id: spaceId,
+                title,
+                instruction,
+                scoring,
+                due_date: dueDate,
+                groupsData,
+            });
+            return response.data;
+        } catch (err: any) {
+            return { success: false, message: err.response?.data?.message || "Failed to upload task" };
+        }
+    }
+
+    async draftTask(spaceId: string, title: string, instruction: string, scoring: number, dueDate: string, groupsData: any[]) {
+        try {
+            const response = await api.post(`/tasks/draft`, {
+                space_id: spaceId,
+                title,
+                instruction,
+                scoring,
+                due_date: dueDate,
+                groupsData,
+            });
+            return response.data;
+        } catch (err: any) {
+            return { success: false, message: err.response?.data?.message || "Failed to draft task" };
+        }
+    }
+
+    async getUploadedTasks(spaceId: string) {
+        try {
+            const response = await api.get(`/tasks/upload/${spaceId}`);
+            return response.data;
+        } catch (err: any) {
+            return { success: false, message: err.response?.data?.message || "Failed to fetch uploaded tasks" };
+        }
+    }
+
+    async getDraftedTasks(spaceId: string) {
+        try {
+            const response = await api.get(`/tasks/draft/${spaceId}`);
+            return response.data;
+        } catch (err: any) {
+            return { success: false, message: err.response?.data?.message || "Failed to fetch drafted tasks" };
+        }
+    }
+
+    async updateTaskStatus(taskId: number, newStatus: string) {
+        try {
+            const response = await api.patch(`/tasks/${taskId}/status`, {
+                status: newStatus
+            });
+            return response.data;
+        } catch (err: any) {
+            return { success: false, message: err.response?.data?.message || "Failed to update task status" };
+        }
+    }
 }
 
 export const spaceService = new SpaceService();

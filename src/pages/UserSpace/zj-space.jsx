@@ -10,12 +10,20 @@ import {
   FiMessageCircle,
   FiMenu,
   FiX,
-  FiChevronLeft
+  FiChevronLeft,
+  FiCopy
 } from "react-icons/fi";
+import { useUser } from "../../contexts/user/useUser";
+import { useSpace } from "../../contexts/space/useSpace";
+import MainLoading from "../../components/LoadingComponents/mainLoading";
+import PageNotFound from "../PageNotFound/pageNotFound";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 
 const UserPage = () => {
   const { space_uuid, space_name } = useParams();
+  const navigate = useNavigate();
 
+  // State hooks - MUST BE AT THE TOP
   const [isFocused, setIsFocused] = useState(false);
   const [showInvitePopup, setShowInvitePopup] = useState(false);
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
@@ -23,39 +31,28 @@ const UserPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
-  // User role state - in real app, this would come from authentication context
-  const [userRole, setUserRole] = useState("user"); // "user", "prof", or "admin"
+  const [copyFeedback, setCopyFeedback] = useState("");
+  
+  // Refs - MUST BE AT THE TOP
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
-  const navigate = useNavigate();
 
-  // Helper function to check if user has permission
-  const hasPermission = () => {
-    return userRole === "admin" || userRole === "prof";
-  };
+  // Custom hooks - MUST BE AT THE TOP
+  const { user, isLoading: userLoading } = useUser();
+  const {
+    userSpaces,
+    friendSpaces,
+    useJoinRequests,
+    isLoading: spaceLoading,
+    acceptJoinRequest,
+    declineJoinRequest,
+    deleteSpace
+  } = useSpace();
 
-  // Mock pending invitations data
-  const [pendingInvitations, setPendingInvitations] = useState([
-    {
-      id: 1,
-      userName: "John Doe",
-      userEmail: "john@example.com",
-      userAvatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
-      message: "John Doe wants to join your space",
-      date: "2024-01-15",
-      timeJoined: "10:30 AM"
-    },
-    {
-      id: 2,
-      userName: "Jane Smith",
-      userEmail: "jane@example.com",
-      userAvatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
-      message: "Jane Smith wants to join your space",
-      date: "2024-01-14",
-      timeJoined: "2:45 PM"
-    },
-  ]);
+  // Join requests - MUST BE AT THE TOP (unconditionally)
+  const { data: joinRequestsData = [], isLoading: joinRequestsLoading } = useJoinRequests(space_uuid || "");
 
+  // Scroll handler
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -71,6 +68,35 @@ const UserPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // UUID validation
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  const isValidUuid = uuidPattern.test(space_uuid);
+
+  // Find current space
+  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+
+  const currentSpace = allSpaces.find(space => space.space_uuid === space_uuid);
+
+  
+  // Check if user is owner
+  const isOwnerSpace = currentSpace?.creator === user?.id;
+
+  const isFriendSpace = !isOwnerSpace;
+
+  // Loading state
+  if (userLoading || spaceLoading) {
+    return <div className="flex h-screen justify-center items-center"><MainLoading /></div>;
+  }
+
+  // Invalid space or not found
+  if (!isValidUuid || !currentSpace) {
+    return <PageNotFound />;
+  }
+
+  // Space name
+  const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
+
+  // Text formatting
   const applyFormat = (command) => {
     editorRef.current?.focus();
     const selection = window.getSelection();
@@ -78,42 +104,70 @@ const UserPage = () => {
     document.execCommand(command, false, null);
   };
 
+  // Invite member
   const handleInviteMember = () => {
     setShowInvitePopup(true);
   };
 
-  const handleAcceptInvitation = (invitationId) => {
-    console.log(`Accepting invitation: ${invitationId}`);
-    // Here you would typically accept the invitation via API
-    alert("Invitation accepted!");
-    // Remove from pending invitations
-    setPendingInvitations(prev => prev.filter(invite => invite.id !== invitationId));
+  // Delete room
+  const handleDeleteRoom = async () => {
+    if (!currentSpace) return;
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`);
+    if (!confirmDelete) return;
+    try {
+      await deleteSpace(currentSpace.space_uuid, user.id);
+      alert(`Space "${currentSpace.space_name}" deleted successfully.`);
+      navigate("/space");
+    } catch (error) {
+      console.error("Failed to delete space:", error);
+      alert("Failed to delete space. Please try again.");
+    }
   };
 
-  const handleDeclineInvitation = (invitationId) => {
-    console.log(`Declining invitation: ${invitationId}`);
-    // Here you would typically decline the invitation via API
-    alert("Invitation declined!");
-    // Remove from pending invitations
-    setPendingInvitations(prev => prev.filter(invite => invite.id !== invitationId));
+  // Handle join requests
+  const handleAcceptJoinRequest = async (userId) => {
+    try {
+      await acceptJoinRequest(userId, space_uuid);
+    } catch (error) {
+      console.error("Failed to accept join request:", error);
+    }
   };
 
+  const handleDeclineJoinRequest = async (userId) => {
+    try {
+      await declineJoinRequest(userId, space_uuid);
+    } catch (error) {
+      console.error("Failed to decline join request:", error);
+    }
+  };
+
+  // Send invite
   const sendInvite = () => {
     if (inviteEmail.trim()) {
-      // Here you would typically send an invitation via API
-      console.log(`Inviting member: ${inviteEmail}`);
-      // For demo purposes, we'll just show a success message
       alert(`Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
       setShowInvitePopup(false);
     }
   };
 
+  // Copy link
+  const handleCopyLink = (space_link) => {
+    navigator.clipboard.writeText(space_link)
+      .then(() => {
+        setCopyFeedback("Copied!");
+        setTimeout(() => setCopyFeedback(""), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err);
+        setCopyFeedback("Error!");
+        setTimeout(() => setCopyFeedback(""), 2000);
+      });
+  };
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        {/* <ProfSidebar onLogoutClick={() => setShowLogout(true)} /> */}
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
@@ -149,7 +203,7 @@ const UserPage = () => {
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold">CS Thesis 2 Space</h1>
+          <h1 className="text-xl font-bold">{spaceName}</h1>
         </div>
 
         {/* HEADER SPACER */}
@@ -168,14 +222,48 @@ const UserPage = () => {
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">
-              CS Thesis 2 Space
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-400">(5 Members)</span>
-              <button className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition">
-                Manage Class
-              </button>
+              <span className="text-xs text-gray-400">({(currentSpace?.members?.length) || 0} member(s))</span>
+              {isOwnerSpace && (
+                <>
+                  <button 
+                    onClick={handleInviteMember} 
+                    className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition"
+                  >
+                    Add Member
+                  </button>
+                  <button 
+                    onClick={() => setShowPendingInvitations(true)} 
+                    className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
+                  >
+                    Pending Invites
+                  </button>
+                  <button
+                    onClick={handleDeleteRoom}
+                    className="px-3 py-1 text-xs bg-red-600 rounded-md hover:bg-red-500 transition"
+                  >
+                    Delete Room
+                  </button>
+                </>
+              )}
+              {isFriendSpace && (
+                <div className="flex flex-col gap-2 mt-2">
+                  <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
+                    <span className="text-xs text-blue-400 break-all">
+                      {currentSpace?.space_link || 'Loading...'}
+                    </span>
+                    <button
+                      onClick={() => handleCopyLink(currentSpace?.space_link)}
+                      className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
+                      title="Copy to clipboard"
+                    >
+                      <FiCopy size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+              
             </div>
           </div>
 
@@ -209,7 +297,7 @@ const UserPage = () => {
           </div>
           
           {/* Add Member Button - Mobile */}
-          {hasPermission() && (
+          {isOwnerSpace && (
             <div className="md:hidden flex justify-end gap-2 mb-6">
               <button 
                 onClick={handleInviteMember} 
@@ -238,7 +326,7 @@ const UserPage = () => {
             <div className="relative p-6">
               {/* AVATAR */}
               <img
-                src="/src/assets/HomePage/frieren-avatar.jpg"
+                src={user?.profile_pic || "/src/assets/HomePage/frieren-avatar.jpg"}
                 alt="Avatar"
                 className="absolute left-6 top-6 w-10 h-10 rounded-full"
               />
@@ -422,35 +510,37 @@ const UserPage = () => {
 
               {/* Invitations List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {pendingInvitations.length === 0 ? (
+                {joinRequestsData.length === 0 ? (
                   <p className="text-gray-400 text-center py-4">No pending invitations</p>
                 ) : (
-                  pendingInvitations.map((invitation) => (
-                    <div key={invitation.id} className="bg-[#2A2F3A] rounded-lg p-4">
+                  joinRequestsData.map((invitation) => (
+                    <div key={invitation.account_id} className="bg-[#2A2F3A] rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         <img
-                          src={invitation.userAvatar}
-                          alt={invitation.userName}
+                          src={invitation.profile_pic}
+                          alt={invitation.fullname}
                           className="w-12 h-12 rounded-full object-cover"
                         />
                         <div className="flex-1">
-                          <h3 className="font-medium">{invitation.userName}</h3>
-                          <p className="text-sm text-gray-400">{invitation.userEmail}</p>
-                          <p className="text-sm mt-1">{invitation.message}</p>
+                          <h3 className="font-medium">{invitation.fullname}</h3>
+                          <p className="text-sm text-gray-400">{invitation.email}</p>
+                          <p className="text-sm mt-1">{invitation.message || "Hello world"}</p>
                           <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs text-gray-500">{invitation.date} • {invitation.timeJoined}</span>
+                            <span className="text-xs text-gray-500">{invitation.added_at}</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex justify-end gap-3 mt-3">
                         <button
-                          onClick={() => handleDeclineInvitation(invitation.id)}
+                          disabled={spaceLoading}
+                          onClick={() => handleDeclineJoinRequest(invitation.account_id)}
                           className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition"
                         >
                           Decline
                         </button>
                         <button
-                          onClick={() => handleAcceptInvitation(invitation.id)}
+                          disabled={spaceLoading}
+                          onClick={() => handleAcceptJoinRequest(invitation.account_id)}
                           className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition"
                         >
                           Accept
@@ -487,10 +577,19 @@ const UserPage = () => {
                 </p>
                 <div className="flex items-center justify-between bg-white px-3 py-1 rounded-md border border-gray-300">
                   <span className="text-xs text-gray-600 truncate flex-1">
-                    immaculearn.collab.app/spaces/sample92629
+                    {currentSpace?.space_link}
                   </span>
-                  <button className="text-gray-500 hover:text-black text-sm ml-2">
-                    Copy Link
+                  <button 
+                    onClick={() => handleCopyLink(currentSpace?.space_link)} 
+                    className={`text-sm ml-2 px-2 py-1 rounded transition-colors ${
+                      copyFeedback 
+                        ? copyFeedback === "Copied!" 
+                          ? "text-green-600 bg-green-50" 
+                          : "text-red-600 bg-red-50"
+                        : "text-gray-500 hover:text-black hover:bg-gray-100"
+                    }`}
+                  >
+                    {copyFeedback || "Copy Link"}
                   </button>
                 </div>
               </div>
