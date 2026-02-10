@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
 import Button from "../component/Button";
-import { FiEdit, FiSend, FiMoreVertical, FiSearch, FiPaperclip } from "react-icons/fi";
+import { FiEdit, FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCornerUpLeft, FiCheck, FiCheckCircle } from "react-icons/fi";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
@@ -17,6 +17,9 @@ const ChatList = () => {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [showMessageOptions, setShowMessageOptions] = useState(null);
 
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
 
@@ -54,6 +57,8 @@ const ChatList = () => {
         minute: "2-digit",
       }),
       date: new Date(m.timestamp).toLocaleDateString(),
+      status: m.status || 'sent', // sent, delivered, read
+      seen: m.seen || false,
     }));
   }, [messages, user.id]);
 
@@ -99,11 +104,14 @@ const ChatList = () => {
       if (showDropdown && !event.target.closest('.dropdown-container')) {
         setShowDropdown(false);
       }
+      if (showMessageOptions && !event.target.closest('.message-options-container')) {
+        setShowMessageOptions(null);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showDropdown]);
+  }, [showDropdown, showMessageOptions]);
 
   const getPrivateSpaceUuid = (a, b) => [a, b].sort().join("-");
 
@@ -155,9 +163,43 @@ const ChatList = () => {
   // Send message helper
   const handleSend = () => {
     if (!input.trim()) return;
-    sendMessage(input);
+    
+    // If replying, include reply information
+    const messageContent = replyingTo ? input : input;
+    sendMessage(messageContent, replyingTo);
     setInput("");
     inputRef.current?.focus();
+    setReplyingTo(null);
+  };
+
+  // Reply functionality
+  const handleReply = (message) => {
+    setReplyingTo({
+      ...message,
+      text: message.text.length > 30 ? message.text.substring(0, 30) + '...' : message.text
+    });
+    setShowMessageOptions(null);
+    inputRef.current?.focus();
+  };
+
+  // Unsend functionality
+  const handleUnsend = (messageId) => {
+    // Add unsend logic here - remove message from chat
+    setShowMessageOptions(null);
+  };
+
+  // Message status icon
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'sent':
+        return <FiCheck className="text-xs text-gray-400" />;
+      case 'delivered':
+        return <FiCheckCircle className="text-xs text-gray-400" />;
+      case 'read':
+        return <FiCheckCircle className="text-xs text-blue-400" />;
+      default:
+        return null;
+    }
   };
   
 
@@ -379,7 +421,7 @@ const ChatList = () => {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto min-h-0">
+              <div className="flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto min-h-0 max-h-[calc(100vh-200px)]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
                 {Object.entries(messagesByDate).map(([dateLabel, dateMessages]) => (
                   <div key={dateLabel}>
                     {/* Date Separator */}
@@ -392,6 +434,12 @@ const ChatList = () => {
                     {/* Messages for this date */}
                     {dateMessages.map((m, i) => {
                       const showUnreadSeparator = dateLabel === "Today" && i === 3; // Show after 4th message of today
+                      const isLastUserMessage = m.from === "me" && i === dateMessages.length - 1;
+                      const nextMessage = dateMessages[i + 1];
+                      const shouldShowTime = m.from === "me" && (!nextMessage || nextMessage.from !== "me");
+                      const prevMessage = dateMessages[i - 1];
+                      const shouldShowAvatar = m.from === "them" && (!nextMessage || nextMessage.from !== "them");
+                      
                       return (
                         <React.Fragment key={m.id}>
                           {showUnreadSeparator && (
@@ -401,13 +449,75 @@ const ChatList = () => {
                               </div>
                             </div>
                           )}
-                          <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} mb-2`}>
-                            {m.from === "them" && (
+                          <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} mb-1 group`}>
+                            {shouldShowAvatar && (
                               <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2" />
                             )}
-                            <div className={`px-3 sm:px-4 py-2 sm:py-3 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? "bg-blue-500 text-white" : "bg-gray-700 text-white"}`}>
-                              <p className="text-sm">{m.text}</p>
-                              <div className="text-[10px] text-right mt-1 opacity-70">{m.time}</div>
+                            {!shouldShowAvatar && m.from === "them" && (
+                              <div className="w-8 h-8 mr-2"></div>
+                            )}
+                            <div className={`relative`}>
+                              <div className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? "bg-blue-500 text-white rounded-br-md" : "bg-gray-700 text-white rounded-bl-md"}`}>
+                                {/* Reply indicator */}
+                                {m.replyingTo && (
+                                  <div className="text-xs text-blue-200 mb-1 flex items-center gap-1 border-l-2 border-blue-300 pl-2">
+                                    <FiCornerUpLeft className="text-xs" />
+                                    <span className="truncate">{m.replyingTo.text}</span>
+                                  </div>
+                                )}
+                                
+                                <p className="text-sm">{m.text}</p>
+                                
+                                {/* Time and Status */}
+                                <div className={`flex items-center gap-1 mt-1 ${m.from === "me" ? "justify-end" : "justify-start"}`}>
+                                  {shouldShowTime && (
+                                    <>
+                                      <span className="text-[10px] opacity-70">{m.time}</span>
+                                      {m.from === "me" && getStatusIcon(m.status)}
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* Message options on hover */}
+                              <div className={`absolute ${m.from === "me" ? "left-0 -ml-10" : "right-0 -mr-10"} top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity`}>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowMessageOptions(showMessageOptions === m.id ? null : m.id);
+                                  }}
+                                  className="bg-gray-600 rounded-full p-1 text-xs hover:bg-gray-500 shadow-lg"
+                                >
+                                  <FiMoreVertical />
+                                </button>
+                              </div>
+                              
+                              {/* Message options dropdown */}
+                              {showMessageOptions === m.id && (
+                                <div className={`absolute ${m.from === "me" ? "right-0" : "left-0"} bottom-full mb-1 w-28 bg-[#1F2937] rounded-md shadow-md border border-gray-600/50 z-50 message-options-container`}>
+                                  <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-[#1F2937]"></div>
+                                  <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-600/50"></div>
+                                  
+                                  <div className="py-0.5">
+                                    <button
+                                      onClick={() => handleReply(m)}
+                                      className="w-full text-center px-1 py-1 text-xs text-gray-200 hover:bg-gray-700/50 hover:text-white transition-all duration-200 flex items-center justify-center gap-1.5 mx-0.5 rounded-sm"
+                                    >
+                                      <FiCornerUpLeft className="text-xs" />
+                                      <span>Reply</span>
+                                    </button>
+                                    
+                                    <div className="mx-0.5 my-0.5 h-px bg-gray-600/30"></div>
+                                    
+                                    <button
+                                      onClick={() => handleUnsend(m.id)}
+                                      className="w-full text-center px-1 py-1 text-xs text-gray-200 hover:bg-red-900/30 hover:text-red-300 transition-all duration-200 flex items-center justify-center gap-1.5 mx-0.5 rounded-sm"
+                                    >
+                                      <span>Unsend</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </React.Fragment>
@@ -420,6 +530,22 @@ const ChatList = () => {
 
               {/* Input */}
               <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700">
+                {/* Reply indicator */}
+                {replyingTo && (
+                  <div className="bg-gray-800 rounded-t-lg px-3 py-2 flex items-center justify-between border-b border-gray-600">
+                    <div className="flex items-center gap-2 text-xs text-gray-300">
+                      <FiCornerUpLeft className="text-xs" />
+                      <span>Replying to "{replyingTo.text}"</span>
+                    </div>
+                    <button
+                      onClick={() => setReplyingTo(null)}
+                      className="text-gray-400 hover:text-white text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+                
                 <div className="flex gap-2 sm:gap-3 bg-gray-800 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center">
                   <FiPaperclip className="text-gray-400 cursor-pointer hover:text-white" />
                   <input
@@ -430,7 +556,7 @@ const ChatList = () => {
                       if (e.key === "Enter") handleSend();
                     }}
                     className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-sm sm:text-base"
-                    placeholder="Type your message here..."
+                    placeholder={replyingTo ? "Type your reply..." : "Type your message here..."}
                   />
                   <button 
                     onClick={handleSend} 
