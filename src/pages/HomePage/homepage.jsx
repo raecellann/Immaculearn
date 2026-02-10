@@ -161,8 +161,10 @@ const HomePage1 = () => {
                   <p className="text-gray-300 mb-1">Meet your classmates and collaborate with them.</p>
                   <p className="text-gray-400 mb-5">Join a space or create your own.</p>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Button className="bg-[#007AFF] hover:bg-blue-700 text-white">Create Space</Button>
-                    <Button className="border border-gray-600 hover:bg-gray-800">Join Space</Button>
+
+
+                    <Button className="bg-[#007AFF] hover:bg-blue-700 text-white" onClick={() => navigate("/space/create")}>Create Space</Button>
+                    <Button className="border border-gray-600 hover:bg-gray-800" onClick={() => navigate("/space")}>Join Space</Button>
                   </div>
                 </div>
                 <img
