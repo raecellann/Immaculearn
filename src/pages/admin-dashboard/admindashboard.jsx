@@ -19,16 +19,24 @@ const AdminDashboard = () => {
     pending: 3,
   });
 
-  const [recentActivity, setRecentActivity] = useState([]);
+  // Sample data for students and teachers
+  const [students] = useState([
+    { id: 1, name: "Raecell Ann Galvez", email: "raecell@gmail.com" },
+    { id: 2, name: "Zeldrick Jesus Delos Santos", email: "zeldrickjesus@gmail.com" },
+    { id: 3, name: "Wilson Esmabe", email: "wesmabe1920@gmail.com" },
+    { id: 4, name: "Nathaniel Faburada", email: "faburadanathaniel@gmail.com" },
+    { id: 5, name: "Christian Joy Bedana", email: "gimple20@gmail.com" },
+  ]);
 
-  useEffect(() => {
-    setRecentActivity([
-      { id: 1, message: "New student account registered", time: "2 min ago" },
-      { id: 2, message: "Teacher account verified", time: "10 min ago" },
-      { id: 3, message: "Student changed profile info", time: "30 min ago" },
-    ]);
-  }, []);
+  const [teachers] = useState([
+    { id: 1, name: "Jober Reyes", email: "joberreyes@gmail.com" },
+    { id: 2, name: "Nathaniel Cruz", email: "nathanielcruz@gmail.com" },
+    { id: 3, name: "Wilson James", email: "wilsonjames@gmail.com" },
+    { id: 4, name: "Shiela Sta. Maria", email: "shengstamaria@gmail.com" },
+    { id: 5, name: "Cecilia Cruz", email: "ceciliacruz@gmail.com" },
+  ]);
 
+  
   /* NAVIGATION FUNCTIONS */
   const navigateToTeachers = () => {
     navigate('/admin-teachers');
@@ -127,51 +135,48 @@ const AdminDashboard = () => {
             />
           </div>
 
-          {/* ===== RECENT ACTIVITY ===== */}
-          <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl mb-6 max-w-4xl mx-auto">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4 text-center">
-              Recent Activity
-            </h2>
+          {/* ===== TEACHERS AND STUDENTS LISTS SIDE BY SIDE ===== */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* ===== TEACHERS LIST (LEFT SIDE) ===== */}
+            <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Teachers</h2>
 
-            <div className="space-y-3">
-              {recentActivity.map((log) => (
-                <div
-                  key={log.id}
-                  className="bg-[#2E3440] p-4 rounded-lg flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 hover:bg-[#363D4A] transition"
-                >
-                  <p className="text-sm">{log.message}</p>
-                  <span className="text-xs text-gray-400">{log.time}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ===== ACCOUNTS PENDING (ALWAYS UNDER) ===== */}
-          <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl max-w-4xl mx-auto">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4 text-center">
-              Accounts Pending Verification
-            </h2>
-
-            <div className="space-y-3">
-              {[1, 2, 3].map((id) => (
-                <div
-                  key={id}
-                  className="bg-[#2E3440] p-4 rounded-lg flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 hover:bg-[#363D4A] transition"
-                >
-                  <div>
-                    <p className="font-medium text-sm">User {id}</p>
-                    <p className="text-gray-400 text-xs">
-                      email{id}@school.edu
-                    </p>
+              <div className="space-y-3">
+                {teachers.map((teacher) => (
+                  <div
+                    key={teacher.id}
+                    className="bg-[#2E3440] p-4 rounded-lg hover:bg-[#363D4A] transition"
+                  >
+                    <div>
+                      <p className="font-medium text-sm">{teacher.name}</p>
+                      <p className="text-gray-400 text-xs">{teacher.email}</p>
+                    </div>
                   </div>
-                  <button className="text-[#007AFF] text-sm hover:underline">
-                    Verify
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            {/* ===== STUDENTS LIST (RIGHT SIDE) ===== */}
+            <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Students</h2>
+
+              <div className="space-y-3">
+                {students.map((student) => (
+                  <div
+                    key={student.id}
+                    className="bg-[#2E3440] p-4 rounded-lg hover:bg-[#363D4A] transition"
+                  >
+                    <div>
+                      <p className="font-medium text-sm">{student.name}</p>
+                      <p className="text-gray-400 text-xs">{student.email}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
+          
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import React from "react";
 import { Route } from "react-router";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import HomePage from "../pages/HomePage/homepage.jsx";
-import ProfilePage from "../pages/AccSettings/accsettingspage.jsx";
+import ProfilePage from "../pages/AccountSettings/accountsettingspage.jsx";
 import GradeViewing from "../pages/GradeViewing/gradeViewing.jsx";
 import TaskPage from "../pages/Task/task.jsx";
 import NotificationPage from "../pages/Notifications/notification.jsx";
@@ -12,6 +12,8 @@ import ChatList from "../pages/User_chats/user_chats";
 import ViewFilePage from "../pages/ViewFiles/ViewFiles.jsx";
 import Calendar from "../pages/Calendar/Calendar.jsx";
 import Setting from "../pages/Settings/settings.jsx";
+import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionpage.jsx";
+import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 
 const ChatRouteWrapper = () => {
 
@@ -61,7 +63,20 @@ export const StudentRoutes = [
   {
     key: "/settings",
     path: "/settings",
-    element: <Setting  />,
+    element: (
+      <ProtectedRoute>
+        <SettingsSelectionPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    key: "/spacesettings",
+    path: "/spacesettings",
+    element: (
+      <ProtectedRoute>
+        <SpaceSettingsPage />
+      </ProtectedRoute>
+    ),
   },
   
 ];

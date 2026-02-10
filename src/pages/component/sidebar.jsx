@@ -158,7 +158,7 @@ const SidebarItem = ({ icon, label, path, onClick, active }) => {
         transition-all duration-700
 
         before:absolute before:inset-0
-        before:bg-[#161A20]
+        before:bg-[rgba(255,255,255,0.05)]
         before:origin-right before:scale-x-0
         before:transition-transform before:duration-700
 
@@ -167,7 +167,7 @@ const SidebarItem = ({ icon, label, path, onClick, active }) => {
         ${
           active
             ? "bg-[#161A20] text-white shadow-lg"
-            : "text-blue-100 hover:bg-[#161A20] hover:text-white hover:shadow-md"
+            : "text-blue-100 hover:text-white hover:shadow-md before:hover:scale-x-100"
         }
       `}
     >
