@@ -1,9 +1,18 @@
 import React, { ReactNode, useState } from "react";
 import { SpaceContext, SpaceContextType } from "./spaceContext";
 import { spaceService } from "../../services/spaceService";
-import { Space, SpaceCreateData, ApiResponse, SpacePendingInvitation, SpaceMemberProfile } from "../../types/space";
+import { 
+  Space, 
+  SpaceCreateData, 
+  ApiResponse, 
+  SpacePendingInvitation, 
+  SpaceMemberProfile,
+  Task,
+  DraftTask,
+  TaskCreateData
+} from "../../types/space";
 import { useUser } from "../user/useUser";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation, UseMutationResult } from "@tanstack/react-query";
 
 export interface SpaceProviderProps {
   children: ReactNode;
@@ -19,11 +28,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   // ----------------------------
   const fetchUserSpaces = async (): Promise<Space[]> => {
     try {
-      console.log("Fetching user spaces...");
       const res = await spaceService.getUserSpaces();
-      console.log("API response:", res);
       const spaces = res.data || [];
-      console.log("Spaces fetched:", spaces);
       return spaces;
     } catch (error) {
       console.error("Error fetching user spaces:", error);
@@ -33,11 +39,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
 
   const fetchFriendSpaces = async (): Promise<Space[]> => {
     try {
-      console.log("Fetching friend spaces...");
       const res = await spaceService.getAllFriendSpaces();
-      console.log("API response:", res);
       const spaces = res.data || [];
-      console.log("Spaces fetched:", spaces);
       return spaces;
     } catch (error) {
       console.error("Error fetching friend spaces:", error);
@@ -48,6 +51,27 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   const fetchJoinRequests = async (spaceId: string): Promise<SpacePendingInvitation[]> => {
     const res = await spaceService.getJoinRequests(spaceId);
     return res.data || [];
+  };
+
+  // Task API functions
+  const fetchUploadedTasks = async (spaceId: string): Promise<Task[]> => {
+    try {
+      const res = await spaceService.getUploadedTasks(spaceId);
+      return Array.isArray(res.data) ? res.data : [];
+    } catch (error) {
+      console.error("Error fetching uploaded tasks:", error);
+      return [];
+    }
+  };
+
+  const fetchDraftedTasks = async (spaceId: string): Promise<DraftTask[]> => {
+    try {
+      const res = await spaceService.getDraftedTasks(spaceId);
+      return Array.isArray(res.data) ? res.data : [];
+    } catch (error) {
+      console.error("Error fetching drafted tasks:", error);
+      return [];
+    }
   };
 
   // ----------------------------
@@ -71,8 +95,25 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     useQuery({
       queryKey: ["joinRequests", spaceId],
       queryFn: () => fetchJoinRequests(spaceId),
-      enabled: !!spaceId,
+      enabled: !!spaceId && isAuthenticated,
       staleTime: 15_000,
+    });
+
+  // Task queries
+  const useUploadedTasks = (spaceId: string) =>
+    useQuery({
+      queryKey: ["uploadedTasks", spaceId],
+      queryFn: () => fetchUploadedTasks(spaceId),
+      enabled: !!spaceId && isAuthenticated,
+      staleTime: 30_000,
+    });
+
+  const useDraftedTasks = (spaceId: string) =>
+    useQuery({
+      queryKey: ["draftedTasks", spaceId],
+      queryFn: () => fetchDraftedTasks(spaceId),
+      enabled: !!spaceId && isAuthenticated,
+      staleTime: 30_000,
     });
 
   const isLoading = userSpacesLoading || friendSpacesLoading;
@@ -116,22 +157,78 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
   };
 
+  // Task mutations
+  const uploadTaskMutation = useMutation({
+    mutationFn: ({ spaceId, taskData }: { spaceId: string; taskData: TaskCreateData }) =>
+      spaceService.uploadTask(
+        spaceId,
+        taskData.title,
+        taskData.instruction || "",
+        taskData.scoring || 0,
+        taskData.due_date,
+        taskData.groupsData || []
+      ),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["uploadedTasks", variables.spaceId] });
+    },
+  });
+
+  const draftTaskMutation = useMutation({
+    mutationFn: ({ spaceId, taskData }: { spaceId: string; taskData: TaskCreateData }) =>
+      spaceService.draftTask(
+        spaceId,
+        taskData.title,
+        taskData.instruction || "",
+        taskData.scoring || 0,
+        taskData.due_date,
+        taskData.groupsData || []
+      ),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["draftedTasks", variables.spaceId] });
+    },
+  });
+
+  // Update task status mutation
+  const updateTaskStatusMutation = useMutation({
+    mutationFn: ({ taskId, newStatus }: { taskId: number; newStatus: string }) =>
+      spaceService.updateTaskStatus(taskId, newStatus),
+    onSuccess: (_, variables) => {
+      // Invalidate both tasks queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ["uploadedTasks"] });
+      queryClient.invalidateQueries({ queryKey: ["draftedTasks"] });
+    },
+  });
+
   // ----------------------------
   // CONTEXT VALUE
   // ----------------------------
   const contextValue: SpaceContextType = {
+    // UI state
     currentSpace,
     setCurrentSpace,
+
+    // Server data
     userSpaces,
     friendSpaces,
     isLoading,
+
+    // Queries
     useJoinRequests,
+    useUploadedTasks, // New: Task queries
+    useDraftedTasks,  // New: Task queries
+
+    // Mutations
     createSpace,
     joinSpace,
     acceptJoinRequest,
     declineJoinRequest,
     leaveSpace,
     deleteSpace,
+
+    // Task mutations
+    uploadTaskMutation,
+    draftTaskMutation,
+    updateTaskStatusMutation,
   };
 
   return <SpaceContext.Provider value={contextValue}>{children}</SpaceContext.Provider>;

@@ -77,7 +77,6 @@ const UserPage = () => {
 
   const currentSpace = allSpaces.find(space => space.space_uuid === space_uuid);
 
-  console.log("current space:", currentSpace?.creator)
   
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;

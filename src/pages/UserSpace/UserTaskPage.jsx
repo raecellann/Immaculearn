@@ -35,7 +35,8 @@ const UserTaskPage = () => {
     uploadedTasksQuery,
     draftedTasksQuery,
     uploadTaskMutation,
-    draftTaskMutation
+    draftTaskMutation,
+    updateTaskStatusMutation
   } = useTasks(currentSpace?.space_id);
 
   const taskData = uploadedTasksQuery?.data || [];
@@ -45,12 +46,12 @@ const UserTaskPage = () => {
   const tasksError = uploadedTasksQuery?.error;
   const draftsError = draftedTasksQuery?.error;
   
-  // console.log("Tasks:", taskData)
+  // Handle API response structure - data might be nested
+  const uploadedTask = Array.isArray(taskData) ? taskData : (taskData?.data || []);
+  const draftedTask = Array.isArray(draftActivities) ? draftActivities : (draftActivities?.data || []);
 
-  const uploadedTask = taskData?.data
-  const draftedTask = draftActivities?.data
-
-  console.log(draftedTask)
+  console.log("Uploaded Tasks:", uploadedTask);
+  console.log("Drafted Tasks:", draftedTask);
 
 
 
@@ -378,18 +379,38 @@ const UserTaskPage = () => {
   const [openDraftIndex, setOpenDraftIndex] = useState(null);
 
   const handleStatusChange = (index, newStatus) => {
-    // Update local state for immediate UI feedback
-    const updated = [...uploadedTask];
-    updated[index].status = newStatus;
-    // Note: You might want to add a mutation for updating task status
+    const task = uploadedTask[index];
+    if (task && task.id) {
+      updateTaskStatusMutation.mutate(
+        { taskId: task.id, newStatus },
+        {
+          onSuccess: () => {
+            console.log(`Task ${task.id} status updated to ${newStatus}`);
+          },
+          onError: (error) => {
+            console.error("Failed to update task status:", error);
+          }
+        }
+      );
+    }
     setOpenIndex(null);
   };
 
   const handleDraftStatusChange = (index, newStatus) => {
-    // Update local state for immediate UI feedback
-    const updated = [...draftActivities];
-    updated[index].status = newStatus;
-    // Note: You might want to add a mutation for updating draft status
+    const draft = draftedTask[index];
+    if (draft && draft.id) {
+      updateTaskStatusMutation.mutate(
+        { taskId: draft.id, newStatus },
+        {
+          onSuccess: () => {
+            console.log(`Draft ${draft.id} status updated to ${newStatus}`);
+          },
+          onError: (error) => {
+            console.error("Failed to update draft status:", error);
+          }
+        }
+      );
+    }
     setOpenDraftIndex(null);
   };
 

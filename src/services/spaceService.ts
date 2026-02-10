@@ -266,6 +266,17 @@ class SpaceService {
             return { success: false, message: err.response?.data?.message || "Failed to fetch drafted tasks" };
         }
     }
+
+    async updateTaskStatus(taskId: number, newStatus: string) {
+        try {
+            const response = await api.patch(`/tasks/${taskId}/status`, {
+                status: newStatus
+            });
+            return response.data;
+        } catch (err: any) {
+            return { success: false, message: err.response?.data?.message || "Failed to update task status" };
+        }
+    }
 }
 
 export const spaceService = new SpaceService();
