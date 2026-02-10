@@ -23,7 +23,7 @@ const UserPage = () => {
   const { space_uuid, space_name } = useParams();
   const navigate = useNavigate();
 
-  // State hooks
+  // State hooks - MUST BE AT THE TOP
   const [isFocused, setIsFocused] = useState(false);
   const [showInvitePopup, setShowInvitePopup] = useState(false);
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
@@ -33,11 +33,11 @@ const UserPage = () => {
   const [showHeader, setShowHeader] = useState(true);
   const [copyFeedback, setCopyFeedback] = useState("");
   
-  // Refs
+  // Refs - MUST BE AT THE TOP
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
 
-  // Custom hooks
+  // Custom hooks - MUST BE AT THE TOP
   const { user, isLoading: userLoading } = useUser();
   const {
     userSpaces,
@@ -49,8 +49,24 @@ const UserPage = () => {
     deleteSpace
   } = useSpace();
 
-  // Join requests
+  // Join requests - MUST BE AT THE TOP (unconditionally)
   const { data: joinRequestsData = [], isLoading: joinRequestsLoading } = useJoinRequests(space_uuid || "");
+
+  // Scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // UUID validation
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -76,22 +92,6 @@ const UserPage = () => {
 
   // Space name
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
-
-  // Scroll handler
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-        setShowHeader(false);
-      } else {
-        setShowHeader(true);
-      }
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // Text formatting
   const applyFormat = (command) => {
