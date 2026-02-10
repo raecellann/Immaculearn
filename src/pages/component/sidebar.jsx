@@ -59,24 +59,25 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 pl-5 overflow-y-auto scrollbar-none">
-        <nav className="space-y-1">
-          {menuItems.map((item) => (
-            <SidebarItem
-              key={item.label}
-              {...item}
-              active={location.pathname === item.path}
-            />
-          ))}
-        </nav>
+      <div
+        className="flex-1 pl-5 overflow-y-auto"
+        style={{
+          scrollbarWidth: "none", // Firefox
+          msOverflowStyle: "none", // IE & Edge
+        }}
+      >
+        {/* Hide scrollbar for Chrome/Safari/Edge */}
+        <style>
+          {`
+            .sidebar-scroll::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
 
-        {/* Private */}
-        <div className="mt-4">
-          <h2 className="text-sm font-semibold mb-3 text-blue-100">
-            Private
-          </h2>
+        <div className="sidebar-scroll">
           <nav className="space-y-1">
-            {privateItems.map((item) => (
+            {menuItems.map((item) => (
               <SidebarItem
                 key={item.label}
                 {...item}
@@ -84,23 +85,39 @@ const Sidebar = () => {
               />
             ))}
           </nav>
-        </div>
 
-        {/* Account */}
-        <div className="mt-4 space-y-1">
-          {accountItems.map((item) => (
+          {/* Private */}
+          <div className="mt-4">
+            <h2 className="text-sm font-semibold mb-3 text-blue-100">
+              Private
+            </h2>
+            <nav className="space-y-1">
+              {privateItems.map((item) => (
+                <SidebarItem
+                  key={item.label}
+                  {...item}
+                  active={location.pathname === item.path}
+                />
+              ))}
+            </nav>
+          </div>
+
+          {/* Account */}
+          <div className="mt-4 space-y-1">
+            {accountItems.map((item) => (
+              <SidebarItem
+                key={item.label}
+                {...item}
+                active={location.pathname === item.path}
+              />
+            ))}
+
             <SidebarItem
-              key={item.label}
-              {...item}
-              active={location.pathname === item.path}
+              icon={<LogOut size={20} />}
+              label="Log Out Account"
+              onClick={() => setShowLogout(true)}
             />
-          ))}
-
-          <SidebarItem
-            icon={<LogOut size={20} />}
-            label="Log Out Account"
-            onClick={() => setShowLogout(true)}
-          />
+          </div>
         </div>
       </div>
 

@@ -4,17 +4,20 @@ import { createPortal } from "react-dom";
 const Logout = ({ onClose, onLogOut }) => {
   console.log("Logout modal rendering"); // Debug log
   return createPortal(
-    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black bg-opacity-60" style={{ zIndex: 999999 }}>
-      <div className="bg-neutral-800 p-8 rounded-2xl shadow-xl text-center w-[350px] animate-fadeIn relative" style={{ zIndex: 1000000 }}>
-        <h1 className="text-xl font-semibold mb-6 text-white">
-          Are you sure you want to Logout?
+    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black bg-opacity-60 p-4" style={{ zIndex: 999999 }}>
+      <div className="bg-neutral-800 p-3 sm:p-4 rounded-xl shadow-xl text-left w-[240px] sm:w-[260px] animate-fadeIn relative" style={{ zIndex: 1000000 }}>
+        <h1 className="text-base font-semibold mb-1 text-white">
+          Log Out?
         </h1>
+        <p className="text-xs text-gray-400 mb-3">
+          Are you sure you want to logout?
+        </p>
 
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-2">
           {/* Cancel Button */}
           <button
             onClick={onClose}
-            className="flex-1 px-6 py-2 border border-gray-500 rounded-full text-white font-semibold shadow-md hover:bg-neutral-700 transition-colors"
+            className="flex-1 px-3 py-1.5 bg-red-600 rounded-full text-white text-xs font-medium hover:bg-red-700 transition-colors"
           >
             No
           </button>
@@ -22,7 +25,7 @@ const Logout = ({ onClose, onLogOut }) => {
           {/* Confirm Logout Button */}
           <button 
             onClick={onLogOut}
-            className="flex-1 px-6 py-2 bg-red-600 rounded-full text-white font-semibold shadow-md hover:bg-red-700 transition-colors"
+            className="flex-1 px-3 py-1.5 border border-gray-500 rounded-full text-white text-xs font-medium hover:bg-neutral-700 transition-colors"
           >
             Yes
           </button>

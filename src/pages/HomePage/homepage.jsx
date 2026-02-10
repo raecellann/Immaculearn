@@ -125,13 +125,13 @@ const HomePage1 = () => {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 z-30 transition-transform duration-300 ${
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="text-2xl focus:outline-none"
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
           >
             ☰
           </button>
@@ -143,10 +143,12 @@ const HomePage1 = () => {
         <div className="flex-1 flex flex-col xl:flex-row gap-6 p-4 md:p-6 lg:p-8">
           {/* CENTER COLUMN */}
           <div className="flex-1 min-w-0">
-            {/* Greeting + Date */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
-              <h2 className="text-2xl md:text-3xl font-bold font-grotesque">Get Productive Today!</h2>
-              <p className="text-gray-400 text-sm">{currentDate}</p>
+            {/* Title and Date ABOVE the card */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-white font-grotesque">
+                Get Productive Today!
+              </h2>
+              <p className="text-gray-400 text-xs sm:text-sm font-inter">{currentDate}</p>
             </div>
 
             {/* Welcome Card */}
