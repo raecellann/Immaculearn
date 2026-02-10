@@ -61,6 +61,11 @@ export const StudentRoutes = [
     element: <ChatRouteWrapper />,
   },
   {
+    key: "/files",
+    path: "/files",
+    element: <FilePage />,
+  },
+  {
     key: "/settings",
     path: "/settings",
     element: (

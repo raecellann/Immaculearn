@@ -59,6 +59,7 @@ export const ProfRoutes = () => {
       />
       
       <Route path="acc-settings" element={<ProfProfilePage />} />
+      <Route path="files" element={<ProfFilePage />} />
       <Route path="files-by-subject" element={<ProfFilesBySubject />} />
       {/* <Route path="files-by-subject" element={<ProfMain />} /> */}
 
