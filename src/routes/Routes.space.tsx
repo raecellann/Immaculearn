@@ -7,6 +7,8 @@ import UserPeoplePage from "../pages/UserSpace/UserPeoplePage.jsx";
 import SpacePage from "../pages/Space/SpacePage.jsx";
 import CreateSpaceAdmin from "../pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
 import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
+import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
+import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 
 export const SpaceRoutes = [
 
@@ -19,6 +21,16 @@ export const SpaceRoutes = [
     key: "/space/create",
     path: "/space/create",
     element: <CreateSpaceAdmin />,
+  },
+  {
+    key: "/space-settings",
+    path: "/space-settings",
+    element: <SpaceSettingsPage />,
+  },
+  {
+    key: "/space-settings-individual",
+    path: "/space-settings/:spaceUuid/:spaceName",
+    element: <IndividualSpaceSettings />,
   },
   {
     key: "/user-page",

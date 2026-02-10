@@ -23,6 +23,7 @@ import ProfSettingsPage from "../pages/Prof-Settings/profsettings.jsx";
 import ProfilePage from "../pages/AccountSettings/accountsettingspage.jsx";
 import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionpage.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
+import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 
 export const ProfRoutes = () => {
   const { user } = useUser();
@@ -127,7 +128,14 @@ export const ProfRoutes = () => {
       />
       
       <Route
-        path="spacesettings"
+        path="prof-settings"
+        element={
+            <ProfSettingsPage />
+        }
+      />
+      
+      <Route
+        path="/space-settings"
         element={
           <ProtectedRoute>
             <SpaceSettingsPage />
@@ -136,9 +144,11 @@ export const ProfRoutes = () => {
       />
       
       <Route
-        path="prof-settings"
+        path="/space-settings/:spaceUuid/:spaceName"
         element={
-            <ProfSettingsPage />
+          <ProtectedRoute>
+            <IndividualSpaceSettings />
+          </ProtectedRoute>
         }
       />
       

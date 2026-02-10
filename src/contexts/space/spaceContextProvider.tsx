@@ -1,16 +1,13 @@
 import React, { ReactNode, useState } from "react";
 import { SpaceContext, SpaceContextType } from "./spaceContext";
 import { spaceService } from "../../services/spaceService";
-import { Space, SpaceCreateData, ApiResponse, SpacePendingInvitation } from "../../types/space";
+import { Space, SpaceCreateData, ApiResponse, SpacePendingInvitation, SpaceMemberProfile } from "../../types/space";
 import { useUser } from "../user/useUser";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-
-
 
 export interface SpaceProviderProps {
   children: ReactNode;
 }
-
 
 export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   const { isAuthenticated } = useUser();
@@ -21,13 +18,31 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   // API FUNCTIONS
   // ----------------------------
   const fetchUserSpaces = async (): Promise<Space[]> => {
-    const res = await spaceService.getUserSpaces();
-    return res.data || [];
+    try {
+      console.log("Fetching user spaces...");
+      const res = await spaceService.getUserSpaces();
+      console.log("API response:", res);
+      const spaces = res.data || [];
+      console.log("Spaces fetched:", spaces);
+      return spaces;
+    } catch (error) {
+      console.error("Error fetching user spaces:", error);
+      return [];
+    }
   };
 
   const fetchFriendSpaces = async (): Promise<Space[]> => {
-    const res = await spaceService.getAllFriendSpaces();
-    return res.data || [];
+    try {
+      console.log("Fetching friend spaces...");
+      const res = await spaceService.getAllFriendSpaces();
+      console.log("API response:", res);
+      const spaces = res.data || [];
+      console.log("Spaces fetched:", spaces);
+      return spaces;
+    } catch (error) {
+      console.error("Error fetching friend spaces:", error);
+      return [];
+    }
   };
 
   const fetchJoinRequests = async (spaceId: string): Promise<SpacePendingInvitation[]> => {

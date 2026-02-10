@@ -1,4 +1,3 @@
-// Routes.student.tsx
 import React from "react";
 import { Route } from "react-router";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
@@ -14,6 +13,7 @@ import Calendar from "../pages/Calendar/Calendar.jsx";
 import Setting from "../pages/Settings/settings.jsx";
 import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionpage.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
+import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 
 const ChatRouteWrapper = () => {
 
@@ -70,13 +70,21 @@ export const StudentRoutes = [
     ),
   },
   {
-    key: "/spacesettings",
-    path: "/spacesettings",
+    key: "/space-settings",
+    path: "/space-settings",
     element: (
       <ProtectedRoute>
         <SpaceSettingsPage />
       </ProtectedRoute>
     ),
   },
-  
+  {
+    key: "/space-settings-individual",
+    path: "/space-settings/:spaceUuid/:spaceName",
+    element: (
+      <ProtectedRoute>
+        <IndividualSpaceSettings />
+      </ProtectedRoute>
+    ),
+  },
 ];

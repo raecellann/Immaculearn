@@ -33,7 +33,7 @@ const SettingsSelectionPage = () => {
   };
 
   const handleSpaceSettings = () => {
-    navigate('/spacesettings');
+    navigate('/space-settings');
   };
 
   return (
