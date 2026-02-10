@@ -20,6 +20,9 @@ import ProfFilePage from "../pages/prof-Files/proffiles.jsx";
 import ProfCalendarPage from "../pages/Prof-Calendar/ProfCalendar.jsx";
 import ProfGradeRecordPage from "../pages/prof-GradeViewing/profgradeviewing.jsx";
 import ProfSettingsPage from "../pages/Prof-Settings/profsettings.jsx";
+import ProfilePage from "../pages/AccountSettings/accountsettingspage.jsx";
+import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionpage.jsx";
+import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 
 export const ProfRoutes = () => {
   const { user } = useUser();
@@ -116,6 +119,24 @@ export const ProfRoutes = () => {
       
       <Route
         path="settings"
+        element={
+          <ProtectedRoute>
+            <SettingsSelectionPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="spacesettings"
+        element={
+          <ProtectedRoute>
+            <SpaceSettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="prof-settings"
         element={
             <ProfSettingsPage />
         }

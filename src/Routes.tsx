@@ -11,10 +11,8 @@ import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
 import { UserProvider } from "./contexts/user/userContextProvider.tsx";
 import { SpaceProvider } from "./contexts/space/spaceContextProvider.tsx";
 import LandingPage from "./pages/Landing/landingPage.jsx";
-import ProfilePage from "./pages/AccSettings/accsettingspage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { FileRoutes } from "./routes/Routes.file.tsx";
-import { SettingsRoutes } from "./routes/Routes.settings.tsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,20 +56,6 @@ export default function Routes() {
         ))}
 
         {FileRoutes.map(route => (
-          <Route
-            key={route.key}
-            path={route.path}
-            element={
-              <UserProvider>
-                <SpaceProvider>
-                  {route.element}
-                </SpaceProvider>
-              </UserProvider>
-            }
-          />
-        ))}
-
-        {SettingsRoutes.map(route => (
           <Route
             key={route.key}
             path={route.path}
