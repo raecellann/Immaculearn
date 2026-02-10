@@ -14,6 +14,7 @@ const OnBoarding = () => {
   const [searchParams] = useSearchParams(); // get role from URL params
 
   // console.log("role", searchParams.get("role"))
+  
 
   const role = searchParams.get("role")
   // Step 1 fields
