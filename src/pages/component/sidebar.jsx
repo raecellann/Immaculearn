@@ -24,23 +24,33 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: <Home size={20} />, label: "Dashboard", path: "/home" },
-    { icon: <Users size={20} />, label: "Students", path: "/space" },
-    { icon: <GraduationCap size={20} />, label: "Teachers", path: "/files" },
+    { icon: <Home size={20} />, label: "Home", path: "/home" },
+    { icon: <Users size={20} />, label: "Spaces", path: "/space" },
+    { icon: <Bell size={20} />, label: "Notifications", path: "/notifications" },
+    { icon: <Calendar size={20} />, label: "Tasks", path: "/task" },
+    { icon: <Folder size={20} />, label: "Files", path: "/files" },
   ];
 
-  const privateItems = [];
-  const accountItems = [];
+  const privateItems = [
+    { icon: <Calendar size={20} />, label: "Calendar", path: "/calendar" },
+    { icon: <ClipboardList size={20} />, label: "Grade Viewing", path: "/grade-viewing" },
+    { icon: <MessageCircle size={20} />, label: "Chats", path: "/chatlist" },
+  ];
+
+  const accountItems = [
+    { icon: <User size={20} />, label: "Account", path: "/accsettings" },
+    { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
+  ];
 
   return (
-    <div 
-      className="h-screen w-60 text-white flex flex-col font-inter sticky top-0 overflow-hidden"
-      style={{
-        backgroundImage:
-          "linear-gradient(to bottom, #6cadf3ff, #2c81e1, #2c81e1, #1a73da, #0066d2)",
-      }}
+    <div
+      className="
+        h-screen w-60 text-white flex flex-col font-inter
+        sticky top-0 overflow-hidden
+        bg-gradient-to-b from-[#6cadf3] via-[#2c81e1] to-[#0066d2]
+      "
     >
-      {/* Logo Section */}
+      {/* Logo */}
       <div className="p-6">
         <div className="flex items-center space-x-2">
           <img src={logo} alt="ImmacuLearn Logo" className="w-8 h-8" />
@@ -48,19 +58,8 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Navigation Items */}
-      <div 
-        className="flex-1 pl-8 overflow-y-auto"
-        style={{
-          scrollbarWidth: 'none',  /* Firefox */
-          msOverflowStyle: 'none',  /* IE and Edge */
-        }}
-      >
-        <style jsx>{`
-          div::-webkit-scrollbar {
-            display: none;  /* Chrome, Safari, Opera */
-          }
-        `}</style>
+      {/* Navigation */}
+      <div className="flex-1 pl-5 overflow-y-auto scrollbar-none">
         <nav className="space-y-1">
           {menuItems.map((item) => (
             <SidebarItem
@@ -71,9 +70,11 @@ const Sidebar = () => {
           ))}
         </nav>
 
-        {/* Private Section */}
+        {/* Private */}
         <div className="mt-4">
-          <h2 className="text-sm font-semibold mb-3 text-blue-100">Private</h2>
+          <h2 className="text-sm font-semibold mb-3 text-blue-100">
+            Private
+          </h2>
           <nav className="space-y-1">
             {privateItems.map((item) => (
               <SidebarItem
@@ -85,7 +86,7 @@ const Sidebar = () => {
           </nav>
         </div>
 
-        {/* Account Section */}
+        {/* Account */}
         <div className="mt-4 space-y-1">
           {accountItems.map((item) => (
             <SidebarItem
@@ -94,7 +95,7 @@ const Sidebar = () => {
               active={location.pathname === item.path}
             />
           ))}
-          
+
           <SidebarItem
             icon={<LogOut size={20} />}
             label="Log Out Account"
@@ -103,7 +104,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* User Profile Section */}
+      {/* User Profile */}
       <div className="px-6 py-2 pt-3 border-t border-blue-500">
         <div className="flex items-center gap-3">
           <img
@@ -111,7 +112,9 @@ const Sidebar = () => {
             alt="Profile"
             className="w-8 h-8 rounded-full"
           />
-          <span className="text-sm font-medium">{user?.name || "User"}</span>
+          <span className="text-sm font-medium">
+            {user?.name || "User"}
+          </span>
         </div>
       </div>
 
@@ -133,26 +136,25 @@ const SidebarItem = ({ icon, label, path, onClick, active }) => {
       to={path}
       onClick={onClick}
       className={`
-        relative flex items-center space-x-3 py-3 text-xs font-medium
+        relative flex items-center gap-3 py-3 pl-5 text-xs font-medium
         rounded-l-full cursor-pointer overflow-hidden
-        transition-all duration-1000
+        transition-all duration-700
 
         before:absolute before:inset-0
         before:bg-[#161A20]
         before:origin-right before:scale-x-0
-        before:transition-transform before:duration-1000
+        before:transition-transform before:duration-700
 
         hover:before:scale-x-100
 
-        ${active 
-          ? "bg-[#161A20] text-white shadow-lg" 
-          : "text-blue-100 hover:bg-[#161A20] hover:text-white hover:shadow-md"
+        ${
+          active
+            ? "bg-[#161A20] text-white shadow-lg"
+            : "text-blue-100 hover:bg-[#161A20] hover:text-white hover:shadow-md"
         }
       `}
-
-      style={{ paddingLeft: '1.25rem' }}
     >
-      <div className="relative z-10 flex items-center space-x-3">
+      <div className="relative z-10 flex items-center gap-3">
         {icon}
         <span>{label}</span>
       </div>
