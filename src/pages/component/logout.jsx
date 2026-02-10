@@ -1,9 +1,11 @@
 import React from "react";
+import { createPortal } from "react-dom";
 
 const Logout = ({ onClose, onLogOut }) => {
-  return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-70">
-      <div className="bg-neutral-800 p-8 rounded-2xl shadow-xl text-center w-[350px] animate-fadeIn">
+  console.log("Logout modal rendering"); // Debug log
+  return createPortal(
+    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black bg-opacity-60" style={{ zIndex: 999999 }}>
+      <div className="bg-neutral-800 p-8 rounded-2xl shadow-xl text-center w-[350px] animate-fadeIn relative" style={{ zIndex: 1000000 }}>
         <h1 className="text-xl font-semibold mb-6 text-white">
           Are you sure you want to Logout?
         </h1>
@@ -26,7 +28,8 @@ const Logout = ({ onClose, onLogOut }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

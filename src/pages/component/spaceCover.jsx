@@ -7,7 +7,6 @@ export const SpaceCover = ({
 }) => {
   const letter = name?.charAt(0)?.toUpperCase() || "?";
 
-  // deterministic color based on letter
   const colors = [
     "from-blue-600 to-indigo-700",
     "from-emerald-500 to-teal-600",
@@ -21,7 +20,7 @@ export const SpaceCover = ({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-lg ${className}`}
+      className={`relative w-full overflow-hidden rounded-lg ${className} aspect-[10/6]`}
     >
       {image ? (
         <img

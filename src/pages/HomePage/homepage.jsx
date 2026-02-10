@@ -8,7 +8,7 @@ import {
   User,
   GraduationCap,
   FileText,
-  Calendar as CalendarIcon,
+  Calendar,
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -100,6 +100,9 @@ const HomePage1 = () => {
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
+      {/* {showLogout && (
+        
+      )} */}
 
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
@@ -168,6 +171,74 @@ const HomePage1 = () => {
               </div>
             </div>
 
+            <div className="xl:hidden mb-8">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3">
+                Reminders
+              </h2>
+              <div className="bg-[#1E242E] rounded-xl p-4 sm:p-6">
+                <ul className="space-y-3 text-sm">
+                  <li className="bg-[#2E3440] p-3 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <BookOpen className="text-blue-400 w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Week 7 Reflection Paper</p>
+                        <p className="text-gray-400 text-xs">
+                          Operating System – Oct 15
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                  <li className="bg-[#2E3440] p-3 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <User className="text-green-400 w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">
+                          Week 8 Individual Activity
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          Data Communications – Oct 24
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                  <li className="bg-[#2E3440] p-3 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <GraduationCap className="text-orange-400 w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Chapter 1 Thesis Paper</p>
+                        <p className="text-gray-400 text-xs">Thesis – Oct 28</p>
+                      </div>
+                    </div>
+                  </li>
+                  <li className="bg-[#2E3440] p-3 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="text-purple-400 w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Midterm Exam Review</p>
+                        <p className="text-gray-400 text-xs">
+                          Mathematics – Nov 5
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                  <li className="bg-[#2E3440] p-3 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="text-red-400 w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Group Project Meeting</p>
+                        <p className="text-gray-400 text-xs">
+                          Software Engineering – Nov 10
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+                <button className="mt-4 text-[#007AFF] hover:underline text-sm bg-transparent">
+                  See All
+                </button>
+              </div>
+            </div>
+
             {/* Your Spaces */}
             <section className="mb-12">
               <div className="flex justify-between items-center mb-4">
@@ -212,9 +283,9 @@ const HomePage1 = () => {
                             <SpaceCover
                               image={space.image}
                               name={space.space_name}
-                              className="h-36 w-full object-cover"
+                              className="w-full flex-shrink-0"
                             />
-                            <div className="p-4">
+                            <div className="p-4 flex flex-col justify-between flex-grow">
                               <h3 className="font-medium truncate">
                                 {capitalizeWords(space.space_name)}'s Space
                               </h3>
@@ -228,6 +299,7 @@ const HomePage1 = () => {
                 </div>
               )}
             </section>
+            
 
             {/* Course Spaces */}
             <section className="mb-12">
@@ -414,53 +486,74 @@ const HomePage1 = () => {
           </div>
 
           {/* RIGHT SIDEBAR – visible on xl+ */}
-          <aside className="hidden xl:block w-80 bg-[#1E242E] rounded-2xl p-6 self-start sticky top-6 space-y-8">
-            {/* Reminders */}
+          {/* RIGHT CONTENT - Reminders (Desktop Only - Sticky Sidebar) */}
+          <div className="hidden xl:block w-80 bg-[#1E242E] rounded-xl p-6 mr-6 my-6 flex-shrink-0 self-start sticky top-6">
             <div>
-              <h4 className="font-semibold mb-4">Reminders</h4>
+              <h4 className="font-semibold mb-3">Reminders</h4>
               <ul className="space-y-3 text-sm">
-                <li className="bg-[#2E3440] p-3 rounded-lg flex items-start gap-3">
-                  <BookOpen className="text-blue-400 w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">Week 7 Reflection Paper</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Operating System – Oct 15</p>
+                <li className="bg-[#2E3440] p-3 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <BookOpen className="text-blue-400 w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">Week 7 Reflection Paper</p>
+                      <p className="text-gray-400 text-xs">
+                        Operating System – Oct 15
+                      </p>
+                    </div>
                   </div>
                 </li>
-                <li className="bg-[#2E3440] p-3 rounded-lg flex items-start gap-3">
-                  <User className="text-green-400 w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">Week 8 Individual Activity</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Data Communications – Oct 24</p>
+                <li className="bg-[#2E3440] p-3 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <User className="text-green-400 w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">Week 8 Individual Activity</p>
+                      <p className="text-gray-400 text-xs">
+                        Data Communications – Oct 24
+                      </p>
+                    </div>
                   </div>
                 </li>
-                <li className="bg-[#2E3440] p-3 rounded-lg flex items-start gap-3">
-                  <GraduationCap className="text-orange-400 w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">Chapter 1 Thesis Paper</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Thesis – Oct 28</p>
+                <li className="bg-[#2E3440] p-3 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <GraduationCap className="text-orange-400 w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">Chapter 1 Thesis Paper</p>
+                      <p className="text-gray-400 text-xs">Thesis – Oct 28</p>
+                    </div>
                   </div>
                 </li>
-                <li className="bg-[#2E3440] p-3 rounded-lg flex items-start gap-3">
-                  <FileText className="text-purple-400 w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">Midterm Exam Review</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Mathematics – Nov 5</p>
+                <li className="bg-[#2E3440] p-3 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FileText className="text-purple-400 w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">Midterm Exam Review</p>
+                      <p className="text-gray-400 text-xs">
+                        Mathematics – Nov 5
+                      </p>
+                    </div>
                   </div>
                 </li>
-                <li className="bg-[#2E3440] p-3 rounded-lg flex items-start gap-3">
-                  <CalendarIcon className="text-red-400 w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">Group Project Meeting</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Software Engineering – Nov 10</p>
+                <li className="bg-[#2E3440] p-3 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="text-red-400 w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">Group Project Meeting</p>
+                      <p className="text-gray-400 text-xs">
+                        Software Engineering – Nov 10
+                      </p>
+                    </div>
                   </div>
                 </li>
               </ul>
-              <button className="mt-4 text-[#60A5FA] hover:underline text-sm">
-                See All Reminders
+              <button className="mt-4 text-[#007AFF] hover:underline text-sm bg-transparent">
+                See All
               </button>
             </div>
-          </aside>
+          </div>
+          
         </div>
+
+        
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
