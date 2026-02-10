@@ -15,11 +15,32 @@ const TaskPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useUser();
 
+  // sticky header scroll state
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setShowHeader(false); // scrolling down
+      } else {
+        setShowHeader(true); // scrolling up
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   const [tasks, setTasks] = useState([
     {
@@ -87,27 +108,28 @@ const TaskPage = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col relative">
 
-        {/* Fixed Desktop Title */}
-        <div className="hidden lg:flex justify-center mb-8 absolute top-0 left-0 right-0 bg-[#161A20] py-4 z-10">
-          <h1 className="text-4xl font-bold text-white">Tasks</h1>
+        {/* 🔥 Sticky Mobile Header */}
+        <div
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+        >
+          <div className="p-4 flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-bold">Tasks</h1>
+          </div>
         </div>
 
-        {/* Spacer for fixed title */}
-        <div className="hidden lg:block h-20"></div>
-
-        {/* Mobile + Tablet Header */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
-          >
-            ☰
-          </button>
-          <h1 className="text-xl font-bold">Tasks</h1>
-        </div>
-
-        {/* Page Content */}
-        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
+        {/* 🔽 Added spacing here (pt-20) */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
+          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
+            Tasks
+          </h1>
           {/* Your Space Tasks */}
           {tasksByCategory['your-space'] && (
             <div className="mb-8">

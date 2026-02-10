@@ -113,23 +113,11 @@ const ProfFilePage = () => {
             </button>
 
             <h1 className="text-lg font-bold flex-1 truncate">Files</h1>
-
-            <Button
-              onClick={() => setShowModal(true)}
-              style={{
-                padding: "0.35rem 0.75rem",
-                fontSize: "0.75rem",
-                borderRadius: "0.375rem",
-                backgroundColor: "#3B82F6",
-              }}
-            >
-              Upload
-            </Button>
           </div>
         </div>
 
         {/* ✅ CONTENT (FOLDER-LIKE DISPLAY) */}
-        <div className="flex-1 px-4 sm:px-6 lg:px-10 pb-10 mt-4 sm:mt-6">
+        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
           <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
             Files
           </h1>
@@ -165,7 +153,7 @@ const ProfFilePage = () => {
                     key={`course-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
                   >
-                    <span className="text-xl ">📁</span>
+                    <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{file.fileName}</p>
                     </div>

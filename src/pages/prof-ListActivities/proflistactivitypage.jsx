@@ -36,7 +36,7 @@ const ProfListActivityPage = () => {
     { id: 4, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026", category: "course-space" },
     { id: 5, status: "Already Ended", name: "Week 5 Individual Activity", dueDate: "September 12", space: "Businteg", category: "course-space" },
     { id: 6, status: "On Going", name: "Week 8 Personal Reflection", dueDate: "October 30", space: "Operating System", category: "your-space" },
-    { id: 7, status: "To be Deployed", name: "dfefefefefefefdededededeeefOJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026", category: "your-space" },
+    { id: 7, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026", category: "your-space" },
   ];
 
   const activitiesByCategory = activities.reduce((acc, activity) => {
@@ -96,17 +96,11 @@ const ProfListActivityPage = () => {
               ☰
             </button>
             <h1 className="text-lg font-bold">List of Activities</h1>
-            <button
-              onClick={() => setShowModal(true)}
-              className="ml-auto bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-md text-sm"
-            >
-              Create
-            </button>
           </div>
         </div>
 
         {/* 🔽 Added spacing here (pt-20) */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 lg:pt-10 overflow-y-auto">
+        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
           <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
             List of Activities
           </h1>
