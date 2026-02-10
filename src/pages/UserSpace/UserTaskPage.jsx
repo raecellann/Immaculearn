@@ -50,10 +50,6 @@ const UserTaskPage = () => {
   const uploadedTask = Array.isArray(taskData) ? taskData : (taskData?.data || []);
   const draftedTask = Array.isArray(draftActivities) ? draftActivities : (draftActivities?.data || []);
 
-  console.log("Uploaded Tasks:", uploadedTask);
-  console.log("Drafted Tasks:", draftedTask);
-
-
 
   const fileInputRef = useRef(null);
   const instructionRef = useRef(null);

@@ -81,7 +81,6 @@ const UserPage = () => {
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
 
-  console.log(isOwnerSpace)
   const isFriendSpace = !isOwnerSpace;
 
   // Loading state
