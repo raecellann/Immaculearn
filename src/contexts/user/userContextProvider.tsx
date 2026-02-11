@@ -96,7 +96,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      const response = await api.post("/auth/login", { email, password });
+      const response = await api.post("/account/login", { email, password }, {withCredentials: true});
 
       if (response.data.success) {
         // Fetch user profile after login
