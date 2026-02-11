@@ -16,13 +16,30 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
 
-  const handleSubmit = (e) => {
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!role) {
-      alert("Please select whether you are a Student or a Professor.");
-      return;
+
+    try {
+      const data = await login(email, password);
+
+      if (data.needsOnboarding) {
+        sessionStorage.setItem("tempToken", data.tempToken);
+        navigate(`/onboarding?role=${data.role}`);
+        return;
+      }
+
+      if (data.role === "student") {
+        navigate(`/home`);
+      } else if (data.role === "professor") {
+        navigate(`/prof/home`);
+      } else if (data.role === "admin") {
+        navigate(`/admin-dashboard`);
+      }
+
+    } catch (err) {
+      toast.error("Login failed");
     }
-    alert(`Logging in as ${role}`);
   };
 
   const handleGmailLogin = async () => {
