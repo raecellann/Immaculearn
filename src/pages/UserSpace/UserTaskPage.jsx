@@ -7,6 +7,7 @@ import {
   FiMenu,
   FiX,
   FiBold,
+  FiCopy,
   FiItalic,
   FiUnderline,
   FiUploadCloud,
@@ -15,22 +16,47 @@ import {
 } from "react-icons/fi";
 import Logout from "../component/logout";
 import Sidebar from "../component/sidebar";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 
 const UserTaskPage = () => {
-  const navigate = useNavigate();
+  // ================= STATE MANAGEMENT =================
+  const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+  const [showInvitePopup, setShowInvitePopup] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [copyFeedback, setCopyFeedback] = useState("");
+  const [joinRequestsData, setJoinRequestsData] = useState([]);
+  const [spaceLoading, setSpaceLoading] = useState(false);
 
+  const navigate = useNavigate();
   const { space_uuid, space_name } = useParams();
   
   const { user, isLoading } = useUser();
-  const { userSpaces, friendSpaces } = useSpace();
+  const { 
+    userSpaces, 
+    friendSpaces, 
+    deleteSpace, 
+    acceptJoinRequest, 
+    declineJoinRequest 
+  } = useSpace();
   
-  /* ================= SPACE & OWNER LOGIC ================= */
+  // ================= SPACE & OWNER LOGIC =================
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
   const currentSpace = allSpaces.find(
     (space) => space.space_uuid === space_uuid
   );
   
-  // Apply useTasks hook
+  const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
+  const isOwnerSpace = currentSpace?.creator === user?.id;
+  const isFriendSpace = !isOwnerSpace;
+  
+  // ================= TASK FORM STATE =================
+  const [taskTitle, setTaskTitle] = useState("");
+  const [instruction, setInstruction] = useState("");
+  const [score, setScore] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  
+  // ================= TASKS HOOK =================
   const {
     uploadedTasksQuery,
     draftedTasksQuery,
@@ -46,34 +72,117 @@ const UserTaskPage = () => {
   const tasksError = uploadedTasksQuery?.error;
   const draftsError = draftedTasksQuery?.error;
   
-  // Handle API response structure - data might be nested
   const uploadedTask = Array.isArray(taskData) ? taskData : (taskData?.data || []);
   const draftedTask = Array.isArray(draftActivities) ? draftActivities : (draftActivities?.data || []);
 
+  // ================= UPLOAD HANDLER =================
+  const handleUpload = async (status_type) => {
+    if (!taskTitle.trim()) {
+      alert("Task title is required");
+      return;
+    }
 
+    if (!dueDate) {
+      alert("Due date is required");
+      return;
+    }
+
+    if (!score) {
+      alert("Score is required");
+      return;
+    }
+
+    const payload = {
+      title: taskTitle,
+      instruction: instruction || "No instruction provided",
+      scoring: Number(score),
+      status: status_type,
+      due_date: dueDate,
+    };
+
+    // Add groups data if configured
+    if (groupsConfigured && groups.length > 0) {
+      // Filter out empty groups and transform to backend format
+      const validGroups = groups.filter(group => 
+        group.leader.account_id || group.members?.some(m => m?.trim())
+      );
+
+      if (validGroups.length > 0) {
+        payload.groupsData = validGroups.map((group, index) => ({
+          group_name: `Group_${index + 1}`,
+          leader_id: group.leader.account_id,
+          members: group.members
+            .filter(member => member?.trim())
+            .map(member => member.trim())
+        }));
+      }
+    }
+
+    console.log("Uploading task with payload:", payload);
+
+    try {
+      if (status_type === "uploaded") {
+        await uploadTaskMutation.mutateAsync({
+          spaceId: Number(currentSpace?.space_id),
+          taskData: payload,
+        });
+        alert("Task published successfully!");
+      } else {
+        await draftTaskMutation.mutateAsync({
+          spaceId: Number(currentSpace?.space_id),
+          taskData: payload,
+        });
+        alert("Task saved as draft!");
+      }
+      
+      // Reset form and close
+      resetTaskForm();
+      setIsCreatingTask(false);
+    } catch (error) {
+      console.error("Failed to save task:", error);
+      alert("Failed to save task. Please try again.");
+    }
+  };
+
+  const resetTaskForm = () => {
+    setTaskTitle("");
+    setInstruction("");
+    setScore("");
+    setDueDate("");
+    setSelectedFile(null);
+    setGroups([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+    setNumberOfGroups(1);
+    setGroupsConfigured(false);
+    setGroupCreationMethod(null);
+    if (instructionRef.current) {
+      instructionRef.current.innerHTML = "";
+    }
+  };
+
+  // ================= REFS =================
   const fileInputRef = useRef(null);
   const instructionRef = useRef(null);
 
-  /* ================= HEADER + SIDEBAR ================= */
+  // ================= HEADER + SIDEBAR =================
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
-  /* ================= CREATE TASK MODE ================= */
+  // ================= CREATE TASK MODE =================
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [showManualGroups, setShowManualGroups] = useState(false);
   const [showGenerateGroups, setShowGenerateGroups] = useState(false);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
   const [numberOfGroups, setNumberOfGroups] = useState(1);
-  const [groups, setGroups] = useState([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
-  const [activeGroup, setActiveGroup] = useState(1); // Track which group is currently active
+  const [groups, setGroups] = useState([{ id: 1, members: [], leader_id: 0, showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+  const [activeGroup, setActiveGroup] = useState(1);
   const [isTablet, setIsTablet] = useState(false);
-  const [groupsConfigured, setGroupsConfigured] = useState(false); // Track if groups are configured
-  const [groupCreationMethod, setGroupCreationMethod] = useState(null); // Track how groups were created: 'manual' or 'generate'
-  const [generatedGroupsPreview, setGeneratedGroupsPreview] = useState([]); // Store shuffled groups for preview
+  const [groupsConfigured, setGroupsConfigured] = useState(false);
+  const [groupCreationMethod, setGroupCreationMethod] = useState(null);
+  const [generatedGroupsPreview, setGeneratedGroupsPreview] = useState([]);
   
-  // Example available members in the professor's space
+  // Example available members - Replace with actual data from your backend
   const availableMembers = [
     "John Smith",
     "Emily Johnson", 
@@ -87,6 +196,7 @@ const UserTaskPage = () => {
     "Jennifer Lopez"
   ];
 
+  // ================= EFFECTS =================
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -111,8 +221,28 @@ const UserTaskPage = () => {
     return () => window.removeEventListener('resize', checkTablet);
   }, []);
 
+  // Sync instruction state with contentEditable
+  useEffect(() => {
+    if (instructionRef.current) {
+      const handleInput = () => {
+        setInstruction(instructionRef.current.innerHTML);
+      };
+      instructionRef.current.addEventListener('input', handleInput);
+      return () => {
+        instructionRef.current?.removeEventListener('input', handleInput);
+      };
+    }
+  }, [isCreatingTask]);
+
+  // ================= HANDLERS =================
   const handleFileClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    console.log("File selected:", file);
   };
 
   const applyFormat = (command) => {
@@ -122,7 +252,6 @@ const UserTaskPage = () => {
 
   const handleManualGroups = () => {
     if (groupsConfigured) {
-      // If groups are already configured, open the appropriate popup based on creation method
       if (groupCreationMethod === 'generate') {
         setShowGenerateGroups(true);
       } else {
@@ -130,76 +259,74 @@ const UserTaskPage = () => {
         setShowManualGroups(true);
       }
     } else {
-      // If no groups are configured, create new empty groups and set creation method to manual
       const input = document.getElementById('groups-input');
-      const numGroups = parseInt(input.value) || 1;
+      const numGroups = parseInt(input?.value) || 1;
       setNumberOfGroups(numGroups);
       setGroupCreationMethod('manual');
       
-      // Initialize groups with empty members arrays and leader field
       const newGroups = Array.from({ length: numGroups }, (_, index) => ({
         id: index + 1,
         members: [''],
-        leader: '',
+        leader: 0,
         showInputs: false,
         isSaved: false,
         wasPreviouslySaved: false
       }));
       setGroups(newGroups);
-      setActiveGroup(1); // Reset to first group when modal opens
+      setActiveGroup(1);
       setShowManualGroups(true);
     }
   };
 
   const handleGenerateGroups = () => {
     const input = document.getElementById('groups-input');
-    const numGroups = parseInt(input.value) || 1;
+    const numGroups = parseInt(input?.value) || 1;
     setNumberOfGroups(numGroups);
-    
-    // Generate initial shuffled groups
     shuffleGroups(numGroups);
     setShowGenerateGroups(true);
   };
 
   const shuffleGroups = (numGroups) => {
-    // Shuffle all available members
-    const shuffledMembers = [...availableMembers].sort(() => Math.random() - 0.5);
-    
-    // Calculate base members per group and remainder
+    if (!currentSpace?.members || currentSpace.members.length === 0) return;
+
+    // Shuffle members randomly
+    const shuffledMembers = [...currentSpace.members].sort(() => Math.random() - 0.5);
+
     const totalMembers = shuffledMembers.length;
     const baseMembersPerGroup = Math.floor(totalMembers / numGroups);
     const remainder = totalMembers % numGroups;
-    
+
     const newGroups = Array.from({ length: numGroups }, (_, index) => {
-      // Distribute members: first groups get one extra member if there's a remainder
       const membersCount = baseMembersPerGroup + (index < remainder ? 1 : 0);
-      
-      // Calculate start and end indices for this group
+
+      // Calculate startIndex dynamically
       let startIndex = 0;
       for (let i = 0; i < index; i++) {
         startIndex += baseMembersPerGroup + (i < remainder ? 1 : 0);
       }
       const endIndex = startIndex + membersCount;
-      
+
       const groupMembers = shuffledMembers.slice(startIndex, endIndex);
-      
-      // First member becomes leader, rest are members
-      const leader = groupMembers[0] || '';
-      const members = groupMembers.slice(1);
-      
+
+      // Extract only account IDs
+      const leader = groupMembers[0]?.account_id || null;
+      const members = groupMembers.slice(1).map(member => member.account_id);
+
       return {
         id: index + 1,
-        leader: leader,
+        leader: groupMembers?.[0],
         members: members,
         showInputs: false,
         isSaved: true,
         wasPreviouslySaved: true
       };
     });
-    
+
     setGeneratedGroupsPreview(newGroups);
   };
 
+
+  // Group management functions (unchanged from your code)
   const handleGroupMemberChange = (groupId, memberIndex, value) => {
     const updatedGroups = [...groups];
     updatedGroups[groupId - 1].members[memberIndex] = value;
@@ -222,9 +349,8 @@ const UserTaskPage = () => {
     const updatedGroups = [...groups];
     const group = updatedGroups[groupId - 1];
     
-    // Store original data before editing
     updatedGroups[groupId - 1].originalData = {
-      leader: group.leader,
+      leader: group.leader?.account_id,
       members: [...group.members]
     };
     
@@ -245,40 +371,19 @@ const UserTaskPage = () => {
     setGroups(updatedGroups);
   };
 
-  const addMemberToGroup = (groupId) => {
-    const updatedGroups = [...groups];
-    updatedGroups[groupId - 1].members.push('');
-    setGroups(updatedGroups);
-  };
-
-  const saveMemberToGroup = (groupId, memberIndex) => {
-    const updatedGroups = [...groups];
-    const currentMember = updatedGroups[groupId - 1].members[memberIndex];
-    
-    if (currentMember.trim()) {
-      // Member is already saved through the onChange handler
-      console.log(`Member "${currentMember}" saved to Group ${groupId}`);
-      // Could add visual feedback here if needed
-    }
-  };
-
   const addMemberFromAvailable = (memberName) => {
-    // Check if the active group has inputs visible
     const activeGroupData = groups[activeGroup - 1];
     if (!activeGroupData.showInputs) {
-      console.log('Cannot add member: Group inputs are not visible. Click "Add People" first.');
+      alert('Please click "Add People" first to edit this group.');
       return;
     }
 
     const updatedGroups = [...groups];
     const activeGroupDataUpdated = updatedGroups[activeGroup - 1];
     
-    // If group has no leader, assign as leader
     if (!activeGroupDataUpdated.leader || activeGroupDataUpdated.leader.trim() === '') {
       activeGroupDataUpdated.leader = memberName;
-      console.log(`Added "${memberName}" as leader of Group ${activeGroup}`);
     } else {
-      // If group already has a leader, add as member
       const activeGroupMembers = activeGroupDataUpdated.members;
       const firstEmptyIndex = activeGroupMembers.findIndex(member => !member || member.trim() === '');
       
@@ -286,24 +391,19 @@ const UserTaskPage = () => {
         activeGroupMembers[firstEmptyIndex] = memberName;
       } else {
         activeGroupMembers.push(memberName);
-        // Add a new empty input field to maintain one empty field
         activeGroupMembers.push('');
       }
-      console.log(`Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`);
     }
     
     setGroups(updatedGroups);
   };
 
-  // Get all members that are already assigned to any group (as leaders or members)
   const getAssignedMembers = () => {
     const allAssignedMembers = new Set();
     groups.forEach(group => {
-      // Add leader if exists
-      if (group.leader && group.leader.trim()) {
-        allAssignedMembers.add(group.leader.trim());
+      if (group.leader.account_id && group.leader.full_name) {
+        allAssignedMembers.add(group.leader.full_name);
       }
-      // Add members
       group.members.forEach(member => {
         if (member && member.trim()) {
           allAssignedMembers.add(member.trim());
@@ -313,15 +413,13 @@ const UserTaskPage = () => {
     return allAssignedMembers;
   };
 
-  // Check if a member is already assigned to any group (as leader or member)
   const isMemberAssigned = (memberName) => {
     return getAssignedMembers().has(memberName);
   };
 
-  // Get the role of a member (leader, member, or null if not assigned)
   const getMemberRole = (memberName) => {
     for (const group of groups) {
-      if (group.leader && group.leader.trim() === memberName) {
+      if (group.leader.full_name && group.leader.account_id) {
         return 'leader';
       }
       if (group.members.some(member => member && member.trim() === memberName)) {
@@ -334,26 +432,20 @@ const UserTaskPage = () => {
   const saveGroup = (groupId) => {
     const group = groups.find(g => g.id === groupId);
     const validMembers = group.members.filter(member => member.trim());
-    console.log(`Group ${groupId} saved with leader: ${group.leader}, members:`, validMembers);
     
-    // Mark the group as saved
     const updatedGroups = [...groups];
     updatedGroups[groupId - 1].isSaved = true;
     updatedGroups[groupId - 1].showInputs = false;
     updatedGroups[groupId - 1].wasPreviouslySaved = true;
     setGroups(updatedGroups);
-    
-    // Here you could add visual feedback or backend call
   };
 
   const removeMemberFromGroup = (groupId, memberIndex) => {
     const updatedGroups = [...groups];
     const groupMembers = updatedGroups[groupId - 1].members;
     
-    // Remove the member at the specified index
     groupMembers.splice(memberIndex, 1);
     
-    // Ensure there's always at least one empty input field
     const hasEmptyField = groupMembers.some(member => !member || member.trim() === '');
     if (!hasEmptyField) {
       groupMembers.push('');
@@ -369,9 +461,7 @@ const UserTaskPage = () => {
     Missing: "border-[#FF5252] text-[#FF5252]",
   };
 
-
   const [openIndex, setOpenIndex] = useState(null);
-
   const [openDraftIndex, setOpenDraftIndex] = useState(null);
 
   const handleStatusChange = (index, newStatus) => {
@@ -410,15 +500,73 @@ const UserTaskPage = () => {
     setOpenDraftIndex(null);
   };
 
+  // Space management handlers
+  const handleInviteMember = () => {
+    setShowInvitePopup(true);
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!currentSpace) return;
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`);
+    if (!confirmDelete) return;
+    try {
+      await deleteSpace(currentSpace.space_uuid, user.id);
+      alert(`Space "${currentSpace.space_name}" deleted successfully.`);
+      navigate("/space");
+    } catch (error) {
+      console.error("Failed to delete space:", error);
+      alert("Failed to delete space. Please try again.");
+    }
+  };
+
+  const handleAcceptJoinRequest = async (userId) => {
+    try {
+      await acceptJoinRequest(userId, space_uuid);
+      // Refresh join requests or remove from list
+      setJoinRequestsData(prev => prev.filter(req => req.account_id !== userId));
+    } catch (error) {
+      console.error("Failed to accept join request:", error);
+    }
+  };
+
+  const handleDeclineJoinRequest = async (userId) => {
+    try {
+      await declineJoinRequest(userId, space_uuid);
+      setJoinRequestsData(prev => prev.filter(req => req.account_id !== userId));
+    } catch (error) {
+      console.error("Failed to decline join request:", error);
+    }
+  };
+
+  const sendInvite = () => {
+    if (inviteEmail.trim()) {
+      alert(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail("");
+      setShowInvitePopup(false);
+    }
+  };
+
+  const handleCopyLink = (space_link) => {
+    navigator.clipboard.writeText(space_link)
+      .then(() => {
+        setCopyFeedback("Copied!");
+        setTimeout(() => setCopyFeedback(""), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err);
+        setCopyFeedback("Error!");
+        setTimeout(() => setCopyFeedback(""), 2000);
+      });
+  };
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
-      {/* ================= DESKTOP SIDEBAR ================= */}
+      {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        {/* <ProfSidebar onLogoutClick={() => setShowLogout(true)} /> */}
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* ================= MOBILE OVERLAY ================= */}
+      {/* MOBILE OVERLAY */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
@@ -426,7 +574,7 @@ const UserTaskPage = () => {
         />
       )}
 
-      {/* ================= MOBILE/TABLET SIDEBAR ================= */}
+      {/* MOBILE/TABLET SIDEBAR */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
@@ -435,9 +583,9 @@ const UserTaskPage = () => {
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* ================= MAIN ================= */}
+      {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col w-full">
-        {/* ================= HEADER ================= */}
+        {/* MOBILE HEADER */}
         <div
           className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
@@ -450,13 +598,12 @@ const UserTaskPage = () => {
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold">CS Thesis 2 Space</h1>
+          <h1 className="text-xl font-bold">{space_name}</h1>
         </div>
 
-        {/* HEADER SPACER */}
         <div className="lg:hidden h-16" />
 
-        {/* ================= COVER ================= */}
+        {/* COVER */}
         <div className="relative">
           <img
             src="/src/assets/UserSpace/cover.png"
@@ -467,20 +614,53 @@ const UserTaskPage = () => {
         </div>
 
         <div className="p-4 sm:p-6">
-          {/* ================= DESKTOP TITLE ================= */}
+          {/* DESKTOP TITLE */}
           <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">
-              CS Thesis 2 Space
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-400">(5 Members)</span>
-              <button className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition">
-                Manage Class
-              </button>
+              <span className="text-xs text-gray-400">({(currentSpace?.members?.length) || 0} member(s))</span>
+              {isOwnerSpace && (
+                <>
+                  <button 
+                    onClick={handleInviteMember} 
+                    className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition"
+                  >
+                    Add Member
+                  </button>
+                  <button 
+                    onClick={() => setShowPendingInvitations(true)} 
+                    className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
+                  >
+                    Pending Invites
+                  </button>
+                  <button
+                    onClick={handleDeleteRoom}
+                    className="px-3 py-1 text-xs bg-red-600 rounded-md hover:bg-red-500 transition"
+                  >
+                    Delete Room
+                  </button>
+                </>
+              )}
+              {isFriendSpace && (
+                <div className="flex flex-col gap-2 mt-2">
+                  <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
+                    <span className="text-xs text-blue-400 break-all">
+                      {currentSpace?.space_link || 'Loading...'}
+                    </span>
+                    <button
+                      onClick={() => handleCopyLink(currentSpace?.space_link)}
+                      className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
+                      title="Copy to clipboard"
+                    >
+                      <FiCopy size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* ================= TABS ================= */}
+          {/* TABS */}
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex justify-center space-x-12">
@@ -490,26 +670,36 @@ const UserTaskPage = () => {
                 <button className="font-semibold border-b-2 border-white pb-2">
                   Tasks
                 </button>
-                <button
-                  onClick={() =>
-                    navigate(`/space/${space_uuid}/${space_name}/files`)
-                  }
-                >
+                <button onClick={() => navigate(`/space/${space_uuid}/${space_name}/files`)}>
                   Files
                 </button>
-                <button
-                  onClick={() =>
-                    navigate(`/space/${space_uuid}/${space_name}/people`)
-                  }
-                >
+                <button onClick={() => navigate(`/space/${space_uuid}/${space_name}/people`)}>
                   People
                 </button>
               </div>
             </div>
           </div>
+          
+          {/* Mobile Add Member Button */}
+          {isOwnerSpace && (
+            <div className="md:hidden flex justify-end gap-2 mb-6">
+              <button 
+                onClick={handleInviteMember} 
+                className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
+              >
+                Add Member
+              </button>
+              <button 
+                onClick={() => setShowPendingInvitations(true)} 
+                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
+              >
+                Pending Invites
+              </button>
+            </div>
+          )}
 
           {!isCreatingTask ? (
-            /* ================= TASKS LIST VIEW ================= */
+            /* TASKS LIST VIEW */
             <div className="max-w-5xl mx-auto">
               <button
                 className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
@@ -518,32 +708,29 @@ const UserTaskPage = () => {
                 <FiFileText size={16} />
                 Create Task
               </button>
+              
               <div className="mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>
               </div>
-              {/* DESKTOP TABLE */}
+              
+              {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                  <tr className="border-b border-gray-600 text-gray-400 text-left">
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Task Name</th>
-                    <th className="py-3 px-4">Deadline</th>
-                    <th className="py-3 px-4">Details</th>
-                  </tr>
-                </thead>
+                    <tr className="border-b border-gray-600 text-gray-400 text-left">
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4">Task Name</th>
+                      <th className="py-3 px-4">Deadline</th>
+                      <th className="py-3 px-4">Details</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {uploadedTask?.map((task, index) => (
-                      <tr
-                        key={index}
-                        className="border-b border-gray-700 hover:bg-[#1E222A]"
-                      >
+                      <tr key={index} className="border-b border-gray-700 hover:bg-[#1E222A]">
                         <td className="py-3 px-4">
                           <div className="relative inline-block">
                             <button
-                              onClick={() =>
-                                setOpenIndex(openIndex === index ? null : index)
-                              }
+                              onClick={() => setOpenIndex(openIndex === index ? null : index)}
                               className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.task_status]}`}
                             >
                               {task.task_status} ▼
@@ -554,9 +741,7 @@ const UserTaskPage = () => {
                                   {Object.keys(statusStyles).map((st) => (
                                     <button
                                       key={st}
-                                      onClick={() =>
-                                        handleStatusChange(index, st)
-                                      }
+                                      onClick={() => handleStatusChange(index, st)}
                                       className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90 whitespace-nowrap`}
                                     >
                                       {st}
@@ -575,7 +760,6 @@ const UserTaskPage = () => {
                             day: "2-digit",
                           })}
                         </td>
-
                         <td className="py-3 px-4">
                           <a
                             href="/prof-task-view"
@@ -590,28 +774,25 @@ const UserTaskPage = () => {
                 </table>
               </div>
 
-              {/* MOBILE / TABLET CARDS */}
+              {/* Mobile Cards */}
               <div className="md:hidden space-y-4">
                 {uploadedTask?.map((task, index) => (
-                  <div
-                    key={index}
-                    className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
-                  >
+                  <div key={index} className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4">
                     <div className="flex justify-between items-center mb-3">
-                      <p className="text-sm font-semibold">{task.name}</p>
+                      <p className="text-sm font-semibold">{task.task_title}</p>
                       <button
-                        onClick={() =>
-                          setOpenIndex(openIndex === index ? null : index)
-                        }
-                        className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.status]}`}
+                        onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                        className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.task_status]}`}
                       >
-                        {task.status}
+                        {task.task_status}
                       </button>
                     </div>
 
                     <p className="text-sm text-gray-400">
                       Deadline:{" "}
-                      <span className="text-white">{task.deadline}</span>
+                      <span className="text-white">
+                        {new Date(task.task_due).toLocaleDateString("en-US")}
+                      </span>
                     </p>
 
                     {openIndex === index && (
@@ -645,96 +826,91 @@ const UserTaskPage = () => {
                 ))}
               </div>
 
-            {/* DRAFT ACTIVITIES TABLE */}
-            <div className="max-w-5xl mx-auto w-full mt-12">
-              <h2 className="text-xl font-semibold mb-6">Draft Activities 📝</h2>
+              {/* Draft Activities */}
+              <div className="max-w-5xl mx-auto w-full mt-12">
+                <h2 className="text-xl font-semibold mb-6">Draft Activities 📝</h2>
 
-              {/* DESKTOP TABLE - HIDDEN ON MOBILE */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-600 text-gray-400 text-left">
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Task Name</th>
-                      <th className="py-3 px-4">Deadline</th>
-                      <th className="py-3 px-4">Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {draftedTask?.map((draft, index) => (
-                      <tr
-                        key={index}
-                        className="border-b border-gray-700 hover:bg-[#1E222A]"
-                      >
-                        <td className="py-3 px-4">
-                          <span className="px-6 py-1 rounded-full bg-black text-sm font-bold border-2 border-gray-500 text-gray-400 inline-block min-w-[120px] text-center">
-                            Draft
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          {draft.task_title}
-                        </td>
-                        <td className="py-3 px-4">
-                          {new Date(draft.task_due).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "2-digit",
-                          })}
-                        </td>
-                        <td className="py-3 px-4">
-                          <a
-                            href="/prof-task-view"
-                            className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
-                          >
-                            View Details
-                          </a>
-                        </td>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-600 text-gray-400 text-left">
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4">Task Name</th>
+                        <th className="py-3 px-4">Deadline</th>
+                        <th className="py-3 px-4">Details</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {draftedTask?.map((draft, index) => (
+                        <tr key={index} className="border-b border-gray-700 hover:bg-[#1E222A]">
+                          <td className="py-3 px-4">
+                            <span className="px-6 py-1 rounded-full bg-black text-sm font-bold border-2 border-gray-500 text-gray-400 inline-block min-w-[120px] text-center">
+                              Draft
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">{draft.task_title}</td>
+                          <td className="py-3 px-4">
+                            {new Date(draft.task_due).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "2-digit",
+                            })}
+                          </td>
+                          <td className="py-3 px-4">
+                            <a
+                              href="/prof-task-view"
+                              className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                            >
+                              View Details
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
-              {/* MOBILE CARDS - SHOWN ON MOBILE */}
-              <div className="md:hidden space-y-4">
-                {draftedTask?.map((draft, index) => (
-                  <div
-                    key={index}
-                    className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
-                  >
-                    <div className="flex justify-between items-center mb-3">
-                      <p className="text-sm font-semibold">{draft.task_title}</p>
-                      <span className="px-3 py-1 rounded-full bg-black text-xs border-2 border-gray-500 text-gray-400 font-bold">
-                        Draft
-                      </span>
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-4">
+                  {draftedTask?.map((draft, index) => (
+                    <div key={index} className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <p className="text-sm font-semibold">{draft.task_title}</p>
+                        <span className="px-3 py-1 rounded-full bg-black text-xs border-2 border-gray-500 text-gray-400 font-bold">
+                          Draft
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        Deadline:{" "}
+                        <span className="text-white">
+                          {new Date(draft.task_due).toLocaleDateString("en-US")}
+                        </span>
+                      </p>
+                      <div className="mt-3 pt-3 border-t border-gray-700">
+                        <a
+                          href="/prof-task-view"
+                          className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                        >
+                          View Details
+                        </a>
+                      </div>
                     </div>
-
-                    <p className="text-xs text-gray-400">
-                      Deadline:{" "}
-                      <span className="text-white">{draft.task_due}</span>
-                    </p>
-
-                    <div className="mt-3 pt-3 border-t border-gray-700">
-                      <a
-                        href="/prof-task-view"
-                        className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
-                      >
-                        View Details
-                      </a>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
             </div>
           ) : (
-            /* ================= CREATE TASK FORM ================= */
+            /* CREATE TASK FORM */
             <div className="max-w-5xl mx-auto">
-              {/* BACK BUTTON */}
+              {/* Back Button */}
               <div className="flex justify-end mb-6">
                 <button
                   className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
-                  onClick={() => setIsCreatingTask(false)}
+                  onClick={() => {
+                    resetTaskForm();
+                    setIsCreatingTask(false);
+                  }}
                 >
                   <FiArrowLeft size={16} />
                   <span className="hidden sm:inline">Back to Tasks</span>
@@ -742,38 +918,35 @@ const UserTaskPage = () => {
                 </button>
               </div>
 
-              {/* FORM CARD */}
+              {/* Form Card */}
               <div className="bg-black rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border border-white">
                 <div className="flex flex-col lg:flex-row gap-6">
-                  {/* LEFT SECTION */}
+                  {/* Left Section */}
                   <div className="flex-1 flex flex-col gap-4">
                     <label className="font-semibold text-lg">
                       Title: <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
+                      value={taskTitle}
+                      onChange={(e) => setTaskTitle(e.target.value)}
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
                       placeholder="Enter task title"
                     />
 
-                    {/* INSTRUCTION */}
+                    {/* Instruction */}
                     <label className="font-semibold">
                       Instruction (optional)
                     </label>
 
                     <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
-                      {/* Editable Instruction Area */}
                       <div
                         ref={instructionRef}
                         contentEditable
                         className="min-h-[140px] px-4 py-3 outline-none"
                         suppressContentEditableWarning
                       />
-
-                      {/* Divider */}
                       <div className="border-t border-[#2F3440]" />
-
-                      {/* Formatting Toolbar (BOTTOM) */}
                       <div className="flex gap-4 px-4 py-2 text-gray-300">
                         <button
                           type="button"
@@ -799,62 +972,61 @@ const UserTaskPage = () => {
                       </div>
                     </div>
 
-                    {/* FILE UPLOAD */}
+                    {/* File Upload */}
                     <div className="mt-6">
                       <label className="block font-semibold mb-2">
                         Choose a file or drag & drop it here.
                       </label>
-
                       <div
                         onClick={handleFileClick}
                         className="border border-dashed border-gray-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer bg-[#0F1115] hover:border-blue-500 transition"
                       >
-                        <FiUploadCloud
-                          size={36}
-                          className="mb-3 text-gray-300"
-                        />
-
+                        <FiUploadCloud size={36} className="mb-3 text-gray-300" />
                         <p className="text-sm text-gray-300 mb-2">
-                          Choose a file or drag & drop it here.
+                          {selectedFile ? selectedFile.name : "Choose a file or drag & drop it here."}
                         </p>
-
                         <p className="text-xs text-gray-500 mb-4">
                           DOCS, PDF, PPT AND EXCEL, UP TO 10 MB
                         </p>
-
                         <button
                           type="button"
                           className="px-4 py-1.5 border border-gray-400 rounded-md text-sm hover:bg-gray-800"
                         >
                           Browse Files
                         </button>
-
                         <input
                           ref={fileInputRef}
                           type="file"
                           className="hidden"
+                          onChange={handleFileChange}
+                          accept=".doc,.docx,.pdf,.ppt,.pptx,.xls,.xlsx"
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* RIGHT SECTION */}
+                  {/* Right Section */}
                   <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
-                    <label className="font-semibold">Score:</label>
+                    <label className="font-semibold">Score: <span className="text-red-500">*</span></label>
                     <input
-                      type="text"
+                      type="number"
+                      value={score}
+                      onChange={(e) => setScore(e.target.value)}
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
-                      placeholder="20/20"
+                      placeholder="Enter score (e.g., 100)"
+                      min="0"
                     />
 
-                    <label className="font-semibold">Due Date:</label>
+                    <label className="font-semibold">Due Date: <span className="text-red-500">*</span></label>
                     <input
                       type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      min={new Date().toISOString().split('T')[0]}
                     />
 
                     {groupsConfigured ? (
-                      // View Groups section when groups are configured
                       <div className="flex flex-col gap-3">
                         <div className="flex justify-between items-center">
                           <label className="font-semibold">View Groups:</label>
@@ -875,24 +1047,24 @@ const UserTaskPage = () => {
                             </button>
                           </div>
                         </div>
-                        <div className="bg-[#23272F] rounded-lg p-4">
+                        <div className="bg-[#23272F] rounded-lg p-4 max-h-[300px] overflow-y-auto">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {groups.filter(group => group.leader.trim() || group.members.filter(m => m.trim()).length > 0).map((group) => (
+                            {groups.filter(group => group.leader.account_id || group.members.filter(m => m.trim()).length > 0).map((group) => (
                               <div key={group.id} className="bg-[#161A20] rounded-lg p-3">
                                 <div className="font-semibold text-blue-400 mb-2">Group {group.id}</div>
                                 <div className="space-y-1">
                                   <div>
                                     <span className="text-xs font-medium text-yellow-400">Leader:</span>
                                     <div className="text-white text-sm mt-1">
-                                      {group.leader.trim() ? group.leader : 'No leader'}
+                                      {group.leader.full_name || 'No leader'}
                                     </div>
                                   </div>
                                   <div>
                                     <span className="text-xs font-medium text-green-400">Members:</span>
                                     <div className="text-white text-sm mt-1">
                                       {group.members.filter(m => m.trim()).length > 0 ? (
-                                        group.members.filter(m => m.trim()).map((member, index) => (
-                                          <div key={index}>{member}</div>
+                                        group.members.filter(m => m.trim()).map((member, idx) => (
+                                          <div key={idx}>{member}</div>
                                         ))
                                       ) : (
                                         'No members'
@@ -906,7 +1078,6 @@ const UserTaskPage = () => {
                         </div>
                       </div>
                     ) : (
-                      // Assign Groups section when groups are not configured
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-3">
                           <label className="font-semibold">Assign Groups:</label>
@@ -916,7 +1087,7 @@ const UserTaskPage = () => {
                               className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
                               onClick={() => {
                                 const input = document.getElementById('groups-input');
-                                if (input.value > 1) input.value = parseInt(input.value) - 1;
+                                if (input && input.value > 1) input.value = parseInt(input.value) - 1;
                               }}
                             >
                               -
@@ -927,13 +1098,16 @@ const UserTaskPage = () => {
                               className="bg-transparent w-12 text-center outline-none text-white text-sm [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
                               defaultValue={1}
                               min="1"
+                              max={10}
                             />
                             <button
                               type="button"
                               className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
                               onClick={() => {
                                 const input = document.getElementById('groups-input');
-                                input.value = parseInt(input.value) + 1;
+                                if (input && parseInt(input.value) < currentSpace?.length) {
+                                  input.value = parseInt(input.value) + 1;
+                                }
                               }}
                             >
                               +
@@ -961,25 +1135,21 @@ const UserTaskPage = () => {
                   </div>
                 </div>
 
-                {/* ACTION BUTTONS */}
+                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
                   <button
-                    className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
-                    onClick={() => {
-                      // Handle publish logic here
-                      setIsCreatingTask(false);
-                    }}
+                    className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleUpload("uploaded")}
+                    disabled={uploadTaskMutation.isLoading}
                   >
-                    Publish Task
+                    {uploadTaskMutation.isLoading ? "Publishing..." : "Publish Task"}
                   </button>
                   <button
-                    className="bg-gray-700 hover:bg-gray-800 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
-                    onClick={() => {
-                      // Handle save as draft logic here
-                      setIsCreatingTask(false);
-                    }}
+                    className="bg-gray-700 hover:bg-gray-800 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleUpload("draft")}
+                    disabled={draftTaskMutation.isLoading}
                   >
-                    Save as Draft
+                    {draftTaskMutation.isLoading ? "Saving..." : "Save as Draft"}
                   </button>
                 </div>
               </div>
@@ -1077,10 +1247,10 @@ const UserTaskPage = () => {
                       {/* Show saved group content */}
                       {group.isSaved ? (
                         <div className="space-y-2">
-                          {group.leader && group.leader.trim() && (
+                          {group.leader.account_id && group.leader.full_name && (
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-medium text-yellow-400">Leader:</span>
-                              <span className="text-sm text-white">{group.leader}</span>
+                              <span className="text-sm text-white">{group.leader.full_name}</span>
                             </div>
                           )}
                           {group.members.filter(m => m.trim()).length > 0 && (
@@ -1130,12 +1300,12 @@ const UserTaskPage = () => {
                                 <div className="flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
                                   <input
                                     type="text"
-                                    value={group.leader}
+                                    value={group.leader.full_name}
                                     onChange={(e) => handleGroupLeaderChange(group.id, e.target.value)}
                                     placeholder="Enter leader name"
                                     className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
                                   />
-                                  {group.leader.trim() && (
+                                  {group.leader.account_id && (
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -1205,9 +1375,9 @@ const UserTaskPage = () => {
                                     e.stopPropagation();
                                     saveGroup(group.id);
                                   }}
-                                  disabled={!group.leader.trim() && group.members.filter(member => member.trim()).length === 0}
+                                  disabled={!group.leader.account_id && group.members.filter(member => member.trim()).length === 0}
                                   className={`${group.wasPreviouslySaved ? 'w-full' : 'flex-1'} px-3 py-2 text-sm rounded ${
-                                    !group.leader.trim() && group.members.filter(member => member.trim()).length === 0
+                                    !group.leader.account_id && group.members.filter(member => member.trim()).length === 0
                                       ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
                                       : 'bg-blue-600 text-white hover:bg-blue-700'
                                   }`}
@@ -1237,7 +1407,7 @@ const UserTaskPage = () => {
                   Available Students ({availableMembers.length - getAssignedMembers().size})
                 </h3>
                 <div className="space-y-2">
-                  {availableMembers.slice(0, isTablet ? 5 : availableMembers.length).map((member, index) => {
+                  {currentSpace?.members.slice(0, isTablet ? 5 : currentSpace?.members.length).map((member, index) => {
                     const isAssigned = isMemberAssigned(member);
                     const role = getMemberRole(member);
                     return (
@@ -1278,7 +1448,7 @@ const UserTaskPage = () => {
                   // Save all groups with their leaders and members
                   const groupsData = groups.map(group => ({
                     groupId: group.id,
-                    leader: group.leader.trim(),
+                    leader_id: group.leader.account_id,
                     members: group.members.filter(member => member.trim()) // Remove empty members
                   }));
                   console.log('All groups saved:', groupsData);
@@ -1345,9 +1515,9 @@ const UserTaskPage = () => {
                         setNumberOfGroups(newNumGroups);
                         shuffleGroups(newNumGroups);
                       }}
-                      disabled={numberOfGroups >= availableMembers.length}
+                      disabled={numberOfGroups >= currentSpace?.members.length}
                       className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
-                        numberOfGroups >= availableMembers.length
+                        numberOfGroups >= currentSpace?.members.length
                           ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                           : 'bg-gray-600 text-white hover:bg-gray-500'
                       }`}
@@ -1363,7 +1533,7 @@ const UserTaskPage = () => {
                       <div className="text-xs space-y-0.5 sm:space-y-1">
                         <div className="text-yellow-400">
                           <span className="font-medium">Leader:</span>
-                          <span className="block xs:inline xs:ml-1">{group.leader}</span>
+                          <span className="block xs:inline xs:ml-1">{group.leader?.full_name}</span>
                         </div>
                         <div className="text-green-400">
                           <span className="font-medium">Members:</span>
@@ -1442,6 +1612,182 @@ const UserTaskPage = () => {
               >
                 Reset
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
+
+
+
+      {/* PENDING INVITATIONS POPUP */}
+      {showPendingInvitations && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Pending Invitations</h2>
+              <button
+                onClick={() => setShowPendingInvitations(false)}
+                className="text-gray-400 hover:text-white p-1 bg-transparent"
+              >
+                <FiX size={24} />
+              </button>
+            </div>
+
+            {/* Invitations List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {joinRequestsData.length === 0 ? (
+                <p className="text-gray-400 text-center py-4">No pending invitations</p>
+              ) : (
+                joinRequestsData.map((invitation) => (
+                  <div key={invitation.account_id} className="bg-[#2A2F3A] rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={invitation.profile_pic}
+                        alt={invitation.fullname}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium">{invitation.fullname}</h3>
+                        <p className="text-sm text-gray-400">{invitation.email}</p>
+                        <p className="text-sm mt-1">{invitation.message || "Hello world"}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-xs text-gray-500">{invitation.added_at}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-3">
+                      <button
+                        disabled={spaceLoading}
+                        onClick={() => handleDeclineJoinRequest(invitation.account_id)}
+                        className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition"
+                      >
+                        Decline
+                      </button>
+                      <button
+                        disabled={spaceLoading}
+                        onClick={() => handleAcceptJoinRequest(invitation.account_id)}
+                        className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* INVITE POPUP */}
+      {showInvitePopup && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-[#E6E6E6] rounded-2xl w-[420px] max-w-[90vw] p-6 shadow-xl">
+            
+            {/* HEADER */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-black">Add Member</h2>
+              <button
+                onClick={() => setShowInvitePopup(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* INVITATION LINK */}
+            <div className="mb-4">
+              <p className="text-sm font-medium text-black mb-1">
+                Invitation Link
+              </p>
+              <div className="flex items-center justify-between bg-white px-3 py-1 rounded-md border border-gray-300">
+                <span className="text-xs text-gray-600 truncate flex-1">
+                  {currentSpace?.space_link}
+                </span>
+                <button 
+                  onClick={() => handleCopyLink(currentSpace?.space_link)} 
+                  className={`text-sm ml-2 px-2 py-1 rounded transition-colors ${
+                    copyFeedback 
+                      ? copyFeedback === "Copied!" 
+                        ? "text-green-600 bg-green-50" 
+                        : "text-red-600 bg-red-50"
+                      : "text-gray-500 hover:text-black hover:bg-gray-100"
+                  }`}
+                >
+                  {copyFeedback || "Copy Link"}
+                </button>
+              </div>
+            </div>
+
+            {/* INPUT */}
+            <div className="mb-4">
+              <p className="text-sm font-medium text-black mb-1">
+                Type username or email
+              </p>
+              <input
+                type="text"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className="
+                  w-full
+                  px-3
+                  py-2
+                  rounded-md
+                  border
+                  border-purple-500
+                  bg-white
+                  text-black
+                  outline-none
+                  focus:ring-2
+                  focus:ring-purple-500
+                "
+              />
+            </div>
+
+            {/* SUGGESTED USERS */}
+            <div>
+              <p className="text-sm font-medium text-black mb-2">
+                Suggested Users
+              </p>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    name: "Raecell Ann Galvez",
+                    email: "raecellanngalvez@gmail.com",
+                    avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
+                  },
+                  {
+                    name: "Nathaniel Faborada",
+                    email: "faboradanathaniel@gmail.com",
+                    avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
+                  },
+                  {
+                    name: "Wilson Esmabe",
+                    email: "wilsonesmabe2003@gmail.com",
+                    avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/wilson_fw2qoz.jpg",
+                  },
+                ].map((user, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 bg-transparent hover:bg-gray-200 px-2 py-2 rounded-lg cursor-pointer"
+                  >
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <div className="text-sm">
+                      <p className="font-medium text-black">{user.name}</p>
+                      <p className="text-xs text-gray-600">{user.email}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

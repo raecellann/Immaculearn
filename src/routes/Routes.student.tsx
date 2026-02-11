@@ -4,9 +4,12 @@ import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import HomePage from "../pages/HomePage/homepage.jsx";
 import ProfilePage from "../pages/AccountSettings/accountsettingspage.jsx";
 import GradeViewing from "../pages/GradeViewing/gradeViewing.jsx";
-import TaskPage from "../pages/Task/task.jsx";
-import NotificationPage from "../pages/Notifications/notification.jsx";
 
+import TaskPage from "../pages/Task/task.jsx";
+import ViewAllTaskPage from "../pages/Task/components/ViewAllTaskPage.jsx";
+import TaskViewPage from "../pages/Task/components/TaskViewPage.jsx";
+
+import NotificationPage from "../pages/Notifications/notification.jsx";
 import FilePage from "../pages/Files/files.jsx";
 import ViewFilePage from "../pages/ViewFiles/ViewFiles.jsx";
 import ViewAllFilesPage from "../pages/ViewAllFiles/view-all-files";
@@ -53,6 +56,21 @@ export const StudentRoutes = [
     element: <TaskPage />,
   },
   {
+<<<<<<< HEAD
+=======
+    key: "/task",
+    path: "/task/:space_uuid/:space_name",
+    element: <ViewAllTaskPage />,
+  },
+  {
+    key: "/task-view",
+    path: "/task-view/:space_uuid/:space_name/:task_name",
+    element: <TaskViewPage />,
+  },
+
+
+  {
+>>>>>>> 13c2b9cf3625d3f99ca5602e166debf252c7f497
     key: "/notifications",
     path: "/notifications",
     element: <NotificationPage />,

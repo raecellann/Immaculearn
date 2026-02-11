@@ -50,7 +50,7 @@ export interface SpaceContextType {
   uploadTaskMutation: UseMutationResult<
     any,
     Error,
-    { spaceId: string; taskData: TaskCreateData },
+    { spaceId: number, taskData: TaskCreateData },
     unknown
   >;
 

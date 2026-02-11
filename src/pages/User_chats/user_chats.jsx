@@ -300,7 +300,7 @@ const ChatList = () => {
           </div>
 
           {/* PEOPLE */}
-          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 flex-1 overflow-y-auto min-h-0">
+          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 h-72 overflow-y-auto">
             <h2 className="font-semibold text-sm mb-3 text-gray-300">People</h2>
             {uniqueMembers
               .filter(m => m.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -332,7 +332,7 @@ const ChatList = () => {
           </div>
 
           {/* GROUPS */}
-          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 flex-1 overflow-y-auto min-h-0">
+          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 h-72 overflow-y-auto">
             <h2 className="font-semibold text-sm mb-3 text-gray-300">Groups</h2>
             {uniqueSpaces.map((space) => (
               <div
