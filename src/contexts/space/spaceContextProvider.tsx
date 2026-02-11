@@ -183,12 +183,13 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
 
   // Task mutations
   const uploadTaskMutation = useMutation({
-    mutationFn: ({ spaceId, taskData }: { spaceId: string; taskData: TaskCreateData }) =>
+    mutationFn: ({ spaceId, taskData }: { spaceId: number; taskData: TaskCreateData }) =>
       spaceService.uploadTask(
         spaceId,
         taskData.title,
         taskData.instruction || "",
         taskData.scoring || 0,
+        taskData.status,
         taskData.due_date,
         taskData.groupsData || []
       ),

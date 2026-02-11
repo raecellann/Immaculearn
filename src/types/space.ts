@@ -58,37 +58,39 @@ export interface Space {
 
 
 export interface Task {
-  id: number;
-  task_id?: number;
-  task_title: string;
-  task_instruction?: string;
-  task_scoring?: number;
-  task_due: string;
-  task_status: string;
-  task_file?: string;
-  created_at: string;
-  updated_at: string;
-  space_id: string;
+    id: number;
+    task_id?: number;
+    task_title: string;
+    task_instruction?: string;
+    task_scoring?: number;
+    task_due: string;
+    task_status: string;
+    task_file?: string;
+    created_at: string;
+    updated_at: string;
+    space_id: string;
 }
 
 export interface DraftTask {
-  id: number;
-  task_id?: number;
-  task_title: string;
-  task_instruction?: string;
-  task_scoring?: number;
-  task_due: string;
-  task_status: "Draft";
-  task_file?: string;
-  created_at: string;
-  updated_at: string;
-  space_id: string;
+    id: number;
+    task_id?: number;
+    task_title: string;
+    task_instruction?: string;
+    task_scoring?: number;
+    task_due: string;
+    task_status: "Draft";
+    task_file?: string;
+    created_at: string;
+    updated_at: string;
+    space_id: string;
 }
 
 export interface TaskCreateData {
-  title: string;
-  instruction?: string;
-  scoring?: number;
-  due_date: string;
-  groupsData?: any[];
+    space_id: number;
+    title: string;
+    instruction?: string;
+    scoring?: number;
+    status: string;
+    due_date: string;
+    groupsData?: any[];
 }

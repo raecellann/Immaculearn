@@ -253,13 +253,14 @@ class SpaceService {
 
 
     // Tasks
-    async uploadTask(spaceId: string, title: string, instruction: string, scoring: number, dueDate: string, groupsData: any[]) {
+    async uploadTask(space_id: number, title: string, instruction: string, scoring: number, status: string, dueDate: string, groupsData: any[]) {
         try {
             const response = await api.post(`/tasks/upload`, {
-                space_id: spaceId,
+                space_id,
                 title,
                 instruction,
                 scoring,
+                status,
                 due_date: dueDate,
                 groupsData,
             });
