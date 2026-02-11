@@ -54,12 +54,14 @@ export function useSpaceChat(spaceUuid, user) {
   }, [spaceUuid, socket]);
 
   // 3️⃣ Send a message
-  const sendMessage = (content) => {
+  const sendMessage = (content, type = 'text', imageUrl = null) => {
     if (!socket || !user || !spaceUuid) return;
 
     const message = {
       id: window.crypto.randomUUID(),
       content,
+      type,
+      imageUrl,
       senderId: user.id,
       senderName: user.name,
       senderAvatar: user.profile_pic,
@@ -73,10 +75,34 @@ export function useSpaceChat(spaceUuid, user) {
     socket.emit("send_message", message);
   };
 
+  // 5️⃣ Send image message
+  const sendImageMessage = (file) => {
+    if (!file || !file.type.startsWith('image/')) return;
+
+    // Convert image to binary data
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      // Get binary data as ArrayBuffer
+      const arrayBuffer = event.target.result;
+      
+      // Convert to base64 for socket transmission
+      const base64String = btoa(
+        new Uint8Array(arrayBuffer)
+          .reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+      
+      // Send message with binary data
+      sendMessage(file.name, 'image', base64String);
+    };
+    
+    reader.readAsArrayBuffer(file);
+  };
+
   // 4️⃣ Helper: online count in current space
   const getOnlineCount = () => {
     return spaceOnlineUsers[spaceUuid]?.filter((id) => id !== user.id).length || 0;
   };
 
-  return { messages, sendMessage, spaceOnlineUsers, getOnlineCount };
+  return { messages, sendMessage, sendImageMessage, spaceOnlineUsers, getOnlineCount };
 }

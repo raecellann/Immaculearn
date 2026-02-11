@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import Button from "../component/Button";
-import { FiEdit, FiSend, FiMoreVertical, FiSearch, FiPaperclip } from "react-icons/fi";
+import { FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCheck, FiCheckCircle } from "react-icons/fi";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
@@ -11,6 +10,10 @@ const ProfChatPage = () => {
   const { userSpaces, friendSpaces } = useSpace();
   const { user } = useUser();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // sticky header scroll state
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const [activeSpaceUuid, setActiveSpaceUuid] = useState(null);
   const [input, setInput] = useState("");
@@ -37,7 +40,7 @@ const ProfChatPage = () => {
   }, [allSpaces, user.id]);
 
   // 🚀 Our hook to manage messages and online users
-  const { messages, sendMessage, spaceOnlineUsers } =
+  const { messages, sendMessage, sendImageMessage, spaceOnlineUsers } =
     useSpaceChat(activeSpaceUuid, user);
 
   // Map messages to render-friendly format with date grouping
@@ -47,6 +50,9 @@ const ProfChatPage = () => {
       from: m.senderId === user.id ? "me" : "them",
       senderId: m.senderId,
       text: m.content,
+      type: m.type || 'text',
+      imageUrl: m.type === 'image' && m.imageUrl ? 
+        `data:image/jpeg;base64,${m.imageUrl}` : m.imageUrl,
       avatar: m.senderAvatar,
       timestamp: new Date(m.timestamp),
       time: new Date(m.timestamp).toLocaleTimeString([], {
@@ -87,6 +93,7 @@ const ProfChatPage = () => {
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -104,6 +111,43 @@ const ProfChatPage = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showDropdown]);
+
+  // Handle sticky header scroll behavior
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollableElement = document.querySelector('.chat-messages-container');
+      const currentScrollY = scrollableElement ? scrollableElement.scrollTop : window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 30) {
+        setShowHeader(false); // scrolling down
+      } else {
+        setShowHeader(true); // scrolling up
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    const scrollableElement = document.querySelector('.chat-messages-container');
+    if (scrollableElement) {
+      scrollableElement.addEventListener('scroll', handleScroll);
+      return () => scrollableElement.removeEventListener('scroll', handleScroll);
+    } else {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
+  }, [lastScrollY]);
+
+  // Show header on hover
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (e.clientY < 100) {
+        setShowHeader(true);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const getPrivateSpaceUuid = (a, b) => [a, b].sort().join("-");
 
@@ -159,6 +203,34 @@ const ProfChatPage = () => {
     setInput("");
     inputRef.current?.focus();
   };
+
+  // Handle file upload
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        // Send image message
+        sendImageMessage(file);
+      } else {
+        // Handle other file types if needed
+        console.log('Non-image file uploaded:', file);
+      }
+    }
+  };
+
+  // Message status icon
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'sent':
+        return <FiCheck className="text-xs text-gray-400" />;
+      case 'delivered':
+        return <FiCheckCircle className="text-xs text-gray-400" />;
+      case 'read':
+        return <FiCheckCircle className="text-xs text-blue-400" />;
+      default:
+        return null;
+    }
+  };
   
 
   return (
@@ -187,25 +259,28 @@ const ProfChatPage = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Mobile + Tablet Header */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
-          >
-            ☰
-          </button>
-          <h1 className="text-xl font-bold">Chats</h1>
+        <div
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+        >
+          <div className="p-4 flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-bold">Chats</h1>
+          </div>
         </div>
 
         {/* Chat Content */}
-        <div className="flex-1 flex px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 gap-2 sm:gap-4 md:gap-6 overflow-hidden">
+        <div className={`flex-1 flex flex-col lg:flex-row px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 gap-2 sm:gap-4 md:gap-6 overflow-hidden transition-all duration-300 ${showHeader ? 'pt-20 sm:pt-24 md:pt-20' : 'pt-2'} lg:pt-2 lg:py-6`}>
           {/* CHAT LIST */}
-          <div className={`${showMobileChat ? "hidden lg:block" : "block"} w-full lg:w-80 xl:w-96 2xl:w-[420px] flex flex-col min-h-0`}>
-            <div className="hidden lg:flex justify-between mb-4">
+          <div className={`${showMobileChat ? "hidden lg:block" : "block"} w-full lg:w-80 xl:w-96 2xl:w-[420px] flex flex-col min-h-0 lg:min-h-0 overflow-y-auto sm:overflow-y-auto lg:overflow-y-visible`}>
+            <div className="hidden lg:flex mb-4">
               <h1 className="font-bold text-lg">Chats</h1>
-              <Button>
-                <FiEdit />
-              </Button>
             </div>
 
           {/* SEARCH BAR */}
@@ -289,20 +364,23 @@ const ProfChatPage = () => {
         </div>
 
         {/* CHAT PANEL */}
-        <div className="flex-1 bg-[#1E2330] rounded-xl flex flex-col min-h-0">
+        <div className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 bg-[#1E2330] rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`}>
           {!activeSpaceUuid ? (
-            <div className="flex-1 flex items-center justify-center text-gray-400">
-              Select a chat to start messaging
+            <div className="flex-1 flex items-center justify-center text-gray-400 min-h-[400px] mt-16">
+              <div className="text-center text-lg">
+                Select a chat to start messaging
+              </div>
             </div>
           ) : (
             <>
-              <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center relative">
+              {/* Fixed Header - Always Visible */}
+              <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center relative bg-[#1E2330] rounded-t-xl sticky top-0 z-10">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowMobileChat(false)}
-                    className="lg:hidden text-gray-400 hover:text-white"
+                    className="lg:hidden text-gray-400 hover:text-white bg-transparent border-none p-0"
                   >
-                    ← Back
+                    ←
                   </button>
                   
                   {/* Profile Picture and Status */}
@@ -329,7 +407,7 @@ const ProfChatPage = () => {
                 <div className="relative dropdown-container">
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
-                    className="text-gray-400 cursor-pointer hover:text-white"
+                    className="text-gray-400 cursor-pointer hover:text-white bg-transparent border-none p-0"
                   >
                     <FiMoreVertical />
                   </button>
@@ -342,44 +420,23 @@ const ProfChatPage = () => {
                           setShowDropdown(false);
                           // Handle change color theme
                         }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg"
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg rounded-b-lg"
                       >
                         Change Color Theme
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          // Handle edit nickname
-                        }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors"
-                      >
-                        Edit Nickname
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          // Handle view profile
-                        }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors"
-                      >
-                        View Profile
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          // Handle delete conversation
-                        }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-400 hover:bg-red-900 hover:text-red-300 transition-colors rounded-b-lg"
-                      >
-                        Delete Conversation
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="flex-1 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto min-h-0">
+              {/* Messages - Scrollable Area */}
+              <div className={`chat-messages-container flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto min-h-0 transition-all duration-300 scrollbar-hide ${showHeader ? 'max-h-[calc(100vh-180px)] sm:max-h-[calc(100vh-200px)] md:max-h-[calc(100vh-190px)]' : 'max-h-[calc(100vh-100px)] sm:max-h-[calc(100vh-110px)] md:max-h-[calc(100vh-120px)]'}`} style={{
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none',
+                transform: 'translateX(0)',
+                paddingRight: '0',
+                marginRight: '0'
+              }}>
                 {Object.entries(messagesByDate).map(([dateLabel, dateMessages]) => (
                   <div key={dateLabel}>
                     {/* Date Separator */}
@@ -392,6 +449,12 @@ const ProfChatPage = () => {
                     {/* Messages for this date */}
                     {dateMessages.map((m, i) => {
                       const showUnreadSeparator = dateLabel === "Today" && i === 3; // Show after 4th message of today
+                      const isLastUserMessage = m.from === "me" && i === dateMessages.length - 1;
+                      const nextMessage = dateMessages[i + 1];
+                      const shouldShowTime = m.from === "me" && (!nextMessage || nextMessage.from !== "me");
+                      const prevMessage = dateMessages[i - 1];
+                      const shouldShowAvatar = m.from === "them" && (!nextMessage || nextMessage.from !== "them");
+                      
                       return (
                         <React.Fragment key={m.id}>
                           {showUnreadSeparator && (
@@ -401,13 +464,37 @@ const ProfChatPage = () => {
                               </div>
                             </div>
                           )}
-                          <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} mb-2`}>
-                            {m.from === "them" && (
-                              <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2" />
+                          <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} ${m.from === "me" ? "mb-1" : "mb-3"} items-start`}>
+                            {shouldShowAvatar && (
+                              <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2 mt-1" />
                             )}
-                            <div className={`px-3 sm:px-4 py-2 sm:py-3 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? "bg-blue-500 text-white" : "bg-gray-700 text-white"}`}>
-                              <p className="text-sm">{m.text}</p>
-                              <div className="text-[10px] text-right mt-1 opacity-70">{m.time}</div>
+                            {!shouldShowAvatar && m.from === "them" && (
+                              <div className="w-8 h-8 mr-2 mt-1"></div>
+                            )}
+                            <div className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? "bg-blue-500 text-white rounded-br-md" : "bg-gray-700 text-white rounded-bl-md"} ${m.from === "them" ? "-mt-1" : ""}`}>
+                              {m.type === 'image' ? (
+                                <div className="space-y-2">
+                                  <img 
+                                    src={m.imageUrl} 
+                                    alt={m.text} 
+                                    className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => window.open(m.imageUrl, '_blank')}
+                                  />
+                                  <p className="text-xs opacity-70">{m.text}</p>
+                                </div>
+                              ) : (
+                                <p className="text-sm">{m.text}</p>
+                              )}
+                                
+                                {/* Time and Status */}
+                                <div className={`flex items-center gap-1 mt-1 ${m.from === "me" ? "justify-end" : "justify-start"}`}>
+                                  {shouldShowTime && (
+                                    <>
+                                      <span className="text-[10px] opacity-70">{m.time}</span>
+                                      {m.from === "me" && getStatusIcon(m.status)}
+                                    </>
+                                  )}
+                                </div>
                             </div>
                           </div>
                         </React.Fragment>
@@ -418,10 +505,20 @@ const ProfChatPage = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
-              <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700">
+              {/* Fixed Input - Always Visible */}
+              <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700 bg-[#1E2330] rounded-b-xl sticky bottom-0">
                 <div className="flex gap-2 sm:gap-3 bg-gray-800 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center">
-                  <FiPaperclip className="text-gray-400 cursor-pointer hover:text-white" />
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept="image/*"
+                  />
+                  <FiPaperclip 
+                    className="text-gray-400 cursor-pointer hover:text-white" 
+                    onClick={() => fileInputRef.current?.click()}
+                  />
                   <input
                     ref={inputRef}
                     value={input}
@@ -434,7 +531,7 @@ const ProfChatPage = () => {
                   />
                   <button 
                     onClick={handleSend} 
-                    className="text-blue-500 hover:text-blue-400 transition-colors p-1 sm:p-0"
+                    className="text-blue-500 hover:text-blue-400 transition-colors p-1 sm:p-0 bg-transparent border-none"
                     disabled={!input.trim()}
                   >
                     <FiSend />

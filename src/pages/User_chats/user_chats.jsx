@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
-import Button from "../component/Button";
-import { FiEdit, FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCornerUpLeft, FiCheck, FiCheckCircle } from "react-icons/fi";
+import { FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCheck, FiCheckCircle } from "react-icons/fi";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
@@ -12,15 +11,16 @@ const ChatList = () => {
   const { user } = useUser();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
+  // sticky header scroll state
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
   const [activeSpaceUuid, setActiveSpaceUuid] = useState(null);
   const [input, setInput] = useState("");
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [selectedMessage, setSelectedMessage] = useState(null);
-  const [showMessageOptions, setShowMessageOptions] = useState(null);
-
+  
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
 
   const uniqueSpaces = useMemo(() => {
@@ -40,7 +40,7 @@ const ChatList = () => {
   }, [allSpaces, user.id]);
 
   // 🚀 Our hook to manage messages and online users
-  const { messages, sendMessage, spaceOnlineUsers } =
+  const { messages, sendMessage, sendImageMessage, spaceOnlineUsers } =
     useSpaceChat(activeSpaceUuid, user);
 
   // Map messages to render-friendly format with date grouping
@@ -50,6 +50,9 @@ const ChatList = () => {
       from: m.senderId === user.id ? "me" : "them",
       senderId: m.senderId,
       text: m.content,
+      type: m.type || 'text',
+      imageUrl: m.type === 'image' && m.imageUrl ? 
+        `data:image/jpeg;base64,${m.imageUrl}` : m.imageUrl,
       avatar: m.senderAvatar,
       timestamp: new Date(m.timestamp),
       time: new Date(m.timestamp).toLocaleTimeString([], {
@@ -92,6 +95,7 @@ const ChatList = () => {
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -104,14 +108,48 @@ const ChatList = () => {
       if (showDropdown && !event.target.closest('.dropdown-container')) {
         setShowDropdown(false);
       }
-      if (showMessageOptions && !event.target.closest('.message-options-container')) {
-        setShowMessageOptions(null);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showDropdown, showMessageOptions]);
+  }, [showDropdown]);
+
+  // Handle sticky header scroll behavior
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollableElement = document.querySelector('.chat-messages-container');
+      const currentScrollY = scrollableElement ? scrollableElement.scrollTop : window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 30) {
+        setShowHeader(false); // scrolling down
+      } else {
+        setShowHeader(true); // scrolling up
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    const scrollableElement = document.querySelector('.chat-messages-container');
+    if (scrollableElement) {
+      scrollableElement.addEventListener('scroll', handleScroll);
+      return () => scrollableElement.removeEventListener('scroll', handleScroll);
+    } else {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
+  }, [lastScrollY]);
+
+  // Show header on hover
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (e.clientY < 100) {
+        setShowHeader(true);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const getPrivateSpaceUuid = (a, b) => [a, b].sort().join("-");
 
@@ -164,28 +202,23 @@ const ChatList = () => {
   const handleSend = () => {
     if (!input.trim()) return;
     
-    // If replying, include reply information
-    const messageContent = replyingTo ? input : input;
-    sendMessage(messageContent, replyingTo);
+    sendMessage(input);
     setInput("");
     inputRef.current?.focus();
-    setReplyingTo(null);
   };
 
-  // Reply functionality
-  const handleReply = (message) => {
-    setReplyingTo({
-      ...message,
-      text: message.text.length > 30 ? message.text.substring(0, 30) + '...' : message.text
-    });
-    setShowMessageOptions(null);
-    inputRef.current?.focus();
-  };
-
-  // Unsend functionality
-  const handleUnsend = (messageId) => {
-    // Add unsend logic here - remove message from chat
-    setShowMessageOptions(null);
+  // Handle file upload
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        // Send image message
+        sendImageMessage(file);
+      } else {
+        // Handle other file types if needed
+        console.log('Non-image file uploaded:', file);
+      }
+    }
   };
 
   // Message status icon
@@ -229,25 +262,28 @@ const ChatList = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Mobile + Tablet Header */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
-          >
-            ☰
-          </button>
-          <h1 className="text-xl font-bold">Chats</h1>
+        <div
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+        >
+          <div className="p-4 flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-bold">Chats</h1>
+          </div>
         </div>
 
         {/* Chat Content */}
-        <div className="flex-1 flex px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 gap-2 sm:gap-4 md:gap-6 overflow-hidden">
+        <div className={`flex-1 flex flex-col lg:flex-row px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 gap-2 sm:gap-4 md:gap-6 overflow-hidden transition-all duration-300 ${showHeader ? 'pt-20 sm:pt-24 md:pt-20' : 'pt-2'} lg:pt-2 lg:py-6`}>
           {/* CHAT LIST */}
-          <div className={`${showMobileChat ? "hidden lg:block" : "block"} w-full lg:w-80 xl:w-96 2xl:w-[420px] flex flex-col min-h-0`}>
-            <div className="hidden lg:flex justify-between mb-4">
+          <div className={`${showMobileChat ? "hidden lg:block" : "block"} w-full lg:w-80 xl:w-96 2xl:w-[420px] flex flex-col min-h-0 lg:min-h-0 overflow-y-auto sm:overflow-y-auto lg:overflow-y-visible`}>
+            <div className="hidden lg:flex mb-4">
               <h1 className="font-bold text-lg">Chats</h1>
-              <Button>
-                <FiEdit />
-              </Button>
             </div>
 
           {/* SEARCH BAR */}
@@ -331,20 +367,23 @@ const ChatList = () => {
         </div>
 
         {/* CHAT PANEL */}
-        <div className="flex-1 bg-[#1E2330] rounded-xl flex flex-col min-h-0">
+        <div className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 bg-[#1E2330] rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`}>
           {!activeSpaceUuid ? (
-            <div className="flex-1 flex items-center justify-center text-gray-400">
-              Select a chat to start messaging
+            <div className="flex-1 flex items-center justify-center text-gray-400 min-h-[400px] mt-16">
+              <div className="text-center text-lg">
+                Select a chat to start messaging
+              </div>
             </div>
           ) : (
             <>
-              <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center relative">
+              {/* Fixed Header - Always Visible */}
+              <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center relative bg-[#1E2330] rounded-t-xl sticky top-0 z-10">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowMobileChat(false)}
-                    className="lg:hidden text-gray-400 hover:text-white"
+                    className="lg:hidden text-gray-400 hover:text-white bg-transparent border-none p-0"
                   >
-                    ← Back
+                    ←
                   </button>
                   
                   {/* Profile Picture and Status */}
@@ -371,7 +410,7 @@ const ChatList = () => {
                 <div className="relative dropdown-container">
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
-                    className="text-gray-400 cursor-pointer hover:text-white"
+                    className="text-gray-400 cursor-pointer hover:text-white bg-transparent border-none p-0"
                   >
                     <FiMoreVertical />
                   </button>
@@ -384,44 +423,23 @@ const ChatList = () => {
                           setShowDropdown(false);
                           // Handle change color theme
                         }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg"
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg rounded-b-lg"
                       >
                         Change Color Theme
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          // Handle edit nickname
-                        }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors"
-                      >
-                        Edit Nickname
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          // Handle view profile
-                        }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors"
-                      >
-                        View Profile
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          // Handle delete conversation
-                        }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-400 hover:bg-red-900 hover:text-red-300 transition-colors rounded-b-lg"
-                      >
-                        Delete Conversation
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto min-h-0 max-h-[calc(100vh-200px)]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+              {/* Messages - Scrollable Area */}
+              <div className={`chat-messages-container flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto min-h-0 transition-all duration-300 scrollbar-hide ${showHeader ? 'max-h-[calc(100vh-180px)] sm:max-h-[calc(100vh-200px)] md:max-h-[calc(100vh-190px)]' : 'max-h-[calc(100vh-100px)] sm:max-h-[calc(100vh-110px)] md:max-h-[calc(100vh-120px)]'}`} style={{
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none',
+                transform: 'translateX(0)',
+                paddingRight: '0',
+                marginRight: '0'
+              }}>
                 {Object.entries(messagesByDate).map(([dateLabel, dateMessages]) => (
                   <div key={dateLabel}>
                     {/* Date Separator */}
@@ -449,24 +467,27 @@ const ChatList = () => {
                               </div>
                             </div>
                           )}
-                          <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} mb-1 group`}>
+                          <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} ${m.from === "me" ? "mb-1" : "mb-3"} items-start`}>
                             {shouldShowAvatar && (
-                              <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2" />
+                              <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2 mt-1" />
                             )}
                             {!shouldShowAvatar && m.from === "them" && (
-                              <div className="w-8 h-8 mr-2"></div>
+                              <div className="w-8 h-8 mr-2 mt-1"></div>
                             )}
-                            <div className={`relative`}>
-                              <div className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? "bg-blue-500 text-white rounded-br-md" : "bg-gray-700 text-white rounded-bl-md"}`}>
-                                {/* Reply indicator */}
-                                {m.replyingTo && (
-                                  <div className="text-xs text-blue-200 mb-1 flex items-center gap-1 border-l-2 border-blue-300 pl-2">
-                                    <FiCornerUpLeft className="text-xs" />
-                                    <span className="truncate">{m.replyingTo.text}</span>
-                                  </div>
-                                )}
-                                
+                            <div className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? "bg-blue-500 text-white rounded-br-md" : "bg-gray-700 text-white rounded-bl-md"} ${m.from === "them" ? "-mt-1" : ""}`}>
+                              {m.type === 'image' ? (
+                                <div className="space-y-2">
+                                  <img 
+                                    src={m.imageUrl} 
+                                    alt={m.text} 
+                                    className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => window.open(m.imageUrl, '_blank')}
+                                  />
+                                  <p className="text-xs opacity-70">{m.text}</p>
+                                </div>
+                              ) : (
                                 <p className="text-sm">{m.text}</p>
+                              )}
                                 
                                 {/* Time and Status */}
                                 <div className={`flex items-center gap-1 mt-1 ${m.from === "me" ? "justify-end" : "justify-start"}`}>
@@ -477,47 +498,6 @@ const ChatList = () => {
                                     </>
                                   )}
                                 </div>
-                              </div>
-                              
-                              {/* Message options on hover */}
-                              <div className={`absolute ${m.from === "me" ? "left-0 -ml-10" : "right-0 -mr-10"} top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity`}>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowMessageOptions(showMessageOptions === m.id ? null : m.id);
-                                  }}
-                                  className="bg-gray-600 rounded-full p-1 text-xs hover:bg-gray-500 shadow-lg"
-                                >
-                                  <FiMoreVertical />
-                                </button>
-                              </div>
-                              
-                              {/* Message options dropdown */}
-                              {showMessageOptions === m.id && (
-                                <div className={`absolute ${m.from === "me" ? "right-0" : "left-0"} bottom-full mb-1 w-28 bg-[#1F2937] rounded-md shadow-md border border-gray-600/50 z-50 message-options-container`}>
-                                  <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[5px] border-t-[#1F2937]"></div>
-                                  <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-600/50"></div>
-                                  
-                                  <div className="py-0.5">
-                                    <button
-                                      onClick={() => handleReply(m)}
-                                      className="w-full text-center px-1 py-1 text-xs text-gray-200 hover:bg-gray-700/50 hover:text-white transition-all duration-200 flex items-center justify-center gap-1.5 mx-0.5 rounded-sm"
-                                    >
-                                      <FiCornerUpLeft className="text-xs" />
-                                      <span>Reply</span>
-                                    </button>
-                                    
-                                    <div className="mx-0.5 my-0.5 h-px bg-gray-600/30"></div>
-                                    
-                                    <button
-                                      onClick={() => handleUnsend(m.id)}
-                                      className="w-full text-center px-1 py-1 text-xs text-gray-200 hover:bg-red-900/30 hover:text-red-300 transition-all duration-200 flex items-center justify-center gap-1.5 mx-0.5 rounded-sm"
-                                    >
-                                      <span>Unsend</span>
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
                             </div>
                           </div>
                         </React.Fragment>
@@ -528,26 +508,20 @@ const ChatList = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
-              <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700">
-                {/* Reply indicator */}
-                {replyingTo && (
-                  <div className="bg-gray-800 rounded-t-lg px-3 py-2 flex items-center justify-between border-b border-gray-600">
-                    <div className="flex items-center gap-2 text-xs text-gray-300">
-                      <FiCornerUpLeft className="text-xs" />
-                      <span>Replying to "{replyingTo.text}"</span>
-                    </div>
-                    <button
-                      onClick={() => setReplyingTo(null)}
-                      className="text-gray-400 hover:text-white text-xs"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-                
+              {/* Fixed Input - Always Visible */}
+              <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700 bg-[#1E2330] rounded-b-xl sticky bottom-0">
                 <div className="flex gap-2 sm:gap-3 bg-gray-800 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center">
-                  <FiPaperclip className="text-gray-400 cursor-pointer hover:text-white" />
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept="image/*"
+                  />
+                  <FiPaperclip 
+                    className="text-gray-400 cursor-pointer hover:text-white" 
+                    onClick={() => fileInputRef.current?.click()}
+                  />
                   <input
                     ref={inputRef}
                     value={input}
@@ -556,11 +530,11 @@ const ChatList = () => {
                       if (e.key === "Enter") handleSend();
                     }}
                     className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-sm sm:text-base"
-                    placeholder={replyingTo ? "Type your reply..." : "Type your message here..."}
+                    placeholder="Type your message here..."
                   />
                   <button 
                     onClick={handleSend} 
-                    className="text-blue-500 hover:text-blue-400 transition-colors p-1 sm:p-0"
+                    className="text-blue-500 hover:text-blue-400 transition-colors p-1 sm:p-0 bg-transparent border-none"
                     disabled={!input.trim()}
                   >
                     <FiSend />
