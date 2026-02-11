@@ -45,7 +45,10 @@ const ProfListActivityPage = () => {
     }
     acc[activity.category].push(activity);
     return acc;
-  }, {});
+  }, {
+    'your-space': [],
+    'course-space': []
+  });
 
   const getStatusColor = (status) => {
     const base =
@@ -106,9 +109,13 @@ const ProfListActivityPage = () => {
           </h1>
 
           {/* Your Space Activities */}
-          {activitiesByCategory['your-space'] && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+            {activitiesByCategory['your-space']?.length === 0 ? (
+              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                No space list activity yet
+              </div>
+            ) : activitiesByCategory['your-space']?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                 {activitiesByCategory['your-space'].map((activity, index) => (
                   <div
@@ -122,14 +129,18 @@ const ProfListActivityPage = () => {
                   </div>
                 ))}
               </div>
-              <div className="border-b border-gray-700 my-6"></div>
-            </div>
-          )}
+            ) : null}
+            <div className="border-b border-gray-700 my-6"></div>
+          </div>
 
           {/* Course Space Activities */}
-          {activitiesByCategory['course-space'] && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+            {activitiesByCategory['course-space']?.length === 0 ? (
+              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                No course space list activity yet
+              </div>
+            ) : activitiesByCategory['course-space']?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                 {activitiesByCategory['course-space'].map((activity, index) => (
                   <div
@@ -143,9 +154,9 @@ const ProfListActivityPage = () => {
                   </div>
                 ))}
               </div>
-              <div className="border-b border-gray-700 my-6"></div>
-            </div>
-          )}
+            ) : null}
+            <div className="border-b border-gray-700 my-6"></div>
+          </div>
         </div>
 
         {/* Modal */}

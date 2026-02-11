@@ -109,20 +109,26 @@ const TaskPage = () => {
           {userSpaces && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {userSpaces?.map((space, index) => (
-                  <div
-                    key={`your-space-${index}`}
-                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/task/${space.space_uuid}/${space.space_name}`)}
-                  >
-                    <span className="text-xl">📋</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+              {userSpaces?.length === 0 ? (
+                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                  No space task yet
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                  {userSpaces?.map((space, index) => (
+                    <div
+                      key={`your-space-${index}`}
+                      className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      onClick={() => navigate(`/task/${space.space_uuid}/${space.space_name}`)}
+                    >
+                      <span className="text-xl">📋</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
               <div className="border-b border-gray-700 my-6"></div>
             </div>
           )}
@@ -131,20 +137,26 @@ const TaskPage = () => {
           {courseSpaces && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {courseSpaces?.map((space, index) => (
-                  <div
-                    key={`course-space-${index}`}
-                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/task-view/${space.space_uuid}`)}
-                  >
-                    <span className="text-xl">📋</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+              {courseSpaces?.length === 0 ? (
+                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                  No course space task yet
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                  {courseSpaces?.map((space, index) => (
+                    <div
+                      key={`course-space-${index}`}
+                      className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      onClick={() => navigate(`/task-view/${space.space_uuid}`)}
+                    >
+                      <span className="text-xl">📋</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
               <div className="border-b border-gray-700 my-6"></div>
             </div>
           )}
@@ -153,20 +165,26 @@ const TaskPage = () => {
           {allFriendSpaces && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {allFriendSpaces?.map((space, index) => (
-                  <div
-                    key={`friends-space-${index}`}
-                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/task-view/${space.space_uuid}`)}
-                  >
-                    <span className="text-xl">📋</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+              {allFriendSpaces?.length === 0 ? (
+                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                  No friends space task yet
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                  {allFriendSpaces?.map((space, index) => (
+                    <div
+                      key={`friends-space-${index}`}
+                      className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      onClick={() => navigate(`/task-view/${space.space_uuid}`)}
+                    >
+                      <span className="text-xl">📋</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
               <div className="border-b border-gray-700 my-6"></div>
             </div>
           )}

@@ -42,7 +42,7 @@ const FilePage = () => {
   }, []);
 
 
-  const { userSpaces, friendSpaces } = useSpace();
+  const { userSpaces, courseSpaces, friendSpaces } = useSpace();
   // const { space_uuid, space_name } = useParams();
 
   
@@ -60,15 +60,28 @@ const FilePage = () => {
   // const { list } = useFileManager(currentSpace?.space_id);
   // const files = list.data || [];
 
+  // Use actual space data instead of hardcoded array
   const spaces = [
-    { name: "Your Space", category: "your-space" },
-    { name: "Thesis and Research", category: "course-space" },
-    { name: "Operating System", category: "course-space" },
-    { name: "CS-ELEC 2", category: "course-space" },
-    { name: "ZJ's Space", category: "friends-space" },
-    { name: "Wilson's Space", category: "friends-space" },
-    { name: "Nath's Space", category: "friends-space" },
-    { name: "Raecell's Space", category: "friends-space" },
+    // Your spaces
+    ...(userSpaces || []).map(space => ({ 
+      name: space.space_name, 
+      category: "your-space",
+      space_uuid: space.space_uuid 
+    })),
+    // Course spaces
+    ...(courseSpaces || []).map(space => ({ 
+      name: space.space_name, 
+      category: "course-space",
+      space_uuid: space.space_uuid 
+    })),
+    // Friend spaces (excluding user's own spaces)
+    ...(friendSpaces || [])
+      .filter(space => !userSpaces?.some(userSpace => userSpace.space_id === space.space_id))
+      .map(space => ({ 
+        name: space.space_name, 
+        category: "friends-space",
+        space_uuid: space.space_uuid 
+      }))
   ];
 
   const spacesByCategory = spaces.reduce((acc, space) => {
@@ -77,7 +90,11 @@ const FilePage = () => {
     }
     acc[space.category].push(space);
     return acc;
-  }, {});
+  }, {
+    'your-space': [],
+    'course-space': [],
+    'friends-space': []
+  });
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
@@ -130,9 +147,13 @@ const FilePage = () => {
           </h1>
 
           {/* Your Space Files */}
-          {spacesByCategory['your-space'] && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+            {spacesByCategory['your-space']?.length === 0 ? (
+              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                No space files yet
+              </div>
+            ) : spacesByCategory['your-space']?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                 {spacesByCategory['your-space'].map((space, index) => (
                   <div
@@ -147,14 +168,18 @@ const FilePage = () => {
                   </div>
                 ))}
               </div>
-              <div className="border-b border-gray-700 my-6"></div>
-            </div>
-          )}
+            ) : null}
+            <div className="border-b border-gray-700 my-6"></div>
+          </div>
 
           {/* Course Space Files */}
-          {spacesByCategory['course-space'] && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+            {spacesByCategory['course-space']?.length === 0 ? (
+              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                No course space files yet
+              </div>
+            ) : spacesByCategory['course-space']?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                 {spacesByCategory['course-space'].map((space, index) => (
                   <div
@@ -169,14 +194,18 @@ const FilePage = () => {
                   </div>
                 ))}
               </div>
-              <div className="border-b border-gray-700 my-6"></div>
-            </div>
-          )}
+            ) : null}
+            <div className="border-b border-gray-700 my-6"></div>
+          </div>
 
           {/* Friends Space Files */}
-          {spacesByCategory['friends-space'] && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
+            {spacesByCategory['friends-space']?.length === 0 ? (
+              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                No friends space files yet
+              </div>
+            ) : spacesByCategory['friends-space']?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                 {spacesByCategory['friends-space'].map((space, index) => (
                   <div
@@ -191,9 +220,9 @@ const FilePage = () => {
                   </div>
                 ))}
               </div>
-              <div className="border-b border-gray-700 my-6"></div>
-            </div>
-          )}
+            ) : null}
+            <div className="border-b border-gray-700 my-6"></div>
+          </div>
         </div>
 
       </div>
