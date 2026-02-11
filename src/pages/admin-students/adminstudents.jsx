@@ -42,7 +42,12 @@ const AdminStudents = () => {
     const res = await adminDashboardService.getAllStudentEmails();
 
     if (res.success && res.data) {
-      setStudents(res.data.emails.map(email => ({ email })));
+      setStudents(
+        res.data.emails.map(email => ({
+          id: email,      // ✅ stable unique key
+          email
+        }))
+      );
     } else {
       console.error(res.message);
     }
