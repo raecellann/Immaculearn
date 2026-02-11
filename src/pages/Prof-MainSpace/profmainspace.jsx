@@ -6,7 +6,7 @@ import Button from "../component/Button";
 import { useSpace } from "../../contexts/space/useSpace";
 
 const ProfSpacePage = () => {
-  const { courseSpaces } = useSpace();
+  const { userSpaces, courseSpaces } = useSpace();
 
   console.log(courseSpaces)
 

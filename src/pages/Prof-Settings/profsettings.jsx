@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Sidebar from "../component/profsidebar";
+import ProfSidebar from "../component/profsidebar";
 
 const ProfSettingsPage = () => {
   const [activeAccount, setActiveAccount] = useState("Jober Reyes");
@@ -22,9 +22,9 @@ const ProfSettingsPage = () => {
 
   return (
     <div className="flex font-grotesque min-h-screen bg-[#161A20] text-white">
-      {/* Desktop Sidebar */}
+      {/* Desktop ProfSidebar */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <ProfSidebar />
       </div>
 
       {/* Mobile Overlay */}
@@ -35,12 +35,12 @@ const ProfSettingsPage = () => {
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile ProfSidebar */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar />
+        <ProfSidebar />
       </div>
 
       {/* Main Content */}
