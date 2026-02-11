@@ -109,17 +109,17 @@ const ArticlesInner = () => {
         </nav>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {articles.slice(0, 12).map((article, index) => (
           <div key={index} className="bg-[#1E242E] rounded-xl overflow-hidden hover:bg-[#242B38] transition-colors">
             <a href={article.url} target="_blank" rel="noopener noreferrer">
               <img
                 src={getImageSrc(article)}
                 alt={article.title}
-                className="h-36 w-full object-cover"
+                className="h-20 w-full object-cover"
               />
-              <div className="p-4">
-                <h3 className="font-medium text-white line-clamp-2">{article.title}</h3>
+              <div className="p-3">
+                <h3 className="font-medium text-white line-clamp-2 text-xs">{article.title}</h3>
                 <p className="text-gray-400 text-xs mt-1">{article.section}</p>
                 <p className="text-gray-500 text-xs mt-1">{article.byline}</p>
               </div>

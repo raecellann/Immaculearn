@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../component/sidebar";
+import Sidebar from "../../component/sidebar";
 import { useNavigate } from "react-router";
-import { useUser } from "../../contexts/user/useUser";
+import { useUser } from "../../../contexts/user/useUser";
 
 const TaskViewPage = () => {
   const [instructions, setInstructions] = useState("");

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router";
 import ProfSidebar from "../component/profsidebar";
 import Button from "../component/Button";
 import {
@@ -9,14 +10,16 @@ import {
   Calendar,
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
+import { useSpace } from "../../contexts/space/useSpace";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { SpaceCover } from "../component/spaceCover";
 import Logout from "../component/logout";
 import ArticlesScrape from "../component/articles_scrape";
-import { useNavigate } from "react-router";
 
 const ProfHomePage = () => {
   const { user } = useUser();
-
-  const navigator = useNavigate();
+  const { userSpaces = [], friendSpaces = [] } = useSpace();
+  const navigate = useNavigate();
 
   const [currentDate, setCurrentDate] = useState('');
   const [greeting, setGreeting] = useState('');
@@ -75,34 +78,12 @@ const ProfHomePage = () => {
     setToday(now);
   }, []);
 
-  const yourSpaceData = [
-    { title: "Lectures", image: "/src/assets/HomePage/Spaces-Cover/lectures.jpg", members: Math.floor(Math.random() * 10) + 1 },
-    { title: "Todo-Lists", image: "/src/assets/HomePage/Spaces-Cover/space-board.jpg", members: Math.floor(Math.random() * 10) + 1 },
-    { title: "Subject Grades", image: "/src/assets/HomePage/Spaces-Cover/grades.jpg", members: Math.floor(Math.random() * 10) + 1 },
-    { title: "Notes", image: "/src/assets/HomePage/Spaces-Cover/cover1.jpg", members: Math.floor(Math.random() * 10) + 1 },
-    { title: "Projects", image: "/src/assets/HomePage/Spaces-Cover/cover2.jpg", members: Math.floor(Math.random() * 10) + 1 }
-  ];
+  const userSpaceUUIDs = new Set(userSpaces.map((s) => s.space_uuid));
+  const sharedSpaces = friendSpaces.filter((s) => !userSpaceUUIDs.has(s.space_uuid));
 
-  const spacesData = [
-    {
-      title: "Thesis and Research",
-      students: "36 Students",
-      section: "BSCS - 4A",
-      image: "/src/assets/HomePage/Spaces-Cover/cover1.jpg",
-    },
-    {
-      title: "Operating System",
-      students: "36 Students",
-      section: "BSCS - 3A",
-      image: "/src/assets/HomePage/Spaces-Cover/cover2.jpg",
-    },
-    {
-      title: "BUSINTEG",
-      students: "36 Students",
-      section: "BSCS - 3A",
-      image: "/src/assets/HomePage/Spaces-Cover/cover3.jpg",
-    },
-  ];
+  const cardsPerView = 3;
+  const yourSlideCount = Math.max(1, Math.ceil(userSpaces.length / cardsPerView));
+  const friendSlideCount = Math.max(1, Math.ceil(sharedSpaces.length / cardsPerView));
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
@@ -248,9 +229,9 @@ const ProfHomePage = () => {
                     ‹
                   </button>
                   <button
-                    onClick={() => setSlideIndexYourSpace(Math.min(Math.ceil(yourSpaceData.length / 3) - 1, slideIndexYourSpace + 1))}
+                    onClick={() => setSlideIndexYourSpace(Math.min(yourSlideCount - 1, slideIndexYourSpace + 1))}
                     className="text-gray-400 hover:text-white text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
-                    disabled={slideIndexYourSpace >= Math.ceil(yourSpaceData.length / 3) - 1}
+                    disabled={slideIndexYourSpace >= yourSlideCount - 1}
                   >
                     ›
                   </button>
@@ -258,50 +239,42 @@ const ProfHomePage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {yourSpaceData.slice(slideIndexYourSpace * 3, (slideIndexYourSpace + 1) * 3).map((space, i) => (
+              {userSpaces.length === 0 ? (
+                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                  No spaces yet — create one to get started!
+                </div>
+              ) : (
+                <div className="relative overflow-hidden">
                   <div
-                    key={i}
-                    className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
+                    className="flex transition-transform duration-500 ease-out"
+                    style={{ transform: `translateX(-${slideIndexYourSpace * 100}%)` }}
                   >
-                    <div className="relative h-40 bg-gray-800">
-                      <img
-                        src={space.image}
-                        alt={space.title}
-                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                      />
-                      <div className="absolute top-3 right-3 z-20">
-                        <button
-                          onClick={() => setShowMenu(showMenu === `your-${i}` ? null : `your-${i}`)}
-                          className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
-                        >
-                          <span className="text-lg font-bold">...</span>
-                        </button>
-                        {showMenu === `your-${i}` && (
-                          <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
-                            <div className="flex flex-col gap-2">
-                              <button 
-                                onClick={() => setShowDeleteConfirm(`your-${i}`)}
-                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
-                              >
-                                Delete Space
-                              </button>
+                    {Array.from({ length: yourSlideCount }).map((_, idx) => (
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0">
+                        {userSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
+                          <div
+                            key={space.space_uuid}
+                            onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
+                            className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group"
+                          >
+                            <SpaceCover
+                              image={space.image}
+                              name={space.space_name}
+                              className="w-full flex-shrink-0 aspect-[3/2]"
+                            />
+                            <div className="p-4 flex flex-col justify-between flex-grow">
+                              <h3 className="font-medium truncate">
+                                {capitalizeWords(space.space_name)}'s Space
+                              </h3>
+                              <p className="text-gray-500 text-xs mt-1">Last active • just now</p>
                             </div>
                           </div>
-                        )}
+                        ))}
                       </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-white text-sm truncate">
-                        {space.title}
-                      </h3>
-                      <p className="text-gray-400 text-xs mt-1">
-                        {space.members} Members
-                      </p>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Spaces Section */}
@@ -317,9 +290,9 @@ const ProfHomePage = () => {
                     ‹
                   </button>
                   <button
-                    onClick={() => setSlideIndexSpaces(Math.min(Math.ceil(spacesData.length / 3) - 1, slideIndexSpaces + 1))}
+                    onClick={() => setSlideIndexSpaces(Math.min(Math.ceil(sharedSpaces.length / 3) - 1, slideIndexSpaces + 1))}
                     className="text-gray-400 hover:text-white text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
-                    disabled={slideIndexSpaces >= Math.ceil(spacesData.length / 3) - 1}
+                    disabled={slideIndexSpaces >= Math.ceil(sharedSpaces.length / 3) - 1}
                   >
                     ›
                   </button>
@@ -327,47 +300,70 @@ const ProfHomePage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {spacesData.slice(slideIndexSpaces * 3, (slideIndexSpaces + 1) * 3).map((space, i) => (
+              {sharedSpaces.length === 0 ? (
+                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                  No shared spaces yet
+                </div>
+              ) : (
+                <div className="relative overflow-hidden">
                   <div
-                    key={i}
-                    className="bg-[#1E242E] rounded-xl overflow-hidden transition hover:scale-[1.02] hover:shadow-lg"
+                    className="flex transition-transform duration-500 ease-out"
+                    style={{ transform: `translateX(-${slideIndexSpaces * 100}%)` }}
                   >
-                    <div className="relative">
-                      <img
-                        src={space.image}
-                        alt={space.title}
-                        className="h-32 w-full object-cover"
-                      />
-                      <div className="absolute top-2 right-2">
-                        <button
-                          onClick={() => setShowMenu(showMenu === i ? null : i)}
-                          className="bg-black/60 hover:bg-black text-white w-6 h-6 flex items-center justify-center rounded-md"
-                        >
-                          ...
-                        </button>
-                        {showMenu === i && (
-                          <div className="absolute top-8 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
-                            <div className="flex flex-col gap-2">
-                              <button 
-                                onClick={() => setShowLeaveConfirm(i)}
-                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                    {Array.from({ length: friendSlideCount }).map((_, idx) => (
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0">
+                        {sharedSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
+                          <div
+                            key={space.space_uuid}
+                            className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative"
+                          >
+                            <SpaceCover
+                              image={space.background_img || space.image}
+                              name={space.space_name}
+                              className="w-full flex-shrink-0 aspect-[3/2]"
+                            />
+                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowMenu(`friend-${space.space_uuid}`);
+                                }}
+                                className="bg-black/70 text-white w-8 h-8 rounded-lg flex items-center justify-center"
                               >
-                                Leave Space
+                                …
                               </button>
                             </div>
+
+                            {showMenu === `friend-${space.space_uuid}` && (
+                              <div className="absolute top-12 right-3 bg-[#242B38] rounded-lg shadow-xl p-2 z-20 border border-[#3B4457] min-w-40">
+                                <button className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded text-sm">
+                                  View Details
+                                </button>
+                                <button
+                                  className="block w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 rounded text-sm"
+                                  onClick={() => setShowLeaveConfirm(`friend-${space.space_uuid}`)}
+                                >
+                                  Leave Space
+                                </button>
+                              </div>
+                            )}
+
+                            <div className="p-4">
+                              <h3 className="font-medium truncate">
+                                {capitalizeWords(space.space_name)}'s Space
+                              </h3>
+                              <p className="text-gray-400 text-xs mt-1">
+                                {space.members?.length || 0} Members
+                              </p>
+                              <p className="text-gray-500 text-xs mt-1">Opened just now</p>
+                            </div>
                           </div>
-                        )}
+                        ))}
                       </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-medium text-sm">{space.title}</h3>
-                      <p className="text-gray-400 text-xs mt-1">{space.students}</p>
-                      <p className="text-gray-400 text-xs">{space.section}</p>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Articles Section */}
