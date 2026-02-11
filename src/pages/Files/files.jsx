@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -9,6 +9,9 @@ const FilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
+  const headerRef = useRef(null);
+  const lastScroll = useRef(0);
+
   const { isAuthenticated } = useUser();
 
   useEffect(() => {
@@ -16,6 +19,27 @@ const FilePage = () => {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
+
+  // 🔹 Hide-on-scroll header
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScroll = window.pageYOffset;
+
+      if (headerRef.current) {
+        if (currentScroll > lastScroll.current) {
+          headerRef.current.classList.add('hidden');
+          headerRef.current.style.transform = "translateY(-100%)";
+        } else {
+          headerRef.current.style.transform = "translateY(0)";
+        }
+      }
+
+      lastScroll.current = currentScroll;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
 
   const { userSpaces, friendSpaces } = useSpace();
@@ -82,19 +106,25 @@ const FilePage = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
 
-        {/* Mobile + Tablet Header */}
-        <div className="lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
-          >
-            ☰
-          </button>
-          <h1 className="text-xl font-bold">Files</h1>
+        {/* 🔥 Sticky Mobile Header */}
+        <div
+          ref={headerRef}
+          className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300"
+        >
+          <div className="p-4 flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-bold">Files</h1>
+          </div>
         </div>
 
-        {/* Page Content */}
-        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
+        {/* ✅ CONTENT (FOLDER-LIKE DISPLAY) */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
           <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
             Files
           </h1>

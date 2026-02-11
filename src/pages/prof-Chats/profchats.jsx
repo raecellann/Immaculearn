@@ -114,39 +114,38 @@ const ProfChatPage = () => {
 
   // Handle sticky header scroll behavior
   useEffect(() => {
+    let lastScrollTop = 0;
+    let ticking = false;
+
     const handleScroll = () => {
-      const scrollableElement = document.querySelector('.chat-messages-container');
-      const currentScrollY = scrollableElement ? scrollableElement.scrollTop : window.scrollY;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollableElement = document.querySelector('.chat-messages-container');
+          const scrollTop = scrollableElement ? scrollableElement.scrollTop : window.pageYOffset;
 
-      if (currentScrollY > lastScrollY && currentScrollY > 30) {
-        setShowHeader(false); // scrolling down
-      } else {
-        setShowHeader(true); // scrolling up
+          if (scrollTop > lastScrollTop && scrollTop > 100) {
+            // Scrolling down
+            setShowHeader(false);
+          } else {
+            // Scrolling up
+            setShowHeader(true);
+          }
+
+          lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+          ticking = false;
+        });
+        ticking = true;
       }
-
-      setLastScrollY(currentScrollY);
     };
 
     const scrollableElement = document.querySelector('.chat-messages-container');
     if (scrollableElement) {
-      scrollableElement.addEventListener('scroll', handleScroll);
+      scrollableElement.addEventListener('scroll', handleScroll, { passive: true });
       return () => scrollableElement.removeEventListener('scroll', handleScroll);
     } else {
-      window.addEventListener('scroll', handleScroll);
+      window.addEventListener('scroll', handleScroll, { passive: true });
       return () => window.removeEventListener('scroll', handleScroll);
     }
-  }, [lastScrollY]);
-
-  // Show header on hover
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (e.clientY < 100) {
-        setShowHeader(true);
-      }
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const getPrivateSpaceUuid = (a, b) => [a, b].sort().join("-");

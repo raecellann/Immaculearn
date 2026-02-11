@@ -36,6 +36,30 @@ const ProfFilePage = () => {
       posted: true,
       category: "course-space"
     },
+    {
+      status: "Posted",
+      fileName: "Machine Learning Projects",
+      datePosted: "Nov 15",
+      spaceName: "CS THESIS 1 - 1SY2025-2026",
+      posted: true,
+      category: "your-space"
+    },
+    {
+      status: "Posted",
+      fileName: "Database Design Notes",
+      datePosted: "Sep 22",
+      spaceName: "DATASTRUCT - 1SY2025-2026",
+      posted: true,
+      category: "course-space"
+    },
+    {
+      status: "To be Uploaded",
+      fileName: "Research Papers Collection",
+      datePosted: "Dec 01",
+      spaceName: "CS THESIS 1 - 1SY2025-2026",
+      posted: false,
+      category: "your-space"
+    },
   ];
 
   const filesByCategory = files.reduce((acc, file) => {
@@ -67,7 +91,7 @@ const ProfFilePage = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen bg-[#161A20] text-white">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -91,28 +115,20 @@ const ProfFilePage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* ✅ MOBILE / TABLET STICKY HEADER */}
+        {/* 🔥 Sticky Mobile Header */}
         <div
           ref={headerRef}
-          className="
-            lg:hidden
-            sticky top-0 z-30
-            bg-[#1E222A]
-            px-3
-            pt-[env(safe-area-inset-top)]
-            border-b border-gray-700
-            transition-transform duration-300
-          "
+          className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300"
         >
-          <div className="flex items-center gap-3 h-14">
+          <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="text-2xl bg-transparent p-0 border-none focus:outline-none"
+              className="bg-transparent border-none text-white text-2xl p-0"
             >
               ☰
             </button>
-
-            <h1 className="text-lg font-bold flex-1 truncate">Files</h1>
+            <h1 className="text-lg font-bold">Files</h1>
           </div>
         </div>
 
