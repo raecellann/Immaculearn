@@ -155,7 +155,7 @@ const HomePage1 = () => {
             <div className="bg-[#1E242E] rounded-2xl p-6 mb-10">
               <div className="flex flex-col sm:flex-row justify-between gap-6">
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-semibold text-[#B0C4FF] mb-2">
+                  <h1 className="text-lg sm:text-xl font-semibold text-[#B0C4FF] mb-2">
                     {greeting}, {user?.name || "Student"}
                   </h1>
                   <p className="text-gray-300 mb-1">Meet your classmates and collaborate with them.</p>
@@ -163,8 +163,8 @@ const HomePage1 = () => {
                   <div className="flex flex-col sm:flex-row gap-3">
 
 
-                    <Button className="bg-[#007AFF] hover:bg-blue-700 text-white" onClick={() => navigate("/space/create")}>Create Space</Button>
-                    <Button className="border border-gray-600 hover:bg-gray-800" onClick={() => navigate("/space")}>Join Space</Button>
+                    <Button className="bg-[#007AFF] hover:bg-blue-700 text-white text-sm py-2 px-4" onClick={() => navigate("/space/create")}>Create Space</Button>
+                    <Button className="border border-gray-600 hover:bg-gray-800 text-sm py-2 px-4" onClick={() => navigate("/space")}>Join Space</Button>
                   </div>
                 </div>
                 <img

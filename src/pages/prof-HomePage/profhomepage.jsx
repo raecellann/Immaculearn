@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import ProfSidebar from "../component/profsidebar";
 import Button from "../component/Button";
-import { BookOpen, User, GraduationCap, FileText, Calendar } from "lucide-react";
+import {
+  BookOpen,
+  User,
+  GraduationCap,
+  FileText,
+  Calendar,
+} from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import Logout from "../component/logout";
 
@@ -138,9 +144,9 @@ const ProfHomePage = () => {
         <div className="lg:hidden h-16"></div>
 
         {/* ================= Page Content Wrapper ================= */}
-        <div className="flex-1 flex flex-col xl:flex-row gap-6 overflow-y-auto">
-          {/* CENTER CONTENT */}
-          <div className="flex-1 p-4 md:p-6 lg:p-8 min-w-0">
+        <div className="flex-1 flex flex-col xl:flex-row gap-6 p-4 md:p-6 lg:p-8">
+          {/* CENTER COLUMN */}
+          <div className="flex-1 min-w-0">
             {/* Title and Date ABOVE the card */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
               <h2 className="text-xl sm:text-2xl font-bold text-white font-grotesque">
@@ -149,35 +155,29 @@ const ProfHomePage = () => {
               <p className="text-gray-400 text-xs sm:text-sm font-inter">{currentDate}</p>
             </div>
 
-            {/* Header Card */}
-            <div className="bg-[#1E242E] rounded-xl p-4 sm:p-6 mb-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                <div className="flex-1">
-                  <h1 className="text-base sm:text-lg font-semibold text-[#B0C4FF] mb-1">
-                    {greeting}, {user && user.name}
+            {/* Welcome Card */}
+            <div className="bg-[#1E242E] rounded-2xl p-6 mb-10">
+              <div className="flex flex-col sm:flex-row justify-between gap-6">
+                <div>
+                  <h1 className="text-lg sm:text-xl font-semibold text-[#B0C4FF] mb-2">
+                    {greeting}, {user?.name || "Professor"}
                   </h1>
-                  <p className="text-gray-400 text-sm">
-                    Manage your classes and collaborate with students.
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    Create spaces or join existing ones.
-                  </p>
-                  <div className="mt-4">
-                    <Button className="text-sm py-2 px-4">Create Space</Button>
+                  <p className="text-gray-300 mb-1">Manage your classes and collaborate with students.</p>
+                  <p className="text-gray-400 mb-5">Create spaces or join existing ones.</p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button className="bg-[#007AFF] hover:bg-blue-700 text-white text-sm py-2 px-4">Create Space</Button>
                   </div>
                 </div>
-                <div className="hidden sm:block flex-shrink-0">
-                  <img
-                    src="/src/assets/HomePage/book-pen.svg"
-                    alt="Book and Pen"
-                    className="w-24 h-24 sm:w-32 sm:h-32 object-cover"
-                  />
-                </div>
+                <img
+                  src="/src/assets/HomePage/book-pen.svg"
+                  alt="Book & Pen"
+                  className="w-32 h-32 object-contain hidden sm:block self-center"
+                />
               </div>
             </div>
 
             {/* Task Deployed Section (Mobile/Tablet/Small Laptop Only) */}
-            <div className="xl:hidden mb-8">
+            <div className="xl:hidden mb-8 mt-6">
               <h2 className="text-lg sm:text-xl font-semibold mb-3">Task Deployed</h2>
               <div className="bg-[#1E242E] rounded-xl p-4 sm:p-6">
                 <ul className="space-y-3 text-sm">
@@ -378,7 +378,7 @@ const ProfHomePage = () => {
           </div>
 
           {/* RIGHT CONTENT - Task Deployed (Desktop Only - Sticky Sidebar) */}
-          <div className="hidden xl:block w-80 bg-[#1E242E] rounded-xl p-6 mr-6 my-6 flex-shrink-0 self-start sticky top-6">
+          <div className="hidden xl:block w-80 bg-[#1E242E] rounded-xl p-6 mr-6 my-6 flex-shrink-0 self-start sticky top-4">
             <div>
               <h4 className="font-semibold mb-3">Task Deployed:</h4>
               <ul className="space-y-3 text-sm">
