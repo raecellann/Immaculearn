@@ -37,6 +37,17 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     }
   };
 
+  const fetchCourseSpaces = async (): Promise<Space[]> => {
+    try {
+      const res = await spaceService.getCourseSpaces();
+      const spaces = res.data || [];
+      return spaces;
+    } catch (error) {
+      console.error("Error fetching user spaces:", error);
+      return [];
+    }
+  };
+
   const fetchFriendSpaces = async (): Promise<Space[]> => {
     try {
       const res = await spaceService.getAllFriendSpaces();
@@ -84,6 +95,13 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     staleTime: 60_000,
   });
 
+  const { data: courseSpaces = [], isLoading: courseSpacesLoading } = useQuery({
+    queryKey: ["courseSpaces"],
+    queryFn: fetchCourseSpaces,
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+
   const { data: friendSpaces = [], isLoading: friendSpacesLoading } = useQuery({
     queryKey: ["friendSpaces"],
     queryFn: fetchFriendSpaces,
@@ -124,6 +142,12 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   const createSpace = async (data: SpaceCreateData): Promise<ApiResponse<Space>> => {
     const result = await spaceService.createSpace(data);
     queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    return result;
+  };
+
+  const createCourseSpace = async (data: SpaceCreateData): Promise<ApiResponse<Space>> => {
+    const result = await spaceService.createCourseSpace(data);
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     return result;
   };
 
@@ -209,6 +233,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
 
     // Server data
     userSpaces,
+    courseSpaces,
     friendSpaces,
     isLoading,
 
@@ -219,6 +244,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
 
     // Mutations
     createSpace,
+    createCourseSpace,
     joinSpace,
     acceptJoinRequest,
     declineJoinRequest,

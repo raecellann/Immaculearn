@@ -154,7 +154,7 @@ export const ProfRoutes = () => {
       />
       
       <Route
-        path="spaces-thesis"
+        path="/space/:space_uuid/:space_name"
         element={
           <SpaceProvider>
               <ProfStreamPage />
@@ -162,7 +162,7 @@ export const ProfRoutes = () => {
         }
       />
       <Route
-        path="spaces/tasks"
+        path="/space/:space_uuid/:space_name/tasks"
         element={
           <SpaceProvider>
               <ProfTaskPage />
@@ -170,7 +170,7 @@ export const ProfRoutes = () => {
         }
       />
       <Route
-        path="spaces/files"
+        path="/space/:space_uuid/:space_name/files"
         element={
           <SpaceProvider>
               <ProfFilesShared />
@@ -178,7 +178,7 @@ export const ProfRoutes = () => {
         }
       />
       <Route
-        path="spaces/people"
+        path="/space/:space_uuid/:space_name/people"
         element={
           <SpaceProvider>
               <ProfPeoplePage />

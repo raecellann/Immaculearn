@@ -19,10 +19,46 @@ class SpaceService {
             };
         }
     }
+    async createCourseSpace(spaceData: SpaceCreateData): Promise<ApiResponse<Space>> {
+        try {
+            const response = await api.post<ApiResponse<Space>>("/spaces/course-space", {
+                space_name: spaceData.space_name,
+                description: spaceData.description || "",
+                settings: spaceData.settings || { space_cover: null, max_member: 50 },
+            });
+
+            return response.data;
+        } catch (error: any) {
+            return {
+                success: false,
+                message: error.response?.data?.message || "Failed to create course space",
+            };
+        }
+    }
 
     async getUserSpaces(): Promise<ApiResponse<Space[]>> {
         try {
             const response = await api.get<ApiResponse<Space[]>>("/spaces/all");
+            const data = Array.isArray(response.data?.data) ? response.data.data : [];
+            console.log(response)
+            return {
+                success: response.data.success,
+                message: response.data.message,
+                data,
+            };
+            // return response.data;
+        } catch (error: any) {
+            return {
+                success: false,
+                message: error.response?.data?.message || "Failed to fetch spaces",
+                data: [],
+            };
+        }
+    }
+
+    async getCourseSpaces(): Promise<ApiResponse<Space[]>> {
+        try {
+            const response = await api.get<ApiResponse<Space[]>>("/spaces/course-spaces");
             const data = Array.isArray(response.data?.data) ? response.data.data : [];
             console.log(response)
             return {

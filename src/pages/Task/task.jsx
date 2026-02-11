@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
 import { useUser } from "../../contexts/user/useUser";
+import { useSpace } from "../../contexts/space/useSpace";
 
 const statusStyles = {
   Done: "border-2 border-[#00B865] text-[#10E164]",
@@ -11,6 +12,10 @@ const statusStyles = {
 };
 
 const TaskPage = () => {
+  const { user } = useUser();
+  const { userSpaces, friendSpaces } = useSpace();
+
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated } = useUser();

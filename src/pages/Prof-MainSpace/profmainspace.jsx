@@ -3,8 +3,13 @@ import { useNavigate } from "react-router";
 import Sidebar from "../component/profsidebar";
 import Logout from "../component/logout";
 import Button from "../component/Button";
+import { useSpace } from "../../contexts/space/useSpace";
 
 const ProfSpacePage = () => {
+  const { courseSpaces } = useSpace();
+
+  console.log(courseSpaces)
+
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -136,11 +141,13 @@ const ProfSpacePage = () => {
   ];
 
   const yourSpaces = spaces.filter((s) => s.category === "Your Space");
-  const courseSpaces = spaces.filter(
-    (s) =>
-      s.category === "Course Space" &&
-      (yearFilter === "All" || s.yearLevel === yearFilter)
-  );
+  // const courseSpaces = spaces.filter(
+  //   (s) =>
+  //     s.category === "Course Space" &&
+  //     (yearFilter === "All" || s.yearLevel === yearFilter)
+  // );
+
+  
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
@@ -297,29 +304,29 @@ const ProfSpacePage = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {courseSpaces.map((space) => (
+              {courseSpaces?.map((space, id) => (
                 <div
-                  key={space.id}
+                  key={id}
                   className="group bg-[#1E242E] rounded-xl overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer"
                 >
                   <div className="relative h-40 bg-gray-800 overflow-hidden">
                     <img
-                      src={space.image}
-                      alt={space.title}
+                      src={space.settings?.space_cover || "/src/assets/SpacesCover/default.jpg"}
+                      alt={space.space_name}
                       className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                     />
                     <div className="absolute top-3 right-3 z-20">
                       <button
-                        onClick={() => setShowMenu(showMenu === space.id ? null : space.id)}
+                        onClick={() => setShowMenu(showMenu === space.space_id ? null : space.space_id)}
                         className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
                       >
                         <span className="text-lg font-bold">...</span>
                       </button>
-                      {showMenu === space.id && (
+                      {showMenu === space.space_id && (
                         <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
                           <div className="flex flex-col gap-2">
                             <button 
-                              onClick={() => setShowLeaveConfirm(space.id)}
+                              onClick={() => setShowLeaveConfirm(space.space_id)}
                               className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
                             >
                               Leave Space
@@ -331,10 +338,10 @@ const ProfSpacePage = () => {
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold text-white text-sm">
-                      {space.title}
+                      {space.space_name}
                     </h3>
                     <p className="text-gray-400 text-xs">
-                      {space.members} Students
+                      {space.members?.length || 0} Students
                     </p>
                   </div>
                 </div>

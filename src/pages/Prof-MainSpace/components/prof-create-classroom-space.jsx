@@ -6,11 +6,18 @@ import Button from "../../component/Button";
 import { X } from "lucide-react";
 import Logout from "../../component/logout";
 import { useNavigate } from "react-router";
+import { useUser } from "../../../contexts/user/useUser";
+import { useSpace } from "../../../contexts/space/useSpace";
+import { toast } from "react-toastify";
 
 const ProfCreateClassroomSpace = () => {
+  const { createCourseSpace } = useSpace();
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [spaceName, setSpaceName] = useState("");
+  const spaceSettings = useRef({space_cover: null, max_member: 50});
+  
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
 
   const navigator = useNavigate();
@@ -64,10 +71,35 @@ const ProfCreateClassroomSpace = () => {
     "/src/assets/HomePage/Spaces-Cover/space-board.jpg",
   ];
 
-  const handleCreateSpace = () => {
+  const handleCreateCourseSpace = async () => {
     if (spaceName.trim()) {
-      alert(`Classroom Space "${spaceName}" created!`);
-      setSpaceName("");
+      try {
+        // Prepare data for API
+        const spaceData = {
+          space_name: spaceName,
+          space_settings: spaceSettings.current,
+          cover_image: coverImage
+        };
+
+        // Call the API
+        const result = await createCourseSpace(spaceData);
+
+        if (result.success) {
+          const space_uuid = result.space_uuid;
+          toast.success(`Course Space "${spaceName}" created successfully!`)
+          // alert(`Space "${spaceName}" created successfully!`);
+          
+          // Reset form
+          setSpaceName("");
+          setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
+          navigator(`/prof/space/${space_uuid}/${spaceName}`)
+        } else {
+          alert(result.message || "Failed to create space. Please try again.");
+        }
+      } catch (error) {
+        console.error("Create space error:", error);
+        alert("An error occurred while creating the space.");
+      }
     } else {
       alert("Please enter a space name.");
     }
@@ -362,7 +394,7 @@ const ProfCreateClassroomSpace = () => {
               Cancel
             </button>
 
-            <Button onClick={handleCreateSpace} className="bg-[#007AFF] hover:bg-[#2563eb] text-xs w-full sm:w-auto">
+            <Button onClick={handleCreateCourseSpace} className="bg-[#007AFF] hover:bg-[#2563eb] text-xs w-full sm:w-auto">
               Create Space
             </Button>
           </div>

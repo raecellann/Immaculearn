@@ -41,6 +41,7 @@ const UserPage = () => {
   const { user, isLoading: userLoading } = useUser();
   const {
     userSpaces,
+    courseSpaces,
     friendSpaces,
     useJoinRequests,
     isLoading: spaceLoading,
@@ -73,7 +74,7 @@ const UserPage = () => {
   const isValidUuid = uuidPattern.test(space_uuid);
 
   // Find current space
-  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [...(userSpaces || []), ...(courseSpaces || []), ...(friendSpaces || [])];
 
   const currentSpace = allSpaces.find(space => space.space_uuid === space_uuid);
 
