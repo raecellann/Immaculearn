@@ -8,7 +8,7 @@ import { useUser } from "../../contexts/user/useUser";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 
 const LoginPage = () => {
-  const {isAuthenticated, user, isLoading ,login} = useUser();
+  const {isAuthenticated, user, isLoading, checkAuth} = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("")
@@ -16,40 +16,14 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    try {
-      const data = await login(email, password);
-
-      if (data.needsOnboarding) {
-        sessionStorage.setItem("tempToken", data.tempToken);
-        navigate(`/onboarding?role=${data.role}`);
-        return;
-      }
-
-      if (data.role === "student") {
-        navigate(`/home`);
-      } else if (data.role === "professor") {
-        navigate(`/prof/home`);
-      } else if (data.role === "admin") {
-        navigate(`/admin-dashboard`);
-      }
-
-    } catch (err) {
-      toast.error("Login failed");
+    if (!role) {
+      alert("Please select whether you are a Student or a Professor.");
+      return;
     }
+    alert(`Logging in as ${role}`);
   };
-
-
-
-    
-
-
-
-
-
-  
 
   const handleGmailLogin = async () => {
     const popup = window.open(
@@ -59,10 +33,11 @@ const LoginPage = () => {
     );
 
     // Set up message listener for the popup
-    const messageHandler = (event) => {
+    const messageHandler = async (event) => {
       // Verify the message is from our domain
       if (event.origin !== window.location.origin) return;
 
+      await checkAuth();
       if (event.data.type === 'OAUTH_SUCCESS') {
         const { role, needsOnboarding, token } = event.data;
 

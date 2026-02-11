@@ -13,7 +13,15 @@ const statusStyles = {
 
 const TaskPage = () => {
   const { user } = useUser();
-  const { userSpaces, friendSpaces } = useSpace();
+  const { userSpaces, courseSpaces, friendSpaces } = useSpace();
+
+  const userSpaceIds = new Set(userSpaces.map(space => space.space_id));
+
+  console.log(userSpaceIds)
+
+  const allFriendSpaces = friendSpaces.filter(
+    space => !userSpaceIds.has(space.space_id)
+  );
 
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -47,44 +55,6 @@ const TaskPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  const [tasks, setTasks] = useState([
-    {
-      name: "OS Activity",
-      deadline: "April 12, 2025",
-      space: "Your Space",
-      status: "In Progress",
-      category: "your-space"
-    },
-    {
-      name: "Thesis Paper",
-      deadline: "April 12, 2025",
-      space: "Course Space",
-      status: "Done",
-      category: "course-space"
-    },
-    {
-      name: "Individual Activity",
-      deadline: "May 1, 2025",
-      space: "Course Space",
-      status: "Done",
-      category: "course-space"
-    },
-    {
-      name: "Personal Reflection",
-      deadline: "April 12, 2025",
-      space: "Nathaniel's Space",
-      status: "Missing",
-      category: "friends-space"
-    },
-  ]);
-
-  const tasksByCategory = tasks.reduce((acc, task) => {
-    if (!acc[task.category]) {
-      acc[task.category] = [];
-    }
-    acc[task.category].push(task);
-    return acc;
-  }, {});
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
@@ -136,19 +106,19 @@ const TaskPage = () => {
             Tasks
           </h1>
           {/* Your Space Tasks */}
-          {tasksByCategory['your-space'] && (
+          {userSpaces && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {tasksByCategory['your-space'].map((task, index) => (
+                {userSpaces?.map((space, index) => (
                   <div
                     key={`your-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/task-view/${task.name}`)}
+                    onClick={() => navigate(`/task/${space.space_uuid}/${space.space_name}`)}
                   >
                     <span className="text-xl">📋</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{task.name}</p>
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
                     </div>
                   </div>
                 ))}
@@ -158,19 +128,19 @@ const TaskPage = () => {
           )}
 
           {/* Course Space Tasks */}
-          {tasksByCategory['course-space'] && (
+          {courseSpaces && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {tasksByCategory['course-space'].map((task, index) => (
+                {courseSpaces?.map((space, index) => (
                   <div
                     key={`course-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/task-view/${task.name}`)}
+                    onClick={() => navigate(`/task-view/${space.space_uuid}`)}
                   >
                     <span className="text-xl">📋</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{task.name}</p>
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
                     </div>
                   </div>
                 ))}
@@ -180,19 +150,19 @@ const TaskPage = () => {
           )}
 
           {/* Friends Space Tasks */}
-          {tasksByCategory['friends-space'] && (
+          {allFriendSpaces && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {tasksByCategory['friends-space'].map((task, index) => (
+                {allFriendSpaces?.map((space, index) => (
                   <div
                     key={`friends-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/task-view/${task.name}`)}
+                    onClick={() => navigate(`/task-view/${space.space_uuid}`)}
                   >
                     <span className="text-xl">📋</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{task.name}</p>
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
                     </div>
                   </div>
                 ))}
