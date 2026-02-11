@@ -14,6 +14,7 @@ import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { SpaceCover } from "../component/spaceCover";
+import ArticlesScrape from "../component/articles_scrape";
 
 const HomePage1 = () => {
   const { user } = useUser();
@@ -475,18 +476,8 @@ const HomePage1 = () => {
               )}
             </section>
 
-            {/* Articles Placeholder */}
-            <section>
-              <h2 className="text-xl md:text-2xl font-semibold mb-5">Articles</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-[#1E242E] h-40 rounded-xl hover:bg-[#242B38] transition"
-                  />
-                ))}
-              </div>
-            </section>
+            {/* Articles Section */}
+            <ArticlesScrape />
           </div>
 
           {/* RIGHT SIDEBAR – visible on xl+ */}

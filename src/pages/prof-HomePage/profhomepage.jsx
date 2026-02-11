@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import Logout from "../component/logout";
+import ArticlesScrape from "../component/articles_scrape";
 
 const ProfHomePage = () => {
   const { user } = useUser();
