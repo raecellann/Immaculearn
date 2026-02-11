@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../component/sidebar";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useUser } from "../../../contexts/user/useUser";
 
 const TaskViewPage = () => {
+  const { space_uuid, space_name, task_name } = useParams();
   const [instructions, setInstructions] = useState("");
   const [postedInstructions, setPostedInstructions] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -48,13 +49,6 @@ const TaskViewPage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-      <style jsx>{`
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
-
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -92,15 +86,22 @@ const TaskViewPage = () => {
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold">Task View</h1>
+            <h1 className="text-lg font-bold">{task_name ? task_name : 'Task View'}</h1>
           </div>
         </div>
 
         {/* 🔽 Added spacing here (pt-20) */}
         <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
         
-          {/* Title */}
-          <h1 className="hidden lg:block text-2xl lg:text-5xl font-bold text-center mb-4 lg:mb-8 font-grotesque">Task</h1>
+          {/* Back Button */}
+          <div className="mb-4 flex items-center">
+            <button
+              onClick={() => navigate(`/task/${space_uuid}/${space_name}`)}
+              className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-lg font-medium transition-colors"
+            >
+              ← Back
+            </button>
+          </div>
 
           {/* Task Information */}
           <div className="p-4 sm:p-6 lg:p-8 rounded-2xl shadow-lg max-w-5xl mx-auto bg-[#1F242D]">
@@ -111,7 +112,7 @@ const TaskViewPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 mb-8 lg:mb-10">
               
               <div>
-                <p className="font-semibold font-inter text-xl sm:text-2xl lg:text-3xl">Week 8 Individual Activity</p>
+                <p className="font-semibold font-inter text-xl sm:text-2xl lg:text-3xl">{task_name ? task_name : 'Week 8 Individual Activity'}</p>
                 <p className="text-xs sm:text-sm opacity-70 mt-2 flex flex-col sm:flex-row gap-2 sm:gap-10">Due Date: <span className="opacity-100">November 20, 2025</span></p>
                 <p className="text-xs sm:text-sm opacity-70 mt-2 flex flex-col sm:flex-row gap-2 sm:gap-5">Assigned By: <span className="opacity-100">Zeldrick Delos Santos</span></p>
               </div>
@@ -132,7 +133,7 @@ const TaskViewPage = () => {
                 placeholder="Add any additional instructions or notes..."
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
-                className="w-full h-20 bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none rounded-lg p-3 text-sm scrollbar-hide"
+                className="w-full h-20 bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none rounded-lg p-3 text-sm"
               />
               
               {/* Action Buttons */}
