@@ -1,11 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 import Button from "../component/Button";
+import { useUser } from "../../contexts/user/useUser";
+import { useNavigate } from "react-router";
 
 const ProfProfilePage = () => {
+  const { user, isAuthenticated } = useUser();
+  const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const profileName = "Jober Reyes";
+  
+  // Edit profile states
+  const [isEditing, setIsEditing] = useState(false);
+  const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || '');
+  const [lastName, setLastName] = useState(user?.name?.split(' ')[1] || '');
+  const [department, setDepartment] = useState(user?.department || '');
+  const [bio, setBio] = useState(user?.bio || '');
+
+  const profileName = isEditing 
+    ? `${firstName} ${lastName}`.trim()
+    : user?.name || '';
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -13,6 +27,51 @@ const ProfProfilePage = () => {
       setProfileImage(URL.createObjectURL(file));
     }
   };
+
+  // Handle edit profile
+  const handleEditProfile = () => {
+    setIsEditing(true);
+  };
+
+  // Handle save profile
+  const handleSaveProfile = () => {
+    // Here you would typically make an API call to update the user profile
+    const updatedProfile = {
+      name: `${firstName} ${lastName}`,
+      department: department,
+      bio: bio,
+      profile_pic: profileImage
+    };
+    
+    console.log('Updated profile:', updatedProfile);
+    
+    // Show success message
+    alert('Profile updated successfully!');
+    setIsEditing(false);
+    
+    // Force a re-render to show the updated data
+    window.location.reload();
+  };
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    // Reset to original values
+    setFirstName(user?.name?.split(' ')[0] || '');
+    setLastName(user?.name?.split(' ')[1] || '');
+    setDepartment(user?.department || '');
+    setBio(user?.bio || '');
+    setIsEditing(false);
+  };
+
+  useEffect(() => {
+    if (user?.profile_pic) {
+      setProfileImage(user.profile_pic);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return navigate('/login')
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-grotesque">
@@ -112,7 +171,7 @@ const ProfProfilePage = () => {
 
                 <h2 className="text-xl font-bold mt-4">{profileName}</h2>
                 <p className="text-[#3A7BFF] mt-1 text-sm font-medium">
-                  Teacher
+                  {user?.role || 'Professor'}
                 </p>
               </div>
 
@@ -120,49 +179,73 @@ const ProfProfilePage = () => {
               <div className="bg-[#1E222A] rounded-2xl flex-1 p-6 sm:p-8 border border-white shadow-lg">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold">Personal Details</h3>
-                  <Button className="text-xs px-3 py-1">Edit Profile</Button>
+                  {!isEditing ? (
+                    <Button 
+                      onClick={handleEditProfile}
+                      className="text-xs px-3 py-1"
+                    >
+                      Edit Profile
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={handleSaveProfile}
+                        className="text-xs bg-green-600 px-3 py-1 rounded-md font-semibold hover:bg-green-700 transition"
+                      >
+                        Save
+                      </button>
+                      <button 
+                        onClick={handleCancelEdit}
+                        className="text-xs bg-gray-600 px-3 py-1 rounded-md font-semibold hover:bg-gray-700 transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <input
                     type="text"
+                    value={isEditing ? firstName : (user?.name?.split(' ')[0] || '')}
+                    onChange={(e) => isEditing && setFirstName(e.target.value)}
                     placeholder="First Name"
+                    readOnly={!isEditing}
                     className="bg-[#2A2E36] p-2 rounded-md outline-none text-white border border-white"
                   />
                   <input
                     type="text"
+                    value={isEditing ? lastName : (user?.name?.split(' ')[1] || '')}
+                    onChange={(e) => isEditing && setLastName(e.target.value)}
                     placeholder="Last Name"
+                    readOnly={!isEditing}
                     className="bg-[#2A2E36] p-2 rounded-md outline-none text-white border border-white"
                   />
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    className="bg-[#2A2E36] p-2 rounded-md col-span-1 sm:col-span-2 outline-none text-white border border-white"
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-4 mb-4">
-                  <label className="flex items-center gap-1">
-                    <input
-                      type="radio"
-                      name="gender"
-                      className="accent-[#3A7BFF]"
-                    />
-                    Male
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input
-                      type="radio"
-                      name="gender"
-                      defaultChecked
-                      className="accent-[#3A7BFF]"
-                    />
-                    Female
-                  </label>
+                  <div className="col-span-1 sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Department</label>
+                    <select
+                      value={isEditing ? department : (user?.department || '')}
+                      onChange={(e) => isEditing && setDepartment(e.target.value)}
+                      disabled={!isEditing}
+                      className="bg-[#2A2E36] p-2 rounded-md outline-none text-white border border-white w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Select Department</option>
+                      <option value="Bachelor of Science in Computer Science">Bachelor of Science in Computer Science</option>
+                      <option value="Bachelor of Science in Hospitality Management">Bachelor of Science in Hospitality Management</option>
+                      <option value="Bachelor of Science in Business Administration">Bachelor of Science in Business Administration</option>
+                      <option value="Bachelor of Secondary Education major in English">Bachelor of Secondary Education major in English</option>
+                      <option value="Bachelor of Secondary Education major in Filipino">Bachelor of Secondary Education major in Filipino</option>
+                      <option value="Bachelor of Science in Tourism Management">Bachelor of Science in Tourism Management</option>
+                      <option value="Bachelor of Science in Accountancy">Bachelor of Science in Accountancy</option>
+                    </select>
+                  </div>
                 </div>
 
                 <textarea
-                  placeholder='“ A good teacher can inspire hope, ignite the imagination, and instill a love of learning. ”'
+                  value={isEditing ? bio : (user?.bio || 'A good teacher can inspire hope, ignite the imagination, and instill a love of learning.')}
+                  onChange={(e) => isEditing && setBio(e.target.value)}
+                  placeholder="Tell us about yourself..."
+                  readOnly={!isEditing}
                   className="bg-[#2A2E36] p-3 rounded-md w-full h-24 outline-none text-white resize-none border border-white"
                 />
               </div>

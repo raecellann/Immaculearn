@@ -367,31 +367,15 @@ const ProfilePage = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-1">Course</label>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Department</label>
                     <input
                       type="text"
-                      value={isEditing ? course : (user?.course || '')}
-                      onChange={(e) => isEditing && setCourse(e.target.value)}
+                      value={isEditing ? department : (user?.department || '')}
+                      onChange={(e) => isEditing && setDepartment(e.target.value)}
                       placeholder="e.g., Computer Science, Business, Engineering"
                       readOnly={!isEditing}
-                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white"
+                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-1">Year Level</label>
-                    <select
-                      value={year || ''}
-                      onChange={(e) => isEditing && setYear(e.target.value)}
-                      disabled={!isEditing}
-                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-32 h-10 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <option value="">Select Year</option>
-                      <option value="1st">1st Year</option>
-                      <option value="2nd">2nd Year</option>
-                      <option value="3rd">3rd Year</option>
-                      <option value="4th">4th Year</option>
-                      <option value="Graduate">Graduate</option>
-                    </select>
                   </div>
                 </div>
 

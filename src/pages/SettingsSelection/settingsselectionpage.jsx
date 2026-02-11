@@ -29,7 +29,7 @@ const SettingsSelectionPage = () => {
   }, []);
 
   const handleAccountSettings = () => {
-    navigate('/accsettings');
+    navigate('/prof/acc-settings');
   };
 
   const handleSpaceSettings = () => {
