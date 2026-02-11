@@ -32,7 +32,12 @@ const ProfCreateClassroomSpace = () => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isCropping, setIsCropping] = useState(false);
 
-  /* 🔹 STICKY HEADER LOGIC */
+  // New state for year level, schedule, and time
+  const [yearLevel, setYearLevel] = useState("");
+  const [selectedDays, setSelectedDays] = useState([]);
+  const [timeSchedule, setTimeSchedule] = useState("");
+
+  /* 📹 STICKY HEADER LOGIC */
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -71,6 +76,22 @@ const ProfCreateClassroomSpace = () => {
     "/src/assets/HomePage/Spaces-Cover/space-board.jpg",
   ];
 
+  const daysOfWeek = [
+    { label: "M", value: "Monday" },
+    { label: "T", value: "Tuesday" },
+    { label: "W", value: "Wednesday" },
+    { label: "THU", value: "Thursday" },
+    { label: "F", value: "Friday" },
+    { label: "SAT", value: "Saturday" },
+    { label: "SUN", value: "Sunday" },
+  ];
+
+  const handleDayToggle = (day) => {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  };
+
   const handleCreateCourseSpace = async () => {
     if (spaceName.trim()) {
       try {
@@ -78,7 +99,10 @@ const ProfCreateClassroomSpace = () => {
         const spaceData = {
           space_name: spaceName,
           space_settings: spaceSettings.current,
-          cover_image: coverImage
+          cover_image: coverImage,
+          year_level: yearLevel,
+          schedule_days: selectedDays,
+          schedule_time: timeSchedule
         };
 
         // Call the API
@@ -92,6 +116,9 @@ const ProfCreateClassroomSpace = () => {
           // Reset form
           setSpaceName("");
           setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
+          setYearLevel("");
+          setSelectedDays([]);
+          setTimeSchedule("");
           navigator(`/prof/space/${space_uuid}/${spaceName}`)
         } else {
           alert(result.message || "Failed to create space. Please try again.");
@@ -192,7 +219,7 @@ const ProfCreateClassroomSpace = () => {
       {/* ================= MAIN CONTENT ================= */}
       <div className="flex-1 flex flex-col">
 
-        {/* 🔹 MOBILE + TABLET STICKY HEADER */}
+        {/* 📹 MOBILE + TABLET STICKY HEADER */}
         <div
           className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
@@ -207,14 +234,15 @@ const ProfCreateClassroomSpace = () => {
           <h1 className="text-xl font-bold">Create Classroom Space</h1>
         </div>
 
-        {/* 🔹 Spacer for fixed header */}
+        {/* 📹 Spacer for fixed header */}
         <div className="lg:hidden h-16" />
 
         {/* ================= PAGE CONTENT ================= */}
-        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
-          <h1 className="hidden lg:block text-4xl font-bold text-center mb-6 lg:mb-10">Create New Classroom Space, Here!</h1>
+        <div className="flex-1 p-4 lg:p-10 overflow-y-auto flex items-center justify-center">
+          <div className="w-full max-w-4xl">
+            <h1 className="hidden lg:block text-4xl font-bold text-center mb-6 lg:mb-10">Create New Classroom Space, Here!</h1>
 
-          <div className="bg-[#2A2A2A] rounded-xl p-4 lg:p-6 w-full mx-auto max-w-4xl">
+            <div className="bg-[#2A2A2A] rounded-xl p-4 lg:p-6 w-full mx-auto">
 
           {/* 🔵 TWITTER-STYLE CROP MODAL */}
           {isCropping && (
@@ -385,6 +413,58 @@ const ProfCreateClassroomSpace = () => {
             />
           </div>
 
+          {/* Year Level Dropdown */}
+          <div className="mt-6">
+            <label className="block text-sm mb-1">Year Level:</label>
+            <select
+              value={yearLevel}
+              onChange={(e) => setYearLevel(e.target.value)}
+              className="w-full bg-white text-black p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+            >
+              <option value="">Select year level</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+
+          {/* Schedule Days */}
+          <div className="mt-6">
+            <label className="block text-sm mb-2">Schedule Days:</label>
+            <div className="flex flex-wrap gap-2">
+              {daysOfWeek.map((day) => (
+                <button
+                  key={day.value}
+                  onClick={() => handleDayToggle(day.value)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    selectedDays.includes(day.value)
+                      ? "bg-[#007AFF] text-white"
+                      : "bg-[#3E3E3E] text-gray-300 hover:bg-[#4A4A4A]"
+                  }`}
+                >
+                  {day.label}
+                </button>
+              ))}
+            </div>
+            {selectedDays.length > 0 && (
+              <p className="text-xs text-gray-400 mt-2">
+                Selected: {selectedDays.join(", ")}
+              </p>
+            )}
+          </div>
+
+          {/* Time Schedule */}
+          <div className="mt-6">
+            <label className="block text-sm mb-1">Time Schedule:</label>
+            <InputField
+              placeholder="e.g., 8:00-10:00 AM"
+              value={timeSchedule}
+              onChange={(e) => setTimeSchedule(e.target.value)}
+              style={{ width: "100%", backgroundColor: "#ffffff" }}
+            />
+          </div>
+
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
             <button 
@@ -400,8 +480,9 @@ const ProfCreateClassroomSpace = () => {
           </div>
 
         </div>
+          </div>
+        </div>
       </div>
-    </div>
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}

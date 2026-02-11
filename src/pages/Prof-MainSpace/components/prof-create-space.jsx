@@ -5,8 +5,10 @@ import InputField from "../../component/InputField";
 import Button from "../../component/Button";
 import { X } from "lucide-react";
 import Logout from "../../component/logout";
+import { useNavigate } from "react-router";
 
 const ProfCreateSpace = () => {
+  const navigator = useNavigate();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [spaceName, setSpaceName] = useState("");
@@ -354,7 +356,7 @@ const ProfCreateSpace = () => {
           <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
             <button 
               className="bg-[#3E3E3E] px-6 py-2 rounded-lg hover:bg-[#4A4A4A] text-xs w-full sm:w-auto"
-              onClick={() => window.location.href = '/prof-main-space'}
+              onClick={() => navigator(-1)}
             >
               Cancel
             </button>
