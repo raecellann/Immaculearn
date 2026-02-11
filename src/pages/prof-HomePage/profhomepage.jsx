@@ -368,14 +368,7 @@ const ProfHomePage = () => {
             </div>
 
             {/* Articles Section */}
-            <div className="mb-8">
-              <h2 className="text-lg sm:text-xl font-semibold mb-3">Articles</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-[#1E242E] h-32 rounded-lg hover:bg-[#242B38] transition"></div>
-                ))}
-              </div>
-            </div>
+            <ArticlesScrape />
           </div>
 
           {/* RIGHT CONTENT - Task Deployed (Desktop Only - Sticky Sidebar) */}
