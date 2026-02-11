@@ -11,6 +11,8 @@ import ProfTaskPage from "../pages/Prof-Space/ProfTaskPage";
 import ProfFilesShared from "../pages/Prof-Space/ProfFilesShared";
 import ProfPeoplePage from "../pages/Prof-Space/ProfPeoplePage";
 import { SpaceProvider } from "../contexts/space/spaceContextProvider";
+
+import ProfCreateSpace from "../pages/Prof-MainSpace/components/prof-create-space.jsx";
 import { useUser } from "../contexts/user/useUser";
 import ProfSpacePage from "../pages/Prof-MainSpace/profmainspace.jsx";
 import ProfCreateClassroomSpace from "../pages/Prof-MainSpace/components/prof-create-classroom-space.jsx";
@@ -149,6 +151,16 @@ export const ProfRoutes = () => {
         element={
           <ProtectedRoute>
             <IndividualSpaceSettings />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/create/space"
+        element={
+          <ProtectedRoute>
+            <ProfCreateSpace />
           </ProtectedRoute>
         }
       />

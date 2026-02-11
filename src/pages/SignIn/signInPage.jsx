@@ -49,7 +49,6 @@ const LoginPage = () => {
 
 
 
-  
 
   const handleGmailLogin = async () => {
     const popup = window.open(
