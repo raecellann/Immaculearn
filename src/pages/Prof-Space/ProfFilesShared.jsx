@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router"; // Add useParams
 import ProfSidebar from "../component/profsidebar";
 import { FiFileText, FiMenu, FiX, FiUpload } from "react-icons/fi";
 import Logout from "../component/logout";
 
 const ProfFilesShared = () => {
   const navigate = useNavigate();
+  const { space_uuid, space_name } = useParams(); // Get params from URL
 
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -93,8 +94,10 @@ const ProfFilesShared = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
+        {/* <ProfSidebar onLogoutClick={() => setShowLogout(true)} /> */}
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
+      
 
       {/* ================= MOBILE OVERLAY ================= */}
       {mobileSidebarOpen && (
@@ -128,7 +131,7 @@ const ProfFilesShared = () => {
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold">CS Thesis 2 Space</h1>
+          <h1 className="text-xl font-bold">{space_name}</h1> {/* Use space_name from params */}
         </div>
 
         {/* HEADER SPACER */}
@@ -148,32 +151,38 @@ const ProfFilesShared = () => {
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">
-              CS Thesis 2 Space
+              {space_name} {/* Use space_name from params */}
             </h1>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs text-gray-400">(5 Members)</span>
+              <button className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition">
+                Manage Class
+              </button>
+            </div>
           </div>
 
           {/* ================= TABS ================= */}
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
-              <div className="flex space-x-4 sm:space-x-8 md:space-x-12 lg:space-x-16 xl:gap-[120px]">
-                <button
-                  className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof/spaces-thesis")}
+              <div className="flex justify-center space-x-12"> {/* Changed from flex space-x-... to justify-center space-x-12 */}
+                <button 
+                  onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}`)} 
+                  className="text-gray-400 hover:text-white transition"
                 >
                   Stream
                 </button>
-                <button
-                  className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof/spaces/tasks")}
+                <button 
+                  onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/tasks`)}
+                  className="text-gray-400 hover:text-white transition"
                 >
                   Tasks
                 </button>
-                <button className="text-white text-base sm:text-lg md:text-xl font-semibold pb-2 px-1 whitespace-nowrap bg-transparent">
-                  Files Shared
+                <button className="text-white font-semibold border-b-2 border-white pb-2">
+                  Files
                 </button>
-                <button
-                  className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof/spaces/people")}
+                <button 
+                  onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/people`)}
+                  className="text-gray-400 hover:text-white transition"
                 >
                   People
                 </button>

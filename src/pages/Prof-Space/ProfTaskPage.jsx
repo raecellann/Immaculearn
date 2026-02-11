@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router";
-import ProfSidebar from "../component/profsidebar";
+import { useNavigate, useParams } from "react-router";
+import { useTasks } from '../../hooks/useTasks'
+import { useUser } from "../../contexts/user/useUser";
+import { useSpace } from "../../contexts/space/useSpace";
 import {
   FiMenu,
   FiX,
@@ -12,9 +14,43 @@ import {
   FiFileText,
 } from "react-icons/fi";
 import Logout from "../component/logout";
+import ProfSidebar from "../component/profsidebar";
 
 const ProfTaskPage = () => {
   const navigate = useNavigate();
+
+  const { space_uuid, space_name } = useParams();
+  
+  const { user, isLoading } = useUser();
+  const { userSpaces, friendSpaces } = useSpace();
+  
+  /* ================= SPACE & OWNER LOGIC ================= */
+  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  const currentSpace = allSpaces.find(
+    (space) => space.space_uuid === space_uuid
+  );
+  
+  // Apply useTasks hook
+  const {
+    uploadedTasksQuery,
+    draftedTasksQuery,
+    uploadTaskMutation,
+    draftTaskMutation,
+    updateTaskStatusMutation
+  } = useTasks(currentSpace?.space_id);
+
+  const taskData = uploadedTasksQuery?.data || [];
+  const draftActivities = draftedTasksQuery?.data || [];
+  const isLoadingTasks = uploadedTasksQuery?.isLoading;
+  const isLoadingDrafts = draftedTasksQuery?.isLoading;
+  const tasksError = uploadedTasksQuery?.error;
+  const draftsError = draftedTasksQuery?.error;
+  
+  // Handle API response structure - data might be nested
+  const uploadedTask = Array.isArray(taskData) ? taskData : (taskData?.data || []);
+  const draftedTask = Array.isArray(draftActivities) ? draftActivities : (draftActivities?.data || []);
+
+
   const fileInputRef = useRef(null);
   const instructionRef = useRef(null);
 
@@ -333,70 +369,44 @@ const ProfTaskPage = () => {
     Missing: "border-[#FF5252] text-[#FF5252]",
   };
 
-  // Example tasks
-  const [tasks, setTasks] = useState([
-    {
-      name: "Review Thesis Papers ",
-      assignedTo: "All Students",
-      deadline: "April 20, 2025",
-      status: "In Progress",
-    },
-    {
-      name: "Grade OS Assignments ",
-      assignedTo: "Section A",
-      deadline: "April 18, 2025",
-      status: "Missing",
-    },
-    {
-      name: "Submit Midterm Grades ",
-      assignedTo: "All Sections",
-      deadline: "April 15, 2025",
-      status: "Done",
-    },
-    {
-      name: "Prepare Lecture Slides ",
-      assignedTo: "Section B",
-      deadline: "April 25, 2025",
-      status: "In Progress",
-    },
-    {
-      name: "Hold Office Hours ",
-      assignedTo: "All Students",
-      deadline: "April 22, 2025",
-      status: "In Progress",
-    },
-  ]);
 
   const [openIndex, setOpenIndex] = useState(null);
 
-  // Draft activities state
-  const [draftActivities, setDraftActivities] = useState([
-    {
-      name: "Research Paper Draft 📝",
-      deadline: "May 15, 2025",
-      assignedTo: "All Students",
-      status: "Draft",
-    },
-    {
-      name: "Lab Report Outline 🧪",
-      deadline: "May 20, 2025",
-      assignedTo: "Section A",
-      status: "Draft",
-    },
-  ]);
   const [openDraftIndex, setOpenDraftIndex] = useState(null);
 
   const handleStatusChange = (index, newStatus) => {
-    const updated = [...tasks];
-    updated[index].status = newStatus;
-    setTasks(updated);
+    const task = uploadedTask[index];
+    if (task && task.id) {
+      updateTaskStatusMutation.mutate(
+        { taskId: task.id, newStatus },
+        {
+          onSuccess: () => {
+            console.log(`Task ${task.id} status updated to ${newStatus}`);
+          },
+          onError: (error) => {
+            console.error("Failed to update task status:", error);
+          }
+        }
+      );
+    }
     setOpenIndex(null);
   };
 
   const handleDraftStatusChange = (index, newStatus) => {
-    const updated = [...draftActivities];
-    updated[index].status = newStatus;
-    setDraftActivities(updated);
+    const draft = draftedTask[index];
+    if (draft && draft.id) {
+      updateTaskStatusMutation.mutate(
+        { taskId: draft.id, newStatus },
+        {
+          onSuccess: () => {
+            console.log(`Draft ${draft.id} status updated to ${newStatus}`);
+          },
+          onError: (error) => {
+            console.error("Failed to update draft status:", error);
+          }
+        }
+      );
+    }
     setOpenDraftIndex(null);
   };
 
@@ -404,6 +414,7 @@ const ProfTaskPage = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
+        {/* <ProfSidebar onLogoutClick={() => setShowLogout(true)} /> */}
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
@@ -472,25 +483,24 @@ const ProfTaskPage = () => {
           {/* ================= TABS ================= */}
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
-              <div className="flex space-x-4 sm:space-x-8 md:space-x-12 lg:space-x-16 xl:gap-[120px]">
-                <button
-                  className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof/spaces-thesis")}
-                >
+              <div className="flex justify-center space-x-12">
+                <button onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}`)}>
                   Stream
                 </button>
-                <button className="text-white text-base sm:text-lg md:text-xl font-semibold pb-2 px-1 whitespace-nowrap bg-transparent">
+                <button className="font-semibold border-b-2 border-white pb-2">
                   Tasks
                 </button>
                 <button
-                  className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof/spaces/files")}
+                  onClick={() =>
+                    navigate(`/prof/space/${space_uuid}/${space_name}/files`)
+                  }
                 >
-                  Files Shared
+                  Files
                 </button>
                 <button
-                  className="text-gray-400 text-base sm:text-lg md:text-xl hover:text-white transition bg-transparent px-1 whitespace-nowrap"
-                  onClick={() => navigate("/prof/spaces/people")}
+                  onClick={() =>
+                    navigate(`/prof/space/${space_uuid}/${space_name}/people`)
+                  }
                 >
                   People
                 </button>
@@ -523,7 +533,7 @@ const ProfTaskPage = () => {
                   </tr>
                 </thead>
                   <tbody>
-                    {tasks.map((task, index) => (
+                    {uploadedTask?.map((task, index) => (
                       <tr
                         key={index}
                         className="border-b border-gray-700 hover:bg-[#1E222A]"
@@ -534,9 +544,9 @@ const ProfTaskPage = () => {
                               onClick={() =>
                                 setOpenIndex(openIndex === index ? null : index)
                               }
-                              className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.status]}`}
+                              className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.task_status]}`}
                             >
-                              {task.status} ▼
+                              {task.task_status} ▼
                             </button>
                             {openIndex === index && (
                               <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50 shadow-lg">
@@ -557,8 +567,15 @@ const ProfTaskPage = () => {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-4">{task.name}</td>
-                        <td className="py-3 px-4">{task.deadline}</td>
+                        <td className="py-3 px-4">{task.task_title}</td>
+                        <td className="py-3 px-4">
+                          {new Date(task.task_due).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "2-digit",
+                          })}
+                        </td>
+
                         <td className="py-3 px-4">
                           <a
                             href="/prof-task-view"
@@ -575,7 +592,7 @@ const ProfTaskPage = () => {
 
               {/* MOBILE / TABLET CARDS */}
               <div className="md:hidden space-y-4">
-                {tasks.map((task, index) => (
+                {uploadedTask?.map((task, index) => (
                   <div
                     key={index}
                     className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
@@ -644,7 +661,7 @@ const ProfTaskPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {draftActivities.map((draft, index) => (
+                    {draftedTask?.map((draft, index) => (
                       <tr
                         key={index}
                         className="border-b border-gray-700 hover:bg-[#1E222A]"
@@ -655,9 +672,15 @@ const ProfTaskPage = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          {draft.name}
+                          {draft.task_title}
                         </td>
-                        <td className="py-3 px-4">{draft.deadline}</td>
+                        <td className="py-3 px-4">
+                          {new Date(draft.task_due).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "2-digit",
+                          })}
+                        </td>
                         <td className="py-3 px-4">
                           <a
                             href="/prof-task-view"
@@ -674,13 +697,13 @@ const ProfTaskPage = () => {
 
               {/* MOBILE CARDS - SHOWN ON MOBILE */}
               <div className="md:hidden space-y-4">
-                {draftActivities.map((draft, index) => (
+                {draftedTask?.map((draft, index) => (
                   <div
                     key={index}
                     className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
                   >
                     <div className="flex justify-between items-center mb-3">
-                      <p className="text-sm font-semibold">{draft.name}</p>
+                      <p className="text-sm font-semibold">{draft.task_title}</p>
                       <span className="px-3 py-1 rounded-full bg-black text-xs border-2 border-gray-500 text-gray-400 font-bold">
                         Draft
                       </span>
@@ -688,7 +711,7 @@ const ProfTaskPage = () => {
 
                     <p className="text-xs text-gray-400">
                       Deadline:{" "}
-                      <span className="text-white">{draft.deadline}</span>
+                      <span className="text-white">{draft.task_due}</span>
                     </p>
 
                     <div className="mt-3 pt-3 border-t border-gray-700">
