@@ -17,6 +17,7 @@ import Setting from "../pages/Settings/settings.jsx";
 import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionpage.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
+import TaskViewPage from "../pages/Task-View/TaskViewPage.jsx";
 
 const ChatRouteWrapper = () => {
 
@@ -52,6 +53,13 @@ export const StudentRoutes = [
     path: "/task",
     element: <TaskPage />,
   },
+  {
+    key: "/task",
+    path: "/task/:space_uuid/:space_name",
+    element: <TaskViewPage />,
+  },
+
+
   {
     key: "/notifications",
     path: "/notifications",

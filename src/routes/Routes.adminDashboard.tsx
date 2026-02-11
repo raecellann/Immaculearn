@@ -2,7 +2,7 @@ import { Route } from "react-router";
 import AdminDashboard from "../pages/admin-dashboard/admindashboard.jsx";
 import AdminStudents from "../pages/admin-students/adminstudents.jsx";
 import AdminTeachers from "../pages/admin-teachers/adminteachers.jsx";
-import AdminLogin from "../pages/admin-login/adminLogin.jsx";
+import AdminLogin from "../pages/admin-login/adminlogin.jsx";
 
 
 export const AdminDataRoutes = [
