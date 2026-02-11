@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import Sidebar from "../component/sidebar";
 import { Menu, User, Star, Settings as SettingsIcon } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
+import ProfSidebar from "../component/profsidebar";
 
 const SettingsSelectionPage = () => {
   const { user } = useUser();
@@ -40,7 +40,7 @@ const SettingsSelectionPage = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white">
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -57,7 +57,7 @@ const SettingsSelectionPage = () => {
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN CONTENT */}

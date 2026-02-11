@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import Sidebar from "../component/sidebar";
 import { Menu, Bell, Lock, Globe, Users, FileText, Settings as SettingsIcon, ChevronRight, Plus } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import Logout from "../component/logout";
+import ProfSidebar from "../component/profsidebar";
 
 const SpaceSettingsPage = () => {
   const { user } = useUser();
@@ -53,7 +53,7 @@ const SpaceSettingsPage = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white">
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -70,7 +70,7 @@ const SpaceSettingsPage = () => {
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN CONTENT */}
