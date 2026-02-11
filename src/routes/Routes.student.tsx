@@ -17,7 +17,7 @@ import Setting from "../pages/Settings/settings.jsx";
 import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionpage.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
-import TaskViewPage from "../pages/Task-View/TaskViewPage.jsx";
+import TaskViewPage from "../pages/Task/components/TaskViewPage.jsx";
 
 const ChatRouteWrapper = () => {
 
