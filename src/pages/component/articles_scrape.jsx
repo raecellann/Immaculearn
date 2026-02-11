@@ -18,21 +18,6 @@ const ArticlesScrape = () => {
     });
   }, []);
 
-  const saveArticlesToJSON = (articlesData) => {
-    const dataToSave = {
-      lastUpdated: new Date().toISOString(),
-      articles: articlesData
-    };
-    
-    // Save to localStorage for immediate use
-    try {
-      localStorage.setItem('scrapedArticles', JSON.stringify(dataToSave));
-      console.log('Articles saved to localStorage:', dataToSave);
-    } catch (error) {
-      console.error('Error saving articles to localStorage:', error);
-    }
-  };
-
   const loadArticlesFromJSON = async (category = 'all') => {
     try {
       // Try to read from category-specific JSON file
@@ -71,8 +56,8 @@ const ArticlesScrape = () => {
           setMostRecentArticle(data.results[0]);
           setArticles(data.results);
           
-          // Save articles to JSON file
-          saveArticlesToJSON(data.results);
+          // Save articles to JSON file (data is already saved by fetch script)
+          console.log(`Loaded ${data.results.length} ${category} articles from API`);
         }
         setLoading(false);
       })

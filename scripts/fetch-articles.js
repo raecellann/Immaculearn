@@ -5,7 +5,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const apiKey = 'CgkxxT7s9PckcmY15CVedbNMJIe0zAP1';
+// Load API key from environment variables
+const apiKey = process.env.NYTIMES_API_KEY;
 
 const categories = ['all', 'world', 'business', 'technology', 'science'];
 
