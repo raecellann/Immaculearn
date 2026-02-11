@@ -56,8 +56,7 @@ export const StudentRoutes = [
     element: <TaskPage />,
   },
   {
-<<<<<<< HEAD
-=======
+
     key: "/task",
     path: "/task/:space_uuid/:space_name",
     element: <ViewAllTaskPage />,
@@ -70,7 +69,6 @@ export const StudentRoutes = [
 
 
   {
->>>>>>> 13c2b9cf3625d3f99ca5602e166debf252c7f497
     key: "/notifications",
     path: "/notifications",
     element: <NotificationPage />,
