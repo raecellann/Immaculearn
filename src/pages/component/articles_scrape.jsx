@@ -24,13 +24,19 @@ const isSameDay = (d1, d2) => {
 const fetchArticles = async (category) => {
   // 1. Try JSON first
   try {
-    const response = await fetch(`/data/articles-${category}.json`);
+    const response = await fetch(`/src/data/articles-${category}.json`);
+
+    console.log(response)
     if (response.ok) {
       const data = await response.json();
-      const lastUpdated = new Date(data.lastUpdated);
-      const now = new Date();
 
-      if (isSameDay(lastUpdated, now) && data.articles?.length > 0) {
+      console.log(data)
+      const lastUpdated = new Date(data.lastUpdated).toLocaleDateString();
+
+      const now = new Date().toLocaleDateString();
+      console.log(lastUpdated, now)
+
+      if ((lastUpdated === now) && data.articles?.length > 0) {
         return data.articles;
       }
     }
