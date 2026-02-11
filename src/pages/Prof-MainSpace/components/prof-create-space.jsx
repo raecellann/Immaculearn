@@ -6,16 +6,20 @@ import Button from "../../component/Button";
 import { X } from "lucide-react";
 import Logout from "../../component/logout";
 import { useNavigate } from "react-router";
+import { useSpace } from "../../../contexts/space/useSpace";
+import { toast } from "react-toastify";
 
 const ProfCreateSpace = () => {
+  const { createSpace } = useSpace();
   const navigator = useNavigate();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [spaceName, setSpaceName] = useState("");
+  const spaceSettings = useRef({space_cover: null, max_member: 50});
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
 
   // Cover image state
-  const [coverImage, setCoverImage] = useState("/src/assets/HomePage/spaces-cover/cover1.jpg");
+  const [coverImage, setCoverImage] = useState("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
   const [uploadedImage, setUploadedImage] = useState(null);
 
   // Cropper states
@@ -63,10 +67,44 @@ const ProfCreateSpace = () => {
     "/src/assets/HomePage/spaces-cover/space-board.jpg",
   ];
 
-  const handleCreateSpace = () => {
+  // const handleCreateSpace = () => {
+  //   if (spaceName.trim()) {
+  //     alert(`Space "${spaceName}" created!`);
+  //     setSpaceName("");
+  //   } else {
+  //     alert("Please enter a space name.");
+  //   }
+  // };
+
+  const handleCreateSpace = async () => {
     if (spaceName.trim()) {
-      alert(`Space "${spaceName}" created!`);
-      setSpaceName("");
+      try {
+        // Prepare data for API
+        const spaceData = {
+          space_name: spaceName,
+          space_settings: spaceSettings.current,
+          cover_image: coverImage,
+        };
+
+        // Call the API
+        const result = await createSpace(spaceData);
+
+        if (result.success) {
+          const space_uuid = result.space_uuid;
+          toast.success(`Course Space "${spaceName}" created successfully!`)
+          // alert(`Space "${spaceName}" created successfully!`);
+          
+          // Reset form
+          setSpaceName("");
+          setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
+          navigator(`/prof/space/${space_uuid}/${spaceName}`)
+        } else {
+          alert(result.message || "Failed to create space. Please try again.");
+        }
+      } catch (error) {
+        console.error("Create space error:", error);
+        alert("An error occurred while creating the space.");
+      }
     } else {
       alert("Please enter a space name.");
     }
