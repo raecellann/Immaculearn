@@ -34,7 +34,7 @@ const LoginPage = () => {
         navigate(`/prof/home`);
       } else if (data.role === "admin") {
         navigate(`/admin-dashboard`);
-      }
+      } 
 
     } catch (err) {
       toast.error("Login failed");

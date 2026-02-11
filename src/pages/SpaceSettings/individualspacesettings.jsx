@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
+import ProfSidebar from "../component/profsidebar";
 import { Menu, ArrowLeft, Users, Settings as SettingsIcon, Link, Trash2, UserX } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -85,11 +86,17 @@ const IndividualSpaceSettings = () => {
     navigate('/space-settings');
   };
 
+
+  
+  const ActiveSidebar =
+    user?.role === "professor" ? ProfSidebar : Sidebar;
+
+
   if (!currentSpace) {
     return (
       <div className="flex min-h-screen bg-[#161A20] text-white">
         <div className="hidden lg:block">
-          <Sidebar onLogoutClick={() => setShowLogout(true)} />
+          <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -111,7 +118,7 @@ const IndividualSpaceSettings = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white">
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -128,7 +135,7 @@ const IndividualSpaceSettings = () => {
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN CONTENT */}
