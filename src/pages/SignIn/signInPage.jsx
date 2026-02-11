@@ -8,7 +8,7 @@ import { useUser } from "../../contexts/user/useUser";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 
 const LoginPage = () => {
-  const {isAuthenticated, user, isLoading, checkAuth} = useUser();
+  const {isAuthenticated, user, isLoading, checkAuth , login} = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("")
@@ -16,7 +16,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
