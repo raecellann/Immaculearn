@@ -15,7 +15,6 @@ import { SpaceProvider } from "../contexts/space/spaceContextProvider";
 import ProfCreateSpace from "../pages/Prof-MainSpace/components/prof-create-space.jsx";
 import { useUser } from "../contexts/user/useUser";
 import ProfSpacePage from "../pages/Prof-MainSpace/profmainspace.jsx";
-import ProfCreateSpace from "../pages/Prof-MainSpace/components/prof-create-space.jsx";
 import ProfCreateClassroomSpace from "../pages/Prof-MainSpace/components/prof-create-classroom-space.jsx";
 import ProfNotificationPage from "../pages/prof-Notifications/profnotification.jsx";
 import ProfListActivityPage from "../pages/prof-ListActivities/proflistactivitypage.jsx";
