@@ -25,9 +25,9 @@ const AdminSidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin-dashboard" },
-    { icon: <Users size={20} />, label: "Students", path: "/admin-students" },
-    { icon: <GraduationCap size={20} />, label: "Teachers", path: "/admin-teachers" },
+    { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin/dashboard" },
+    { icon: <Users size={20} />, label: "Students", path: "/admin/students" },
+    { icon: <GraduationCap size={20} />, label: "Teachers", path: "/admin/teachers" },
   ];
 
   const privateItems = [];

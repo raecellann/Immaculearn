@@ -66,11 +66,11 @@ const fetchTeachers = async () => {
 
   /* NAVIGATION FUNCTIONS */
   const navigateToTeachers = () => {
-    navigate('/admin-teachers');
+    navigate('/admin/teachers');
   };
 
   const navigateToStudents = () => {
-    navigate('/admin-students');
+    navigate('/admin/students');
   };
 
   /* SCROLL BEHAVIOR (RESTORED) */

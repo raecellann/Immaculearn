@@ -28,11 +28,11 @@ const AdminTeachers = () => {
 
   /* NAVIGATION FUNCTIONS */
   const navigateToDashboard = () => {
-    navigate('/admin-dashboard');
+    navigate('/admin/dashboard');
   };
 
   const navigateToStudents = () => {
-    navigate('/admin-students');
+    navigate('/admin/students');
   };
 
   useEffect(() => {
