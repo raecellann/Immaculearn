@@ -394,18 +394,7 @@ const UserPage = () => {
                   <div className="mt-4 border-t border-gray-300" />
 
                   {/* FOOTER */}
-                  <div className="mt-4 flex flex-col sm:flex-row justify-between gap-3 sm:items-center">
-                    <div className="flex flex-wrap gap-4 sm:gap-6 text-sm text-gray-600">
-                      <button className="flex items-center gap-1.5 sm:gap-2 bg-white hover:text-black px-2 py-1.5 sm:px-0 sm:py-0">
-                        <FiFileText className="flex-shrink-0" />
-                        <span className="text-xs sm:text-sm">Add File</span>
-                      </button>
-                      <button className="flex items-center gap-1.5 sm:gap-2 bg-white hover:text-black px-2 py-1.5 sm:px-0 sm:py-0">
-                        <FiLink className="flex-shrink-0" />
-                        <span className="text-xs sm:text-sm">Add Link</span>
-                      </button>
-                    </div>
-
+                  <div className="mt-4 flex justify-end">
                     <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
                       <button
                         onClick={() => {

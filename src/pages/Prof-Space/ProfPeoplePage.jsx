@@ -1,11 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
 import { FiMenu, FiX, FiChevronLeft } from "react-icons/fi";
 import Logout from "../component/logout";
+import { useSpace } from "../../contexts/space/useSpace";
+import { useUser } from "../../contexts/user/useUser";
 
 const ProfPeoplePage = () => {
+  const { user } = useUser();
+  const { userSpaces, friendSpaces } = useSpace();
   const navigate = useNavigate();
+  const { space_uuid } = useParams();
 
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -28,21 +33,27 @@ const ProfPeoplePage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Admin info
-  const admin = {
-    name: "Joseph Bernard Reyes",
-    src: "/src/assets/HomePage/jober.jpg",
+  // Combine user and friend spaces
+  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  const activeSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
+
+  // Handle not found
+  if (!activeSpace) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-white bg-[#161A20]">
+        <p className="text-xl">Space not found.</p>
+      </div>
+    );
+  }
+
+  // Separate creator/admin and other members
+  const creator = activeSpace.members.find((m) => m.role === "creator") || {
+    account_id: user.id,
+    full_name: "You",
+    profile_pic: user.profile_pic,
+    role: "creator"
   };
-
-  // Members with individual profile pictures
-  const initialMembers = [
-    { name: "Zeldrick Jesus Delos Santos", src: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1760087780/zj_lswba7.jpg" },
-    { name: "Raecell Ann Galvez", src: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg" },
-    { name: "Nathaniel Faborada", src: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg" },
-    { name: "Wilson Esmobe", src: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990149/wilson_gjdkdm.jpg" },
-  ];
-
-  const [members] = useState(initialMembers);
+  const otherMembers = activeSpace.members.filter((m) => m.role !== "creator");
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
@@ -104,7 +115,7 @@ const ProfPeoplePage = () => {
           <div className="max-w-4xl mx-auto mb-8">
             <div className="flex items-center justify-between">
               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold underline underline-offset-4">
-                People – CS Thesis 2 Space
+                People – {activeSpace.space_name}
               </h1>
 
               <button
@@ -119,35 +130,41 @@ const ProfPeoplePage = () => {
 
           {/* ================= PEOPLE CONTENT ================= */}
           <div className="max-w-4xl mx-auto space-y-8">
-            {/* ADMIN */}
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Admin</h2>
-              <div className="border-t border-gray-700 pt-4">
-                <div className="flex items-center gap-4">
-                  <img
-                    src={admin.src}
-                    alt={admin.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <span className="font-medium">{admin.name}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* MEMBERS */}
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Members</h2>
-              <div className="border-t border-gray-700 pt-4 space-y-4">
-                {members.map((member, index) => (
-                  <div key={index} className="flex items-center gap-4">
+            {/* CREATOR / ADMIN SECTION */}
+            {creator && (
+              <div>
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">Adviser</h2>
+                <div className="border-t border-gray-700 pt-4">
+                  <div className="flex items-center gap-4">
                     <img
-                      src={member.src}
-                      alt={member.name}
+                      src={creator.profile_pic || "/src/assets/default-avatar.jpg"}
+                      alt={creator.full_name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
-                    <span className="text-sm sm:text-base">{member.name}</span>
+                    <span className="font-medium">{creator.full_name}</span>
                   </div>
-                ))}
+                </div>
+              </div>
+            )}
+
+            {/* MEMBERS SECTION */}
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Students</h2>
+              <div className="border-t border-gray-700 pt-4 space-y-4">
+                {otherMembers.length > 0 ? (
+                  otherMembers.map((member) => (
+                    <div key={member.account_id} className="flex items-center gap-4">
+                      <img
+                        src={member.profile_pic || "/src/assets/default-avatar.jpg"}
+                        alt={member.full_name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <span className="text-sm sm:text-base">{member.account_id !== user.id ? member.full_name : "You"}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400">No members yet.</p>
+                )}
               </div>
             </div>
           </div>
