@@ -11,7 +11,7 @@ import TaskViewPage from "../pages/Task/components/TaskViewPage.jsx";
 
 import NotificationPage from "../pages/Notifications/notification.jsx";
 import FilePage from "../pages/Files/files.jsx";
-import ViewFilePage from "../pages/ViewFiles/ViewFiles.jsx";
+import ViewFilePage from "../pages/Files/ViewFiles.jsx";
 import ViewAllFilesPage from "../pages/ViewAllFiles/view-all-files";
 
 import ChatList from "../pages/User_chats/user_chats";
@@ -20,6 +20,7 @@ import Setting from "../pages/Settings/settings.jsx";
 import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionpage.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
+import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
 
 const ChatRouteWrapper = () => {
 
@@ -120,6 +121,16 @@ export const StudentRoutes = [
     element: (
       <ProtectedRoute>
         <IndividualSpaceSettings />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    key: "open-document",
+    path: "/space/:space_uuid/:space_name/:task_id/:task_title/:file_uuid/:file_name",
+    element: (
+      <ProtectedRoute>
+        <CreateDocumentPage />
       </ProtectedRoute>
     ),
   },

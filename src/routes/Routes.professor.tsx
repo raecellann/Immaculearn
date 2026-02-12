@@ -26,6 +26,7 @@ import ProfilePage from "../pages/AccountSettings/accountsettingspage.jsx";
 import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionpage.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
+import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
 
 export const ProfRoutes = () => {
   const { user } = useUser();
@@ -202,6 +203,14 @@ export const ProfRoutes = () => {
         element={
           <SpaceProvider>
               <ProfPeoplePage />
+          </SpaceProvider>
+        }
+      />
+      <Route
+        path="/space/:space_uuid/:space_name/:task_id/:task_title/:file_uuid/:file_name"
+        element={
+          <SpaceProvider>
+              <CreateDocumentPage />
           </SpaceProvider>
         }
       />

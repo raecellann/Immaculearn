@@ -6,7 +6,7 @@ import { AuthRoutes } from "./routes/Routes.auth";
 import { StudentRoutes } from "./routes/Routes.student";
 import { SpaceRoutes } from "./routes/Routes.space";
 import { AdminDataRoutes } from "./routes/Routes.adminDashboard.tsx";
-import { AdminRoutes } from "./routes/Routes.admin";
+// import { AdminRoutes } from "./routes/Routes.admin";
 import { ProfRoutes } from "./routes/Routes.professor.js";
 import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
 import { UserProvider } from "./contexts/user/userContextProvider.tsx";
@@ -87,7 +87,7 @@ export default function Routes() {
           </UserProvider>
         } />
 
-        {AdminRoutes.map(route => (
+        {/* {AdminRoutes.map(route => (
           <Route
             key={route.key}
             path={route.props.path}
@@ -99,7 +99,7 @@ export default function Routes() {
               </UserProvider>
             }
           />
-        ))}
+        ))} */}
 
         {AdminDataRoutes.map(route => (
           <Route
