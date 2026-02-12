@@ -46,16 +46,12 @@ const UserPeoplePage = () => {
         {/* COVER IMAGE */}
         <div className="relative">
           <img
-            src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b"
+            src="/src/assets/UserSpace/cover.png"
             alt="Space Cover"
             className="w-full h-52 object-cover"
           />
 
-          {/* SPACE TITLE */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-black px-10 py-3 rounded-b-xl text-2xl font-extrabold">
-            {activeSpace.space_name}
-          </div>
-        </div>
+                  </div>
 
         {/* PAGE HEADER */}
         <div className="px-10 py-6">
