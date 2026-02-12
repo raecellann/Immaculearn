@@ -52,16 +52,16 @@ const LoginPage = () => {
     const messageHandler = async (event) => {
       // Verify the message is from our domain
       if (event.origin !== window.location.origin) return;
-
-      await checkAuth();
+      
       if (event.data.type === 'OAUTH_SUCCESS') {
         const { role, needsOnboarding, token } = event.data;
-
+        
         if (needsOnboarding && token) {
           // 🔐 store tempToken for onboarding
           sessionStorage.setItem("tempToken", token);
           navigate(`/onboarding?role=${role}`);
         } else {
+          await checkAuth();
           if (role === 'student') {
             navigate(`/home?role=${role}`);
           } else if (role === 'professor') {
@@ -131,15 +131,15 @@ const LoginPage = () => {
   }, [error]); // run only when `error` changes
 
 
-  useEffect(() => {
-    if (!isAuthenticated || !user?.role) return;
+  // useEffect(() => {
+  //   if (!isAuthenticated || !user?.role) return;
 
-    if (user.role === "student") {
-      navigate(`/home?role=${user.role}`);
-    } else if (user.role === "professor") {
-      navigate(`/prof/home?role=${user.role}`);
-    }
-  }, [isAuthenticated, user, navigate]);
+  //   if (user.role === "student") {
+  //     navigate(`/home?role=${user.role}`);
+  //   } else if (user.role === "professor") {
+  //     navigate(`/prof/home?role=${user.role}`);
+  //   }
+  // }, [isAuthenticated, user, navigate]);
 
   if (isLoading) {
     return (
