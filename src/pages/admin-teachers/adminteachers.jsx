@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
-import { Upload, X, FileText, UserPlus } from "lucide-react";
+import { Menu, Upload, X, FileText, UserPlus } from "lucide-react";
 import * as XLSX from "xlsx";
+import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
 import { toast } from "react-toastify";
 
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showLogout, setShowLogout] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -18,8 +20,22 @@ const AdminTeachers = () => {
   const [newTeacher, setNewTeacher] = useState({ email: "" });
 
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
+
+  /* 🔹 STICKY HEADER STATE */
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
 
   /* ================= FETCH TEACHERS ================= */
+
+  /* NAVIGATION FUNCTIONS */
+  const navigateToDashboard = () => {
+    navigate('/admin/dashboard');
+  };
+
+  const navigateToStudents = () => {
+    navigate('/admin/students');
+  };
 
   useEffect(() => {
     const fetchTeachers = async () => {
@@ -37,6 +53,24 @@ const AdminTeachers = () => {
     };
 
     fetchTeachers();
+  }, []);
+
+  /* 🔹 SCROLL BEHAVIOR */
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   /* ================= SEARCH ================= */
@@ -141,110 +175,231 @@ const AdminTeachers = () => {
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-      <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
 
-      <div className="flex-1 p-8">
+      {/* DESKTOP SIDEBAR */}
+      <div className="hidden lg:block">
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
 
-        <h1 className="text-2xl font-bold mb-6">Teachers List</h1>
+      {/* MOBILE OVERLAY */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
 
-        {/* ACTION BUTTONS */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="relative w-64">
-            <input
-              type="text"
-              placeholder="Search teacher..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
-            />
-            <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
-          </div>
+      {/* MOBILE SIDEBAR */}
+      <div
+        className={`fixed top-0 left-0 h-screen w-64 z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg"
-            >
-              <UserPlus size={18} />
-              Add Teacher
-            </button>
+      {/* MAIN CONTENT */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
 
-            <button
-              onClick={() => setShowImportModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
-            >
-              <Upload size={18} />
-              Import Teacher
-            </button>
-          </div>
+        {/* MOBILE HEADER */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
+          <button
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Teachers</h1>
         </div>
 
-        {/* TABLE */}
-        <div className="bg-[#1E242E] p-6 rounded-xl">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-gray-400 border-b border-gray-700">
-                <th className="py-3">Name</th>
-                <th className="py-3">Email</th>
-                <th className="py-3">Course</th>
-                <th className="py-3">Year</th>
-                <th className="py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTeachers.map((teacher) => (
-                <tr key={teacher.id} className="border-b border-gray-800">
-                  <td className="py-4">{teacher.name}</td>
-                  <td className="py-4">{teacher.email}</td>
-                  <td className="py-4">
-                    <button
-                      onClick={() => setShowDeleteConfirm(teacher.id)}
-                      className="px-3 py-1 bg-red-600 hover:bg-red-700 text-sm rounded-lg"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* HEADER SPACER */}
+        <div className="lg:hidden h-16"></div>
 
-          {filteredTeachers.length === 0 && (
-            <p className="text-gray-400 text-center mt-4">
-              No teachers found
-            </p>
-          )}
+        {/* CONTENT */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+
+          {/* DESKTOP TITLE */}
+          <h1 className="hidden lg:block text-2xl font-bold mb-6">
+            Teachers List
+          </h1>
+          
+          {/* DESKTOP BUTTONS */}
+          <div className="hidden lg:flex justify-between items-center mb-6">
+            <div className="relative w-64">
+              <input
+                type="text"
+                placeholder="Search teacher..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+              >
+                <UserPlus className="w-4 h-4" />
+                Add Teacher
+              </button>
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Import Excel
+              </button>
+            </div>
+          </div>
+
+          {/* MOBILE SEARCH */}
+          <div className="lg:hidden mb-4">
+            <div className="relative max-w-sm">
+              <input
+                type="text"
+                placeholder="Search teacher..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            </div>
+          </div>
+
+          {/* MOBILE IMPORT BUTTON */}
+          <div className="lg:hidden mb-4 flex gap-3">
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
+            >
+              <UserPlus className="w-4 h-4" />
+              Add Teacher
+            </button>
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
+            >
+              <Upload className="w-4 h-4" />
+              Import Excel
+            </button>
+          </div>
+
+          {/* MOBILE / TABLET */}
+          <div className="flex flex-col gap-4 lg:hidden">
+            {filteredTeachers.map((teacher) => (
+              <div
+                key={teacher.id}
+                className="bg-[#1E242E] p-5 rounded-xl border border-white/10"
+              >
+                <h2 className="font-semibold text-base mb-1">
+                  {teacher.name}
+                </h2>
+                <p className="text-sm text-gray-400 mb-1">
+                  {teacher.email}
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowDeleteConfirm(teacher.id)}
+                    className="flex items-center gap-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* DESKTOP TABLE */}
+          <div className="hidden lg:block bg-[#1E242E] p-6 rounded-xl">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-gray-400 border-b border-gray-700">
+                  <th className="py-3">Name</th>
+                  <th className="py-3">Email</th>
+                  <th className="py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTeachers.map((teacher) => (
+                  <tr
+                    key={teacher.id}
+                    className="border-b border-gray-800 hover:bg-[#242B38]"
+                  >
+                    <td className="py-4 text-sm">{teacher.name}</td>
+                    <td className="py-4 text-sm">{teacher.email}</td>
+                    <td className="py-4">
+                      <button
+                        onClick={() => setShowDeleteConfirm(teacher.id)}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {filteredTeachers.length === 0 && (
+              <p className="text-gray-400 text-center mt-4">
+                No teachers found
+              </p>
+            )}
+          </div>
+
         </div>
       </div>
 
-      {/* ADD MODAL */}
+      {/* ADD TEACHER MODAL */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-[#1E242E] p-6 rounded-xl w-96">
-            <h2 className="text-xl mb-4">Add Teacher</h2>
-
-            <input
-              type="email"
-              value={newTeacher.email}
-              onChange={(e) =>
-                setNewTeacher({ email: e.target.value })
-              }
-              className="w-full px-3 py-2 bg-[#242B38] rounded-lg mb-4"
-              placeholder="teacher@gmail.com"
-            />
-
-            <div className="flex justify-end gap-3">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white">Add New Teacher</h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 bg-gray-600 rounded-lg"
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Teacher Form */}
+            <div className="space-y-4">
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={newTeacher.email}
+                  onChange={(e) => setNewTeacher({ email: e.target.value })}
+                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  placeholder="teacher@gmail.com"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddTeacher}
-                className="px-4 py-2 bg-green-600 rounded-lg"
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
               >
-                Add
+                Add Teacher
               </button>
             </div>
           </div>
@@ -359,6 +514,33 @@ const AdminTeachers = () => {
         </div>
       )}
 
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Delete Teacher Account</h2>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this teacher account? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteTeacher(showDeleteConfirm)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
