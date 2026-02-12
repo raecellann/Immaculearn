@@ -3,10 +3,17 @@ import { useNavigate } from "react-router";
 import Sidebar from "../component/profsidebar";
 import Logout from "../component/logout";
 import Button from "../component/Button";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { prefixName } from "../../utils/prefixNameFormat";
+import { formatFullDate } from "../../utils/formatTime";
+import { getGreeting } from "../../utils/greetings";
+
+import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { SpaceCover } from "../component/spaceCover";
 
 const ProfSpacePage = () => {
+  const { user } = useUser();
   const { userSpaces, courseSpaces } = useSpace();
 
   console.log(courseSpaces)
@@ -209,7 +216,7 @@ const ProfSpacePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
               <div>
                 <h2 className="text-2xl font-bold text-[#60A5FA] mb-2">
-                  Good Morning, Sir Jober
+                  {getGreeting()}, {prefixName(capitalizeWords(user?.name?.split(" ")[0]), user?.gender) || "Professor"}
                 </h2>
                 <p className="text-gray-300 text-sm">
                   Meet your students and collaborate with them.
@@ -358,7 +365,7 @@ const ProfSpacePage = () => {
                       {space.space_name}
                     </h3>
                     <p className="text-gray-400 text-xs">
-                      {space.members?.length || 0} Students
+                      {space.members?.length -1 || 0} Students
                     </p>
                   </div>
                 </div>

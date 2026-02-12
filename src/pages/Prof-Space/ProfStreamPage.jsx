@@ -229,7 +229,7 @@ const ProfStreamPage = () => {
           <div className="hidden md:block mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-400">({(currentSpace?.members?.length) || 0} member(s))</span>
+              <span className="text-xs text-gray-400">({(currentSpace?.members?.length - 1) || 0} member(s))</span>
               {isOwnerSpace && (
                 <>
                   <button 
@@ -398,7 +398,7 @@ const ProfStreamPage = () => {
                   <div className="mt-4 border-t border-gray-300" />
 
                   {/* FOOTER */}
-                  <div className="mt-4 flex justify-end">
+                  <div className="mt-4 flex flex-col sm:flex-row justify-between gap-3 sm:items-center">
                     <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
                       <button
                         onClick={() => {

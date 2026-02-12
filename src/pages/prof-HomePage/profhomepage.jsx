@@ -12,20 +12,23 @@ import {
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { prefixName } from "../../utils/prefixNameFormat";
+import { formatFullDate } from "../../utils/formatTime";
+import { getGreeting } from "../../utils/greetings";
 import { SpaceCover } from "../component/spaceCover";
 import Logout from "../component/logout";
 import ArticlesScrape from "../component/articles_scrape";
 
 const ProfHomePage = () => {
   const { user } = useUser();
-  const { userSpaces = [], friendSpaces = [] } = useSpace();
+  const { userSpaces = [], courseSpaces = [] } = useSpace();
   const navigate = useNavigate();
 
-  const [currentDate, setCurrentDate] = useState('');
-  const [greeting, setGreeting] = useState('');
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [today, setToday] = useState(new Date());
+  // const [currentDate, setCurrentDate] = useState('');
+  // const [greeting, setGreeting] = useState('');
+  // const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  // const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  // const [today, setToday] = useState(new Date());
   const [slideIndexYourSpace, setSlideIndexYourSpace] = useState(0);
   const [slideIndexSpaces, setSlideIndexSpaces] = useState(0);
   const [showMenu, setShowMenu] = useState(null);
@@ -60,26 +63,10 @@ const ProfHomePage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    const now = new Date();
-    const month = now.toLocaleString('default', { month: 'long' });
-    const day = now.getDate().toString().padStart(2, '0');
-    const year = now.getFullYear();
-    const weekday = now.toLocaleString('default', { weekday: 'long' });
-    setCurrentDate(`${month} ${day}, ${year} (${weekday})`);
 
-    const hour = now.getHours();
-    if (hour < 12) setGreeting('Good Morning');
-    else if (hour < 18) setGreeting('Good Afternoon');
-    else setGreeting('Good Evening');
-
-    setCurrentMonth(now.getMonth());
-    setCurrentYear(now.getFullYear());
-    setToday(now);
-  }, []);
 
   const userSpaceUUIDs = new Set(userSpaces.map((s) => s.space_uuid));
-  const sharedSpaces = friendSpaces.filter((s) => !userSpaceUUIDs.has(s.space_uuid));
+  const sharedSpaces = courseSpaces.filter((s) => !userSpaceUUIDs.has(s.space_uuid));
 
   const cardsPerView = 3;
   const yourSlideCount = Math.max(1, Math.ceil(userSpaces.length / cardsPerView));
@@ -137,7 +124,7 @@ const ProfHomePage = () => {
               <h2 className="text-xl sm:text-2xl font-bold text-white font-grotesque">
                 Get Productive Today!
               </h2>
-              <p className="text-gray-400 text-xs sm:text-sm font-inter">{currentDate}</p>
+              <p className="text-gray-400 text-xs sm:text-sm font-inter">{formatFullDate()}</p>
             </div>
 
             {/* Welcome Card */}
@@ -145,7 +132,7 @@ const ProfHomePage = () => {
               <div className="flex flex-col sm:flex-row justify-between gap-6">
                 <div>
                   <h1 className="text-lg sm:text-xl font-semibold text-[#B0C4FF] mb-2">
-                    {greeting}, {user?.name || "Professor"}
+                    {getGreeting()}, {prefixName(capitalizeWords(user?.name?.split(" ")[0]), user?.gender) || "Professor"}
                   </h1>
                   <p className="text-gray-300 mb-1">Manage your classes and collaborate with students.</p>
                   <p className="text-gray-400 mb-5">Create spaces or join existing ones.</p>
@@ -254,7 +241,7 @@ const ProfHomePage = () => {
                         {userSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
-                            onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
+                            onClick={() => navigate(`/prof/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
                             className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group"
                           >
                             <SpaceCover
@@ -311,16 +298,17 @@ const ProfHomePage = () => {
                     style={{ transform: `translateX(-${slideIndexSpaces * 100}%)` }}
                   >
                     {Array.from({ length: friendSlideCount }).map((_, idx) => (
-                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0">
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full">
                         {sharedSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
-                            className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative"
+                            onClick={() => navigate(`/prof/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
+                            className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group"
                           >
                             <SpaceCover
                               image={space.background_img || space.image}
                               name={space.space_name}
-                              className="w-full flex-shrink-0 aspect-[3/2]"
+                              className="w-full flex-shrink-0"
                             />
                             <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
                               <button
@@ -353,7 +341,7 @@ const ProfHomePage = () => {
                                 {capitalizeWords(space.space_name)}'s Space
                               </h3>
                               <p className="text-gray-400 text-xs mt-1">
-                                {space.members?.length || 0} Members
+                                {(space.members?.length -1) || 0} Students
                               </p>
                               <p className="text-gray-500 text-xs mt-1">Opened just now</p>
                             </div>

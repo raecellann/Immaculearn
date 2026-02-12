@@ -43,6 +43,7 @@ export interface Space {
     space_id: string;
     space_uuid: string;
     space_name: string;
+    space_type: string;
     members: SpaceMemberProfile[];
     description: string | null;
     settings?: SpaceSettings;
