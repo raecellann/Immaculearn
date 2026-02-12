@@ -297,7 +297,7 @@ const ProfChatPage = () => {
           </div>
 
           {/* PEOPLE */}
-          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 h-72 overflow-y-auto">
+          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto">
             <h2 className="font-semibold text-sm mb-3 text-gray-300">Students</h2>
             {uniqueMembers
               .filter(m => m.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -329,7 +329,7 @@ const ProfChatPage = () => {
           </div>
 
           {/* GROUPS */}
-          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 h-72 overflow-y-auto">
+          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 overflow-y-auto">
             <h2 className="font-semibold text-sm mb-3 text-gray-300">Courses</h2>
             {uniqueSpaces.map((space) => (
               <div
