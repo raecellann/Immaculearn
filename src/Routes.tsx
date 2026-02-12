@@ -33,13 +33,13 @@ export default function Routes() {
         
         {/* Public/Auth routes - no SpaceProvider needed */}
 
-        {AuthRoutes.map(route => (
+        {/* {AuthRoutes.map(route => (
           <Route
             key={route.key}
             path={route.path}
             element={route.element}
           />
-        ))}
+        ))} */}
 
         {AuthRoutes.map(route => (
           <Route
@@ -72,7 +72,9 @@ export default function Routes() {
             element={
               <UserProvider>
                 <SpaceProvider>
-                  {route.element}
+                  <ProtectedRoute>
+                    {route.element}
+                  </ProtectedRoute>
                 </SpaceProvider>
               </UserProvider>
             }
