@@ -335,13 +335,13 @@ const HomePage1 = () => {
                   className="flex transition-transform duration-500 ease-out"
                   style={{ transform: `translateX(-${slideIndexCourseSpace * 100}%)` }}
                 >
+                  {
+                    courseSpaces?.length === 0 && <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                      No Course Space Yet!
+                    </div>
+                  }
                   {Array.from({ length: courseSlideCount }).map((_, idx) => (
                     <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full">
-                      {
-                        courseSpaces?.length === 0 && <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
-                          No Course Space Yet!
-                        </div>
-                      }
                       {courseSpaces?.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((course, i) => (
                         <div
                           key={i}
