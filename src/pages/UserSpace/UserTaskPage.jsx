@@ -104,13 +104,13 @@ const UserTaskPage = () => {
     if (groupsConfigured && groups.length > 0) {
       // Filter out empty groups and transform to backend format
       const validGroups = groups.filter(group => 
-        group.leader.account_id || group.members?.some(m => m?.trim())
+        group.leader?.account_id || group.members?.some(m => m?.trim())
       );
 
       if (validGroups.length > 0) {
         payload.groupsData = validGroups.map((group, index) => ({
           group_name: `Group_${index + 1}`,
-          leader_id: group.leader.account_id,
+          leader_id: group.leader?.account_id,
           members: group.members
             .filter(member => member?.trim())
             .map(member => member.trim())
@@ -150,7 +150,8 @@ const UserTaskPage = () => {
     setScore("");
     setDueDate("");
     setSelectedFile(null);
-    setGroups([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+    setLastGroupSaved([])
+    setGroups([{ id: 1, members: [], leader: { account_id: null, full_name: '' }, showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
     setNumberOfGroups(1);
     setGroupsConfigured(false);
     setGroupCreationMethod(null);
@@ -175,8 +176,10 @@ const UserTaskPage = () => {
   const [showGenerateGroups, setShowGenerateGroups] = useState(false);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
   const [numberOfGroups, setNumberOfGroups] = useState(1);
-  const [groups, setGroups] = useState([{ id: 1, members: [], leader_id: 0, showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+  const [lastGroupSaved, setLastGroupSaved] = useState([]);
+  const [groups, setGroups] = useState([{ id: 1, members: [], leader: { account_id: null, full_name: '' }, showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
   const [activeGroup, setActiveGroup] = useState(1);
+  const [lastActiveGroup, setLastActiveGroup] = useState(1);
   const [isTablet, setIsTablet] = useState(false);
   const [groupsConfigured, setGroupsConfigured] = useState(false);
   const [groupCreationMethod, setGroupCreationMethod] = useState(null);
@@ -255,7 +258,23 @@ const UserTaskPage = () => {
       if (groupCreationMethod === 'generate') {
         setShowGenerateGroups(true);
       } else {
-        setActiveGroup(1);
+        // Restore saved groups from lastGroupSaved
+        if (lastGroupSaved && lastGroupSaved.length > 0) {
+          const restoredGroups = lastGroupSaved.map(savedGroup => ({
+            id: savedGroup.groupId,
+            members: [...savedGroup.members, ''], // Add empty slot for new members
+            leader: { 
+              account_id: savedGroup.leader_id, 
+              full_name: currentSpace?.members?.find(m => m.account_id === savedGroup.leader_id)?.full_name || ''
+            },
+            showInputs: false,
+            isSaved: true,
+            wasPreviouslySaved: true
+          }));
+          setGroups(restoredGroups);
+          setNumberOfGroups(restoredGroups.length);
+        }
+        setActiveGroup(lastActiveGroup);
         setShowManualGroups(true);
       }
     } else {
@@ -267,7 +286,7 @@ const UserTaskPage = () => {
       const newGroups = Array.from({ length: numGroups }, (_, index) => ({
         id: index + 1,
         members: [''],
-        leader: 0,
+        leader: { account_id: null, full_name: '' },
         showInputs: false,
         isSaved: false,
         wasPreviouslySaved: false
@@ -335,7 +354,9 @@ const UserTaskPage = () => {
 
   const handleGroupLeaderChange = (groupId, value) => {
     const updatedGroups = [...groups];
-    updatedGroups[groupId - 1].leader = value;
+    // Find the member object from currentSpace.members that matches the name
+    const memberObj = currentSpace?.members?.find(m => m.full_name === value);
+    updatedGroups[groupId - 1].leader = memberObj || { account_id: null, full_name: value };
     setGroups(updatedGroups);
   };
 
@@ -363,7 +384,7 @@ const UserTaskPage = () => {
     const updatedGroups = [...groups];
     updatedGroups[groupId - 1] = {
       ...updatedGroups[groupId - 1],
-      leader: '',
+      leader: { account_id: null, full_name: '' },
       members: [''],
       showInputs: false,
       isSaved: false
@@ -381,8 +402,11 @@ const UserTaskPage = () => {
     const updatedGroups = [...groups];
     const activeGroupDataUpdated = updatedGroups[activeGroup - 1];
     
-    if (!activeGroupDataUpdated.leader || activeGroupDataUpdated.leader.trim() === '') {
-      activeGroupDataUpdated.leader = memberName;
+    // Find the member object from currentSpace.members
+    const memberObj = currentSpace?.members?.find(m => m.full_name === memberName);
+    
+    if (!activeGroupDataUpdated.leader?.account_id && !activeGroupDataUpdated.leader?.full_name) {
+      activeGroupDataUpdated.leader = memberObj || { account_id: null, full_name: memberName };
     } else {
       const activeGroupMembers = activeGroupDataUpdated.members;
       const firstEmptyIndex = activeGroupMembers.findIndex(member => !member || member.trim() === '');
@@ -401,7 +425,7 @@ const UserTaskPage = () => {
   const getAssignedMembers = () => {
     const allAssignedMembers = new Set();
     groups.forEach(group => {
-      if (group.leader.account_id && group.leader.full_name) {
+      if (group.leader?.full_name) {
         allAssignedMembers.add(group.leader.full_name);
       }
       group.members.forEach(member => {
@@ -419,7 +443,7 @@ const UserTaskPage = () => {
 
   const getMemberRole = (memberName) => {
     for (const group of groups) {
-      if (group.leader.full_name && group.leader.account_id) {
+      if (group.leader?.full_name === memberName) {
         return 'leader';
       }
       if (group.members.some(member => member && member.trim() === memberName)) {
@@ -1049,14 +1073,14 @@ const UserTaskPage = () => {
                         </div>
                         <div className="bg-[#23272F] rounded-lg p-4 max-h-[300px] overflow-y-auto">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {groups.filter(group => group.leader.account_id || group.members.filter(m => m.trim()).length > 0).map((group) => (
+                            {groups.filter(group => group.leader?.account_id || group.members.filter(m => m.trim()).length > 0).map((group) => (
                               <div key={group.id} className="bg-[#161A20] rounded-lg p-3">
                                 <div className="font-semibold text-blue-400 mb-2">Group {group.id}</div>
                                 <div className="space-y-1">
                                   <div>
                                     <span className="text-xs font-medium text-yellow-400">Leader:</span>
                                     <div className="text-white text-sm mt-1">
-                                      {group.leader.full_name || 'No leader'}
+                                      {group.leader?.full_name || 'No leader'}
                                     </div>
                                   </div>
                                   <div>
@@ -1170,7 +1194,31 @@ const UserTaskPage = () => {
                 Manual Groups({numberOfGroups} {numberOfGroups === 1 ? 'Group' : 'Groups'})
               </h2>
               <button
-                onClick={() => setShowManualGroups(false)}
+                onClick={() => {
+                  // Store current active group before closing
+                  // if (activeGroup) {
+                  //   setLastActiveGroup(activeGroup);
+                  // }
+                  if (lastGroupSaved && lastGroupSaved.length > 0) {
+                    const restoredGroups = lastGroupSaved.map(savedGroup => ({
+                      id: savedGroup.groupId,
+                      members: [...savedGroup.members, ''],
+                      leader: {
+                        account_id: savedGroup.leader_id,
+                        full_name: currentSpace?.members?.find(m => m.account_id === savedGroup.leader_id)?.full_name || ''
+                      },
+                      showInputs: false,
+                      isSaved: true,
+                      wasPreviouslySaved: true
+                    }));
+                    setGroups(restoredGroups);
+                  } else {
+                    setGroups([]); // Clear groups if nothing was previously saved
+                  }
+                  // Ensure groups state is preserved by forcing a re-render
+                  // setGroups([...groups]);
+                  setShowManualGroups(false);
+                }}
                 className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
               >
                 ×
@@ -1203,7 +1251,7 @@ const UserTaskPage = () => {
                               delete updatedGroups[activeGroup - 1].originalData;
                             } else {
                               // For new groups, reset to empty state
-                              updatedGroups[activeGroup - 1].leader = '';
+                              updatedGroups[activeGroup - 1].leader = { account_id: null, full_name: '' };
                               updatedGroups[activeGroup - 1].members = [''];
                               updatedGroups[activeGroup - 1].showInputs = false;
                               updatedGroups[activeGroup - 1].isSaved = false;
@@ -1247,7 +1295,7 @@ const UserTaskPage = () => {
                       {/* Show saved group content */}
                       {group.isSaved ? (
                         <div className="space-y-2">
-                          {group.leader.account_id && group.leader.full_name && (
+                          {group.leader?.full_name && (
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-medium text-yellow-400">Leader:</span>
                               <span className="text-sm text-white">{group.leader.full_name}</span>
@@ -1300,17 +1348,17 @@ const UserTaskPage = () => {
                                 <div className="flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
                                   <input
                                     type="text"
-                                    value={group.leader.full_name}
+                                    value={group.leader?.full_name || ''}
                                     onChange={(e) => handleGroupLeaderChange(group.id, e.target.value)}
                                     placeholder="Enter leader name"
                                     className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
                                   />
-                                  {group.leader.account_id && (
+                                  {group.leader?.account_id && (
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         const updatedGroups = [...groups];
-                                        updatedGroups[group.id - 1].leader = '';
+                                        updatedGroups[group.id - 1].leader = { account_id: null, full_name: '' };
                                         setGroups(updatedGroups);
                                       }}
                                       disabled={group.members.filter(member => member.trim()).length > 0}
@@ -1375,9 +1423,9 @@ const UserTaskPage = () => {
                                     e.stopPropagation();
                                     saveGroup(group.id);
                                   }}
-                                  disabled={!group.leader.account_id && group.members.filter(member => member.trim()).length === 0}
+                                  disabled={!group.leader?.full_name || !group.leader?.full_name.trim()}
                                   className={`${group.wasPreviouslySaved ? 'w-full' : 'flex-1'} px-3 py-2 text-sm rounded ${
-                                    !group.leader.account_id && group.members.filter(member => member.trim()).length === 0
+                                    !group.leader?.full_name || !group.leader?.full_name.trim()
                                       ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
                                       : 'bg-blue-600 text-white hover:bg-blue-700'
                                   }`}
@@ -1404,12 +1452,12 @@ const UserTaskPage = () => {
               {/* Available Students - Right side for tablet and larger */}
               <div className="lg:w-80 md:w-72 sm:w-64 bg-[#23272F] rounded-lg p-4 h-fit max-h-[300px] md:max-h-[280px] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:order-2 lg:order-2 order-1">
                 <h3 className="font-semibold text-white mb-4">
-                  Available Students ({availableMembers.length - getAssignedMembers().size})
+                  Available Students ({currentSpace?.members.length - getAssignedMembers().size})
                 </h3>
                 <div className="space-y-2">
                   {currentSpace?.members.slice(0, isTablet ? 5 : currentSpace?.members.length).map((member, index) => {
-                    const isAssigned = isMemberAssigned(member);
-                    const role = getMemberRole(member);
+                    const isAssigned = isMemberAssigned(member.full_name);
+                    const role = getMemberRole(member.full_name);
                     return (
                       <div 
                         key={index} 
@@ -1418,10 +1466,10 @@ const UserTaskPage = () => {
                             ? 'bg-[#1a1f29] opacity-50 cursor-not-allowed' 
                             : 'bg-[#161A20] hover:bg-[#1a1f29]'
                         }`}
-                        onClick={() => !isAssigned && addMemberFromAvailable(member)}
+                        onClick={() => !isAssigned && addMemberFromAvailable(member.full_name)}
                       >
                         <div className="flex items-center justify-between">
-                          <span className={isAssigned ? 'line-through' : ''}>{member}</span>
+                          <span className={isAssigned ? 'line-through' : ''}>{member.full_name}</span>
                           <div className="flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${
                               role === 'leader' ? 'bg-yellow-500' : 
@@ -1448,16 +1496,22 @@ const UserTaskPage = () => {
                   // Save all groups with their leaders and members
                   const groupsData = groups.map(group => ({
                     groupId: group.id,
-                    leader_id: group.leader.account_id,
+                    leader_id: group.leader?.account_id,
                     members: group.members.filter(member => member.trim()) // Remove empty members
                   }));
                   console.log('All groups saved:', groupsData);
+                  setLastGroupSaved(groupsData)
                   // Here you would send this data to your backend
                   setGroupsConfigured(true);
                   setGroupCreationMethod('manual');
                   setShowManualGroups(false);
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                disabled={groups.some(group => !group.leader?.full_name || !group.leader?.full_name.trim())}
+                className={`px-4 py-2 text-sm rounded ${
+                  groups.some(group => !group.leader?.full_name || !group.leader?.full_name.trim())
+                    ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
               >
                 Save Groups
               </button>
@@ -1602,7 +1656,7 @@ const UserTaskPage = () => {
               <button
                 onClick={() => {
                   // Reset all groups
-                  setGroups([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+                  setGroups([{ id: 1, members: [], leader: { account_id: null, full_name: '' }, showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
                   setNumberOfGroups(1);
                   setGroupsConfigured(false);
                   setGroupCreationMethod(null);
