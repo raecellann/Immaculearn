@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCheck, FiCheckCircle } from "react-icons/fi";
+import { FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCheck, FiCheckCircle, FiSettings, FiTrash2 } from "react-icons/fi";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
@@ -20,6 +20,28 @@ const ProfChatPage = () => {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  
+  // Color theme state
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  
+  // Color options for chat bubbles
+  const colorOptions = [
+    { name: 'Blue', sent: 'bg-blue-500', received: 'bg-gray-700' },
+    { name: 'Green', sent: 'bg-green-500', received: 'bg-gray-700' },
+    { name: 'Red', sent: 'bg-red-500', received: 'bg-gray-700' },
+    { name: 'Purple', sent: 'bg-purple-500', received: 'bg-gray-700' },
+    { name: 'Pink', sent: 'bg-pink-500', received: 'bg-gray-700' },
+    { name: 'Orange', sent: 'bg-orange-500', received: 'bg-gray-700' },
+    { name: 'Teal', sent: 'bg-teal-500', received: 'bg-gray-700' },
+    { name: 'Indigo', sent: 'bg-indigo-500', received: 'bg-gray-700' },
+    { name: 'Cyan', sent: 'bg-cyan-500', received: 'bg-gray-700' },
+    { name: 'Yellow', sent: 'bg-yellow-500', received: 'bg-gray-700' },
+    { name: 'Lime', sent: 'bg-lime-500', received: 'bg-gray-700' },
+    { name: 'Rose', sent: 'bg-rose-500', received: 'bg-gray-700' }
+  ];
+
+  // Current theme state
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
 
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
 
@@ -216,6 +238,33 @@ const ProfChatPage = () => {
       }
     }
   };
+
+  // Color selection handlers
+  const handleThemeChange = () => {
+    setShowColorPicker(true);
+    setShowDropdown(false);
+  };
+
+  const handleColorSelect = (color) => {
+    setSelectedColor(color);
+    setShowColorPicker(false);
+    
+    // Save color preference to localStorage
+    localStorage.setItem('profChatColor', JSON.stringify(color));
+  };
+
+  // Load saved color on component mount
+  useEffect(() => {
+    const savedColor = localStorage.getItem('profChatColor');
+    if (savedColor) {
+      try {
+        const color = JSON.parse(savedColor);
+        setSelectedColor(color);
+      } catch (e) {
+        console.error('Error loading saved color:', e);
+      }
+    }
+  }, []);
 
   // Message status icon
   const getStatusIcon = (status) => {
@@ -415,13 +464,25 @@ const ProfChatPage = () => {
                   {showDropdown && (
                     <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-[#2A2F3E] rounded-lg shadow-lg border border-gray-600 z-50">
                       <button
+                        onClick={handleThemeChange}
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg flex items-center gap-3"
+                      >
+                        <FiSettings className="text-sm" />
+                        Change Color Theme
+                      </button>
+                      <button
                         onClick={() => {
                           setShowDropdown(false);
-                          // Handle change color theme
+                          // Handle delete conversation
+                          if (window.confirm('Are you sure you want to delete this conversation?')) {
+                            console.log('Delete conversation:', activeSpaceUuid);
+                            // Add delete conversation logic here
+                          }
                         }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg rounded-b-lg"
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-b-lg flex items-center gap-3"
                       >
-                        Change Color Theme
+                        <FiTrash2 className="text-sm" />
+                        Delete Conversation
                       </button>
                     </div>
                   )}
@@ -470,7 +531,7 @@ const ProfChatPage = () => {
                             {!shouldShowAvatar && m.from === "them" && (
                               <div className="w-8 h-8 mr-2 mt-1"></div>
                             )}
-                            <div className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? "bg-blue-500 text-white rounded-br-md" : "bg-gray-700 text-white rounded-bl-md"} ${m.from === "them" ? "-mt-1" : ""}`}>
+                            <div className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? `${selectedColor.sent} text-white rounded-br-md` : `${selectedColor.received} text-white rounded-bl-md`} ${m.from === "them" ? "-mt-1" : ""}`}>
                               {m.type === 'image' ? (
                                 <div className="space-y-2">
                                   <img 
@@ -542,6 +603,36 @@ const ProfChatPage = () => {
         </div>
         </div>
       </div>
+      
+      {/* Color Picker Dialog */}
+      {showColorPicker && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-[#2A2F3E] rounded-xl p-6 w-80 max-w-[90%] border border-gray-600">
+            <h3 className="text-white font-semibold mb-4">Choose Chat Color</h3>
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              {colorOptions.map((color) => (
+                <button
+                  key={color.name}
+                  onClick={() => handleColorSelect(color)}
+                  className={`w-12 h-12 rounded-lg ${color.sent} hover:scale-110 transition-transform duration-200 border-2 ${
+                    selectedColor?.sent === color.sent ? 'border-white' : 'border-transparent'
+                  }`}
+                  title={color.name}
+                />
+              ))}
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-300 text-sm">Selected: {selectedColor?.name}</span>
+              <button
+                onClick={() => setShowColorPicker(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
