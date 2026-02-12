@@ -22,35 +22,55 @@ const isSameDay = (d1, d2) => {
 };
 
 const fetchArticles = async (category) => {
-  // 1. Try JSON first
+
+  const storageKey = `articles-${category}`;
+
+  // ===== 1. TRY LOCAL CACHE =====
   try {
-    const response = await fetch(`/src/data/articles-${category}.json`);
+    const cachedRaw = localStorage.getItem(storageKey);
 
-    console.log(response)
-    if (response.ok) {
-      const data = await response.json();
+    if (cachedRaw) {
+      const cached = JSON.parse(cachedRaw);
 
-      console.log(data)
-      const lastUpdated = new Date(data.lastUpdated).toLocaleDateString();
-
+      const lastUpdated = new Date(cached.lastUpdated).toLocaleDateString();
       const now = new Date().toLocaleDateString();
-      console.log(lastUpdated, now)
 
-      if ((lastUpdated === now) && data.articles?.length > 0) {
-        return data.articles;
+      if (lastUpdated === now && cached.articles?.length > 0) {
+        console.log('Loaded from local cache');
+        return cached.articles;
       }
     }
   } catch (e) {
-    console.log('JSON not available, fallback to API');
+    console.log('Cache read failed');
   }
 
-  // 2. Fallback to API
-  const url = `https://api.nytimes.com/svc/news/v3/content/nyt/${category}.json?api-key=${apiKey}`;
-  const res = await fetch(url);
-  const data = await res.json();
+  // ===== 2. FALLBACK TO NYT API =====
 
-  return data.results || [];
+  const url =
+    `https://api.nytimes.com/svc/news/v3/content/nyt/${category}.json?api-key=${apiKey}`;
+
+  const res = await fetch(url);
+  const apiData = await res.json();
+
+  const articles = apiData.results || [];
+
+  // ===== 3. SAVE FOR TODAY =====
+
+  try {
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        lastUpdated: new Date().toISOString(),
+        articles,
+      })
+    );
+  } catch (e) {
+    console.log('Cache write failed');
+  }
+
+  return articles;
 };
+
 
 const ArticlesInner = () => {
   const [category, setCategory] = useState('all');
