@@ -7,11 +7,12 @@ import { useSpace } from "../../contexts/space/useSpace";
 import Logout from "../component/logout";
 import Button from "../component/Button";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { prefixName } from "../../utils/prefixNameFormat";
 import { SpaceCover } from "../component/spaceCover";
 
 const SpacePage = () => {
   const { user } = useUser();
-  const { userSpaces, friendSpaces, joinSpace } = useSpace();
+  const { userSpaces, friendSpaces, courseSpaces, joinSpace } = useSpace();
 
 
   const [showMenu, setShowMenu] = useState(null);
@@ -76,41 +77,8 @@ const SpacePage = () => {
     space => !userSpaceUUIDs.has(space.space_uuid)
   );
 
-  // Courses Spaces (static – kept from original design)
-  const [enrolledClassSlideIndex, setEnrolledClassSlideIndex] = useState(0);
-
-  const enrolledClasses = [
-    {
-      id: 9,
-      title: "Thesis and Research",
-      image: "/src/assets/SpacesCover/thesis.jpg",
-      members: 32,
-      yearLevel: "4th Year",
-      instructor: "Prof. Smith",
-      schedule: "MWF 10:00-11:30 AM",
-      description: "Advanced research methodology and thesis writing"
-    },
-    {
-      id: 10,
-      title: "Operating System",
-      image: "/src/assets/SpacesCover/os.jpg",
-      members: 40,
-      yearLevel: "3rd Year",
-      instructor: "Prof. Johnson",
-      schedule: "TTH 2:00-3:30 PM",
-      description: "Operating system concepts and implementation"
-    }
-  ];
-
-  const handleClassClick = (classItem) => {
-    const routeMap = {
-      "Thesis and Research": "/user-prof-space/thesis",
-      "Operating System": "/user-prof-space/os"
-    };
-
-    const route = routeMap[classItem.title];
-    if (route) navigate(route);
-  };
+  // Course Spaces Data (from homepage logic)
+  const courseSpacesShared = courseSpaces?.filter((s) => !userSpaceUUIDs.has(s.space_uuid));
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
@@ -250,36 +218,46 @@ const SpacePage = () => {
             </div>
           </div>
 
-          {/* Courses Spaces (Design Kept) */}
+          {/* Course Spaces - Dynamic Data */}
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-4">Courses Spaces</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {enrolledClasses.map((classItem) => (
-                <div
-                  key={classItem.id}
-                  onClick={() => handleClassClick(classItem)}
-                  className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457]"
-                >
-                  <div className="relative h-48 bg-gray-800">
-                    <img
-                      src={classItem.image}
-                      alt={classItem.title}
-                      className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                    />
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {courseSpacesShared.length > 0 ? (
+                courseSpacesShared.map((course, i) => (
+                  <div
+                    key={i}
+                    onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
+                    className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457]"
+                  >
+                    <div className="relative h-48 bg-gray-800">
+                      <SpaceCover
+                        image={course.background_img || course.image}
+                        name={course.space_name}
+                        className="w-full h-full"
+                      />
+                    </div>
 
-                  <div className="p-4">
-                    <h3 className="font-semibold text-white text-sm mb-1">
-                      {classItem.title}
-                    </h3>
-                    <p className="text-gray-400 text-xs mb-1">
-                      {classItem.instructor} • {classItem.members} Students
-                    </p>
-                    <p className="text-gray-500 text-xs mb-2">{classItem.schedule}</p>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-white text-sm mb-1 truncate">
+                        {capitalizeWords(course.space_name)}'s Space
+                      </h3>
+                      <p className="text-gray-400 text-xs mb-1">
+                        {course.members?.filter(m => m.role === "creator").map(m => (
+                          <span key={m.account_id}>
+                            {m.account_id === user?.id ? `You` : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])}`}
+                          </span>
+                        ))} • {course.space_type === "course" ? (course.members?.length -1) : (course.members?.length) || 0} Students
+                      </p>
+                      <p className="text-gray-500 text-xs mb-2">Opened just now</p>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="col-span-full p-4 bg-[#1E242E] rounded-lg border border-[#3B4457] text-center text-gray-400">
+                  No course spaces found
                 </div>
-              ))}
+              )}
             </div>
           </div>
 

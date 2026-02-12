@@ -289,7 +289,7 @@ const ProfHomePage = () => {
 
               {sharedSpaces.length === 0 ? (
                 <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
-                  No shared spaces yet
+                  No Course spaces yet
                 </div>
               ) : (
                 <div className="relative overflow-hidden">
@@ -308,13 +308,13 @@ const ProfHomePage = () => {
                             <SpaceCover
                               image={space.background_img || space.image}
                               name={space.space_name}
-                              className="w-full flex-shrink-0"
+                              className="w-full"
                             />
                             <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setShowMenu(`friend-${space.space_uuid}`);
+                                  setShowMenu(`course-${space.space_uuid}`);
                                 }}
                                 className="bg-black/70 text-white w-8 h-8 rounded-lg flex items-center justify-center"
                               >
@@ -322,14 +322,14 @@ const ProfHomePage = () => {
                               </button>
                             </div>
 
-                            {showMenu === `friend-${space.space_uuid}` && (
+                            {showMenu === `course-${space.space_uuid}` && (
                               <div className="absolute top-12 right-3 bg-[#242B38] rounded-lg shadow-xl p-2 z-20 border border-[#3B4457] min-w-40">
                                 <button className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded text-sm">
                                   View Details
                                 </button>
                                 <button
                                   className="block w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 rounded text-sm"
-                                  onClick={() => setShowLeaveConfirm(`friend-${space.space_uuid}`)}
+                                  onClick={() => setShowLeaveConfirm(`course-${space.space_uuid}`)}
                                 >
                                   Leave Space
                                 </button>

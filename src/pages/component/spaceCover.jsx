@@ -20,7 +20,7 @@ export const SpaceCover = ({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-lg ${className} aspect-[10/6]`}
+      className={`relative w-full overflow-hidden rounded-t-lg ${className} aspect-[10/6]`}
     >
       {image ? (
         <img

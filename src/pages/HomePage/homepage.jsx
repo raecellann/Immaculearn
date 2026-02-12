@@ -15,10 +15,11 @@ import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { SpaceCover } from "../component/spaceCover";
 import ArticlesScrape from "../component/articles_scrape";
+import { prefixName } from "../../utils/prefixNameFormat";
 
 const HomePage1 = () => {
   const { user } = useUser();
-  const { userSpaces = [], friendSpaces = [] } = useSpace();
+  const { userSpaces = [], friendSpaces = [], courseSpaces = [] } = useSpace();
   const navigate = useNavigate();
 
   const [currentDate, setCurrentDate] = useState("");
@@ -278,7 +279,7 @@ const HomePage1 = () => {
                     style={{ transform: `translateX(-${slideIndexYourSpace * 100}%)` }}
                   >
                     {Array.from({ length: yourSlideCount }).map((_, idx) => (
-                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0">
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full">
                         {userSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
@@ -288,7 +289,7 @@ const HomePage1 = () => {
                             <SpaceCover
                               image={space.image}
                               name={space.space_name}
-                              className="w-full flex-shrink-0"
+                              className="w-full flex-shrink-0 aspect-[3/2]"
                             />
                             <div className="p-4 flex flex-col justify-between flex-grow">
                               <h3 className="font-medium truncate">
@@ -335,18 +336,23 @@ const HomePage1 = () => {
                   style={{ transform: `translateX(-${slideIndexCourseSpace * 100}%)` }}
                 >
                   {Array.from({ length: courseSlideCount }).map((_, idx) => (
-                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0">
-                      {courseSpaceData.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((course, i) => (
+                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full">
+                      {courseSpaces?.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((course, i) => (
                         <div
                           key={i}
-                          onClick={() => navigate(course.route)}
+                          onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
                           className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group relative"
                         >
                           <div className="relative">
-                            <img
+                            {/* <img
                               src={course.image}
                               alt={course.title}
                               className="h-36 w-full object-cover"
+                            /> */}
+                            <SpaceCover
+                              image={course.image}
+                              name={course.space_name}
+                              className="w-full flex-shrink-0 aspect-[3/2]"
                             />
                             <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
                               <button
@@ -376,8 +382,20 @@ const HomePage1 = () => {
                           )}
 
                           <div className="p-4">
-                            <h3 className="font-medium">{course.title}</h3>
-                            <p className="text-gray-400 text-xs mt-1">{course.members}</p>
+                            <h3 className="font-medium truncate">
+                              {capitalizeWords(course.space_name)}'s Space
+                            </h3>
+                            <p className="text-gray-400 text-xs mt-1">
+                              {course.members?.filter(m => m.role === "creator").map(m => (
+                                <span key={m.account_id}>
+                                  {m.account_id === user?.id ? `You • ` + (course.members?.length - 1) + " Students" : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])} • ` + (course.members?.length - 1) + " Students"}
+                                </span>
+                              ))}
+                            </p>
+                            {/* <p className="text-gray-400 text-xs mt-1">
+                              {course.space_type === "course" ? (course.members?.length -1) : (course.members?.length) || 0} Students
+                            </p> */}
+                            <p className="text-gray-500 text-xs mt-1">Opened just now</p>
                           </div>
                         </div>
                       ))}
@@ -430,7 +448,7 @@ const HomePage1 = () => {
                             <SpaceCover
                               image={space.background_img || space.image}
                               name={space.space_name}
-                              className="h-36 w-full object-cover"
+                              className="w-full flex-shrink-0 aspect-[3/2]"
                             />
                             <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
                               <button
