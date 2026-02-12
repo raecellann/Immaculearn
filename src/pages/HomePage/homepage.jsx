@@ -305,7 +305,6 @@ const HomePage1 = () => {
                 </div>
               )}
             </section>
-            
 
             {/* Course Spaces */}
             <section className="mb-12">
@@ -330,84 +329,77 @@ const HomePage1 = () => {
                 </div>
               </div>
 
-              <div className="relative overflow-hidden">
-                <div
-                  className="flex transition-transform duration-500 ease-out"
-                  style={{ transform: `translateX(-${slideIndexCourseSpace * 100}%)` }}
-                >
-                  {
-                    courseSpaces?.length === 0 && <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
-                      No Course Space Yet!
-                    </div>
-                  }
-                  {Array.from({ length: courseSlideCount }).map((_, idx) => (
-                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full">
-                      {courseSpaces?.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((course, i) => (
-                        <div
-                          key={i}
-                          onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
-                          className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group relative"
-                        >
-                          <div className="relative">
-                            {/* <img
-                              src={course.image}
-                              alt={course.title}
-                              className="h-36 w-full object-cover"
-                            /> */}
-                            <SpaceCover
-                              image={course.image}
-                              name={course.space_name}
-                              className="w-full flex-shrink-0 aspect-[3/2]"
-                            />
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowMenu(`course-${i}`);
-                                }}
-                                className="bg-black/70 text-white w-8 h-8 rounded-lg flex items-center justify-center"
-                              >
-                                …
-                              </button>
-                            </div>
-                          </div>
-
-                          {showMenu === `course-${i}` && (
-                            <div className="absolute top-12 right-3 bg-[#242B38] rounded-lg shadow-xl p-2 z-20 border border-[#3B4457] min-w-40">
-                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded text-sm">
-                                Details
-                              </button>
-                              <button
-                                className="block w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 rounded text-sm"
-                                onClick={() => setShowLeaveConfirm(`course-${i}`)}
-                              >
-                                Leave
-                              </button>
-                            </div>
-                          )}
-
-                          <div className="p-4">
-                            <h3 className="font-medium truncate">
-                              {capitalizeWords(course.space_name)}'s Space
-                            </h3>
-                            <p className="text-gray-400 text-xs mt-1">
-                              {course.members?.filter(m => m.role === "creator").map(m => (
-                                <span key={m.account_id}>
-                                  {m.account_id === user?.id ? `You • ` + (course.members?.length - 1) + " Students" : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])} • ` + (course.members?.length - 1) + " Students"}
-                                </span>
-                              ))}
-                            </p>
-                            {/* <p className="text-gray-400 text-xs mt-1">
-                              {course.space_type === "course" ? (course.members?.length -1) : (course.members?.length) || 0} Students
-                            </p> */}
-                            <p className="text-gray-500 text-xs mt-1">Opened just now</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
+              {courseSpaces?.length === 0 ? (
+                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                  No Course Space Yet!
                 </div>
-              </div>
+              ) : (
+                <div className="relative overflow-hidden">
+                  <div
+                    className="flex transition-transform duration-500 ease-out"
+                    style={{ transform: `translateX(-${slideIndexCourseSpace * 100}%)` }}
+                  >
+                    {Array.from({ length: courseSlideCount }).map((_, idx) => (
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full">
+                        {courseSpaces?.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((course, i) => (
+                          <div
+                            key={i}
+                            onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
+                            className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group relative"
+                          >
+                            <div className="relative">
+                              <SpaceCover
+                                image={course.image}
+                                name={course.space_name}
+                                className="w-full flex-shrink-0 aspect-[3/2]"
+                              />
+                              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowMenu(`course-${i}`);
+                                  }}
+                                  className="bg-black/70 text-white w-8 h-8 rounded-lg flex items-center justify-center"
+                                >
+                                  …
+                                </button>
+                              </div>
+                            </div>
+
+                            {showMenu === `course-${i}` && (
+                              <div className="absolute top-12 right-3 bg-[#242B38] rounded-lg shadow-xl p-2 z-20 border border-[#3B4457] min-w-40">
+                                <button className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded text-sm">
+                                  Details
+                                </button>
+                                <button
+                                  className="block w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 rounded text-sm"
+                                  onClick={() => setShowLeaveConfirm(`course-${i}`)}
+                                >
+                                  Leave
+                                </button>
+                              </div>
+                            )}
+
+                            <div className="p-4">
+                              <h3 className="font-medium truncate">
+                                {capitalizeWords(course.space_name)}'s Space
+                              </h3>
+                              <p className="text-gray-400 text-xs mt-1">
+                                {course.members?.filter(m => m.role === "creator").map(m => (
+                                  <span key={m.account_id}>
+                                    {m.account_id === user?.id ? `You • ` + (course.members?.length - 1) + " Students" : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])} • ` + (course.members?.length - 1) + " Students"}
+                                  </span>
+                                ))}
+                              </p>
+                              <p className="text-gray-500 text-xs mt-1">Opened just now</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* Friends Spaces */}

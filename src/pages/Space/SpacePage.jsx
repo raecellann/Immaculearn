@@ -212,7 +212,7 @@ const SpacePage = () => {
                 ))
               ) : (
                 <div className="col-span-full p-4 bg-[#1E242E] rounded-lg border border-[#3B4457] text-center text-gray-400">
-                  No space found
+                  No spaces yet — create one to get started!
                 </div>
               )}
             </div>
@@ -255,7 +255,7 @@ const SpacePage = () => {
                 ))
               ) : (
                 <div className="col-span-full p-4 bg-[#1E242E] rounded-lg border border-[#3B4457] text-center text-gray-400">
-                  No course spaces found
+                  No Course Space Yet!
                 </div>
               )}
             </div>

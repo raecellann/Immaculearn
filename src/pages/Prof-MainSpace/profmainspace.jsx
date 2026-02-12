@@ -125,56 +125,62 @@ const ProfSpacePage = () => {
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-4">Your Space</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {userSpaces?.map((space) => (
-                <div
-                  key={space.space_id}
-                  className="group bg-[#1E242E] rounded-lg overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer"
-                >
-                  <div 
-                    onClick={() => navigate(`/prof/space/${space?.space_uuid}/${space.space_name}`)}
-                    className="relative h-40 bg-gray-800 overflow-hidden"
+              {userSpaces && userSpaces.length > 0 ? (
+                userSpaces?.map((space) => (
+                  <div
+                    key={space.space_id}
+                    className="group bg-[#1E242E] rounded-lg overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer"
                   >
-                    <SpaceCover
-                      image={space.space_cover}
-                      name={space.space_name}
-                      className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                    />
-                    {/* <img
-                      src={space.space_cover}
-                      alt={space.space_name}
-                      className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                    /> */}
-                    <div className="absolute top-3 right-3 z-20">
-                      <button
-                        onClick={() => setShowMenu(showMenu === `your-${space.space_id}` ? null : `your-${space.space_id}`)}
-                        className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
-                      >
-                        <span className="text-lg font-bold">...</span>
-                      </button>
-                      {showMenu === `your-${space.space_id}` && (
-                        <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
-                          <div className="flex flex-col gap-2">
-                            <button 
-                              onClick={() => setShowDeleteConfirm(`your-${space.space_id}`)}
-                              className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
-                            >
-                              Delete Space
-                            </button>
+                    <div 
+                      onClick={() => navigate(`/prof/space/${space?.space_uuid}/${space.space_name}`)}
+                      className="relative h-40 bg-gray-800 overflow-hidden"
+                    >
+                      <SpaceCover
+                        image={space.space_cover}
+                        name={space.space_name}
+                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
+                      />
+                      {/* <img
+                        src={space.space_cover}
+                        alt={space.space_name}
+                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
+                      /> */}
+                      <div className="absolute top-3 right-3 z-20">
+                        <button
+                          onClick={() => setShowMenu(showMenu === `your-${space.space_id}` ? null : `your-${space.space_id}`)}
+                          className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
+                        >
+                          <span className="text-lg font-bold">...</span>
+                        </button>
+                        {showMenu === `your-${space.space_id}` && (
+                          <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                            <div className="flex flex-col gap-2">
+                              <button 
+                                onClick={() => setShowDeleteConfirm(`your-${space.space_id}`)}
+                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                              >
+                                Delete Space
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-white text-sm truncate">
+                        {space.space_name}
+                      </h3>
+                      <p className="text-gray-400 text-xs mt-1">
+                        {space.members.length} Members
+                      </p>
                     </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-white text-sm truncate">
-                      {space.space_name}
-                    </h3>
-                    <p className="text-gray-400 text-xs mt-1">
-                      {space.members.length} Members
-                    </p>
-                  </div>
+                ))
+              ) : (
+                <div className="col-span-full p-4 bg-[#1E242E] rounded-lg border border-[#3B4457] text-center text-gray-400">
+                  No spaces yet — create one to get started!
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -208,56 +214,62 @@ const ProfSpacePage = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {courseSpaces?.map((space, id) => (
-                <div
-                  key={id}
-                  className="group bg-[#1E242E] rounded-xl overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer"
-                >
-                  <div 
-                    onClick={() => navigate(`/prof/space/${space?.space_uuid}/${space.space_name}`)}
-                    className="relative h-40 bg-gray-800 overflow-hidden"
+              {courseSpaces && courseSpaces.length > 0 ? (
+                courseSpaces?.map((space, id) => (
+                  <div
+                    key={id}
+                    className="group bg-[#1E242E] rounded-xl overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer"
                   >
-                    <SpaceCover
-                      image={space.space_cover}
-                      name={space.space_name}
-                      className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                    />
-                    {/* <img
-                      src={space.settings?.space_cover || "/src/assets/SpacesCover/default.jpg"}
-                      alt={space.space_name}
-                      className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                    /> */}
-                    <div className="absolute top-3 right-3 z-20">
-                      <button
-                        onClick={() => setShowMenu(showMenu === space.space_id ? null : space.space_id)}
-                        className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
-                      >
-                        <span className="text-lg font-bold">...</span>
-                      </button>
-                      {showMenu === space.space_id && (
-                        <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
-                          <div className="flex flex-col gap-2">
-                            <button 
-                              onClick={() => setShowLeaveConfirm(space.space_id)}
-                              className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
-                            >
-                              Leave Space
-                            </button>
+                    <div 
+                      onClick={() => navigate(`/prof/space/${space?.space_uuid}/${space.space_name}`)}
+                      className="relative h-40 bg-gray-800 overflow-hidden"
+                    >
+                      <SpaceCover
+                        image={space.space_cover}
+                        name={space.space_name}
+                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
+                      />
+                      {/* <img
+                        src={space.settings?.space_cover || "/src/assets/SpacesCover/default.jpg"}
+                        alt={space.space_name}
+                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
+                      /> */}
+                      <div className="absolute top-3 right-3 z-20">
+                        <button
+                          onClick={() => setShowMenu(showMenu === space.space_id ? null : space.space_id)}
+                          className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
+                        >
+                          <span className="text-lg font-bold">...</span>
+                        </button>
+                        {showMenu === space.space_id && (
+                          <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
+                            <div className="flex flex-col gap-2">
+                              <button 
+                                onClick={() => setShowLeaveConfirm(space.space_id)}
+                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
+                              >
+                                Leave Space
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-white text-sm">
+                        {space.space_name}
+                      </h3>
+                      <p className="text-gray-400 text-xs">
+                        {space.members?.length -1 || 0} Students
+                      </p>
                     </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-white text-sm">
-                      {space.space_name}
-                    </h3>
-                    <p className="text-gray-400 text-xs">
-                      {space.members?.length -1 || 0} Students
-                    </p>
-                  </div>
+                ))
+              ) : (
+                <div className="col-span-full p-4 bg-[#1E242E] rounded-lg border border-[#3B4457] text-center text-gray-400">
+                  No Course Space Yet!
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
