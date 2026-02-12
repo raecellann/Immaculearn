@@ -443,6 +443,7 @@ const HomePage1 = () => {
                         {sharedSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
+                            onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
                             className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative"
                           >
                             <SpaceCover
