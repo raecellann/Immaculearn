@@ -223,7 +223,7 @@ const SpacePage = () => {
             <h2 className="text-2xl font-bold mb-4">Courses Spaces</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {courseSpacesShared.length > 0 ? (
+              {courseSpacesShared && courseSpacesShared.length > 0 ? (
                 courseSpacesShared.map((course, i) => (
                   <div
                     key={i}
