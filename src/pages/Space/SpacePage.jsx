@@ -309,7 +309,7 @@ const SpacePage = () => {
                     </div>
 
                     <div className="p-4">
-                      <h3 className="font-semibold text-white text-sm mb-1">
+                      <h3 className="font-semibold text-white text-sm mb-1 truncate">
                         {capitalizeWords(space.space_name) + "'s Space"}
                       </h3>
                       <p className="text-gray-400 text-xs mb-1">
