@@ -168,7 +168,7 @@ const SpacePage = () => {
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-4">Your Spaces</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {userSpaces && userSpaces.length > 0 ? (
                 userSpaces.map((space, i) => (
                   <div
@@ -222,7 +222,7 @@ const SpacePage = () => {
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-4">Courses Spaces</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {courseSpacesShared.length > 0 ? (
                 courseSpacesShared.map((course, i) => (
                   <div
