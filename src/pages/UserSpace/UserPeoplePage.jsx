@@ -7,12 +7,12 @@ import { useUser } from "../../contexts/user/useUser";
 
 const UserPeoplePage = () => {
   const { user } = useUser();
-  const { userSpaces, friendSpaces } = useSpace();
+  const { userSpaces, friendSpaces, courseSpaces } = useSpace();
   const navigate = useNavigate();
   const { space_uuid } = useParams();
 
   // Combine user and friend spaces
-  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [...(userSpaces || []), ...(courseSpaces || []), ...(friendSpaces || [])];
   const activeSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
 
   // Handle not found
@@ -51,7 +51,7 @@ const UserPeoplePage = () => {
             className="w-full h-52 object-cover"
           />
 
-                  </div>
+        </div>
 
         {/* PAGE HEADER */}
         <div className="px-10 py-6">
@@ -72,7 +72,7 @@ const UserPeoplePage = () => {
           {/* CREATOR / ADMIN SECTION */}
           {creator && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">Adviser</h2>
+              <h2 className="text-xl font-semibold mb-4">{activeSpace?.space_type === "course" ? "Adviser" : "Admin"}</h2>
               <div className="border-t border-gray-600 pt-4">
                 <div className="flex items-center gap-4">
                   <img

@@ -8,7 +8,7 @@ import { useUser } from "../../contexts/user/useUser";
 
 const ProfPeoplePage = () => {
   const { user } = useUser();
-  const { userSpaces, friendSpaces } = useSpace();
+  const { userSpaces, courseSpaces } = useSpace();
   const navigate = useNavigate();
   const { space_uuid } = useParams();
 
@@ -34,7 +34,7 @@ const ProfPeoplePage = () => {
   }, []);
 
   // Combine user and friend spaces
-  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [...(userSpaces || []), ...(courseSpaces || [])];
   const activeSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
 
   // Handle not found
@@ -94,7 +94,7 @@ const ProfPeoplePage = () => {
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold">CS Thesis 2 Space</h1>
+          <h1 className="text-xl font-bold">{activeSpace.space_name}</h1>
         </div>
 
         {/* HEADER SPACER */}
@@ -110,62 +110,58 @@ const ProfPeoplePage = () => {
           <div className="absolute inset-0 bg-black/50" />
         </div>
 
-        <div className="p-4 sm:p-6">
-          {/* ================= TITLE + BACK ================= */}
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="flex items-center justify-between">
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold underline underline-offset-4">
-                People – {activeSpace.space_name}
-              </h1>
 
-              <button
-                onClick={() => navigate(-1)}
-                className="flex items-center gap-2 text-gray-300 hover:text-white transition bg-transparent"
-              >
-                <FiChevronLeft />
-                Back
-              </button>
-            </div>
+        {/* PAGE HEADER */}
+        <div className="p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold">
+              People – {activeSpace.space_name}
+            </h1>
+
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition"
+            >
+              <FiChevronLeft />
+              Back
+            </button>
           </div>
 
-          {/* ================= PEOPLE CONTENT ================= */}
-          <div className="max-w-4xl mx-auto space-y-8">
-            {/* CREATOR / ADMIN SECTION */}
-            {creator && (
-              <div>
-                <h2 className="text-lg sm:text-xl font-semibold mb-4">Adviser</h2>
-                <div className="border-t border-gray-700 pt-4">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={creator.profile_pic || "/src/assets/default-avatar.jpg"}
-                      alt={creator.full_name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <span className="font-medium">{creator.full_name}</span>
-                  </div>
+          {/* CREATOR / ADMIN SECTION */}
+          {creator && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">Adviser</h2>
+              <div className="border-t border-gray-600 pt-4">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={creator.profile_pic || "/src/assets/default-avatar.jpg"}
+                    alt={creator.full_name}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <span className="font-medium">{creator.full_name}</span>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* MEMBERS SECTION */}
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Students</h2>
-              <div className="border-t border-gray-700 pt-4 space-y-4">
-                {otherMembers.length > 0 ? (
-                  otherMembers.map((member) => (
-                    <div key={member.account_id} className="flex items-center gap-4">
-                      <img
-                        src={member.profile_pic || "/src/assets/default-avatar.jpg"}
-                        alt={member.full_name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <span className="text-sm sm:text-base">{member.account_id !== user.id ? member.full_name : "You"}</span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400">No members yet.</p>
-                )}
-              </div>
+          {/* MEMBERS SECTION */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Students</h2>
+            <div className="border-t border-gray-600 pt-4 space-y-4">
+              {otherMembers.length > 0 ? (
+                otherMembers.map((member) => (
+                  <div key={member.account_id} className="flex items-center gap-4">
+                    <img
+                      src={member.profile_pic || "/src/assets/default-avatar.jpg"}
+                      alt={member.full_name}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <span>{member.account_id !== user.id ? member.full_name : "You"}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400">No members yet.</p>
+              )}
             </div>
           </div>
         </div>

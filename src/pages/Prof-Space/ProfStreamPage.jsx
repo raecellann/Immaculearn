@@ -229,7 +229,7 @@ const ProfStreamPage = () => {
           <div className="hidden md:block mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-400">({(currentSpace?.members?.length - 1) || 0} member(s))</span>
+              <span className="text-xs text-gray-400">({currentSpace?.space_type === "course" ? (currentSpace?.members?.length - 1) + " student(s)": (currentSpace?.members?.length) + " member(s)" || 0})</span>
               {isOwnerSpace && (
                 <>
                   <button 
