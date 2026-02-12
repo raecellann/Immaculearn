@@ -40,8 +40,11 @@ const ProfChatPage = () => {
     { name: 'Rose', sent: 'bg-rose-500', received: 'bg-gray-700' }
   ];
 
-  // Current theme state
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+  // Per-conversation color state
+  const [conversationColors, setConversationColors] = useState({});
+
+  // Get current conversation color
+  const currentConversationColor = conversationColors[activeSpaceUuid] || colorOptions[0];
 
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
 
@@ -116,11 +119,6 @@ const ProfChatPage = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
-
-  // Auto-scroll to latest message
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -246,25 +244,23 @@ const ProfChatPage = () => {
   };
 
   const handleColorSelect = (color) => {
-    setSelectedColor(color);
+    setConversationColors(prev => ({
+      ...prev,
+      [activeSpaceUuid]: color
+    }));
     setShowColorPicker(false);
     
-    // Save color preference to localStorage
-    localStorage.setItem('profChatColor', JSON.stringify(color));
+    // Save color preference to localStorage (per conversation)
+    const savedColors = JSON.parse(localStorage.getItem('profConversationColors') || '{}');
+    savedColors[activeSpaceUuid] = color;
+    localStorage.setItem('profConversationColors', JSON.stringify(savedColors));
   };
 
-  // Load saved color on component mount
+  // Load saved colors on component mount and when activeSpaceUuid changes
   useEffect(() => {
-    const savedColor = localStorage.getItem('profChatColor');
-    if (savedColor) {
-      try {
-        const color = JSON.parse(savedColor);
-        setSelectedColor(color);
-      } catch (e) {
-        console.error('Error loading saved color:', e);
-      }
-    }
-  }, []);
+    const savedColors = JSON.parse(localStorage.getItem('profConversationColors') || '{}');
+    setConversationColors(savedColors);
+  }, [activeSpaceUuid]);
 
   // Message status icon
   const getStatusIcon = (status) => {
@@ -490,7 +486,7 @@ const ProfChatPage = () => {
               </div>
 
               {/* Messages - Scrollable Area */}
-              <div className={`chat-messages-container flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto min-h-0 transition-all duration-300 scrollbar-hide ${showHeader ? 'max-h-[calc(100vh-180px)] sm:max-h-[calc(100vh-200px)] md:max-h-[calc(100vh-190px)]' : 'max-h-[calc(100vh-100px)] sm:max-h-[calc(100vh-110px)] md:max-h-[calc(100vh-120px)]'}`} style={{
+              <div className={`chat-messages-container flex-1 p-2 sm:p-3 md:p-4 overflow-y-auto min-h-0 transition-all duration-300 scrollbar-hide ${showHeader ? 'max-h-[calc(100vh-160px)] sm:max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-170px)]' : 'max-h-[calc(100vh-80px)] sm:max-h-[calc(100vh-90px)] md:max-h-[calc(100vh-100px)]'}`} style={{
                 msOverflowStyle: 'none',
                 scrollbarWidth: 'none',
                 transform: 'translateX(0)',
@@ -531,7 +527,7 @@ const ProfChatPage = () => {
                             {!shouldShowAvatar && m.from === "them" && (
                               <div className="w-8 h-8 mr-2 mt-1"></div>
                             )}
-                            <div className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? `${selectedColor.sent} text-white rounded-br-md` : `${selectedColor.received} text-white rounded-bl-md`} ${m.from === "them" ? "-mt-1" : ""}`}>
+                            <div className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? `${currentConversationColor.sent} text-white rounded-br-md` : `${currentConversationColor.received} text-white rounded-bl-md`} ${m.from === "them" ? "-mt-1" : ""}`}>
                               {m.type === 'image' ? (
                                 <div className="space-y-2">
                                   <img 
@@ -562,7 +558,6 @@ const ProfChatPage = () => {
                     })}
                   </div>
                 ))}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Fixed Input - Always Visible */}
@@ -615,14 +610,14 @@ const ProfChatPage = () => {
                   key={color.name}
                   onClick={() => handleColorSelect(color)}
                   className={`w-12 h-12 rounded-lg ${color.sent} hover:scale-110 transition-transform duration-200 border-2 ${
-                    selectedColor?.sent === color.sent ? 'border-white' : 'border-transparent'
+                    currentConversationColor?.sent === color.sent ? 'border-white' : 'border-transparent'
                   }`}
                   title={color.name}
                 />
               ))}
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-300 text-sm">Selected: {selectedColor?.name}</span>
+              <span className="text-gray-300 text-sm">Selected: {currentConversationColor?.name}</span>
               <button
                 onClick={() => setShowColorPicker(false)}
                 className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
