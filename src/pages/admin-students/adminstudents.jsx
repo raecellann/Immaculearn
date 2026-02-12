@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [showLogout, setShowLogout] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -56,6 +57,12 @@ const AdminStudents = () => {
   fetchStudents();
 }, []);
 
+
+  /* ================= SEARCH ================= */
+
+  const filteredTeachers = students.filter((student) =>
+    student.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -283,7 +290,16 @@ const AdminStudents = () => {
           
           {/* DESKTOP BUTTONS */}
           <div className="hidden lg:flex justify-between items-center mb-6">
-            <div></div>
+            <div className="relative w-64">
+            <input
+              type="text"
+              placeholder="Search teacher..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
+            />
+            <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+          </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddModal(true)}
@@ -367,7 +383,7 @@ const AdminStudents = () => {
               </thead>
 
               <tbody>
-                {students.map((student) => (
+                {filteredTeachers.map((student) => (
                   <tr
                     key={student.id}
                     className="border-b border-gray-800 hover:bg-[#242B38]"

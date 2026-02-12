@@ -76,6 +76,16 @@ const AdminTeachers = () => {
     setShowAddModal(false);
   };
 
+
+  const handleCancelImport = () => {
+    setShowImportModal(false);
+    setImportFile(null);
+    setImportPreview([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   /* ================= DELETE ================= */
 
   const handleDeleteTeacher = (teacherId) => {
@@ -135,7 +145,7 @@ const AdminTeachers = () => {
 
       <div className="flex-1 p-8">
 
-        <h1 className="text-2xl font-bold mb-6">Teachers</h1>
+        <h1 className="text-2xl font-bold mb-6">Teachers List</h1>
 
         {/* ACTION BUTTONS */}
         <div className="flex justify-between items-center mb-6">
@@ -176,6 +186,8 @@ const AdminTeachers = () => {
               <tr className="text-gray-400 border-b border-gray-700">
                 <th className="py-3">Name</th>
                 <th className="py-3">Email</th>
+                <th className="py-3">Course</th>
+                <th className="py-3">Year</th>
                 <th className="py-3">Actions</th>
               </tr>
             </thead>
@@ -245,34 +257,104 @@ const AdminTeachers = () => {
           <div className="bg-[#1E242E] p-6 rounded-xl w-[500px]">
             <h2 className="text-xl mb-4">Import Teachers</h2>
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleFileUpload}
-              className="mb-4"
-            />
+            {/* File Upload Area */}
+            <div className="mb-6">
+              <div
+                className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-gray-500 transition-colors cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-300 mb-2">
+                  Click to upload CSV or Excel file or drag and drop
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Supported formats: .csv, .xlsx, .xls
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
 
-            {importPreview.length > 0 && (
-              <p className="text-sm text-gray-400 mb-4">
-                {importPreview.length} teachers found
-              </p>
+            {/* File Info */}
+            {importFile && (
+              <div className="mb-6 p-4 bg-[#242B38] rounded-lg">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <p className="text-white font-medium">{importFile.name}</p>
+                    <p className="text-gray-400 text-sm">
+                      {(importFile.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
 
+
+            {/* Preview */}
+            {importPreview.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Preview ({importPreview.length} Teachers found)
+                </h3>
+                <div className="max-h-60 overflow-y-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-gray-400 border-b border-gray-700">
+                        <th className="py-2 text-sm">Email</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importPreview.slice(0, 5).map((student, index) => (
+                        <tr key={index} className="border-b border-gray-800">
+                          <td className="py-2 text-sm">{student.email}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {importPreview.length > 5 && (
+                    <p className="text-gray-400 text-sm mt-2 text-center">
+                      ... and {importPreview.length - 5} more Teachers
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Excel Format Instructions */}
+            <div className="mb-6 p-4 bg-[#242B38] rounded-lg">
+              <h3 className="text-white font-medium mb-2">Excel Format Required:</h3>
+              <p className="text-gray-300 text-sm mb-2">
+                Your Excel / CSV file should have the following column in the first row:
+              </p>
+              <ul className="text-gray-400 text-sm space-y-1">
+                <li>• Gmail (Gmail only — must end with <b>@gmail.com</b>)</li>
+              </ul>
+            </div>
+
+            {/* Action Buttons */}
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setShowImportModal(false)}
-                className="px-4 py-2 bg-gray-600 rounded-lg"
+                onClick={handleCancelImport}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleImportTeachers}
-                className="px-4 py-2 bg-blue-600 rounded-lg"
+                disabled={importPreview.length === 0}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Import
+                Import {importPreview.length} Teachers
               </button>
             </div>
+
+            
           </div>
         </div>
       )}
