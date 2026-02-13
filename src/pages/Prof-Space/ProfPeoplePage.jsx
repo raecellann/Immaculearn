@@ -94,7 +94,7 @@ const ProfPeoplePage = () => {
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold">{activeSpace.space_name}</h1>
+          <h1 className="text-xl font-bold">People – {activeSpace.space_name}</h1>
         </div>
 
         {/* HEADER SPACER */}

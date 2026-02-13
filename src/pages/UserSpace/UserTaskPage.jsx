@@ -768,7 +768,7 @@ const UserTaskPage = () => {
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold">{space_name}</h1>
+          <h1 className="text-xl font-bold">{spaceName}</h1>
         </div>
 
         <div className="lg:hidden h-16" />
@@ -864,6 +864,12 @@ const UserTaskPage = () => {
                 className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
               >
                 Pending Invites
+              </button>
+              <button
+                onClick={handleDeleteRoom}
+                className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500 transition text-sm"
+              >
+                Delete Room
               </button>
             </div>
           )}

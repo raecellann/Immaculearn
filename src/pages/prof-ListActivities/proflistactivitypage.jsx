@@ -2,8 +2,17 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 import Button from "../component/Button";
 import Logout from "../component/logout";
+import { useUser } from "../../contexts/user/useUser";
+import { useSpace } from "../../contexts/space/useSpace";
+import { useNavigate } from "react-router";
 
 const ProfListActivityPage = () => {
+
+  const { user } = useUser();
+  const { userSpaces, courseSpaces } = useSpace();
+  const navigate = useNavigate();
+
+
   const [showModal, setShowModal] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -111,20 +120,21 @@ const ProfListActivityPage = () => {
           {/* Your Space Activities */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
-            {activitiesByCategory['your-space']?.length === 0 ? (
+            {userSpaces?.length === 0 ? (
               <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
                 No space list activity yet
               </div>
-            ) : activitiesByCategory['your-space']?.length > 0 ? (
+            ) : userSpaces?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {activitiesByCategory['your-space'].map((activity, index) => (
+                {userSpaces?.map((space, index) => (
                   <div
                     key={`your-space-${index}`}
+                    onClick={() => navigate(`/prof/list-activity/${space.space_uuid}/${space.space_name}`)}
                     className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
                   >
                     <span className="text-xl">📋</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{activity.name}</p>
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
                     </div>
                   </div>
                 ))}
@@ -136,20 +146,20 @@ const ProfListActivityPage = () => {
           {/* Course Space Activities */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
-            {activitiesByCategory['course-space']?.length === 0 ? (
+            {courseSpaces?.length === 0 ? (
               <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
                 No course space list activity yet
               </div>
-            ) : activitiesByCategory['course-space']?.length > 0 ? (
+            ) : courseSpaces?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {activitiesByCategory['course-space'].map((activity, index) => (
+                {courseSpaces?.map((space, index) => (
                   <div
                     key={`course-space-${index}`}
                     className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
                   >
                     <span className="text-xl">📋</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{activity.name}</p>
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
                     </div>
                   </div>
                 ))}
@@ -159,7 +169,7 @@ const ProfListActivityPage = () => {
           </div>
         </div>
 
-        {/* Modal */}
+        {/* Modal
         {showModal && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
             <div className="bg-[#1F242D] p-6 rounded-lg w-[90%] max-w-[400px]">
@@ -186,7 +196,7 @@ const ProfListActivityPage = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* LOGOUT MODAL */}

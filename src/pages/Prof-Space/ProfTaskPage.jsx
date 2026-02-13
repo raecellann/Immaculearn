@@ -838,6 +838,12 @@ const ProfTaskPage = () => {
                   >
                     Pending Invites
                   </button>
+                  <button
+                    onClick={handleDeleteRoom}
+                    className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500 transition text-sm"
+                  >
+                    Delete Room
+                  </button>
                 </div>
               )}
               <button
