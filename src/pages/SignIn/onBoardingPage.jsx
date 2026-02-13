@@ -103,8 +103,8 @@ const OnBoarding = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden px-4" style={{ backgroundColor: "#FDFBEE" }}>
       {/* Decorative Images */}
-      <img src="https://res.cloudinary.com/diws5bcu6/image/upload/v1761577252/freepik__background__93517_1_ww82rt.png" alt="Left" className="absolute bottom-0 left-4 w-100 md:w-100" />
-      <img src="https://res.cloudinary.com/diws5bcu6/image/upload/v1761577536/download_1_t1ahpa.png" alt="Right" className="absolute bottom-0 right-4 w-100 md:w-100" />
+      <img src="https://res.cloudinary.com/diws5bcu6/image/upload/v1761577252/freepik__background__93517_1_ww82rt.png" alt="Left" className="absolute bottom-0 left-4 w-100 md:w-100 hidden md:block" />
+      <img src="https://res.cloudinary.com/diws5bcu6/image/upload/v1761577536/download_1_t1ahpa.png" alt="Right" className="absolute bottom-0 right-4 w-100 md:w-100 hidden md:block" />
 
       <div className="bg-white shadow-lg rounded-lg p-8 md:p-10 w-full max-w-md relative z-10 border border-gray-200">
         <h2 className="text-2xl font-bold text-green-700 mb-6 text-center">

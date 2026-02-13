@@ -160,12 +160,12 @@ const LoginPage = () => {
       <img
         src="https://res.cloudinary.com/diws5bcu6/image/upload/v1761577252/freepik__background__93517_1_ww82rt.png"
         alt="Left Illustration"
-        className="absolute bottom-0 left-4 w-100 md:w-100"
+        className="absolute bottom-0 left-4 w-100 md:w-100 hidden md:block"
       />
       <img
         src="https://res.cloudinary.com/diws5bcu6/image/upload/v1761577536/download_1_t1ahpa.png"
         alt="Right Illustration"
-        className="absolute bottom-0 right-4 w-100 md:w-100"
+        className="absolute bottom-0 right-4 w-100 md:w-100 hidden md:block"
       />
 
       {/* Center Content */}
