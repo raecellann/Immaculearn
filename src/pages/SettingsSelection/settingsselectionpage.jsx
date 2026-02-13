@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, User, Star, Settings as SettingsIcon } from "lucide-react";
+import { Menu, Star, Settings as SettingsIcon, ArrowLeft } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
@@ -33,12 +33,12 @@ const SettingsSelectionPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleAccountSettings = () => {
-    navigate("/accsettings");
-  };
-
   const handleSpaceSettings = () => {
     navigate("/space-settings");
+  };
+
+  const handleGoBack = () => {
+    navigate(-1);
   };
 
   const ActiveSidebar =
@@ -78,9 +78,16 @@ const SettingsSelectionPage = () => {
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3"
           >
             <Menu size={24} />
+          </button>
+          <button
+            onClick={handleGoBack}
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3 flex items-center"
+          >
+            <ArrowLeft size={20} className="mr-2" />
+            <span className="text-sm">Back</span>
           </button>
           <div className="w-10" />
         </div>
@@ -90,39 +97,26 @@ const SettingsSelectionPage = () => {
           <div className="max-w-4xl mx-auto">
 
             {/* HEADER */}
-            <div className="mb-10 text-center">
-              <h1 className="text-3xl font-bold mb-2">Settings</h1>
-              <p className="text-gray-400">
-                Choose what you'd like to configure
-              </p>
+            <div className="mb-10">
+              <div className="flex items-center mb-4">
+                <button
+                  onClick={handleGoBack}
+                  className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3 flex items-center"
+                >
+                  <ArrowLeft size={20} className="mr-2" />
+                  <span className="text-sm">Back</span>
+                </button>
+                <div className="flex-grow text-center">
+                  <h1 className="text-3xl font-bold mb-2">Settings</h1>
+                  <p className="text-gray-400">
+                    Choose what you'd like to configure
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* SETTINGS CARDS */}
+            {/* SETTINGS CARDS AND QUICK INFO */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-
-              {/* ACCOUNT SETTINGS */}
-              <button
-                onClick={handleAccountSettings}
-                className="bg-[#1E242E] rounded-xl p-8 hover:bg-[#2E3440] transition-all duration-200 group"
-              >
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-700 transition-colors">
-                    <User size={30} />
-                  </div>
-
-                  <h2 className="text-xl font-semibold mb-2">
-                    Account Settings
-                  </h2>
-
-                  <p className="text-gray-400 text-sm">
-                    Manage profile, security, and preferences
-                  </p>
-
-                  <span className="mt-4 text-blue-400 text-sm font-medium group-hover:text-blue-300">
-                    Configure Account →
-                  </span>
-                </div>
-              </button>
 
               {/* SPACE SETTINGS */}
               <button
@@ -147,38 +141,26 @@ const SettingsSelectionPage = () => {
                   </span>
                 </div>
               </button>
-            </div>
 
-            {/* QUICK INFO */}
-            <div className="bg-[#1E242E] rounded-xl p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <SettingsIcon size={20} className="mr-2" />
-                Quick Info
-              </h3>
+              {/* QUICK INFO */}
+              <div className="bg-[#1E242E] rounded-xl p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <SettingsIcon size={20} className="mr-2" />
+                  Quick Info
+                </h3>
 
-              <div className="grid md:grid-cols-2 gap-6 text-sm text-gray-400">
-                <div>
-                  <h4 className="text-white font-medium mb-2">
-                    Account Settings
-                  </h4>
-                  <ul className="space-y-1">
-                    <li>• Profile information</li>
-                    <li>• Email and password</li>
-                    <li>• Security options</li>
-                    <li>• Notifications</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="text-white font-medium mb-2">
-                    Space Settings
-                  </h4>
-                  <ul className="space-y-1">
-                    <li>• Space configuration</li>
-                    <li>• Member permissions</li>
-                    <li>• Feature toggles</li>
-                    <li>• Access control</li>
-                  </ul>
+                <div className="text-sm text-gray-400">
+                  <div>
+                    <h4 className="text-white font-medium mb-2">
+                      Space Settings
+                    </h4>
+                    <ul className="space-y-1">
+                      <li>• Space configuration</li>
+                      <li>• Member permissions</li>
+                      <li>• Feature toggles</li>
+                      <li>• Access control</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>

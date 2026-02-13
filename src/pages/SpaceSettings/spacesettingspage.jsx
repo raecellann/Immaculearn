@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { Menu, Bell, Lock, Globe, Users, FileText, Settings as SettingsIcon, ChevronRight, Plus } from "lucide-react";
+import { Menu, ArrowLeft, Bell, Lock, Globe, Users, FileText, Settings as SettingsIcon, ChevronRight, Plus } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import Logout from "../component/logout";
 import Sidebar from "../component/sidebar";
+import ProfSidebar from "../component/profsidebar";
 
 const SpaceSettingsPage = () => {
   const { user } = useUser();
@@ -14,6 +15,8 @@ const SpaceSettingsPage = () => {
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
+  
+  const ActiveSidebar = user?.role === "professor" ? ProfSidebar : Sidebar;
 
   // Debug logging
   console.log("Space Settings Debug:", { 
@@ -44,6 +47,10 @@ const SpaceSettingsPage = () => {
     navigate('/space-settings');
   };
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   const handleSpaceSettingsClick = (spaceUuid, spaceName) => {
     console.log("Navigating to space settings:", { spaceUuid, spaceName });
     navigate(`/space-settings/${spaceUuid}/${encodeURIComponent(spaceName)}`);
@@ -53,7 +60,7 @@ const SpaceSettingsPage = () => {
     <div className="flex min-h-screen bg-[#161A20] text-white">
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -70,7 +77,7 @@ const SpaceSettingsPage = () => {
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN CONTENT */}
@@ -81,13 +88,22 @@ const SpaceSettingsPage = () => {
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
         >
-          <button
-            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="text-lg font-semibold">Space Settings</h1>
+          <div className="flex items-center">
+            <button
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3"
+            >
+              <Menu size={24} />
+            </button>
+            <button
+              onClick={handleGoBack}
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3 flex items-center"
+            >
+              <ArrowLeft size={20} className="mr-2" />
+              <span className="text-sm">Back</span>
+            </button>
+            <h1 className="text-lg font-semibold">Space Settings</h1>
+          </div>
           <div className="w-10" />
         </div>
 
@@ -98,8 +114,19 @@ const SpaceSettingsPage = () => {
           <div className="max-w-6xl mx-auto">
             {/* PAGE HEADER */}
             <div className="mb-8">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Space Settings</h1>
-              <p className="text-gray-400">Select a space to configure its settings and preferences</p>
+              <div className="flex items-center mb-4">
+                <button
+                  onClick={handleGoBack}
+                  className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3 flex items-center"
+                >
+                  <ArrowLeft size={20} className="mr-2" />
+                  <span className="text-sm">Back</span>
+                </button>
+                <div className="flex-grow text-center">
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-2">Space Settings</h1>
+                  <p className="text-gray-400">Select a space to configure its settings and preferences</p>
+                </div>
+              </div>
             </div>
 
             {/* SPACES LIST */}

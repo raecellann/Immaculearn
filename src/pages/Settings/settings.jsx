@@ -1,11 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
+import ProfSidebar from "../component/profsidebar";
 import Logout from "../component/logout";
+import { useUser } from "../../contexts/user/useUser";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router";
 
 const SettingsPage = () => {
+  const { user } = useUser();
+  const navigate = useNavigate();
   const [activeAccount, setActiveAccount] = useState("Raecell Ann");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+
+  const ActiveSidebar = user?.role === "professor" ? ProfSidebar : Sidebar;
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
 
   const accounts = [
     {
@@ -46,7 +58,7 @@ const SettingsPage = () => {
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile + Tablet Overlay */}
@@ -62,7 +74,7 @@ const SettingsPage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
@@ -80,6 +92,13 @@ const SettingsPage = () => {
           >
             ☰
           </button>
+          <button
+            onClick={handleGoBack}
+            className="bg-transparent border-none text-white p-2 focus:outline-none flex items-center"
+          >
+            <ArrowLeft size={20} className="mr-2" />
+            <span className="text-sm">Back</span>
+          </button>
           <h1 className="text-xl sm:text-2xl font-bold">Settings</h1>
         </div>
 
@@ -91,12 +110,25 @@ const SettingsPage = () => {
           <div className="w-full max-w-5xl">
 
             {/* Title (Laptop & Desktop only) */}
-            <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
-              Settings
-            </h1>
-            <p className="text-gray-300 mb-6 lg:mb-10 text-center text-sm lg:text-base">
-              Manage your profile, account preferences, and other options below.
-            </p>
+            <div className="hidden lg:block mb-6 lg:mb-10">
+              <div className="flex items-center mb-4">
+                <button
+                  onClick={handleGoBack}
+                  className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3 flex items-center"
+                >
+                  <ArrowLeft size={20} className="mr-2" />
+                  <span className="text-sm">Back</span>
+                </button>
+                <div className="flex-grow text-center">
+                  <h1 className="text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
+                    Settings
+                  </h1>
+                  <p className="text-gray-300 text-center text-sm lg:text-base">
+                    Manage your profile, account preferences, and other options below.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {/* Profile Account */}
             <div className="bg-[#1E222A] rounded-2xl p-4 lg:p-6 mb-8 lg:mb-10 border border-white shadow-lg">

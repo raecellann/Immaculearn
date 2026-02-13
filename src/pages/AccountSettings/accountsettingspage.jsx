@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import Sidebar from "../component/sidebar";
+import ProfSidebar from "../component/profsidebar";
 import { useUser } from "../../contexts/user/useUser";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
@@ -8,6 +9,8 @@ import Cropper from 'react-easy-crop';
 const ProfilePage = () => {
   const { user, isAuthenticated } = useUser();
   const navigate = useNavigate();
+  
+  const ActiveSidebar = user?.role === "professor" ? ProfSidebar : Sidebar;
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -189,7 +192,7 @@ const ProfilePage = () => {
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile + Tablet Sidebar Overlay */}
@@ -205,7 +208,7 @@ const ProfilePage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
