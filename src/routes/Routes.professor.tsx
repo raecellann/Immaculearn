@@ -17,8 +17,13 @@ import { useUser } from "../contexts/user/useUser";
 import ProfSpacePage from "../pages/Prof-MainSpace/profmainspace.jsx";
 import ProfCreateClassroomSpace from "../pages/Prof-MainSpace/components/prof-create-classroom-space.jsx";
 import ProfNotificationPage from "../pages/prof-Notifications/profnotification.jsx";
+
 import ProfListActivityPage from "../pages/prof-ListActivities/proflistactivitypage.jsx";
+import ProfViewAllActivityPage from "../pages/prof-ListActivities/components/ProfViewAllActivities.jsx";
+import ProfViewActivityPage from "../pages/prof-ListActivities/components/ProfViewActivity.jsx";
+
 import ProfFilePage from "../pages/prof-Files/proffiles.jsx";
+import ProfViewFiles from "../pages/prof-Files/components/profviewfiles.jsx";
 import ProfCalendarPage from "../pages/Prof-Calendar/ProfCalendar.jsx";
 import ProfGradeRecordPage from "../pages/prof-GradeViewing/profgradeviewing.jsx";
 import ProfSettingsPage from "../pages/Prof-Settings/profsettings.jsx";
@@ -27,9 +32,6 @@ import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionp
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
-import ProfViewAllActivityPage from "../pages/prof-ListActivities/components/ProfViewAllActivities.jsx";
-import ProfViewActivityPage from "../pages/prof-ListActivities/components/ProfViewActivity.jsx";
-
 export const ProfRoutes = () => {
   const { user } = useUser();
   if (!user) return null; // Or a loading spinner
@@ -74,6 +76,7 @@ export const ProfRoutes = () => {
       <Route path="acc-settings" element={<ProfProfilePage />} />
       <Route path="files" element={<ProfFilePage />} />
       <Route path="files-by-subject" element={<ProfFilesBySubject />} />
+
       {/* <Route path="files-by-subject" element={<ProfMain />} /> */}
 
       <Route
@@ -121,6 +124,14 @@ export const ProfRoutes = () => {
         element={
             <ProfFilePage />
         }
+      />
+      <Route 
+        path="files/:space_uuid/:space_name/:file_uuid/:file_name" 
+        element={
+          <ProtectedRoute>
+            <ProfViewFiles />
+          </ProtectedRoute>
+        } 
       />
       
       <Route
