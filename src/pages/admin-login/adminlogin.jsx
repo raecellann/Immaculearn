@@ -70,18 +70,18 @@ const AdminLogin = () => {
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center font-sans relative overflow-hidden px-4"
+      className="min-h-screen w-full flex flex-col items-center justify-center font-sans relative overflow-hidden"
       style={{ backgroundColor: "#FDFBEE" }}
     >
       <img
-        src="https://res.cloudinary.com/diws5bcu6/image/upload/v1761577252/freepik__background__93517_1_ww82rt.png"
+        src="https://res.cloudinary.com/diws5bcu6/image/upload/v1770907737/137629793_10353052_t3herh.png"
         alt="Left Illustration"
-        className="absolute bottom-0 left-4 w-100 md:w-100"
+        className="absolute bottom-0 left-0 w-48 md:w-64 lg:w-80 opacity-60"
       />
       <img
-        src="https://res.cloudinary.com/diws5bcu6/image/upload/v1761577536/download_1_t1ahpa.png"
+        src="https://res.cloudinary.com/diws5bcu6/image/upload/v1770907737/151093308_10499104_nrnnwi.png"
         alt="Right Illustration"
-        className="absolute bottom-0 right-4 w-100 md:w-100"
+        className="absolute bottom-0 right-0 w-48 md:w-64 lg:w-80 opacity-60"
       />
 
       <div className="text-center mb-8">
