@@ -84,7 +84,9 @@ export default function Routes() {
         <Route path="/prof/*" element={
           <UserProvider>
             <SpaceProvider>
-              <ProfRoutes />
+              <ProtectedRoute>
+                <ProfRoutes />
+              </ProtectedRoute>
             </SpaceProvider>
           </UserProvider>
         } />
