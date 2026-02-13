@@ -390,8 +390,11 @@ const AdminStudents = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-400 border-b border-gray-700">
-                  
+                  <th className="py-3">First Name</th>
+                  <th className="py-3">Last Name</th>
                   <th className="py-3">Email</th>
+                  <th className="py-3">Course</th>
+                  <th className="py-3">Year Level</th>
                   <th className="py-3">Actions</th>
                 </tr>
               </thead>
@@ -402,7 +405,13 @@ const AdminStudents = () => {
                     key={student.id}
                     className="border-b border-gray-800 hover:bg-[#242B38]"
                   >
+
+                    <td className="py-4 text-sm"></td>
+                    <td className="py-4 text-sm"></td>
                     <td className="py-4 text-sm">{student.email}</td>
+                    <td className="py-4 text-sm"></td>
+                    <td className="py-4 text-sm"></td>
+                    
                    
                     <td className="py-4">
                       <button
