@@ -19,6 +19,34 @@ import ProfSidebar from "../component/profsidebar";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 
 const ProfTaskPage = () => {
+  // ================= TASK FORM STATE =================
+  const [taskTitle, setTaskTitle] = useState("");
+  const [instruction, setInstruction] = useState("");
+  const [score, setScore] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [taskCategory, setTaskCategory] = useState("individual-act");
+  
+  // Task categories with emojis
+  const taskCategories = [
+    { value: "personal-reflection", label: "Personal Reflection", emoji: "🤔" },
+    { value: "individual-act", label: "Individual Activity", emoji: "📝" },
+    { value: "group-project", label: "Group Project", emoji: "👥" },
+    { value: "individual-project", label: "Individual Project", emoji: "🎯" }
+  ];
+
+  // Get category emoji and label
+  const getCategoryDisplay = (categoryValue) => {
+    const category = taskCategories.find(cat => cat.value === categoryValue);
+    return category ? `${category.emoji} ${category.label}` : "📝 Task";
+  };
+
+  // Get category emoji
+  const getCategoryEmoji = (categoryValue) => {
+    const category = taskCategories.find(cat => cat.value === categoryValue);
+    return category ? category.emoji : "📝";
+  };
+
   const navigate = useNavigate();
 
   const { space_uuid, space_name } = useParams();
@@ -205,8 +233,6 @@ const ProfTaskPage = () => {
       })
       .catch(err => {
         console.error('Failed to copy: ', err);
-        setCopyFeedback("Error!");
-        setTimeout(() => setCopyFeedback(""), 2000);
       });
   };
 
@@ -214,9 +240,163 @@ const ProfTaskPage = () => {
     fileInputRef.current?.click();
   };
 
-  const applyFormat = (command) => {
-    instructionRef.current?.focus();
-    document.execCommand(command, false, null);
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    console.log("File selected:", file);
+
+    // Extract text from document and populate instruction field
+    if (file) {
+      try {
+        const extractedText = await extractTextFromFile(file);
+        if (extractedText) {
+          setInstruction(extractedText);
+          // Update the contentEditable div if it exists
+          if (instructionRef.current) {
+            instructionRef.current.innerHTML = extractedText;
+          }
+          console.log("Text extracted from document:", extractedText);
+        }
+      } catch (error) {
+        console.error("Error extracting text from file:", error);
+      }
+    }
+  };
+
+  // Text extraction functions (same as UserTaskPage)
+  const extractTextFromFile = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileType = file.type;
+      const fileName = file.name.toLowerCase();
+
+      // PDF file extraction
+      if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+        resolve(`[PDF Document: ${file.name}]\n\nContent extraction from PDF requires additional library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+      }
+      // Word document extraction
+      else if (fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+        resolve(`[Word Document: ${file.name}]\n\nContent extraction from DOCX requires mammoth.js library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+      }
+      // PowerPoint extraction
+      else if (fileType.includes('presentation') || fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) {
+        resolve(`[PowerPoint Presentation: ${file.name}]\n\nContent extraction from PPTX requires additional library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+      }
+      // Excel extraction
+      else if (fileType.includes('sheet') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        resolve(`[Excel Spreadsheet: ${file.name}]\n\nContent extraction from Excel requires xlsx library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+      }
+      // Plain text file
+      else if (fileType.startsWith('text/') || fileName.endsWith('.txt')) {
+        const fileReader = new FileReader();
+        fileReader.onload = function() {
+          resolve(this.result);
+        };
+        fileReader.onerror = reject;
+        fileReader.readAsText(file);
+      }
+      else {
+        reject(new Error('Unsupported file type for text extraction'));
+      }
+    });
+  };
+
+  // Sync instruction state with contentEditable
+  useEffect(() => {
+    if (instructionRef.current) {
+      const handleInput = () => {
+        setInstruction(instructionRef.current.innerHTML);
+      };
+      instructionRef.current.addEventListener('input', handleInput);
+      return () => {
+        instructionRef.current?.removeEventListener('input', handleInput);
+      };
+    }
+  }, [isCreatingTask]);
+
+  // ================= UPLOAD HANDLER =================
+  const handleUpload = async (status_type) => {
+    if (!taskTitle.trim()) {
+      alert("Task title is required");
+      return;
+    }
+
+    if (!dueDate) {
+      alert("Due date is required");
+      return;
+    }
+
+    if (!score) {
+      alert("Score is required");
+      return;
+    }
+
+    const payload = {
+      title: taskTitle,
+      instruction: instruction || "No instruction provided",
+      scoring: Number(score),
+      status: status_type,
+      due_date: dueDate,
+      category: taskCategory,
+    };
+
+    // Add groups data if configured
+    if (groupsConfigured && groups.length > 0) {
+      // Filter out empty groups and transform to backend format
+      const validGroups = groups.filter(group => 
+        group.leader?.trim() || group.members?.some(m => m?.trim())
+      );
+
+      if (validGroups.length > 0) {
+        payload.groupsData = validGroups.map((group, index) => ({
+          group_name: `Group_${index + 1}`,
+          leader_id: group.leader?.trim() || null,
+          members: group.members
+            .filter(member => member?.trim())
+            .map(member => member.trim())
+        }));
+      }
+    }
+
+    console.log("Uploading task with payload:", payload);
+
+    try {
+      if (status_type === "uploaded") {
+        await uploadTaskMutation.mutateAsync({
+          spaceId: Number(currentSpace?.space_id),
+          taskData: payload,
+        });
+        alert("Task published successfully!");
+      } else {
+        await draftTaskMutation.mutateAsync({
+          spaceId: Number(currentSpace?.space_id),
+          taskData: payload,
+        });
+        alert("Task saved as draft!");
+      }
+      
+      // Reset form and close
+      resetTaskForm();
+      setIsCreatingTask(false);
+    } catch (error) {
+      console.error("Failed to save task:", error);
+      alert("Failed to save task. Please try again.");
+    }
+  };
+
+  const resetTaskForm = () => {
+    setTaskTitle("");
+    setInstruction("");
+    setScore("");
+    setDueDate("");
+    setSelectedFile(null);
+    setTaskCategory("individual-act");
+    setGroups([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+    setNumberOfGroups(1);
+    setGroupsConfigured(false);
+    setGroupCreationMethod(null);
+    if (instructionRef.current) {
+      instructionRef.current.innerHTML = "";
+    }
   };
 
   const handleManualGroups = () => {
@@ -716,7 +896,12 @@ const ProfTaskPage = () => {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-4">{task.task_title}</td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{getCategoryDisplay(task.task_category)}</span>
+                            <span className="text-sm font-semibold">{task.task_title}</span>
+                          </div>
+                        </td>
                         <td className="py-3 px-4">
                           {new Date(task.task_due).toLocaleDateString("en-US", {
                             year: "numeric",
@@ -747,7 +932,10 @@ const ProfTaskPage = () => {
                     className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
                   >
                     <div className="flex justify-between items-center mb-3">
-                      <p className="text-sm font-semibold">{task.name}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{getCategoryDisplay(task.task_category)}</span>
+                        <span className="text-sm font-semibold">{task.task_title}</span>
+                      </div>
                       <button
                         onClick={() =>
                           setOpenIndex(openIndex === index ? null : index)
@@ -757,10 +945,15 @@ const ProfTaskPage = () => {
                         {task.status}
                       </button>
                     </div>
-
-                    <p className="text-sm text-gray-400">
+                    <p className="text-xs text-gray-400">
                       Deadline:{" "}
-                      <span className="text-white">{task.deadline}</span>
+                      <span className="text-white">
+                        {new Date(task.task_due).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "2-digit",
+                        })}
+                      </span>
                     </p>
 
                     {openIndex === index && (
@@ -901,9 +1094,26 @@ const ProfTaskPage = () => {
                     </label>
                     <input
                       type="text"
+                      value={taskTitle}
+                      onChange={(e) => setTaskTitle(e.target.value)}
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
                       placeholder="Enter task title"
                     />
+
+                    <label className="font-semibold">
+                      Category: <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={taskCategory}
+                      onChange={(e) => setTaskCategory(e.target.value)}
+                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500 w-full"
+                    >
+                      {taskCategories.map((category) => (
+                        <option key={category.value} value={category.value}>
+                          {category.emoji} {category.label}
+                        </option>
+                      ))}
+                    </select>
 
                     {/* INSTRUCTION */}
                     <label className="font-semibold">
@@ -981,6 +1191,7 @@ const ProfTaskPage = () => {
                         <input
                           ref={fileInputRef}
                           type="file"
+                          onChange={handleFileChange}
                           className="hidden"
                         />
                       </div>
@@ -989,17 +1200,23 @@ const ProfTaskPage = () => {
 
                   {/* RIGHT SECTION */}
                   <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
-                    <label className="font-semibold">Score:</label>
+                    <label className="font-semibold">Score: <span className="text-red-500">*</span></label>
                     <input
                       type="text"
+                      value={score}
+                      onChange={(e) => setScore(e.target.value)}
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
-                      placeholder="20/20"
+                      placeholder="Enter score (e.g., 100)"
+                      min="0"
                     />
 
-                    <label className="font-semibold">Due Date:</label>
+                    <label className="font-semibold">Due Date: <span className="text-red-500">*</span></label>
                     <input
                       type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      min={new Date().toISOString().split('T')[0]}
                     />
 
                     {groupsConfigured ? (
@@ -1114,21 +1331,15 @@ const ProfTaskPage = () => {
                 <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
                   <button
                     className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
-                    onClick={() => {
-                      // Handle publish logic here
-                      setIsCreatingTask(false);
-                    }}
+                    onClick={() => handleUpload("uploaded")}
                   >
-                    Publish Task
+                    {uploadTaskMutation.isLoading ? "Publishing..." : "Publish Task"}
                   </button>
                   <button
                     className="bg-gray-700 hover:bg-gray-800 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
-                    onClick={() => {
-                      // Handle save as draft logic here
-                      setIsCreatingTask(false);
-                    }}
+                    onClick={() => handleUpload("draft")}
                   >
-                    Save as Draft
+                    {draftTaskMutation.isLoading ? "Saving..." : "Save as Draft"}
                   </button>
                 </div>
               </div>
