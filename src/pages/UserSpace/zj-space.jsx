@@ -268,6 +268,30 @@ const UserPage = () => {
             </div>
           </div>
 
+          {/* Add Member Button - Mobile */}
+          {isOwnerSpace && (
+            <div className="md:hidden flex justify-end gap-2 mb-6">
+              <button 
+                onClick={handleInviteMember} 
+                className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
+              >
+                Add Member
+              </button>
+              <button 
+                onClick={() => setShowPendingInvitations(true)} 
+                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
+              >
+                Pending Invites
+              </button>
+              <button
+                onClick={handleDeleteRoom}
+                className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500 transition text-sm"
+              >
+                Delete Room
+              </button>
+            </div>
+          )}
+
           {/* ================= TABS ================= */}
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
@@ -296,24 +320,6 @@ const UserPage = () => {
               </div>
             </div>
           </div>
-          
-          {/* Add Member Button - Mobile */}
-          {isOwnerSpace && (
-            <div className="md:hidden flex justify-end gap-2 mb-6">
-              <button 
-                onClick={handleInviteMember} 
-                className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
-              >
-                Add Member
-              </button>
-              <button 
-                onClick={() => setShowPendingInvitations(true)} 
-                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
-              >
-                Pending Invites
-              </button>
-            </div>
-          )}
 
           {/* POST BOX */}
           <div
