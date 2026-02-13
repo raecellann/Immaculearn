@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import Sidebar from "../component/sidebar";
-import { FiChevronLeft } from "react-icons/fi";
+import { FiMenu, FiX, FiChevronLeft } from "react-icons/fi";
+import Logout from "../component/logout";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
 
@@ -10,6 +11,27 @@ const UserPeoplePage = () => {
   const { userSpaces, friendSpaces, courseSpaces } = useSpace();
   const navigate = useNavigate();
   const { space_uuid } = useParams();
+
+  /* ================= HEADER + SIDEBAR ================= */
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Combine user and friend spaces
   const allSpaces = [...(userSpaces || []), ...(courseSpaces || []), ...(friendSpaces || [])];
@@ -37,26 +59,64 @@ const UserPeoplePage = () => {
 
   console.log(activeSpace)
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
-      {/* SIDEBAR */}
-      <Sidebar />
+    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <div className="hidden lg:block">
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 overflow-y-auto">
-        {/* COVER IMAGE */}
+      {/* ================= MOBILE OVERLAY ================= */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* ================= MOBILE/TABLET SIDEBAR ================= */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        md:block lg:hidden`}
+      >
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
+
+      {/* ================= MAIN ================= */}
+      <div className="flex-1 flex flex-col w-full">
+        {/* ================= HEADER ================= */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
+          flex items-center gap-4 fixed top-0 left-0 right-0 z-30
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+        >
+          <button
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            className="bg-transparent border-none text-white text-2xl p-0"
+          >
+            {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
+          <h1 className="text-xl font-bold">People – {activeSpace.space_name}</h1>
+        </div>
+
+        {/* HEADER SPACER */}
+        <div className="lg:hidden h-16" />
+
+        {/* ================= COVER ================= */}
         <div className="relative">
           <img
             src="/src/assets/UserSpace/cover.png"
-            alt="Space Cover"
-            className="w-full h-52 object-cover"
+            className="w-full h-32 sm:h-40 md:h-48 object-cover"
+            alt="cover"
           />
-
+          <div className="absolute inset-0 bg-black/50" />
         </div>
 
         {/* PAGE HEADER */}
-        <div className="px-10 py-6">
+        <div className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold underline underline-offset-4">
+            <h1 className="text-2xl md:text-3xl font-bold">
               People – {activeSpace.space_name}
             </h1>
 
@@ -108,6 +168,9 @@ const UserPeoplePage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

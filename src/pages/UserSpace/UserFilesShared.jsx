@@ -12,11 +12,25 @@ const UserFilesShared = () => {
 
   const [showPendingInvitations, setShowPendingInvitations] = useState(false)
   const [showInvitePopup, setShowInvitePopup] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState("")
+  const [copyFeedback, setCopyFeedback] = useState("")
+  const [joinRequestsData, setJoinRequestsData] = useState([])
+  const [spaceLoading, setSpaceLoading] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  // File upload states
+  const [showCreateUploadModal, setShowCreateUploadModal] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams(); // Get params from URL
 
   const { user, isLoading } = useUser();
-  const { userSpaces, friendSpaces } = useSpace();
+  const { userSpaces, friendSpaces, deleteSpace, acceptJoinRequest, declineJoinRequest } = useSpace();
 
   /* ================= SPACE & OWNER LOGIC ================= */
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
@@ -31,17 +45,6 @@ const UserFilesShared = () => {
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
 
   const isFriendSpace = !isOwnerSpace;
-
-  /* ================= HEADER + SIDEBAR ================= */
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [showLogout, setShowLogout] = useState(false);
-  const [showHeader, setShowHeader] = useState(true);
-  const lastScrollY = useRef(0);
-
-  // File upload states
-  const [showCreateUploadModal, setShowCreateUploadModal] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -214,7 +217,7 @@ const UserFilesShared = () => {
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold">{space_name}</h1>
+          <h1 className="text-xl font-bold">{spaceName}</h1>
         </div>
 
         {/* HEADER SPACER */}
@@ -323,6 +326,12 @@ const UserFilesShared = () => {
                 className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
               >
                 Pending Invites
+              </button>
+              <button
+                onClick={handleDeleteRoom}
+                className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500 transition text-sm"
+              >
+                Delete Room
               </button>
             </div>
           )}
