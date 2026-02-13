@@ -191,7 +191,7 @@ export const ProfRoutes = () => {
 
 
       <Route
-        path="/create/space"
+        path="/space/create"
         element={
           <ProtectedRoute>
             <ProfCreateSpace />

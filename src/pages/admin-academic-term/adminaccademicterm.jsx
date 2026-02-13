@@ -115,6 +115,9 @@ const AdminAcademicTerm = () => {
     }
   ]);
 
+  // Check if 1st semester is completed
+  const isFirstSemCompleted = academicTerms.find(term => term.id === "1st-sem")?.status === "completed";
+
   const currentTerm = academicTerms.find(term => term.id === selectedTerm.replace(" ", "-").toLowerCase());
 
   const getStatusColor = (status) => {
@@ -165,23 +168,34 @@ const AdminAcademicTerm = () => {
         <div className="flex-1 p-6">
           {/* Term Selection */}
           <div className="flex gap-4 mb-6">
-            {academicTerms.map((term) => (
-              <button
-                key={term.id}
-                onClick={() => setSelectedTerm(term.name)}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                  selectedTerm === term.name
-                    ? "bg-[#007AFF] text-white"
-                    : "bg-[#1E242E] text-gray-300 hover:bg-[#2A2F3A]"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{term.name}</span>
-                  <span className="text-xs opacity-75">({term.schoolYear})</span>
-                </div>
-              </button>
-            ))}
+            {academicTerms.filter(term => term.id === "1st-sem" || term.id === "2nd-sem").map((term) => {
+              const isSecondSem = term.id === "2nd-sem";
+              const isDisabled = isSecondSem && !isFirstSemCompleted;
+              
+              return (
+                <button
+                  key={term.id}
+                  onClick={() => !isDisabled && setSelectedTerm(term.name)}
+                  disabled={isDisabled}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                    selectedTerm === term.name
+                      ? "bg-[#007AFF] text-white"
+                      : isDisabled
+                      ? "bg-[#1E242E] text-gray-500 cursor-not-allowed opacity-50"
+                      : "bg-[#1E242E] text-gray-300 hover:bg-[#2A2F3A]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>{term.name}</span>
+                    <span className="text-xs opacity-75">({term.schoolYear})</span>
+                    {isDisabled && (
+                      <span className="text-xs text-yellow-400 ml-1">(Locked)</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {/* Period Cards */}
