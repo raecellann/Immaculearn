@@ -4,14 +4,8 @@ import {
   GraduationCap,
   Users,
   LogOut,
-  Home,
   Bell,
-  Calendar,
-  Folder,
-  ClipboardList,
-  MessageCircle,
-  User,
-  Settings,
+  School
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import Logout from "./logout";
@@ -28,6 +22,8 @@ const AdminSidebar = () => {
     { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin/dashboard" },
     { icon: <Users size={20} />, label: "Students", path: "/admin/students" },
     { icon: <GraduationCap size={20} />, label: "Teachers", path: "/admin/teachers" },
+    { icon: <Bell size={20} />, label: "Announcement", path: "/admin/announcement" },
+    { icon: <School size={20} />, label: "Academic Term", path: "/admin/academic-term" },
   ];
 
   const privateItems = [];
