@@ -27,6 +27,8 @@ import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionp
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
+import ProfViewAllActivityPage from "../pages/prof-ListActivities/components/ProfViewAllActivities.jsx";
+import ProfViewActivityPage from "../pages/prof-ListActivities/components/ProfViewActivity.jsx";
 
 export const ProfRoutes = () => {
   const { user } = useUser();
@@ -92,6 +94,18 @@ export const ProfRoutes = () => {
         path="list-activity"
         element={
             <ProfListActivityPage />
+        }
+      />
+      <Route
+        path="list-activity/:space_uuid/:space_name"
+        element={
+            <ProfViewAllActivityPage />
+        }
+      />
+      <Route
+        path="list-activity/:space_uuid/:space_name/:task_id/:task_name"
+        element={
+            <ProfViewActivityPage />
         }
       />
       
