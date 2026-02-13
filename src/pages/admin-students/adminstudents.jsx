@@ -60,7 +60,7 @@ const AdminStudents = () => {
 
   /* ================= SEARCH ================= */
 
-  const filteredTeachers = students.filter((student) =>
+  const filteredStudents = students.filter((student) =>
     student.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -318,9 +318,9 @@ const AdminStudents = () => {
             </div>
           </div>
 
-          {/* MOBILE SEARCH */}
-          <div className="lg:hidden mb-4">
-            <div className="relative max-w-sm">
+          {/* MOBILE LARGE TO TABLET: SEARCH AND BUTTONS ALIGNED */}
+          <div className="hidden md:flex lg:hidden justify-between items-center mb-6">
+            <div className="relative w-64">
               <input
                 type="text"
                 placeholder="Search student..."
@@ -330,29 +330,62 @@ const AdminStudents = () => {
               />
               <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
             </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+              >
+                <UserPlus className="w-4 h-4" />
+                Add Student
+              </button>
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Import Excel
+              </button>
+            </div>
           </div>
 
-          {/* MOBILE IMPORT BUTTON */}
-          <div className="lg:hidden mb-4 flex gap-3">
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
-            >
-              <UserPlus className="w-4 h-4" />
-              Add Student
-            </button>
-            <button
-              onClick={() => setShowImportModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
-            >
-              <Upload className="w-4 h-4" />
-              Import Excel
-            </button>
+          {/* MOBILE SMALL: BUTTONS FIRST, SEARCH BELOW */}
+          <div className="md:hidden">
+            {/* MOBILE IMPORT BUTTON */}
+            <div className="mb-4 flex gap-3">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
+              >
+                <UserPlus className="w-4 h-4" />
+                Add Student
+              </button>
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
+              >
+                <Upload className="w-4 h-4" />
+                Import Excel
+              </button>
+            </div>
+
+            {/* MOBILE SEARCH */}
+            <div className="mb-4">
+              <div className="relative max-w-sm">
+                <input
+                  type="text"
+                  placeholder="Search student..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+              </div>
+            </div>
           </div>
 
           {/* MOBILE / TABLET */}
           <div className="flex flex-col gap-4 lg:hidden">
-            {students.map((student) => (
+            {filteredStudents.map((student) => (
               <div
                 key={student.id}
                 className="bg-[#1E242E] p-5 rounded-xl border border-white/10"
@@ -397,7 +430,7 @@ const AdminStudents = () => {
               </thead>
 
               <tbody>
-                {filteredTeachers.map((student) => (
+                {filteredStudents.map((student) => (
                   <tr
                     key={student.id}
                     className="border-b border-gray-800 hover:bg-[#242B38]"
