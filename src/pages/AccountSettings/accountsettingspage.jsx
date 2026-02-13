@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import Sidebar from "../component/sidebar";
-import ProfSidebar from "../component/profsidebar";
 import { useUser } from "../../contexts/user/useUser";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
@@ -9,8 +8,6 @@ import Cropper from 'react-easy-crop';
 const ProfilePage = () => {
   const { user, isAuthenticated } = useUser();
   const navigate = useNavigate();
-  
-  const ActiveSidebar = user?.role === "professor" ? ProfSidebar : Sidebar;
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -28,6 +25,7 @@ const ProfilePage = () => {
   const [middleInitial, setMiddleInitial] = useState(user?.middleInitial || '');
   const [lastName, setLastName] = useState(user?.name?.split(' ')[1] || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [department, setDepartment] = useState(user?.department || '');
   const [year, setYear] = useState(user?.year || '');
   const [course, setCourse] = useState(user?.course || '');
 
@@ -153,6 +151,7 @@ const ProfilePage = () => {
     setMiddleInitial(user?.middleInitial || '');
     setLastName(user?.name?.split(' ')[1] || '');
     setBio(user?.bio || '');
+    setDepartment(user?.department || '');
     setYear(user?.year || '');
     setCourse(user?.course || '');
     setIsEditing(false);
@@ -192,7 +191,7 @@ const ProfilePage = () => {
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
-        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Mobile + Tablet Sidebar Overlay */}
@@ -208,7 +207,7 @@ const ProfilePage = () => {
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
