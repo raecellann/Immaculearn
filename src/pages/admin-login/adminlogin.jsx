@@ -76,12 +76,13 @@ const AdminLogin = () => {
       <img
         src="https://res.cloudinary.com/diws5bcu6/image/upload/v1770907737/137629793_10353052_t3herh.png"
         alt="Left Illustration"
-        className="absolute bottom-0 left-0 w-48 md:w-64 lg:w-80 opacity-60"
+        className="absolute bottom-0 left-0 w-80 md:w-96 lg:w-[400px] h-auto max-h-[60vh] object-contain opacity-90"
       />
+
       <img
         src="https://res.cloudinary.com/diws5bcu6/image/upload/v1770907737/151093308_10499104_nrnnwi.png"
         alt="Right Illustration"
-        className="absolute bottom-0 right-0 w-48 md:w-64 lg:w-80 opacity-60"
+        className="absolute bottom-0 right-0 w-80 md:w-96 lg:w-[400px] h-auto max-h-[60vh] object-contain opacity-90"
       />
 
       <div className="text-center mb-8">
