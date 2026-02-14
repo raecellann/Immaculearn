@@ -11,8 +11,11 @@ import { ProfRoutes } from "./routes/Routes.professor.js";
 import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
 import { UserProvider } from "./contexts/user/userContextProvider.tsx";
 import { SpaceProvider } from "./contexts/space/spaceContextProvider.tsx";
+import { NotificationProvider } from "./contexts/notification/notificationContextProvider.tsx";
 import LandingPage from "./pages/Landing/landingPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import NotificationContainer from "./components/Notification/NotificationContainer.jsx";
+import NotificationExample from "./examples/NotificationExample.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,105 +29,110 @@ const queryClient = new QueryClient({
 
 export default function Routes() {
   return (
-    // <UserProvider>
-    <QueryClientProvider client={queryClient}>
-      <ReactRoutes>
-        <Route key="landing" path="/" element={<LandingPage />} />,
-        
-        {/* Public/Auth routes - no SpaceProvider needed */}
+    <NotificationProvider>
+      <QueryClientProvider client={queryClient}>
+        <ReactRoutes>
+          <Route key="landing" path="/" element={<LandingPage />} />,
+          
+          {/* Public/Auth routes - no SpaceProvider needed */}
 
-        {/* {AuthRoutes.map(route => (
-          <Route
-            key={route.key}
-            path={route.path}
-            element={route.element}
-          />
-        ))} */}
+          {/* {AuthRoutes.map(route => (
+            <Route
+              key={route.key}
+              path={route.path}
+              element={route.element}
+            />
+          ))} */}
 
-        {AuthRoutes.map(route => (
-          <Route
-            key={route.key}
-            path={route.path}
-            element={route.element}
-          />
-        ))}
+          {AuthRoutes.map(route => (
+            <Route
+              key={route.key}
+              path={route.path}
+              element={route.element}
+            />
+          ))}
 
-        {StudentRoutes.map(route => (
-          <Route
-            key={route.key}
-            path={route.path}
-            element={
-              <UserProvider>
-                <SpaceProvider>
-                  <ProtectedRoute>
+          {StudentRoutes.map(route => (
+            <Route
+              key={route.key}
+              path={route.path}
+              element={
+                <UserProvider>
+                  <SpaceProvider>
+                    <ProtectedRoute>
+                        {route.element}
+                    </ProtectedRoute>
+                  </SpaceProvider>
+                </UserProvider>
+              }
+            />
+          ))}
+
+          {SpaceRoutes.map(route => (
+            <Route
+              key={route.key}
+              path={route.path}
+              element={
+                <UserProvider>
+                  <SpaceProvider>
+                    <ProtectedRoute>
                       {route.element}
-                  </ProtectedRoute>
-                </SpaceProvider>
-              </UserProvider>
-            }
-          />
-        ))}
+                    </ProtectedRoute>
+                  </SpaceProvider>
+                </UserProvider>
+              }
+            />
+          ))}
 
-        {SpaceRoutes.map(route => (
-          <Route
-            key={route.key}
-            path={route.path}
-            element={
-              <UserProvider>
-                <SpaceProvider>
-                  <ProtectedRoute>
+          <Route path="/prof/*" element={
+            <UserProvider>
+              <SpaceProvider>
+                <ProtectedRoute>
+                  <ProfRoutes />
+                </ProtectedRoute>
+              </SpaceProvider>
+            </UserProvider>
+          } />
+
+          {/* {AdminRoutes.map(route => (
+            <Route
+              key={route.key}
+              path={route.props.path}
+              element={
+                <UserProvider>
+                  <SpaceProvider>
+                    {route.props.element}
+                  </SpaceProvider>
+                </UserProvider>
+              }
+            />
+          ))} */}
+
+          {AdminDataRoutes.map(route => (
+            <Route
+              key={route.key}
+              path={route.path}
+              element={
+                <UserProvider>
+                  <SpaceProvider>
                     {route.element}
-                  </ProtectedRoute>
-                </SpaceProvider>
-              </UserProvider>
-            }
-          />
-        ))}
+                  </SpaceProvider>
+                </UserProvider>
+              }
+            />
+          ))}
 
-        <Route path="/prof/*" element={
-          <UserProvider>
-            <SpaceProvider>
-              <ProtectedRoute>
-                <ProfRoutes />
-              </ProtectedRoute>
-            </SpaceProvider>
-          </UserProvider>
-        } />
+          <Route path="/example/notification" element={<NotificationExample />} />
 
-        {/* {AdminRoutes.map(route => (
-          <Route
-            key={route.key}
-            path={route.props.path}
-            element={
-              <UserProvider>
-                <SpaceProvider>
-                  {route.props.element}
-                </SpaceProvider>
-              </UserProvider>
-            }
-          />
-        ))} */}
+          
 
-        {AdminDataRoutes.map(route => (
-          <Route
-            key={route.key}
-            path={route.path}
-            element={
-              <UserProvider>
-                <SpaceProvider>
-                  {route.element}
-                </SpaceProvider>
-              </UserProvider>
-            }
-          />
-        ))}
-
+          {/* Fallback */}
+          <Route path="*" element={<PageNotFound />} />
+        </ReactRoutes>
         
-
-        {/* Fallback */}
-        <Route path="*" element={<PageNotFound />} />
-      </ReactRoutes>
-    {/* // </UserProvider> */}
-    </QueryClientProvider>
+        {/* Global Notification Container */}
+        <NotificationContainer />
+      </QueryClientProvider>
+    </NotificationProvider>
   );
 }

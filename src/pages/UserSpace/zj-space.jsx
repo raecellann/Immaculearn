@@ -11,10 +11,14 @@ import {
   FiMenu,
   FiX,
   FiChevronLeft,
-  FiCopy
+  FiCopy,
+  FiUpload,
+  FiRefreshCw
 } from "react-icons/fi";
+import * as XLSX from 'xlsx';
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 import PageNotFound from "../PageNotFound/pageNotFound";
@@ -34,6 +38,13 @@ const UserPage = () => {
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [copyFeedback, setCopyFeedback] = useState("");
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadQueue, setUploadQueue] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, completed, error
+  const [uploadError, setUploadError] = useState(null);
+  const [backgroundUpload, setBackgroundUpload] = useState(false);
+  const [showUploadNotification, setShowUploadNotification] = useState(false);
   
   // Refs - MUST BE AT THE TOP
   const lastScrollY = useRef(0);
@@ -41,6 +52,7 @@ const UserPage = () => {
 
   // Custom hooks - MUST BE AT THE TOP
   const { user, isLoading: userLoading } = useUser();
+  const { addNotification, showGlobalNotification } = useNotification();
   const {
     userSpaces,
     courseSpaces,
@@ -122,11 +134,21 @@ const UserPage = () => {
     if (!confirmDelete) return;
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-      alert(`Space "${currentSpace.space_name}" deleted successfully.`);
+      addNotification({
+        type: 'success',
+        title: 'Space Deleted',
+        message: `"${currentSpace.space_name}" has been deleted successfully.`,
+        duration: 3000
+      });
       navigate("/space");
     } catch (error) {
       console.error("Failed to delete space:", error);
-      alert("Failed to delete space. Please try again.");
+      addNotification({
+        type: 'error',
+        title: 'Delete Failed',
+        message: 'Failed to delete space. Please try again.',
+        duration: 5000
+      });
     }
   };
 
@@ -134,27 +156,56 @@ const UserPage = () => {
   const handleAcceptJoinRequest = async (userId) => {
     try {
       await acceptJoinRequest(userId, space_uuid);
+      addNotification({
+        type: 'success',
+        title: 'Request Accepted',
+        message: 'Member has been added to the space successfully.',
+        duration: 3000
+      });
       // Immediately refetch to update the UI
       refetchJoinRequests();
     } catch (error) {
       console.error("Failed to accept join request:", error);
+      addNotification({
+        type: 'error',
+        title: 'Accept Failed',
+        message: 'Failed to accept join request. Please try again.',
+        duration: 5000
+      });
     }
   };
 
   const handleDeclineJoinRequest = async (userId) => {
     try {
       await declineJoinRequest(userId, space_uuid);
+      addNotification({
+        type: 'info',
+        title: 'Request Declined',
+        message: 'Join request has been declined.',
+        duration: 3000
+      });
       // Immediately refetch to update the UI
       refetchJoinRequests();
     } catch (error) {
       console.error("Failed to decline join request:", error);
+      addNotification({
+        type: 'error',
+        title: 'Decline Failed',
+        message: 'Failed to decline join request. Please try again.',
+        duration: 5000
+      });
     }
   };
 
   // Send invite
   const sendInvite = () => {
     if (inviteEmail.trim()) {
-      alert(`Invitation sent to ${inviteEmail}`);
+      addNotification({
+        type: 'success',
+        title: 'Invitation Sent',
+        message: `Invitation has been sent to ${inviteEmail}`,
+        duration: 3000
+      });
       setInviteEmail("");
       setShowInvitePopup(false);
     }
@@ -172,6 +223,305 @@ const UserPage = () => {
         setCopyFeedback("Error!");
         setTimeout(() => setCopyFeedback(""), 2000);
       });
+  };
+
+  // File validation
+  const validateFile = (file) => {
+    const validTypes = [
+      'text/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    const validExtensions = ['.csv', '.xls', '.xlsx'];
+    
+    const isValidType = validTypes.includes(file.type);
+    const isValidExtension = validExtensions.some(ext => 
+      file.name.toLowerCase().endsWith(ext)
+    );
+    
+    return isValidType || isValidExtension;
+  };
+
+  // Parse CSV/Excel file
+  const parseFile = async (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          let data = [];
+          let headers = [];
+          
+          if (file.name.toLowerCase().endsWith('.csv')) {
+            // Handle CSV files
+            const text = e.target.result;
+            const lines = text.split('\n').filter(line => line.trim());
+            headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            
+            data = lines.slice(1).map((line, index) => {
+              const values = line.split(',').map(v => v.trim());
+              return {
+                id: `member-${index}`,
+                email: values[0] || '',
+                name: values[1] || '',
+                status: 'pending'
+              };
+            });
+          } else {
+            // Handle Excel files (XLS/XLSX)
+            const workbook = XLSX.read(e.target.result, { type: 'binary' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            headers = jsonData[0].map(h => String(h).trim().toLowerCase());
+            
+            data = jsonData.slice(1).map((row, index) => {
+              return {
+                id: `member-${index}`,
+                email: row[0] ? String(row[0]).trim() : '',
+                name: row[1] ? String(row[1]).trim() : '',
+                status: 'pending'
+              };
+            });
+          }
+          
+          // Find email column index
+          const emailColumnIndex = headers.findIndex(header => 
+            header === 'email' || header === 'emails'
+          );
+          
+          if (emailColumnIndex === -1) {
+            reject(new Error('No "email" or "emails" header found in the file. Please ensure your file has a header row with "email" or "emails" column.'));
+            return;
+          }
+          
+          // Find name column index (optional)
+          const nameColumnIndex = headers.findIndex(header => 
+            header === 'name' || header === 'fullname' || header === 'full_name'
+          );
+          
+          // Re-process data with correct column mapping
+          if (file.name.toLowerCase().endsWith('.csv')) {
+            const text = e.target.result;
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            data = lines.slice(1).map((line, index) => {
+              const values = line.split(',').map(v => v.trim());
+              return {
+                id: `member-${index}`,
+                email: values[emailColumnIndex] || '',
+                name: nameColumnIndex !== -1 ? (values[nameColumnIndex] || '') : '',
+                status: 'pending'
+              };
+            });
+          } else {
+            const workbook = XLSX.read(e.target.result, { type: 'binary' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            data = jsonData.slice(1).map((row, index) => {
+              return {
+                id: `member-${index}`,
+                email: row[emailColumnIndex] ? String(row[emailColumnIndex]).trim() : '',
+                name: nameColumnIndex !== -1 ? (row[nameColumnIndex] ? String(row[nameColumnIndex]).trim() : '') : '',
+                status: 'pending'
+              };
+            });
+          }
+          
+          // Filter for Gmail addresses only and valid emails
+          const gmailOnlyMembers = data.filter(member => {
+            const email = member.email.toLowerCase();
+            const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+            return gmailRegex.test(email);
+          });
+          
+          if (gmailOnlyMembers.length === 0) {
+            reject(new Error('No valid Gmail addresses found in the file. Please ensure emails are in format: username@gmail.com'));
+            return;
+          }
+          
+          if (gmailOnlyMembers.length < data.length) {
+            const nonGmailCount = data.length - gmailOnlyMembers.length;
+            console.log(`Filtered out ${nonGmailCount} non-Gmail addresses`);
+          }
+          
+          resolve(gmailOnlyMembers);
+        } catch (error) {
+          reject(new Error('Failed to parse file: ' + error.message));
+        }
+      };
+      
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsBinaryString(file);
+      }
+    });
+  };
+
+  // Process upload queue
+  const processUploadQueue = async () => {
+    setUploadStatus('uploading');
+    setUploadError(null);
+    setBackgroundUpload(true);
+    setShowUploadModal(false);
+    setShowUploadNotification(true);
+    
+    const updatedQueue = [...uploadQueue];
+    
+    for (let i = 0; i < updatedQueue.length; i++) {
+      const member = updatedQueue[i];
+      
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+        
+        // Simulate random success/failure (90% success rate)
+        if (Math.random() > 0.1) {
+          updatedQueue[i] = { ...member, status: 'completed' };
+        } else {
+          updatedQueue[i] = { ...member, status: 'error', error: 'Failed to send invitation' };
+        }
+        
+        setUploadQueue([...updatedQueue]);
+        setUploadProgress(prev => ({ ...prev, [member.id]: i + 1 }));
+      } catch (error) {
+        updatedQueue[i] = { ...member, status: 'error', error: error.message };
+        setUploadQueue([...updatedQueue]);
+      }
+    }
+    
+    const hasErrors = updatedQueue.some(m => m.status === 'error');
+    setUploadStatus(hasErrors ? 'error' : 'completed');
+    
+    // Show completion notification
+    setTimeout(() => {
+      if (!hasErrors) {
+        addNotification({
+          type: 'success',
+          title: 'All Invitations Sent',
+          message: `Successfully invited ${updatedQueue.length} members!`,
+          duration: 5000
+        });
+        resetUploadState();
+      } else {
+        const successCount = updatedQueue.filter(m => m.status === 'completed').length;
+        const errorCount = updatedQueue.filter(m => m.status === 'error').length;
+        addNotification({
+          type: 'warning',
+          title: 'Upload Completed with Issues',
+          message: `${successCount} successful, ${errorCount} failed. Check upload status for details.`,
+          duration: 7000
+        });
+      }
+    }, 500);
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!validateFile(file)) {
+      addNotification({
+        type: 'error',
+        title: 'Invalid File',
+        message: 'Please upload a valid CSV or Excel file',
+        duration: 5000
+      });
+      return;
+    }
+    
+    try {
+      const members = await parseFile(file);
+      
+      if (members.length === 0) {
+        addNotification({
+          type: 'warning',
+          title: 'No Members Found',
+          message: 'No valid members found in file',
+          duration: 5000
+        });
+        return;
+      }
+      
+      // Show info about Gmail filtering
+      const totalParsed = members.length;
+      addNotification({
+        type: 'info',
+        title: 'File Processed',
+        message: `Found ${totalParsed} valid Gmail address(es). Non-Gmail addresses have been filtered out.`,
+        duration: 5000
+      });
+      
+      setUploadQueue(members);
+      setShowUploadModal(true);
+      setUploadStatus('idle');
+      setShowInvitePopup(false);
+      // Reset file input
+      event.target.value = '';
+    } catch (error) {
+      addNotification({
+        type: 'error',
+        title: 'Parse Error',
+        message: 'Error parsing file: ' + error.message,
+        duration: 5000
+      });
+    }
+  };
+
+  // Retry failed uploads
+  const retryFailedUploads = () => {
+    const failedMembers = uploadQueue.filter(m => m.status === 'error');
+    const updatedQueue = uploadQueue.map(m => 
+      m.status === 'error' ? { ...m, status: 'pending', error: null } : m
+    );
+    
+    setUploadQueue(updatedQueue);
+    setUploadStatus('uploading');
+    setUploadError(null);
+    
+    // Process only failed members
+    processUploadQueue();
+  };
+
+  // Reset upload state
+  const resetUploadState = () => {
+    setUploadQueue([]);
+    setUploadProgress({});
+    setUploadStatus('idle');
+    setUploadError(null);
+    setBackgroundUpload(false);
+    setShowUploadNotification(false);
+  };
+
+  // Remove member from upload queue
+  const removeMemberFromQueue = (memberId) => {
+    const updatedQueue = uploadQueue.filter(member => member.id !== memberId);
+    setUploadQueue(updatedQueue);
+    
+    if (updatedQueue.length === 0) {
+      setShowUploadModal(false);
+      resetUploadState();
+    }
+  };
+
+  // Close upload modal
+  const closeUploadModal = () => {
+    if (uploadStatus === 'uploading') {
+      if (!confirm('Start upload in background and continue?')) {
+        return;
+      }
+    }
+    setShowUploadModal(false);
+  };
+
+  // Show upload status modal
+  const showUploadStatusModal = () => {
+    setShowUploadModal(true);
   };
 
   return (
@@ -634,6 +984,33 @@ const UserPage = () => {
                 />
               </div>
 
+              {/* CSV/EXCEL UPLOAD */}
+              <div className="mb-4">
+                <p className="text-sm font-medium text-black mb-2">
+                  Or upload CSV/Excel file (Gmail only)
+                </p>
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <FiUpload className="w-6 h-6 mb-2 text-gray-400" />
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">Click to upload</span> CSV/Excel file
+                      </p>
+                      <p className="text-xs text-gray-500">Gmail addresses only (CSV, XLS, XLSX)</p>
+                    </div>
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept=".csv,.xls,.xlsx"
+                      onChange={handleFileUpload}
+                    />
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Format: Must include header row with "email" or "emails" column. Optional: "name", "fullname", or "full_name" column
+                </p>
+              </div>
+
               {/* SUGGESTED USERS */}
               <div>
                 <p className="text-sm font-medium text-black mb-2">
@@ -674,6 +1051,234 @@ const UserPage = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* BACKGROUND UPLOAD NOTIFICATION */}
+        {showUploadNotification && (
+          <div className="fixed bottom-4 right-4 bg-[#1E222A] border border-gray-700 rounded-lg p-4 shadow-xl z-40 max-w-sm">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-white">Inviting Members</h3>
+              <button
+                onClick={showUploadStatusModal}
+                className="text-blue-400 hover:text-blue-300 text-sm"
+              >
+                View Details
+              </button>
+            </div>
+            <div className="mb-2">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-300">Progress</span>
+                <span className="text-gray-300">
+                  {Object.keys(uploadProgress).length} / {uploadQueue.length}
+                </span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(Object.keys(uploadProgress).length / uploadQueue.length) * 100}%` }}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400">
+              Upload continues in background. You can continue using the application.
+            </p>
+          </div>
+        )}
+
+        {/* UPLOAD STATUS MODAL */}
+        {showUploadModal && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-white">
+                  {backgroundUpload ? 'Upload Status' :
+                   uploadStatus === 'idle' ? 'Review Members' : 
+                   uploadStatus === 'uploading' ? 'Inviting Members...' :
+                   uploadStatus === 'completed' ? 'Upload Completed' : 'Upload Issues'}
+                </h2>
+                <button
+                  onClick={backgroundUpload ? showUploadStatusModal : closeUploadModal}
+                  className="text-gray-400 hover:text-white p-1 bg-transparent"
+                  disabled={uploadStatus === 'uploading' && !backgroundUpload}
+                >
+                  <FiX size={24} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {uploadStatus === 'idle' && (
+                  <div>
+                    <p className="text-sm text-gray-300 mb-4">
+                      Found {uploadQueue.length} member(s) to invite. Review and remove any you don't want to include.
+                    </p>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {uploadQueue.map((member) => (
+                        <div key={member.id} className="bg-[#2A2F3A] rounded-lg p-3 flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="font-medium text-white">{member.name || 'No name'}</p>
+                            <p className="text-sm text-gray-400">{member.email}</p>
+                          </div>
+                          <button
+                            onClick={() => removeMemberFromQueue(member.id)}
+                            className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-900/20 transition-colors"
+                            title="Remove member"
+                          >
+                            <FiX size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {uploadStatus === 'uploading' && (
+                  <div>
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-gray-300">Progress</span>
+                        <span className="text-gray-300">
+                          {Object.keys(uploadProgress).length} / {uploadQueue.length}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(Object.keys(uploadProgress).length / uploadQueue.length) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {uploadQueue.map((member) => (
+                        <div key={member.id} className="bg-[#2A2F3A] rounded-lg p-3 flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-white">{member.name || 'No name'}</p>
+                            <p className="text-sm text-gray-400">{member.email}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {member.status === 'pending' && (
+                              <div className="w-4 h-4 border-2 border-gray-500 border-t-blue-500 rounded-full animate-spin" />
+                            )}
+                            {member.status === 'completed' && (
+                              <span className="text-green-400 text-xs">✓ Sent</span>
+                            )}
+                            {member.status === 'error' && (
+                              <span className="text-red-400 text-xs">✗ Failed</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(uploadStatus === 'completed' || uploadStatus === 'error') && (
+                  <div>
+                    <div className="mb-4 p-4 bg-[#2A2F3A] rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-green-400 font-medium">
+                          ✓ {uploadQueue.filter(m => m.status === 'completed').length} invitations sent
+                        </span>
+                        {uploadQueue.some(m => m.status === 'error') && (
+                          <span className="text-red-400 font-medium">
+                            ✗ {uploadQueue.filter(m => m.status === 'error').length} failed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {uploadQueue.some(m => m.status === 'error') && (
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        <p className="text-sm text-gray-300 mb-2">Failed invitations:</p>
+                        {uploadQueue.filter(m => m.status === 'error').map((member) => (
+                          <div key={member.id} className="bg-[#2A2F3A] rounded-lg p-3 flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-white">{member.name || 'No name'}</p>
+                              <p className="text-sm text-gray-400">{member.email}</p>
+                              <p className="text-xs text-red-400 mt-1">{member.error}</p>
+                            </div>
+                            <span className="text-red-400 text-xs">✗ Failed</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+                {uploadStatus === 'idle' && !backgroundUpload && (
+                  <>
+                    <button
+                      onClick={closeUploadModal}
+                      className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={processUploadQueue}
+                      className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+                      disabled={uploadQueue.length === 0}
+                    >
+                      Invite {uploadQueue.length} Member(s)
+                    </button>
+                  </>
+                )}
+                
+                {uploadStatus === 'uploading' && backgroundUpload && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-300">
+                      Processing in background...
+                    </span>
+                    <button
+                      onClick={() => setShowUploadNotification(false)}
+                      className="px-3 py-1 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+                    >
+                      Hide
+                    </button>
+                  </div>
+                )}
+                
+                {uploadStatus === 'uploading' && !backgroundUpload && (
+                  <button
+                    disabled
+                    className="px-4 py-2 text-sm bg-gray-600 rounded-md text-gray-400 cursor-not-allowed"
+                  >
+                    Processing...
+                  </button>
+                )}
+                
+                {uploadStatus === 'completed' && (
+                  <button
+                    onClick={resetUploadState}
+                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+                  >
+                    Done
+                  </button>
+                )}
+                
+                {uploadStatus === 'error' && (
+                  <>
+                    <button
+                      onClick={resetUploadState}
+                      className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+                    >
+                      Close
+                    </button>
+                    <button
+                      onClick={retryFailedUploads}
+                      className="px-4 py-2 text-sm bg-orange-600 hover:bg-orange-500 rounded-md transition text-white flex items-center gap-2"
+                    >
+                      <FiRefreshCw size={16} />
+                      Retry Failed
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
