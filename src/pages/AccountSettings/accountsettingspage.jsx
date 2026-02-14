@@ -148,7 +148,7 @@ const ProfilePage = () => {
   const handleCancelEdit = () => {
     // Reset to original values
     setFirstName(user?.name?.split(' ')[0] || '');
-    setMiddleInitial(user?.middleInitial || '');
+    
     setLastName(user?.name?.split(' ')[1] || '');
     setBio(user?.bio || '');
     setDepartment(user?.department || '');
@@ -341,31 +341,23 @@ const ProfilePage = () => {
                       className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-1">Middle Initial</label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Last Name</label>
                     <input
                       type="text"
-                      value={isEditing ? middleInitial : (user?.middleInitial || '')}
-                      onChange={(e) => isEditing && setMiddleInitial(e.target.value)}
-                      placeholder="MI"
-                      maxLength="1"
+                      value={isEditing ? lastName : (user?.name?.split(' ')[0] || '')}
+                      onChange={(e) => isEditing && setLastName(e.target.value)}
+                      placeholder="Last Name"
                       readOnly={!isEditing}
                       className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
                     />
                   </div>
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Last Name</label>
-                  <input
-                    type="text"
-                    value={isEditing ? lastName : (user?.name?.split(' ')[1] || '')}
-                    onChange={(e) => isEditing && setLastName(e.target.value)}
-                    placeholder="Last Name"
-                    readOnly={!isEditing}
-                    className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-1/2"
-                  />
-                </div>
+                
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
