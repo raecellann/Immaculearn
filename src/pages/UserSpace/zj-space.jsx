@@ -15,6 +15,7 @@ import {
 } from "react-icons/fi";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useQueryClient } from "@tanstack/react-query";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 import PageNotFound from "../PageNotFound/pageNotFound";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
@@ -22,6 +23,7 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 const UserPage = () => {
   const { space_uuid, space_name } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // State hooks - MUST BE AT THE TOP
   const [isFocused, setIsFocused] = useState(false);
@@ -51,7 +53,10 @@ const UserPage = () => {
   } = useSpace();
 
   // Join requests - MUST BE AT THE TOP (unconditionally)
-  const { data: joinRequestsData = [], isLoading: joinRequestsLoading } = useJoinRequests(space_uuid || "");
+  const { data: joinRequestsData = [], isLoading: joinRequestsLoading, refetch: refetchJoinRequests } = useJoinRequests(space_uuid || "");
+
+  // Calculate pending invites count
+  const pendingInvitesCount = joinRequestsData?.length || 0;
 
   // Scroll handler
   useEffect(() => {
@@ -129,6 +134,8 @@ const UserPage = () => {
   const handleAcceptJoinRequest = async (userId) => {
     try {
       await acceptJoinRequest(userId, space_uuid);
+      // Immediately refetch to update the UI
+      refetchJoinRequests();
     } catch (error) {
       console.error("Failed to accept join request:", error);
     }
@@ -137,6 +144,8 @@ const UserPage = () => {
   const handleDeclineJoinRequest = async (userId) => {
     try {
       await declineJoinRequest(userId, space_uuid);
+      // Immediately refetch to update the UI
+      refetchJoinRequests();
     } catch (error) {
       console.error("Failed to decline join request:", error);
     }
@@ -236,9 +245,14 @@ const UserPage = () => {
                   </button>
                   <button 
                     onClick={() => setShowPendingInvitations(true)} 
-                    className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
+                    className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition relative"
                   >
                     Pending Invites
+                    {pendingInvitesCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {pendingInvitesCount}
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={handleDeleteRoom}
@@ -308,9 +322,14 @@ const UserPage = () => {
               </button>
               <button 
                 onClick={() => setShowPendingInvitations(true)} 
-                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
+                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm relative"
               >
                 Pending Invites
+                {pendingInvitesCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {pendingInvitesCount}
+                  </span>
+                )}
               </button>
               <button
                 onClick={handleDeleteRoom}

@@ -114,7 +114,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       queryKey: ["joinRequests", spaceId],
       queryFn: () => fetchJoinRequests(spaceId),
       enabled: !!spaceId && isAuthenticated,
-      staleTime: 15_000,
+      staleTime: 5_000, // Reduced to 5 seconds for faster updates when actions happen
     });
 
   // Task queries
@@ -155,6 +155,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     const spaceuuid = inviteCode.split("=").pop() || "";
     const result = await spaceService.joinSpace(spaceuuid);
     queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     return result;
   };
 
@@ -162,6 +164,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     await spaceService.acceptJoinRequest(userId, spaceId);
     queryClient.invalidateQueries({ queryKey: ["joinRequests", spaceId] });
     queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
   };
 
   const declineJoinRequest = async (userId: number, spaceId: string) => {

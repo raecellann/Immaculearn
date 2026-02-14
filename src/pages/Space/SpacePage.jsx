@@ -59,10 +59,17 @@ const SpacePage = () => {
     setLoading(true);
 
     try {
-      const res = await joinSpace(joinCode);
-      console.log(res);
+      const result = await joinSpace(joinCode);
+      
+      if (result.success) {
+        alert("Successfully joined the space!");
+        setJoinCode("");
+      } else {
+        alert(result.message || "Failed to join space");
+      }
     } catch (error) {
-      alert(error.message);
+      console.error("Error joining space:", error);
+      alert(error.message || "An error occurred while joining the space");
     } finally {
       setLoading(false);
     }
