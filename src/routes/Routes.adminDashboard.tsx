@@ -3,6 +3,8 @@ import AdminDashboard from "../pages/admin-dashboard/admindashboard.jsx";
 import AdminStudents from "../pages/admin-students/adminstudents.jsx";
 import AdminTeachers from "../pages/admin-teachers/adminteachers.jsx";
 import AdminLogin from "../pages/admin-login/adminlogin.jsx";
+import AdminAnnouncement from "../pages/admin-announcement/adminannouncement.jsx";
+import AdminAcademicTerm from "../pages/admin-academic-term/adminaccademicterm.jsx";
 
 
 export const AdminDataRoutes = [
@@ -23,6 +25,16 @@ export const AdminDataRoutes = [
     key: "/admin-teachers",
     path: "/admin/teachers",
     element: <AdminTeachers />,
+  },
+  {
+    key: "/admin-announcement",
+    path: "/admin/announcement",
+    element: <AdminAnnouncement />,
+  },
+  {
+    key: "/admin-academic-term",
+    path: "/admin/academic-term",
+    element: <AdminAcademicTerm />,
   },
   {
     key: "/admin-login",

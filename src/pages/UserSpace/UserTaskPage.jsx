@@ -13,6 +13,11 @@ import {
   FiUploadCloud,
   FiArrowLeft,
   FiFileText,
+  FiBook,
+  FiCode,
+  FiMusic,
+  FiVideo,
+  FiImage,
 } from "react-icons/fi";
 import Logout from "../component/logout";
 import Sidebar from "../component/sidebar";
@@ -55,7 +60,28 @@ const UserTaskPage = () => {
   const [score, setScore] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [taskCategory, setTaskCategory] = useState("individual-act");
   
+  // Task categories with emojis
+  const taskCategories = [
+    { value: "personal-reflection", label: "Personal Reflection", emoji: "🤔" },
+    { value: "individual-act", label: "Individual Activity", emoji: "📝" },
+    { value: "group-project", label: "Group Project", emoji: "👥" },
+    { value: "individual-project", label: "Individual Project", emoji: "🎯" }
+  ];
+
+  // Get category emoji and label
+  const getCategoryDisplay = (categoryValue) => {
+    const category = taskCategories.find(cat => cat.value === categoryValue);
+    return category ? `${category.emoji} ${category.label}` : "📝 Task";
+  };
+
+  // Get category emoji
+  const getCategoryEmoji = (categoryValue) => {
+    const category = taskCategories.find(cat => cat.value === categoryValue);
+    return category ? category.emoji : "📝";
+  };
+
   // ================= TASKS HOOK =================
   const {
     uploadedTasksQuery,
@@ -98,6 +124,7 @@ const UserTaskPage = () => {
       scoring: Number(score),
       status: status_type,
       due_date: dueDate,
+      category: taskCategory,
     };
 
     // Add groups data if configured
@@ -150,6 +177,7 @@ const UserTaskPage = () => {
     setScore("");
     setDueDate("");
     setSelectedFile(null);
+    setTaskCategory("individual-act");
     setLastGroupSaved([])
     setGroups([{ id: 1, members: [], leader: { account_id: null, full_name: '' }, showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
     setNumberOfGroups(1);
@@ -242,10 +270,128 @@ const UserTaskPage = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     setSelectedFile(file);
     console.log("File selected:", file);
+
+    // Extract text from document and populate instruction field
+    if (file) {
+      try {
+        const extractedText = await extractTextFromFile(file);
+        if (extractedText) {
+          setInstruction(extractedText);
+          // Update the contentEditable div if it exists
+          if (instructionRef.current) {
+            instructionRef.current.innerHTML = extractedText;
+          }
+          console.log("Text extracted from document:", extractedText);
+        }
+      } catch (error) {
+        console.error("Error extracting text from file:", error);
+      }
+    }
+  };
+
+  // Function to extract text from different file types
+  const extractTextFromFile = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileType = file.type;
+      const fileName = file.name.toLowerCase();
+
+      // PDF file extraction
+      if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+        extractTextFromPDF(file).then(resolve).catch(reject);
+      }
+      // Word document extraction
+      else if (fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+        extractTextFromDocx(file).then(resolve).catch(reject);
+      }
+      // PowerPoint extraction
+      else if (fileType.includes('presentation') || fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) {
+        extractTextFromPptx(file).then(resolve).catch(reject);
+      }
+      // Excel extraction
+      else if (fileType.includes('sheet') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        extractTextFromExcel(file).then(resolve).catch(reject);
+      }
+      // Plain text file
+      else if (fileType.startsWith('text/') || fileName.endsWith('.txt')) {
+        extractTextFromText(file).then(resolve).catch(reject);
+      }
+      else {
+        reject(new Error('Unsupported file type for text extraction'));
+      }
+    });
+  };
+
+  // PDF text extraction
+  const extractTextFromPDF = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.onload = function() {
+        const typedarray = new Uint8Array(this.result);
+        
+        // For PDF extraction, we'll use a simple approach
+        // In a real implementation, you'd use a library like pdf.js
+        // For now, we'll return a placeholder indicating PDF content
+        resolve(`[PDF Document: ${file.name}]\n\nContent extraction from PDF requires additional library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+      };
+      fileReader.readAsArrayBuffer(file);
+    });
+  };
+
+  // DOCX text extraction
+  const extractTextFromDocx = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.onload = function() {
+        const typedarray = new Uint8Array(this.result);
+        
+        // For DOCX extraction, you'd typically use mammoth.js
+        // For now, we'll return a placeholder indicating DOCX content
+        resolve(`[Word Document: ${file.name}]\n\nContent extraction from DOCX requires mammoth.js library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+      };
+      fileReader.readAsArrayBuffer(file);
+    });
+  };
+
+  // PPTX text extraction
+  const extractTextFromPptx = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.onload = function() {
+        // For PPTX extraction, you'd use a specialized library
+        // For now, we'll return a placeholder indicating PPTX content
+        resolve(`[PowerPoint Presentation: ${file.name}]\n\nContent extraction from PPTX requires additional library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+      };
+      fileReader.readAsArrayBuffer(file);
+    });
+  };
+
+  // Excel text extraction
+  const extractTextFromExcel = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.onload = function() {
+        // For Excel extraction, you'd use libraries like xlsx or sheetjs
+        // For now, we'll return a placeholder indicating Excel content
+        resolve(`[Excel Spreadsheet: ${file.name}]\n\nContent extraction from Excel requires xlsx library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+      };
+      fileReader.readAsArrayBuffer(file);
+    });
+  };
+
+  // Plain text extraction
+  const extractTextFromText = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.onload = function() {
+        resolve(this.result);
+      };
+      fileReader.onerror = reject;
+      fileReader.readAsText(file);
+    });
   };
 
   const applyFormat = (command) => {
@@ -782,7 +928,12 @@ const UserTaskPage = () => {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-4">{task.task_title}</td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{getCategoryDisplay(task.task_category)}</span>
+                            <span className="text-sm font-semibold">{task.task_title}</span>
+                          </div>
+                        </td>
                         <td className="py-3 px-4">
                           {new Date(task.task_due).toLocaleDateString("en-US", {
                             year: "numeric",
@@ -809,7 +960,10 @@ const UserTaskPage = () => {
                 {uploadedTask?.map((task, index) => (
                   <div key={index} className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4">
                     <div className="flex justify-between items-center mb-3">
-                      <p className="text-sm font-semibold">{task.task_title}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{getCategoryDisplay(task.task_category)}</span>
+                        <span className="text-sm font-semibold">{task.task_title}</span>
+                      </div>
                       <button
                         onClick={() => setOpenIndex(openIndex === index ? null : index)}
                         className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.task_status]}`}
@@ -963,6 +1117,22 @@ const UserTaskPage = () => {
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
                       placeholder="Enter task title"
                     />
+
+                    {/* Task Category */}
+                    <label className="font-semibold">
+                      Category: <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={taskCategory}
+                      onChange={(e) => setTaskCategory(e.target.value)}
+                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500 w-full"
+                    >
+                      {taskCategories.map((category) => (
+                        <option key={category.value} value={category.value}>
+                          {category.emoji} {category.label}
+                        </option>
+                      ))}
+                    </select>
 
                     {/* Instruction */}
                     <label className="font-semibold">

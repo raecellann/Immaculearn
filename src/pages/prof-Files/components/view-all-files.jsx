@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
-import Sidebar from "../component/sidebar";
-import Logout from "../component/logout";
+import Sidebar from "../../component/sidebar";
+import Logout from "../../component/logout";
 import { useNavigate, useParams } from "react-router";
-import { useSpace } from "../../contexts/space/useSpace";
-import { useUser } from "../../contexts/user/useUser";
-import { useFileManager } from "../../hooks/useFileManager";
+import { useSpace } from "../../../contexts/space/useSpace";
+import { useUser } from "../../../contexts/user/useUser";
+import { useFileManager } from "../../../hooks/useFileManager";
 
 const ViewAllFilesPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -138,8 +138,13 @@ const ViewAllFilesPage = () => {
 
           <div className="max-w-6xl mx-auto">
 
-            {/* ================= MOBILE + TABLET (CARD VIEW) ================= */}
-            <div className="flex flex-col gap-4 lg:hidden">
+            {/* ================= MOBILE (CARD VIEW) ================= */}
+            <div className="flex flex-col gap-4 block md:hidden">
+              {files.length === 0 && (
+                <div className="bg-[#1E222A] border border-gray-700 rounded-lg p-6 text-center">
+                  <div className="text-gray-400">No File Found.</div>
+                </div>
+              )}
               {files.map((file, index) => (
                 <div
                   key={index}
@@ -149,7 +154,7 @@ const ViewAllFilesPage = () => {
                     ● {file.status}
                   </p>
 
-                  <p className="text-blue-400 font-medium">
+                  <p className="text-blue-400 font-medium break-words">
                     {file.filename}
                   </p>
 
@@ -159,17 +164,66 @@ const ViewAllFilesPage = () => {
                   </p>
 
                   <div className="flex items-center justify-between">
-                    {/* <p className="text-sm text-gray-300">
-                      <span className="text-gray-400">Space:</span>{" "}
-                      {file.spaceName}
-                    </p> */}
-
                     <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition">
                       View File
                     </span>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* ================= TABLET (RESPONSIVE TABLE VIEW) ================= */}
+            <div className="hidden md:block lg:hidden bg-gray-900 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[500px] border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-700 text-gray-400 text-left">
+                      <th className="px-4 py-3 text-xs uppercase">Status</th>
+                      <th className="px-4 py-3 text-xs uppercase">File Name</th>
+                      <th className="px-4 py-3 text-xs uppercase">Date</th>
+                      <th className="px-4 py-3 text-xs uppercase">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {files.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-4 py-6 text-center text-gray-400"
+                        >
+                          No File Found.
+                        </td>
+                      </tr>
+                    )}
+                    {files.map((file, index) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-gray-800/50 transition"
+                      >
+                        <td className="px-4 py-3">
+                          <span className={`${file.status === "uploaded" ? "text-green-400" : file.status === "drafted" && "text-white-400" } flex items-center gap-2`}>
+                            <span className={`w-2 h-2 ${file.status === "uploaded" ? "bg-green-500" : file.status === "drafted" && "bg-gray-500" } rounded-full`} />
+                            <span className="text-xs">{file.status}</span>
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-sm truncate max-w-[200px]" title={file.filename}>
+                            {file.filename}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-300 text-sm">
+                          {new Date(file.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition">
+                            View
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* ================= LAPTOP & DESKTOP (TABLE VIEW) ================= */}

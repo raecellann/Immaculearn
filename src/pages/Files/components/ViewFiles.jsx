@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Sidebar from "../component/sidebar";
+import Sidebar from "../../component/sidebar";
 
 const ViewFilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);

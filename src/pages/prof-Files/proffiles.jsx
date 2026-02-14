@@ -1,72 +1,51 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router";
 import Sidebar from "../component/profsidebar";
+import { useFileManager } from "../../hooks/useFileManager";
 import Button from "../component/Button";
 import Logout from "../component/logout";
+import { useSpace } from "../../contexts/space/useSpace";
+import { useUser } from "../../contexts/user/useUser";
 
 const ProfFilePage = () => {
   const [showModal, setShowModal] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+  const navigate = useNavigate();
 
   const headerRef = useRef(null);
   const lastScroll = useRef(0);
 
-  const files = [
-    {
-      status: "Posted",
-      fileName: "LPS CS Thesis 1 – Week 6",
-      datePosted: "July 24",
-      spaceName: "CS THESIS 1 - 1SY2025-2026",
-      posted: true,
-      category: "your-space"
-    },
-    {
-      status: "To be Uploaded",
-      fileName: "Data Mining-Lecture",
-      datePosted: "Oct 30",
-      spaceName: "BUSINTEG - 1SY2025-2026",
-      posted: false,
-      category: "course-space"
-    },
-    {
-      status: "Posted",
-      fileName: "Basic File and Access Concepts-2021",
-      datePosted: "Oct 10",
-      spaceName: "BUSINTEG - 1SY2025-2026",
-      posted: true,
-      category: "course-space"
-    },
-    {
-      status: "Posted",
-      fileName: "Machine Learning Projects",
-      datePosted: "Nov 15",
-      spaceName: "CS THESIS 1 - 1SY2025-2026",
-      posted: true,
-      category: "your-space"
-    },
-    {
-      status: "Posted",
-      fileName: "Database Design Notes",
-      datePosted: "Sep 22",
-      spaceName: "DATASTRUCT - 1SY2025-2026",
-      posted: true,
-      category: "course-space"
-    },
-    {
-      status: "To be Uploaded",
-      fileName: "Research Papers Collection",
-      datePosted: "Dec 01",
-      spaceName: "CS THESIS 1 - 1SY2025-2026",
-      posted: false,
-      category: "your-space"
-    },
+  const { isAuthenticated } = useUser();
+  const { userSpaces, courseSpaces } = useSpace();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Use actual space data instead of hardcoded array
+  const spaces = [
+    // Your spaces (Professor's personal spaces)
+    ...(userSpaces || []).map(space => ({ 
+      name: space.space_name, 
+      category: "your-space",
+      space_uuid: space.space_uuid
+    })),
+    // Course spaces (Professor's course spaces)
+    ...(courseSpaces || []).map(space => ({ 
+      name: space.space_name, 
+      category: "course-space",
+      space_uuid: space.space_uuid
+    }))
   ];
 
-  const filesByCategory = files.reduce((acc, file) => {
-    if (!acc[file.category]) {
-      acc[file.category] = [];
+  const spacesByCategory = spaces.reduce((acc, space) => {
+    if (!acc[space.category]) {
+      acc[space.category] = [];
     }
-    acc[file.category].push(file);
+    acc[space.category].push(space);
     return acc;
   }, {
     'your-space': [],
@@ -144,20 +123,21 @@ const ProfFilePage = () => {
           {/* Your Space Files */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
-            {filesByCategory['your-space']?.length === 0 ? (
+            {userSpaces?.length === 0 ? (
               <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
                 No space files yet
               </div>
-            ) : filesByCategory['your-space']?.length > 0 ? (
+            ) : userSpaces?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {filesByCategory['your-space'].map((file, index) => (
+                {userSpaces.map((space, index) => (
                   <div
                     key={`your-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => navigate(`/prof/files/${space.space_uuid}/${space.space_name}/${space.space_uuid}/${space.space_name}`)}
                   >
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{file.fileName}</p>
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
                     </div>
                   </div>
                 ))}
@@ -169,20 +149,21 @@ const ProfFilePage = () => {
           {/* Course Space Files */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
-            {filesByCategory['course-space']?.length === 0 ? (
+            {spacesByCategory['course-space']?.length === 0 ? (
               <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
                 No course space files yet
               </div>
-            ) : filesByCategory['course-space']?.length > 0 ? (
+            ) : spacesByCategory['course-space']?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {filesByCategory['course-space'].map((file, index) => (
+                {spacesByCategory['course-space'].map((space, index) => (
                   <div
                     key={`course-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => navigate(`/prof/files/${space.space_uuid}/${space.space_name}/${space.space_uuid}/${space.space_name}`)}
                   >
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{file.fileName}</p>
+                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.name}</p>
                     </div>
                   </div>
                 ))}
@@ -202,70 +183,42 @@ const ProfFilePage = () => {
               Upload New File
             </h2>
 
-            <form className="flex flex-col gap-3">
+            <form className="flex flex-col gap-3" onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              handleFileUpload(formData);
+            }}>
               <input
                 type="text"
+                name="fileName"
                 placeholder="File Name"
                 className="p-2 bg-[#2A2E36] rounded-md text-white outline-none"
+                required
               />
               <input
                 type="text"
-                placeholder="Date Posted (e.g. Oct 30)"
-                className="p-2 bg-[#2A2E36] rounded-md text-white outline-none"
-              />
-              <input
-                type="text"
+                name="spaceName"
                 placeholder="Space Name"
                 className="p-2 bg-[#2A2E36] rounded-md text-white outline-none"
+                required
               />
-              <select className="p-2 bg-[#2A2E36] rounded-md text-white outline-none">
-                <option>To be Uploaded</option>
-                <option>Posted</option>
-              </select>
             </form>
 
             <div className="flex justify-end mt-5 gap-3">
               <button
-                onClick={(e) => {
-                  // Clear form
-                  const form = e.target.closest('form');
-                  if (form) {
-                    form.reset();
-                  }
-                }}
+                onClick={() => setShowModal(false)}
                 className="px-3 py-1 bg-gray-600 rounded-md hover:bg-gray-700"
               >
                 Cancel
               </button>
               <button
                 onClick={(e) => {
-                  // Handle form submission
-                  const form = e.target.closest('form');
-                  if (form) {
-                    const formData = new FormData();
-                    formData.append('fileName', form.querySelector('input[placeholder="File Name"]').value);
-                    formData.append('datePosted', form.querySelector('input[placeholder*="Date"]').value);
-                    formData.append('spaceName', form.querySelector('input[placeholder*="Space"]').value);
-                    formData.append('status', form.querySelector('select').value);
-                    
-                    // Here you would typically make an API call to save the file
-                    console.log('New file:', {
-                      fileName: form.querySelector('input[placeholder="File Name"]').value,
-                      datePosted: form.querySelector('input[placeholder*="Date"]').value,
-                      spaceName: form.querySelector('input[placeholder*="Space"]').value,
-                      status: form.querySelector('select').value
-                    });
-                    
-                    // Add to files array and close modal
-                    setFiles([...files, {
-                      fileName: form.querySelector('input[placeholder="File Name"]').value,
-                      datePosted: form.querySelector('input[placeholder*="Date"]').value,
-                      spaceName: form.querySelector('input[placeholder*="Space"]').value,
-                      status: form.querySelector('select').value === "To be Uploaded" ? "Posted" : "Posted",
-                      posted: form.querySelector('select').value === "Posted",
-                      category: form.querySelector('select').value === "To be Uploaded" ? "your-space" : "course-space"
-                    }]);
-                    setShowModal(false);
+                  const form = document.querySelector('form');
+                  if (form && form.checkValidity()) {
+                    const formData = new FormData(form);
+                    handleFileUpload(formData);
+                  } else {
+                    form?.reportValidity();
                   }
                 }}
                 className="px-3 py-1 bg-blue-500 rounded-md hover:bg-blue-600"

@@ -138,7 +138,9 @@ const ProfHomePage = () => {
                   <p className="text-gray-300 mb-1">Manage your classes and collaborate with students.</p>
                   <p className="text-gray-400 mb-5">Create spaces or join existing ones.</p>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Button onClick={() => navigate('/prof/create/space')} className="bg-[#007AFF] hover:bg-blue-700 text-white text-sm py-2 px-4">Create Space</Button>
+                    <Button onClick={() => navigate('/prof/space/create')} className="bg-[#007AFF] hover:bg-blue-700 text-white text-sm py-2 px-4">
+                      Create Space
+                    </Button>
                   </div>
                 </div>
                 <img

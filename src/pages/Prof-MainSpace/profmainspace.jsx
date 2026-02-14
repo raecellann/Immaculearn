@@ -114,7 +114,7 @@ const ProfSpacePage = () => {
                 </p>
               </div>
               <div className="flex md:justify-end">
-                <Button onClick={() => navigate('/prof/create/space')}>
+                <Button onClick={() => navigate('/prof/space/create')}>
                   Create Space
                 </Button>
               </div>
