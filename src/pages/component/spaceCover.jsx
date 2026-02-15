@@ -36,7 +36,7 @@ export const SpaceCover = ({
           className={`w-full h-full flex items-center justify-center
           bg-gradient-to-br ${color} text-white`}
         >
-          <span className="text-4xl font-bold select-none">
+          <span className="text-4xl font-bold select-none font-serif">
             {letter}
           </span>
         </div>

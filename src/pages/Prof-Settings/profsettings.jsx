@@ -73,7 +73,7 @@ const ProfSettingsPage = () => {
 
         {/* Desktop Header */}
         <div className="hidden lg:block px-10 pt-10">
-          <h1 className="text-4xl font-bold text-center mb-2">Settings</h1>
+          <h1 className="text-4xl font-bold text-center mb-2 font-serif">Settings</h1>
           <p className="text-gray-300 mb-8 text-center">
             Manage your professor profile, course settings, and account preferences.
           </p>

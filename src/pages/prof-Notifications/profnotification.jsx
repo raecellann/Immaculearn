@@ -101,7 +101,7 @@ const ProfNotificationPage = ({ notifications = [] }) => {
         {/* Content */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
           {/* Desktop Header */}
-          <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
+          <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center font-serif">
             Notifications
           </h1>
 

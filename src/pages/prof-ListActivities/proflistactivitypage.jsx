@@ -113,7 +113,7 @@ const ProfListActivityPage = () => {
 
         {/* 🔽 Added spacing here (pt-20) */}
         <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
-          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
+          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10 font-serif">
             List of Activities
           </h1>
 
