@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import Sidebar from "../component/profsidebar";
 import { FiCalendar, FiClock, FiCheck, FiAlertCircle, FiMenu, FiX, FiChevronLeft, FiChevronRight, FiEdit, FiPlus } from "react-icons/fi";
 import Logout from "../component/logout";
-import { SpaceContext } from "../../contexts/space/spaceContext";
+import CreateTaskFlowModal from "../component/CreateTaskFlowModal";
 
 const ProfCalendarPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -12,9 +12,9 @@ const ProfCalendarPage = () => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatistic, setSelectedStatistic] = useState(null);
+  const [showCreateTaskFlow, setShowCreateTaskFlow] = useState(false);
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState("");
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [newActivity, setNewActivity] = useState({
     title: "",
     description: "",
@@ -151,105 +151,20 @@ const ProfCalendarPage = () => {
     initializeCalendar();
   }, [refreshKey]); // Re-run when refreshKey changes
 
-  // Handle create activity
-  const handleCreateActivity = async () => {
-    if (selectedSpace && newActivity.title && newActivity.description) {
-      try {
-        // Find the selected space
-        const space = availableSpaces.find(s => s.space_name === selectedSpace);
-        if (!space) {
-          console.error('Space not found');
-          return;
-        }
 
-        // If this is a mock space (context error), just add to local state
-        if (contextError || space.space_uuid.startsWith('mock-')) {
-          const mockActivity = {
-            id: activities.length + 1,
-            title: newActivity.title,
-            description: newActivity.description,
-            dueDate: newActivity.dueDate,
-            dueTime: newActivity.dueTime,
-            priority: newActivity.priority,
-            status: "pending",
-            subject: space.space_name,
-            type: newActivity.type,
-            studentsCount: space.members?.length || 25,
-            yearLevel: "4th Year",
-            spaceId: space.space_uuid
-          };
-          
-          setActivities([...activities, mockActivity]);
-          
-          // Reset form
-          setShowCreateModal(false);
-          setNewActivity({
-            title: "",
-            description: "",
-            dueDate: "",
-            dueTime: "",
-            priority: "medium",
-            type: "Assignment"
-          });
-          setSelectedSpace("");
-          return;
-        }
-
-        // Create activity data in the format expected by the API
-        const activityData = {
-          title: newActivity.title,
-          instruction: newActivity.description,
-          due_date: new Date(`${newActivity.dueDate}T${newActivity.dueTime}`).toISOString(),
-          status: 'pending',
-          scoring: 100, // Default scoring
-        };
-
-        // Call the API to create the task/activity
-        const response = await fetch(`/api/spaces/${space.space_uuid}/tasks`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(activityData),
-        });
-
-        if (response.ok) {
-          const createdActivity = await response.json();
-          const formattedActivity = {
-            id: createdActivity.id,
-            title: createdActivity.task_title,
-            description: createdActivity.task_instruction || '',
-            dueDate: createdActivity.task_due ? new Date(createdActivity.task_due).toISOString().split('T')[0] : '',
-            dueTime: createdActivity.task_due ? new Date(createdActivity.task_due).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
-            priority: newActivity.priority,
-            status: createdActivity.task_status,
-            subject: space.space_name,
-            type: newActivity.type,
-            studentsCount: space.members?.length || 25,
-            yearLevel: '4th Year',
-            spaceId: space.space_uuid
-          };
-          
-          setActivities([...activities, formattedActivity]);
-
-          // Reset form
-          setShowCreateModal(false);
-          setNewActivity({
-            title: "",
-            description: "",
-            dueDate: "",
-            dueTime: "",
-            priority: "medium",
-            type: "Assignment"
-          });
-          setSelectedSpace("");
-        } else {
-          console.error('Failed to create activity');
-        }
-      } catch (error) {
-        console.error('Error creating activity:', error);
+  // Handler for when a new task is created from the modal
+  const handleTaskCreate = (newTask) => {
+    // Convert the newTask to the ProfCalendar activity format
+    setActivities((prev) => [
+      ...prev,
+      {
+        ...newTask,
+        subject: (availableSpaces.find(s => s.space_uuid === newTask.spaceId)?.space_name) || '',
+        studentsCount: (availableSpaces.find(s => s.space_uuid === newTask.spaceId)?.members?.length) || 25,
+        yearLevel: '4th Year',
+        type: newTask.type || 'Assignment',
       }
-    }
+    ]);
   };
 
   const handleCancelCreate = () => {
@@ -442,12 +357,10 @@ const ProfCalendarPage = () => {
         <div className="p-4 sm:p-6">
           {/* Desktop Header */}
           <div className="hidden lg:block mb-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Activity Calendar</h1>
-              <p className="text-gray-600 mt-1">
-                {contextError ? "Showing sample data (SpaceContext not available)" : "Track all activity due dates and manage your class schedules"}
-              </p>
-            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Activity Calendar</h1>
+            <p className="text-gray-600">
+              {contextError ? "Showing sample data (SpaceContext not available)" : "Track all activity due dates and manage your class schedules"}
+            </p>
           </div>
 
           {/* Create Activity Button */}
@@ -455,25 +368,20 @@ const ProfCalendarPage = () => {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <button
-                  onClick={() => {
-                    if (selectedSpace) {
-                      setShowCreateModal(true);
-                    } else {
-                      setShowCreateDropdown(true);
-                    }
-                  }}
+                  onClick={() => setShowCreateTaskFlow(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <FiPlus size={16} />
-                  Create Activity
+                  Create New Task
                 </button>
                 
                 {/* Dropdown */}
                 {showCreateDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
-                    <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+                  <div className="absolute top-full left-0 mt-2 w-72 bg-[#1E222A] rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+                    {/* Dropdown Header */}
+            <div className="p-3 bg-gradient-to-r from-blue-800 to-indigo-800 border-b border-blue-700">
                       <div className="flex justify-between items-center">
-                        <p className="text-sm font-semibold text-blue-900 flex items-center gap-2">
+                        <p className="text-sm font-semibold text-white flex items-center gap-2">
                           <div className="w-4 h-4 bg-blue-600 rounded flex items-center justify-center">
                             <FiCalendar className="text-white" size={10} />
                           </div>
@@ -554,7 +462,7 @@ const ProfCalendarPage = () => {
                                   setShowCreateDropdown(false);
                                   setShowCreateModal(true);
                                 }}
-                                className="w-full group relative overflow-hidden rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+                                className="w-full group relative overflow-hidden rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg bg-gray-800"
                               >
                                 <div className={`absolute inset-0 ${colors[index % colors.length]} opacity-10 group-hover:opacity-20 transition-opacity`}></div>
                                 <div className="relative flex items-center gap-3 px-4 py-3 text-left">
@@ -853,181 +761,15 @@ const ProfCalendarPage = () => {
         </div>
       </div>
 
-      {/* Create Activity Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-gray-200">
-            {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-2xl border-b border-blue-700">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                    <FiPlus className="text-white" size={16} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Create New Activity</h3>
-                    <p className="text-blue-100 text-sm">Add a new activity for {selectedSpace}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleCancelCreate}
-                  className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg p-2 transition-colors"
-                >
-                  <FiX size={20} />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left Column */}
-                <div className="space-y-5">
-                  {/* Space Selection */}
-                  <div>
-                    <label className="block text-sm font-semibold text-black mb-2 flex items-center gap-2">
-                      <div className="w-5 h-5 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <FiCalendar className="text-blue-600" size={12} />
-                      </div>
-                      Space
-                    </label>
-                    <div className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-black font-medium">
-                      {selectedSpace || "Select a space"}
-                    </div>
-                  </div>
-
-                  {/* Activity Title */}
-                  <div>
-                    <label className="block text-sm font-semibold text-black mb-2 flex items-center gap-2">
-                      <div className="w-5 h-5 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FiEdit className="text-green-600" size={12} />
-                      </div>
-                      Activity Title
-                    </label>
-                    <input
-                      type="text"
-                      value={newActivity.title}
-                      onChange={(e) => setNewActivity({...newActivity, title: e.target.value})}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-black"
-                      placeholder="Enter activity title"
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <label className="block text-sm font-semibold text-black mb-2 flex items-center gap-2">
-                      <div className="w-5 h-5 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <FiEdit className="text-purple-600" size={12} />
-                      </div>
-                      Description
-                    </label>
-                    <textarea
-                      value={newActivity.description}
-                      onChange={(e) => setNewActivity({...newActivity, description: e.target.value})}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none text-black"
-                      rows="4"
-                      placeholder="Enter activity description"
-                    />
-                  </div>
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-5">
-                  {/* Due Date and Time */}
-                  <div className="space-y-4">
-                    <label className="block text-sm font-semibold text-black mb-2 flex items-center gap-2">
-                      <div className="w-5 h-5 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <FiClock className="text-orange-600" size={12} />
-                      </div>
-                      Due Date & Time
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-black mb-1">Date</label>
-                        <input
-                          type="date"
-                          value={newActivity.dueDate}
-                          onChange={(e) => setNewActivity({...newActivity, dueDate: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-black mb-1">Time</label>
-                        <input
-                          type="time"
-                          value={newActivity.dueTime}
-                          onChange={(e) => setNewActivity({...newActivity, dueTime: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Priority and Type */}
-                  <div className="space-y-4">
-                    <label className="block text-sm font-semibold text-black mb-2 flex items-center gap-2">
-                      <div className="w-5 h-5 bg-red-100 rounded-lg flex items-center justify-center">
-                        <FiAlertCircle className="text-red-600" size={12} />
-                      </div>
-                      Priority & Type
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-black mb-1">Priority</label>
-                        <select
-                          value={newActivity.priority}
-                          onChange={(e) => setNewActivity({...newActivity, priority: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                        >
-                          <option value="low">🟢 Low Priority</option>
-                          <option value="medium">🟡 Medium Priority</option>
-                          <option value="high">🔴 High Priority</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-black mb-1">Activity Type</label>
-                        <select
-                          value={newActivity.type}
-                          onChange={(e) => setNewActivity({...newActivity, type: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                        >
-                          <option value="Assignment">📝 Assignment</option>
-                          <option value="Exam">📋 Exam</option>
-                          <option value="Lab Activity">🔬 Lab Activity</option>
-                          <option value="Paper">📄 Paper</option>
-                          <option value="Practical Exam">⚽ Practical Exam</option>
-                          <option value="Presentation">🎯 Presentation</option>
-                          <option value="Project Demo">💻 Project Demo</option>
-                          <option value="Coding Challenge">💡 Coding Challenge</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
-                <button
-                  onClick={handleCancelCreate}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCreateActivity}
-                  disabled={!selectedSpace || !newActivity.title || !newActivity.description}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 font-medium transition-all disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <FiPlus size={16} />
-                    Create Activity
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* CREATE TASK FLOW MODAL */}
+      <CreateTaskFlowModal
+        show={showCreateTaskFlow}
+        setShow={setShowCreateTaskFlow}
+        availableSpaces={availableSpaces}
+        contextError={contextError}
+        refreshSpaces={refreshSpaces}
+        onTaskCreate={handleTaskCreate}
+      />
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
