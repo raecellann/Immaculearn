@@ -29,6 +29,8 @@ const UserFilesShared = () => {
   const [activeFile, setActiveFile] = useState(null);
   const [fileName, setFileName] = useState("");
   const [isCreatingFile, setIsCreatingFile] = useState(false);
+  const [showFileOptions, setShowFileOptions] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
 
   const navigate = useNavigate();
@@ -87,6 +89,26 @@ const UserFilesShared = () => {
   };
 
 
+  const handleFileClick = (file) => {
+    setSelectedFile(file);
+    setShowFileOptions(true);
+  };
+
+  const handleOpenFile = (file) => {
+    const url = `/space/${space_uuid}/${space_name}/files/${file.fuuid}/${file.filename}`;
+    navigate(url);
+    setShowFileOptions(false);
+  };
+
+  const handleDeleteFile = (file) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${file.filename}"? This action cannot be undone.`);
+    if (confirmDelete) {
+      // Add delete logic here
+      alert(`File "${file.filename}" deleted successfully!`);
+      setShowFileOptions(false);
+    }
+  };
+
   const handleCreateFile = () => {
     if (!fileName.trim()) {
       toast.error("File title is required");
@@ -104,8 +126,8 @@ const UserFilesShared = () => {
         onSuccess: (newFile) => {
           toast.success(`File "${fileName}" created successfully!`);
 
-          const url = `/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${fileName}`;
-          window.open(url, "_blank", "noopener,noreferrer");
+          const url = `/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${newFile.title}`;
+          navigate(url);
 
           setFileName("");
           setIsCreatingFile(false);
@@ -360,46 +382,46 @@ const UserFilesShared = () => {
           {/* Action Ribbon */}
           {activeFile && (
             <div className="sticky top-0 z-20 mb-6 bg-[#1E222A] border border-gray-700 rounded-xl p-4 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <FiFileText />
-                <span key={activeFile.file_id} className="font-semibold truncate max-w-[220px]">
-                  {activeFile.filename}
-                </span>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    window.open(
-                      `/space/${space_uuid}/${space_name}/files/${activeFile.file_uuid}/${activeFile.filename}`,
-                      "_blank",
-                      "noopener,noreferrer"
-                    )
-                  }
-                  className="px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-sm"
-                >
-                  Open
-                </button>
-
-                <button
-                  onClick={() => setShareModalOpen(true)}
-                  className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm"
-                >
-                  Share
-                </button>
-
-                <button className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">
-                  Upload Version
-                </button>
-
-                <button
-                  onClick={() => setActiveFile(null)}
-                  className="px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-sm"
-                >
-                  Close
-                </button>
-              </div>
+            <div className="flex items-center gap-3">
+              <FiFileText />
+              <span key={activeFile.file_id} className="font-semibold truncate max-w-[220px]">
+                {activeFile.filename}
+              </span>
             </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() =>
+                  window.open(
+                    `/space/${space_uuid}/${space_name}/files/${activeFile.file_uuid}/${activeFile.filename}`,
+                    "_blank",
+                    "noopener,noreferrer"
+                  )
+                }
+                className="px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-sm"
+              >
+                Open
+              </button>
+
+              <button
+                onClick={() => setShareModalOpen(true)}
+                className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm"
+              >
+                Share
+              </button>
+
+              <button className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">
+                Upload Version
+              </button>
+
+              <button
+                onClick={() => setActiveFile(null)}
+                className="px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-sm"
+              >
+                Close
+              </button>
+            </div>
+          </div>
           )}
 
 
@@ -427,10 +449,10 @@ const UserFilesShared = () => {
               {files.map((file, index) => (
                 <div
                   key={index}
-                  onClick={() => setActiveFile(file)}
+                  onClick={() => handleFileClick(file)}
                   className="grid grid-cols-4 items-center bg-[#161A20] rounded-lg px-4 py-3 mt-4"
                 >
-                  <div className="flex items-center gap-3 col-span-2">
+                  <div className="flex items-center gap-3 col-span-2 cursor-pointer">
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
@@ -454,20 +476,23 @@ const UserFilesShared = () => {
               {files.map((file, index) => (
                 <div
                   key={index}
-                  className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                  className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4 cursor-pointer"
+                  onClick={() => handleFileClick(file)}
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
-                    <p className="font-semibold">{file.name}</p>
+                    <p className="font-semibold">{file.filename}</p>
                   </div>
 
                   <p className="text-sm text-gray-400">
-                    Date: <span className="text-white">{file.date}</span>
+                    Date: <span className="text-white">{new Date(file.created_at).toLocaleDateString()}</span>
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
-                    Posted by: <span className="text-white">{file.by}</span>
+                    Posted by: <span className="text-white">{file.owner_id === user.id ? "You" : currentSpace.members.find(
+                      member => member.account_id === file.owner_id
+                    )?.full_name}</span>
                   </p>
                 </div>
               ))}
@@ -588,45 +613,97 @@ const UserFilesShared = () => {
         </div>
       )}
 
-      {/* This is a popup modal when i click Create File Button */}
+      {/* FILE OPTIONS MODAL */}
+      {showFileOptions && selectedFile && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md shadow-xl">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-white">File Options</h2>
+                <button
+                  onClick={() => setShowFileOptions(false)}
+                  className="text-gray-400 hover:text-white p-1"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+            </div>
 
+            {/* Content */}
+            <div className="p-6">
+              <p className="text-white mb-4">
+                What would you like to do with "<span className="font-semibold">{selectedFile.filename}</span>"?
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => handleDeleteFile(selectedFile)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  Delete
+                </button>
+                <button 
+                  onClick={() => handleOpenFile(selectedFile)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  Open
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FILE TITLE MODAL */}
       {isCreatingFile && (
-      <div className="max-w-5xl mx-auto">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md shadow-xl">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-white">File Title</h2>
+                <button
+                  onClick={() => setIsCreatingFile(false)}
+                  className="text-gray-400 hover:text-white p-1"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+            </div>
 
-              <div className="bg-black rounded-xl p-6 border border-white">
-                <label className="font-semibold text-lg mb-3 block">
-                  File Title <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value)}
-                  className="bg-[#23272F] w-full rounded-lg px-4 py-2 mb-6 outline-none border border-[#23272F] focus:border-blue-500"
-                  placeholder="Enter file title"
-                />
+            {/* Content */}
+            <div className="p-6">
+              <label className="font-semibold text-white mb-3 block">
+                File Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+                className="w-full bg-[#23272F] text-white rounded-lg px-4 py-2 mb-6 outline-none border border-[#23272F] focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter file title"
+                autoFocus
+              />
 
-                <div className="flex justify-end gap-3 mt-6">
-                  <button
-                  className="bg-gray-700 hover:bg-gray-800 px-6 py-2 rounded-lg"
+              <div className="flex justify-end gap-3">
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
                   onClick={() => setIsCreatingFile(false)}
                 >
                   Cancel
                 </button>
-                  <button 
-                    onClick={handleCreateFile}
-                    className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg"
-                  >
-                    Create
-                  </button>
-                </div>
+                <button 
+                  onClick={handleCreateFile}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  Create
+                </button>
               </div>
-            </div>)}
-
-      
-
-
-
-
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {/* PENDING INVITATIONS POPUP */}

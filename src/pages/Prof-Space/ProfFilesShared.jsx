@@ -6,6 +6,7 @@ import Logout from "../component/logout";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { useFileManager } from "../../hooks/useFileManager.js";
 
 const ProfFilesShared = () => {
   const navigate = useNavigate();
@@ -42,6 +43,9 @@ const ProfFilesShared = () => {
   // Space name
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
 
+  const { list, create } = useFileManager(currentSpace?.space_id || null);
+  const files = list?.data || [];
+
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -56,6 +60,8 @@ const ProfFilesShared = () => {
   const [showCreateUploadModal, setShowCreateUploadModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [fileName, setFileName] = useState("");
+  const [isCreatingFile, setIsCreatingFile] = useState(false);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -177,26 +183,41 @@ const ProfFilesShared = () => {
       });
   };
 
-  const files = [
-    {
-      name: "Calculus: Lecture 3",
-      date: "October 8, 2025",
-      by: "Zeldrick",
-      folder: "Math",
-    },
-    {
-      name: "IAS : Lecture 1",
-      date: "October 8, 2025",
-      by: "Nathaniel",
-      folder: "IAS",
-    },
-    {
-      name: "CS Thesis 2 : Lecture 4",
-      date: "October 8, 2025",
-      by: "Raeccell",
-      folder: "Thesis",
-    },
-  ];
+  const handleOpenFile = (file) => {
+    const url = `/prof/space/${space_uuid}/${space_name}/files/${file.fuuid}/${file.filename}`;
+    navigate(url);
+  };
+
+  const handleCreateFile = () => {
+    if (!fileName.trim()) {
+      alert("File title is required");
+      return;
+    }
+
+    create.mutate(
+      {
+        title: fileName,
+        space_id: currentSpace?.space_id ?? null,
+        owner_id: user?.id ?? null, 
+        content: "",
+      },
+      {
+        onSuccess: (newFile) => {
+          alert(`File "${fileName}" created successfully!`);
+
+          const url = `/prof/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${newFile.title}`;
+          navigate(url);
+
+          setFileName("");
+          setIsCreatingFile(false);
+        },
+        onError: (err) => {
+          console.error(err);
+          alert(err?.message || "Failed to create file");
+        },
+      }
+    );
+  };
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
@@ -305,7 +326,7 @@ const ProfFilesShared = () => {
           {/* ================= TABS ================= */}
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
-              <div className="flex justify-center space-x-12"> {/* Changed from flex space-x-... to justify-center space-x-12 */}
+              <div className="flex justify-center space-x-12"> 
                 <button 
                   onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}`)} 
                   className="text-gray-400 hover:text-white transition"
@@ -381,14 +402,19 @@ const ProfFilesShared = () => {
                   key={index}
                   className="grid grid-cols-4 items-center bg-[#161A20] rounded-lg px-4 py-3 mt-4"
                 >
-                  <div className="flex items-center gap-3 col-span-2">
+                  <div className="flex items-center gap-3 col-span-2 cursor-pointer" onClick={() => handleOpenFile(file)}>
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
-                    <span>{file.name}</span>
+                    <span>{file.filename}</span>
                   </div>
-                  <div>{file.date}</div>
-                  <div>{file.by}</div>
+                  <div>
+                    {new Date(file.created_at).toLocaleDateString()}
+                  </div>
+                  <div>{file.owner_id === user.id ? "You" : currentSpace.members.find(
+                      member => member.account_id === file.owner_id
+                    )?.full_name}
+                  </div>
                 </div>
               ))}
             </div>
@@ -398,20 +424,23 @@ const ProfFilesShared = () => {
               {files.map((file, index) => (
                 <div
                   key={index}
-                  className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                  className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4 cursor-pointer"
+                  onClick={() => handleOpenFile(file)}
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
-                    <p className="font-semibold">{file.name}</p>
+                    <p className="font-semibold">{file.filename}</p>
                   </div>
 
                   <p className="text-sm text-gray-400">
-                    Date: <span className="text-white">{file.date}</span>
+                    Date: <span className="text-white">{new Date(file.created_at).toLocaleDateString()}</span>
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
-                    Posted by: <span className="text-white">{file.by}</span>
+                    Posted by: <span className="text-white">{file.owner_id === user.id ? "You" : currentSpace.members.find(
+                      member => member.account_id === file.owner_id
+                    )?.full_name}</span>
                   </p>
                 </div>
               ))}
@@ -657,10 +686,7 @@ const ProfFilesShared = () => {
 
               {/* CREATE FILE BUTTON */}
               <button
-                onClick={() => {
-                  navigate("/create-document");
-                  setShowCreateUploadModal(false);
-                }}
+                onClick={() => setIsCreatingFile(true)}
                 className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center space-x-2 bg-white mb-6"
               >
                 <FiFileText size={20} />
@@ -698,6 +724,56 @@ const ProfFilesShared = () => {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FILE TITLE MODAL */}
+      {isCreatingFile && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md shadow-xl">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-white">File Title</h2>
+                <button
+                  onClick={() => setIsCreatingFile(false)}
+                  className="text-gray-400 hover:text-white p-1"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <label className="font-semibold text-white mb-3 block">
+                File Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+                className="w-full bg-[#23272F] text-white rounded-lg px-4 py-2 mb-6 outline-none border border-[#23272F] focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter file title"
+                autoFocus
+              />
+
+              <div className="flex justify-end gap-3">
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
+                  onClick={() => setIsCreatingFile(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleCreateFile}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  Create
+                </button>
+              </div>
             </div>
           </div>
         </div>
