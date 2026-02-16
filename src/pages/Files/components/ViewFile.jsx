@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import Sidebar from "../../component/sidebar";
+import { useNavigate } from "react-router";
 
 const ViewFilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [title, setTitle] = useState("Calculus: Lecture 3");
+  const navigate = useNavigate();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [content, setContent] = useState(`Today we covered integration by parts. The formula for integration by parts is given by:
 
@@ -103,7 +105,10 @@ We also discussed the method of partial fractions, which allows us to break down
                   )}
                 </div>
 
-                <button className="text-white hover:text-gray-300 text-sm bg-transparent border border-gray-500 hover:border-gray-300 px-2 py-0.5 rounded transition-colors">
+                <button
+                  className="text-white hover:text-gray-300 text-sm bg-transparent border border-gray-500 hover:border-gray-300 px-2 py-0.5 rounded transition-colors"
+                  onClick={() => navigate(-1)}
+                >
                   ← Back
                 </button>
               </div>
@@ -171,15 +176,6 @@ We also discussed the method of partial fractions, which allows us to break down
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 w-full">
-            <button className="px-4 sm:px-5 py-2 sm:py-1.5 bg-white text-gray-800 hover:bg-gray-200 rounded-full transition-colors text-sm sm:text-sm">
-              Cancel
-            </button>
-            <button className="px-4 sm:px-5 py-2 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors text-sm sm:text-sm">
-              Publish
-            </button>
-          </div>
         </div>
       </div>
     </div>

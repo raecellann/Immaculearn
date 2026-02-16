@@ -171,8 +171,18 @@ const ViewAllFilesPage = () => {
                     {file.created_at}
                   </p>
 
+                  
+
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition">
+                    <span 
+                      
+                      onClick={() =>
+                        navigate(
+                          `/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.filename)}/${file.file_uuid}`
+                        )
+                      }
+                      className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition"
+                    >
                       View File
                     </span>
                   </div>
@@ -282,10 +292,19 @@ const ViewAllFilesPage = () => {
                       </td> */}
 
                       <td className="px-6 py-4">
-                        <span className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition">
-                          View File
-                        </span>
-                      </td>
+  <span
+    onClick={() =>
+      navigate(
+        `/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.filename)}/${file.file_uuid}`
+      )
+    }
+    className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md cursor-pointer hover:bg-blue-600 transition"
+  >
+    View File
+  </span>
+</td>
+
+
                     </tr>
                   ))}
                 </tbody>
