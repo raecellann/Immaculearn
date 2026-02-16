@@ -4,6 +4,7 @@ import ProfSidebar from "../component/profsidebar";
 import { FiCopy, FiFileText, FiMenu, FiX, FiUpload } from "react-icons/fi";
 import Logout from "../component/logout";
 import Sidebar from "../component/sidebar";
+import { useFileManager } from "../../hooks/useFileManager.js";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
@@ -25,6 +26,10 @@ const UserFilesShared = () => {
   const [showCreateUploadModal, setShowCreateUploadModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [activeFile, setActiveFile] = useState(null);
+  const [fileName, setFileName] = useState("");
+  const [isCreatingFile, setIsCreatingFile] = useState(false);
+
 
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams(); // Get params from URL
@@ -81,6 +86,38 @@ const UserFilesShared = () => {
     }
   };
 
+
+  const handleCreateFile = () => {
+    if (!fileName.trim()) {
+      toast.error("File title is required");
+      return;
+    }
+
+    create.mutate(
+      {
+        title: fileName,
+        space_id: currentSpace?.space_id ?? null,
+        owner_id: user?.id ?? null, 
+        content: "",
+      },
+      {
+        onSuccess: (newFile) => {
+          toast.success(`File "${fileName}" created successfully!`);
+
+          const url = `/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${fileName}`;
+          window.open(url, "_blank", "noopener,noreferrer");
+
+          setFileName("");
+          setIsCreatingFile(false);
+        },
+        onError: (err) => {
+          console.error(err);
+          toast.error(err?.message || "Failed to create file");
+        },
+      }
+    );
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -96,26 +133,9 @@ const UserFilesShared = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const files = [
-    {
-      name: "Calculus: Lecture 3",
-      date: "October 8, 2025",
-      by: "Zeldrick",
-      folder: "Math",
-    },
-    {
-      name: "IAS : Lecture 1",
-      date: "October 8, 2025",
-      by: "Nathaniel",
-      folder: "IAS",
-    },
-    {
-      name: "CS Thesis 2 : Lecture 4",
-      date: "October 8, 2025",
-      by: "Raeccell",
-      folder: "Thesis",
-    },
-  ];
+  const { list , create} = useFileManager(currentSpace?.space_id || null);
+
+  const files = list?.data || [];
 
 
 
@@ -336,6 +356,53 @@ const UserFilesShared = () => {
             </div>
           )}
 
+
+          {/* Action Ribbon */}
+          {activeFile && (
+            <div className="sticky top-0 z-20 mb-6 bg-[#1E222A] border border-gray-700 rounded-xl p-4 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <FiFileText />
+                <span key={activeFile.file_id} className="font-semibold truncate max-w-[220px]">
+                  {activeFile.filename}
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() =>
+                    window.open(
+                      `/space/${space_uuid}/${space_name}/files/${activeFile.file_uuid}/${activeFile.filename}`,
+                      "_blank",
+                      "noopener,noreferrer"
+                    )
+                  }
+                  className="px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-sm"
+                >
+                  Open
+                </button>
+
+                <button
+                  onClick={() => setShareModalOpen(true)}
+                  className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm"
+                >
+                  Share
+                </button>
+
+                <button className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">
+                  Upload Version
+                </button>
+
+                <button
+                  onClick={() => setActiveFile(null)}
+                  className="px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-sm"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+
+
           {/* ================= FILES ================= */}
           <div className="max-w-5xl mx-auto">
             {/* BUTTON */}
@@ -360,16 +427,24 @@ const UserFilesShared = () => {
               {files.map((file, index) => (
                 <div
                   key={index}
+                  onClick={() => setActiveFile(file)}
                   className="grid grid-cols-4 items-center bg-[#161A20] rounded-lg px-4 py-3 mt-4"
                 >
                   <div className="flex items-center gap-3 col-span-2">
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
-                    <span>{file.name}</span>
+                    <span>{file.filename}</span>
                   </div>
-                  <div>{file.date}</div>
-                  <div>{file.by}</div>
+                  
+                  <div>
+                    {new Date(file.created_at).toLocaleDateString()}
+                  </div>
+                  <div>{file.owner_id === user.id ? "You" : currentSpace.members.find(
+                      member => member.account_id === file.owner_id
+                    )?.full_name}
+                  </div>
+
                 </div>
               ))}
             </div>
@@ -467,10 +542,10 @@ const UserFilesShared = () => {
 
               {/* CREATE FILE BUTTON */}
               <button
-                onClick={() => {
-                  navigate("/create-document");
-                  setShowCreateUploadModal(false);
-                }}
+
+
+                // Kapag clinick ito lalabas yung set filename sa ibaba
+                onClick={() => setIsCreatingFile(true)}
                 className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center space-x-2 bg-white mb-6"
               >
                 <FiFileText size={20} />
@@ -512,6 +587,40 @@ const UserFilesShared = () => {
           </div>
         </div>
       )}
+
+      {/* This is a popup modal when i click Create File Button */}
+
+      {isCreatingFile && (
+      <div className="max-w-5xl mx-auto">
+
+              <div className="bg-black rounded-xl p-6 border border-white">
+                <label className="font-semibold text-lg mb-3 block">
+                  File Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={fileName}
+                  onChange={(e) => setFileName(e.target.value)}
+                  className="bg-[#23272F] w-full rounded-lg px-4 py-2 mb-6 outline-none border border-[#23272F] focus:border-blue-500"
+                  placeholder="Enter file title"
+                />
+
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                  className="bg-gray-700 hover:bg-gray-800 px-6 py-2 rounded-lg"
+                  onClick={() => setIsCreatingFile(false)}
+                >
+                  Cancel
+                </button>
+                  <button 
+                    onClick={handleCreateFile}
+                    className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg"
+                  >
+                    Create
+                  </button>
+                </div>
+              </div>
+            </div>)}
 
       
 
