@@ -129,7 +129,7 @@ const SpacePage = () => {
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           <div className="hidden md:flex items-center justify-center mb-8">
-            <h1 className="text-4xl font-bold font-serif">Spaces</h1>
+            <h1 className="text-4xl font-bold">Spaces</h1>
           </div>
 
           {/* Welcome Section */}
