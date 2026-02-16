@@ -30,8 +30,9 @@ const CreateTaskFlowModal = ({
     description: "",
     dueDate: "",
     dueTime: "",
-    priority: "medium",
-    type: "Assignment"
+    type: "Assignment",
+    assignGroups: 0,
+    groupAssignments: []
   });
 
   if (!show) return null;
@@ -185,7 +186,7 @@ const CreateTaskFlowModal = ({
                   <div className="w-5 h-5 bg-purple-100 rounded-lg flex items-center justify-center">
                     <FiEdit className="text-purple-600" size={12} />
                   </div>
-                  Description
+                  Instruction (optional)
                 </label>
                 <textarea
                   value={newActivity.description}
@@ -227,44 +228,119 @@ const CreateTaskFlowModal = ({
                   </div>
                 </div>
               </div>
-              {/* Priority and Type */}
-              <div className="space-y-4">
+              {/* Task Type */}
+              <div>
                 <label className="block text-sm font-semibold text-black mb-2 flex items-center gap-2">
                   <div className="w-5 h-5 bg-red-100 rounded-lg flex items-center justify-center">
                     <FiAlertCircle className="text-red-600" size={12} />
                   </div>
-                  Priority & Type
+                  Category
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-black mb-1">Priority</label>
-                    <select
-                      value={newActivity.priority}
-                      onChange={(e) => setNewActivity({...newActivity, priority: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                    >
-                      <option value="low">🟢 Low Priority</option>
-                      <option value="medium">🟡 Medium Priority</option>
-                      <option value="high">🔴 High Priority</option>
-                    </select>
+                <select
+                  value={newActivity.type}
+                  onChange={(e) => setNewActivity({...newActivity, type: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-black"
+                >
+                  <option value="Assignment">📝 Assignment</option>
+                  <option value="Exam">📋 Exam</option>
+                  <option value="Lab Activity">🔬 Lab Activity</option>
+                  <option value="Paper">📄 Paper</option>
+                  <option value="Practical Exam">⚽ Practical Exam</option>
+                  <option value="Presentation">🎯 Presentation</option>
+                  <option value="Project Demo">💻 Project Demo</option>
+                  <option value="Coding Challenge">💡 Coding Challenge</option>
+                </select>
+              </div>
+              {/* Assign Groups */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2 flex items-center gap-2">
+                  <div className="w-5 h-5 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <FiPlus className="text-indigo-600" size={12} />
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-black mb-1">Task Type</label>
-                    <select
-                      value={newActivity.type}
-                      onChange={(e) => setNewActivity({...newActivity, type: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                    >
-                      <option value="Assignment">📝 Assignment</option>
-                      <option value="Exam">📋 Exam</option>
-                      <option value="Lab Activity">🔬 Lab Activity</option>
-                      <option value="Paper">📄 Paper</option>
-                      <option value="Practical Exam">⚽ Practical Exam</option>
-                      <option value="Presentation">🎯 Presentation</option>
-                      <option value="Project Demo">💻 Project Demo</option>
-                      <option value="Coding Challenge">💡 Coding Challenge</option>
-                    </select>
+                  Assign Groups
+                </label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs font-medium text-black">Number of Groups:</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewActivity({...newActivity, assignGroups: Math.max(0, newActivity.assignGroups - 1)})}
+                        className="w-8 h-8 bg-black hover:bg-gray-700 rounded-lg flex items-center justify-center transition-colors text-white text-s"
+                      >
+                        <span>—</span>
+                      </button>
+                      <input
+                        type="number"
+                        min="0"
+                        value={newActivity.assignGroups}
+                        onChange={(e) => setNewActivity({...newActivity, assignGroups: parseInt(e.target.value) || 0})}
+                        className="w-16 px-2 py-1 border border-gray-300 rounded-lg text-center text-black"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setNewActivity({...newActivity, assignGroups: newActivity.assignGroups + 1})}
+                        className="w-8 h-8 bg-black hover:bg-gray-700 rounded-lg flex items-center justify-center transition-colors text-white text-s"
+                      >
+                        <span>+</span>
+                      </button>
+                    </div>
                   </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Manual assignment logic
+                        const groups = [];
+                        for (let i = 1; i <= newActivity.assignGroups; i++) {
+                          groups.push({
+                            id: i,
+                            name: `Group ${i}`,
+                            members: [],
+                            manuallyAssigned: true
+                          });
+                        }
+                        setNewActivity({...newActivity, groupAssignments: groups});
+                      }}
+                      className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Manual
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Generate random groups logic
+                        const groups = [];
+                        for (let i = 1; i <= newActivity.assignGroups; i++) {
+                          groups.push({
+                            id: i,
+                            name: `Group ${i}`,
+                            members: [],
+                            randomlyGenerated: true
+                          });
+                        }
+                        setNewActivity({...newActivity, groupAssignments: groups});
+                      }}
+                      className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Generate
+                    </button>
+                  </div>
+                  {newActivity.groupAssignments.length > 0 && (
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs font-medium text-black mb-2">Created Groups:</p>
+                      <div className="space-y-1">
+                        {newActivity.groupAssignments.map((group) => (
+                          <div key={group.id} className="flex items-center justify-between text-xs">
+                            <span className="font-medium">{group.name}</span>
+                            <span className="text-gray-500">
+                              {group.manuallyAssigned ? 'Manual' : 'Generated'} • {group.members.length} members
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -273,7 +349,7 @@ const CreateTaskFlowModal = ({
           <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
             <button
               onClick={() => setShow(false)}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 text-white rounded-xl hover:bg-gray-50 font-medium transition-all"
+              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all"
             >
               Cancel
             </button>
@@ -288,7 +364,7 @@ const CreateTaskFlowModal = ({
                       task_status: 'pending',
                       space_id: space.space_uuid,
                       task_type: newActivity.type,
-                      priority: newActivity.priority
+                      group_assignments: newActivity.groupAssignments
                     };
                     const response = await fetch(`/api/spaces/${space.space_uuid}/tasks`, {
                       method: 'POST',
@@ -302,11 +378,11 @@ const CreateTaskFlowModal = ({
                         description: newActivity.description,
                         dueDate: newActivity.dueDate,
                         dueTime: newActivity.dueTime,
-                        priority: newActivity.priority,
                         status: 'pending',
                         assignedBy: 'You',
                         category: 'Academic',
-                        spaceId: space.space_uuid
+                        spaceId: space.space_uuid,
+                        groupAssignments: newActivity.groupAssignments
                       };
                       if (onTaskCreate && typeof onTaskCreate === 'function') {
                         onTaskCreate(newTask);
