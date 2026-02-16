@@ -37,7 +37,7 @@ export const SpaceRoutes = [
   },
   {
     key: "/files",
-    path: "/space/:space_uuid/:space_name/files/:file_uuid/:file_name",
+    path: "/space/:space_uuid/:space_name/files",
     element: <CreateDocumentPage />,
   },
   {
