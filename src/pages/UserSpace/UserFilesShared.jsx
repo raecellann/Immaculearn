@@ -8,6 +8,7 @@ import { useFileManager } from "../../hooks/useFileManager.js";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { toast } from "react-toastify";
 
 const UserFilesShared = () => {
 
@@ -124,13 +125,17 @@ const UserFilesShared = () => {
       },
       {
         onSuccess: (newFile) => {
-          toast.success(`File "${fileName}" created successfully!`);
+          toast.success(`File "${fileName}" created successfully!`, {
+            duration: 3000,
+            position: 'top-center',
+          });
 
           const url = `/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${newFile.title}`;
           navigate(url);
 
           setFileName("");
           setIsCreatingFile(false);
+          setShowCreateUploadModal(false);
         },
         onError: (err) => {
           console.error(err);
@@ -637,6 +642,12 @@ const UserFilesShared = () => {
               </p>
 
               <div className="flex justify-end gap-3">
+                <button
+                  className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
+                  onClick={() => setShowFileOptions(false)}
+                >
+                  Cancel
+                </button>
                 <button 
                   onClick={() => handleDeleteFile(selectedFile)}
                   className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
@@ -664,7 +675,10 @@ const UserFilesShared = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-white">File Title</h2>
                 <button
-                  onClick={() => setIsCreatingFile(false)}
+                  onClick={() => {
+                    setFileName("");
+                    setIsCreatingFile(false);
+                  }}
                   className="text-gray-400 hover:text-white p-1"
                 >
                   <FiX size={20} />
@@ -689,7 +703,10 @@ const UserFilesShared = () => {
               <div className="flex justify-end gap-3">
                 <button
                   className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
-                  onClick={() => setIsCreatingFile(false)}
+                  onClick={() => {
+                    setFileName("");
+                    setIsCreatingFile(false);
+                  }}
                 >
                   Cancel
                 </button>
