@@ -104,7 +104,7 @@ const ProfGradeRecordPage = () => {
 
         {/* Desktop Header */}
         <div className="hidden lg:flex justify-between items-center mb-6 relative">
-          <h1 className="text-4xl font-bold text-center flex-1 font-serif">Grade Record</h1>
+          <h1 className="text-4xl font-bold text-center flex-1">Grade Record</h1>
         </div>
 
         {/* Year Level & Back */}
