@@ -23,7 +23,7 @@ import ProfViewAllActivityPage from "../pages/prof-ListActivities/components/Pro
 import ProfViewActivityPage from "../pages/prof-ListActivities/components/ProfViewActivity.jsx";
 
 import ProfFilePage from "../pages/prof-Files/proffiles.jsx";
-import ProfViewFiles from "../pages/prof-Files/components/profviewfiles.jsx";
+import ProfViewFiles from "../pages/prof-Files/components/ProfViewAllFiles.jsx";
 import ProfCalendarPage from "../pages/Prof-Calendar/ProfCalendar.jsx";
 import ProfGradeRecordPage from "../pages/prof-GradeViewing/profgradeviewing.jsx";
 import ProfSettingsPage from "../pages/Prof-Settings/profsettings.jsx";

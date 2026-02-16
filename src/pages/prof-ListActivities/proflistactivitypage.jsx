@@ -155,6 +155,7 @@ const ProfListActivityPage = () => {
                 {courseSpaces?.map((space, index) => (
                   <div
                     key={`course-space-${index}`}
+                    onClick={() => navigate(`/prof/list-activity/${space.space_uuid}/${space.space_name}`)}
                     className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
                   >
                     <span className="text-xl">📋</span>

@@ -11,8 +11,8 @@ import TaskViewPage from "../pages/Task/components/TaskViewPage.jsx";
 
 import NotificationPage from "../pages/Notifications/notification.jsx";
 import FilePage from "../pages/Files/files.jsx";
-import ViewFilePage from "../pages/Files/components/ViewFiles.jsx";
-import ViewAllFilesPage from "../pages/Files/components/view-all-files.jsx";
+import ViewFilePage from "../pages/Files/components/ViewFile.jsx";
+import ViewAllFilesPage from "../pages/Files/components/ViewAllFiles.jsx";
 
 import ChatList from "../pages/User_chats/user_chats";
 import Calendar from "../pages/Calendar/Calendar.jsx";

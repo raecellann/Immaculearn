@@ -137,6 +137,14 @@ const ViewAllFilesPage = () => {
           </h1>
 
           <div className="max-w-6xl mx-auto">
+            <div className="mb-4 flex items-center">
+              <button
+                onClick={() => navigate(-1)}
+                className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-lg font-medium transition-colors"
+              >
+                ← Back
+              </button>
+            </div>
 
             {/* ================= MOBILE (CARD VIEW) ================= */}
             <div className="flex flex-col gap-4 block md:hidden">

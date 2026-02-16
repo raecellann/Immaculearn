@@ -147,7 +147,7 @@ const TaskPage = () => {
                     <div
                       key={`course-space-${index}`}
                       className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                      onClick={() => navigate(`/task-view/${space.space_uuid}`)}
+                      onClick={() => navigate(`/task/${space.space_uuid}/${space.space_name}`)}
                     >
                       <span className="text-xl">📋</span>
                       <div className="flex-1 min-w-0">
