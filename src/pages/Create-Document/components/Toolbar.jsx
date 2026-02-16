@@ -16,6 +16,7 @@ import {
   FiFile,
   FiColumns,
 } from "react-icons/fi";
+import { useTheme } from "../contexts/ThemeContext";
 
 const Toolbar = ({
   editorRef,
@@ -29,6 +30,9 @@ const Toolbar = ({
   isClient = true,
   windowWidth = 1024,
 }) => {
+  const { isDarkMode, colors } = useTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
+
   const [isAlignmentDropdownOpen, setIsAlignmentDropdownOpen] = useState(false);
   const [selectedAlignment, setSelectedAlignment] = useState("left");
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
@@ -44,6 +48,47 @@ const Toolbar = ({
   const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
   const [selectedFont, setSelectedFont] = useState("Inter");
   const [isListDropdownOpen, setIsListDropdownOpen] = useState(false);
+  const handleDropdownToggle = (dropdownName, isOpen) => {
+    // Close all other dropdowns when opening a new one
+    if (isOpen) {
+      setIsAlignmentDropdownOpen(false);
+      setIsColorDropdownOpen(false);
+      setIsFontSizeDropdownOpen(false);
+      setIsImageDropdownOpen(false);
+      setIsPaperSizeDropdownOpen(false);
+      setIsMarginDropdownOpen(false);
+      setIsFontDropdownOpen(false);
+      setIsListDropdownOpen(false);
+    }
+    
+    // Set the specific dropdown state
+    switch (dropdownName) {
+      case 'alignment':
+        setIsAlignmentDropdownOpen(isOpen);
+        break;
+      case 'color':
+        setIsColorDropdownOpen(isOpen);
+        break;
+      case 'fontSize':
+        setIsFontSizeDropdownOpen(isOpen);
+        break;
+      case 'image':
+        setIsImageDropdownOpen(isOpen);
+        break;
+      case 'paperSize':
+        setIsPaperSizeDropdownOpen(isOpen);
+        break;
+      case 'margin':
+        setIsMarginDropdownOpen(isOpen);
+        break;
+      case 'font':
+        setIsFontDropdownOpen(isOpen);
+        break;
+      case 'list':
+        setIsListDropdownOpen(isOpen);
+        break;
+    }
+  };
 
   // Paper sizes configuration
   const paperSizes = {
@@ -343,49 +388,62 @@ const Toolbar = ({
   const fontSizeOptions = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72];
 
   return (
-    <div className="bg-[#EFEFEF] px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 flex flex-wrap items-center justify-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 border-b text-gray-800">
+    <div className="px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 flex flex-wrap items-center justify-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 border-b" style={{ 
+      backgroundColor: currentColors.background, 
+      borderColor: currentColors.border,
+      color: currentColors.text
+    }}>
       {/* TEXT STYLE */}
       <div className="flex items-center gap-1 sm:gap-2 md:gap-3 text-lg sm:text-xl md:text-lg lg:text-lg">
         {/* Bold */}
         <FiBold
-          className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${isClient && document.queryCommandState('bold') ? 'text-blue-500 bg-blue-100' : ''}`}
+          className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors`}
           onMouseDown={(e) => handleMouseDown(e, applyBold)}
           title="Bold"
           size={windowWidth < 640 ? 32 : windowWidth < 768 ? 28 : 24}
+          style={{ color: currentColors.text }}
         />
         
         {/* Italic */}
         <FiItalic
-          className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${isClient && document.queryCommandState('italic') ? 'text-blue-500 bg-blue-100' : ''}`}
+          className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors`}
           onMouseDown={(e) => handleMouseDown(e, applyItalic)}
           title="Italic"
           size={windowWidth < 640 ? 32 : windowWidth < 768 ? 28 : 24}
+          style={{ color: currentColors.text }}
         />
         
         {/* Underline */}
         <FiUnderline
-          className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${isClient && document.queryCommandState('underline') ? 'text-blue-500 bg-blue-100' : ''}`}
+          className={`cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors`}
           onMouseDown={(e) => handleMouseDown(e, applyUnderline)}
           title="Underline"
           size={windowWidth < 640 ? 32 : windowWidth < 768 ? 28 : 24}
+          style={{ color: currentColors.text }}
         />
         
         {/* Font Size Dropdown */}
         <div className="relative">
           <div
-            className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors"
-            onClick={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
+            className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors"
+            style={{ color: currentColors.text }}
+            onClick={() => handleDropdownToggle('fontSize', !isFontSizeDropdownOpen)}
           >
             <span className="text-xs sm:text-sm md:text-sm lg:text-sm font-medium">{selectedFontSize}</span>
             <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
           </div>
 
           {isFontSizeDropdownOpen && (
-            <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-48 sm:w-56">
+            <div className="absolute top-full mt-1 rounded shadow-lg z-10 w-48 sm:w-56" style={{ 
+              backgroundColor: currentColors.surface, 
+              borderColor: currentColors.border,
+              border: `1px solid ${currentColors.border}`
+            }}>
               {fontSizeOptions.map((size) => (
                 <div
                   key={size}
-                  className="flex items-center gap-2 px-2 sm:px-3 py-2 cursor-pointer hover:bg-gray-100"
+                  className="flex items-center gap-2 px-2 sm:px-3 py-2 cursor-pointer transition-colors"
+                  style={{ color: currentColors.text }}
                   onMouseDown={(e) =>
                     handleMouseDown(e, () => {
                       applyFontSize(size);
@@ -403,7 +461,7 @@ const Toolbar = ({
                   >
                     T
                   </span>
-                  <span className="text-xs sm:text-sm text-gray-600">{size}px</span>
+                  <span className="text-xs sm:text-sm" style={{ color: currentColors.textSecondary }}>{size}px</span>
                 </div>
               ))}
             </div>
@@ -411,13 +469,14 @@ const Toolbar = ({
         </div>
       </div>
 
-      <div className="h-6 w-px bg-gray-400" />
+      <div className="h-6 w-px" style={{ backgroundColor: currentColors.border }} />
 
       {/* ALIGNMENT */}
       <div className="relative">
         <div
-          className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors"
-          onClick={() => setIsAlignmentDropdownOpen(!isAlignmentDropdownOpen)}
+          className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors"
+          style={{ color: currentColors.text }}
+          onClick={() => handleDropdownToggle('alignment', !isAlignmentDropdownOpen)}
         >
           {selectedAlignment === "left" && <FiAlignLeft size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />}
           {selectedAlignment === "center" && <FiAlignCenter size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />}
@@ -427,7 +486,11 @@ const Toolbar = ({
         </div>
 
         {isAlignmentDropdownOpen && (
-          <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10">
+          <div className="absolute top-full mt-1 rounded shadow-lg z-10" style={{ 
+            backgroundColor: currentColors.surface, 
+            borderColor: currentColors.border,
+            border: `1px solid ${currentColors.border}`
+          }}>
             {[
               ["left", <FiAlignLeft />, "Left"],
               ["center", <FiAlignCenter />, "Center"],
@@ -436,7 +499,8 @@ const Toolbar = ({
             ].map(([align, icon, label]) => (
               <div
                 key={align}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => {
                     applyAlignment(align);
@@ -458,24 +522,29 @@ const Toolbar = ({
       {/* COLOR */}
       <div className="relative">
         <div
-          className={`flex items-center gap-2 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${selectedTextColor !== 'black' ? 'text-blue-500 bg-blue-100' : ''}`}
-          onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
+          className="flex items-center gap-2 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors"
+          style={{ color: currentColors.text }}
+          onClick={() => handleDropdownToggle('color', !isColorDropdownOpen)}
           title="Text Color"
         >
           <div
             className="w-4 h-4 sm:w-4 sm:h-4 rounded border border-gray-400"
-            style={{ backgroundColor: selectedTextColor }}
+            style={{ backgroundColor: selectedTextColor, borderColor: currentColors.border }}
           />
           <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
         </div>
 
         {isColorDropdownOpen && (
-          <div className={`absolute top-full mt-2 bg-white border rounded-xl shadow-lg z-20 p-3 ${
+          <div className={`absolute top-full mt-2 bg-gray-800 border border-gray-600 rounded-xl shadow-lg z-20 p-3 ${
             windowWidth < 640 ? 'w-[280px] left-1/2 transform -translate-x-1/2' : 
             windowWidth < 768 ? 'w-[300px] left-1/2 transform -translate-x-1/2' : 
             'w-[320px] right-0'
-          }`}>
-            <div className="text-xs font-semibold mb-2 text-gray-700">
+          }`} style={{ 
+            backgroundColor: currentColors.surface, 
+            borderColor: currentColors.border,
+            border: `1px solid ${currentColors.border}`
+          }}>
+            <div className="text-xs font-semibold mb-2 text-gray-300">
               Text Color
             </div>
 
@@ -487,11 +556,12 @@ const Toolbar = ({
               {colorOptions.map((color) => (
                 <button
                   key={color}
-                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded border border-black bg-white ${
+                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded border border-gray-400 bg-gray-700 ${
                     windowWidth < 640 ? 'text-xs' : 'text-sm sm:text-base'
                   }`}
                   style={{
                     backgroundColor: color === "transparent" ? "white" : color,
+                    borderColor: currentColors.border,
                   }}
                   onMouseDown={(e) =>
                     handleMouseDown(e, () => applyTextColor(color))
@@ -507,13 +577,14 @@ const Toolbar = ({
         )}
       </div>
 
-      <div className="h-6 w-px bg-gray-400" />
+      <div className="h-6 w-px" style={{ backgroundColor: currentColors.border }} />
 
       {/* IMAGE */}
       <div className="relative">
         <div
-          className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors"
-          onClick={() => setIsImageDropdownOpen(!isImageDropdownOpen)}
+          className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors"
+          style={{ color: currentColors.text }}
+          onClick={() => handleDropdownToggle('image', !isImageDropdownOpen)}
           title="Crop and Rotate"
         >
           <FiImage size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />
@@ -521,9 +592,14 @@ const Toolbar = ({
         </div>
 
         {isImageDropdownOpen && (
-          <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10">
+          <div className="absolute top-full mt-1 rounded shadow-lg z-10" style={{ 
+            backgroundColor: currentColors.surface, 
+            borderColor: currentColors.border,
+            border: `1px solid ${currentColors.border}`
+          }}>
             <div
-              className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+              className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+              style={{ color: currentColors.text }}
               onMouseDown={(e) =>
                 handleMouseDown(e, () => handleImageAction("crop"))
               }
@@ -532,7 +608,8 @@ const Toolbar = ({
               <span className="text-sm">Crop</span>
             </div>
             <div
-              className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+              className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+              style={{ color: currentColors.text }}
               onMouseDown={(e) =>
                 handleMouseDown(e, () => handleImageAction("rotate"))
               }
@@ -547,8 +624,9 @@ const Toolbar = ({
       {/* PAPER SIZE */}
       <div className="relative">
         <div
-          className={`flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${selectedPaperSize !== 'A4' ? 'text-blue-500 bg-blue-100' : ''}`}
-          onClick={() => setIsPaperSizeDropdownOpen(!isPaperSizeDropdownOpen)}
+          className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors"
+          style={{ color: currentColors.text }}
+          onClick={() => handleDropdownToggle('paperSize', !isPaperSizeDropdownOpen)}
           title="Paper Size"
         >
           <FiFile className="text-sm" size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />
@@ -556,17 +634,22 @@ const Toolbar = ({
         </div>
 
         {isPaperSizeDropdownOpen && (
-          <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-48">
+          <div className="absolute top-full mt-1 rounded shadow-lg z-10 w-48" style={{ 
+            backgroundColor: currentColors.surface, 
+            borderColor: currentColors.border,
+            border: `1px solid ${currentColors.border}`
+          }}>
             {Object.entries(paperSizes).map(([name, { width, height }]) => (
               <div
                 key={name}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyPaperSize(name))
                 }
               >
                 <span className="text-sm">{name}</span>
-                <span className="text-xs text-gray-500">{width} × {height}</span>
+                <span className="text-xs" style={{ color: currentColors.textSecondary }}>{width} × {height}</span>
               </div>
             ))}
           </div>
@@ -576,8 +659,9 @@ const Toolbar = ({
       {/* MARGINS */}
       <div className="relative">
         <div
-          className={`flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${selectedMargin !== 'Normal' ? 'text-blue-500 bg-blue-100' : ''}`}
-          onClick={() => setIsMarginDropdownOpen(!isMarginDropdownOpen)}
+          className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors"
+          style={{ color: currentColors.text }}
+          onClick={() => handleDropdownToggle('margin', !isMarginDropdownOpen)}
           title="Margins"
         >
           <FiColumns className="text-sm" size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />
@@ -585,17 +669,22 @@ const Toolbar = ({
         </div>
 
         {isMarginDropdownOpen && (
-          <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-48">
+          <div className="absolute top-full mt-1 rounded shadow-lg z-10 w-48" style={{ 
+            backgroundColor: currentColors.surface, 
+            borderColor: currentColors.border,
+            border: `1px solid ${currentColors.border}`
+          }}>
             {Object.entries(marginOptions).map(([name, margins]) => (
               <div
                 key={name}
-                className="flex flex-col px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex flex-col px-3 py-2 cursor-pointer transition-colors"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyMargin(name))
                 }
               >
                 <span className="text-sm">{name}</span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs" style={{ color: currentColors.textSecondary }}>
                   {margins.top} / {margins.right} / {margins.bottom} / {margins.left}
                 </span>
               </div>
@@ -604,13 +693,14 @@ const Toolbar = ({
         )}
       </div>
 
-      <div className="h-6 w-px bg-gray-400" />
+      <div className="h-6 w-px" style={{ backgroundColor: currentColors.border }} />
 
       {/* FONT FAMILY */}
       <div className="relative">
         <div
-          className={`flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors ${selectedFont !== 'Inter' ? 'text-blue-500 bg-blue-100' : ''}`}
-          onClick={() => setIsFontDropdownOpen(!isFontDropdownOpen)}
+          className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors"
+          style={{ color: currentColors.text }}
+          onClick={() => handleDropdownToggle('font', !isFontDropdownOpen)}
           title="Font Family"
         >
           <span className="text-xs sm:text-sm font-medium" style={{ fontFamily: selectedFont }}>
@@ -620,11 +710,16 @@ const Toolbar = ({
         </div>
 
         {isFontDropdownOpen && (
-          <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-48">
+          <div className="absolute top-full mt-1 rounded shadow-lg z-10 w-48" style={{ 
+            backgroundColor: currentColors.surface, 
+            borderColor: currentColors.border,
+            border: `1px solid ${currentColors.border}`
+          }}>
             {fontOptions.map((font) => (
               <div
                 key={font}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyFontFamily(font))
                 }
@@ -638,13 +733,14 @@ const Toolbar = ({
         )}
       </div>
 
-      <div className="h-6 w-px bg-gray-400" />
+      <div className="h-6 w-px" style={{ backgroundColor: currentColors.border }} />
 
       {/* LIST */}
       <div className="relative">
         <div
-          className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors"
-          onClick={() => setIsListDropdownOpen(!isListDropdownOpen)}
+          className="flex items-center gap-1 text-lg cursor-pointer p-2 sm:p-2 md:p-2 lg:p-1 sm:p-2 rounded transition-colors"
+          style={{ color: currentColors.text }}
+          onClick={() => handleDropdownToggle('list', !isListDropdownOpen)}
           title="Lists"
         >
           <FiList size={windowWidth < 640 ? 18 : windowWidth < 768 ? 20 : 16} />
@@ -652,12 +748,12 @@ const Toolbar = ({
         </div>
 
         {isListDropdownOpen && (
-          <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-56">
+          <div className="absolute top-full mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg z-10 w-56">
             {/* Bulleted Lists */}
             <div className="border-b border-gray-200 pb-1 mb-1">
-              <div className="px-3 py-1 text-xs font-semibold text-gray-500">BULLETED</div>
+              <div className="px-3 py-1 text-xs font-semibold text-gray-400">BULLETED</div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("bullet"))
                 }
@@ -668,9 +764,9 @@ const Toolbar = ({
             
             {/* Numbered Lists */}
             <div>
-              <div className="px-3 py-1 text-xs font-semibold text-gray-500">NUMBERED</div>
+              <div className="px-3 py-1 text-xs font-semibold text-gray-400">NUMBERED</div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "decimal"))
                 }
@@ -678,7 +774,7 @@ const Toolbar = ({
                 <span className="text-sm">1. Numbered List</span>
               </div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "upper-roman"))
                 }
@@ -686,7 +782,7 @@ const Toolbar = ({
                 <span className="text-sm">I. Roman Numerals (Upper)</span>
               </div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "lower-alpha"))
                 }
@@ -694,7 +790,7 @@ const Toolbar = ({
                 <span className="text-sm">a. Alphabetical (Lower)</span>
               </div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "upper-alpha"))
                 }
@@ -702,7 +798,7 @@ const Toolbar = ({
                 <span className="text-sm">A. Alphabetical (Upper)</span>
               </div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "lower-roman"))
                 }
@@ -714,7 +810,7 @@ const Toolbar = ({
             {/* None Option */}
             <div className="border-t border-gray-200 pt-1 mt-1">
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("none"))
                 }

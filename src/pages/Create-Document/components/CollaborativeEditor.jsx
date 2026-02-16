@@ -1,5 +1,6 @@
 // components/CollaborativeEditor.jsx - Enhanced Version
 import React, { forwardRef, useImperativeHandle, useEffect, useRef, useState } from 'react';
+import { useTheme } from "../contexts/ThemeContext";
 
 const CollaborativeEditor = forwardRef(({
   ydoc,
@@ -11,6 +12,9 @@ const CollaborativeEditor = forwardRef(({
   onUpdate,
   initialContent
 }, ref) => {
+  const { isDarkMode, colors } = useTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
+  
   const editorRef = useRef(null);
   const [isSynced, setIsSynced] = useState(false);
   const isLocalUpdateRef = useRef(false);
@@ -309,35 +313,36 @@ const CollaborativeEditor = forwardRef(({
   }), [ydoc]);
 
   return (
-    <div className="w-full max-w-7xl">
-      <div
-        ref={editorRef}
-        contentEditable={true}
-        onInput={handleInput}
-        onPaste={handlePaste}
-        onKeyDown={handleKeyDown}
-        className="prose prose-lg focus:outline-none max-w-none min-h-[500px] p-8"
-        style={{
-          width: paperSize?.width || '8.27in',
-          minHeight: paperSize?.height || '11.69in',
-          marginTop: margins?.top || '1in',
-          marginRight: margins?.right || '1in',
-          marginBottom: margins?.bottom || '1in',
-          marginLeft: margins?.left || '1in',
-          fontFamily: fontFamily || 'Inter, sans-serif',
-          background: 'white',
-          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-          color: 'black',
-          outline: 'none',
-          border: isSynced ? '2px solid #10b981' : '2px solid #ef4444',
-        }}
-        suppressContentEditableWarning={true}
-        placeholder="Start typing here..."
-      />
-      
-      <div className="mt-2 flex items-center gap-2">
+    <div className="w-full max-w-7xl mx-auto">
+      <div className="flex flex-col items-center">
+        <div
+          ref={editorRef}
+          contentEditable={true}
+          onInput={handleInput}
+          onPaste={handlePaste}
+          onKeyDown={handleKeyDown}
+          className="prose prose-lg focus:outline-none max-w-none min-h-[500px] p-8"
+          style={{
+            width: paperSize?.width || '8.27in',
+            minHeight: paperSize?.height || '11.69in',
+            marginTop: margins?.top || '1in',
+            marginRight: margins?.right || '1in',
+            marginBottom: margins?.bottom || '1in',
+            marginLeft: margins?.left || '1in',
+            fontFamily: fontFamily || 'Inter, sans-serif',
+            background: currentColors.surface,
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+            color: currentColors.text,
+            outline: 'none',
+            border: `1px solid ${currentColors.border}`,
+          }}
+          suppressContentEditableWarning={true}
+          placeholder="Start typing here..."
+        />
+      </div>
+      <div className="mt-2 flex items-center gap-2 justify-start">
         <div className={`w-2 h-2 rounded-full ${isSynced ? 'bg-green-500' : 'bg-red-500'}`} />
-        <span className="text-sm text-gray-600">
+        <span className="text-sm" style={{ color: currentColors.textSecondary }}>
           {isSynced ? 'Connected to collaboration' : 'Connecting...'}
         </span>
       </div>

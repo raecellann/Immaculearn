@@ -7,23 +7,26 @@ import { BrowserRouter } from "react-router";
 import { ToastContainer } from "react-toastify";
 
 import Routes from "./Routes.tsx";
+import { ThemeProvider } from "./pages/Create-Document/contexts/ThemeContext";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-      <Routes />
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+        <Routes />
+      </BrowserRouter>
+    </ThemeProvider>
   </StrictMode>
 );

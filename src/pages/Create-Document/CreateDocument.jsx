@@ -8,6 +8,7 @@ import CollaborativeEditor from "./components/CollaborativeEditor";
 import TiptapToolbar from "./components/TiptapToolbar";
 import { useUser } from "../../contexts/user/useUser";
 import { useFileManager } from "../../hooks/useFileManager";
+import { useTheme } from "./contexts/ThemeContext";
 
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
@@ -18,7 +19,8 @@ const CreateDocumentPage = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const { space_uuid, file_uuid, file_name } = useParams();
-
+  const { isDarkMode, colors } = useTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
 
   const { userSpaces, friendSpaces } = useSpace();
 
@@ -204,7 +206,7 @@ const CreateDocumentPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F3F4F6]">
+    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background }}>
       {/* Sidebar */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -239,7 +241,7 @@ const CreateDocumentPage = () => {
           windowWidth={windowWidth}
         />
 
-        <div className="flex justify-center py-6 px-4">
+        <div className="flex justify-center items-center py-6 px-4 min-h-[calc(100vh-200px)]">
           <CollaborativeEditor
             ref={setEditorReference}
             ydoc={ydocRef.current}
