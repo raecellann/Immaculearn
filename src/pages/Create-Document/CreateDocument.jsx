@@ -22,6 +22,24 @@ const CreateDocumentPage = () => {
   const { isDarkMode, colors } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+  const headerRef = useRef(null);
+  const lastScroll = useRef(0);
+
+  // Hide header on scroll down
+  const [showHeader, setShowHeader] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const current = window.scrollY;
+      setShowHeader(current <= lastScroll.current || current < 60);
+      lastScroll.current = current;
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const { userSpaces, friendSpaces } = useSpace();
 
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
@@ -207,82 +225,130 @@ const CreateDocumentPage = () => {
 
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background }}>
-      {/* Sidebar */}
+      {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      {/* Main content */}
-      <div className="flex-1">
-        <MobileHeader />
-        <EditorHeader
-          saveStatus={saveStatus}
-          lastSaved={lastSaved}
-          title={title}
-          setTitle={setTitle}
-          connectedUsers={connectedUsers}
-          isOnline={isOnline}
-          collaborationEnabled={collaborationEnabled}
+      {/* Mobile + Tablet Overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
         />
-        
-        {/* Optional: Toolbar for formatting */}
-        {/* <TiptapToolbar editor={editorRef.current} /> */}
+      )}
 
-        <Toolbar
-          editorRef={editorRef}
-          paperSize={paperSize}
-          margins={margins}
-          fontFamily={fontFamily}
-          onFormatChange={handleFormatChange}
-          onPaperSizeChange={(size) => setPaperSize(size)}
-          onMarginChange={(margin) => setMargins(margin)}
-          onFontChange={(font) => setFontFamily(font)}
-          isClient={typeof window !== 'undefined'}
-          windowWidth={windowWidth}
-        />
+      {/* Mobile + Tablet Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{ backgroundColor: currentColors.surface }}
+      >
+        <Sidebar />
+      </div>
 
-        <div className="flex justify-center items-center py-6 px-4 min-h-[calc(100vh-200px)]">
-          <CollaborativeEditor
-            ref={setEditorReference}
-            ydoc={ydocRef.current}
-            provider={providerRef.current}
-            user={{ 
-              id: user?.id, 
-              name: user?.name, 
-              color: getUserColor(user?.id),
-              avatar: user?.profile_pic || `https://i.pravatar.cc/40?u=${user?.id}`
-            }}
-            onUpdate={handleEditorUpdate}
-            initialContent={file?.content || ""}
-          />
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+
+        {/* 🔥 Sticky Mobile Header */}
+        <div
+          className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300`}
+          style={{ 
+            backgroundColor: currentColors.background, 
+            borderColor: currentColors.border,
+            transform: showHeader ? "translateY(0)" : "translateY(-100%)"
+          }}
+        >
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none p-0 text-2xl focus:outline-none"
+            style={{ color: currentColors.text }}
+          >
+            ☰
+          </button>
+          <h1 className="text-lg font-bold" style={{ color: currentColors.text }}>
+            {title || "Document Editor"}
+          </h1>
         </div>
 
-        {/* Connection status indicator */}
-        <div className="fixed top-20 right-4 z-50">
-          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-            isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-          }`}>
-            {isOnline ? '● Online' : '● Offline'}
+        <div className="lg:hidden h-16" /> {/* spacer */}
+
+        {/* ✅ CONTENT */}
+        <div className="flex-1 pt-20 lg:pt-0 overflow-y-auto">
+          {/* Header - Now responsive for all screen sizes */}
+          <EditorHeader
+            saveStatus={saveStatus}
+            lastSaved={lastSaved}
+            title={title}
+            setTitle={setTitle}
+            connectedUsers={connectedUsers}
+            isOnline={isOnline}
+            collaborationEnabled={collaborationEnabled}
+          />
+
+          {/* Toolbar */}
+          <Toolbar
+            editorRef={editorRef}
+            paperSize={paperSize}
+            margins={margins}
+            fontFamily={fontFamily}
+            onFormatChange={handleFormatChange}
+            onPaperSizeChange={(size) => setPaperSize(size)}
+            onMarginChange={(margin) => setMargins(margin)}
+            onFontChange={(font) => setFontFamily(font)}
+            isClient={typeof window !== 'undefined'}
+            windowWidth={windowWidth}
+          />
+
+          {/* Editor */}
+          <div className="flex justify-center items-center py-3 sm:py-4 md:py-6 px-2 sm:px-4 md:px-6 lg:px-8 min-h-[calc(100vh-200px)]">
+            <div className="w-full max-w-full">
+              <CollaborativeEditor
+                ref={setEditorReference}
+                ydoc={ydocRef.current}
+                provider={providerRef.current}
+                user={{ 
+                  id: user?.id, 
+                  name: user?.name, 
+                  color: getUserColor(user?.id),
+                  avatar: user?.profile_pic || `https://i.pravatar.cc/40?u=${user?.id}`
+                }}
+                onUpdate={handleEditorUpdate}
+                initialContent={file?.content || ""}
+              />
+            </div>
+          </div>
+
+          {/* Connection status indicator */}
+          <div className="fixed top-20 sm:top-20 right-2 sm:right-4 z-50">
+            <div className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
+              isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}>
           </div>
         </div>
 
         {/* Connected users */}
         {collaborationEnabled && connectedUsers.length > 0 && (
-          <div className="fixed bottom-4 right-4 z-50">
-            <div className="bg-white rounded-lg shadow-lg p-3">
-              <div className="text-xs text-gray-600 mb-2 font-medium">
-                {connectedUsers.length} {connectedUsers.length === 1 ? "other person" : "other people"} editing
+          <div className="fixed bottom-4 right-2 sm:right-4 z-50">
+            <div className="rounded-lg shadow-lg p-2 sm:p-3 max-w-[200px] sm:max-w-none" style={{ backgroundColor: currentColors.surface, border: `1px solid ${currentColors.border}` }}>
+              <div className="text-xs mb-2 font-medium" style={{ color: currentColors.textSecondary }}>
+                <span className="hidden sm:inline">
+                  {connectedUsers.length} {connectedUsers.length === 1 ? "other person" : "other people"} editing
+                </span>
+                <span className="sm:hidden">
+                  {connectedUsers.length} {connectedUsers.length === 1 ? "person" : "people"}
+                </span>
               </div>
               <div className="flex flex-col gap-2">
                 {connectedUsers.map((u) => (
-                  <div key={u.clientId} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-full">
+                  <div key={u.clientId} className="flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-full" style={{ backgroundColor: currentColors.background }}>
                     <img 
                       src={u.avatar} 
                       alt={u.name} 
-                      className="w-6 h-6 rounded-full border-2" 
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2" 
                       style={{ borderColor: u.color }} 
                     />
-                    <span className="text-sm font-medium text-gray-800">{u.name}</span>
+                    <span className="text-xs sm:text-sm font-medium" style={{ color: currentColors.text }}>{u.name}</span>
                   </div>
                 ))}
               </div>
@@ -291,7 +357,8 @@ const CreateDocumentPage = () => {
         )}
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default CreateDocumentPage;

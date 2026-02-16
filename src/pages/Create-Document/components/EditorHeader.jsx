@@ -150,8 +150,8 @@ const EditorHeader = ({
       </div>
 
       {/* Title */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
-        <label className="text-sm font-medium" style={{ color: currentColors.textSecondary }}>
+      <div className="flex items-center gap-4 mb-4">
+        <label className="text-sm font-medium whitespace-nowrap" style={{ color: currentColors.textSecondary }}>
           Document Title
         </label>
         <input

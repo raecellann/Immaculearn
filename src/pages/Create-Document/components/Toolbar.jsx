@@ -442,7 +442,7 @@ const Toolbar = ({
               {fontSizeOptions.map((size) => (
                 <div
                   key={size}
-                  className="flex items-center gap-2 px-2 sm:px-3 py-2 cursor-pointer transition-colors"
+                  className="flex items-center gap-2 px-2 sm:px-3 py-2 cursor-pointer transition-colors rounded"
                   style={{ color: currentColors.text }}
                   onMouseDown={(e) =>
                     handleMouseDown(e, () => {
@@ -450,6 +450,8 @@ const Toolbar = ({
                       setIsFontSizeDropdownOpen(false);
                     })
                   }
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   <span
                     className="text-xs sm:text-sm font-medium"
@@ -499,7 +501,7 @@ const Toolbar = ({
             ].map(([align, icon, label]) => (
               <div
                 key={align}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
                 style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => {
@@ -508,6 +510,8 @@ const Toolbar = ({
                     setIsAlignmentDropdownOpen(false);
                   })
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 {icon}
                 <span className="text-sm">{label}</span>
@@ -556,7 +560,7 @@ const Toolbar = ({
               {colorOptions.map((color) => (
                 <button
                   key={color}
-                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded border border-gray-400 bg-gray-700 ${
+                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded border transition-opacity ${
                     windowWidth < 640 ? 'text-xs' : 'text-sm sm:text-base'
                   }`}
                   style={{
@@ -566,6 +570,8 @@ const Toolbar = ({
                   onMouseDown={(e) =>
                     handleMouseDown(e, () => applyTextColor(color))
                   }
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   <span className="font-bold" style={{ color: color === "transparent" ? "black" : "white" }}>
                     A
@@ -598,21 +604,25 @@ const Toolbar = ({
             border: `1px solid ${currentColors.border}`
           }}>
             <div
-              className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+              className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
               style={{ color: currentColors.text }}
               onMouseDown={(e) =>
                 handleMouseDown(e, () => handleImageAction("crop"))
               }
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <FiCrop size={16} />
               <span className="text-sm">Crop</span>
             </div>
             <div
-              className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+              className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
               style={{ color: currentColors.text }}
               onMouseDown={(e) =>
                 handleMouseDown(e, () => handleImageAction("rotate"))
               }
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <FiRotateCw size={16} />
               <span className="text-sm">Rotate</span>
@@ -642,11 +652,13 @@ const Toolbar = ({
             {Object.entries(paperSizes).map(([name, { width, height }]) => (
               <div
                 key={name}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
                 style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyPaperSize(name))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span className="text-sm">{name}</span>
                 <span className="text-xs" style={{ color: currentColors.textSecondary }}>{width} × {height}</span>
@@ -677,11 +689,13 @@ const Toolbar = ({
             {Object.entries(marginOptions).map(([name, margins]) => (
               <div
                 key={name}
-                className="flex flex-col px-3 py-2 cursor-pointer transition-colors"
+                className="flex flex-col px-3 py-2 cursor-pointer transition-colors rounded"
                 style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyMargin(name))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span className="text-sm">{name}</span>
                 <span className="text-xs" style={{ color: currentColors.textSecondary }}>
@@ -718,11 +732,13 @@ const Toolbar = ({
             {fontOptions.map((font) => (
               <div
                 key={font}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
                 style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyFontFamily(font))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span className="text-sm" style={{ fontFamily: font }}>
                   {font}
@@ -748,15 +764,22 @@ const Toolbar = ({
         </div>
 
         {isListDropdownOpen && (
-          <div className="absolute top-full mt-1 bg-gray-800 border border-gray-600 rounded shadow-lg z-10 w-56">
+          <div className="absolute top-full mt-1 rounded shadow-lg z-10 w-56" style={{ 
+            backgroundColor: currentColors.surface, 
+            borderColor: currentColors.border,
+            border: `1px solid ${currentColors.border}`
+          }}>
             {/* Bulleted Lists */}
-            <div className="border-b border-gray-200 pb-1 mb-1">
-              <div className="px-3 py-1 text-xs font-semibold text-gray-400">BULLETED</div>
+            <div className="border-b pb-1 mb-1" style={{ borderColor: currentColors.border }}>
+              <div className="px-3 py-1 text-xs font-semibold" style={{ color: currentColors.textSecondary }}>BULLETED</div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("bullet"))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span className="text-sm">• Bulleted List</span>
               </div>
@@ -764,58 +787,76 @@ const Toolbar = ({
             
             {/* Numbered Lists */}
             <div>
-              <div className="px-3 py-1 text-xs font-semibold text-gray-400">NUMBERED</div>
+              <div className="px-3 py-1 text-xs font-semibold" style={{ color: currentColors.textSecondary }}>NUMBERED</div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "decimal"))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span className="text-sm">1. Numbered List</span>
               </div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "upper-roman"))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span className="text-sm">I. Roman Numerals (Upper)</span>
               </div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "lower-alpha"))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span className="text-sm">a. Alphabetical (Lower)</span>
               </div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "upper-alpha"))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span className="text-sm">A. Alphabetical (Upper)</span>
               </div>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("number", "lower-roman"))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span className="text-sm">i. Roman Numerals (Lower)</span>
               </div>
             </div>
             
             {/* None Option */}
-            <div className="border-t border-gray-200 pt-1 mt-1">
+            <div className="border-t pt-1 mt-1" style={{ borderColor: currentColors.border }}>
               <div
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-700"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors rounded"
+                style={{ color: currentColors.text }}
                 onMouseDown={(e) =>
                   handleMouseDown(e, () => applyList("none"))
                 }
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.background}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <span className="text-sm">None</span>
+                <span className="text-sm" style={{ color: currentColors.text }}>None</span>
               </div>
             </div>
           </div>
