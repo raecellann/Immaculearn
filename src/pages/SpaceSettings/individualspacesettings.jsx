@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
 import ProfSidebar from "../component/profsidebar";
-import { Menu, ArrowLeft, Users, Settings as SettingsIcon, Link, Trash2, UserX } from "lucide-react";
+import { ArrowLeft, Users, Settings as SettingsIcon, Link, Trash2, UserX } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import Logout from "../component/logout";
@@ -14,8 +14,27 @@ const IndividualSpaceSettings = () => {
   const navigate = useNavigate();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+
+  // Hide-on-scroll header
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Find the current space from userSpaces
   const currentSpace = userSpaces?.find(space => space.space_uuid === spaceUuid);
@@ -36,20 +55,6 @@ const IndividualSpaceSettings = () => {
     }
   }, [currentSpace]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current && currentScrollY > 60) {
-        setShowHeader(false);
-      } else {
-        setShowHeader(true);
-      }
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const handleSettingChange = (field, value) => {
     setSpaceSettings(prev => ({
@@ -131,7 +136,7 @@ const IndividualSpaceSettings = () => {
 
       {/* MOBILE SIDEBAR */}
       <div
-        className={`fixed left-0 top-0 h-full w-60 bg-[#1a73da] text-white transform transition-transform duration-300 z-50 md:block lg:hidden ${
+        className={`fixed left-0 top-0 h-full w-60 bg-[#1E222A] text-white transform transition-transform duration-300 z-50 md:block lg:hidden ${
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -140,54 +145,67 @@ const IndividualSpaceSettings = () => {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 overflow-x-hidden">
-        {/* MOBILE HEADER */}
+        {/* ✅ MOBILE / TABLET HEADER */}
         <div
-          className={`sticky top-0 z-30 bg-[#1a73da] text-white p-4 flex items-center justify-between transition-transform duration-300 md:hidden ${
-            showHeader ? "translate-y-0" : "-translate-y-full"
-          }`}
+          className={`
+            lg:hidden
+            bg-[#1E222A]
+            p-4
+            border-b border-[#3B4457]
+            flex items-center gap-4
+            fixed top-0 left-0 right-0 z-30
+            transition-transform duration-300
+            ${showHeader ? "translate-y-0" : "-translate-y-full"}
+          `}
         >
-          <div className="flex items-center">
-            <button
-              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3"
-            >
-              <Menu size={24} />
-            </button>
-            <button
-              onClick={handleBackToSpaces}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3"
-            >
-              <ArrowLeft size={24} />
-            </button>
-            <h1 className="text-lg font-semibold">Space Settings</h1>
-          </div>
-          <div className="w-10" />
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Space Settings</h1>
         </div>
 
-        {/* DESKTOP HEADER SPACER */}
-        <div className="hidden md:block h-16" />
+        <div className="lg:hidden h-16"></div>
 
-        <div className="p-4 sm:p-6 lg:p-8">
+        {/* PAGE CONTENT */}
+        <div className="flex-1 px-4 sm:px-6 lg:px-10 pb-10 pt-20 lg:pt-10 relative">
+          {/* Back Button - Mobile/Tablet Only */}
+          <div className="absolute top-4 left-4 z-20 lg:hidden">
+            <button
+              onClick={() => navigate(-1)}
+              className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-sm font-medium transition-colors"
+            >
+             ← Back
+            </button>
+          </div>
+          
           <div className="max-w-4xl mx-auto">
-            {/* PAGE HEADER */}
-            <div className="mb-8">
-              <div className="flex items-center mb-4">
-                <button
-                  onClick={handleBackToSpaces}
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors mr-3"
-                >
-                  <ArrowLeft size={24} />
-                </button>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold mb-2">Space Settings</h1>
-                  <p className="text-gray-400">Configure your learning space preferences and permissions</p>
-                </div>
-              </div>
-              <div className="bg-[#1E242E] rounded-lg p-4 inline-block">
+            {/* Desktop Header */}
+            <div className="hidden lg:block px-10 pt-10">
+              <h1 className="text-4xl font-bold text-center mb-2">
+                Space Settings
+              </h1>
+              <p className="text-gray-300 mb-8 text-center">
+                Configure your learning space preferences and permissions
+              </p>
+            </div> 
+                        {/* Back Button - Desktop */}
+            <div className="hidden lg:block mb-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-sm font-medium transition-colors"
+              >
+               ← Back
+              </button>
+            </div>
+              <div className="bg-[#1E242E] rounded-lg p-4 inline-block mb-2">
                 <h2 className="text-lg font-semibold text-blue-400">{currentSpace.space_name}</h2>
                 <p className="text-sm text-gray-400">{currentSpace.members?.length || 0} members</p>
               </div>
-            </div>
+
+
 
             {/* SPACE SETTINGS FORM */}
             <div className="bg-[#1E242E] rounded-xl p-6 sm:p-8">
