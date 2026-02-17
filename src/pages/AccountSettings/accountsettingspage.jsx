@@ -25,25 +25,46 @@ const ProfilePage = () => {
   const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || '');
   const [lastName, setLastName] = useState(user?.name?.split(' ')[1] || '');
   const [bio, setBio] = useState(user?.bio || '');
-  const [year, setYear] = useState(user?.year || '');
+  const [year, setYear] = useState(user?.year || '');  
   const [course, setCourse] = useState(user?.course || '');
   const [gmail, setGmail] = useState(user?.email || '');
   const [gender, setGender] = useState(user?.gender || '');
 
   // Department options
   const departmentOptions = [
-    'Bachelor of Scince in Tourism Management',
-    'Bachelor of Scince in Computer Science',
-    'Bachelor of Scince in Business Administration',
-    'Bachelor of Scince in Tourism Management',
-    'Bachelor of Scince in Hospitaly Management',
-    'Bachelor of Scince in Accountancy',
-    'Associate in Computer Technology',
-    'Bachelor of Special Needs Education',
-    'Bachelor of Elementary Education',
-    'Bachelor of Secondary Education, Major in English',
-    'Bachelor of Secondary Education, Major in Filipino',  
-  ];
+      { code: "BSCS", name: "Bachelor of Science in Computer Science" },
+      { code: "BSTM", name: "Bachelor of Science in Tourism Management" },
+      { code: "BSBA", name: "Bachelor of Science in Business Administration" },
+      { code: "BSHM", name: "Bachelor of Science in Hospitality Management" },
+      { code: "BSA", name: "Bachelor of Science in Accountancy" },
+      { code: "ACT", name: "Associate in Computer Technology" },
+      { code: "BSNE", name: "Bachelor of Special Needs Education" },
+      { code: "BEED", name: "Bachelor of Elementary Education" },
+      { code: "BSED-ENG", name: "Bachelor of Secondary Education Major in English" },
+      { code: "BSED-FIL", name: "Bachelor of Secondary Education Major in Filipino" }
+    ];  
+
+  const genderOptions = [
+    { code: "M", name: "Male" },
+    { code: "F", name: "Female" },
+  ]
+
+  let genderValue;
+
+  if (isEditing) {
+    genderValue = gender;
+  } else {
+    genderValue = user?.gender || '';
+  }
+  
+  let departmentValue;
+
+  if (isEditing) {
+    departmentValue = course;
+  } else {
+    departmentValue = user?.course || '';
+  }
+
 
   // Calculate School Year (SY) based on current date
   const getCurrentSchoolYear = () => {
@@ -374,19 +395,23 @@ const ProfilePage = () => {
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-1">Department</label>
                       <select
-                        value={isEditing ? course : (user?.course || '')}
+                        value={departmentValue}
                         onChange={(e) => isEditing && setCourse(e.target.value)}
                         disabled={!isEditing}
-                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
+                        className="bg-[#2A2E36] p-2 rounded-md border border-white text-white w-full text-sm"
                       >
                         <option value="">Select Department</option>
+
                         {departmentOptions.map((dept) => (
-                          <option key={dept} value={dept}>
-                            {dept}
+                          <option key={dept.code} value={dept.code}>
+                            {dept.name}
                           </option>
                         ))}
+
                       </select>
+
                     </div>
+                  
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-1">School Year (SY)</label>
                       <input
@@ -414,16 +439,19 @@ const ProfilePage = () => {
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-1">Gender</label>
                       <select
-                        value={isEditing ? gender : (user?.gender || '')}
+                        value={genderValue}
                         onChange={(e) => isEditing && setGender(e.target.value)}
                         disabled={!isEditing}
-                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
+                        className="bg-[#2A2E36] p-2 rounded-md border border-white text-white w-full text-sm"
                       >
                         <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                        <option value="Prefer not to say">Prefer not to say</option>
+
+                        {genderOptions.map((gen) => (
+                          <option key={gen.code} value={gen.code}>
+                            {gen.name}
+                          </option>
+                        ))}
+
                       </select>
                     </div>
                   </div>
