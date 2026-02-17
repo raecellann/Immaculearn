@@ -61,7 +61,7 @@ const ProfSidebar = () => {
   return (
     <div
       className="
-        h-screen w-60 text-white flex flex-col font-inter
+        h-screen w-64 lg:w-60 text-white flex flex-col font-inter
         sticky top-0 overflow-hidden
         bg-gradient-to-b from-[#6cadf3] via-[#2c81e1] to-[#0066d2]
       "

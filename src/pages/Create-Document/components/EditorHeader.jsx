@@ -92,6 +92,9 @@ const EditorHeader = ({
             </div>
           </div>
 
+          <button className="px-6 py-2 rounded-full font-medium mr-2" style={{ backgroundColor: '#2c81e1', color: 'white' }}>
+            Save
+          </button>
           <button className="px-6 py-2 rounded-full font-medium" style={{ backgroundColor: currentColors.surface, color: currentColors.text }}>
             Cancel
           </button>
