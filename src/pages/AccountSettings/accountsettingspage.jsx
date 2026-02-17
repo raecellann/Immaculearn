@@ -4,6 +4,7 @@ import { useUser } from "../../contexts/user/useUser";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import Cropper from 'react-easy-crop';
+import Button from "../component/Button";
 
 const ProfilePage = () => {
   const { user, isAuthenticated } = useUser();
@@ -24,10 +25,25 @@ const ProfilePage = () => {
   const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || '');
   const [lastName, setLastName] = useState(user?.name?.split(' ')[1] || '');
   const [bio, setBio] = useState(user?.bio || '');
-  const [gmail , setGmail] = useState(user?.email || '');
-  const [gender, setGender] = useState(user?.gender || '');
   const [year, setYear] = useState(user?.year || '');
   const [course, setCourse] = useState(user?.course || '');
+  const [gmail, setGmail] = useState(user?.email || '');
+  const [gender, setGender] = useState(user?.gender || '');
+
+  // Department options
+  const departmentOptions = [
+    'Bachelor of Scince in Tourism Management',
+    'Bachelor of Scince in Computer Science',
+    'Bachelor of Scince in Business Administration',
+    'Bachelor of Scince in Tourism Management',
+    'Bachelor of Scince in Hospitaly Management',
+    'Bachelor of Scince in Accountancy',
+    'Associate in Computer Technology',
+    'Bachelor of Special Needs Education',
+    'Bachelor of Elementary Education',
+    'Bachelor of Secondary Education, Major in English',
+    'Bachelor of Secondary Education, Major in Filipino',  
+  ];
 
   // Calculate School Year (SY) based on current date
   const getCurrentSchoolYear = () => {
@@ -119,7 +135,7 @@ const ProfilePage = () => {
   const handleSaveProfile = () => {
     // Here you would typically make an API call to update the user profile
     const updatedProfile = {
-      name: `${firstName}  ${lastName}`,
+      name: `${firstName} ${lastName}`,
       bio: bio,
       course: course,
       gender: gender,
@@ -150,7 +166,6 @@ const ProfilePage = () => {
     setFirstName(user?.name?.split(' ')[0] || '');
     setLastName(user?.name?.split(' ')[1] || '');
     setBio(user?.bio || '');
-    setYear(user?.year || '');
     setGender(user?.gender || '');
     setGmail(user?.email || '');
     setCourse(user?.course || '');
@@ -232,23 +247,23 @@ const ProfilePage = () => {
         <div className="lg:hidden h-16"></div>
 
         {/* Content */}
-        <div className="flex-1 p-4 lg:p-6 xl:p-10 overflow-y-auto">
+        <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-10 overflow-y-auto">
           <div className="w-full max-w-5xl mx-auto">
 
             {/* Title (Laptop & Desktop only) */}
             <div className="hidden lg:block mb-8 text-center">
-              <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
-                Your Profile
-              </h1>
-              <p className="text-gray-300">
-                View and edit all your information here
-              </p>
+          <h1 className="text-4xl font-bold text-center mb-2">
+            Your Profile
+          </h1>
+          <p className="text-gray-300 mb-8 text-center">
+            View and edit all your information here
+          </p>
             </div>
 
-            <div className="flex flex-col xl:flex-row gap-6">
+            <div className="flex flex-col xl:flex-row gap-3 sm:gap-4 xl:gap-6">
 
               {/* Profile Card */}
-              <div className="bg-[#1E222A] rounded-2xl p-4 lg:p-6 w-full xl:w-80 2xl:w-96 mx-auto xl:mx-0 text-center shadow-lg border border-white h-fit">
+              <div className="bg-[#1E222A] rounded-2xl p-3 sm:p-4 lg:p-6 w-full xl:w-72 2xl:w-80 mx-auto xl:mx-0 text-center shadow-lg border border-white h-fit">
                 <input
                   type="file"
                   id="upload-img"
@@ -301,16 +316,16 @@ const ProfilePage = () => {
               </div>
 
               {/* Personal Details */}
-              <div className="bg-[#1E222A] rounded-2xl flex-1 p-4 lg:p-6 xl:p-8 border border-white shadow-lg">
+              <div className="bg-[#1E222A] rounded-2xl flex-1 p-3 sm:p-4 lg:p-6 border border-white shadow-lg">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold">Personal Details</h3>
                   {!isEditing ? (
-                    <button 
+                    <Button 
                       onClick={handleEditProfile}
-                      className="text-xs bg-[#3A7BFF] px-3 py-2 rounded-md font-semibold hover:bg-[#5592ff] transition"
+                      className="text-xs px-3 py-1"
                     >
                       Edit Profile
-                    </button>
+                    </Button>
                   ) : (
                     <div className="flex gap-2">
                       <button 
@@ -329,105 +344,102 @@ const ProfilePage = () => {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-medium text-gray-400 mb-1">First Name</label>
-                    <input
-                      type="text"
-                      value={isEditing ? firstName : (user?.name?.split(' ')[0] || '')}
-                      onChange={(e) => isEditing && setFirstName(e.target.value)}
-                      placeholder="First Name"
-                      readOnly={!isEditing}
-                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
-                    />
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        value={isEditing ? firstName : (user?.name?.split(' ')[0] || '')}
+                        onChange={(e) => isEditing && setFirstName(e.target.value)}
+                        placeholder="First Name"
+                        readOnly={!isEditing}
+                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        value={isEditing ? lastName : (user?.name?.split(' ')[1] || '')}
+                        onChange={(e) => isEditing && setLastName(e.target.value)}
+                        placeholder="Last Name"
+                        readOnly={!isEditing}
+                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-medium text-gray-400 mb-1">Last Name</label>
-                    <input
-                      type="text"
-                      value={isEditing ? lastName : (user?.name?.split(' ')[1] || '')}
-                      onChange={(e) => isEditing && setLastName(e.target.value)}
-                      placeholder="Last Name"
-
-                      readOnly={!isEditing}
-                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
-                    />
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">Department</label>
+                      <select
+                        value={isEditing ? course : (user?.course || '')}
+                        onChange={(e) => isEditing && setCourse(e.target.value)}
+                        disabled={!isEditing}
+                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
+                      >
+                        <option value="">Select Department</option>
+                        {departmentOptions.map((dept) => (
+                          <option key={dept} value={dept}>
+                            {dept}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">School Year (SY)</label>
+                      <input
+                        type="text"
+                        value={schoolYear}
+                        readOnly
+                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full opacity-60 text-sm"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Automatically calculated</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-medium text-gray-400 mb-1">Google Mail</label>
-                    <input
-                      type="text"
-                      value={isEditing ? gmail : (user?.email || '')}
-                      onChange={(e) => isEditing && setGmail(e.target.value)}
-                      placeholder="Last Name"
-
-                      readOnly={!isEditing}
-                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
-                    />
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">Google Mail</label>
+                      <input
+                        type="email"
+                        value={isEditing ? gmail : (user?.email || '')}
+                        onChange={(e) => isEditing && setGmail(e.target.value)}
+                        placeholder="your.email@gmail.com"
+                        readOnly={!isEditing}
+                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">Gender</label>
+                      <select
+                        value={isEditing ? gender : (user?.gender || '')}
+                        onChange={(e) => isEditing && setGender(e.target.value)}
+                        disabled={!isEditing}
+                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                      </select>
+                    </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-medium text-gray-400 mb-1">Gender </label>
-                    <input
-                      type="text"
-                      value={isEditing ? gender : (user?.gender || '')}
-                      onChange={(e) => isEditing && setGender(e.target.value)}
-                      placeholder="Last Name"
-
-                      readOnly={!isEditing}
-                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
-                    />
-                  </div>
-                </div>
-
-                
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-1">Department</label>
-                    <input
-
-                      type="text"
-                      value={isEditing ? course : (user?.course || '')}
-                      onChange={(e) => isEditing && setCourse(e.target.value)}
-                      placeholder="e.g., Computer Science, Business, Engineering"
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Bio</label>
+                    <textarea
+                      value={isEditing ? bio : (user?.bio || '')}
+                      onChange={(e) => isEditing && setBio(e.target.value)}
+                      placeholder="Tell us about yourself..."
                       readOnly={!isEditing}
-                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
+                      className="bg-[#2A2E36] p-2 sm:p-3 rounded-md w-full h-20 sm:h-24 border border-white outline-none resize-none text-white text-sm"
                     />
                   </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-400 mb-1">School Year (SY)</label>
-                  <input
-                    type="text"
-                    value={schoolYear}
-                    readOnly
-                    className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-32 opacity-60"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">Automatically calculated based on current date</p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Bio</label>
-                  <textarea
-                    value={isEditing ? bio : (user?.bio || '')}
-                    onChange={(e) => isEditing && setBio(e.target.value)}
-                    placeholder="Tell us about yourself..."
-                    readOnly={!isEditing}
-                    className="bg-[#2A2E36] p-3 rounded-md w-full h-24 border border-white outline-none resize-none text-white"
-                  />
                 </div>
               </div>
-
             </div>
           </div>
         </div>
