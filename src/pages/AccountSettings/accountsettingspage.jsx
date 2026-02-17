@@ -22,10 +22,8 @@ const ProfilePage = () => {
   // Edit profile states
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || '');
-  const [middleInitial, setMiddleInitial] = useState(user?.middleInitial || '');
   const [lastName, setLastName] = useState(user?.name?.split(' ')[1] || '');
   const [bio, setBio] = useState(user?.bio || '');
-  const [department, setDepartment] = useState(user?.department || '');
   const [year, setYear] = useState(user?.year || '');
   const [course, setCourse] = useState(user?.course || '');
 
@@ -151,7 +149,6 @@ const ProfilePage = () => {
     
     setLastName(user?.name?.split(' ')[1] || '');
     setBio(user?.bio || '');
-    setDepartment(user?.department || '');
     setYear(user?.year || '');
     setCourse(user?.course || '');
     setIsEditing(false);
@@ -348,9 +345,10 @@ const ProfilePage = () => {
                     <label className="block text-xs font-medium text-gray-400 mb-1">Last Name</label>
                     <input
                       type="text"
-                      value={isEditing ? lastName : (user?.name?.split(' ')[0] || '')}
+                      value={isEditing ? lastName : (user?.name?.split(' ')[1] || '')}
                       onChange={(e) => isEditing && setLastName(e.target.value)}
                       placeholder="Last Name"
+
                       readOnly={!isEditing}
                       className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
                     />
@@ -363,9 +361,10 @@ const ProfilePage = () => {
                   <div>
                     <label className="block text-xs font-medium text-gray-400 mb-1">Department</label>
                     <input
+
                       type="text"
-                      value={isEditing ? department : (user?.department || '')}
-                      onChange={(e) => isEditing && setDepartment(e.target.value)}
+                      value={isEditing ? course : (user?.course || '')}
+                      onChange={(e) => isEditing && setCourse(e.target.value)}
                       placeholder="e.g., Computer Science, Business, Engineering"
                       readOnly={!isEditing}
                       className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
