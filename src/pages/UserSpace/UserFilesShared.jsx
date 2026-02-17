@@ -4,6 +4,7 @@ import ProfSidebar from "../component/profsidebar";
 import { FiCopy, FiFileText, FiMenu, FiX, FiUpload } from "react-icons/fi";
 import Logout from "../component/logout";
 import Sidebar from "../component/sidebar";
+import Button from "../component/button_2";
 import { useFileManager } from "../../hooks/useFileManager.js";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -288,24 +289,20 @@ const UserFilesShared = () => {
               <span className="text-xs text-gray-400">({(currentSpace?.members?.length) || 0} member(s))</span>
               {isOwnerSpace && (
                 <>
-                  <button 
-                    onClick={handleInviteMember} 
-                    className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition"
-                  >
-                    Add Member
-                  </button>
-                  <button 
-                    onClick={() => setShowPendingInvitations(true)} 
-                    className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
-                  >
-                    Pending Invites
-                  </button>
-                  <button
-                    onClick={handleDeleteRoom}
-                    className="px-3 py-1 text-xs bg-red-600 rounded-md hover:bg-red-500 transition"
-                  >
-                    Delete Room
-                  </button>
+                  <div onClick={handleInviteMember}>
+                    <Button text="Add Member" />
+                  </div>
+                  <div onClick={() => setShowPendingInvitations(true)} className="relative">
+                    <Button text="Pending Invites" />
+                    {joinRequestsData.length > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {joinRequestsData.length}
+                      </span>
+                    )}
+                  </div>
+                  <div onClick={handleDeleteRoom}>
+                    <Button text="Delete Room" />
+                  </div>
                 </>
               )}
               {isFriendSpace && (
@@ -362,24 +359,15 @@ const UserFilesShared = () => {
           {/* Add Member Button - Mobile */}
           {isOwnerSpace && (
             <div className="md:hidden flex justify-end gap-2 mb-6">
-              <button 
-                onClick={handleInviteMember} 
-                className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
-              >
-                Add Member
-              </button>
-              <button 
-                onClick={() => setShowPendingInvitations(true)} 
-                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
-              >
-                Pending Invites
-              </button>
-              <button
-                onClick={handleDeleteRoom}
-                className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500 transition text-sm"
-              >
-                Delete Room
-              </button>
+              <Button onClick={handleInviteMember} text="Add Member" />
+              <Button onClick={() => setShowPendingInvitations(true)} text="Pending Invites" className="relative">
+                {joinRequestsData.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {joinRequestsData.length}
+                  </span>
+                )}
+              </Button>
+              <Button onClick={handleDeleteRoom} text="Delete Room" />
             </div>
           )}
 
