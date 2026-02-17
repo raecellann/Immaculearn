@@ -23,8 +23,7 @@ const ProfProfilePage = () => {
   const getCurrentSchoolYear = () => {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
-    
-    // School year typically starts in June (month 5)
+
     if (currentMonth >= 5) {
       return `${currentYear}-${currentYear + 1}`;
     } else {
@@ -33,6 +32,7 @@ const ProfProfilePage = () => {
   };
 
   const schoolYear = getCurrentSchoolYear();
+
   const profileName = isEditing 
     ? `${firstName} ${lastName}`.trim()
     : user?.name || '';
