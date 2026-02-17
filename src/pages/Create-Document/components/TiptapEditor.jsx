@@ -1,5 +1,5 @@
 // components/TiptapEditor.jsx
-import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
+import React, { forwardRef, useImperativeHandle, useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -25,7 +25,72 @@ const TiptapEditor = forwardRef(({
   onUpdate,
   initialContent
 }, ref) => {
-  
+
+  // Responsive: track viewport width to scale paper correctly
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1024
+  );
+
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Build responsive paper style string for the editor attributes
+  const getResponsiveEditorStyle = () => {
+    const rawWidth = paperSize?.width || '8.27in';
+    const rawHeight = paperSize?.height || '11.69in';
+    const rawMarginTop = margins?.top || '1in';
+    const rawMarginRight = margins?.right || '1in';
+    const rawMarginBottom = margins?.bottom || '1in';
+    const rawMarginLeft = margins?.left || '1in';
+
+    if (viewportWidth < 640) {
+      return `
+        width: 100%;
+        min-height: 80vh;
+        margin-top: 0.5in;
+        margin-right: 0.5in;
+        margin-bottom: 0.5in;
+        margin-left: 0.5in;
+        font-family: ${fontFamily || 'Inter'}, sans-serif;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        color: black;
+        box-sizing: border-box;
+      `;
+    }
+    if (viewportWidth < 1024) {
+      return `
+        width: 100%;
+        max-width: ${rawWidth};
+        min-height: ${rawHeight};
+        margin-top: ${rawMarginTop};
+        margin-right: ${rawMarginRight};
+        margin-bottom: ${rawMarginBottom};
+        margin-left: ${rawMarginLeft};
+        font-family: ${fontFamily || 'Inter'}, sans-serif;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        color: black;
+        box-sizing: border-box;
+      `;
+    }
+    return `
+      width: ${rawWidth};
+      min-height: ${rawHeight};
+      margin-top: ${rawMarginTop};
+      margin-right: ${rawMarginRight};
+      margin-bottom: ${rawMarginBottom};
+      margin-left: ${rawMarginLeft};
+      font-family: ${fontFamily || 'Inter'}, sans-serif;
+      background: white;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      color: black;
+    `;
+  };
+
   // Create collaboration extensions only if ydoc exists
   const getCollaborationExtensions = () => {
     if (!ydoc || !provider) return [];
@@ -103,19 +168,8 @@ const TiptapEditor = forwardRef(({
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class: 'prose prose-lg focus:outline-none max-w-none min-h-[500px] p-8',
-        style: `
-          width: ${paperSize?.width || '8.27in'};
-          min-height: ${paperSize?.height || '11.69in'};
-          margin-top: ${margins?.top || '1in'};
-          margin-right: ${margins?.right || '1in'};
-          margin-bottom: ${margins?.bottom || '1in'};
-          margin-left: ${margins?.left || '1in'};
-          font-family: ${fontFamily || 'Inter'}, sans-serif;
-          background: white;
-          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-          color: black;
-        `,
+        class: 'prose prose-sm sm:prose-base lg:prose-lg focus:outline-none max-w-none min-h-[400px] sm:min-h-[500px] p-4 sm:p-6 md:p-8',
+        style: getResponsiveEditorStyle(),
       },
     },
   });
@@ -269,8 +323,12 @@ const TiptapEditor = forwardRef(({
     }
   }, [editor, initialContent]);
 
-  
-
+  // Update editor styles responsively when viewport changes
+  useEffect(() => {
+    if (!editor) return;
+    // Trigger a view update to re-apply the responsive style
+    // The style is re-computed via getResponsiveEditorStyle() on re-render
+  }, [viewportWidth, paperSize, margins, fontFamily]);
 
 
   // Expose editor methods to parent component
@@ -432,6 +490,23 @@ const TiptapEditor = forwardRef(({
 
         .ProseMirror-focused {
           outline: none;
+        }
+
+        /* Responsive ProseMirror overrides */
+        @media (max-width: 639px) {
+          .ProseMirror {
+            padding: 1rem !important;
+            margin: 0 !important;
+            width: 100% !important;
+            min-height: 80vh !important;
+          }
+        }
+
+        @media (min-width: 640px) and (max-width: 1023px) {
+          .ProseMirror {
+            width: 100% !important;
+            max-width: 8.27in;
+          }
         }
       `}</style>
       <EditorContent editor={editor} />

@@ -20,6 +20,58 @@ const CollaborativeEditor = forwardRef(({
   const isLocalUpdateRef = useRef(false);
   const lastRemoteContentRef = useRef('');
 
+  // Responsive: track viewport to scale the paper appropriately on small screens
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1024
+  );
+
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Compute scaled paper dimensions so the sheet always fits in the viewport
+  const getResponsivePaperStyle = () => {
+    const rawWidth = paperSize?.width || '8.27in';
+    const rawHeight = paperSize?.height || '11.69in';
+    const rawMarginTop = margins?.top || '1in';
+    const rawMarginRight = margins?.right || '1in';
+    const rawMarginBottom = margins?.bottom || '1in';
+    const rawMarginLeft = margins?.left || '1in';
+
+    // On small screens, use 100% width instead of fixed inches
+    if (viewportWidth < 640) {
+      return {
+        width: '100%',
+        minHeight: '80vh',
+        marginTop: '0.5in',
+        marginRight: '0.5in',
+        marginBottom: '0.5in',
+        marginLeft: '0.5in',
+      };
+    }
+    if (viewportWidth < 1024) {
+      return {
+        width: '100%',
+        maxWidth: rawWidth,
+        minHeight: rawHeight,
+        marginTop: rawMarginTop,
+        marginRight: rawMarginRight,
+        marginBottom: rawMarginBottom,
+        marginLeft: rawMarginLeft,
+      };
+    }
+    return {
+      width: rawWidth,
+      minHeight: rawHeight,
+      marginTop: rawMarginTop,
+      marginRight: rawMarginRight,
+      marginBottom: rawMarginBottom,
+      marginLeft: rawMarginLeft,
+    };
+  };
+
   // Get cursor position
   const getCursorPosition = () => {
     const selection = window.getSelection();
@@ -312,37 +364,35 @@ const CollaborativeEditor = forwardRef(({
     }
   }), [ydoc]);
 
+  const responsivePaperStyle = getResponsivePaperStyle();
+
   return (
     <div className="w-full max-w-7xl mx-auto">
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center px-2 sm:px-4 md:px-0">
         <div
           ref={editorRef}
           contentEditable={true}
           onInput={handleInput}
           onPaste={handlePaste}
           onKeyDown={handleKeyDown}
-          className="prose prose-lg focus:outline-none max-w-none min-h-[500px] p-8"
+          className="prose prose-sm sm:prose-base lg:prose-lg focus:outline-none max-w-none min-h-[400px] sm:min-h-[500px] p-4 sm:p-6 md:p-8"
           style={{
-            width: paperSize?.width || '8.27in',
-            minHeight: paperSize?.height || '11.69in',
-            marginTop: margins?.top || '1in',
-            marginRight: margins?.right || '1in',
-            marginBottom: margins?.bottom || '1in',
-            marginLeft: margins?.left || '1in',
+            ...responsivePaperStyle,
             fontFamily: fontFamily || 'Inter, sans-serif',
             background: currentColors.surface,
             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
             color: currentColors.text,
             outline: 'none',
             border: `1px solid ${currentColors.border}`,
+            boxSizing: 'border-box',
           }}
           suppressContentEditableWarning={true}
           placeholder="Start typing here..."
         />
       </div>
-      <div className="mt-2 flex items-center gap-2 justify-start">
+      <div className="mt-2 flex items-center gap-2 justify-start px-2 sm:px-4 md:px-0">
         <div className={`w-2 h-2 rounded-full ${isSynced ? 'bg-green-500' : 'bg-red-500'}`} />
-        <span className="text-sm" style={{ color: currentColors.textSecondary }}>
+        <span className="text-xs sm:text-sm" style={{ color: currentColors.textSecondary }}>
           {isSynced ? 'Connected to collaboration' : 'Connecting...'}
         </span>
       </div>
