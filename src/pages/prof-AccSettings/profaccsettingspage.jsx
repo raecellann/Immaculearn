@@ -18,6 +18,7 @@ const ProfProfilePage = () => {
   const [department, setDepartment] = useState(user?.department || '');
   const [gender, setGender] = useState(user?.gender || '')
   const [bio, setBio] = useState(user?.bio || '');
+  const [gmail , setGmail] = useState(user?.email || '');
 
 
   const getCurrentSchoolYear = () => {
@@ -57,6 +58,7 @@ const ProfProfilePage = () => {
       department: department,
       bio: bio,
       gender : gender,
+      email: gmail,
       profile_pic: profileImage
     };
     
@@ -77,6 +79,7 @@ const ProfProfilePage = () => {
     setLastName(user?.name?.split(' ')[1] || '');
     setDepartment(user?.department || '');
     setGender(user?.gender || '');
+    setGmail(user?.email || '');
     setBio(user?.bio || '');
     setIsEditing(false);
   };
@@ -269,6 +272,22 @@ const ProfProfilePage = () => {
                     className="bg-[#2A2E36] p-2 rounded-md outline-none text-white border border-white"
                   />
                   </div>
+
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Google Mail</label>
+                    <input
+                      type="text"
+                      value={isEditing ? gmail : (user?.email || '')}
+                      onChange={(e) => isEditing && setGmail(e.target.value)}
+                      placeholder="Last Name"
+
+                      readOnly={!isEditing}
+                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
+                    />
+                  </div>
+                </div>
 
                   <div className="mb-4">
                   <label className="block text-xs font-medium text-gray-400 mb-1">School Year (SY)</label>

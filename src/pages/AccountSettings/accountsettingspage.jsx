@@ -24,6 +24,8 @@ const ProfilePage = () => {
   const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || '');
   const [lastName, setLastName] = useState(user?.name?.split(' ')[1] || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [gmail , setGmail] = useState(user?.email || '');
+  const [gender, setGender] = useState(user?.gender || '');
   const [year, setYear] = useState(user?.year || '');
   const [course, setCourse] = useState(user?.course || '');
 
@@ -119,8 +121,9 @@ const ProfilePage = () => {
     const updatedProfile = {
       name: `${firstName}  ${lastName}`,
       bio: bio,
-      year: year,
       course: course,
+      gender: gender,
+      email: gmail,
       profile_pic: profileImage
     };
     
@@ -145,10 +148,11 @@ const ProfilePage = () => {
   const handleCancelEdit = () => {
     // Reset to original values
     setFirstName(user?.name?.split(' ')[0] || '');
-    
     setLastName(user?.name?.split(' ')[1] || '');
     setBio(user?.bio || '');
     setYear(user?.year || '');
+    setGender(user?.gender || '');
+    setGmail(user?.email || '');
     setCourse(user?.course || '');
     setIsEditing(false);
   };
@@ -346,6 +350,36 @@ const ProfilePage = () => {
                       type="text"
                       value={isEditing ? lastName : (user?.name?.split(' ')[1] || '')}
                       onChange={(e) => isEditing && setLastName(e.target.value)}
+                      placeholder="Last Name"
+
+                      readOnly={!isEditing}
+                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Google Mail</label>
+                    <input
+                      type="text"
+                      value={isEditing ? gmail : (user?.email || '')}
+                      onChange={(e) => isEditing && setGmail(e.target.value)}
+                      placeholder="Last Name"
+
+                      readOnly={!isEditing}
+                      className="bg-[#2A2E36] p-2 rounded-md border border-white outline-none text-white w-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Gender </label>
+                    <input
+                      type="text"
+                      value={isEditing ? gender : (user?.gender || '')}
+                      onChange={(e) => isEditing && setGender(e.target.value)}
                       placeholder="Last Name"
 
                       readOnly={!isEditing}
