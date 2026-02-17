@@ -43,7 +43,7 @@ const ProfilePage = () => {
   const schoolYear = getCurrentSchoolYear();
 
   const profileName = isEditing 
-    ? `${firstName} ${middleInitial ? middleInitial + '.' : ''} ${lastName}`.trim()
+    ? `${firstName} ${lastName}`.trim()
     : user?.name || '';
 
   // Upload profile picture
@@ -117,8 +117,7 @@ const ProfilePage = () => {
   const handleSaveProfile = () => {
     // Here you would typically make an API call to update the user profile
     const updatedProfile = {
-      name: `${firstName} ${middleInitial ? middleInitial + '.' : ''} ${lastName}`,
-      middleInitial: middleInitial,
+      name: `${firstName}  ${lastName}`,
       bio: bio,
       year: year,
       course: course,
