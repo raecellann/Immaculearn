@@ -7,6 +7,7 @@ import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { useFileManager } from "../../hooks/useFileManager.js";
+import Button from "../component/button_2";
 
 const ProfFilesShared = () => {
   const navigate = useNavigate();
@@ -54,6 +55,12 @@ const ProfFilesShared = () => {
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [copyFeedback, setCopyFeedback] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
+  const [inviteButtonClicked, setInviteButtonClicked] = useState(false);
+  const [pendingButtonClicked, setPendingButtonClicked] = useState(false);
+  const [deleteButtonClicked, setDeleteButtonClicked] = useState(false);
+  const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const lastScrollY = useRef(0);
 
   // File upload states
@@ -125,14 +132,25 @@ const ProfFilesShared = () => {
 
   // Invite member
   const handleInviteMember = () => {
+    setInviteButtonClicked(true);
+    setIsInviting(true);
     setShowInvitePopup(true);
+    setTimeout(() => {
+      setInviteButtonClicked(false);
+      setIsInviting(false);
+    }, 500);
   };
 
   // Delete room
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
+    setDeleteButtonClicked(true);
     const confirmDelete = window.confirm(`Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`);
-    if (!confirmDelete) return;
+    if (!confirmDelete) {
+      setDeleteButtonClicked(false);
+      return;
+    }
+    setIsDeleting(true);
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
       alert(`Space "${currentSpace.space_name}" deleted successfully.`);
@@ -141,6 +159,15 @@ const ProfFilesShared = () => {
       console.error("Failed to delete space:", error);
       alert("Failed to delete space. Please try again.");
     }
+  };
+
+  // Handle pending invitations
+  const handlePendingInvitations = () => {
+    setPendingButtonClicked(true);
+    setShowPendingInvitations(true);
+    setTimeout(() => {
+      setPendingButtonClicked(false);
+    }, 500);
   };
 
   // Handle join requests
@@ -284,24 +311,20 @@ const ProfFilesShared = () => {
               <span className="text-xs text-gray-400">({currentSpace?.space_type === "course" ? (currentSpace?.members?.length - 1) + " student(s)": (currentSpace?.members?.length) + " member(s)" || 0})</span>
               {isOwnerSpace && (
                 <>
-                  <button 
-                    onClick={handleInviteMember} 
-                    className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition"
-                  >
-                    Add Member
-                  </button>
-                  <button 
-                    onClick={() => setShowPendingInvitations(true)} 
-                    className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
-                  >
-                    Pending Invites
-                  </button>
-                  <button
-                    onClick={handleDeleteRoom}
-                    className="px-3 py-1 text-xs bg-red-600 rounded-md hover:bg-red-500 transition"
-                  >
-                    Delete Room
-                  </button>
+                  <div onClick={handleInviteMember}>
+                    <Button text="Add Member" />
+                  </div>
+                  <div onClick={handlePendingInvitations} className="relative">
+                    <Button text="Pending Invites" />
+                    {joinRequestsData.length > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {joinRequestsData.length}
+                      </span>
+                    )}
+                  </div>
+                  <div onClick={handleDeleteRoom}>
+                    <Button text="Delete Room" />
+                  </div>
                 </>
               )}
               {isFriendSpace && (
@@ -355,24 +378,20 @@ const ProfFilesShared = () => {
           {/* Add Member Button - Mobile */}
           {isOwnerSpace && (
             <div className="md:hidden flex justify-end gap-2 mb-6">
-              <button 
-                onClick={handleInviteMember} 
-                className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
-              >
-                Add Member
-              </button>
-              <button 
-                onClick={() => setShowPendingInvitations(true)} 
-                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
-              >
-                Pending Invites
-              </button>
-              <button
-                onClick={handleDeleteRoom}
-                className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500 transition text-sm"
-              >
-                Delete Room
-              </button>
+              <div onClick={handleInviteMember}>
+                <Button text="Add Member" />
+              </div>
+              <div onClick={handlePendingInvitations} className="relative">
+                <Button text="Pending Invites" />
+                {joinRequestsData.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {joinRequestsData.length}
+                  </span>
+                )}
+              </div>
+              <div onClick={handleDeleteRoom}>
+                <Button text="Delete Room" />
+              </div>
             </div>
           )}
 
