@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
 import Button from "../component/button_2";
+import { DeleteConfirmationDialog, SuccessDialog, CancelledDialog } from "../component/SweetAlert.jsx";
 import {
   FiSearch,
   FiFileText,
@@ -46,7 +47,13 @@ const UserPage = () => {
   const [uploadError, setUploadError] = useState(null);
   const [backgroundUpload, setBackgroundUpload] = useState(false);
   const [showUploadNotification, setShowUploadNotification] = useState(false);
-  
+
+  // State for dialog management
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showCancelledDialog, setShowCancelledDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+
   // Refs - MUST BE AT THE TOP
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
@@ -96,7 +103,6 @@ const UserPage = () => {
 
   const currentSpace = allSpaces.find(space => space.space_uuid === space_uuid);
 
-  
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
 
@@ -131,16 +137,22 @@ const UserPage = () => {
   // Delete room
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
-    const confirmDelete = window.confirm(`Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`);
-    if (!confirmDelete) return;
+    
+    // Show delete confirmation dialog
+    setDialogMessage(currentSpace.space_name);
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    // Prevent multiple executions
+    if (!currentSpace || !showDeleteDialog) return;
+    
+    setShowDeleteDialog(false);
+    
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-      addNotification({
-        type: 'success',
-        title: 'Space Deleted',
-        message: `"${currentSpace.space_name}" has been deleted successfully.`,
-        duration: 3000
-      });
+      
+      // Navigate immediately after successful deletion
       navigate("/space");
     } catch (error) {
       console.error("Failed to delete space:", error);
@@ -151,6 +163,18 @@ const UserPage = () => {
         duration: 5000
       });
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteDialog(false);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessDialog(false);
+  };
+
+  const handleCancelledClose = () => {
+    setShowCancelledDialog(false);
   };
 
   // Handle join requests
@@ -1254,6 +1278,32 @@ const UserPage = () => {
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Are you sure?"
+        message="You won't be able to revert this!"
+        itemName={dialogMessage}
+      />
+
+      {/* SUCCESS DIALOG */}
+      <SuccessDialog
+        isOpen={showSuccessDialog}
+        onClose={handleSuccessClose}
+        title="Deleted!"
+        message={dialogMessage}
+      />
+
+      {/* CANCELLED DIALOG */}
+      <CancelledDialog
+        isOpen={showCancelledDialog}
+        onClose={handleCancelledClose}
+        title="Cancelled"
+        message={dialogMessage}
+      />
     </div>
   );
 };
