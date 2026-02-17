@@ -36,7 +36,7 @@ const Toolbar = ({
   const [isAlignmentDropdownOpen, setIsAlignmentDropdownOpen] = useState(false);
   const [selectedAlignment, setSelectedAlignment] = useState("left");
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
-  const [selectedTextColor, setSelectedTextColor] = useState("black");
+  const [selectedTextColor, setSelectedTextColor] = useState("default");
   const [selectedHighlightColor, setSelectedHighlightColor] = useState("transparent");
   const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
   const [selectedFontSize, setSelectedFontSize] = useState(16);
@@ -230,11 +230,13 @@ const Toolbar = ({
   };
 
   const applyTextColor = (color) => {
+    const actualColor = color === "default" ? (isDarkMode ? "white" : "black") : color;
+    
     if (selectedTextColor === color) {
-      applyFormatting('foreColor', 'black');
-      setSelectedTextColor('black');
+      applyFormatting('foreColor', isDarkMode ? "white" : "black");
+      setSelectedTextColor('default');
     } else {
-      applyFormatting('foreColor', color);
+      applyFormatting('foreColor', actualColor);
       setSelectedTextColor(color);
     }
     setIsColorDropdownOpen(false);
@@ -370,7 +372,9 @@ const Toolbar = ({
 
   // Color options
   const colorOptions = [
+    "default",
     "black",
+    "white",
     "green",
     "red",
     "blue",
@@ -533,7 +537,10 @@ const Toolbar = ({
         >
           <div
             className="w-4 h-4 sm:w-4 sm:h-4 rounded border border-gray-400"
-            style={{ backgroundColor: selectedTextColor, borderColor: currentColors.border }}
+            style={{ 
+              backgroundColor: selectedTextColor === "default" ? (isDarkMode ? "white" : "black") : selectedTextColor, 
+              borderColor: currentColors.border 
+            }}
           />
           <FiChevronDown className="text-xs sm:text-sm" size={windowWidth < 640 ? 14 : 16} />
         </div>
@@ -564,8 +571,8 @@ const Toolbar = ({
                     windowWidth < 640 ? 'text-xs' : 'text-sm sm:text-base'
                   }`}
                   style={{
-                    backgroundColor: color === "transparent" ? "white" : color,
-                    borderColor: currentColors.border,
+                    backgroundColor: color === "default" ? (isDarkMode ? "white" : "black") : (color === "transparent" ? "white" : color),
+                    borderColor: color === "white" || color === "default" ? currentColors.border : currentColors.border,
                   }}
                   onMouseDown={(e) =>
                     handleMouseDown(e, () => applyTextColor(color))
@@ -573,8 +580,8 @@ const Toolbar = ({
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  <span className="font-bold" style={{ color: color === "transparent" ? "black" : "white" }}>
-                    A
+                  <span className="font-bold text-xs" style={{ color: (color === "transparent" || color === "white" || (color === "default" && isDarkMode)) ? "black" : "white" }}>
+                    {color === "default" ? "D" : "A"}
                   </span>
                 </button>
               ))}

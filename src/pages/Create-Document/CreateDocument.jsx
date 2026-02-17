@@ -319,11 +319,12 @@ const CreateDocumentPage = () => {
             </div>
           </div>
 
-          {/* Connection status indicator */}
-          <div className="fixed top-20 sm:top-20 right-2 sm:right-4 z-50">
-            <div className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
-              isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
+        {/* Connection status indicator */}
+        <div className="fixed top-20 sm:top-20 right-2 sm:right-4 z-50">
+          <div className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
+            isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {isOnline ? 'Online' : 'Offline'}
           </div>
         </div>
 
@@ -359,6 +360,6 @@ const CreateDocumentPage = () => {
     </div>
   </div>
 );
-};
+}
 
 export default CreateDocumentPage;

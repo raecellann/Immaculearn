@@ -8,11 +8,9 @@ const EditorHeader = ({
   lastSaved,
   title,
   setTitle,
-  isDownloadDropdownOpen,
-  setIsDownloadDropdownOpen,
-  downloadDocument,
   connectedUsers = [],
   isOnline = false,
+  collaborationEnabled = false,
 }) => {
   const { isDarkMode, toggleTheme, colors } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
@@ -82,65 +80,16 @@ const EditorHeader = ({
             )}
 
             {/* Connection indicator */}
-            {connectedUsers.length > 0 && (
-              <div className="flex items-center gap-1 ml-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${
-                    isOnline ? "bg-green-500" : "bg-red-500"
-                  }`}
-                />
-                <span className="text-xs" style={{ color: currentColors.textSecondary }}>
-                  {isOnline ? "Online" : "Offline"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Download */}
-          <div className="relative">
-            <button
-              className="px-6 py-2 rounded-full font-medium"
-              style={{ 
-                backgroundColor: currentColors.accent,
-                color: 'white'
-              }}
-              onClick={() =>
-                setIsDownloadDropdownOpen(!isDownloadDropdownOpen)
-              }
-            >
-              Download
-            </button>
-
-            {isDownloadDropdownOpen && (
-              <div className="absolute top-full mt-2 right-0 border rounded-lg shadow-lg z-10 w-40" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
-                <div
-                  className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:opacity-80"
-                  style={{ color: currentColors.text }}
-                  onClick={() => downloadDocument("html")}
-                >
-                  <FiDownload size={16} />
-                  <span className="text-sm">Word (.docx)</span>
-                </div>
-
-                <div
-                  className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:opacity-80"
-                  style={{ color: currentColors.text }}
-                  onClick={() => downloadDocument("pdf")}
-                >
-                  <FiDownload size={16} />
-                  <span className="text-sm">PDF</span>
-                </div>
-
-                <div
-                  className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:opacity-80"
-                  style={{ color: currentColors.text }}
-                  onClick={() => downloadDocument("txt")}
-                >
-                  <FiDownload size={16} />
-                  <span className="text-sm">Text (.txt)</span>
-                </div>
-              </div>
-            )}
+            <div className="flex items-center gap-1 ml-2">
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  isOnline ? "bg-green-500" : "bg-red-500"
+                }`}
+              />
+              <span className="text-xs" style={{ color: currentColors.textSecondary }}>
+                {isOnline ? "Online" : "Offline"}
+              </span>
+            </div>
           </div>
 
           <button className="px-6 py-2 rounded-full font-medium" style={{ backgroundColor: currentColors.surface, color: currentColors.text }}>
@@ -192,5 +141,4 @@ const EditorHeader = ({
     </div>
   );
 };
-
 export default EditorHeader;

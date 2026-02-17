@@ -9,8 +9,9 @@ const FilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
-  const headerRef = useRef(null);
-  const lastScroll = useRef(0);
+  // sticky header scroll state
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const { isAuthenticated } = useUser();
 
@@ -23,23 +24,20 @@ const FilePage = () => {
   // 🔹 Hide-on-scroll header
   useEffect(() => {
     const handleScroll = () => {
-      const currentScroll = window.pageYOffset;
+      const currentScrollY = window.scrollY;
 
-      if (headerRef.current) {
-        if (currentScroll > lastScroll.current) {
-          headerRef.current.classList.add('hidden');
-          headerRef.current.style.transform = "translateY(-100%)";
-        } else {
-          headerRef.current.style.transform = "translateY(0)";
-        }
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setShowHeader(false); // scrolling down
+      } else {
+        setShowHeader(true); // scrolling up
       }
 
-      lastScroll.current = currentScroll;
+      setLastScrollY(currentScrollY);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
 
   const { userSpaces, courseSpaces, friendSpaces } = useSpace();
@@ -125,9 +123,9 @@ const FilePage = () => {
 
         {/* 🔥 Sticky Mobile Header */}
         <div
-          ref={headerRef}
-          className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
-          transition-transform duration-300"
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
         >
           <div className="p-4 flex items-center gap-4">
             <button
