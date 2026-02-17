@@ -136,7 +136,7 @@ const IndividualSpaceSettings = () => {
 
       {/* MOBILE SIDEBAR */}
       <div
-        className={`fixed left-0 top-0 h-full w-60 bg-[#1E222A] text-white transform transition-transform duration-300 z-50 md:block lg:hidden ${
+        className={`fixed left-0 top-0 h-full w-64 bg-[#1E222A] text-white transform transition-transform duration-300 z-50 md:block lg:hidden ${
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
