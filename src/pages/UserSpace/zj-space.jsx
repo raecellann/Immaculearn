@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
+import Button from "../component/button_2";
 import {
   FiSearch,
   FiFileText,
@@ -587,29 +588,20 @@ const UserPage = () => {
               <span className="text-xs text-gray-400">({(currentSpace?.members?.length) || 0} member(s))</span>
               {isOwnerSpace && (
                 <>
-                  <button 
-                    onClick={handleInviteMember} 
-                    className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition"
-                  >
-                    Add Member
-                  </button>
-                  <button 
-                    onClick={() => setShowPendingInvitations(true)} 
-                    className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition relative"
-                  >
-                    Pending Invites
+                  <div onClick={handleInviteMember}>
+                    <Button text="Add Member" />
+                  </div>
+                  <div onClick={() => setShowPendingInvitations(true)} className="relative">
+                    <Button text="Pending Invites" />
                     {pendingInvitesCount > 0 && (
                       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                         {pendingInvitesCount}
                       </span>
                     )}
-                  </button>
-                  <button
-                    onClick={handleDeleteRoom}
-                    className="px-3 py-1 text-xs bg-red-600 rounded-md hover:bg-red-500 transition"
-                  >
-                    Delete Room
-                  </button>
+                  </div>
+                  <div onClick={handleDeleteRoom}>
+                    <Button text="Delete Room" />
+                  </div>
                 </>
               )}
               {isFriendSpace && (
@@ -628,7 +620,6 @@ const UserPage = () => {
                   </div>
                 </div>
               )}
-              
             </div>
           </div>
 
@@ -664,29 +655,20 @@ const UserPage = () => {
           {/* Add Member Button - Mobile */}
           {isOwnerSpace && (
             <div className="md:hidden flex justify-end gap-2 mb-6">
-              <button 
-                onClick={handleInviteMember} 
-                className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
-              >
-                Add Member
-              </button>
-              <button 
-                onClick={() => setShowPendingInvitations(true)} 
-                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm relative"
-              >
-                Pending Invites
+              <div onClick={handleInviteMember}>
+                <Button text="Add Member" />
+              </div>
+              <div onClick={() => setShowPendingInvitations(true)} className="relative">
+                <Button text="Pending Invites" />
                 {pendingInvitesCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {pendingInvitesCount}
                   </span>
                 )}
-              </button>
-              <button
-                onClick={handleDeleteRoom}
-                className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500 transition text-sm"
-              >
-                Delete Room
-              </button>
+              </div>
+              <div onClick={handleDeleteRoom}>
+                <Button text="Delete Room" />
+              </div>
             </div>
           )}
 
@@ -982,33 +964,6 @@ const UserPage = () => {
                     focus:ring-purple-500
                   "
                 />
-              </div>
-
-              {/* CSV/EXCEL UPLOAD */}
-              <div className="mb-4">
-                <p className="text-sm font-medium text-black mb-2">
-                  Or upload CSV/Excel file (Gmail only)
-                </p>
-                <div className="flex items-center justify-center w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <FiUpload className="w-6 h-6 mb-2 text-gray-400" />
-                      <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">Click to upload</span> CSV/Excel file
-                      </p>
-                      <p className="text-xs text-gray-500">Gmail addresses only (CSV, XLS, XLSX)</p>
-                    </div>
-                    <input 
-                      type="file" 
-                      className="hidden" 
-                      accept=".csv,.xls,.xlsx"
-                      onChange={handleFileUpload}
-                    />
-                  </label>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Format: Must include header row with "email" or "emails" column. Optional: "name", "fullname", or "full_name" column
-                </p>
               </div>
 
               {/* SUGGESTED USERS */}
