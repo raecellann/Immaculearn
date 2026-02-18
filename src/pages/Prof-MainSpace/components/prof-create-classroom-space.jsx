@@ -36,6 +36,9 @@ const ProfCreateClassroomSpace = () => {
   const [yearLevel, setYearLevel] = useState("");
   const [selectedDays, setSelectedDays] = useState([]);
   const [timeSchedule, setTimeSchedule] = useState("");
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [startTime, setStartTime] = useState({ hour: 8, minute: 0, period: 'AM' });
+  const [endTime, setEndTime] = useState({ hour: 10, minute: 0, period: 'AM' });
 
   /* 📹 STICKY HEADER LOGIC */
   const [showHeader, setShowHeader] = useState(true);
@@ -91,6 +94,26 @@ const ProfCreateClassroomSpace = () => {
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
   };
+
+  const formatTime = (time) => {
+    const { hour, minute, period } = time;
+    const displayHour = hour === 12 ? 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
+  };
+
+  const generateTimeOptions = () => {
+    const options = [];
+    for (let period of ['AM', 'PM']) {
+      for (let hour = period === 'AM' ? 1 : 12; hour <= (period === 'AM' ? 12 : 11); hour++) {
+        for (let minute = 0; minute < 60; minute += 15) {
+          options.push({ hour, minute, period });
+        }
+      }
+    }
+    return options;
+  };
+
+  const timeOptions = generateTimeOptions();
 
   const handleCreateCourseSpace = async () => {
     if (spaceName.trim()) {
@@ -402,71 +425,177 @@ const ProfCreateClassroomSpace = () => {
             </div>
           )}
 
-          {/* Space Name */}
-          <div className="mt-6">
-            <label className="block text-sm mb-1">Space Name:</label>
-            <InputField
-              placeholder="Enter space name"
-              value={spaceName}
-              onChange={(e) => setSpaceName(e.target.value)}
-              style={{ width: "100%", backgroundColor: "#ffffff" }}
-            />
-          </div>
-
-          {/* Year Level Dropdown */}
-          <div className="mt-6">
-            <label className="block text-sm mb-1">Year Level:</label>
-            <select
-              value={yearLevel}
-              onChange={(e) => setYearLevel(e.target.value)}
-              className="w-full bg-white text-black p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
-            >
-              <option value="">Select year level</option>
-              <option value="1st Year">1st Year</option>
-              <option value="2nd Year">2nd Year</option>
-              <option value="3rd Year">3rd Year</option>
-              <option value="4th Year">4th Year</option>
-            </select>
-          </div>
-
-          {/* Schedule Days */}
-          <div className="mt-6">
-            <label className="block text-sm mb-2">Schedule Days:</label>
-            <div className="flex flex-wrap gap-2">
-              {daysOfWeek.map((day) => (
-                <button
-                  key={day.value}
-                  onClick={() => handleDayToggle(day.value)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedDays.includes(day.value)
-                      ? "bg-[#007AFF] text-white"
-                      : "bg-[#3E3E3E] text-gray-300 hover:bg-[#4A4A4A]"
-                  }`}
-                >
-                  {day.label}
-                </button>
-              ))}
+          {/* Space Name and Year Level Row */}
+          <div className="mt-8 flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm mb-3">Space Name:</label>
+              <InputField
+                placeholder="Enter space name"
+                value={spaceName}
+                onChange={(e) => setSpaceName(e.target.value)}
+                style={{ width: "100%", backgroundColor: "#ffffff" }}
+              />
             </div>
-            {selectedDays.length > 0 && (
-              <p className="text-xs text-gray-400 mt-2">
-                Selected: {selectedDays.join(", ")}
-              </p>
-            )}
+            <div className="sm:w-1/3">
+              <label className="block text-sm mb-3">Year Level:</label>
+              <select
+                value={yearLevel}
+                onChange={(e) => setYearLevel(e.target.value)}
+                className="w-full bg-white text-black p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+              >
+                <option value="">Select year level</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </div>
           </div>
 
-          {/* Time Schedule */}
-          <div className="mt-6">
-            <label className="block text-sm mb-1">Time Schedule:</label>
-            <InputField
-              placeholder="e.g., 8:00-10:00 AM"
-              value={timeSchedule}
-              onChange={(e) => setTimeSchedule(e.target.value)}
-              style={{ width: "100%", backgroundColor: "#ffffff" }}
-            />
+          {/* Schedule Days and Time Schedule Row */}
+          <div className="mt-8 flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm mb-3">Schedule Days:</label>
+              <div className="flex flex-wrap gap-2">
+                {daysOfWeek.map((day) => (
+                  <button
+                    key={day.value}
+                    onClick={() => handleDayToggle(day.value)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedDays.includes(day.value)
+                        ? "bg-[#007AFF] text-white"
+                        : "bg-[#3E3E3E] text-gray-300 hover:bg-[#4A4A4A]"
+                    }`}
+                  >
+                    {day.label}
+                  </button>
+                ))}
+              </div>
+              {selectedDays.length > 0 && (
+                <p className="text-xs text-gray-400 mt-2">
+                  Selected: {selectedDays.join(", ")}
+                </p>
+              )}
+            </div>
+            <div className="lg:w-1/2">
+              <label className="block text-sm mb-3">Time Schedule:</label>
+              <div 
+                className="bg-white text-black p-3 rounded-lg border border-gray-300 cursor-pointer hover:border-[#007AFF] transition-colors"
+                onClick={() => setShowTimePicker(!showTimePicker)}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-700">
+                    {timeSchedule || 'Click to set time'}
+                  </span>
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
           </div>
+
+            {/* Time Picker Modal */}
+            {showTimePicker && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-xl p-6 w-full max-w-sm">
+                  <h3 className="text-lg font-semibold mb-4 text-black">Set Time Schedule</h3>
+                  
+                  <div className="space-y-4">
+                    {/* Start Time */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+                      <div className="grid grid-cols-3 gap-1">
+                        <select 
+                          value={startTime.hour}
+                          onChange={(e) => setStartTime({...startTime, hour: parseInt(e.target.value)})}
+                          className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-black"
+                        >
+                          {Array.from({length: 12}, (_, i) => i + 1).map(h => (
+                            <option key={h} value={h}>{h === 12 ? 12 : h}</option>
+                          ))}
+                        </select>
+                        <select 
+                          value={startTime.minute}
+                          onChange={(e) => setStartTime({...startTime, minute: parseInt(e.target.value)})}
+                          className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-black"
+                        >
+                          <option value={0}>00</option>
+                          <option value={15}>15</option>
+                          <option value={30}>30</option>
+                          <option value={45}>45</option>
+                        </select>
+                        <select 
+                          value={startTime.period}
+                          onChange={(e) => setStartTime({...startTime, period: e.target.value})}
+                          className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-black"
+                        >
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* End Time */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                      <div className="grid grid-cols-3 gap-1">
+                        <select 
+                          value={endTime.hour}
+                          onChange={(e) => setEndTime({...endTime, hour: parseInt(e.target.value)})}
+                          className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-black"
+                        >
+                          {Array.from({length: 12}, (_, i) => i + 1).map(h => (
+                            <option key={h} value={h}>{h === 12 ? 12 : h}</option>
+                          ))}
+                        </select>
+                        <select 
+                          value={endTime.minute}
+                          onChange={(e) => setEndTime({...endTime, minute: parseInt(e.target.value)})}
+                          className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-black"
+                        >
+                          <option value={0}>00</option>
+                          <option value={15}>15</option>
+                          <option value={30}>30</option>
+                          <option value={45}>45</option>
+                        </select>
+                        <select 
+                          value={endTime.period}
+                          onChange={(e) => setEndTime({...endTime, period: e.target.value})}
+                          className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-black"
+                        >
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end gap-3 mt-6">
+                    <button
+                      onClick={() => setShowTimePicker(false)}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        const formattedTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+                        setTimeSchedule(formattedTime);
+                        setShowTimePicker(false);
+                      }}
+                      className="px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#2563eb] transition-colors"
+                    >
+                      Set Time
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-10">
             <button 
               className="bg-[#3E3E3E] px-6 py-2 rounded-lg hover:bg-[#4A4A4A] text-xs w-full sm:w-auto"
               onClick={() => navigator(-1)}
