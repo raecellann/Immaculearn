@@ -32,6 +32,7 @@ const CreateDocumentPage = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
+
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 

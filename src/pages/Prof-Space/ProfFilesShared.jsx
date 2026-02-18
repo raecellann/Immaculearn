@@ -11,6 +11,8 @@ import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 
 
+
+
 const ProfFilesShared = () => {
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams();

@@ -216,6 +216,7 @@ export const ProfRoutes = () => {
         }
       />
       <Route
+      
         path="/space/:space_uuid/:space_name/files"
         element={
           <SpaceProvider>
@@ -232,13 +233,16 @@ export const ProfRoutes = () => {
         }
       />
       <Route
-        path="/space/:space_uuid/:space_name/:task_id/:task_title/:file_uuid/:file_name"
+        path="/space/:space_uuid/:space_name/files/:file_uuid/:file_name"
         element={
           <SpaceProvider>
               <CreateDocumentPage />
           </SpaceProvider>
         }
       />
+
+
+      
     </Routes>
   );
 };
