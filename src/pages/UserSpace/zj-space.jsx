@@ -1241,7 +1241,7 @@ const UserPage = () => {
                                                   "Unknown User"}
                                               </span>
                                               <span className="text-gray-400 text-xs">
-                                                {timeAgo(post?.created_at)}
+                                                {timeAgo(comment?.created_at)}
                                               </span>
                                             </div>
                                             <p className="text-gray-200 text-sm whitespace-pre-wrap">
