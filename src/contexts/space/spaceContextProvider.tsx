@@ -1,405 +1,350 @@
-// services/spaceService.ts
-import { api } from "../../lib/api";
+import React, { ReactNode, useState } from "react";
+import { SpaceContext, SpaceContextType } from "./spaceContext";
+import { spaceService } from "../../services/spaceService";
 import {
   Space,
   SpaceCreateData,
   ApiResponse,
   SpacePendingInvitation,
+  SpaceMemberProfile,
+  Task,
+  DraftTask,
+  TaskCreateData,
 } from "../../types/space";
+import { useUser } from "../user/useUser";
+import {
+  useQuery,
+  useQueryClient,
+  useMutation,
+  UseMutationResult,
+} from "@tanstack/react-query";
 
-class SpaceService {
-  async createSpace(spaceData: SpaceCreateData): Promise<ApiResponse<Space>> {
-    try {
-      const response = await api.post<ApiResponse<Space>>("/spaces/", {
-        space_name: spaceData.space_name,
-        description: spaceData.description || "",
-        settings: spaceData.settings || { space_cover: null, max_member: 10 },
-      });
-
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to create space",
-      };
-    }
-  }
-  async createCourseSpace(
-    spaceData: SpaceCreateData,
-  ): Promise<ApiResponse<Space>> {
-    try {
-      const response = await api.post<ApiResponse<Space>>(
-        "/spaces/course-space",
-        {
-          space_name: spaceData.space_name,
-          description: spaceData.description || "",
-          settings: spaceData.settings || { space_cover: null, max_member: 50 },
-        },
-      );
-
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message:
-          error.response?.data?.message || "Failed to create course space",
-      };
-    }
-  }
-
-  async getUserSpaces(): Promise<ApiResponse<Space[]>> {
-    try {
-      const response = await api.get<ApiResponse<Space[]>>("/spaces/all");
-      const data = Array.isArray(response.data?.data) ? response.data.data : [];
-      console.log(response);
-      return {
-        success: response.data.success,
-        message: response.data.message,
-        data,
-      };
-      // return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to fetch spaces",
-        data: [],
-      };
-    }
-  }
-
-  async getCourseSpaces(): Promise<ApiResponse<Space[]>> {
-    try {
-      const response = await api.get<ApiResponse<Space[]>>(
-        "/spaces/course-spaces",
-      );
-      const data = Array.isArray(response.data?.data) ? response.data.data : [];
-      console.log(response);
-      return {
-        success: response.data.success,
-        message: response.data.message,
-        data,
-      };
-      // return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to fetch spaces",
-        data: [],
-      };
-    }
-  }
-
-  async getSpace(uuid: string): Promise<ApiResponse<Space>> {
-    try {
-      const response = await api.get<ApiResponse<Space>>(`/spaces/${uuid}`);
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Space not found",
-      };
-    }
-  }
-
-  async getAllFriendSpaces(): Promise<ApiResponse<Space[]>> {
-    try {
-      const response = await api.get<ApiResponse<Space[]>>("/spaces/shared");
-      const data = Array.isArray(response.data?.data) ? response.data.data : [];
-      console.log(response);
-      return {
-        success: response.data.success,
-        message: response.data.message,
-        data,
-      };
-      // return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to fetch spaces",
-        data: [],
-      };
-    }
-  }
-
-  async joinSpace(space_uuid: string): Promise<ApiResponse> {
-    try {
-      const response = await api.post<ApiResponse>("/spaces/join", {
-        space_uuid,
-      });
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to join space",
-      };
-    }
-  }
-
-  async getAllPendingInvitations(
-    space_uuid: string,
-  ): Promise<ApiResponse<SpacePendingInvitation[]>> {
-    try {
-      const response = await api.get<ApiResponse<SpacePendingInvitation[]>>(
-        `/spaces/${space_uuid}/invitations`,
-      );
-      // return response.data
-      const data = Array.isArray(response.data?.data) ? response.data.data : [];
-      return {
-        success: response.data.success,
-        message: response.data.message,
-        data,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        message:
-          error.response?.data?.message || "Space Pending Inivation Not Found",
-      };
-    }
-  }
-
-  async acceptInvitation(
-    account_id: number,
-    space_uuid: string,
-  ): Promise<ApiResponse> {
-    try {
-      const response = await api.patch<ApiResponse>(
-        `/spaces/${space_uuid}/accept`,
-        { user_id: account_id },
-      );
-
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message:
-          error.response?.data?.message || "Space Pending Inivation Not Found",
-      };
-    }
-  }
-
-  async declineInvitation(
-    account_id: number,
-    space_uuid: string,
-  ): Promise<ApiResponse> {
-    try {
-      const response = await api.patch<ApiResponse>(
-        `/spaces/${space_uuid}/decline`,
-        { user_id: account_id },
-      );
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message:
-          error.response?.data?.message || "Space Pending Inivation Not Found",
-      };
-    }
-  }
-
-  async getJoinRequests(
-    space_uuid: string,
-  ): Promise<ApiResponse<SpacePendingInvitation[]>> {
-    try {
-      const response = await api.get<ApiResponse<SpacePendingInvitation[]>>(
-        `/spaces/${space_uuid}/join-requests`,
-      );
-      const data = Array.isArray(response.data?.data) ? response.data.data : [];
-      return {
-        success: response.data.success,
-        message: response.data.message,
-        data,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        message:
-          error.response?.data?.message || "Failed to fetch join requests",
-        data: [],
-      };
-    }
-  }
-
-  // Accept a join request
-  async acceptJoinRequest(
-    user_id: number,
-    space_uuid: string,
-  ): Promise<ApiResponse> {
-    try {
-      const response = await api.patch<ApiResponse>(
-        `/spaces/${space_uuid}/accept/${user_id}?status=accepted`,
-      );
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message:
-          error.response?.data?.message || "Failed to accept join request",
-      };
-    }
-  }
-
-  // Decline a join request
-  async declineJoinRequest(
-    user_id: number,
-    space_uuid: string,
-  ): Promise<ApiResponse> {
-    try {
-      const response = await api.patch<ApiResponse>(
-        `/spaces/${space_uuid}/decline/${user_id}?status=declined`,
-      );
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message:
-          error.response?.data?.message || "Failed to decline join request",
-      };
-    }
-  }
-
-  async leaveSpace(spaceUuid: string): Promise<ApiResponse> {
-    try {
-      const response = await api.delete<ApiResponse>(
-        `/spaces/${spaceUuid}/leave`,
-      );
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to leave space",
-      };
-    }
-  }
-
-  async deleteSpace(spaceUuid: string): Promise<ApiResponse> {
-    try {
-      console.log(`SPACE UUID ${spaceUuid}`);
-      const response = await api.delete<ApiResponse>(`/spaces/${spaceUuid}`);
-
-      console.log(response.data);
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to leave space",
-      };
-    }
-  }
-
-  async removeUserFromSpace(
-    space_id: string,
-    userId: number,
-  ): Promise<ApiResponse> {
-    try {
-      console.log(`SPACE UUID ${space_id}`);
-      const response = await api.delete<ApiResponse>(
-        `/spaces/${space_id}/${userId}`,
-      );
-
-      console.log(response.data);
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to remove  space",
-      };
-    }
-  }
-
-  // Tasks
-  async uploadTask(
-    space_id: number,
-    title: string,
-    instruction: string,
-    scoring: number,
-    status: string,
-    dueDate: string,
-    groupsData: any[],
-  ) {
-    try {
-      const response = await api.post(`/tasks/upload`, {
-        space_id,
-        title,
-        instruction,
-        scoring,
-        status,
-        due_date: dueDate,
-        groupsData,
-      });
-      return response.data;
-    } catch (err: any) {
-      return {
-        success: false,
-        message: err.response?.data?.message || "Failed to upload task",
-      };
-    }
-  }
-
-  async draftTask(
-    spaceId: string,
-    title: string,
-    instruction: string,
-    scoring: number,
-    dueDate: string,
-    groupsData: any[],
-  ) {
-    try {
-      const response = await api.post(`/tasks/draft`, {
-        space_id: spaceId,
-        title,
-        instruction,
-        scoring,
-        due_date: dueDate,
-        groupsData,
-      });
-      return response.data;
-    } catch (err: any) {
-      return {
-        success: false,
-        message: err.response?.data?.message || "Failed to draft task",
-      };
-    }
-  }
-
-  async getUploadedTasks(spaceId: string) {
-    try {
-      const response = await api.get(`/tasks/upload/${spaceId}`);
-      return response.data;
-    } catch (err: any) {
-      return {
-        success: false,
-        message:
-          err.response?.data?.message || "Failed to fetch uploaded tasks",
-      };
-    }
-  }
-
-  async getDraftedTasks(spaceId: string) {
-    try {
-      const response = await api.get(`/tasks/draft/${spaceId}`);
-      return response.data;
-    } catch (err: any) {
-      return {
-        success: false,
-        message: err.response?.data?.message || "Failed to fetch drafted tasks",
-      };
-    }
-  }
-
-  async updateTaskStatus(taskId: number, newStatus: string) {
-    try {
-      const response = await api.patch(`/tasks/${taskId}/status`, {
-        status: newStatus,
-      });
-      return response.data;
-    } catch (err: any) {
-      return {
-        success: false,
-        message: err.response?.data?.message || "Failed to update task status",
-      };
-    }
-  }
+export interface SpaceProviderProps {
+  children: ReactNode;
 }
 
-export const spaceService = new SpaceService();
+export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
+  const { isAuthenticated } = useUser();
+  const queryClient = useQueryClient();
+  const [currentSpace, setCurrentSpace] = useState<Space | null>(null);
+
+  // ----------------------------
+  // API FUNCTIONS
+  // ----------------------------
+  const fetchUserSpaces = async (): Promise<Space[]> => {
+    try {
+      const res = await spaceService.getUserSpaces();
+      const spaces = res.data || [];
+      return spaces;
+    } catch (error) {
+      console.error("Error fetching user spaces:", error);
+      return [];
+    }
+  };
+
+  const fetchCourseSpaces = async (): Promise<Space[]> => {
+    try {
+      const res = await spaceService.getCourseSpaces();
+      const spaces = res.data || [];
+      return spaces;
+    } catch (error) {
+      console.error("Error fetching user spaces:", error);
+      return [];
+    }
+  };
+
+  const fetchFriendSpaces = async (): Promise<Space[]> => {
+    try {
+      const res = await spaceService.getAllFriendSpaces();
+      const spaces = res.data || [];
+      return spaces;
+    } catch (error) {
+      console.error("Error fetching friend spaces:", error);
+      return [];
+    }
+  };
+
+  const fetchJoinRequests = async (
+    spaceId: string,
+  ): Promise<SpacePendingInvitation[]> => {
+    const res = await spaceService.getJoinRequests(spaceId);
+    return res.data || [];
+  };
+
+  // Task API functions
+  const fetchUploadedTasks = async (spaceId: string): Promise<Task[]> => {
+    try {
+      const res = await spaceService.getUploadedTasks(spaceId);
+      return Array.isArray(res.data) ? res.data : [];
+    } catch (error) {
+      console.error("Error fetching uploaded tasks:", error);
+      return [];
+    }
+  };
+
+  const fetchDraftedTasks = async (spaceId: string): Promise<DraftTask[]> => {
+    try {
+      const res = await spaceService.getDraftedTasks(spaceId);
+      return Array.isArray(res.data) ? res.data : [];
+    } catch (error) {
+      console.error("Error fetching drafted tasks:", error);
+      return [];
+    }
+  };
+
+  // ----------------------------
+  // QUERIES
+  // ----------------------------
+  const { data: userSpaces = [], isLoading: userSpacesLoading } = useQuery({
+    queryKey: ["userSpaces"],
+    queryFn: fetchUserSpaces,
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+
+  const { data: courseSpaces = [], isLoading: courseSpacesLoading } = useQuery({
+    queryKey: ["courseSpaces"],
+    queryFn: fetchCourseSpaces,
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+
+  const { data: friendSpaces = [], isLoading: friendSpacesLoading } = useQuery({
+    queryKey: ["friendSpaces"],
+    queryFn: fetchFriendSpaces,
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+
+  const useJoinRequests = (spaceId: string, isAuthenticated: boolean) =>
+    useQuery({
+      queryKey: ["joinRequests", spaceId],
+      queryFn: () => fetchJoinRequests(spaceId),
+      enabled: !!spaceId && isAuthenticated,
+
+      // Data is considered fresh for 30 seconds
+      staleTime: 30_000, // 30 seconds
+
+      // Unused data stays in cache for 5 minutes
+      // cacheTime: 300_000, // 5 minutes
+
+      // Refetch stale data when window/tab regains focus
+      refetchOnWindowFocus: true,
+
+      // Optional: Poll every 30 seconds while component is mounted
+      refetchInterval: 30_000,
+
+      // Reduce refetching on reconnect if data is fresh
+      refetchOnReconnect: true,
+    });
+
+  // Task queries
+  const useUploadedTasks = (spaceId: string) =>
+    useQuery({
+      queryKey: ["uploadedTasks", spaceId],
+      queryFn: () => fetchUploadedTasks(spaceId),
+      enabled: !!spaceId && isAuthenticated,
+      staleTime: 30_000,
+    });
+
+  const useDraftedTasks = (spaceId: string) =>
+    useQuery({
+      queryKey: ["draftedTasks", spaceId],
+      queryFn: () => fetchDraftedTasks(spaceId),
+      enabled: !!spaceId && isAuthenticated,
+      staleTime: 30_000,
+    });
+
+  const isLoading = userSpacesLoading || friendSpacesLoading;
+
+  // ----------------------------
+  // MUTATIONS
+  // ----------------------------
+  const createSpace = async (
+    data: SpaceCreateData,
+  ): Promise<ApiResponse<Space>> => {
+    const result = await spaceService.createSpace(data);
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    return result;
+  };
+
+  const createCourseSpace = async (
+    data: SpaceCreateData,
+  ): Promise<ApiResponse<Space>> => {
+    const result = await spaceService.createCourseSpace(data);
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    return result;
+  };
+
+  const joinSpace = async (inviteCode: string): Promise<ApiResponse> => {
+    const spaceuuid = inviteCode.split("=").pop() || "";
+    const result = await spaceService.joinSpace(spaceuuid);
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    return result;
+  };
+
+  const acceptJoinRequest = async (userId: number, spaceId: string) => {
+    await spaceService.acceptJoinRequest(userId, spaceId);
+    queryClient.invalidateQueries({ queryKey: ["joinRequests", spaceId] });
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+  };
+
+  const declineJoinRequest = async (userId: number, spaceId: string) => {
+    await spaceService.declineJoinRequest(userId, spaceId);
+    queryClient.invalidateQueries({ queryKey: ["joinRequests", spaceId] });
+  };
+
+  const leaveSpace = async (spaceId: string) => {
+    await spaceService.leaveSpace(spaceId);
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
+  };
+
+  const deleteSpace = async (spaceId: string) => {
+    await spaceService.deleteSpace(spaceId);
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
+  };
+
+  const removeUserFromSpace = async (spaceId: string, userId: number) => {
+    await spaceService.removeUserFromSpace(spaceId, userId);
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
+  };
+
+  // Invitation functions
+  const getAllPendingInvitations = async (spaceUuid: string) => {
+    const result = await spaceService.getAllPendingInvitations(spaceUuid);
+    return result;
+  };
+
+  const acceptInvitation = async (accountId: number, spaceUuid: string) => {
+    const result = await spaceService.acceptInvitation(accountId, spaceUuid);
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    return result;
+  };
+
+  const declineInvitation = async (accountId: number, spaceUuid: string) => {
+    const result = await spaceService.declineInvitation(accountId, spaceUuid);
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    return result;
+  };
+
+  // Task mutations
+  const uploadTaskMutation = useMutation({
+    mutationFn: ({
+      spaceId,
+      taskData,
+    }: {
+      spaceId: number;
+      taskData: TaskCreateData;
+    }) =>
+      spaceService.uploadTask(
+        spaceId,
+        taskData.title,
+        taskData.instruction || "",
+        taskData.scoring || 0,
+        taskData.status,
+        taskData.due_date,
+        taskData.groupsData || [],
+      ),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["uploadedTasks", variables.spaceId],
+      });
+    },
+  });
+
+  const draftTaskMutation = useMutation({
+    mutationFn: ({
+      spaceId,
+      taskData,
+    }: {
+      spaceId: string;
+      taskData: TaskCreateData;
+    }) =>
+      spaceService.draftTask(
+        spaceId,
+        taskData.title,
+        taskData.instruction || "",
+        taskData.scoring || 0,
+        taskData.due_date,
+        taskData.groupsData || [],
+      ),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["draftedTasks", variables.spaceId],
+      });
+    },
+  });
+
+  // Update task status mutation
+  const updateTaskStatusMutation = useMutation({
+    mutationFn: ({
+      taskId,
+      newStatus,
+    }: {
+      taskId: number;
+      newStatus: string;
+    }) => spaceService.updateTaskStatus(taskId, newStatus),
+    onSuccess: (_, variables) => {
+      // Invalidate both tasks queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ["uploadedTasks"] });
+      queryClient.invalidateQueries({ queryKey: ["draftedTasks"] });
+    },
+  });
+
+  // ----------------------------
+  // CONTEXT VALUE
+  // ----------------------------
+  const contextValue: SpaceContextType = {
+    // UI state
+    currentSpace,
+    setCurrentSpace,
+
+    // Server data
+    userSpaces,
+    courseSpaces,
+    friendSpaces,
+    isLoading,
+
+    // Queries
+    useJoinRequests,
+    useUploadedTasks, // New: Task queries
+    useDraftedTasks, // New: Task queries
+
+    // Mutations
+    createSpace,
+    createCourseSpace,
+    joinSpace,
+    acceptJoinRequest,
+    declineJoinRequest,
+    leaveSpace,
+    deleteSpace,
+    removeUserFromSpace,
+
+    // Invitation mutations
+    getAllPendingInvitations,
+    acceptInvitation,
+    declineInvitation,
+
+    // Task mutations
+    uploadTaskMutation,
+    draftTaskMutation,
+    updateTaskStatusMutation,
+  };
+
+  return (
+    <SpaceContext.Provider value={contextValue}>
+      {children}
+    </SpaceContext.Provider>
+  );
+};
