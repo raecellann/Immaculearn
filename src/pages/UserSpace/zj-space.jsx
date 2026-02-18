@@ -1019,55 +1019,56 @@ const UserPage = () => {
             {/* RIGHT CONTENT - 70% */}
             <div className="w-full lg:w-[70%] space-y-6">
               {/* CREATE POST */}
-              <div
-                className={`
+              {isOwnerSpace && (
+                <div
+                  className={`
                   bg-white rounded-xl border cursor-text transition
                   ${isFocused ? "border-black" : "border-transparent"}
                   hover:border-black
                 `}
-                onClick={() => editorRef.current?.focus()}
-              >
-                <div className="relative p-6">
-                  {/* AVATAR */}
-                  <img
-                    src={
-                      user?.profile_pic ||
-                      "/src/assets/HomePage/frieren-avatar.jpg"
-                    }
-                    alt="Avatar"
-                    className="absolute left-6 top-6 w-10 h-10 rounded-full"
-                  />
-
-                  {/* EDITOR */}
-                  <div
-                    ref={editorRef}
-                    contentEditable
-                    suppressContentEditableWarning
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => {
-                      if (editorRef.current.innerText.trim() === "") {
-                        setIsFocused(false);
+                  onClick={() => editorRef.current?.focus()}
+                >
+                  <div className="relative p-6">
+                    {/* AVATAR */}
+                    <img
+                      src={
+                        user?.profile_pic ||
+                        "/src/assets/HomePage/frieren-avatar.jpg"
                       }
-                    }}
-                    onInput={() => {
-                      let text = editorRef.current.innerText;
+                      alt="Avatar"
+                      className="absolute left-6 top-6 w-10 h-10 rounded-full"
+                    />
 
-                      if (text.length > MAX_CHAR) {
-                        text = text.substring(0, MAX_CHAR);
-                        editorRef.current.innerText = text;
+                    {/* EDITOR */}
+                    <div
+                      ref={editorRef}
+                      contentEditable
+                      suppressContentEditableWarning
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => {
+                        if (editorRef.current.innerText.trim() === "") {
+                          setIsFocused(false);
+                        }
+                      }}
+                      onInput={() => {
+                        let text = editorRef.current.innerText;
 
-                        // Move cursor to end
-                        const range = document.createRange();
-                        const sel = window.getSelection();
-                        range.selectNodeContents(editorRef.current);
-                        range.collapse(false);
-                        sel.removeAllRanges();
-                        sel.addRange(range);
-                      }
+                        if (text.length > MAX_CHAR) {
+                          text = text.substring(0, MAX_CHAR);
+                          editorRef.current.innerText = text;
 
-                      setCharCount(text.length);
-                    }}
-                    className="
+                          // Move cursor to end
+                          const range = document.createRange();
+                          const sel = window.getSelection();
+                          range.selectNodeContents(editorRef.current);
+                          range.collapse(false);
+                          sel.removeAllRanges();
+                          sel.addRange(range);
+                        }
+
+                        setCharCount(text.length);
+                      }}
+                      className="
                       editor
                       w-full
                       min-h-[40px]
@@ -1079,51 +1080,52 @@ const UserPage = () => {
                       py-2
                       outline-none
                     "
-                  />
+                    />
 
-                  {/* ACTIONS */}
-                  {isFocused && (
-                    <>
-                      {/* FORMAT */}
+                    {/* ACTIONS */}
+                    {isFocused && (
+                      <>
+                        {/* FORMAT */}
 
-                      <div className="mt-4 border-t border-gray-300" />
+                        <div className="mt-4 border-t border-gray-300" />
 
-                      {/* FOOTER */}
-                      <div className="mt-4 flex justify-between items-center">
-                        <div>
-                          <span
-                            className={`text-xs sm:text-sm ${
-                              charCount > MAX_CHAR
-                                ? "text-red-500"
-                                : "text-gray-500"
-                            }`}
-                          >
-                            {charCount}/{MAX_CHAR}
-                          </span>
+                        {/* FOOTER */}
+                        <div className="mt-4 flex justify-between items-center">
+                          <div>
+                            <span
+                              className={`text-xs sm:text-sm ${
+                                charCount > MAX_CHAR
+                                  ? "text-red-500"
+                                  : "text-gray-500"
+                              }`}
+                            >
+                              {charCount}/{MAX_CHAR}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
+                            <button
+                              onClick={() => {
+                                setIsFocused(false);
+                                editorRef.current.innerHTML = "";
+                              }}
+                              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleCreatePost}
+                              disabled={isCreatingPost}
+                              className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {isCreatingPost ? "Posting..." : "Post"}
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
-                          <button
-                            onClick={() => {
-                              setIsFocused(false);
-                              editorRef.current.innerHTML = "";
-                            }}
-                            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={handleCreatePost}
-                            disabled={isCreatingPost}
-                            className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {isCreatingPost ? "Posting..." : "Post"}
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* POSTS FEED */}
               <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-6">
