@@ -1,23 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../component/profsidebar";
-import { useFileManager } from "../../hooks/useFileManager";
-import Button from "../component/Button";
-import Logout from "../component/logout";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
+import { useFileManager } from "../../hooks/useFileManager";
 
 const ProfFilePage = () => {
-  const [showModal, setShowModal] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [showLogout, setShowLogout] = useState(false);
   const navigate = useNavigate();
 
-  const headerRef = useRef(null);
-  const lastScroll = useRef(0);
+  // sticky header scroll state
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
-  const { isAuthenticated } = useUser();
-  const { userSpaces, courseSpaces } = useSpace();
+  const { isAuthenticated, user } = useUser();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -25,20 +21,74 @@ const ProfFilePage = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  // 🔹 Hide-on-scroll header
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setShowHeader(false); // scrolling down
+      } else {
+        setShowHeader(true); // scrolling up
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
+
+  const { userSpaces, courseSpaces, friendSpaces } = useSpace();
+  // const { space_uuid, space_name } = useParams();
+
+  
+  // const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+
+  const allSpaces = new Set([
+    ...(userSpaces || []).map(space => space.space_uuid), ...(courseSpaces || []).map(space => space.space_uuid)]
+  );
+
+  const sharedSpaces = (friendSpaces || []).filter(space =>
+    !allSpaces.has(space.space_uuid) &&
+    space.members?.some(member => member.account_id === user?.id)
+  );
+  // Remove duplicates by space_id
+  // const uniqueSpaces = allSpaces.filter(
+  //   (space, index, self) =>
+  //     index === self.findIndex(s => s.space_id === space.space_id)
+  // );
+  // // const currentSpace = allSpaces.find((space) => space.space_uuid === space_uuid);
+
+  // console.log(uniqueSpaces);
+
+
+  // const { list } = useFileManager(currentSpace?.space_id);
+  // const files = list.data || [];
+
   // Use actual space data instead of hardcoded array
   const spaces = [
-    // Your spaces (Professor's personal spaces)
+    // Your spaces
     ...(userSpaces || []).map(space => ({ 
       name: space.space_name, 
       category: "your-space",
-      space_uuid: space.space_uuid
+      space_uuid: space.space_uuid 
     })),
-    // Course spaces (Professor's course spaces)
+    // Course spaces
     ...(courseSpaces || []).map(space => ({ 
       name: space.space_name, 
       category: "course-space",
-      space_uuid: space.space_uuid
-    }))
+      space_uuid: space.space_uuid 
+    })),
+    // Friend spaces (excluding user's own spaces)
+    ...(friendSpaces || [])
+      .filter(space => !userSpaces?.some(userSpace => userSpace.space_id === space.space_id))
+      .map(space => ({ 
+        name: space.space_name, 
+        category: "friends-space",
+        space_uuid: space.space_uuid 
+      }))
   ];
 
   const spacesByCategory = spaces.reduce((acc, space) => {
@@ -49,37 +99,19 @@ const ProfFilePage = () => {
     return acc;
   }, {
     'your-space': [],
-    'course-space': []
+    'course-space': [],
+    'friends-space': []
   });
-
-  // 🔹 Hide-on-scroll header
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScroll = window.pageYOffset;
-
-      if (headerRef.current) {
-        if (currentScroll > lastScroll.current) {
-          headerRef.current.style.transform = "translateY(-100%)";
-        } else {
-          headerRef.current.style.transform = "translateY(0)";
-        }
-      }
-
-      lastScroll.current = currentScroll;
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-      {/* Desktop Sidebar */}
+
+      {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar />
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile + Tablet Overlay */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -87,21 +119,22 @@ const ProfFilePage = () => {
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile + Tablet Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col">
+
         {/* 🔥 Sticky Mobile Header */}
         <div
-          ref={headerRef}
-          className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
-          transition-transform duration-300"
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
         >
           <div className="p-4 flex items-center gap-4">
             <button
@@ -123,21 +156,22 @@ const ProfFilePage = () => {
           {/* Your Space Files */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
-            {userSpaces?.length === 0 ? (
+            {spacesByCategory['your-space']?.length === 0 ? (
               <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
                 No space files yet
               </div>
-            ) : userSpaces?.length > 0 ? (
+            ) : spacesByCategory['your-space']?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {userSpaces.map((space, index) => (
+                {spacesByCategory['your-space'].map((space, index) => (
                   <div
                     key={`your-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/prof/files/${space.space_uuid}/${space.space_name}/${space.space_uuid}/${space.space_name}`)}
+                    onClick={() => navigate(`/prof/files/${encodeURIComponent(space.name)}/${space.space_uuid}`)}
+
                   >
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.name}</p>
                     </div>
                   </div>
                 ))}
@@ -159,11 +193,11 @@ const ProfFilePage = () => {
                   <div
                     key={`course-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/prof/files/${space.space_uuid}/${space.space_name}/${space.space_uuid}/${space.space_name}`)}
+                    onClick={() => navigate(`/prof/files/${encodeURIComponent(space.name)}/${space.space_uuid || ''}`)}
                   >
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.name}</p>
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.name}</p>
                     </div>
                   </div>
                 ))}
@@ -172,66 +206,34 @@ const ProfFilePage = () => {
             <div className="border-b border-gray-700 my-6"></div>
           </div>
 
-        </div>
-      </div>
-
-      {/* ✅ MODAL RESTORED */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-          <div className="bg-[#1F242D] p-6 rounded-lg w-[90%] max-w-[400px] shadow-lg">
-            <h2 className="text-xl font-semibold mb-4 text-center">
-              Upload New File
-            </h2>
-
-            <form className="flex flex-col gap-3" onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target);
-              handleFileUpload(formData);
-            }}>
-              <input
-                type="text"
-                name="fileName"
-                placeholder="File Name"
-                className="p-2 bg-[#2A2E36] rounded-md text-white outline-none"
-                required
-              />
-              <input
-                type="text"
-                name="spaceName"
-                placeholder="Space Name"
-                className="p-2 bg-[#2A2E36] rounded-md text-white outline-none"
-                required
-              />
-            </form>
-
-            <div className="flex justify-end mt-5 gap-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-3 py-1 bg-gray-600 rounded-md hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={(e) => {
-                  const form = document.querySelector('form');
-                  if (form && form.checkValidity()) {
-                    const formData = new FormData(form);
-                    handleFileUpload(formData);
-                  } else {
-                    form?.reportValidity();
-                  }
-                }}
-                className="px-3 py-1 bg-blue-500 rounded-md hover:bg-blue-600"
-              >
-                Save
-              </button>
-            </div>
+          {/* Friends Space Files */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
+            {sharedSpaces?.length === 0 ? (
+              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                No friends space files yet
+              </div>
+            ) : sharedSpaces?.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+                {sharedSpaces.map((space, index) => (
+                  <div
+                    key={`friends-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => navigate(`/prof/files/${encodeURIComponent(space.name)}/${space.space_uuid || ''}`)}
+                  >
+                    <span className="text-xl">📁</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            <div className="border-b border-gray-700 my-6"></div>
           </div>
         </div>
-      )}
 
-      {/* LOGOUT MODAL */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+      </div>
     </div>
   );
 };

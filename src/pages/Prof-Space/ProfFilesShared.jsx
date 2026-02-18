@@ -10,9 +10,6 @@ import { useFileManager } from "../../hooks/useFileManager.js";
 import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 
-
-
-
 const ProfFilesShared = () => {
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams();
@@ -235,6 +232,16 @@ const ProfFilesShared = () => {
     );
   };
 
+    const formatFileTitle = (filename) => {
+  if (!filename) return "";
+
+  const decodedFileName = decodeURIComponent(filename);
+  const nameWithoutExtension = decodedFileName.split(".")[0];
+  const cleanTitle = nameWithoutExtension.split("_")[0];
+
+  return cleanTitle;
+};
+
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
@@ -415,7 +422,7 @@ const ProfFilesShared = () => {
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
-                    <span>{file.filename}</span>
+                    <span>{formatFileTitle(file.filename)}</span>
                   </div>
                   <div>
                     {new Date(file.created_at).toLocaleDateString()}
@@ -440,7 +447,7 @@ const ProfFilesShared = () => {
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
-                    <p className="font-semibold">{file.filename}</p>
+                    <p className="font-semibold">{formatFileTitle(file.filename)}</p>
                   </div>
 
                   <p className="text-sm text-gray-400">

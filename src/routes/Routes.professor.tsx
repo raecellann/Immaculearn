@@ -11,6 +11,7 @@ import ProfTaskPage from "../pages/Prof-Space/ProfTaskPage";
 import ProfFilesShared from "../pages/Prof-Space/ProfFilesShared";
 import ProfPeoplePage from "../pages/Prof-Space/ProfPeoplePage";
 import { SpaceProvider } from "../contexts/space/spaceContextProvider";
+import ViewFilePage from "../pages/Files/components/ViewFile.jsx";
 
 import ProfCreateSpace from "../pages/Prof-MainSpace/components/prof-create-space.jsx";
 import { useUser } from "../contexts/user/useUser";
@@ -75,6 +76,8 @@ export const ProfRoutes = () => {
       
       <Route path="acc-settings" element={<ProfProfilePage />} />
       <Route path="files" element={<ProfFilePage />} />
+
+      
       <Route path="files-by-subject" element={<ProfFilesBySubject />} />
 
       {/* <Route path="files-by-subject" element={<ProfMain />} /> */}
@@ -118,15 +121,21 @@ export const ProfRoutes = () => {
             <ProfNotificationPage />
         }
       />
-      
-      <Route
-        path="files"
-        element={
-            <ProfFilePage />
-        }
-      />
+
       <Route 
-        path="files/:space_uuid/:space_name/:file_uuid/:file_name" 
+        
+
+        path="/files/:space_name/:space_uuid/:file_name/:file_uuid"
+        element={
+          <ProtectedRoute>
+            <ViewFilePage />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+
+        path="files/:space_name/:space_uuid"
         element={
           <ProtectedRoute>
             <ProfViewFiles />
@@ -240,7 +249,6 @@ export const ProfRoutes = () => {
           </SpaceProvider>
         }
       />
-
 
       
     </Routes>

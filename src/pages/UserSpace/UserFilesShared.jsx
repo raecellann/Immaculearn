@@ -244,6 +244,16 @@ const UserFilesShared = () => {
       });
   };
 
+    const formatFileTitle = (filename) => {
+  if (!filename) return "";
+
+  const decodedFileName = decodeURIComponent(filename);
+  const nameWithoutExtension = decodedFileName.split(".")[0];
+  const cleanTitle = nameWithoutExtension.split("_")[0];
+
+  return cleanTitle;
+};
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* ================= DESKTOP SIDEBAR ================= */}
@@ -469,7 +479,7 @@ const UserFilesShared = () => {
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
-                    <span>{file.filename}</span>
+                    <span>{formatFileTitle(file.filename)}</span>
                   </div>
                   
                   <div>
@@ -496,7 +506,7 @@ const UserFilesShared = () => {
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
-                    <p className="font-semibold">{file.filename}</p>
+                    <p className="font-semibold">{formatFileTitle(file.filename)}</p>
                   </div>
 
                   <p className="text-sm text-gray-400">
@@ -646,7 +656,7 @@ const UserFilesShared = () => {
             {/* Content */}
             <div className="p-6">
               <p className="text-white mb-4">
-                What would you like to do with "<span className="font-semibold">{selectedFile.filename}</span>"?
+                What would you like to do with "<span className="font-semibold">{formatFileTitle(selectedFile.filename)}</span>"?
               </p>
 
               <div className="flex justify-end gap-3">

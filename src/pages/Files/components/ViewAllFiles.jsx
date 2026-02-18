@@ -64,6 +64,16 @@ const ViewAllFilesPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const formatFileTitle = (filename) => {
+  if (!filename) return "";
+
+  const decodedFileName = decodeURIComponent(filename);
+  const nameWithoutExtension = decodedFileName.split(".")[0];
+  const cleanTitle = nameWithoutExtension.split("_")[0];
+
+  return cleanTitle;
+};
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
 
@@ -142,7 +152,8 @@ const ViewAllFilesPage = () => {
                   </p>
 
                   <p className="text-blue-400 font-medium break-words">
-                    {file.filename}
+                    {formatFileTitle(file.filename)}
+
                   </p>
 
                   <p className="text-sm text-gray-300">
@@ -204,8 +215,8 @@ const ViewAllFilesPage = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-medium text-sm truncate max-w-[200px]" title={file.filename}>
-                            {file.filename}
+                          <div className="font-medium text-sm truncate max-w-[200px]" title={formatFileTitle(file.filename)}>
+                            {formatFileTitle(file.filename)}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-gray-300 text-sm">
@@ -260,7 +271,7 @@ const ViewAllFilesPage = () => {
                         </span>
                       </td>
 
-                      <td className="px-6 py-4 font-medium">{file.filename}</td>
+                      <td className="px-6 py-4 font-medium">{formatFileTitle(file.filename)}</td>
 
                       <td className="px-6 py-4 text-gray-300">
                         {new Date(file.created_at).toLocaleDateString()}
