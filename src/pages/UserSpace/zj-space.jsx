@@ -979,7 +979,9 @@ const UserPage = () => {
             {/* LEFT SIDEBAR - 30% */}
             <div className="w-full lg:w-[30%]">
               {/* REMINDERS - STICKY */}
-              <div className="sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-4">
+              <div
+                className={`sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
+              >
                 <h2 className="font-bold mb-4">Reminders</h2>
                 <div className="text-center py-6">
                   <div className="text-gray-500 mb-2">
@@ -1128,7 +1130,9 @@ const UserPage = () => {
               )}
 
               {/* POSTS FEED */}
-              <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-6 h-full">
+              <div
+                className={`bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${!isOwnerSpace && "h-full"} `}
+              >
                 <h2 className="font-bold mb-4">Announcement Feed</h2>
 
                 {isLoadingPosts ? (
