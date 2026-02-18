@@ -49,6 +49,18 @@ const SpacePage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && !event.target.closest('.menu-container')) {
+        setShowMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
+
   // Join Space Functionality (from sample)
   const handleJoinRequestSubmit = async () => {
     if (!joinCode.trim()) {
@@ -183,40 +195,60 @@ const SpacePage = () => {
                 userSpaces.map((space, i) => (
                   <div
                     key={i}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => navigate(`/space/${space?.space_uuid}/${space.space_name}`)}
                     className="bg-[#1E242E] rounded-lg overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
                   >
-                    <div className="relative overflow-hidden h-40 bg-gray-800">
-                      <SpaceCover
-                        image={space.image}
-                        name={space.space_name}
-                        className="w-full h-full"
-                      />
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => navigate(`/space/${space?.space_uuid}/${space.space_name}`)}
+                      className="cursor-pointer"
+                    >
+                      <div className="relative overflow-hidden h-40 bg-gray-800">
+                        <SpaceCover
+                          image={space.image}
+                          name={space.space_name}
+                          className="w-full h-full"
+                        />
 
-                      <div className="absolute top-3 right-3 z-20">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowMenu(showMenu === `your-${i}` ? null : `your-${i}`);
-                          }}
-                          className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
-                        >
-                          <span className="text-lg font-bold">...</span>
-                        </button>
+                      </div>
+
+                      <div className="p-4">
+                        <h3 className="font-semibold text-white text-sm truncate">
+                          {capitalizeWords(space.space_name) + "'s Space"}
+                        </h3>
+                        <p className="text-gray-400 text-xs mt-1">
+                          {space.members != null
+                            ? `${space?.members?.length} Members`
+                            : "No members"}
+                        </p>
                       </div>
                     </div>
-
-                    <div className="p-4">
-                      <h3 className="font-semibold text-white text-sm truncate">
-                        {capitalizeWords(space.space_name) + "'s Space"}
-                      </h3>
-                      <p className="text-gray-400 text-xs mt-1">
-                        {space.members != null
-                          ? `${space?.members?.length} Members`
-                          : "No members"}
-                      </p>
+                    
+                    {/* Three dots menu */}
+                    <div className="absolute top-2 right-2 menu-container">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMenu(showMenu === space.space_uuid ? null : space.space_uuid);
+                        }}
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      
+                      {showMenu === space.space_uuid && (
+                        <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDeleteConfirm(space.space_uuid);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                          >
+                            Delete Space
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -237,29 +269,60 @@ const SpacePage = () => {
                 courseSpaces.map((course, i) => (
                   <div
                     key={i}
-                    onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
-                    className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457]"
+                    className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
                   >
-                    <div className="relative h-48 bg-gray-800">
-                      <SpaceCover
-                        image={course.background_img || course.image}
-                        name={course.space_name}
-                        className="w-full h-full"
-                      />
-                    </div>
+                    <div
+                      onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
+                      className="cursor-pointer"
+                    >
+                      <div className="relative h-48 bg-gray-800">
+                        <SpaceCover
+                          image={course.background_img || course.image}
+                          name={course.space_name}
+                          className="w-full h-full"
+                        />
+                      </div>
 
-                    <div className="p-4">
-                      <h3 className="font-semibold text-white text-sm mb-1 truncate">
-                        {capitalizeWords(course.space_name)}'s Space
-                      </h3>
-                      <p className="text-gray-400 text-xs mb-1">
-                        {course.members?.filter(m => m.role === "creator").map(m => (
-                          <span key={m.account_id}>
-                            {m.account_id === user?.id ? `You` : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])}`}
-                          </span>
-                        ))} • {course.space_type === "course" ? (course.members?.length -1) : (course.members?.length) || 0} Students
-                      </p>
-                      <p className="text-gray-500 text-xs mb-2">Opened just now</p>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-white text-sm mb-1 truncate">
+                          {capitalizeWords(course.space_name)}'s Space
+                        </h3>
+                        <p className="text-gray-400 text-xs mb-1">
+                          {course.members?.filter(m => m.role === "creator").map(m => (
+                            <span key={m.account_id}>
+                              {m.account_id === user?.id ? `You` : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])}`}
+                            </span>
+                          ))} • {course.space_type === "course" ? (course.members?.length -1) : (course.members?.length) || 0} Students
+                        </p>
+                        <p className="text-gray-500 text-xs mb-2">Opened just now</p>
+                      </div>
+                    </div>
+                    
+                    {/* Three dots menu */}
+                    <div className="absolute top-2 right-2 menu-container">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMenu(showMenu === course.space_uuid ? null : course.space_uuid);
+                        }}
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      
+                      {showMenu === course.space_uuid && (
+                        <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowLeaveConfirm(course.space_uuid);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                          >
+                            Leave Space
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -280,53 +343,60 @@ const SpacePage = () => {
                 sharedSpaces.map((space, i) => (
                   <div
                     key={i}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => navigate(`/space/${space?.space_uuid}/${space.space_name}`)}
-                    className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457]"
+                    className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
                   >
-                    <div className="relative h-40 bg-gray-800">
-                      <SpaceCover
-                        image={space.image}
-                        name={space.space_name}
-                        className="w-full h-full"
-                      />
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => navigate(`/space/${space?.space_uuid}/${space.space_name}`)}
+                      className="cursor-pointer"
+                    >
+                      <div className="relative h-40 bg-gray-800">
+                        <SpaceCover
+                          image={space.image}
+                          name={space.space_name}
+                          className="w-full h-full"
+                        />
 
-                      <div className="absolute top-3 right-3 z-20">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowMenu(showMenu === `friend-${i}` ? null : `friend-${i}`);
-                          }}
-                          className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
-                        >
-                          <span className="text-lg font-bold">...</span>
-                        </button>
+                      </div>
 
-                        {showMenu === `friend-${i}` && (
-                          <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
-                            <div className="flex flex-col gap-2">
-                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-[#3B4457] text-white text-sm">
-                                View Details
-                              </button>
-                              <button className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm">
-                                Leave Space
-                              </button>
-                            </div>
-                          </div>
-                        )}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-white text-sm mb-1 truncate">
+                          {capitalizeWords(space.space_name) + "'s Space"}
+                        </h3>
+                        <p className="text-gray-400 text-xs mb-1">
+                          {space.members != null
+                            ? `${space?.members?.length} Members`
+                            : "No members"}
+                        </p>
                       </div>
                     </div>
-
-                    <div className="p-4">
-                      <h3 className="font-semibold text-white text-sm mb-1 truncate">
-                        {capitalizeWords(space.space_name) + "'s Space"}
-                      </h3>
-                      <p className="text-gray-400 text-xs mb-1">
-                        {space.members != null
-                          ? `${space?.members?.length} Members`
-                          : "No members"}
-                      </p>
+                    
+                    {/* Three dots menu */}
+                    <div className="absolute top-2 right-2 menu-container">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMenu(showMenu === space.space_uuid ? null : space.space_uuid);
+                        }}
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      
+                      {showMenu === space.space_uuid && (
+                        <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowLeaveConfirm(space.space_uuid);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                          >
+                            Leave Space
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -340,6 +410,68 @@ const SpacePage = () => {
 
           
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+            <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
+              <h3 className="text-lg font-semibold mb-3">Delete Space</h3>
+              <p className="text-gray-400 text-sm mb-6">
+                Are you sure you want to delete this space? This action cannot be undone.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowDeleteConfirm(null)}
+                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // TODO: implement actual delete logic
+                    console.log("Deleting:", showDeleteConfirm);
+                    setShowDeleteConfirm(null);
+                    setShowMenu(null);
+                  }}
+                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Leave Confirmation Modal */}
+        {showLeaveConfirm && (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+            <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
+              <h3 className="text-lg font-semibold mb-3">Leave Space</h3>
+              <p className="text-gray-400 text-sm mb-6">
+                Are you sure you want to leave this space? You'll need to be re-invited to rejoin.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowLeaveConfirm(null)}
+                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // TODO: implement actual leave logic
+                    console.log("Leaving:", showLeaveConfirm);
+                    setShowLeaveConfirm(null);
+                    setShowMenu(null);
+                  }}
+                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
+                >
+                  Leave
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}

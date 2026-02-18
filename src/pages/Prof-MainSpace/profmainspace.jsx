@@ -7,6 +7,7 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { prefixName } from "../../utils/prefixNameFormat";
 import { formatFullDate } from "../../utils/formatTime";
 import { getGreeting } from "../../utils/greetings";
+import { MoreVertical } from "lucide-react";
 
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -44,6 +45,18 @@ const ProfSpacePage = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && !event.target.closest('.menu-container')) {
+        setShowMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
@@ -129,50 +142,54 @@ const ProfSpacePage = () => {
                 userSpaces?.map((space) => (
                   <div
                     key={space.space_id}
-                    className="group bg-[#1E242E] rounded-lg overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer"
+                    className="group bg-[#1E242E] rounded-lg overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer relative"
                   >
                     <div 
                       onClick={() => navigate(`/prof/space/${space?.space_uuid}/${space.space_name}`)}
-                      className="relative h-40 bg-gray-800 overflow-hidden"
+                      className="cursor-pointer"
                     >
-                      <SpaceCover
-                        image={space.space_cover}
-                        name={space.space_name}
-                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                      />
-                      {/* <img
-                        src={space.space_cover}
-                        alt={space.space_name}
-                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                      /> */}
-                      <div className="absolute top-3 right-3 z-20">
-                        <button
-                          onClick={() => setShowMenu(showMenu === `your-${space.space_id}` ? null : `your-${space.space_id}`)}
-                          className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
-                        >
-                          <span className="text-lg font-bold">...</span>
-                        </button>
-                        {showMenu === `your-${space.space_id}` && (
-                          <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
-                            <div className="flex flex-col gap-2">
-                              <button 
-                                onClick={() => setShowDeleteConfirm(`your-${space.space_id}`)}
-                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
-                              >
-                                Delete Space
-                              </button>
-                            </div>
-                          </div>
-                        )}
+                      <div className="relative h-40 bg-gray-800 overflow-hidden">
+                        <SpaceCover
+                          image={space.space_cover}
+                          name={space.space_name}
+                          className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-white text-sm truncate">
+                          {space.space_name}
+                        </h3>
+                        <p className="text-gray-400 text-xs mt-1">
+                          {space.members.length} Members
+                        </p>
                       </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-white text-sm truncate">
-                        {space.space_name}
-                      </h3>
-                      <p className="text-gray-400 text-xs mt-1">
-                        {space.members.length} Members
-                      </p>
+                    
+                    {/* Three dots menu */}
+                    <div className="absolute top-2 right-2 menu-container">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMenu(showMenu === `your-${space.space_id}` ? null : `your-${space.space_id}`);
+                        }}
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      
+                      {showMenu === `your-${space.space_id}` && (
+                        <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDeleteConfirm(`your-${space.space_id}`);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                          >
+                            Delete Space
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -218,50 +235,54 @@ const ProfSpacePage = () => {
                 courseSpaces?.map((space, id) => (
                   <div
                     key={id}
-                    className="group bg-[#1E242E] rounded-xl overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer"
+                    className="group bg-[#1E242E] rounded-xl overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer relative"
                   >
                     <div 
                       onClick={() => navigate(`/prof/space/${space?.space_uuid}/${space.space_name}`)}
-                      className="relative h-40 bg-gray-800 overflow-hidden"
+                      className="cursor-pointer"
                     >
-                      <SpaceCover
-                        image={space.space_cover}
-                        name={space.space_name}
-                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                      />
-                      {/* <img
-                        src={space.settings?.space_cover || "/src/assets/SpacesCover/default.jpg"}
-                        alt={space.space_name}
-                        className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                      /> */}
-                      <div className="absolute top-3 right-3 z-20">
-                        <button
-                          onClick={() => setShowMenu(showMenu === space.space_id ? null : space.space_id)}
-                          className="bg-black/60 hover:bg-black text-white w-8 h-8 flex items-center justify-center rounded-md transition"
-                        >
-                          <span className="text-lg font-bold">...</span>
-                        </button>
-                        {showMenu === space.space_id && (
-                          <div className="absolute top-10 right-0 bg-[#242B38] rounded-lg shadow-lg p-3 min-w-[160px] z-10 border border-[#3B4457]">
-                            <div className="flex flex-col gap-2">
-                              <button 
-                                onClick={() => setShowLeaveConfirm(space.space_id)}
-                                className="w-full text-center px-3 py-2 rounded-full bg-black border border-red-600 text-red-400 text-sm"
-                              >
-                                Leave Space
-                              </button>
-                            </div>
-                          </div>
-                        )}
+                      <div className="relative h-40 bg-gray-800 overflow-hidden">
+                        <SpaceCover
+                          image={space.space_cover}
+                          name={space.space_name}
+                          className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-white text-sm">
+                          {space.space_name}
+                        </h3>
+                        <p className="text-gray-400 text-xs">
+                          {space.members?.length -1 || 0} Students
+                        </p>
                       </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-white text-sm">
-                        {space.space_name}
-                      </h3>
-                      <p className="text-gray-400 text-xs">
-                        {space.members?.length -1 || 0} Students
-                      </p>
+                    
+                    {/* Three dots menu */}
+                    <div className="absolute top-2 right-2 menu-container">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowMenu(showMenu === space.space_id ? null : space.space_id);
+                        }}
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      
+                      {showMenu === space.space_id && (
+                        <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowLeaveConfirm(space.space_id);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                          >
+                            Leave Space
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -275,16 +296,16 @@ const ProfSpacePage = () => {
 
           {/* Delete Space Confirmation Dialog */}
           {showDeleteConfirm && (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
-                <h3 className="text-lg font-semibold text-white mb-2">Delete Space</h3>
+            <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
+                <h3 className="text-lg font-semibold mb-3">Delete Space</h3>
                 <p className="text-gray-400 text-sm mb-6">
                   Are you sure you want to delete this space? This action cannot be undone.
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setShowDeleteConfirm(null)}
-                    className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                    className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
                   >
                     Cancel
                   </button>
@@ -295,7 +316,7 @@ const ProfSpacePage = () => {
                       setShowDeleteConfirm(null);
                       setShowMenu(null);
                     }}
-                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                    className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
                   >
                     Delete
                   </button>
@@ -306,16 +327,16 @@ const ProfSpacePage = () => {
 
           {/* Leave Space Confirmation Dialog */}
           {showLeaveConfirm && (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm mx-4 border border-[#3B4457]">
-                <h3 className="text-lg font-semibold text-white mb-2">Leave Space</h3>
+            <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
+                <h3 className="text-lg font-semibold mb-3">Delete Space</h3>
                 <p className="text-gray-400 text-sm mb-6">
                   Are you sure you want to leave this space? You'll need to be re-invited to join again.
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setShowLeaveConfirm(null)}
-                    className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white text-sm transition"
+                    className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
                   >
                     Cancel
                   </button>
@@ -326,7 +347,7 @@ const ProfSpacePage = () => {
                       setShowLeaveConfirm(null);
                       setShowMenu(null);
                     }}
-                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition"
+                    className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
                   >
                     Leave
                   </button>

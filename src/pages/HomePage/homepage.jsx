@@ -9,13 +9,13 @@ import {
   GraduationCap,
   FileText,
   Calendar,
+  MoreVertical,
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { SpaceCover } from "../component/spaceCover";
 import ArticlesScrape from "../component/articles_scrape";
-import { prefixName } from "../../utils/prefixNameFormat";
 
 const HomePage1 = () => {
   const { user } = useUser();
@@ -74,6 +74,18 @@ const HomePage1 = () => {
     setCurrentYear(now.getFullYear());
     setToday(now);
   }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMenu && !event.target.closest('.menu-container')) {
+        setShowMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
 
   // Data
   const allSpaces = new Set([
@@ -286,23 +298,54 @@ const HomePage1 = () => {
                     style={{ transform: `translateX(-${slideIndexYourSpace * 100}%)` }}
                   >
                     {Array.from({ length: yourSlideCount }).map((_, idx) => (
-                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full">
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full">
                         {userSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
-                            onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
-                            className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group"
+                            className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative"
                           >
-                            <SpaceCover
-                              image={space.image}
-                              name={space.space_name}
-                              className="w-full flex-shrink-0 aspect-[3/2]"
-                            />
-                            <div className="p-4 flex flex-col justify-between flex-grow">
-                              <h3 className="font-medium truncate">
-                                {capitalizeWords(space.space_name)}'s Space
-                              </h3>
-                              <p className="text-gray-500 text-xs mt-1">Last active • just now</p>
+                            <div
+                              onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
+                              className="cursor-pointer"
+                            >
+                              <SpaceCover
+                                image={space.image}
+                                name={space.space_name}
+                                className="w-full flex-shrink-0 aspect-[3/2]"
+                              />
+                              <div className="p-4 flex flex-col justify-between flex-grow">
+                                <h3 className="font-medium truncate">
+                                  {capitalizeWords(space.space_name)}'s Space
+                                </h3>
+                                <p className="text-gray-500 text-xs mt-1">Last active • just now</p>
+                              </div>
+                            </div>
+                            
+                            {/* Three dots menu */}
+                            <div className="absolute top-2 right-2 menu-container">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowMenu(showMenu === space.space_uuid ? null : space.space_uuid);
+                                }}
+                                className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+                              
+                              {showMenu === space.space_uuid && (
+                                <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowDeleteConfirm(space.space_uuid);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                                  >
+                                    Delete Space
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -351,54 +394,59 @@ const HomePage1 = () => {
                         {courseSpaces?.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((course, i) => (
                           <div
                             key={i}
-                            onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
-                            className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group relative"
+                            className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative"
                           >
-                            <div className="relative">
-                              <SpaceCover
-                                image={course.image}
-                                name={course.space_name}
-                                className="w-full flex-shrink-0 aspect-[3/2]"
-                              />
-                              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowMenu(`course-${i}`);
-                                  }}
-                                  className="bg-black/70 text-white w-8 h-8 rounded-lg flex items-center justify-center"
-                                >
-                                  …
-                                </button>
+                            <div
+                              onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
+                              className="cursor-pointer"
+                            >
+                              <div className="relative">
+                                <SpaceCover
+                                  image={course.image}
+                                  name={course.space_name}
+                                  className="w-full flex-shrink-0 aspect-[3/2]"
+                                />
+                              </div>
+                              <div className="p-4">
+                                <h3 className="font-medium truncate">
+                                  {capitalizeWords(course.space_name)}'s Space
+                                </h3>
+                                <p className="text-gray-400 text-xs mt-1">
+                                  {course.members?.filter(m => m.role === "creator").map(m => (
+                                    <span key={m.account_id}>
+                                      {m.account_id === user?.id ? `You • ` + (course.members?.length - 1) + " Students" : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])} • ` + (course.members?.length - 1) + " Students"}
+                                    </span>
+                                  ))}
+                                </p>
+                                <p className="text-gray-500 text-xs mt-1">Opened just now</p>
                               </div>
                             </div>
-
-                            {showMenu === `course-${i}` && (
-                              <div className="absolute top-12 right-3 bg-[#242B38] rounded-lg shadow-xl p-2 z-20 border border-[#3B4457] min-w-40">
-                                <button className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded text-sm">
-                                  Details
-                                </button>
-                                <button
-                                  className="block w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 rounded text-sm"
-                                  onClick={() => setShowLeaveConfirm(`course-${i}`)}
-                                >
-                                  Leave
-                                </button>
-                              </div>
-                            )}
-
-                            <div className="p-4">
-                              <h3 className="font-medium truncate">
-                                {capitalizeWords(course.space_name)}'s Space
-                              </h3>
-                              <p className="text-gray-400 text-xs mt-1">
-                                {course.members?.filter(m => m.role === "creator").map(m => (
-                                  <span key={m.account_id}>
-                                    {m.account_id === user?.id ? `You • ` + (course.members?.length - 1) + " Students" : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])} • ` + (course.members?.length - 1) + " Students"}
-                                  </span>
-                                ))}
-                              </p>
-                              <p className="text-gray-500 text-xs mt-1">Opened just now</p>
+                            
+                            {/* Three dots menu */}
+                            <div className="absolute top-2 right-2 menu-container">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowMenu(showMenu === course.space_uuid ? null : course.space_uuid);
+                                }}
+                                className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+                              
+                              {showMenu === course.space_uuid && (
+                                <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowLeaveConfirm(course.space_uuid);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                                  >
+                                    Leave Space
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -447,48 +495,53 @@ const HomePage1 = () => {
                         {sharedSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
-                            onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
                             className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative"
                           >
-                            <SpaceCover
-                              image={space.background_img || space.image}
-                              name={space.space_name}
-                              className="w-full flex-shrink-0 aspect-[3/2]"
-                            />
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
+                            <div
+                              onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
+                              className="cursor-pointer"
+                            >
+                              <SpaceCover
+                                image={space.background_img || space.image}
+                                name={space.space_name}
+                                className="w-full flex-shrink-0 aspect-[3/2]"
+                              />
+                              <div className="p-4">
+                                <h3 className="font-medium truncate">
+                                  {capitalizeWords(space.space_name)}'s Space
+                                </h3>
+                                <p className="text-gray-400 text-xs mt-1">
+                                  {space.members?.length || 0} Members
+                                </p>
+                                <p className="text-gray-500 text-xs mt-1">Opened just now</p>
+                              </div>
+                            </div>
+                            
+                            {/* Three dots menu */}
+                            <div className="absolute top-2 right-2 menu-container">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setShowMenu(`friend-${space.space_uuid}`);
+                                  setShowMenu(showMenu === space.space_uuid ? null : space.space_uuid);
                                 }}
-                                className="bg-black/70 text-white w-8 h-8 rounded-lg flex items-center justify-center"
+                                className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                               >
-                                …
+                                <MoreVertical className="w-4 h-4" />
                               </button>
-                            </div>
-
-                            {showMenu === `friend-${space.space_uuid}` && (
-                              <div className="absolute top-12 right-3 bg-[#242B38] rounded-lg shadow-xl p-2 z-20 border border-[#3B4457] min-w-40">
-                                <button className="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded text-sm">
-                                  View Details
-                                </button>
-                                <button
-                                  className="block w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 rounded text-sm"
-                                  onClick={() => setShowLeaveConfirm(`friend-${space.space_uuid}`)}
-                                >
-                                  Leave Space
-                                </button>
-                              </div>
-                            )}
-
-                            <div className="p-4">
-                              <h3 className="font-medium truncate">
-                                {capitalizeWords(space.space_name)}'s Space
-                              </h3>
-                              <p className="text-gray-400 text-xs mt-1">
-                                {space.members?.length || 0} Members
-                              </p>
-                              <p className="text-gray-500 text-xs mt-1">Opened just now</p>
+                              
+                              {showMenu === space.space_uuid && (
+                                <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowLeaveConfirm(space.space_uuid);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                                  >
+                                    Leave Space
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
