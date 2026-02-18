@@ -1128,7 +1128,7 @@ const UserPage = () => {
               )}
 
               {/* POSTS FEED */}
-              <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-6">
+              <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-6 h-full">
                 <h2 className="font-bold mb-4">Announcement Feed</h2>
 
                 {isLoadingPosts ? (
