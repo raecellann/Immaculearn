@@ -886,29 +886,6 @@ const ProfTaskPage = () => {
           {!isCreatingTask ? (
             /* ================= TASKS LIST VIEW ================= */
             <div className="max-w-5xl mx-auto">
-              {/* Add Member Button - Mobile */}
-              {isOwnerSpace && (
-                <div className="md:hidden flex justify-end gap-2 mb-6">
-                  <button 
-                    onClick={handleInviteMember} 
-                    className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
-                  >
-                    Add Member
-                  </button>
-                  <button 
-                    onClick={() => setShowPendingInvitations(true)} 
-                    className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
-                  >
-                    Pending Invites
-                  </button>
-                  <button
-                    onClick={handleDeleteRoom}
-                    className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500 transition text-sm"
-                  >
-                    Delete Room
-                  </button>
-                </div>
-              )}
               <button
                 className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
                 onClick={() => setIsCreatingTask(true)}
