@@ -248,6 +248,24 @@ class SpaceService {
         }
     }
 
+    async removeUserFromSpace(space_id: string, userId: number): Promise<ApiResponse> {
+        try {
+
+            console.log(`SPACE UUID ${space_id}`)
+            const response = await api.delete<ApiResponse>(
+                `/spaces/${space_id}/${userId}`
+            );
+
+            console.log(response.data)
+            return response.data;
+        } catch (error: any) {
+            return {
+                success: false,
+                message: error.response?.data?.message || "Failed to remove  space",
+            };
+        }
+    }
+
 
 
 

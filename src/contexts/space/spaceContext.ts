@@ -46,6 +46,12 @@ export interface SpaceContextType {
   declineJoinRequest: (userId: number, spaceUuid: string) => Promise<any>;
   leaveSpace: (spaceUuid: string) => Promise<any>;
   deleteSpace: (spaceUuid: string) => Promise<any>;
+  removeUserFromSpace: (spaceUuid: string, userId: number) => Promise<any>;
+
+  // Invitation mutations
+  getAllPendingInvitations: (spaceUuid: string) => Promise<any>;
+  acceptInvitation: (accountId: number, spaceUuid: string) => Promise<any>;
+  declineInvitation: (accountId: number, spaceUuid: string) => Promise<any>;
 
   // New: Task mutations
   uploadTaskMutation: UseMutationResult<

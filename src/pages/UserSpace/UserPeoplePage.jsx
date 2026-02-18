@@ -9,7 +9,8 @@ import { useUser } from "../../contexts/user/useUser";
 
 const UserPeoplePage = () => {
   const { user } = useUser();
-  const { userSpaces, friendSpaces, courseSpaces } = useSpace();
+  const { userSpaces, friendSpaces, courseSpaces, removeUserFromSpace } =
+    useSpace();
   const navigate = useNavigate();
   const { space_uuid } = useParams();
 
@@ -37,10 +38,27 @@ const UserPeoplePage = () => {
   }, []);
 
   // Combine user and friend spaces
-  const allSpaces = [...(userSpaces || []), ...(courseSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(courseSpaces || []),
+    ...(friendSpaces || []),
+  ];
   const activeSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
 
-  // Handle not found
+  // Separate creator/admin and other members
+  const creator = activeSpace?.members.find((m) => m.role === "creator") || {
+    account_id: user.id,
+    full_name: "You",
+    profile_pic: user.profile_pic,
+    role: "creator",
+  };
+  const otherMembers =
+    activeSpace?.members.filter((m) => m.role !== "creator") || [];
+
+  // Check if current user is the creator/owner of the space
+  const isOwner = creator.account_id === user.id;
+
+  // Handle not found - moved after all hooks
   if (!activeSpace) {
     return (
       <div className="flex items-center justify-center min-h-screen text-white bg-[#161A20]">
@@ -49,34 +67,26 @@ const UserPeoplePage = () => {
     );
   }
 
+  console.log(activeSpace);
 
-  // Separate creator/admin and other members
-  const creator = activeSpace.members.find((m) => m.role === "creator") || {
-    account_id: user.id,
-    full_name: "You",
-    profile_pic: user.profile_pic,
-    role: "creator"
-  };
-  const otherMembers = activeSpace.members.filter((m) => m.role !== "creator");
-  
-  // Check if current user is the creator/owner of the space
-  const isOwner = creator.account_id === user.id;
-
-
-  console.log(activeSpace)
-  
   const handleRemoveMember = (member) => {
     setMemberToRemove(member);
     setShowRemoveWarning(true);
   };
-  
-  const confirmRemoveMember = () => {
-    // TODO: Implement actual remove member API call
-    console.log(`Removing member: ${memberToRemove.full_name}`);
-    setShowRemoveWarning(false);
-    setMemberToRemove(null);
+
+  const confirmRemoveMember = async () => {
+    try {
+      await removeUserFromSpace(
+        activeSpace?.space_id,
+        memberToRemove.account_id,
+      );
+      setShowRemoveWarning(false);
+      setMemberToRemove(null);
+    } catch (error) {
+      console.error("Failed to remove member:", error);
+    }
   };
-  
+
   const cancelRemoveMember = () => {
     setShowRemoveWarning(false);
     setMemberToRemove(null);
@@ -120,7 +130,9 @@ const UserPeoplePage = () => {
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold">People – {activeSpace.space_name}</h1>
+          <h1 className="text-xl font-bold">
+            People – {activeSpace.space_name}
+          </h1>
         </div>
 
         {/* HEADER SPACER */}
@@ -155,11 +167,15 @@ const UserPeoplePage = () => {
           {/* CREATOR / ADMIN SECTION */}
           {creator && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">{activeSpace?.space_type === "course" ? "Adviser" : "Admin"}</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                {activeSpace?.space_type === "course" ? "Adviser" : "Admin"}
+              </h2>
               <div className="border-t border-gray-600 pt-4">
                 <div className="flex items-center gap-4">
                   <img
-                    src={creator.profile_pic || "/src/assets/default-avatar.jpg"}
+                    src={
+                      creator.profile_pic || "/src/assets/default-avatar.jpg"
+                    }
                     alt={creator.full_name}
                     className="w-10 h-10 rounded-full"
                   />
@@ -175,17 +191,28 @@ const UserPeoplePage = () => {
             <div className="border-t border-gray-600 pt-4 space-y-4">
               {otherMembers.length > 0 ? (
                 otherMembers.map((member) => (
-                  <div key={member.account_id} className="flex items-center justify-between gap-4">
+                  <div
+                    key={member.account_id}
+                    className="flex items-center justify-between gap-4"
+                  >
                     <div className="flex items-center gap-4">
                       <img
-                        src={member.profile_pic || "/src/assets/default-avatar.jpg"}
+                        src={
+                          member.profile_pic || "/src/assets/default-avatar.jpg"
+                        }
                         alt={member.full_name}
                         className="w-10 h-10 rounded-full"
                       />
-                      <span>{member.account_id !== user.id ? member.full_name : "You"}</span>
+                      <span>
+                        {member.account_id !== user.id
+                          ? member.full_name
+                          : "You"}
+                      </span>
                     </div>
                     {isOwner && member.account_id !== user.id && (
-                      <DeleteButton onClick={() => handleRemoveMember(member)} />
+                      <DeleteButton
+                        onClick={() => handleRemoveMember(member)}
+                      />
                     )}
                   </div>
                 ))
@@ -199,14 +226,18 @@ const UserPeoplePage = () => {
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
-      
+
       {/* REMOVE MEMBER WARNING MODAL */}
       {showRemoveWarning && memberToRemove && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-[#1E222A] rounded-lg p-6 max-w-md w-full">
             <p className="text-gray-300 mb-6">
-              Are you sure you want to remove <span className="font-medium text-white">{memberToRemove.full_name}</span> from this space? 
-              They will lose access to all content and resources in this space.
+              Are you sure you want to remove{" "}
+              <span className="font-medium text-white">
+                {memberToRemove.full_name}
+              </span>{" "}
+              from this space? They will lose access to all content and
+              resources in this space.
             </p>
             <div className="flex gap-3 justify-end">
               <button
