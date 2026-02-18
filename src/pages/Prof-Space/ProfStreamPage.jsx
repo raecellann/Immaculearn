@@ -439,9 +439,8 @@ const ProfStreamPage = () => {
 
                   <div className="mt-4 border-t border-gray-300" />
 
-                  {/* FOOTER */}
-                  <div className="mt-4 flex flex-col sm:flex-row justify-between gap-3 sm:items-center">
-                    <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
+                  <div className="mt-4 flex justify-end">
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
                       <button
                         onClick={() => {
                           setIsFocused(false);
