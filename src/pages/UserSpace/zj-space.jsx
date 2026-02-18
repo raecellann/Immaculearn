@@ -301,12 +301,16 @@ const UserPage = () => {
       type: 'text',
       senderId: user?.id,
       senderName: user?.fullname || 'You',
-      text: messageText,
-      timestamp: 'Just now',
-      avatar: user?.profile_pic,
-      isRead: false
+      senderAvatar: user?.profile_pic,
+      timestamp: new Date().toISOString(),
+      spaceUuid: space_uuid
     };
     
+    // Add to messages state
+    setChatMessages(prev => [...prev, newMessage]);
+    
+    // Show notification
+
     // For now, just show a notification (replace with actual chat implementation)
     addNotification({
       type: "success",
