@@ -76,16 +76,16 @@ const SpacePage = () => {
   };
 
   // Filter shared spaces (same logic as sample)
-  const userSpaceUUIDs = new Set(
-    (userSpaces || []).map(space => space.space_uuid)
+  const allSpaces = new Set([
+    ...(userSpaces || []).map(space => space.space_uuid), ...(courseSpaces || []).map(space => space.space_uuid)]
   );
 
   const sharedSpaces = (friendSpaces || []).filter(
-    space => !userSpaceUUIDs.has(space.space_uuid)
+    space => !allSpaces.has(space.space_uuid)
   );
 
   // Course Spaces Data (from homepage logic)
-  const courseSpacesShared = courseSpaces?.filter((s) => !userSpaceUUIDs.has(s.space_uuid));
+  // const courseSpaces = courseSpaces?.filter((s) => !allSpaces.has(s.space_uuid));
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
@@ -230,8 +230,8 @@ const SpacePage = () => {
             <h2 className="text-2xl font-bold mb-4">Courses Spaces</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {courseSpacesShared && courseSpacesShared.length > 0 ? (
-                courseSpacesShared.map((course, i) => (
+              {courseSpaces && courseSpaces.length > 0 ? (
+                courseSpaces.map((course, i) => (
                   <div
                     key={i}
                     onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
