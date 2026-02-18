@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Sidebar from "../component/profsidebar";
 import Logout from "../component/logout";
-import { FiMenu, FiX, FiUsers } from "react-icons/fi";
+import { FiUsers } from "react-icons/fi";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
@@ -11,8 +11,7 @@ const ProfNotificationPage = () => {
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
-
-  const lastScrollY = useRef(0);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const { user, isLoading: userLoading } = useUser();
   const {
@@ -58,17 +57,19 @@ const ProfNotificationPage = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-        setShowHeader(false);
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setShowHeader(false); // scrolling down
       } else {
-        setShowHeader(true);
+        setShowHeader(true); // scrolling up
       }
-      lastScrollY.current = currentScrollY;
+
+      setLastScrollY(currentScrollY);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   if (userLoading || spaceLoading) {
     return (
@@ -121,27 +122,26 @@ const ProfNotificationPage = () => {
       {/* MAIN */}
       <div className="flex-1 flex flex-col">
 
-        {/* MOBILE HEADER */}
+        {/* 🔥 Sticky Mobile Header */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
-          flex items-center gap-4 fixed top-0 left-0 right-0 z-30
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
         >
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="text-white text-2xl"
-          >
-            <FiMenu />
-          </button>
-          <h1 className="text-xl font-bold">Notifications</h1>
+          <div className="p-4 flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-bold">Notifications</h1>
+          </div>
         </div>
 
-        <div className="lg:hidden h-16" />
-
-        {/* CONTENT */}
-        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
-          <h1 className="hidden lg:block text-4xl font-bold mb-10 text-center">
+        {/* ✅ CONTENT */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
+          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
             Notifications
           </h1>
 
@@ -177,9 +177,9 @@ const ProfNotificationPage = () => {
               <h2 className="text-lg font-semibold">Pending Invitations</h2>
               <button
                 onClick={() => setShowPendingInvitations(false)}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-white text-2xl"
               >
-                <FiX size={22} />
+                ×
               </button>
             </div>
 
