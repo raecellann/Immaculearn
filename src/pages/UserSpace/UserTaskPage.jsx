@@ -888,13 +888,15 @@ const UserTaskPage = () => {
           {!isCreatingTask ? (
             /* TASKS LIST VIEW */
             <div className="max-w-5xl mx-auto">
-              <button
-                className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
-                onClick={() => setIsCreatingTask(true)}
-              >
-                <FiFileText size={16} />
-                Create Task
-              </button>
+              {isOwnerSpace && (
+                <button
+                  className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
+                  onClick={() => setIsCreatingTask(true)}
+                >
+                  <FiFileText size={16} />
+                  Create Task
+                </button>
+              )}
               
               <div className="mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>

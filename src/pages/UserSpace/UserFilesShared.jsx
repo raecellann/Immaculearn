@@ -439,15 +439,17 @@ const UserFilesShared = () => {
           {/* ================= FILES ================= */}
           <div className="max-w-5xl mx-auto">
             {/* BUTTON */}
-            <div className="flex justify-end mb-4">
-              <button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                onClick={() => setShowCreateUploadModal(true)}
-              >
-                <FiFileText size={16} />
-                Create or Upload File
-              </button>
-            </div>
+            {isOwnerSpace && (
+              <div className="flex justify-end mb-4">
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  onClick={() => setShowCreateUploadModal(true)}
+                >
+                  <FiFileText size={16} />
+                  Create or Upload File
+                </button>
+              </div>
+            )}
 
             {/* DESKTOP TABLE */}
             <div className="hidden md:block bg-[#0F1115] rounded-xl p-6">
