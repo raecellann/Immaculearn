@@ -13,7 +13,7 @@ const FilePage = () => {
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated, user } = useUser();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -44,15 +44,24 @@ const FilePage = () => {
   // const { space_uuid, space_name } = useParams();
 
   
-  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
-  // Remove duplicates by space_id
-  const uniqueSpaces = allSpaces.filter(
-    (space, index, self) =>
-      index === self.findIndex(s => s.space_id === space.space_id)
-  );
-  // const currentSpace = allSpaces.find((space) => space.space_uuid === space_uuid);
+  // const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
 
-  console.log(uniqueSpaces);
+  const allSpaces = new Set([
+    ...(userSpaces || []).map(space => space.space_uuid), ...(courseSpaces || []).map(space => space.space_uuid)]
+  );
+
+  const sharedSpaces = (friendSpaces || []).filter(space =>
+    !allSpaces.has(space.space_uuid) &&
+    space.members?.some(member => member.account_id === user?.id)
+  );
+  // Remove duplicates by space_id
+  // const uniqueSpaces = allSpaces.filter(
+  //   (space, index, self) =>
+  //     index === self.findIndex(s => s.space_id === space.space_id)
+  // );
+  // // const currentSpace = allSpaces.find((space) => space.space_uuid === space_uuid);
+
+  // console.log(uniqueSpaces);
 
 
   // const { list } = useFileManager(currentSpace?.space_id);
@@ -199,21 +208,21 @@ const FilePage = () => {
           {/* Friends Space Files */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
-            {spacesByCategory['friends-space']?.length === 0 ? (
+            {sharedSpaces?.length === 0 ? (
               <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
                 No friends space files yet
               </div>
-            ) : spacesByCategory['friends-space']?.length > 0 ? (
+            ) : sharedSpaces?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {spacesByCategory['friends-space'].map((space, index) => (
+                {sharedSpaces.map((space, index) => (
                   <div
                     key={`friends-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/files/${space.name}/${space.space_uuid || ''}`)}
+                    onClick={() => navigate(`/files/${space.space_name}/${space.space_uuid || ''}`)}
                   >
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.name}</p>
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
                     </div>
                   </div>
                 ))}
