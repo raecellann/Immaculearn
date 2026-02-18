@@ -33,6 +33,7 @@ const ViewAllFilesPage = () => {
     (space, index, self) =>
       index === self.findIndex(s => s.space_id === space.space_id)
   );
+  
   const currentSpace = allSpaces.find((space) => space.space_uuid === space_uuid);
 
 
@@ -42,29 +43,7 @@ const ViewAllFilesPage = () => {
 
   console.log(files)
 
-  // const [files] = useState([
-  //   {
-  //     status: "Posted",
-  //     name: "LPS CS Thesis 1 - Week 6",
-  //     datePosted: "July 24",
-  //     spaceName: "Zjs Space",
-  //     isNew: true,
-  //   },
-  //   {
-  //     status: "Posted",
-  //     name: "MOOTECH-LECTURE",
-  //     datePosted: "Oct 30",
-  //     spaceName: "Zjs Space",
-  //     isNew: false,
-  //   },
-  //   {
-  //     status: "Posted",
-  //     name: "Basic File and Access Concepts-2021",
-  //     datePosted: "Oct 10",
-  //     spaceName: "Zjs Space",
-  //     isNew: false,
-  //   },
-  // ]);
+
 
   /* 🔹 ADDED — SAME STICKY HEADER LOGIC */
   const [showHeader, setShowHeader] = useState(true);

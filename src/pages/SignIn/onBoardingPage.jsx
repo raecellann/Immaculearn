@@ -170,7 +170,39 @@ const OnBoarding = () => {
                   <InputField type="text" placeholder="First Name" value={studentFn} onChange={(e) => setStudentFn(e.target.value)} />
                   <InputField type="text" placeholder="Last Name" value={studentLn} onChange={(e) => setStudentLn(e.target.value)} />
                   <InputField type="date" placeholder="Birthdate" value={studentBd} onChange={(e) => setStudentBd(e.target.value)} />
-                  <InputField type="text" placeholder="Course ex: BSCS" value={studentCourse} onChange={(e) => setStudentCourse(e.target.value)} />
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="border border-black rounded-lg px-4 py-2 w-full text-gray-900 bg-white flex items-center justify-between hover:bg-gray-50 transition"
+                      onClick={() => setShowDeptDropdown(!showDeptDropdown)}
+                    >
+                      <span className="text-gray-900">
+                        {studentCourse 
+                          ? departments.find(d => d.code === studentCourse)?.name || "Select Department"
+                          : "Select Department"
+                        }
+                      </span>
+                      <ChevronDown size={20} className={`transition-transform ${showDeptDropdown ? "rotate-180" : ""}`} />
+                    </button>
+                    
+                    {showDeptDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-black rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                        {departments.map((dept) => (
+                          <button
+                            key={dept.code}
+                            type="button"
+                            className="w-full px-4 py-2 text-left text-gray-900 hover:bg-gray-100 transition border-b border-gray-200 last:border-b-0 bg-white"
+                            onClick={() => {
+                              setStudentCourse(dept.code);
+                              setShowDeptDropdown(false);
+                            }}
+                          >
+                            <span className="font-medium">{dept.code}:</span> {dept.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={studentYrLvl} onChange={(e) => setStudentYrLvl(e.target.value)}>
                     <option value="" className="text-black">Select Year Level</option>
                     <option value="1" className="text-black">1st Year</option>
