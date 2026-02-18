@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
 import { FiMenu, FiX, FiChevronLeft } from "react-icons/fi";
 import Logout from "../component/logout";
+import DeleteButton from "../component/DeleteButton";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
 
@@ -16,6 +17,8 @@ const ProfPeoplePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+  const [showRemoveWarning, setShowRemoveWarning] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState(null);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -54,6 +57,28 @@ const ProfPeoplePage = () => {
     role: "creator"
   };
   const otherMembers = activeSpace.members.filter((m) => m.role !== "creator");
+
+  // Check if current user is the creator/owner of the space
+  const isOwner = creator.account_id === user.id;
+
+  console.log(activeSpace)
+
+  const handleRemoveMember = (member) => {
+    setMemberToRemove(member);
+    setShowRemoveWarning(true);
+  };
+  
+  const confirmRemoveMember = () => {
+    // TODO: Implement actual remove member API call
+    console.log(`Removing member: ${memberToRemove.full_name}`);
+    setShowRemoveWarning(false);
+    setMemberToRemove(null);
+  };
+  
+  const cancelRemoveMember = () => {
+    setShowRemoveWarning(false);
+    setMemberToRemove(null);
+  };
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
@@ -110,7 +135,6 @@ const ProfPeoplePage = () => {
           <div className="absolute inset-0 bg-black/50" />
         </div>
 
-
         {/* PAGE HEADER */}
         <div className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-6">
@@ -150,13 +174,18 @@ const ProfPeoplePage = () => {
             <div className="border-t border-gray-600 pt-4 space-y-4">
               {otherMembers.length > 0 ? (
                 otherMembers.map((member) => (
-                  <div key={member.account_id} className="flex items-center gap-4">
-                    <img
-                      src={member.profile_pic || "/src/assets/default-avatar.jpg"}
-                      alt={member.full_name}
-                      className="w-10 h-10 rounded-full"
-                    />
-                    <span>{member.account_id !== user.id ? member.full_name : "You"}</span>
+                  <div key={member.account_id} className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={member.profile_pic || "/src/assets/default-avatar.jpg"}
+                        alt={member.full_name}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <span>{member.account_id !== user.id ? member.full_name : "You"}</span>
+                    </div>
+                    {isOwner && member.account_id !== user.id && (
+                      <DeleteButton onClick={() => handleRemoveMember(member)} />
+                    )}
                   </div>
                 ))
               ) : (
@@ -169,6 +198,32 @@ const ProfPeoplePage = () => {
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+      
+      {/* REMOVE MEMBER WARNING MODAL */}
+      {showRemoveWarning && memberToRemove && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1E222A] rounded-lg p-6 max-w-md w-full">
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to remove <span className="font-medium text-white">{memberToRemove.full_name}</span> from this space? 
+              They will lose access to all content and resources in this space.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelRemoveMember}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmRemoveMember}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg transition-colors"
+              >
+                Yes, Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

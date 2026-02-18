@@ -15,12 +15,19 @@ const TaskPage = () => {
   const { user } = useUser();
   const { userSpaces, courseSpaces, friendSpaces } = useSpace();
 
-  const userSpaceIds = new Set(userSpaces.map(space => space.space_id));
+  // const allSpaces = new Set(userSpaces.map(space => space.space_id));
+  const allSpaces = new Set([
+    ...(userSpaces || []).map(space => space.space_uuid), ...(courseSpaces || []).map(space => space.space_uuid)]
+  );
 
-  console.log(userSpaceIds)
+  console.log(allSpaces)
 
-  const allFriendSpaces = friendSpaces.filter(
-    space => !userSpaceIds.has(space.space_id)
+  // const allFriendSpaces = friendSpaces.filter(
+  //   space => !allSpaces.has(space.space_id)
+  // );
+  const allFriendSpaces = (friendSpaces || []).filter(space =>
+    !allSpaces.has(space.space_uuid) &&
+    space.members?.some(member => member.account_id === user?.id)
   );
 
 
