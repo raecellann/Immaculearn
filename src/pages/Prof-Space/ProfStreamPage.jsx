@@ -20,6 +20,8 @@ import PageNotFound from "../PageNotFound/pageNotFound";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
+import ChatPopup from "../component/ChatPopup";
+import { useNotification } from "../../contexts/notification/notificationContextProvider";
 
 const ProfStreamPage = () => {
   const { space_uuid, space_name } = useParams();
@@ -44,6 +46,7 @@ const ProfStreamPage = () => {
   const [dialogMessage, setDialogMessage] = useState('');
   const [charCount, setCharCount] = useState(0);
   const [isCreatingPost, setIsCreatingPost] = useState(false);
+  const [showChatPopup, setShowChatPopup] = useState(false);
   const MAX_CHAR = 250;
 
   // Additional state for posts and comments
@@ -61,6 +64,7 @@ const ProfStreamPage = () => {
 
   // Custom hooks - MUST BE AT THE TOP
   const { user, isLoading: userLoading } = useUser();
+  const { addNotification, showGlobalNotification } = useNotification();
   const {
     userSpaces,
     courseSpaces,
@@ -246,9 +250,62 @@ const ProfStreamPage = () => {
 
   // Enter chat
   const handleEnterChat = () => {
-    // TODO: Implement chat navigation logic
-    console.log("Entering chat...");
+    setShowChatPopup(true);
   };
+
+  const handleCloseChat = () => {
+    setShowChatPopup(false);
+  };
+
+  const handleSendMessage = (messageText) => {
+    // Add message to chat (you can integrate with your chat backend here)
+    const newMessage = {
+      id: Date.now(),
+      senderId: user?.id,
+      senderName: user?.fullname || "You",
+      text: messageText,
+      timestamp: "Just now",
+      avatar: user?.profile_pic,
+      isRead: false,
+    };
+
+    // For now, just show a notification (replace with actual chat implementation)
+    addNotification({
+      type: "success",
+      title: "Message Sent",
+      message: "Your message was sent successfully",
+      duration: 3000,
+    });
+
+    console.log("Message sent:", newMessage);
+  };
+
+  // Sample space members (replace with actual data from your backend)
+  const spaceMembers = [
+    {
+      id: user?.id,
+      name: user?.fullname || "You",
+      email: user?.email,
+      avatar: user?.profile_pic,
+      online: true,
+    },
+    {
+      id: 2,
+      name: "Zeldrick",
+      email: "zeldrick@example.com",
+      avatar:
+        "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
+      online: true,
+    },
+    {
+      id: 3,
+      name: "Nathaniel",
+      email: "nathaniel@example.com",
+      avatar:
+        "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
+      online: false,
+    },
+  ];
 
   // Time ago helper
   const timeAgo = (dateString) => {
@@ -820,109 +877,73 @@ const ProfStreamPage = () => {
         {/* INVITE POPUP */}
         {showInvitePopup && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-[#E6E6E6] rounded-2xl w-[420px] max-w-[90vw] p-6 shadow-xl">
+            <div className="bg-gradient-to-br from-[#2A2F3A] to-[#1E222A] rounded-2xl w-[420px] max-w-[90vw] p-6 shadow-2xl border border-gray-700">
               
               {/* HEADER */}
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-black">Add Member</h2>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <FiLink size={20} className="text-white" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-white">Add Member</h2>
+                </div>
                 <button
                   onClick={() => setShowInvitePopup(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700"
                 >
-                  ✕
+                  <FiX size={20} />
                 </button>
               </div>
 
               {/* INVITATION LINK */}
-              <div className="mb-4">
-                <p className="text-sm font-medium text-black mb-1">
-                  Invitation Link
-                </p>
-                <div className="flex items-center justify-between bg-white px-3 py-1 rounded-md border border-gray-300">
-                  <span className="text-xs text-gray-600 truncate flex-1">
-                    {currentSpace?.space_link}
-                  </span>
-                  <button 
-                    onClick={() => handleCopyLink(currentSpace?.space_link)} 
-                    className={`text-sm ml-2 px-2 py-1 rounded transition-colors ${
-                      copyFeedback 
-                        ? copyFeedback === "Copied!" 
-                          ? "text-green-600 bg-green-50" 
-                          : "text-red-600 bg-red-50"
-                        : "text-gray-500 hover:text-black hover:bg-gray-100"
-                    }`}
-                  >
-                    {copyFeedback || "Copy Link"}
-                  </button>
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <p className="text-sm font-medium text-white">
+                    Share Invitation Link
+                  </p>
                 </div>
-              </div>
-
-              {/* INPUT */}
-              <div className="mb-4">
-                <p className="text-sm font-medium text-black mb-1">
-                  Type username or email
-                </p>
-                <input
-                  type="text"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="
-                    w-full
-                    px-3
-                    py-2
-                    rounded-md
-                    border
-                    border-purple-500
-                    bg-white
-                    text-black
-                    outline-none
-                    focus:ring-2
-                    focus:ring-purple-500
-                  "
-                />
-              </div>
-
-              {/* SUGGESTED USERS */}
-              <div>
-                <p className="text-sm font-medium text-black mb-2">
-                  Suggested Users
-                </p>
-
-                <div className="space-y-3">
-                  {[
-                    {
-                      name: "Raecell Ann Galvez",
-                      email: "raecellanngalvez@gmail.com",
-                      avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
-                    },
-                    {
-                      name: "Nathaniel Faborada",
-                      email: "faboradanathaniel@gmail.com",
-                      avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
-                    },
-                    {
-                      name: "Wilson Esmabe",
-                      email: "wilsonesmabe2003@gmail.com",
-                      avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/wilson_fw2qoz.jpg",
-                    },
-                  ].map((user, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 bg-transparent hover:bg-gray-200 px-2 py-2 rounded-lg cursor-pointer"
+                <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-300 truncate flex-1 mr-2">
+                      {currentSpace?.space_link}
+                    </span>
+                    <button 
+                      onClick={() => handleCopyLink(currentSpace?.space_link)} 
+                      className={`text-sm px-3 py-1.5 rounded-lg transition-all transform hover:scale-105 ${
+                        copyFeedback 
+                          ? copyFeedback === "Copied!" 
+                            ? "bg-green-600 text-white shadow-lg shadow-green-600/30" 
+                            : "bg-red-600 text-white shadow-lg shadow-red-600/30"
+                          : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/30"
+                      }`}
                     >
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="w-8 h-8 rounded-full"
-                      />
-                      <div className="text-sm">
-                        <p className="font-medium text-black">{user.name}</p>
-                        <p className="text-xs text-gray-600">{user.email}</p>
+                      <div className="flex items-center gap-1">
+                        <FiCopy size={14} />
+                        <span>{copyFeedback || "Copy"}</span>
                       </div>
-                    </div>
-                  ))}
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {/* INFO SECTION */}
+              <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <FiLink size={14} className="text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white mb-1">
+                      How to invite members
+                    </p>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      Copy the invitation link above and share it with people you want to add to this space. They can join using this link.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         )}
@@ -949,6 +970,16 @@ const ProfStreamPage = () => {
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
         itemName={dialogMessage}
+      />
+
+      {/* CHAT POPUP */}
+      <ChatPopup
+        isOpen={showChatPopup}
+        onClose={handleCloseChat}
+        spaceName={spaceName}
+        currentUser={user}
+        spaceMembers={spaceMembers}
+        onSendMessage={handleSendMessage}
       />
     </div>
   );

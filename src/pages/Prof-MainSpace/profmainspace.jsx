@@ -279,7 +279,7 @@ const ProfSpacePage = () => {
                             }}
                             className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
                           >
-                            Leave Space
+                            Delete Space
                           </button>
                         </div>
                       )}
