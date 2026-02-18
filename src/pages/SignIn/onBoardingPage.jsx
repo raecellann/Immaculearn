@@ -42,12 +42,15 @@ const OnBoarding = () => {
 
   const departments = [
     { code: "BSCS", name: "Bachelor of Science in Computer Science" },
-    { code: "BSBA", name: "Bachelor of Science in Business Administration major in Operations Management" },
-    { code: "BSA", name: "Bachelor of Science in Accountancy" },
-    { code: "BSHM", name: "Bachelor of Science in Hospitality Management" },
     { code: "BSTM", name: "Bachelor of Science in Tourism Management" },
-    { code: "BSED", name: "Bachelor of Secondary Education" },
+    { code: "BSBA", name: "Bachelor of Science in Business Administration" },
+    { code: "BSHM", name: "Bachelor of Science in Hospitality Management" },
+    { code: "BSA", name: "Bachelor of Science in Accountancy" },
+    { code: "ACT", name: "Associate in Computer Technology" },
+    { code: "BSNE", name: "Bachelor of Special Needs Education" },
     { code: "BEED", name: "Bachelor of Elementary Education" },
+    { code: "BSED-ENG", name: "Bachelor of Secondary Education Major in English" },
+    { code: "BSED-FIL", name: "Bachelor of Secondary Education Major in Filipino" }
   ];
 
   const handleNext = () => {
