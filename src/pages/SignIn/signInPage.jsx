@@ -53,15 +53,16 @@ const LoginPage = () => {
       // Verify the message is from our domain
       if (event.origin !== window.location.origin) return;
 
-      await checkAuth();
+      
       if (event.data.type === 'OAUTH_SUCCESS') {
         const { role, needsOnboarding, token } = event.data;
-
+        
         if (needsOnboarding && token) {
           // 🔐 store tempToken for onboarding
           sessionStorage.setItem("tempToken", token);
           navigate(`/onboarding?role=${role}`);
         } else {
+          await checkAuth();
           if (role === 'student') {
             navigate(`/home?role=${role}`);
           } else if (role === 'professor') {
