@@ -109,12 +109,26 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     staleTime: 60_000,
   });
 
-  const useJoinRequests = (spaceId: string) =>
+  const useJoinRequests = (spaceId: string, isAuthenticated: boolean) =>
     useQuery({
       queryKey: ["joinRequests", spaceId],
       queryFn: () => fetchJoinRequests(spaceId),
       enabled: !!spaceId && isAuthenticated,
-      staleTime: 5_000, // Reduced to 5 seconds for faster updates when actions happen
+
+      // Data is considered fresh for 30 seconds
+      staleTime: 30_000, // 30 seconds
+
+      // Unused data stays in cache for 5 minutes
+      cacheTime: 300_000, // 5 minutes
+
+      // Refetch stale data when window/tab regains focus
+      refetchOnWindowFocus: true,
+
+      // Optional: Poll every 30 seconds while component is mounted
+      refetchInterval: 30_000,
+
+      // Reduce refetching on reconnect if data is fresh
+      refetchOnReconnect: true,
     });
 
   // Task queries

@@ -1,157 +1,157 @@
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
-import { useState } from 'react'
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useState } from "react";
 
 // Delete Button Component using consistent design
 const DeleteButton = ({ onClick }) => {
   const buttonStyle = {
-    cursor: 'pointer',
-    padding: '0.5em 1em',
-    fontSize: '0.9em',
-    width: 'auto',
-    height: 'auto',
-    color: '#ef4444', // Red for delete
-    background: 'transparent',
-    borderRadius: '0.25em',
-    border: 'none',
-    boxShadow: 'none',
-    transition: 'all 0.3s ease-in-out',
-    outline: '0.1em solid #cc1515ff', 
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.5em',
+    cursor: "pointer",
+    padding: "0.5em 1em",
+    fontSize: "0.9em",
+    width: "auto",
+    height: "auto",
+    color: "#ef4444", // Red for delete
+    background: "transparent",
+    borderRadius: "0.25em",
+    border: "none",
+    boxShadow: "none",
+    transition: "all 0.3s ease-in-out",
+    outline: "0.1em solid #cc1515ff",
+    position: "relative",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.5em",
   };
 
   const iconStyle = {
-    fill: '#ef4444',
-    width: '1em',
-    height: '1em',
-    marginRight: '0.5em',
-    display: 'inline-block',
-    verticalAlign: 'middle',
+    fill: "#ef4444",
+    width: "1em",
+    height: "1em",
+    marginRight: "0.5em",
+    display: "inline-block",
+    verticalAlign: "middle",
   };
 
   return (
-    <button 
+    <button
       style={buttonStyle}
       onMouseEnter={(e) => {
-        const color = 'rgba(239, 68, 68, 0.5)'; // Red hover
+        const color = "rgba(239, 68, 68, 0.5)"; // Red hover
         e.target.style.background = `radial-gradient(circle at bottom, ${color} 10%, #212121 70%)`;
-        e.target.style.transform = 'scale(1.1)';
-        e.target.style.boxShadow = '0 0 1em 0.45em rgba(0, 0, 0, 0.1)';
-        e.target.style.margin = '0 0.5em';
-        e.target.style.color = 'white';
-        const svg = e.target.querySelector('svg');
-        if (svg) svg.style.fill = 'white';
+        e.target.style.transform = "scale(1.1)";
+        e.target.style.boxShadow = "0 0 1em 0.45em rgba(0, 0, 0, 0.1)";
+        e.target.style.margin = "0 0.5em";
+        e.target.style.color = "white";
+        const svg = e.target.querySelector("svg");
+        if (svg) svg.style.fill = "white";
       }}
       onMouseLeave={(e) => {
-        e.target.style.background = '#212121';
-        e.target.style.transform = 'scale(1)';
-        e.target.style.boxShadow = '0 0 1em 1em rgba(0, 0, 0, 0.1)';
-        e.target.style.margin = '0';
-        e.target.style.color = '#ef4444';
-        const svg = e.target.querySelector('svg');
-        if (svg) svg.style.fill = '#ef4444';
+        e.target.style.background = "#212121";
+        e.target.style.transform = "scale(1)";
+        e.target.style.boxShadow = "0 0 1em 1em rgba(0, 0, 0, 0.1)";
+        e.target.style.margin = "0";
+        e.target.style.color = "#ef4444";
+        const svg = e.target.querySelector("svg");
+        if (svg) svg.style.fill = "#ef4444";
       }}
       onClick={onClick}
     >
       <span style={iconStyle}>
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
         </svg>
       </span>
       Delete
     </button>
-  )
-}
+  );
+};
 
 // Cancel Button Component using consistent design
 const CancelButton = ({ onClick }) => {
   const buttonStyle = {
-    cursor: 'pointer',
-    padding: '0.5em 1em',
-    fontSize: '0.9em',
-    width: 'auto',
-    height: 'auto',
-    color: '#f4f4f4ff', // Gray for cancel
-    background: 'transparent',
-    borderRadius: '0.25em',
-    border: 'none',
-    boxShadow: 'none',
-    transition: 'all 0.3s ease-in-out',
-    outline: '0.1em solid #ffffffff', 
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.5em',
+    cursor: "pointer",
+    padding: "0.5em 1em",
+    fontSize: "0.9em",
+    width: "auto",
+    height: "auto",
+    color: "#f4f4f4ff", // Gray for cancel
+    background: "transparent",
+    borderRadius: "0.25em",
+    border: "none",
+    boxShadow: "none",
+    transition: "all 0.3s ease-in-out",
+    outline: "0.1em solid #ffffffff",
+    position: "relative",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.5em",
   };
 
   const iconStyle = {
-    fill: '#ffffffff',
-    width: '1em',
-    height: '1em',
-    marginRight: '0.5em',
-    display: 'inline-block',
-    verticalAlign: 'middle',
+    fill: "#ffffffff",
+    width: "1em",
+    height: "1em",
+    marginRight: "0.5em",
+    display: "inline-block",
+    verticalAlign: "middle",
   };
 
   return (
-    <button 
+    <button
       style={buttonStyle}
       onMouseEnter={(e) => {
-        const color = 'rgba(107, 114, 128, 0.5)'; // Gray hover
+        const color = "rgba(107, 114, 128, 0.5)"; // Gray hover
         e.target.style.background = `radial-gradient(circle at bottom, ${color} 10%, #212121 70%)`;
-        e.target.style.transform = 'scale(1.1)';
-        e.target.style.boxShadow = '0 0 1em 0.45em rgba(0, 0, 0, 0.1)';
-        e.target.style.margin = '0 0.5em';
-        e.target.style.color = 'white';
-        const svg = e.target.querySelector('svg');
-        if (svg) svg.style.fill = 'white';
+        e.target.style.transform = "scale(1.1)";
+        e.target.style.boxShadow = "0 0 1em 0.45em rgba(0, 0, 0, 0.1)";
+        e.target.style.margin = "0 0.5em";
+        e.target.style.color = "white";
+        const svg = e.target.querySelector("svg");
+        if (svg) svg.style.fill = "white";
       }}
       onMouseLeave={(e) => {
-        e.target.style.background = '#212121';
-        e.target.style.transform = 'scale(1)';
-        e.target.style.boxShadow = '0 0 1em 1em rgba(0, 0, 0, 0.1)';
-        e.target.style.margin = '0';
-        e.target.style.color = '#6b7280';
-        const svg = e.target.querySelector('svg');
-        if (svg) svg.style.fill = '#6b7280';
+        e.target.style.background = "#212121";
+        e.target.style.transform = "scale(1)";
+        e.target.style.boxShadow = "0 0 1em 1em rgba(0, 0, 0, 0.1)";
+        e.target.style.margin = "0";
+        e.target.style.color = "#6b7280";
+        const svg = e.target.querySelector("svg");
+        if (svg) svg.style.fill = "#6b7280";
       }}
       onClick={onClick}
     >
       <span style={iconStyle}>
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
         </svg>
       </span>
       Cancel
     </button>
-  )
-}
+  );
+};
 
 // Delete confirmation dialog component
-export function DeleteConfirmationDialog({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
+export function DeleteConfirmationDialog({
+  isOpen,
+  onClose,
+  onConfirm,
   space = {
     space_name: "Unknown Space",
     members: [],
     files: [],
-    tasks: []
+    tasks: [],
   },
 }) {
-  const [confirmationText, setConfirmationText] = useState("")
-  const isValid = confirmationText === space.space_name
+  const [confirmationText, setConfirmationText] = useState("");
+  const isValid = confirmationText === space.space_name;
 
-  console.log("DeleteConfirmationDialog received space:", space);
+  // console.log("DeleteConfirmationDialog received space:", space);
 
   // Calculate counts
-  const filesCount = space.files?.length || 0
-  const tasksCount = space.tasks?.length || 0  
-  const peopleCount = space.members?.length || 0
+  const filesCount = space.files?.length || 0;
+  const tasksCount = space.tasks?.length || 0;
+  const peopleCount = space.members?.length || 0;
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
@@ -160,7 +160,6 @@ export function DeleteConfirmationDialog({
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="w-full max-w-lg bg-gray-900 rounded-2xl shadow-2xl p-6 space-y-6">
-
           {/* Header */}
           <div className="flex items-start justify-between">
             <DialogTitle className="text-lg font-semibold text-white">
@@ -183,8 +182,8 @@ export function DeleteConfirmationDialog({
           <div className="flex gap-3 bg-red-900/20 border border-red-800/50 rounded-xl p-4">
             <div className="w-1 bg-red-500 rounded-full" />
             <div className="text-xs text-gray-300">
-              <span className="font-semibold text-white">Warning:</span>{" "}
-              This action <span className="font-semibold">cannot be undone</span>.
+              <span className="font-semibold text-white">Warning:</span> This
+              action <span className="font-semibold">cannot be undone</span>.
               Deleting a space will remove all its associated data. Any files,
               tasks, configurations, and more will be{" "}
               <span className="font-semibold">permanently lost</span>.
@@ -255,33 +254,55 @@ export function DeleteConfirmationDialog({
         </DialogPanel>
       </div>
     </Dialog>
-  )
+  );
 }
 
 // Success notification dialog
-export function SuccessDialog({ 
-  isOpen, 
-  onClose, 
-  title = "Deleted!", 
-  message = "Your file has been deleted." 
+export function SuccessDialog({
+  isOpen,
+  onClose,
+  title = "Deleted!",
+  message = "Your file has been deleted.",
 }) {
   return (
-    <Dialog open={isOpen} as="div" className="relative z-10 focus:outline-none" onClose={onClose}>
+    <Dialog
+      open={isOpen}
+      as="div"
+      className="relative z-10 focus:outline-none"
+      onClose={onClose}
+    >
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto bg-black/50">
         <div className="flex min-h-full items-center justify-center p-4">
           <DialogPanel
             transition
             className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-closed:transform-[scale(95%)] data-closed:opacity-0 border border-green-500/20"
           >
-            <DialogTitle as="h3" className="text-base/7 font-medium text-green-400 flex items-center justify-between">
+            <DialogTitle
+              as="h3"
+              className="text-base/7 font-medium text-green-400 flex items-center justify-between"
+            >
               {title}
               <button
                 onClick={onClose}
                 className="text-green-400/70 hover:text-green-400 transition-colors p-1 rounded-md hover:bg-green-400/10"
-                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </DialogTitle>
@@ -300,33 +321,55 @@ export function SuccessDialog({
         </div>
       </div>
     </Dialog>
-  )
+  );
 }
 
 // Cancel notification dialog
-export function CancelledDialog({ 
-  isOpen, 
-  onClose, 
-  title = "Cancelled", 
-  message = "Your imaginary file is safe :)" 
+export function CancelledDialog({
+  isOpen,
+  onClose,
+  title = "Cancelled",
+  message = "Your imaginary file is safe :)",
 }) {
   return (
-    <Dialog open={isOpen} as="div" className="relative z-10 focus:outline-none" onClose={onClose}>
+    <Dialog
+      open={isOpen}
+      as="div"
+      className="relative z-10 focus:outline-none"
+      onClose={onClose}
+    >
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto bg-black/50">
         <div className="flex min-h-full items-center justify-center p-4">
           <DialogPanel
             transition
             className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-closed:transform-[scale(95%)] data-closed:opacity-0 border border-gray-500/20"
           >
-            <DialogTitle as="h3" className="text-base/7 font-medium text-gray-400 flex items-center justify-between">
+            <DialogTitle
+              as="h3"
+              className="text-base/7 font-medium text-gray-400 flex items-center justify-between"
+            >
               {title}
               <button
                 onClick={onClose}
                 className="text-gray-400/70 hover:text-gray-400 transition-colors p-1 rounded-md hover:bg-gray-400/10"
-                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </DialogTitle>
@@ -345,5 +388,5 @@ export function CancelledDialog({
         </div>
       </div>
     </Dialog>
-  )
+  );
 }

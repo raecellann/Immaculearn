@@ -2,6 +2,7 @@ import React, { useState, useEffect, ReactNode, useRef } from "react";
 import { api } from "../../lib/api"; // Axios instance with withCredentials
 
 import { UserContext, User } from "./userContext";
+import { PostCreateData, CommentCreateData } from "../../types/post";
 
 interface UserProviderProps {
   children: ReactNode;
@@ -131,6 +132,61 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     await checkAuth();
   };
 
+  // Post functions
+  const createPost = async (postData: PostCreateData) => {
+    try {
+      const response = await api.post('/post/', postData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Create post error:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to create post'
+      };
+    }
+  };
+
+  const createComment = async (commentData: CommentCreateData) => {
+    try {
+      const response = await api.post('/post/comment', commentData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Create comment error:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to create comment'
+      };
+    }
+  };
+
+  const getPosts = async (spaceId: string) => {
+    try {
+      const response = await api.get(`/post/${spaceId}`);
+
+      console.log(response.data)
+      return response.data;
+    } catch (error: any) {
+      console.error('Get post error:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to fetch post'
+      };
+    }
+  };
+
+  const getComments = async (postId: string) => {
+    try {
+      const response = await api.get(`/post/comment/${postId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Get comments error:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to fetch comments'
+      };
+    }
+  };
+
   // Initial check on mount
   useEffect(() => {
     checkAuth();
@@ -147,6 +203,10 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         logout,
         refreshUser,
         checkAuth,
+        createPost,
+        createComment,
+        getPosts,
+        getComments,
       }}
     >
       {children}

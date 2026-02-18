@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import { PostCreateData, CommentCreateData, Post, Comment } from "../../types/post";
 
 export interface User {
     id: string;
@@ -17,6 +18,10 @@ export interface UserContextType {
     refreshUser: () => Promise<void>;
     checkAuth: () => Promise<boolean>;
     createAccount: (payload: any) => Promise<boolean>;
+    createPost: (postData: PostCreateData) => Promise<{ success: boolean; message?: string; data?: Post }>;
+    createComment: (commentData: CommentCreateData) => Promise<{ success: boolean; message?: string; data?: Comment }>;
+    getPosts: (spaceId: string) => Promise<{ success: boolean; message?: string; data?: Post[] }>;
+    getComments: (postId: string) => Promise<{ success: boolean; message?: string; data?: Comment[] }>;
 }
 
 export const UserContext = createContext<UserContextType | undefined>(

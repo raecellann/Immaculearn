@@ -26,15 +26,20 @@ import * as XLSX from "xlsx";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useUserPosts } from "../../hooks/useUserPosts";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 import PageNotFound from "../PageNotFound/pageNotFound";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { timeAgo } from "../../utils/timeAgo.js";
 
 const UserPage = () => {
   const { space_uuid, space_name } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Add loading state for post creation
+  const [isCreatingPost, setIsCreatingPost] = useState(false);
 
   // State hooks - MUST BE AT THE TOP
   const [isFocused, setIsFocused] = useState(false);
@@ -53,11 +58,6 @@ const UserPage = () => {
   const [backgroundUpload, setBackgroundUpload] = useState(false);
   const [showUploadNotification, setShowUploadNotification] = useState(false);
   const [showChatPopup, setShowChatPopup] = useState(false);
-  const [chatMessages, setChatMessages] = useState(() => {
-    // Load messages from localStorage for this specific space
-    const savedMessages = localStorage.getItem(`chatMessages_${space_uuid}`);
-    return savedMessages ? JSON.parse(savedMessages) : [];
-  });
 
   // State for dialog management
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -83,6 +83,125 @@ const UserPage = () => {
     deleteSpace,
   } = useSpace();
 
+  // Find current space
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(courseSpaces || []),
+    ...(friendSpaces || []),
+  ];
+
+  const currentSpace = allSpaces.find(
+    (space) => space.space_uuid === space_uuid,
+  );
+
+  // Check if user is owner
+  const isOwnerSpace = currentSpace?.creator === user?.id;
+
+  const isFriendSpace = !isOwnerSpace;
+
+  // Posts hook with React Query for 15-minute auto-re-render
+  const { createPost, createComment, getPosts, getComments } = useUserPosts();
+
+  const {
+    data: postsData,
+    isLoading: isLoadingPosts,
+    error: postsError,
+    refetch: refetchPosts,
+  } = useQuery({
+    queryKey: ["posts", currentSpace?.space_id],
+    queryFn: () => getPosts(currentSpace?.space_id || ""),
+    enabled: !!currentSpace?.space_id,
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    cacheTime: 20 * 60 * 1000, // 20 minutes
+  });
+
+  const posts = postsData?.data || [];
+
+  // Comments state
+  const [expandedPosts, setExpandedPosts] = useState(new Set());
+  const [commentInputs, setCommentInputs] = useState({});
+  const [comments, setComments] = useState({});
+  const [isLoadingComments, setIsLoadingComments] = useState({});
+
+  // Comment functions
+  const toggleComments = (postId) => {
+    const newExpanded = new Set(expandedPosts);
+    if (newExpanded.has(postId)) {
+      newExpanded.delete(postId);
+    } else {
+      newExpanded.add(postId);
+      // Load comments if not already loaded
+      if (!comments[postId]) {
+        loadComments(postId);
+      }
+    }
+    setExpandedPosts(newExpanded);
+  };
+
+  const loadComments = async (postId) => {
+    setIsLoadingComments((prev) => ({ ...prev, [postId]: true }));
+    try {
+      const result = await getComments(postId);
+      if (result.success && result.data) {
+        setComments((prev) => ({ ...prev, [postId]: result.data }));
+      }
+    } catch (error) {
+      console.error("Failed to load comments:", error);
+    } finally {
+      setIsLoadingComments((prev) => ({ ...prev, [postId]: false }));
+    }
+  };
+
+  const handleCommentChange = (postId, value) => {
+    setCommentInputs((prev) => ({ ...prev, [postId]: value }));
+  };
+
+  const handleCreateComment = async (postId) => {
+    const commentContent = commentInputs[postId]?.trim();
+
+    if (!commentContent || !currentSpace?.space_id) {
+      addNotification({
+        type: "error",
+        message: "Please write something before commenting",
+      });
+      return;
+    }
+
+    setIsLoadingComments((prev) => ({ ...prev, [postId]: true }));
+    try {
+      const result = await createComment({
+        space_id: currentSpace?.space_id,
+        post_id: postId,
+        post_content: commentContent,
+      });
+
+      if (result.success) {
+        // Clear comment input
+        setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+
+        // Reload comments
+        await loadComments(postId);
+
+        addNotification({
+          type: "success",
+          message: "Comment posted successfully!",
+        });
+      } else {
+        addNotification({
+          type: "error",
+          message: result.message || "Failed to post comment",
+        });
+      }
+    } catch (error) {
+      addNotification({
+        type: "error",
+        message: "Failed to post comment. Please try again.",
+      });
+    } finally {
+      setIsLoadingComments((prev) => ({ ...prev, [postId]: false }));
+    }
+  };
+
   // Join requests - MUST BE AT THE TOP (unconditionally)
   const {
     data: joinRequestsData = [],
@@ -92,13 +211,6 @@ const UserPage = () => {
 
   // Calculate pending invites count
   const pendingInvitesCount = joinRequestsData?.length || 0;
-
-  // Save chat messages to localStorage whenever they change
-  useEffect(() => {
-    if (space_uuid && chatMessages.length > 0) {
-      localStorage.setItem(`chatMessages_${space_uuid}`, JSON.stringify(chatMessages));
-    }
-  }, [chatMessages, space_uuid]);
 
   // Scroll handler
   useEffect(() => {
@@ -120,22 +232,6 @@ const UserPage = () => {
   const uuidPattern =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
   const isValidUuid = uuidPattern.test(space_uuid);
-
-  // Find current space
-  const allSpaces = [
-    ...(userSpaces || []),
-    ...(courseSpaces || []),
-    ...(friendSpaces || []),
-  ];
-
-  const currentSpace = allSpaces.find(
-    (space) => space.space_uuid === space_uuid,
-  );
-
-  // Check if user is owner
-  const isOwnerSpace = currentSpace?.creator === user?.id;
-
-  const isFriendSpace = !isOwnerSpace;
 
   // Loading state
   if (userLoading || spaceLoading) {
@@ -160,6 +256,53 @@ const UserPage = () => {
     const selection = window.getSelection();
     if (!selection || selection.toString() === "") return;
     document.execCommand(command, false, null);
+  };
+
+  // Handle post creation
+  const handleCreatePost = async () => {
+    const postContent = editorRef.current?.innerText?.trim();
+
+    if (!postContent || !currentSpace?.space_id) {
+      addNotification({
+        type: "error",
+        message: "Please write something before posting",
+      });
+      return;
+    }
+
+    setIsCreatingPost(true);
+    try {
+      const result = await createPost({
+        space_id: currentSpace.space_id,
+        post_content: postContent,
+      });
+
+      if (result.success) {
+        // Clear editor
+        editorRef.current.innerHTML = "";
+        setIsFocused(false);
+
+        // Refetch posts to get the latest data
+        refetchPosts();
+
+        addNotification({
+          type: "success",
+          message: "Post created successfully!",
+        });
+      } else {
+        addNotification({
+          type: "error",
+          message: result.message || "Failed to create post",
+        });
+      }
+    } catch (error) {
+      addNotification({
+        type: "error",
+        message: "Failed to create post. Please try again.",
+      });
+    } finally {
+      setIsCreatingPost(false);
+    }
   };
 
   // Invite member
@@ -294,22 +437,16 @@ const UserPage = () => {
   };
 
   const handleSendMessage = (messageText) => {
-    // Add message to chat state with same format as useSpaceChat
+    // Add message to chat (you can integrate with your chat backend here)
     const newMessage = {
-      id: window.crypto.randomUUID(),
-      content: messageText,
-      type: 'text',
+      id: Date.now(),
       senderId: user?.id,
-      senderName: user?.fullname || 'You',
-      senderAvatar: user?.profile_pic,
-      timestamp: new Date().toISOString(),
-      spaceUuid: space_uuid
+      senderName: user?.fullname || "You",
+      text: messageText,
+      timestamp: "Just now",
+      avatar: user?.profile_pic,
+      isRead: false,
     };
-    
-    // Add to messages state
-    setChatMessages(prev => [...prev, newMessage]);
-    
-    // Show notification
 
     // For now, just show a notification (replace with actual chat implementation)
     addNotification({
@@ -858,7 +995,9 @@ const UserPage = () => {
                       />
                     </svg>
                   </div>
-                  <p className="text-gray-400 text-sm">No reminders posted yet</p>
+                  <p className="text-gray-400 text-sm">
+                    No reminders posted yet
+                  </p>
                   <p className="text-gray-500 text-xs mt-1">
                     Reminders will appear here when created
                   </p>
@@ -890,7 +1029,8 @@ const UserPage = () => {
                   {/* AVATAR */}
                   <img
                     src={
-                      user?.profile_pic || "/src/assets/HomePage/frieren-avatar.jpg"
+                      user?.profile_pic ||
+                      "/src/assets/HomePage/frieren-avatar.jpg"
                     }
                     alt="Avatar"
                     className="absolute left-6 top-6 w-10 h-10 rounded-full"
@@ -940,8 +1080,12 @@ const UserPage = () => {
                           >
                             Cancel
                           </button>
-                          <button className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">
-                            Post
+                          <button
+                            onClick={handleCreatePost}
+                            disabled={isCreatingPost}
+                            className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isCreatingPost ? "Posting..." : "Post"}
                           </button>
                         </div>
                       </div>
@@ -950,15 +1094,169 @@ const UserPage = () => {
                 </div>
               </div>
 
-              {/* ANNOUNCEMENT FEED */}
+              {/* POSTS FEED */}
               <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-6">
                 <h2 className="font-bold mb-4">Announcement Feed</h2>
-                <div className="text-center py-8">
-                  <p className="text-gray-400 text-lg">No announcements yet</p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Announcements will appear here when posted
-                  </p>
-                </div>
+
+                {isLoadingPosts ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400">Loading posts...</p>
+                  </div>
+                ) : postsError ? (
+                  <div className="text-center py-8">
+                    <p className="text-red-400">Error loading posts</p>
+                  </div>
+                ) : posts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400 text-lg">No posts yet</p>
+                    <p className="text-gray-500 text-sm mt-1">
+                      Posts will appear here when created
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {posts.map((post) => (
+                      <div
+                        key={post.post_id}
+                        className="bg-gray-800 rounded-lg p-4 border border-gray-700"
+                      >
+                        <div className="flex items-start space-x-3">
+                          {/* Avatar */}
+                          {post.profile_pic ? (
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                              <img
+                                src={post.profile_pic}
+                                alt={post.user_full_name || "User"}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                              {post.user_full_name?.charAt(0)?.toUpperCase() ||
+                                "U"}
+                            </div>
+                          )}
+
+                          {/* Post Content */}
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span className="font-semibold text-white">
+                                {post.user_full_name || "Unknown User"}
+                              </span>
+                              <span className="text-gray-400 text-sm">
+                                {timeAgo(post?.created_at)}
+                              </span>
+                            </div>
+                            <p className="text-gray-200 whitespace-pre-wrap mb-3">
+                              {post.post_content}
+                            </p>
+
+                            {/* Comment Button */}
+                            <button
+                              onClick={() => toggleComments(post.post_id)}
+                              className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors text-sm"
+                            >
+                              <FiMessageCircle size={16} />
+                              <span>Comments</span>
+                              {post.reply_count && (
+                                <span className="text-xs bg-gray-700 px-2 py-1 rounded-full">
+                                  {post.reply_count}
+                                </span>
+                              )}
+                            </button>
+
+                            {/* Comments Section */}
+                            {expandedPosts.has(post.post_id) && (
+                              <div className="mt-4 border-t border-gray-700 pt-4">
+                                {/* Existing Comments */}
+                                {comments[post.post_id] &&
+                                  comments[post.post_id].length > 0 && (
+                                    <div className="space-y-3 mb-4">
+                                      {comments[post.post_id].map((comment) => (
+                                        <div
+                                          key={comment.post_id}
+                                          className="flex items-start space-x-2"
+                                        >
+                                          <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                                            {comment.user_full_name
+                                              ?.charAt(0)
+                                              ?.toUpperCase() || "U"}
+                                          </div>
+                                          <div className="flex-1">
+                                            <div className="flex items-center space-x-2 mb-1">
+                                              <span className="font-medium text-white text-sm">
+                                                {comment.user_full_name ||
+                                                  "Unknown User"}
+                                              </span>
+                                              <span className="text-gray-400 text-xs">
+                                                {timeAgo(post?.created_at)}
+                                              </span>
+                                            </div>
+                                            <p className="text-gray-200 text-sm whitespace-pre-wrap">
+                                              {comment.post_content}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                {/* Comment Loading */}
+                                {isLoadingComments[post.post_id] && (
+                                  <div className="text-center py-2">
+                                    <p className="text-gray-400 text-sm">
+                                      Loading comments...
+                                    </p>
+                                  </div>
+                                )}
+
+                                {/* Add Comment */}
+                                <div className="flex items-start space-x-2">
+                                  <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                                    {user?.username?.charAt(0)?.toUpperCase() ||
+                                      "Y"}
+                                  </div>
+                                  <div className="flex-1">
+                                    <textarea
+                                      value={commentInputs[post.post_id] || ""}
+                                      onChange={(e) =>
+                                        handleCommentChange(
+                                          post.post_id,
+                                          e.target.value,
+                                        )
+                                      }
+                                      placeholder="Write a comment..."
+                                      className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      rows="2"
+                                    />
+                                    <div className="flex justify-end mt-2">
+                                      <button
+                                        onClick={() =>
+                                          handleCreateComment(post.post_id)
+                                        }
+                                        disabled={
+                                          !commentInputs[
+                                            post.post_id
+                                          ]?.trim() ||
+                                          isLoadingComments[post.post_id]
+                                        }
+                                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      >
+                                        {isLoadingComments[post.post_id]
+                                          ? "Posting..."
+                                          : "Post"}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1442,7 +1740,7 @@ const UserPage = () => {
       <style>
         {`
           .editor:empty:before {
-            content: "Post something to your space";
+            content: "Post something to your space with a maximum of 250 letters";
             color: #9ca3af;
             pointer-events: none;
           }
@@ -1489,7 +1787,6 @@ const UserPage = () => {
         currentUser={user}
         spaceMembers={spaceMembers}
         onSendMessage={handleSendMessage}
-        messages={chatMessages}
       />
     </div>
   );
