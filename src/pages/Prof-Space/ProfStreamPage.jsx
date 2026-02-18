@@ -42,6 +42,18 @@ const ProfStreamPage = () => {
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
+  const [charCount, setCharCount] = useState(0);
+  const [isCreatingPost, setIsCreatingPost] = useState(false);
+  const MAX_CHAR = 250;
+
+  // Additional state for posts and comments
+  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const [postsError, setPostsError] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [expandedPosts, setExpandedPosts] = useState(new Set());
+  const [comments, setComments] = useState({});
+  const [isLoadingComments, setIsLoadingComments] = useState({});
+  const [commentInputs, setCommentInputs] = useState({});
 
   // Refs - MUST BE AT THE TOP
   const lastScrollY = useRef(0);
@@ -213,6 +225,90 @@ const ProfStreamPage = () => {
       });
   };
 
+  // Create post
+  const handleCreatePost = async () => {
+    const content = editorRef.current?.innerText?.trim();
+    if (!content) return;
+
+    setIsCreatingPost(true);
+    try {
+      // TODO: Implement actual post creation logic
+      console.log("Creating post:", content);
+      editorRef.current.innerHTML = "";
+      setIsFocused(false);
+      setCharCount(0);
+    } catch (error) {
+      console.error("Failed to create post:", error);
+    } finally {
+      setIsCreatingPost(false);
+    }
+  };
+
+  // Enter chat
+  const handleEnterChat = () => {
+    // TODO: Implement chat navigation logic
+    console.log("Entering chat...");
+  };
+
+  // Time ago helper
+  const timeAgo = (dateString) => {
+    if (!dateString) return "Just now";
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return "Just now";
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+    return `${Math.floor(seconds / 86400)} days ago`;
+  };
+
+  // Toggle comments
+  const toggleComments = (postId) => {
+    const newExpanded = new Set(expandedPosts);
+    if (newExpanded.has(postId)) {
+      newExpanded.delete(postId);
+    } else {
+      newExpanded.add(postId);
+    }
+    setExpandedPosts(newExpanded);
+  };
+
+  // Handle comment change
+  const handleCommentChange = (postId, value) => {
+    setCommentInputs(prev => ({
+      ...prev,
+      [postId]: value
+    }));
+  };
+
+  // Create comment
+  const handleCreateComment = async (postId) => {
+    const content = commentInputs[postId]?.trim();
+    if (!content) return;
+
+    setIsLoadingComments(prev => ({
+      ...prev,
+      [postId]: true
+    }));
+
+    try {
+      // TODO: Implement actual comment creation logic
+      console.log("Creating comment:", content, "for post:", postId);
+      setCommentInputs(prev => ({
+        ...prev,
+        [postId]: ""
+      }));
+    } catch (error) {
+      console.error("Failed to create comment:", error);
+    } finally {
+      setIsLoadingComments(prev => ({
+        ...prev,
+        [postId]: false
+      }));
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       {/* ================= DESKTOP SIDEBAR ================= */}
@@ -361,203 +457,366 @@ const ProfStreamPage = () => {
             </div>
           )}
 
-          {/* POST BOX */}
-          <div
-            className={`
-              bg-white rounded-xl border cursor-text transition
-              ${isFocused ? "border-black" : "border-transparent"}
-              hover:border-black
-            `}
-            onClick={() => editorRef.current?.focus()}
-          >
-            <div className="relative p-6">
-              {/* AVATAR */}
-              <img
-                src={user?.profile_pic || "/src/assets/HomePage/frieren-avatar.jpg"}
-                alt="Avatar"
-                className="absolute left-6 top-6 w-10 h-10 rounded-full"
-              />
 
-              {/* EDITOR */}
-              <div
-                ref={editorRef}
-                contentEditable
-                suppressContentEditableWarning
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => {
-                  if (editorRef.current.innerText.trim() === "") {
-                    setIsFocused(false);
-                  }
-                }}
-                className="
-                  editor
-                  w-full
-                  min-h-[40px]
-                  bg-white
-                  text-black
-                  text-sm
-                  pl-14
-                  pr-4
-                  py-2
-                  outline-none
-                "
-              />
-
-              {/* ACTIONS */}
-              {isFocused && (
-                <>
-                  <div className="mt-4 border-t border-gray-300" />
-
-                  <div className="mt-4 flex justify-end">
-                    <div className="flex flex-wrap gap-2 sm:gap-3">
-                      <button
-                        onClick={() => {
-                          setIsFocused(false);
-                          editorRef.current.innerHTML = "";
-                        }}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
+                  {/* MAIN CONTENT GRID */}
+                  <div className="flex flex-col lg:flex-row gap-4 md:gap-6 mt-4">
+                    {/* LEFT SIDEBAR - 30% */}
+                    <div className="w-full lg:w-[30%]">
+                      {/* REMINDERS - STICKY */}
+                      <div
+                        className={`sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
                       >
-                        Cancel
-                      </button>
-                      <button className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">
-                        Post
-                      </button>
+                        <h2 className="font-bold mb-4">Reminders</h2>
+                        <div className="text-center py-6">
+                          <div className="text-gray-500 mb-2">
+                            <svg
+                              className="w-12 h-12 mx-auto"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                          </div>
+                          <p className="text-gray-400 text-sm">
+                            No reminders posted yet
+                          </p>
+                          <p className="text-gray-500 text-xs mt-1">
+                            Reminders will appear here when created
+                          </p>
+                        </div>
+        
+                        {/* CHAT */}
+                        <button
+                          onClick={handleEnterChat}
+                          className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-black border border-gray-700 hover:bg-gray-900"
+                        >
+                          <FiMessageCircle />
+                          Enter Chat
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* CONTENT GRID */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
-            {/* REMINDERS */}
-            <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4 md:p-5">
-              <h2 className="font-bold mb-4">Reminders</h2>
-              <div className="space-y-3">
-                <div className="bg-[#141820] p-3 rounded-lg">
-                  <p className="font-semibold text-sm">
-                    Week 7 Reflection Paper
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Operating System • Oct 15
-                  </p>
-                </div>
-                <div className="bg-[#141820] p-3 rounded-lg">
-                  <p className="font-semibold text-sm">
-                    Week 7 Individual Activity
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Operating System • Oct 15
-                  </p>
-                </div>
-              </div>
-
-              {/* CHAT */}
-              <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-black border border-gray-700 hover:bg-gray-900">
-                <FiMessageCircle />
-                Enter Chat
-              </button>
-            </div>
-
-            {/* ACTIVITY */}
-            <div className="lg:col-span-2 space-y-3 md:space-y-4">
-              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="flex gap-4">
-                  <FiFileText className="text-blue-400" size={24} />
-                  <div>
-                    <p className="font-semibold">
-                      Zeldrick shared a file with you
-                    </p>
-                    <p className="text-sm text-gray-400">OS • Week 7 Lecture</p>
-                  </div>
-                </div>
-                <button className="text-blue-400 hover:underline bg-transparent">
-                  See File
-                </button>
-              </div>
-
-              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="flex gap-4">
-                  <FiCheckCircle className="text-blue-400" size={24} />
-                  <div>
-                    <p className="font-semibold">
-                      Zeldrick assigned task with you
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      Thesis • Survey Revision
-                    </p>
-                  </div>
-                </div>
-                <button className="text-blue-400 hover:underline bg-transparent">
-                  See Task
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* PENDING INVITATIONS POPUP */}
-        {showPendingInvitations && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-              {/* Header */}
-              <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Pending Invitations</h2>
-                <button
-                  onClick={() => setShowPendingInvitations(false)}
-                  className="text-gray-400 hover:text-white p-1 bg-transparent"
-                >
-                  <FiX size={24} />
-                </button>
-              </div>
-
-              {/* Invitations List */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {joinRequestsData.length === 0 ? (
-                  <p className="text-gray-400 text-center py-4">No pending invitations</p>
-                ) : (
-                  joinRequestsData.map((invitation) => (
-                    <div key={invitation.account_id} className="bg-[#2A2F3A] rounded-lg p-4">
-                      <div className="flex items-start gap-3">
-                        <img
-                          src={invitation.profile_pic}
-                          alt={invitation.fullname}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-medium">{invitation.fullname}</h3>
-                          <p className="text-sm text-gray-400">{invitation.email}</p>
-                          <p className="text-sm mt-1">{invitation.message || "Hello world"}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs text-gray-500">{invitation.added_at}</span>
+        
+                    {/* RIGHT CONTENT - 70% */}
+                    <div className="w-full lg:w-[70%] space-y-6">
+                      {/* CREATE POST */}
+                      {isOwnerSpace && (
+                        <div
+                          className={`
+                          bg-white rounded-xl border cursor-text transition
+                          ${isFocused ? "border-black" : "border-transparent"}
+                          hover:border-black
+                        `}
+                          onClick={() => editorRef.current?.focus()}
+                        >
+                          <div className="relative p-6">
+                            {/* AVATAR */}
+                            <img
+                              src={
+                                user?.profile_pic ||
+                                "/src/assets/HomePage/frieren-avatar.jpg"
+                              }
+                              alt="Avatar"
+                              className="absolute left-6 top-6 w-10 h-10 rounded-full"
+                            />
+        
+                            {/* EDITOR */}
+                            <div
+                              ref={editorRef}
+                              contentEditable
+                              suppressContentEditableWarning
+                              onFocus={() => setIsFocused(true)}
+                              onBlur={() => {
+                                if (editorRef.current.innerText.trim() === "") {
+                                  setIsFocused(false);
+                                }
+                              }}
+                              onInput={() => {
+                                let text = editorRef.current.innerText;
+        
+                                if (text.length > MAX_CHAR) {
+                                  text = text.substring(0, MAX_CHAR);
+                                  editorRef.current.innerText = text;
+        
+                                  // Move cursor to end
+                                  const range = document.createRange();
+                                  const sel = window.getSelection();
+                                  range.selectNodeContents(editorRef.current);
+                                  range.collapse(false);
+                                  sel.removeAllRanges();
+                                  sel.addRange(range);
+                                }
+        
+                                setCharCount(text.length);
+                              }}
+                              className="
+                              editor
+                              w-full
+                              min-h-[40px]
+                              bg-white
+                              text-black
+                              text-sm
+                              pl-14
+                              pr-4
+                              py-2
+                              outline-none
+                            "
+                            />
+        
+                            {/* ACTIONS */}
+                            {isFocused && (
+                              <>
+                                {/* FORMAT */}
+        
+                                <div className="mt-4 border-t border-gray-300" />
+        
+                                {/* FOOTER */}
+                                <div className="mt-4 flex justify-between items-center">
+                                  <div>
+                                    <span
+                                      className={`text-xs sm:text-sm ${
+                                        charCount > MAX_CHAR
+                                          ? "text-red-500"
+                                          : "text-gray-500"
+                                      }`}
+                                    >
+                                      {charCount}/{MAX_CHAR}
+                                    </span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
+                                    <button
+                                      onClick={() => {
+                                        setIsFocused(false);
+                                        editorRef.current.innerHTML = "";
+                                      }}
+                                      className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      onClick={handleCreatePost}
+                                      disabled={isCreatingPost}
+                                      className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                      {isCreatingPost ? "Posting..." : "Post"}
+                                    </button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
-                      </div>
-                      <div className="flex justify-end gap-3 mt-3">
-                        <button
-                          disabled={spaceLoading}
-                          onClick={() => handleDeclineJoinRequest(invitation.account_id)}
-                          className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition"
-                        >
-                          Decline
-                        </button>
-                        <button
-                          disabled={spaceLoading}
-                          onClick={() => handleAcceptJoinRequest(invitation.account_id)}
-                          className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition"
-                        >
-                          Accept
-                        </button>
+                      )}
+        
+                      {/* POSTS FEED */}
+                      <div
+                        className={`bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${!isOwnerSpace && "h-full"} `}
+                      >
+                        <h2 className="font-bold mb-4">Announcement Feed</h2>
+        
+                        {isLoadingPosts ? (
+                          <div className="text-center py-8">
+                            <p className="text-gray-400">Loading posts...</p>
+                          </div>
+                        ) : postsError ? (
+                          <div className="text-center py-8">
+                            <p className="text-red-400">Error loading posts</p>
+                          </div>
+                        ) : posts.length === 0 ? (
+                          <div className="text-center py-8">
+                            <p className="text-gray-400 text-lg">No posts yet</p>
+                            <p className="text-gray-500 text-sm mt-1">
+                              Posts will appear here when created
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {posts.map((post) => (
+                              <div
+                                key={post.post_id}
+                                className="bg-gray-800 rounded-lg p-4 border border-gray-700"
+                              >
+                                <div className="flex items-start space-x-3">
+                                  {/* Avatar */}
+                                  {post.profile_pic ? (
+                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                      <img
+                                        src={post.profile_pic}
+                                        alt={post.user_full_name || "User"}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                      {post.user_full_name?.charAt(0)?.toUpperCase() ||
+                                        "U"}
+                                    </div>
+                                  )}
+        
+                                  {/* Post Content */}
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                      <span className="font-semibold text-white">
+                                        {post.user_full_name || "Unknown User"}
+                                      </span>
+                                      <span className="text-gray-400 text-sm">
+                                        {timeAgo(post?.created_at)}
+                                      </span>
+                                    </div>
+                                    <p className="text-gray-200 whitespace-pre-wrap mb-3">
+                                      {post.post_content}
+                                    </p>
+        
+                                    {/* Comment Button */}
+                                    <button
+                                      onClick={() => toggleComments(post.post_id)}
+                                      className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors text-sm"
+                                    >
+                                      <FiMessageCircle size={16} />
+                                      <span>Comments</span>
+                                      {post.reply_count > 0 && (
+                                        <span className="text-xs bg-gray-700 px-2 py-1 rounded-full">
+                                          {post.reply_count}
+                                        </span>
+                                      )}
+                                    </button>
+        
+                                    {/* Comments Section */}
+                                    {expandedPosts.has(post.post_id) && (
+                                      <div className="mt-4 border-t border-gray-700 pt-4">
+                                        {/* Existing Comments */}
+                                        {comments[post.post_id] &&
+                                          comments[post.post_id].length > 0 && (
+                                            <div className="space-y-3 mb-4">
+                                              {comments[post.post_id].map((comment) => (
+                                                <div
+                                                  key={comment.post_id}
+                                                  className="flex items-start space-x-2"
+                                                >
+                                                  {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                                                    {comment.user_full_name
+                                                      ?.charAt(0)
+                                                      ?.toUpperCase() || "U"}
+                                                  </div> */}
+        
+                                                  {post.profile_pic ? (
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                                      <img
+                                                        src={comment.profile_pic}
+                                                        alt={
+                                                          comment.user_full_name ||
+                                                          "User"
+                                                        }
+                                                        className="w-full h-full object-cover"
+                                                      />
+                                                    </div>
+                                                  ) : (
+                                                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                                      {post.user_full_name
+                                                        ?.charAt(0)
+                                                        ?.toUpperCase() || "U"}
+                                                    </div>
+                                                  )}
+                                                  <div className="flex-1">
+                                                    <div className="flex items-center space-x-2 mb-1">
+                                                      <span className="font-medium text-white text-sm">
+                                                        {comment.user_full_name ||
+                                                          "Unknown User"}
+                                                      </span>
+                                                      <span className="text-gray-400 text-xs">
+                                                        {timeAgo(comment?.created_at)}
+                                                      </span>
+                                                    </div>
+                                                    <p className="text-gray-200 text-sm whitespace-pre-wrap">
+                                                      {comment.post_content}
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+        
+                                        {/* Comment Loading */}
+                                        {isLoadingComments[post.post_id] && (
+                                          <div className="text-center py-2">
+                                            <p className="text-gray-400 text-sm">
+                                              Loading comments...
+                                            </p>
+                                          </div>
+                                        )}
+        
+                                        {/* Add Comment */}
+                                        <div className="flex items-start space-x-2">
+                                          {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                                            {user?.username?.charAt(0)?.toUpperCase() ||
+                                              "Y"}
+                                          </div> */}
+                                          {user?.profile_pic ? (
+                                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                              <img
+                                                src={user?.profile_pic}
+                                                alt={user?.full_name || "User"}
+                                                className="w-full h-full object-cover"
+                                              />
+                                            </div>
+                                          ) : (
+                                            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                              {post.user_full_name
+                                                ?.charAt(0)
+                                                ?.toUpperCase() || "Y"}
+                                            </div>
+                                          )}
+                                          <div className="flex-1">
+                                            <textarea
+                                              value={commentInputs[post.post_id] || ""}
+                                              onChange={(e) =>
+                                                handleCommentChange(
+                                                  post.post_id,
+                                                  e.target.value,
+                                                )
+                                              }
+                                              placeholder="Write a comment..."
+                                              className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                              rows="2"
+                                            />
+                                            <div className="flex justify-end mt-2">
+                                              <button
+                                                onClick={() =>
+                                                  handleCreateComment(post.post_id)
+                                                }
+                                                disabled={
+                                                  !commentInputs[
+                                                    post.post_id
+                                                  ]?.trim() ||
+                                                  isLoadingComments[post.post_id]
+                                                }
+                                                className="px-3 py-1 text-sm bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                              >
+                                                {isLoadingComments[post.post_id]
+                                                  ? "Posting..."
+                                                  : "Post"}
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
+                  </div>
+                </div>
+        
         {/* INVITE POPUP */}
         {showInvitePopup && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
