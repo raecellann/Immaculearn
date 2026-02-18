@@ -19,6 +19,7 @@ import MainLoading from "../../components/LoadingComponents/mainLoading";
 import PageNotFound from "../PageNotFound/pageNotFound";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
+import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 
 const ProfStreamPage = () => {
   const { space_uuid, space_name } = useParams();
@@ -39,7 +40,9 @@ const ProfStreamPage = () => {
   const [pendingButtonClicked, setPendingButtonClicked] = useState(false);
   const [deleteButtonClicked, setDeleteButtonClicked] = useState(false);
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
-  
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+
   // Refs - MUST BE AT THE TOP
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
@@ -130,16 +133,24 @@ const ProfStreamPage = () => {
   // Delete room
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
+    
+    // Show delete confirmation dialog
+    setDialogMessage(currentSpace.space_name);
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    // Prevent multiple executions
+    if (!currentSpace || !showDeleteDialog) return;
+    
+    setShowDeleteDialog(false);
     setDeleteButtonClicked(true);
-    const confirmDelete = window.confirm(`Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`);
-    if (!confirmDelete) {
-      setDeleteButtonClicked(false);
-      return;
-    }
     setIsDeleting(true);
+    
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-      alert(`Space "${currentSpace.space_name}" deleted successfully.`);
+      
+      // Navigate immediately after successful deletion
       navigate("/space");
     } catch (error) {
       console.error("Failed to delete space:", error);
@@ -148,6 +159,11 @@ const ProfStreamPage = () => {
       setIsDeleting(false);
       setDeleteButtonClicked(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteDialog(false);
+    setDeleteButtonClicked(false);
   };
 
   // Handle pending invitations
@@ -699,6 +715,14 @@ const ProfStreamPage = () => {
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        itemName={dialogMessage}
+      />
     </div>
   );
 };

@@ -136,8 +136,7 @@ export function DeleteConfirmationDialog({
   isOpen, 
   onClose, 
   onConfirm, 
-  title = "Are you sure?", 
-  message = "You won't be able to revert this!",
+  title = "Delete Space Notice.", 
   itemName = "" 
 }) {
   const warningMessage = itemName 

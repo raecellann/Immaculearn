@@ -1284,8 +1284,6 @@ const UserPage = () => {
         isOpen={showDeleteDialog}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title="Are you sure?"
-        message="You won't be able to revert this!"
         itemName={dialogMessage}
       />
 
@@ -1293,7 +1291,6 @@ const UserPage = () => {
       <SuccessDialog
         isOpen={showSuccessDialog}
         onClose={handleSuccessClose}
-        title="Deleted!"
         message={dialogMessage}
       />
 
@@ -1301,7 +1298,6 @@ const UserPage = () => {
       <CancelledDialog
         isOpen={showCancelledDialog}
         onClose={handleCancelledClose}
-        title="Cancelled"
         message={dialogMessage}
       />
     </div>

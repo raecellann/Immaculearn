@@ -1,53 +1,32 @@
 import React, { useState, useRef, useEffect } from "react";
-
 import { useNavigate, useParams } from "react-router";
-
 import ProfSidebar from "../component/profsidebar";
-
 import { FiFileText, FiMenu, FiX, FiUpload, FiCopy } from "react-icons/fi";
-
 import Logout from "../component/logout";
-
 import { useUser } from "../../contexts/user/useUser";
-
 import { useSpace } from "../../contexts/space/useSpace";
-
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
-
 import { useFileManager } from "../../hooks/useFileManager.js";
+import Button from "../component/button_2";
 
 
 
 const ProfFilesShared = () => {
-
   const navigate = useNavigate();
-
   const { space_uuid, space_name } = useParams();
-
-
 
   // Custom hooks
 
   const { user, isLoading: userLoading } = useUser();
-
   const {
-
     userSpaces,
-
     courseSpaces,
-
     friendSpaces,
-
     useJoinRequests,
-
     isLoading: spaceLoading,
-
     acceptJoinRequest,
-
     declineJoinRequest,
-
     deleteSpace
-
   } = useSpace();
 
 
@@ -56,12 +35,8 @@ const ProfFilesShared = () => {
 
   const { data: joinRequestsData = [], isLoading: joinRequestsLoading } = useJoinRequests(space_uuid || "");
 
-
-
   // UUID validation
-
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-
   const isValidUuid = uuidPattern.test(space_uuid);
 
 
@@ -69,7 +44,6 @@ const ProfFilesShared = () => {
   // Find current space
 
   const allSpaces = [...(userSpaces || []), ...(courseSpaces || []), ...(friendSpaces || [])];
-
   const currentSpace = allSpaces.find(space => space.space_uuid === space_uuid);
 
 
@@ -77,16 +51,11 @@ const ProfFilesShared = () => {
   // Check if user is owner
 
   const isOwnerSpace = currentSpace?.creator === user?.id;
-
   const isFriendSpace = !isOwnerSpace;
-
-
 
   // Space name
 
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
-
-
 
   const { list, create } = useFileManager(currentSpace?.space_id || null);
 
@@ -97,19 +66,12 @@ const ProfFilesShared = () => {
   /* ================= HEADER + SIDEBAR ================= */
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
   const [showLogout, setShowLogout] = useState(false);
-
   const [showHeader, setShowHeader] = useState(true);
-
   const [showInvitePopup, setShowInvitePopup] = useState(false);
-
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
-
   const [inviteEmail, setInviteEmail] = useState("");
-
   const [copyFeedback, setCopyFeedback] = useState("");
-
   const lastScrollY = useRef(0);
 
 
@@ -117,31 +79,19 @@ const ProfFilesShared = () => {
   // File upload states
 
   const [showCreateUploadModal, setShowCreateUploadModal] = useState(false);
-
   const [dragActive, setDragActive] = useState(false);
-
   const [uploadedFiles, setUploadedFiles] = useState([]);
-
   const [fileName, setFileName] = useState("");
-
   const [isCreatingFile, setIsCreatingFile] = useState(false);
-
-
 
   const handleDrag = (e) => {
 
     e.preventDefault();
-
     e.stopPropagation();
-
     if (e.type === "dragenter" || e.type === "dragover") {
-
       setDragActive(true);
-
     } else if (e.type === "dragleave") {
-
       setDragActive(false);
-
     }
 
   };
@@ -149,25 +99,15 @@ const ProfFilesShared = () => {
 
 
   const handleDrop = (e) => {
-
     e.preventDefault();
-
     e.stopPropagation();
-
     setDragActive(false);
-
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-
       const newFile = {
-
         id: Date.now(),
-
         name: e.dataTransfer.files[0].name,
-
         size: e.dataTransfer.files[0].size,
-
       };
-
       setUploadedFiles((prev) => [...prev, newFile]);
 
     }
@@ -177,73 +117,40 @@ const ProfFilesShared = () => {
 
 
   const handleFileChange = (e) => {
-
     if (e.target.files && e.target.files[0]) {
-
       const newFile = {
-
         id: Date.now(),
-
         name: e.target.files[0].name,
-
         size: e.target.files[0].size,
-
       };
-
       setUploadedFiles((prev) => [...prev, newFile]);
-
     }
 
   };
 
-
-
   useEffect(() => {
-
     const handleScroll = () => {
-
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-
         setShowHeader(false);
-
       } else {
-
         setShowHeader(true);
-
       }
-
       lastScrollY.current = currentScrollY;
-
     };
 
-
-
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
-
   }, []);
 
-
-
-  // Loading state
-
   if (userLoading || spaceLoading) {
-
     return <div className="flex h-screen justify-center items-center">Loading...</div>;
-
   }
-
-
 
   // Invalid space or not found
 
   if (!isValidUuid || !currentSpace) {
-
     return <div className="flex h-screen justify-center items-center text-white">Space not found</div>;
-
   }
 
 
@@ -570,41 +477,17 @@ const ProfFilesShared = () => {
 
                 <>
 
-                  <button 
+                  <div onClick={handleInviteMember}>
+                    <Button text="Add Member" />
+                  </div>
 
-                    onClick={handleInviteMember} 
+                  <div onClick={() => setShowPendingInvitations(true)}>
+                    <Button text="Pending Invites" />
+                  </div>
 
-                    className="px-3 py-1 text-xs bg-gray-600 rounded-md hover:bg-gray-500 transition"
-
-                  >
-
-                    Add Member
-
-                  </button>
-
-                  <button 
-
-                    onClick={() => setShowPendingInvitations(true)} 
-
-                    className="px-3 py-1 text-xs bg-blue-600 rounded-md hover:bg-blue-500 transition"
-
-                  >
-
-                    Pending Invites
-
-                  </button>
-
-                  <button
-
-                    onClick={handleDeleteRoom}
-
-                    className="px-3 py-1 text-xs bg-red-600 rounded-md hover:bg-red-500 transition"
-
-                  >
-
-                    Delete Room
-
-                  </button>
+                  <div onClick={handleDeleteRoom}>
+                    <Button text="Delete Room" />
+                  </div>
 
                 </>
 
@@ -712,41 +595,17 @@ const ProfFilesShared = () => {
 
             <div className="md:hidden flex justify-end gap-2 mb-6">
 
-              <button 
+              <div onClick={handleInviteMember}>
+                <Button text="Add Member" />
+              </div>
 
-                onClick={handleInviteMember} 
+              <div onClick={() => setShowPendingInvitations(true)}>
+                <Button text="Pending Invites" />
+              </div>
 
-                className="px-4 py-2 bg-gray-600 rounded-md hover:bg-gray-500 transition text-sm"
-
-              >
-
-                Add Member
-
-              </button>
-
-              <button 
-
-                onClick={() => setShowPendingInvitations(true)} 
-
-                className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-500 transition text-sm"
-
-              >
-
-                Pending Invites
-
-              </button>
-
-              <button
-
-                onClick={handleDeleteRoom}
-
-                className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-500 transition text-sm"
-
-              >
-
-                Delete Room
-
-              </button>
+              <div onClick={handleDeleteRoom}>
+                <Button text="Delete Room" />
+              </div>
 
             </div>
 

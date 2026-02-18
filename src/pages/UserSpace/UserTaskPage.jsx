@@ -22,6 +22,7 @@ import {
 import Logout from "../component/logout";
 import Sidebar from "../component/sidebar";
 import Button from "../component/button_2";
+import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 
 const UserTaskPage = () => {
@@ -32,6 +33,8 @@ const UserTaskPage = () => {
   const [copyFeedback, setCopyFeedback] = useState("");
   const [joinRequestsData, setJoinRequestsData] = useState([]);
   const [spaceLoading, setSpaceLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
 
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams();
@@ -671,23 +674,37 @@ const UserTaskPage = () => {
     setOpenDraftIndex(null);
   };
 
-  // Space management handlers
   const handleInviteMember = () => {
     setShowInvitePopup(true);
   };
 
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
-    const confirmDelete = window.confirm(`Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`);
-    if (!confirmDelete) return;
+    
+    // Show delete confirmation dialog
+    setDialogMessage(currentSpace.space_name);
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    // Prevent multiple executions
+    if (!currentSpace || !showDeleteDialog) return;
+    
+    setShowDeleteDialog(false);
+    
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-      alert(`Space "${currentSpace.space_name}" deleted successfully.`);
+      
+      // Navigate immediately after successful deletion
       navigate("/space");
     } catch (error) {
       console.error("Failed to delete space:", error);
       alert("Failed to delete space. Please try again.");
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteDialog(false);
   };
 
   const handleAcceptJoinRequest = async (userId) => {
@@ -2015,6 +2032,14 @@ const UserTaskPage = () => {
           </div>
         </div>
       )}
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        itemName={dialogMessage}
+      />
     </div>
   );
 };

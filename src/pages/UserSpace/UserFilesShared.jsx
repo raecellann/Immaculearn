@@ -5,6 +5,7 @@ import { FiCopy, FiFileText, FiMenu, FiX, FiUpload } from "react-icons/fi";
 import Logout from "../component/logout";
 import Sidebar from "../component/sidebar";
 import Button from "../component/button_2";
+import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { useFileManager } from "../../hooks/useFileManager.js";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -22,6 +23,8 @@ const UserFilesShared = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
   const lastScrollY = useRef(0);
 
   // File upload states
@@ -174,16 +177,31 @@ const UserFilesShared = () => {
   // Delete room
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
-    const confirmDelete = window.confirm(`Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`);
-    if (!confirmDelete) return;
+    
+    // Show delete confirmation dialog
+    setDialogMessage(currentSpace.space_name);
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    // Prevent multiple executions
+    if (!currentSpace || !showDeleteDialog) return;
+    
+    setShowDeleteDialog(false);
+    
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-      alert(`Space "${currentSpace.space_name}" deleted successfully.`);
+      
+      // Navigate immediately after successful deletion
       navigate("/space");
     } catch (error) {
       console.error("Failed to delete space:", error);
       alert("Failed to delete space. Please try again.");
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteDialog(false);
   };
 
   // Handle join requests
@@ -888,6 +906,14 @@ const UserFilesShared = () => {
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        itemName={dialogMessage}
+      />
     </div>
   );
 };
