@@ -331,7 +331,7 @@ const ProfSpacePage = () => {
               <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
                 <h3 className="text-lg font-semibold mb-3">Delete Space</h3>
                 <p className="text-gray-400 text-sm mb-6">
-                  Are you sure you want to leave this space? You'll need to be re-invited to join again.
+                  Are you sure you want to delete this space? This action cannot be undone.
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button
@@ -349,7 +349,7 @@ const ProfSpacePage = () => {
                     }}
                     className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
                   >
-                    Leave
+                    Delete
                   </button>
                 </div>
               </div>
