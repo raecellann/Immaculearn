@@ -25,6 +25,7 @@ import Button from "../component/button_2";
 import MainButton from "../component/Button.jsx";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import mammoth from 'mammoth';
 
 const UserTaskPage = () => {
   // ================= STATE MANAGEMENT =================
@@ -286,9 +287,14 @@ const UserTaskPage = () => {
         const extractedText = await extractTextFromFile(file);
         if (extractedText) {
           setInstruction(extractedText);
-          // Update the contentEditable div if it exists
+          // Update contentEditable div with preserved formatting
           if (instructionRef.current) {
-            instructionRef.current.innerHTML = extractedText;
+            // Use innerText to preserve spacing and line breaks
+            instructionRef.current.innerText = extractedText;
+            // Add CSS to preserve whitespace
+            instructionRef.current.style.whiteSpace = 'pre-wrap';
+            instructionRef.current.style.fontFamily = 'inherit';
+            instructionRef.current.style.fontSize = 'inherit';
           }
           console.log("Text extracted from document:", extractedText);
         }
@@ -347,18 +353,52 @@ const UserTaskPage = () => {
   };
 
   // DOCX text extraction
-  const extractTextFromDocx = (file) => {
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      fileReader.onload = function() {
-        const typedarray = new Uint8Array(this.result);
-        
-        // For DOCX extraction, you'd typically use mammoth.js
-        // For now, we'll return a placeholder indicating DOCX content
-        resolve(`[Word Document: ${file.name}]\n\nContent extraction from DOCX requires mammoth.js library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
-      };
-      fileReader.readAsArrayBuffer(file);
-    });
+  const extractTextFromDocx = async (file) => {
+    try {
+      console.log('Starting DOCX extraction for:', file.name);
+      console.log('File size:', file.size, 'bytes');
+      console.log('File type:', file.type);
+      
+      const arrayBuffer = await file.arrayBuffer();
+      console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
+      
+      if (!mammoth || !mammoth.extractRawText) {
+        throw new Error('Mammoth library not properly loaded');
+      }
+      
+      // Use extractRawText with options to preserve formatting
+      const result = await mammoth.extractRawText({ 
+        arrayBuffer,
+        options: {
+          preserveWhitespace: true,
+          includeDefaultStyleMap: true
+        }
+      });
+      
+      console.log('Mammoth result:', result);
+      console.log('Extracted text length:', result.value ? result.value.length : 0);
+      console.log('First 200 chars:', result.value ? result.value.substring(0, 200) : 'No text extracted');
+      
+      let text = result.value || "";
+      
+      // Preserve multiple spaces and line breaks
+      text = text
+        .replace(/\r\n/g, '\n')  // Normalize line endings
+        .replace(/\r/g, '\n')    // Convert Mac line endings to Unix
+        .replace(/[ \t]+$/gm, '') // Remove trailing spaces but keep internal spaces
+        .replace(/^[ \t]+/gm, '') // Remove leading spaces but keep internal spaces
+        .replace(/ {2,}/g, ' ')   // Only collapse multiple spaces to single spaces if they're excessive
+        .replace(/\n{3,}/g, '\n\n'); // Limit consecutive line breaks to 2
+      
+      console.log('Processed text length:', text.length);
+      console.log('First 200 chars (processed):', text.substring(0, 200));
+      
+      return text;
+      
+    } catch (error) {
+      console.error('Mammoth extraction error:', error);
+      throw error;
+    }
   };
 
   // PPTX text extraction
