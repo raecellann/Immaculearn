@@ -119,7 +119,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       staleTime: 30_000, // 30 seconds
 
       // Unused data stays in cache for 5 minutes
-      cacheTime: 300_000, // 5 minutes
+      // cacheTime: 300_000, // 5 minutes
 
       // Refetch stale data when window/tab regains focus
       refetchOnWindowFocus: true,

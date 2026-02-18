@@ -25,7 +25,8 @@ export interface SpaceContextType {
 
   // Queries
   useJoinRequests: (
-    spaceId: string
+    spaceId: string,
+    isAuthenticated: boolean
   ) => UseQueryResult<SpacePendingInvitation[], Error>;
 
   // New: Task queries
