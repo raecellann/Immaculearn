@@ -178,15 +178,7 @@ const ProfTaskPage = () => {
     return () => window.removeEventListener('resize', checkTablet);
   }, []);
 
-  // Loading state
-  if (userLoading || spaceLoading) {
-    return <div className="flex h-screen justify-center items-center">Loading...</div>;
-  }
-
-  // Invalid space or not found
-  if (!isValidUuid || !currentSpace) {
-    return <div className="flex h-screen justify-center items-center text-white">Space not found</div>;
-  }
+  
 
   // Invite member
   const handleInviteMember = () => {
@@ -732,6 +724,16 @@ const ProfTaskPage = () => {
     }
     setOpenDraftIndex(null);
   };
+
+  // Loading state
+  if (userLoading || spaceLoading) {
+    return <div className="flex h-screen justify-center items-center">Loading...</div>;
+  }
+
+  // Invalid space or not found
+  if (!isValidUuid || !currentSpace) {
+    return <div className="flex h-screen justify-center items-center text-white">Space not found</div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
