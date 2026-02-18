@@ -77,12 +77,15 @@ const SpacePage = () => {
 
   // Filter shared spaces (same logic as sample)
   const allSpaces = new Set([
-    ...(userSpaces || []).map(space => space.space_uuid), ...(courseSpaces || []).map(space => space.space_uuid)]
+    ...(userSpaces || []).map(space => space.space_uuid),
+    ...(courseSpaces || []).map(space => space.space_uuid)
+  ]);
+
+  const sharedSpaces = (friendSpaces || []).filter(space =>
+    !allSpaces.has(space.space_uuid) &&
+    space.members?.some(member => member.account_id === user?.id)
   );
 
-  const sharedSpaces = (friendSpaces || []).filter(
-    space => !allSpaces.has(space.space_uuid)
-  );
 
   // Course Spaces Data (from homepage logic)
   // const courseSpaces = courseSpaces?.filter((s) => !allSpaces.has(s.space_uuid));
