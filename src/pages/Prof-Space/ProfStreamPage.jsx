@@ -312,26 +312,6 @@ const ProfStreamPage = () => {
             </div>
           </div>
 
-          {/* Add Member Button - Mobile */}
-          {isOwnerSpace && (
-            <div className="md:hidden flex justify-end gap-2 mb-6">
-              <div onClick={handleInviteMember}>
-                <Button text="Add Member" />
-              </div>
-              <div onClick={handlePendingInvitations} className="relative">
-                <Button text="Pending Invites" />
-                {pendingInvitesCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {pendingInvitesCount}
-                  </span>
-                )}
-              </div>
-              <div onClick={handleDeleteRoom}>
-                <Button text="Delete Room" />
-              </div>
-            </div>
-          )}
-
           {/* ================= TABS ================= */}
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
@@ -360,6 +340,26 @@ const ProfStreamPage = () => {
               </div>
             </div>
           </div>
+
+          {/* Add Member Button - Mobile */}
+          {isOwnerSpace && (
+            <div className="md:hidden flex justify-end gap-2 mb-6">
+              <div onClick={handleInviteMember}>
+                <Button text="Add Member" />
+              </div>
+              <div onClick={handlePendingInvitations} className="relative">
+                <Button text="Pending Invites" />
+                {pendingInvitesCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {pendingInvitesCount}
+                  </span>
+                )}
+              </div>
+              <div onClick={handleDeleteRoom}>
+                <Button text="Delete Room" />
+              </div>
+            </div>
+          )}
 
           {/* POST BOX */}
           <div
