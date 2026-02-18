@@ -4,6 +4,7 @@ import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
 import Button from "../component/button_2";
 import { DeleteConfirmationDialog, SuccessDialog, CancelledDialog } from "../component/SweetAlert.jsx";
+import ChatPopup from "../component/ChatPopup";
 import {
   FiSearch,
   FiFileText,
@@ -47,6 +48,7 @@ const UserPage = () => {
   const [uploadError, setUploadError] = useState(null);
   const [backgroundUpload, setBackgroundUpload] = useState(false);
   const [showUploadNotification, setShowUploadNotification] = useState(false);
+  const [showChatPopup, setShowChatPopup] = useState(false);
 
   // State for dialog management
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -249,6 +251,63 @@ const UserPage = () => {
         setTimeout(() => setCopyFeedback(""), 2000);
       });
   };
+
+  // Handle chat popup
+  const handleEnterChat = () => {
+    setShowChatPopup(true);
+  };
+
+  const handleCloseChat = () => {
+    setShowChatPopup(false);
+  };
+
+  const handleSendMessage = (messageText) => {
+    // Add message to chat (you can integrate with your chat backend here)
+    const newMessage = {
+      id: Date.now(),
+      senderId: user?.id,
+      senderName: user?.fullname || 'You',
+      text: messageText,
+      timestamp: 'Just now',
+      avatar: user?.profile_pic,
+      isRead: false
+    };
+    
+    // For now, just show a notification (replace with actual chat implementation)
+    addNotification({
+      type: 'success',
+      title: 'Message Sent',
+      message: 'Your message was sent successfully',
+      duration: 3000
+    });
+    
+    console.log('Message sent:', newMessage);
+  };
+
+  // Sample space members (replace with actual data from your backend)
+  const spaceMembers = [
+    {
+      id: user?.id,
+      name: user?.fullname || 'You',
+      email: user?.email,
+      avatar: user?.profile_pic,
+      online: true
+    },
+    {
+      id: 2,
+      name: 'Zeldrick',
+      email: 'zeldrick@example.com',
+      avatar: 'https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg',
+      online: true
+    },
+    {
+      id: 3,
+      name: 'Nathaniel',
+      email: 'nathaniel@example.com',
+      avatar: 'https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg',
+      online: false
+    }
+  ];
 
   // File validation
   const validateFile = (file) => {
@@ -696,169 +755,36 @@ const UserPage = () => {
             </div>
           )}
 
-          {/* POST BOX */}
-          <div
-            className={`
-              bg-white rounded-xl border cursor-text transition
-              ${isFocused ? "border-black" : "border-transparent"}
-              hover:border-black
-            `}
-            onClick={() => editorRef.current?.focus()}
-          >
-            <div className="relative p-6">
-              {/* AVATAR */}
-              <img
-                src={user?.profile_pic || "/src/assets/HomePage/frieren-avatar.jpg"}
-                alt="Avatar"
-                className="absolute left-6 top-6 w-10 h-10 rounded-full"
-              />
-
-              {/* EDITOR */}
-              <div
-                ref={editorRef}
-                contentEditable
-                suppressContentEditableWarning
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => {
-                  if (editorRef.current.innerText.trim() === "") {
-                    setIsFocused(false);
-                  }
-                }}
-                className="
-                  editor
-                  w-full
-                  min-h-[40px]
-                  bg-white
-                  text-black
-                  text-sm
-                  pl-14
-                  pr-4
-                  py-2
-                  outline-none
-                "
-              />
-
-              {/* ACTIONS */}
-              {isFocused && (
-                <>
-                  {/* FORMAT */}
-                  <div className="flex gap-8 mt-4 text-black">
-                    <button
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        applyFormat("bold");
-                      }}
-                      className="font-bold text-lg bg-white"
-                    >
-                      B
-                    </button>
-                    <button
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        applyFormat("italic");
-                      }}
-                      className="italic text-lg bg-white"
-                    >
-                      I
-                    </button>
-                    <button
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        applyFormat("underline");
-                      }}
-                      className="underline text-lg bg-white"
-                    >
-                      U
-                    </button>
-                  </div>
-
-                  <div className="mt-4 border-t border-gray-300" />
-
-                  {/* FOOTER */}
-                  <div className="mt-4 flex justify-end">
-                    <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
-                      <button
-                        onClick={() => {
-                          setIsFocused(false);
-                          editorRef.current.innerHTML = "";
-                        }}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
-                      >
-                        Cancel
-                      </button>
-                      <button className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">
-                        Post
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
           {/* CONTENT GRID */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[30%_70%] gap-4 md:gap-6 mt-4">
             {/* REMINDERS */}
-            <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4 md:p-5">
+            <div className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4">
               <h2 className="font-bold mb-4">Reminders</h2>
-              <div className="space-y-3">
-                <div className="bg-[#141820] p-3 rounded-lg">
-                  <p className="font-semibold text-sm">
-                    Week 7 Reflection Paper
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Operating System • Oct 15
-                  </p>
+              <div className="text-center py-6">
+                <div className="text-gray-500 mb-2">
+                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-                <div className="bg-[#141820] p-3 rounded-lg">
-                  <p className="font-semibold text-sm">
-                    Week 7 Individual Activity
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Operating System • Oct 15
-                  </p>
-                </div>
+                <p className="text-gray-400 text-sm">No reminders posted yet</p>
+                <p className="text-gray-500 text-xs mt-1">Reminders will appear here when created</p>
               </div>
 
               {/* CHAT */}
-              <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-black border border-gray-700 hover:bg-gray-900">
+              <button 
+                onClick={handleEnterChat}
+                className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-black border border-gray-700 hover:bg-gray-900"
+              >
                 <FiMessageCircle />
                 Enter Chat
               </button>
             </div>
 
-            {/* ACTIVITY */}
-            <div className="lg:col-span-2 space-y-3 md:space-y-4">
-              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="flex gap-4">
-                  <FiFileText className="text-blue-400" size={24} />
-                  <div>
-                    <p className="font-semibold">
-                      Zeldrick shared a file with you
-                    </p>
-                    <p className="text-sm text-gray-400">OS • Week 7 Lecture</p>
-                  </div>
-                </div>
-                <button className="text-blue-400 hover:underline bg-transparent">
-                  See File
-                </button>
-              </div>
-
-              <div className="bg-[#1B1F26] p-4 md:p-5 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="flex gap-4">
-                  <FiCheckCircle className="text-blue-400" size={24} />
-                  <div>
-                    <p className="font-semibold">
-                      Zeldrick assigned task with you
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      Thesis • Survey Revision
-                    </p>
-                  </div>
-                </div>
-                <button className="text-blue-400 hover:underline bg-transparent">
-                  See Task
-                </button>
+            {/* POSTS MESSAGE */}
+            <div className="flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-gray-400 text-lg">No posts yet</p>
+                <p className="text-gray-500 text-sm mt-1">Posts will appear here when posted</p>
               </div>
             </div>
           </div>
@@ -1304,6 +1230,16 @@ const UserPage = () => {
         isOpen={showCancelledDialog}
         onClose={handleCancelledClose}
         message={dialogMessage}
+      />
+
+      {/* CHAT POPUP */}
+      <ChatPopup
+        isOpen={showChatPopup}
+        onClose={handleCloseChat}
+        spaceName={spaceName}
+        currentUser={user}
+        spaceMembers={spaceMembers}
+        onSendMessage={handleSendMessage}
       />
     </div>
   );
