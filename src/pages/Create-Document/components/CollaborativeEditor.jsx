@@ -299,21 +299,165 @@ const CollaborativeEditor = forwardRef(({
     // Handle bold (Ctrl/Cmd + B)
     if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
       e.preventDefault();
-      document.execCommand('bold', false, null);
+      
+      const selection = window.getSelection();
+      if (selection.rangeCount) {
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed) {
+          const selectedText = range.toString();
+          
+          // Check if selection contains non-whitespace characters
+          if (selectedText.trim().length > 0) {
+            // Determine if the selection is currently bold
+            const isBold = document.queryCommandState('bold');
+
+            let newHtml = '';
+            // Split by space character specifically
+            const words = selectedText.split(' ');
+
+            words.forEach((word, index) => {
+              if (word.trim().length > 0) {
+                // Non-whitespace: apply or remove bold
+                if (isBold) {
+                  newHtml += word; // Remove bold
+                } else {
+                  newHtml += `<strong>${word}</strong>`; // Apply bold
+                }
+              }
+              
+              // Add &nbsp; between words (except for the last one) - never formatted
+              if (index < words.length - 1) {
+                newHtml += '&nbsp;';
+              }
+            });
+            
+            // Replace the selection with the new HTML
+            range.deleteContents();
+            const div = document.createElement('div');
+            div.innerHTML = newHtml;
+            const fragment = document.createDocumentFragment();
+            while (div.firstChild) {
+              fragment.appendChild(div.firstChild);
+            }
+            range.insertNode(fragment);
+            
+            // Restore selection
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
+      }
+      
       setTimeout(() => handleInput({ target: editorRef.current }), 0);
     }
     
     // Handle italic (Ctrl/Cmd + I)
     if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
       e.preventDefault();
-      document.execCommand('italic', false, null);
+      
+      const selection = window.getSelection();
+      if (selection.rangeCount) {
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed) {
+          const selectedText = range.toString();
+          
+          // Check if selection contains non-whitespace characters
+          if (selectedText.trim().length > 0) {
+            // Determine if the selection is currently italic
+            const isItalic = document.queryCommandState('italic');
+
+            let newHtml = '';
+            // Split by space character specifically
+            const words = selectedText.split(' ');
+
+            words.forEach((word, index) => {
+              if (word.trim().length > 0) {
+                // Non-whitespace: apply or remove italic
+                if (isItalic) {
+                  newHtml += word; // Remove italic
+                } else {
+                  newHtml += `<em>${word}</em>`; // Apply italic
+                }
+              }
+              
+              // Add &nbsp; between words (except for the last one) - never formatted
+              if (index < words.length - 1) {
+                newHtml += '&nbsp;';
+              }
+            });
+            
+            // Replace the selection with the new HTML
+            range.deleteContents();
+            const div = document.createElement('div');
+            div.innerHTML = newHtml;
+            const fragment = document.createDocumentFragment();
+            while (div.firstChild) {
+              fragment.appendChild(div.firstChild);
+            }
+            range.insertNode(fragment);
+            
+            // Restore selection
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
+      }
+      
       setTimeout(() => handleInput({ target: editorRef.current }), 0);
     }
     
     // Handle underline (Ctrl/Cmd + U)
     if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
       e.preventDefault();
-      document.execCommand('underline', false, null);
+      
+      const selection = window.getSelection();
+      if (selection.rangeCount) {
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed) {
+          const selectedText = range.toString();
+          
+          // Check if selection contains non-whitespace characters
+          if (selectedText.trim().length > 0) {
+            // Determine if the selection is currently underlined
+            const isUnderlined = document.queryCommandState('underline');
+
+            let newHtml = '';
+            // Split by space character specifically
+            const words = selectedText.split(' ');
+
+            words.forEach((word, index) => {
+              if (word.trim().length > 0) {
+                // Non-whitespace: apply or remove underline
+                if (isUnderlined) {
+                  newHtml += word; // Remove underline
+                } else {
+                  newHtml += `<u>${word}</u>`; // Apply underline
+                }
+              }
+              
+              // Add &nbsp; between words (except for the last one) - never formatted
+              if (index < words.length - 1) {
+                newHtml += '&nbsp;';
+              }
+            });
+            
+            // Replace the selection with the new HTML
+            range.deleteContents();
+            const div = document.createElement('div');
+            div.innerHTML = newHtml;
+            const fragment = document.createDocumentFragment();
+            while (div.firstChild) {
+              fragment.appendChild(div.firstChild);
+            }
+            range.insertNode(fragment);
+            
+            // Restore selection
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
+      }
+      
       setTimeout(() => handleInput({ target: editorRef.current }), 0);
     }
   };
@@ -378,7 +522,7 @@ const CollaborativeEditor = forwardRef(({
           className="prose prose-sm sm:prose-base lg:prose-lg focus:outline-none max-w-none min-h-[400px] sm:min-h-[500px] p-4 sm:p-6 md:p-8"
           style={{
             ...responsivePaperStyle,
-            fontFamily: fontFamily || 'Inter, sans-serif',
+            fontFamily: fontFamily || 'Calibri, Inter, sans-serif',
             background: currentColors.surface,
             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
             color: currentColors.text,
