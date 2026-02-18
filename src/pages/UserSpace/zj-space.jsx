@@ -1189,7 +1189,7 @@ const UserPage = () => {
                             >
                               <FiMessageCircle size={16} />
                               <span>Comments</span>
-                              {post.reply_count && (
+                              {post.reply_count > 0 && (
                                 <span className="text-xs bg-gray-700 px-2 py-1 rounded-full">
                                   {post.reply_count}
                                 </span>
@@ -1208,11 +1208,30 @@ const UserPage = () => {
                                           key={comment.post_id}
                                           className="flex items-start space-x-2"
                                         >
-                                          <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                                          {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
                                             {comment.user_full_name
                                               ?.charAt(0)
                                               ?.toUpperCase() || "U"}
-                                          </div>
+                                          </div> */}
+
+                                          {post.profile_pic ? (
+                                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                              <img
+                                                src={comment.profile_pic}
+                                                alt={
+                                                  comment.user_full_name ||
+                                                  "User"
+                                                }
+                                                className="w-full h-full object-cover"
+                                              />
+                                            </div>
+                                          ) : (
+                                            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                              {post.user_full_name
+                                                ?.charAt(0)
+                                                ?.toUpperCase() || "U"}
+                                            </div>
+                                          )}
                                           <div className="flex-1">
                                             <div className="flex items-center space-x-2 mb-1">
                                               <span className="font-medium text-white text-sm">
@@ -1243,10 +1262,25 @@ const UserPage = () => {
 
                                 {/* Add Comment */}
                                 <div className="flex items-start space-x-2">
-                                  <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                                  {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
                                     {user?.username?.charAt(0)?.toUpperCase() ||
                                       "Y"}
-                                  </div>
+                                  </div> */}
+                                  {user?.profile_pic ? (
+                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                      <img
+                                        src={user?.profile_pic}
+                                        alt={user?.full_name || "User"}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                      {post.user_full_name
+                                        ?.charAt(0)
+                                        ?.toUpperCase() || "Y"}
+                                    </div>
+                                  )}
                                   <div className="flex-1">
                                     <textarea
                                       value={commentInputs[post.post_id] || ""}
