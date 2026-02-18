@@ -8,11 +8,11 @@ const ChatPopup = ({
   currentUser, 
   spaceMembers = [],
   onSendMessage,
+  messages = [],
   className = ""
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const [showMembersList, setShowMembersList] = useState(false);
-  const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -30,20 +30,6 @@ const ChatPopup = ({
 
   const handleSendMessage = () => {
     if (newMessage.trim() && onSendMessage) {
-      // Create new message object
-      const newMsg = {
-        id: Date.now(),
-        senderId: currentUser?.id,
-        senderName: currentUser?.fullname || 'You',
-        text: newMessage.trim(),
-        timestamp: 'Just now',
-        avatar: currentUser?.profile_pic,
-        isRead: false
-      };
-      
-      // Add message to local state
-      setMessages(prev => [...prev, newMsg]);
-      
       // Call parent handler
       onSendMessage(newMessage.trim());
       
@@ -63,7 +49,7 @@ const ChatPopup = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1E222A] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+      <div className="bg-[#1E222A] rounded-2xl w-full max-w-4xl h-[85vh] overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#2A2F3A] to-[#1E222A] p-4 border-b border-gray-700">
           <div className="flex items-center justify-between">
@@ -168,14 +154,22 @@ const ChatPopup = ({
                       ? 'bg-blue-600 text-white rounded-br-sm' 
                       : 'bg-gray-700 text-white rounded-bl-sm'
                   }`}>
-                    <p className="text-sm break-words">{message.text}</p>
+                    <p className="text-sm break-words">{message.content || message.text}</p>
                   </div>
                   <div className={`flex items-center gap-2 mt-1 text-xs ${
                     isCurrentUser ? 'flex-row-reverse' : ''
                   }`}>
                     <span className="text-gray-500">{message.senderName}</span>
                     <span className="text-gray-400">•</span>
-                    <span className="text-gray-400">{message.timestamp}</span>
+                    <span className="text-gray-400">
+                    {message.timestamp === 'Just now' 
+                      ? 'Just now' 
+                      : new Date(message.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })
+                    }
+                  </span>
                     {message.isRead && isCurrentUser && (
                       <span className="text-blue-400">✓✓</span>
                     )}
@@ -197,12 +191,10 @@ const ChatPopup = ({
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
-                className="w-full bg-[#2A2F3A] text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 resize-none transition-all"
-                rows={1}
+                className="w-full bg-[#2A2F3A] text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 resize-none"
+                rows={2}
                 style={{
-                  minHeight: '44px',
-                  maxHeight: '120px',
-                  height: newMessage.split('\n').length > 1 ? 'auto' : '44px'
+                  height: '80px'
                 }}
               />
             </div>

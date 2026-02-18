@@ -49,6 +49,11 @@ const UserPage = () => {
   const [backgroundUpload, setBackgroundUpload] = useState(false);
   const [showUploadNotification, setShowUploadNotification] = useState(false);
   const [showChatPopup, setShowChatPopup] = useState(false);
+  const [chatMessages, setChatMessages] = useState(() => {
+    // Load messages from localStorage for this specific space
+    const savedMessages = localStorage.getItem(`chatMessages_${space_uuid}`);
+    return savedMessages ? JSON.parse(savedMessages) : [];
+  });
 
   // State for dialog management
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -79,6 +84,13 @@ const UserPage = () => {
 
   // Calculate pending invites count
   const pendingInvitesCount = joinRequestsData?.length || 0;
+
+  // Save chat messages to localStorage whenever they change
+  useEffect(() => {
+    if (space_uuid && chatMessages.length > 0) {
+      localStorage.setItem(`chatMessages_${space_uuid}`, JSON.stringify(chatMessages));
+    }
+  }, [chatMessages, space_uuid]);
 
   // Scroll handler
   useEffect(() => {
@@ -262,18 +274,22 @@ const UserPage = () => {
   };
 
   const handleSendMessage = (messageText) => {
-    // Add message to chat (you can integrate with your chat backend here)
+    // Add message to chat state with same format as useSpaceChat
     const newMessage = {
-      id: Date.now(),
+      id: window.crypto.randomUUID(),
+      content: messageText,
+      type: 'text',
       senderId: user?.id,
       senderName: user?.fullname || 'You',
-      text: messageText,
-      timestamp: 'Just now',
-      avatar: user?.profile_pic,
-      isRead: false
+      senderAvatar: user?.profile_pic,
+      timestamp: new Date().toISOString(),
+      spaceUuid: space_uuid
     };
     
-    // For now, just show a notification (replace with actual chat implementation)
+    // Add to messages state
+    setChatMessages(prev => [...prev, newMessage]);
+    
+    // Show notification
     addNotification({
       type: 'success',
       title: 'Message Sent',
@@ -1340,6 +1356,7 @@ const UserPage = () => {
         currentUser={user}
         spaceMembers={spaceMembers}
         onSendMessage={handleSendMessage}
+        messages={chatMessages}
       />
     </div>
   );

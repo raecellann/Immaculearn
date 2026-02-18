@@ -3,9 +3,23 @@ import useSocket from "./useSocket"; // import your hook
 
 export function useSpaceChat(spaceUuid, user) {
   const { socket, isConnected } = useSocket(); // ✅ reuse singleton socket
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    // Load messages from localStorage for this specific space
+    if (spaceUuid) {
+      const savedMessages = localStorage.getItem(`chatMessages_${spaceUuid}`);
+      return savedMessages ? JSON.parse(savedMessages) : [];
+    }
+    return [];
+  });
   const [spaceOnlineUsers, setSpaceOnlineUsers] = useState({}); // { spaceUuid: [userIds] }
   const previousSpaceRef = useRef(null);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (spaceUuid && messages.length > 0) {
+      localStorage.setItem(`chatMessages_${spaceUuid}`, JSON.stringify(messages));
+    }
+  }, [messages, spaceUuid]);
 
   // 1️⃣ Handle socket events once connected
   useEffect(() => {
@@ -50,7 +64,7 @@ export function useSpaceChat(spaceUuid, user) {
     socket.emit("join_chat", { spaceUuid });
     previousSpaceRef.current = spaceUuid;
 
-    setMessages([]); // clear while fetching messages
+    // Don't clear messages here - they're loaded from localStorage
   }, [spaceUuid, socket]);
 
   // 3️⃣ Send a message
