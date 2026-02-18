@@ -1,27 +1,68 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
+import { FiMenu, FiX, FiUsers } from "react-icons/fi";
+import { useUser } from "../../contexts/user/useUser";
+import { useSpace } from "../../contexts/space/useSpace";
+import MainLoading from "../../components/LoadingComponents/mainLoading";
 
-const NotificationPage = ({ notifications = [] }) => {
+const NotificationPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
-
-  // 🔹 ADDED: hide-on-scroll state
   const [showHeader, setShowHeader] = useState(true);
+  const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+
   const lastScrollY = useRef(0);
 
+  const { user, isLoading: userLoading } = useUser();
+  const {
+    userSpaces,
+    courseSpaces,
+    friendSpaces,
+    useJoinRequests,
+    acceptJoinRequest,
+    declineJoinRequest,
+    isLoading: spaceLoading
+  } = useSpace();
+
+  /* =========================
+     GET ALL OWNED SPACES
+  ========================= */
+  const ownedSpaces = useMemo(() => {
+    const allSpaces = [
+      ...(userSpaces || []),
+      ...(courseSpaces || []),
+      ...(friendSpaces || [])
+    ];
+
+    return allSpaces.filter(space => space.creator === user?.id);
+  }, [userSpaces, courseSpaces, friendSpaces, user]);
+
+  /* =========================
+     FETCH JOIN REQUESTS PER SPACE
+  ========================= */
+  const allJoinRequests = ownedSpaces.flatMap(space => {
+    const { data = [] } = useJoinRequests(space.space_uuid);
+    return data.map(request => ({
+      ...request,
+      space_uuid: space.space_uuid,
+      space_name: space.space_name
+    }));
+  });
+
+  const pendingInvitesCount = allJoinRequests.length;
+
+  /* =========================
+     SCROLL HIDE HEADER
+  ========================= */
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-        // scrolling down
         setShowHeader(false);
       } else {
-        // scrolling up
         setShowHeader(true);
       }
-
       lastScrollY.current = currentScrollY;
     };
 
@@ -29,45 +70,39 @@ const NotificationPage = ({ notifications = [] }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Default notifications for demo
-  const defaultNotifications = [
-    { id: 1, type: "invite", sender: "Zeldrick", message: "Zeldrick invited you to join their space" },
-    { id: 2, type: "file", sender: "Nathaniel", message: "Nathaniel shared a file with you" },
-    { id: 3, type: "task", sender: "Wilson", message: "Wilson assigned you a task in their space" },
-    { id: 4, type: "comment", sender: "Raecell", message: "Raecell commented on your activity" },
-    { id: 5, type: "invite", sender: "Zeldrick", message: "Zeldrick invited you to join their space" },
-    { id: 6, type: "file", sender: "Nathaniel", message: "Nathaniel shared a file with you" },
-    { id: 7, type: "comment", sender: "John", message: "John commented on your post" },
-    { id: 8, type: "task", sender: "Wilson", message: "Wilson assigned you a task in their space" },
-  ];
+  if (userLoading || spaceLoading) {
+    return (
+      <div className="flex h-screen justify-center items-center">
+        <MainLoading />
+      </div>
+    );
+  }
 
-  const notificationList = notifications.length > 0 ? notifications : defaultNotifications;
-
-  const getIconEmoji = (type) => {
-    switch (type) {
-      case "invite": return "👥";
-      case "file": return "📁";
-      case "task": return "📋";
-      case "comment": return "💬";
-      default: return "🔔";
+  const handleAccept = async (accountId, spaceUuid) => {
+    try {
+      await acceptJoinRequest(accountId, spaceUuid);
+    } catch (err) {
+      console.error("Accept failed:", err);
     }
   };
 
-  const handleAcceptInvitation = (id) => console.log("Accepted", id);
-  const handleDecline = (id) => console.log("Declined", id);
-  const handleOpenFile = (id) => console.log("Opened file", id);
-  const handleOpenTask = (id) => console.log("Opened task", id);
-  const handleViewComment = (id) => console.log("Viewed comment", id);
+  const handleDecline = async (accountId, spaceUuid) => {
+    try {
+      await declineJoinRequest(accountId, spaceUuid);
+    } catch (err) {
+      console.error("Decline failed:", err);
+    }
+  };
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
-
-      {/* Desktop Sidebar (Laptop & Desktop) */}
+      
+      {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* Mobile + Tablet Overlay */}
+      {/* MOBILE OVERLAY */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -75,7 +110,7 @@ const NotificationPage = ({ notifications = [] }) => {
         />
       )}
 
-      {/* Mobile + Tablet Sidebar */}
+      {/* MOBILE SIDEBAR */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
@@ -83,92 +118,125 @@ const NotificationPage = ({ notifications = [] }) => {
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* Main Content */}
+      {/* MAIN */}
       <div className="flex-1 flex flex-col">
 
-        {/* Mobile + Tablet Header with hide-on-scroll */}
+        {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
-            showHeader ? "translate-y-0" : "-translate-y-full"
-          }`}
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
+          flex items-center gap-4 fixed top-0 left-0 right-0 z-30
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            className="text-white text-2xl"
           >
-            ☰
+            <FiMenu />
           </button>
-          <h1 className="text-xl sm:text-2xl font-bold">Notifications</h1>
+          <h1 className="text-xl font-bold">Notifications</h1>
         </div>
 
-        {/* Spacer for fixed header */}
-        <div className="lg:hidden h-16"></div>
+        <div className="lg:hidden h-16" />
 
-        {/* Content */}
+        {/* CONTENT */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
-          {/* Desktop Header */}
-          <h1 className="hidden lg:block text-4xl font-bold mb-6 lg:mb-10 font-grotesque text-center">
+          <h1 className="hidden lg:block text-4xl font-bold mb-10 text-center">
             Notifications
           </h1>
 
-          <div className="w-full max-w-3xl mx-auto space-y-4">
-            {notificationList.map((notif) => (
-              <div
-                key={notif.id}
-                className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[#1E242E] p-4 rounded-lg gap-3"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{getIconEmoji(notif.type)}</span>
-                  <span className="text-base sm:text-lg font-medium">{notif.message}</span>
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-[#1E242E] p-5 rounded-lg flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <FiUsers size={22} />
+                <div>
+                  <p className="font-semibold">Pending Join Requests</p>
+                  <p className="text-sm text-gray-400">
+                    {pendingInvitesCount} request(s)
+                  </p>
                 </div>
+              </div>
 
-                <div className="flex gap-2 w-full sm:w-auto justify-end">
-                  {notif.type === "invite" ? (
-                    <>
+              <button
+                onClick={() => setShowPendingInvitations(true)}
+                className="text-blue-400 hover:underline"
+              >
+                View
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MODAL */}
+      {showPendingInvitations && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Pending Invitations</h2>
+              <button
+                onClick={() => setShowPendingInvitations(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <FiX size={22} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {allJoinRequests.length === 0 ? (
+                <p className="text-gray-400 text-center py-4">
+                  No pending invitations
+                </p>
+              ) : (
+                allJoinRequests.map(invite => (
+                  <div
+                    key={`${invite.space_uuid}-${invite.account_id}`}
+                    className="bg-[#2A2F3A] rounded-lg p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={invite.profile_pic}
+                        alt={invite.fullname}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium">{invite.fullname}</h3>
+                        <p className="text-sm text-gray-400">
+                          {invite.email}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Space: {invite.space_name}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 mt-3">
                       <button
-                        className="text-red-500 bg-transparent border border-transparent hover:border-red-500 hover:text-red-400 px-3 py-1 rounded-md transition text-sm whitespace-nowrap"
-                        onClick={() => handleDecline(notif.id)}
+                        onClick={() =>
+                          handleDecline(invite.account_id, invite.space_uuid)
+                        }
+                        className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md"
                       >
                         Decline
                       </button>
                       <button
-                        className="text-green-400 bg-transparent border border-transparent hover:border-green-400 hover:text-green-300 px-3 py-1 rounded-md transition text-sm whitespace-nowrap"
-                        onClick={() => handleAcceptInvitation(notif.id)}
+                        onClick={() =>
+                          handleAccept(invite.account_id, invite.space_uuid)
+                        }
+                        className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md"
                       >
-                        Accept Invitation
+                        Accept
                       </button>
-                    </>
-                  ) : notif.type === "file" ? (
-                    <button
-                      className="text-green-400 hover:underline bg-transparent text-sm whitespace-nowrap"
-                      onClick={() => handleOpenFile(notif.id)}
-                    >
-                      Open file
-                    </button>
-                  ) : notif.type === "task" ? (
-                    <button
-                      className="text-green-400 hover:underline bg-transparent text-sm whitespace-nowrap"
-                      onClick={() => handleOpenTask(notif.id)}
-                    >
-                      View Task
-                    </button>
-                  ) : notif.type === "comment" ? (
-                    <button
-                      className="text-blue-400 hover:underline bg-transparent text-sm whitespace-nowrap"
-                      onClick={() => handleViewComment(notif.id)}
-                    >
-                      View Comment
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-
         </div>
-      </div>
+      )}
 
-      {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
