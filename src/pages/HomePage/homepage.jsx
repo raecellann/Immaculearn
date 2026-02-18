@@ -76,8 +76,10 @@ const HomePage1 = () => {
   }, []);
 
   // Data
-  const userSpaceUUIDs = new Set(userSpaces.map((s) => s.space_uuid));
-  const sharedSpaces = friendSpaces.filter((s) => !userSpaceUUIDs.has(s.space_uuid));
+  const allSpaces = new Set([
+    ...(userSpaces || []).map(space => space.space_uuid), ...(courseSpaces || []).map(space => space.space_uuid)]
+  );
+  const sharedSpaces = friendSpaces.filter((s) => !allSpaces.has(s.space_uuid));
 
   const courseSpaceData = [
     { title: "Thesis and Research", members: "32 Students", image: "src/assets/SpacesCover/thesis.jpg", route: "/user-prof-space-thesis" },
