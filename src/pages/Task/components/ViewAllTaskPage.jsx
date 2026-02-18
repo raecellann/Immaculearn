@@ -76,7 +76,7 @@ const ViewAllTaskPage = () => {
   };
 
   const handleViewDetails = (task) => {
-    navigate(`/task-view/${task.spaceUuid}/${space_name}/${task.taskName}`);
+    navigate(`/task/${task.spaceUuid}/${space_name}/${task.taskName}`);
   };
 
   return (
@@ -133,7 +133,7 @@ const ViewAllTaskPage = () => {
           {/* Back Button */}
           <div className="mb-4 flex items-center">
             <button
-              onClick={() => navigate('/task')}
+              onClick={() => navigate(-1)}
               className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-lg font-medium transition-colors"
             >
               ← Back

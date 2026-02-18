@@ -22,6 +22,7 @@ import {
 import Logout from "../component/logout";
 import Sidebar from "../component/sidebar";
 import Button from "../component/button_2";
+import MainButton from "../component/Button.jsx";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 
@@ -952,12 +953,12 @@ const UserTaskPage = () => {
                           })}
                         </td>
                         <td className="py-3 px-4">
-                          <a
-                            href="/prof-task-view"
+                          <MainButton
                             className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                            onClick={() => navigate(`/task/${currentSpace?.space_uuid}/${currentSpace?.space_name}/${task.task_title}`)}
                           >
-                            View Details
-                          </a>
+                            View Button
+                          </MainButton>
                         </td>
                       </tr>
                     ))}

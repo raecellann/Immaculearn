@@ -96,7 +96,7 @@ const TaskViewPage = () => {
           {/* Back Button */}
           <div className="mb-4 flex items-center">
             <button
-              onClick={() => navigate(`/task/${space_uuid}/${space_name}`)}
+              onClick={() => navigate(-1)}
               className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-lg font-medium transition-colors"
             >
               ← Back

@@ -64,7 +64,7 @@ export const StudentRoutes = [
   },
   {
     key: "/task-view",
-    path: "/task-view/:space_uuid/:space_name/:task_name",
+    path: "/task/:space_uuid/:space_name/:task_name",
     element: <TaskViewPage />,
   },
 
