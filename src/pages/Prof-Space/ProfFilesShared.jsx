@@ -8,7 +8,7 @@ import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { useFileManager } from "../../hooks/useFileManager.js";
 import Button from "../component/button_2";
-
+import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 
 
 const ProfFilesShared = () => {
@@ -83,6 +83,7 @@ const ProfFilesShared = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [fileName, setFileName] = useState("");
   const [isCreatingFile, setIsCreatingFile] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleDrag = (e) => {
 
@@ -168,29 +169,23 @@ const ProfFilesShared = () => {
   // Delete room
 
   const handleDeleteRoom = async () => {
-
+    console.log("handleDeleteRoom called, currentSpace:", currentSpace);
     if (!currentSpace) return;
+    setShowDeleteDialog(true);
+  };
 
-    const confirmDelete = window.confirm(`Are you sure you want to delete "${currentSpace.space_name}"? This action cannot be undone.`);
-
-    if (!confirmDelete) return;
-
+  const confirmDeleteRoom = async () => {
+    if (!currentSpace) return;
+    
+    setShowDeleteDialog(false);
+    
     try {
-
       await deleteSpace(currentSpace.space_uuid, user.id);
-
-      alert(`Space "${currentSpace.space_name}" deleted successfully.`);
-
       navigate("/space");
-
     } catch (error) {
-
       console.error("Failed to delete space:", error);
-
       alert("Failed to delete space. Please try again.");
-
     }
-
   };
 
 
@@ -1423,12 +1418,20 @@ const ProfFilesShared = () => {
 
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
 
+      {/* DELETE CONFIRMATION DIALOG */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={confirmDeleteRoom}
+        space={currentSpace || {
+          space_name: "Unknown Space",
+          members: [],
+          files: [],
+          tasks: []
+        }}
+      />
     </div>
-
   );
-
 };
-
-
 
 export default ProfFilesShared;

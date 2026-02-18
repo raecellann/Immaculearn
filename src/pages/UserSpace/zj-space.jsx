@@ -1284,7 +1284,12 @@ const UserPage = () => {
         isOpen={showDeleteDialog}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        itemName={dialogMessage}
+        space={currentSpace || {
+          space_name: "Unknown Space",
+          members: [],
+          files: [],
+          tasks: []
+        }}
       />
 
       {/* SUCCESS DIALOG */}

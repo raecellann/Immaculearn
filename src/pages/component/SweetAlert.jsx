@@ -136,52 +136,123 @@ export function DeleteConfirmationDialog({
   isOpen, 
   onClose, 
   onConfirm, 
-  title = "Delete Space Notice.", 
-  itemName = "" 
+  space = {
+    space_name: "Unknown Space",
+    members: [],
+    files: [],
+    tasks: []
+  },
 }) {
-  const warningMessage = itemName 
-    ? (
-        <>
-          Are you sure you want to delete the space
-          <br />
-          <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>
-            "{itemName}?"
-          </span>
-          <br />
-          You won't be able to revert this!
-        </>
-      )
-    : "Are you sure you want to delete this space? You won't be able to revert this!";
-  
+  const [confirmationText, setConfirmationText] = useState("")
+  const isValid = confirmationText === space.space_name
+
+  console.log("DeleteConfirmationDialog received space:", space);
+
+  // Calculate counts
+  const filesCount = space.files?.length || 0
+  const tasksCount = space.tasks?.length || 0  
+  const peopleCount = space.members?.length || 0
+
   return (
-    <Dialog open={isOpen} as="div" className="relative z-10 focus:outline-none" onClose={() => {}}>
-      <div className="fixed inset-0 z-10 w-screen overflow-y-auto bg-black/50">
-        <div className="flex min-h-full items-center justify-center p-4">
-          <DialogPanel
-            transition
-            className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-closed:transform-[scale(95%)] data-closed:opacity-0 border border-white/20"
-          >
-            <DialogTitle as="h3" className="text-base/7 font-medium text-white flex items-center justify-between">
-              {title}
-              <button
-                onClick={onClose}
-                className="text-white/70 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10"
-                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      {/* Overlay */}
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <DialogPanel className="w-full max-w-lg bg-gray-900 rounded-2xl shadow-2xl p-6 space-y-6">
+
+          {/* Header */}
+          <div className="flex items-start justify-between">
+            <DialogTitle className="text-lg font-semibold text-white">
+              Delete Space
             </DialogTitle>
-            <p className="mt-2 text-sm/6 text-white/50 text-center" style={{ color: 'white' }}>
-              {warningMessage}
-            </p>
-            <div className="mt-4 flex gap-3 justify-center">
-              <DeleteButton onClick={onConfirm} />
-              <CancelButton onClick={onClose} />
+
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-200 transition"
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="text-gray-300 text-sm">
+            Are you sure you want to delete the following workspace?
+          </p>
+
+          {/* Warning Box */}
+          <div className="flex gap-3 bg-red-900/20 border border-red-800/50 rounded-xl p-4">
+            <div className="w-1 bg-red-500 rounded-full" />
+            <div className="text-xs text-gray-300">
+              <span className="font-semibold text-white">Warning:</span>{" "}
+              This action <span className="font-semibold">cannot be undone</span>.
+              Deleting a space will remove all its associated data. Any files,
+              tasks, configurations, and more will be{" "}
+              <span className="font-semibold">permanently lost</span>.
             </div>
-          </DialogPanel>
-        </div>
+          </div>
+
+          {/* Workspace Card */}
+          <div className="flex items-center justify-between border border-gray-700 rounded-xl p-4 bg-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                ✓
+              </div>
+              <div>
+                <div className="font-medium text-white text-sm">
+                  {space.space_name}
+                </div>
+                <div className="text-xs text-gray-400">
+                  {filesCount} Files, {tasksCount} tasks, {peopleCount} people
+                </div>
+              </div>
+            </div>
+
+            <button className="text-xs border border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-700 transition text-gray-300">
+              Go to Home
+            </button>
+          </div>
+
+          {/* Confirmation Input */}
+          <div className="space-y-2">
+            <p className="text-xs text-gray-400">
+              To delete, type the workspace name{" "}
+              <span className="font-semibold text-white">
+                {space.space_name}
+              </span>{" "}
+              below
+            </p>
+
+            <input
+              type="text"
+              value={confirmationText}
+              onChange={(e) => setConfirmationText(e.target.value)}
+              placeholder={`Enter ${space.space_name}`}
+              className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 placeholder-gray-500"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 transition border border-gray-600"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={onConfirm}
+              disabled={!isValid}
+              className={`px-4 py-2 rounded-lg text-sm text-white transition ${
+                isValid
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-red-800 cursor-not-allowed"
+              }`}
+            >
+              Yes, Delete Space
+            </button>
+          </div>
+        </DialogPanel>
       </div>
     </Dialog>
   )
