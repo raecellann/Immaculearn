@@ -755,6 +755,106 @@ const UserPage = () => {
             </div>
           )}
 
+          {/* POST BOX */}
+          <div
+            className={`
+              bg-white rounded-xl border cursor-text transition
+              ${isFocused ? "border-black" : "border-transparent"}
+              hover:border-black
+            `}
+            onClick={() => editorRef.current?.focus()}
+          >
+            <div className="relative p-6">
+              {/* AVATAR */}
+              <img
+                src={user?.profile_pic || "/src/assets/HomePage/frieren-avatar.jpg"}
+                alt="Avatar"
+                className="absolute left-6 top-6 w-10 h-10 rounded-full"
+              />
+
+              {/* EDITOR */}
+              <div
+                ref={editorRef}
+                contentEditable
+                suppressContentEditableWarning
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => {
+                  if (editorRef.current.innerText.trim() === "") {
+                    setIsFocused(false);
+                  }
+                }}
+                className="
+                  editor
+                  w-full
+                  min-h-[40px]
+                  bg-white
+                  text-black
+                  text-sm
+                  pl-14
+                  pr-4
+                  py-2
+                  outline-none
+                "
+              />
+
+              {/* ACTIONS */}
+              {isFocused && (
+                <>
+                  {/* FORMAT */}
+                  <div className="flex gap-8 mt-4 text-black">
+                    <button
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        applyFormat("bold");
+                      }}
+                      className="font-bold text-lg bg-white"
+                    >
+                      B
+                    </button>
+                    <button
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        applyFormat("italic");
+                      }}
+                      className="italic text-lg bg-white"
+                    >
+                      I
+                    </button>
+                    <button
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        applyFormat("underline");
+                      }}
+                      className="underline text-lg bg-white"
+                    >
+                      U
+                    </button>
+                  </div>
+
+                  <div className="mt-4 border-t border-gray-300" />
+
+                  {/* FOOTER */}
+                  <div className="mt-4 flex justify-end">
+                    <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
+                      <button
+                        onClick={() => {
+                          setIsFocused(false);
+                          editorRef.current.innerHTML = "";
+                        }}
+                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
+                      >
+                        Cancel
+                      </button>
+                      <button className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap">
+                        Post
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
           {/* CONTENT GRID */}
           <div className="grid grid-cols-1 lg:grid-cols-[30%_70%] gap-4 md:gap-6 mt-4">
             {/* REMINDERS */}
