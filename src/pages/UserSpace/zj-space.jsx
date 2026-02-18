@@ -68,6 +68,8 @@ const UserPage = () => {
   // Refs - MUST BE AT THE TOP
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
+  const [charCount, setCharCount] = useState(0);
+  const MAX_CHAR = 250;
 
   // Custom hooks - MUST BE AT THE TOP
   const { user, isLoading: userLoading } = useUser();
@@ -1047,6 +1049,24 @@ const UserPage = () => {
                         setIsFocused(false);
                       }
                     }}
+                    onInput={() => {
+                      let text = editorRef.current.innerText;
+
+                      if (text.length > MAX_CHAR) {
+                        text = text.substring(0, MAX_CHAR);
+                        editorRef.current.innerText = text;
+
+                        // Move cursor to end
+                        const range = document.createRange();
+                        const sel = window.getSelection();
+                        range.selectNodeContents(editorRef.current);
+                        range.collapse(false);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                      }
+
+                      setCharCount(text.length);
+                    }}
                     className="
                       editor
                       w-full
@@ -1069,7 +1089,18 @@ const UserPage = () => {
                       <div className="mt-4 border-t border-gray-300" />
 
                       {/* FOOTER */}
-                      <div className="mt-4 flex justify-end">
+                      <div className="mt-4 flex justify-between items-center">
+                        <div>
+                          <span
+                            className={`text-xs sm:text-sm ${
+                              charCount > MAX_CHAR
+                                ? "text-red-500"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {charCount}/{MAX_CHAR}
+                          </span>
+                        </div>
                         <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
                           <button
                             onClick={() => {
