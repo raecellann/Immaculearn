@@ -115,6 +115,11 @@ const UserTaskPage = () => {
       return;
     }
 
+    if (!groups) {
+      alert("Due date is required");
+      return;
+    }
+
     const payload = {
       title: taskTitle,
       instruction: instruction || "No instruction provided",
@@ -203,7 +208,7 @@ const UserTaskPage = () => {
   const [showManualGroups, setShowManualGroups] = useState(false);
   const [showGenerateGroups, setShowGenerateGroups] = useState(false);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
-  const [numberOfGroups, setNumberOfGroups] = useState(1);
+  const [numberOfGroups, setNumberOfGroups] = useState(0);
   const [lastGroupSaved, setLastGroupSaved] = useState([]);
   const [groups, setGroups] = useState([
     {
@@ -215,6 +220,15 @@ const UserTaskPage = () => {
       wasPreviouslySaved: false,
     },
   ]);
+
+  const ispublisheable =
+    numberOfGroups > 0 &&
+    taskTitle &&
+    instruction &&
+    score &&
+    dueDate &&
+    taskCategory;
+  const isNotPublishable = !ispublisheable;
   const [activeGroup, setActiveGroup] = useState(1);
   const [lastActiveGroup, setLastActiveGroup] = useState(1);
   const [isTablet, setIsTablet] = useState(false);
@@ -635,6 +649,8 @@ const UserTaskPage = () => {
     };
 
     setGroups(updatedGroups);
+    setLastGroupSaved([]);
+    setNumberOfGroups(0);
   };
 
   const addMemberFromAvailable = (memberName) => {
@@ -1268,7 +1284,6 @@ const UserTaskPage = () => {
               </div>
               <div className="bg-black rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border border-white">
                 <div className="flex flex-col lg:flex-row gap-6">
-                
                   <div className="flex-1 flex flex-col gap-4">
                     <label className="font-semibold text-lg">
                       Title: <span className="text-red-500">*</span>
@@ -1555,7 +1570,7 @@ const UserTaskPage = () => {
                   <button
                     className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => handleUpload("uploaded")}
-                    disabled={uploadTaskMutation.isLoading}
+                    disabled={uploadTaskMutation.isLoading || isNotPublishable}
                   >
                     {uploadTaskMutation.isLoading
                       ? "Publishing..."
@@ -1565,7 +1580,7 @@ const UserTaskPage = () => {
                   <button
                     className="bg-gray-700 hover:bg-gray-800 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => handleUpload("draft")}
-                    disabled={draftTaskMutation.isLoading}
+                    disabled={draftTaskMutation.isLoading || isNotPublishable}
                   >
                     {draftTaskMutation.isLoading
                       ? "Saving..."
@@ -2217,7 +2232,7 @@ const UserTaskPage = () => {
                     },
                   ]);
 
-                  setNumberOfGroups(1);
+                  setNumberOfGroups(0);
                   setGroupsConfigured(false);
                   setGroupCreationMethod(null);
                   setShowResetConfirmation(false);
