@@ -406,37 +406,6 @@ const ProfStreamPage = () => {
               {/* ACTIONS */}
               {isFocused && (
                 <>
-                  {/* FORMAT */}
-                  <div className="flex gap-8 mt-4 text-black">
-                    <button
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        applyFormat("bold");
-                      }}
-                      className="font-bold text-lg bg-white"
-                    >
-                      B
-                    </button>
-                    <button
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        applyFormat("italic");
-                      }}
-                      className="italic text-lg bg-white"
-                    >
-                      I
-                    </button>
-                    <button
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        applyFormat("underline");
-                      }}
-                      className="underline text-lg bg-white"
-                    >
-                      U
-                    </button>
-                  </div>
-
                   <div className="mt-4 border-t border-gray-300" />
 
                   <div className="mt-4 flex justify-end">
