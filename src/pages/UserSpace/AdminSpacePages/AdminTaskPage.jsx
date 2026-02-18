@@ -94,41 +94,11 @@ const AdminTaskPage = () => {
           }
           
         } else if (fileName.endsWith('.pdf')) {
-          // For PDF files - use a simpler client-side approach
-          const reader = new FileReader();
-          reader.onload = async (e) => {
-            try {
-              const typedarray = new Uint8Array(e.target.result);
-              
-              // Load PDF.js dynamically to avoid SSR issues
-              const pdfjsLib = await import('pdfjs-dist');
-              pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-              
-              const pdf = await pdfjsLib.getDocument(typedarray).promise;
-              let extractedText = '';
-              
-              // Extract text from all pages
-              for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join(' ');
-                extractedText += pageText + ' ';
-              }
-              
-              if (instructionRef.current) {
-                instructionRef.current.innerText = extractedText.substring(0, 2000);
-              }
-            } catch (pdfError) {
-              console.error('PDF extraction error:', pdfError);
-              alert('Could not extract text from this PDF. Please try copying and pasting the text manually.');
-            }
-          };
-          reader.readAsArrayBuffer(file);
-          
+          // For PDF files - show placeholder for now
+          alert('PDF text extraction requires additional library integration. Please try copying and pasting the text manually.');
         } else if (fileName.endsWith('.doc')) {
           // For older .doc files
           alert('Older Word document (.doc) format requires special handling. Please save as .docx or .txt file, or copy and paste the text manually.');
-          
         } else {
           // For other files, try basic text extraction
           const reader = new FileReader();
