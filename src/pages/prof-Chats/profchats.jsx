@@ -1,5 +1,14 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCheck, FiCheckCircle, FiSettings, FiTrash2 } from "react-icons/fi";
+import {
+  FiSend,
+  FiMoreVertical,
+  FiSearch,
+  FiPaperclip,
+  FiCheck,
+  FiCheckCircle,
+  FiSettings,
+  FiTrash2,
+} from "react-icons/fi";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
@@ -20,31 +29,32 @@ const ProfChatPage = () => {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  
+
   // Color theme state
   const [showColorPicker, setShowColorPicker] = useState(false);
-  
+
   // Color options for chat bubbles
   const colorOptions = [
-    { name: 'Blue', sent: 'bg-blue-500', received: 'bg-gray-700' },
-    { name: 'Green', sent: 'bg-green-500', received: 'bg-gray-700' },
-    { name: 'Red', sent: 'bg-red-500', received: 'bg-gray-700' },
-    { name: 'Purple', sent: 'bg-purple-500', received: 'bg-gray-700' },
-    { name: 'Pink', sent: 'bg-pink-500', received: 'bg-gray-700' },
-    { name: 'Orange', sent: 'bg-orange-500', received: 'bg-gray-700' },
-    { name: 'Teal', sent: 'bg-teal-500', received: 'bg-gray-700' },
-    { name: 'Indigo', sent: 'bg-indigo-500', received: 'bg-gray-700' },
-    { name: 'Cyan', sent: 'bg-cyan-500', received: 'bg-gray-700' },
-    { name: 'Yellow', sent: 'bg-yellow-500', received: 'bg-gray-700' },
-    { name: 'Lime', sent: 'bg-lime-500', received: 'bg-gray-700' },
-    { name: 'Rose', sent: 'bg-rose-500', received: 'bg-gray-700' }
+    { name: "Blue", sent: "bg-blue-500", received: "bg-gray-700" },
+    { name: "Green", sent: "bg-green-500", received: "bg-gray-700" },
+    { name: "Red", sent: "bg-red-500", received: "bg-gray-700" },
+    { name: "Purple", sent: "bg-purple-500", received: "bg-gray-700" },
+    { name: "Pink", sent: "bg-pink-500", received: "bg-gray-700" },
+    { name: "Orange", sent: "bg-orange-500", received: "bg-gray-700" },
+    { name: "Teal", sent: "bg-teal-500", received: "bg-gray-700" },
+    { name: "Indigo", sent: "bg-indigo-500", received: "bg-gray-700" },
+    { name: "Cyan", sent: "bg-cyan-500", received: "bg-gray-700" },
+    { name: "Yellow", sent: "bg-yellow-500", received: "bg-gray-700" },
+    { name: "Lime", sent: "bg-lime-500", received: "bg-gray-700" },
+    { name: "Rose", sent: "bg-rose-500", received: "bg-gray-700" },
   ];
 
   // Per-conversation color state
   const [conversationColors, setConversationColors] = useState({});
 
   // Get current conversation color
-  const currentConversationColor = conversationColors[activeSpaceUuid] || colorOptions[0];
+  const currentConversationColor =
+    conversationColors[activeSpaceUuid] || colorOptions[0];
 
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
 
@@ -56,11 +66,13 @@ const ProfChatPage = () => {
 
   const uniqueMembers = useMemo(() => {
     const map = new Map();
-    allSpaces.flatMap((s) => s.members || []).forEach((m) => {
-      if (m.account_id !== user.id && !map.has(m.account_id)) {
-        map.set(m.account_id, m);
-      }
-    });
+    allSpaces
+      .flatMap((s) => s.members || [])
+      .forEach((m) => {
+        if (m.account_id !== user.id && !map.has(m.account_id)) {
+          map.set(m.account_id, m);
+        }
+      });
     return Array.from(map.values());
   }, [allSpaces, user.id]);
 
@@ -75,9 +87,11 @@ const ProfChatPage = () => {
       from: m.senderId === user.id ? "me" : "them",
       senderId: m.senderId,
       text: m.content,
-      type: m.type || 'text',
-      imageUrl: m.type === 'image' && m.imageUrl ? 
-        `data:image/jpeg;base64,${m.imageUrl}` : m.imageUrl,
+      type: m.type || "text",
+      imageUrl:
+        m.type === "image" && m.imageUrl
+          ? `data:image/jpeg;base64,${m.imageUrl}`
+          : m.imageUrl,
       avatar: m.senderAvatar,
       timestamp: new Date(m.timestamp),
       time: new Date(m.timestamp).toLocaleTimeString([], {
@@ -94,20 +108,20 @@ const ProfChatPage = () => {
     chatMessages.forEach((message) => {
       const today = new Date().toLocaleDateString();
       const yesterday = new Date(Date.now() - 86400000).toLocaleDateString();
-      
+
       let dateLabel = message.date;
       if (message.date === today) {
         dateLabel = "Today";
       } else if (message.date === yesterday) {
         dateLabel = "Yesterday";
       } else {
-        dateLabel = new Date(message.timestamp).toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          month: 'short', 
-          day: 'numeric' 
+        dateLabel = new Date(message.timestamp).toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "short",
+          day: "numeric",
         });
       }
-      
+
       if (!groups[dateLabel]) {
         groups[dateLabel] = [];
       }
@@ -123,13 +137,13 @@ const ProfChatPage = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showDropdown && !event.target.closest('.dropdown-container')) {
+      if (showDropdown && !event.target.closest(".dropdown-container")) {
         setShowDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showDropdown]);
 
   // Handle sticky header scroll behavior
@@ -140,8 +154,12 @@ const ProfChatPage = () => {
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const scrollableElement = document.querySelector('.chat-messages-container');
-          const scrollTop = scrollableElement ? scrollableElement.scrollTop : window.pageYOffset;
+          const scrollableElement = document.querySelector(
+            ".chat-messages-container",
+          );
+          const scrollTop = scrollableElement
+            ? scrollableElement.scrollTop
+            : window.pageYOffset;
 
           if (scrollTop > lastScrollTop && scrollTop > 100) {
             // Scrolling down
@@ -158,20 +176,28 @@ const ProfChatPage = () => {
       }
     };
 
-    const scrollableElement = document.querySelector('.chat-messages-container');
+    const scrollableElement = document.querySelector(
+      ".chat-messages-container",
+    );
     if (scrollableElement) {
-      scrollableElement.addEventListener('scroll', handleScroll, { passive: true });
-      return () => scrollableElement.removeEventListener('scroll', handleScroll);
+      scrollableElement.addEventListener("scroll", handleScroll, {
+        passive: true,
+      });
+      return () =>
+        scrollableElement.removeEventListener("scroll", handleScroll);
     } else {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      return () => window.removeEventListener('scroll', handleScroll);
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      return () => window.removeEventListener("scroll", handleScroll);
     }
   }, []);
 
   const getPrivateSpaceUuid = (a, b) => [a, b].sort().join("-");
 
   const getOnlineCountForSpace = (space) => {
-    return spaceOnlineUsers[space.space_uuid]?.filter(id => id !== user.id).length || 0;
+    return (
+      spaceOnlineUsers[space.space_uuid]?.filter((id) => id !== user.id)
+        .length || 0
+    );
   };
 
   const activeSpace = useMemo(() => {
@@ -179,7 +205,7 @@ const ProfChatPage = () => {
 
     // Check if it's a private chat (between two users)
     const member = uniqueMembers.find(
-      (m) => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid
+      (m) => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid,
     );
     if (member) {
       return { space_name: member.full_name }; // 1:1 chat
@@ -194,17 +220,21 @@ const ProfChatPage = () => {
 
     // For private chats, check if the other participant is online
     const member = uniqueMembers.find(
-      (m) => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid
+      (m) => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid,
     );
     if (member) {
-      return spaceOnlineUsers[activeSpaceUuid]?.includes(member.account_id) ? "Online" : "Offline";
+      return spaceOnlineUsers[activeSpaceUuid]?.includes(member.account_id)
+        ? "Online"
+        : "Offline";
     }
 
     // For group chats, check if any member is online
     if (space && space.members) {
       const onlineMembers = spaceOnlineUsers[space.space_uuid] || [];
-      const otherOnlineMembers = space.members.filter(member =>
-        member.account_id !== user.id && onlineMembers.includes(member.account_id)
+      const otherOnlineMembers = space.members.filter(
+        (member) =>
+          member.account_id !== user.id &&
+          onlineMembers.includes(member.account_id),
       );
       return otherOnlineMembers.length > 0 ? "Online" : "Offline";
     }
@@ -212,8 +242,10 @@ const ProfChatPage = () => {
   };
 
   const participantStatus = getParticipantStatus(activeSpace);
-  const statusColorClass = participantStatus === "Online" ? "text-green-500" : "text-gray-500";
-  const statusDotClass = participantStatus === "Online" ? "bg-green-500" : "bg-gray-500";
+  const statusColorClass =
+    participantStatus === "Online" ? "text-green-500" : "text-gray-500";
+  const statusDotClass =
+    participantStatus === "Online" ? "bg-green-500" : "bg-gray-500";
 
   // Send message helper
   const handleSend = () => {
@@ -227,12 +259,12 @@ const ProfChatPage = () => {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith("image/")) {
         // Send image message
         sendImageMessage(file);
       } else {
         // Handle other file types if needed
-        console.log('Non-image file uploaded:', file);
+        console.log("Non-image file uploaded:", file);
       }
     }
   };
@@ -244,38 +276,41 @@ const ProfChatPage = () => {
   };
 
   const handleColorSelect = (color) => {
-    setConversationColors(prev => ({
+    setConversationColors((prev) => ({
       ...prev,
-      [activeSpaceUuid]: color
+      [activeSpaceUuid]: color,
     }));
     setShowColorPicker(false);
-    
+
     // Save color preference to localStorage (per conversation)
-    const savedColors = JSON.parse(localStorage.getItem('profConversationColors') || '{}');
+    const savedColors = JSON.parse(
+      localStorage.getItem("profConversationColors") || "{}",
+    );
     savedColors[activeSpaceUuid] = color;
-    localStorage.setItem('profConversationColors', JSON.stringify(savedColors));
+    localStorage.setItem("profConversationColors", JSON.stringify(savedColors));
   };
 
   // Load saved colors on component mount and when activeSpaceUuid changes
   useEffect(() => {
-    const savedColors = JSON.parse(localStorage.getItem('profConversationColors') || '{}');
+    const savedColors = JSON.parse(
+      localStorage.getItem("profConversationColors") || "{}",
+    );
     setConversationColors(savedColors);
   }, [activeSpaceUuid]);
 
   // Message status icon
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'sent':
+      case "sent":
         return <FiCheck className="text-xs text-gray-400" />;
-      case 'delivered':
+      case "delivered":
         return <FiCheckCircle className="text-xs text-gray-400" />;
-      case 'read':
+      case "read":
         return <FiCheckCircle className="text-xs text-blue-400" />;
       default:
         return null;
     }
   };
-  
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
@@ -320,285 +355,354 @@ const ProfChatPage = () => {
         </div>
 
         {/* Chat Content */}
-        <div className={`flex-1 flex flex-col lg:flex-row px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 gap-2 sm:gap-4 md:gap-6 overflow-hidden transition-all duration-300 ${showHeader ? 'pt-20 sm:pt-24 md:pt-20' : 'pt-2'} lg:pt-2 lg:py-6`}>
+        <div
+          className={`flex-1 flex flex-col lg:flex-row px-2 sm:px-4 md:px-6 py-2 sm:py-4 md:py-6 gap-2 sm:gap-4 md:gap-6 overflow-hidden transition-all duration-300 ${showHeader ? "pt-20 sm:pt-24 md:pt-20" : "pt-2"} lg:pt-2 lg:py-6`}
+        >
           {/* CHAT LIST */}
-          <div className={`${showMobileChat ? "hidden lg:block" : "block"} w-full lg:w-80 xl:w-96 2xl:w-[420px] flex flex-col min-h-0 lg:min-h-0 overflow-y-auto sm:overflow-y-auto lg:overflow-y-visible`}>
+          <div
+            className={`${showMobileChat ? "hidden lg:block" : "block"} w-full lg:w-80 xl:w-96 2xl:w-[420px] flex flex-col min-h-0 lg:min-h-0 overflow-y-auto sm:overflow-y-auto lg:overflow-y-visible`}
+          >
             <div className="hidden lg:flex mb-4">
               <h1 className="font-bold text-lg">Chats</h1>
             </div>
 
-          {/* SEARCH BAR */}
-          <div className="mb-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search People"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-5 pr-4 py-2 bg-gray-800 text-white rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <FiSearch className="absolute right-3 top-3 text-gray-400" />
-            </div>
-          </div>
-
-          {/* PEOPLE */}
-          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar">
-            <h2 className="font-semibold text-sm mb-3 text-gray-300">Students</h2>
-            {uniqueMembers
-              .filter(m => m.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
-              .map((m) => {
-                const uuid = getPrivateSpaceUuid(user.id, m.account_id);
-                return (
-                  <div
-                    key={m.account_id}
-                    onClick={() => {
-                      setActiveSpaceUuid(uuid);
-                      setShowMobileChat(true);
-                    }}
-                    className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
-                  >
-                    <div className="relative">
-                      <img
-                        src={m.profile_pic || "/default-avatar.png"}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm text-white">{m.full_name}</p>
-                      <p className="text-xs text-gray-400">Online</p>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-
-          {/* GROUPS */}
-          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar">
-            <h2 className="font-semibold text-sm mb-3 text-gray-300">Courses</h2>
-            {uniqueSpaces.map((space) => (
-              <div
-                key={space.space_uuid}
-                onClick={() => {
-                  setActiveSpaceUuid(space.space_uuid);
-                  setShowMobileChat(true);
-                }}
-                className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
-              >
-                <div className="relative">
-                  <GroupCover
-                    image={space.image}
-                    name={space.space_name}
-                    members={space.members.filter((m) => m.account_id !== user.id)}
-                    className="w-10 h-10"
-                  />
-                  {getOnlineCountForSpace(space) > 0 && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-sm text-white">{space.space_name}</p>
-                  <p className="text-xs text-gray-400">
-                    {getOnlineCountForSpace(space)} online • {space.members?.length || 0} members
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CHAT PANEL */}
-        <div className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 bg-[#1E2330] rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`}>
-          {!activeSpaceUuid ? (
-            <div className="flex-1 flex items-center justify-center text-gray-400 min-h-[400px] mt-16">
-              <div className="text-center text-lg">
-                Select a chat to start messaging
+            {/* SEARCH BAR */}
+            <div className="mb-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search People"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-5 pr-4 py-2 bg-gray-800 text-white rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <FiSearch className="absolute right-3 top-3 text-gray-400" />
               </div>
             </div>
-          ) : (
-            <>
-              {/* Fixed Header - Always Visible */}
-              <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center relative bg-[#1E2330] rounded-t-xl sticky top-0 z-10">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setShowMobileChat(false)}
-                    className="lg:hidden text-gray-400 hover:text-white bg-transparent border-none p-0"
-                  >
-                    ←
-                  </button>
-                  
-                  {/* Profile Picture and Status */}
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <img
-                        src={
-                          // For private chat, show the other person's profile
-                          uniqueMembers.find(m => getPrivateSpaceUuid(user.id, m.account_id) === activeSpaceUuid)?.profile_pic ||
-                          // For group chat, show group cover
-                          uniqueSpaces.find(s => s.space_uuid === activeSpaceUuid)?.image ||
-                          "/default-avatar.png"
-                        }
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div className={`absolute bottom-0 right-0 w-3 h-3 ${statusDotClass} rounded-full border-2 border-[#1E2330]`}></div>
-                    </div>
-                    <div>
-                      <h2 className="font-semibold text-white">{activeSpace?.space_name || "Chat"}</h2>
-                      <p className={`text-xs ${statusColorClass}`}>{participantStatus}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="relative dropdown-container">
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    className="text-gray-400 cursor-pointer hover:text-white bg-transparent border-none p-0"
-                  >
-                    <FiMoreVertical />
-                  </button>
-                  
-                  {/* Dropdown Menu */}
-                  {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-[#2A2F3E] rounded-lg shadow-lg border border-gray-600 z-50">
-                      <button
-                        onClick={handleThemeChange}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg flex items-center gap-3"
-                      >
-                        <FiSettings className="text-sm" />
-                        Change Color Theme
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          // Handle delete conversation
-                          if (window.confirm('Are you sure you want to delete this conversation?')) {
-                            console.log('Delete conversation:', activeSpaceUuid);
-                            // Add delete conversation logic here
-                          }
-                        }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-b-lg flex items-center gap-3"
-                      >
-                        <FiTrash2 className="text-sm" />
-                        Delete Conversation
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              {/* Messages - Scrollable Area */}
-              <div className={`chat-messages-container flex-1 p-2 sm:p-3 md:p-4 overflow-y-auto min-h-0 transition-all duration-300 scrollbar-hide ${showHeader ? 'max-h-[calc(100vh-160px)] sm:max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-170px)]' : 'max-h-[calc(100vh-80px)] sm:max-h-[calc(100vh-90px)] md:max-h-[calc(100vh-100px)]'}`} style={{
-                msOverflowStyle: 'none',
-                scrollbarWidth: 'none',
-                transform: 'translateX(0)',
-                paddingRight: '0',
-                marginRight: '0'
-              }}>
-                {Object.entries(messagesByDate).map(([dateLabel, dateMessages]) => (
-                  <div key={dateLabel}>
-                    {/* Date Separator */}
-                    <div className="flex items-center justify-center py-2">
-                      <div className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
-                        {dateLabel}
+            {/* PEOPLE */}
+            <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar">
+              <h2 className="font-semibold text-sm mb-3 text-gray-300">
+                Students
+              </h2>
+              {uniqueMembers
+                .filter((m) =>
+                  m.full_name.toLowerCase().includes(searchQuery.toLowerCase()),
+                )
+                .map((m) => {
+                  const uuid = getPrivateSpaceUuid(user.id, m.account_id);
+                  return (
+                    <div
+                      key={m.account_id}
+                      onClick={() => {
+                        setActiveSpaceUuid(uuid);
+                        setShowMobileChat(true);
+                      }}
+                      className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
+                    >
+                      <div className="relative">
+                        <img
+                          src={m.profile_pic || "/default-avatar.png"}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div
+                          className={`absolute bottom-0 right-0 w-3 h-3 ${statusDotClass} rounded-full border-2 border-[#1E2330]`}
+                        ></div>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm text-white">
+                          {m.full_name}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {participantStatus}
+                        </p>
                       </div>
                     </div>
-                    
-                    {/* Messages for this date */}
-                    {dateMessages.map((m, i) => {
-                      const showUnreadSeparator = dateLabel === "Today" && i === 3; // Show after 4th message of today
-                      const isLastUserMessage = m.from === "me" && i === dateMessages.length - 1;
-                      const nextMessage = dateMessages[i + 1];
-                      const shouldShowTime = m.from === "me" && (!nextMessage || nextMessage.from !== "me");
-                      const prevMessage = dateMessages[i - 1];
-                      const shouldShowAvatar = m.from === "them" && (!nextMessage || nextMessage.from !== "them");
-                      
-                      return (
-                        <React.Fragment key={m.id}>
-                          {showUnreadSeparator && (
-                            <div className="flex items-center justify-center py-2">
-                              <div className="bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
-                                Unread messages
-                              </div>
-                            </div>
-                          )}
-                          <div className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} ${m.from === "me" ? "mb-1" : "mb-3"} items-start`}>
-                            {shouldShowAvatar && (
-                              <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2 mt-1" />
-                            )}
-                            {!shouldShowAvatar && m.from === "them" && (
-                              <div className="w-8 h-8 mr-2 mt-1"></div>
-                            )}
-                            <div className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? `${currentConversationColor.sent} text-white rounded-br-md` : `${currentConversationColor.received} text-white rounded-bl-md`} ${m.from === "them" ? "-mt-1" : ""}`}>
-                              {m.type === 'image' ? (
-                                <div className="space-y-2">
-                                  <img 
-                                    src={m.imageUrl} 
-                                    alt={m.text} 
-                                    className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => window.open(m.imageUrl, '_blank')}
-                                  />
-                                  <p className="text-xs opacity-70">{m.text}</p>
-                                </div>
-                              ) : (
-                                <p className="text-sm">{m.text}</p>
-                              )}
-                                
-                                {/* Time and Status */}
-                                <div className={`flex items-center gap-1 mt-1 ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-                                  {shouldShowTime && (
-                                    <>
-                                      <span className="text-[10px] opacity-70">{m.time}</span>
-                                      {m.from === "me" && getStatusIcon(m.status)}
-                                    </>
-                                  )}
-                                </div>
-                            </div>
-                          </div>
-                        </React.Fragment>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
+                  );
+                })}
+            </div>
 
-              {/* Fixed Input - Always Visible */}
-              <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700 bg-[#1E2330] rounded-b-xl sticky bottom-0">
-                <div className="flex gap-2 sm:gap-3 bg-gray-800 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    accept="image/*"
-                  />
-                  <FiPaperclip 
-                    className="text-gray-400 cursor-pointer hover:text-white" 
-                    onClick={() => fileInputRef.current?.click()}
-                  />
-                  <input
-                    ref={inputRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSend();
-                    }}
-                    className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-sm sm:text-base"
-                    placeholder="Type your message here..."
-                  />
-                  <button 
-                    onClick={handleSend} 
-                    className="text-blue-500 hover:text-blue-400 transition-colors p-1 sm:p-0 bg-transparent border-none"
-                    disabled={!input.trim()}
-                  >
-                    <FiSend />
-                  </button>
+            {/* GROUPS */}
+            <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar">
+              <h2 className="font-semibold text-sm mb-3 text-gray-300">
+                Courses
+              </h2>
+              {uniqueSpaces.map((space) => (
+                <div
+                  key={space.space_uuid}
+                  onClick={() => {
+                    setActiveSpaceUuid(space.space_uuid);
+                    setShowMobileChat(true);
+                  }}
+                  className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
+                >
+                  <div className="relative">
+                    <GroupCover
+                      image={space.image}
+                      name={space.space_name}
+                      members={space.members.filter(
+                        (m) => m.account_id !== user.id,
+                      )}
+                      className="w-10 h-10"
+                    />
+                    {getOnlineCountForSpace(space) > 0 && (
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm text-white">
+                      {space.space_name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {getOnlineCountForSpace(space)} online •{" "}
+                      {space.members?.length || 0} members
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CHAT PANEL */}
+          <div
+            className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 bg-[#1E2330] rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`}
+          >
+            {!activeSpaceUuid ? (
+              <div className="flex-1 flex items-center justify-center text-gray-400 min-h-[400px] mt-16">
+                <div className="text-center text-lg">
+                  Select a chat to start messaging
                 </div>
               </div>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                {/* Fixed Header - Always Visible */}
+                <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center relative bg-[#1E2330] rounded-t-xl sticky top-0 z-10">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setShowMobileChat(false)}
+                      className="lg:hidden text-gray-400 hover:text-white bg-transparent border-none p-0"
+                    >
+                      ←
+                    </button>
+
+                    {/* Profile Picture and Status */}
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <img
+                          src={
+                            // For private chat, show the other person's profile
+                            uniqueMembers.find(
+                              (m) =>
+                                getPrivateSpaceUuid(user.id, m.account_id) ===
+                                activeSpaceUuid,
+                            )?.profile_pic ||
+                            // For group chat, show group cover
+                            uniqueSpaces.find(
+                              (s) => s.space_uuid === activeSpaceUuid,
+                            )?.image ||
+                            "/default-avatar.png"
+                          }
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div
+                          className={`absolute bottom-0 right-0 w-3 h-3 ${statusDotClass} rounded-full border-2 border-[#1E2330]`}
+                        ></div>
+                      </div>
+                      <div>
+                        <h2 className="font-semibold text-white">
+                          {activeSpace?.space_name || "Chat"}
+                        </h2>
+                        <p className={`text-xs ${statusColorClass}`}>
+                          {participantStatus}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="relative dropdown-container">
+                    <button
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className="text-gray-400 cursor-pointer hover:text-white bg-transparent border-none p-0"
+                    >
+                      <FiMoreVertical />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showDropdown && (
+                      <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-[#2A2F3E] rounded-lg shadow-lg border border-gray-600 z-50">
+                        <button
+                          onClick={handleThemeChange}
+                          className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg flex items-center gap-3"
+                        >
+                          <FiSettings className="text-sm" />
+                          Change Color Theme
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowDropdown(false);
+                            // Handle delete conversation
+                            if (
+                              window.confirm(
+                                "Are you sure you want to delete this conversation?",
+                              )
+                            ) {
+                              console.log(
+                                "Delete conversation:",
+                                activeSpaceUuid,
+                              );
+                              // Add delete conversation logic here
+                            }
+                          }}
+                          className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-b-lg flex items-center gap-3"
+                        >
+                          <FiTrash2 className="text-sm" />
+                          Delete Conversation
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Messages - Scrollable Area */}
+                <div
+                  className={`chat-messages-container flex-1 p-2 sm:p-3 md:p-4 overflow-y-auto min-h-0 transition-all duration-300 scrollbar-hide ${showHeader ? "max-h-[calc(100vh-160px)] sm:max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-170px)]" : "max-h-[calc(100vh-80px)] sm:max-h-[calc(100vh-90px)] md:max-h-[calc(100vh-100px)]"}`}
+                  style={{
+                    msOverflowStyle: "none",
+                    scrollbarWidth: "none",
+                    transform: "translateX(0)",
+                    paddingRight: "0",
+                    marginRight: "0",
+                  }}
+                >
+                  {Object.entries(messagesByDate).map(
+                    ([dateLabel, dateMessages]) => (
+                      <div key={dateLabel}>
+                        {/* Date Separator */}
+                        <div className="flex items-center justify-center py-2">
+                          <div className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
+                            {dateLabel}
+                          </div>
+                        </div>
+
+                        {/* Messages for this date */}
+                        {dateMessages.map((m, i) => {
+                          const showUnreadSeparator =
+                            dateLabel === "Today" && i === 3; // Show after 4th message of today
+                          const isLastUserMessage =
+                            m.from === "me" && i === dateMessages.length - 1;
+                          const nextMessage = dateMessages[i + 1];
+                          const shouldShowTime =
+                            m.from === "me" &&
+                            (!nextMessage || nextMessage.from !== "me");
+                          const prevMessage = dateMessages[i - 1];
+                          const shouldShowAvatar =
+                            m.from === "them" &&
+                            (!nextMessage || nextMessage.from !== "them");
+
+                          return (
+                            <React.Fragment key={m.id}>
+                              {showUnreadSeparator && (
+                                <div className="flex items-center justify-center py-2">
+                                  <div className="bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
+                                    Unread messages
+                                  </div>
+                                </div>
+                              )}
+                              <div
+                                className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} ${m.from === "me" ? "mb-1" : "mb-3"} items-start`}
+                              >
+                                {shouldShowAvatar && (
+                                  <img
+                                    src={m.avatar || "/default-avatar.png"}
+                                    className="w-8 h-8 rounded-full mr-2 mt-1"
+                                  />
+                                )}
+                                {!shouldShowAvatar && m.from === "them" && (
+                                  <div className="w-8 h-8 mr-2 mt-1"></div>
+                                )}
+                                <div
+                                  className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? `${currentConversationColor.sent} text-white rounded-br-md` : `${currentConversationColor.received} text-white rounded-bl-md`} ${m.from === "them" ? "-mt-1" : ""}`}
+                                >
+                                  {m.type === "image" ? (
+                                    <div className="space-y-2">
+                                      <img
+                                        src={m.imageUrl}
+                                        alt={m.text}
+                                        className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() =>
+                                          window.open(m.imageUrl, "_blank")
+                                        }
+                                      />
+                                      <p className="text-xs opacity-70">
+                                        {m.text}
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm">{m.text}</p>
+                                  )}
+
+                                  {/* Time and Status */}
+                                  <div
+                                    className={`flex items-center gap-1 mt-1 ${m.from === "me" ? "justify-end" : "justify-start"}`}
+                                  >
+                                    {shouldShowTime && (
+                                      <>
+                                        <span className="text-[10px] opacity-70">
+                                          {m.time}
+                                        </span>
+                                        {m.from === "me" &&
+                                          getStatusIcon(m.status)}
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+                    ),
+                  )}
+                </div>
+
+                {/* Fixed Input - Always Visible */}
+                <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700 bg-[#1E2330] rounded-b-xl sticky bottom-0">
+                  <div className="flex gap-2 sm:gap-3 bg-gray-800 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      accept="image/*"
+                    />
+                    <FiPaperclip
+                      className="text-gray-400 cursor-pointer hover:text-white"
+                      onClick={() => fileInputRef.current?.click()}
+                    />
+                    <input
+                      ref={inputRef}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSend();
+                      }}
+                      className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-sm sm:text-base"
+                      placeholder="Type your message here..."
+                    />
+                    <button
+                      onClick={handleSend}
+                      className="text-blue-500 hover:text-blue-400 transition-colors p-1 sm:p-0 bg-transparent border-none"
+                      disabled={!input.trim()}
+                    >
+                      <FiSend />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
-      
+
       {/* Color Picker Dialog */}
       {showColorPicker && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
@@ -610,14 +714,18 @@ const ProfChatPage = () => {
                   key={color.name}
                   onClick={() => handleColorSelect(color)}
                   className={`w-12 h-12 rounded-lg ${color.sent} hover:scale-110 transition-transform duration-200 border-2 ${
-                    currentConversationColor?.sent === color.sent ? 'border-white' : 'border-transparent'
+                    currentConversationColor?.sent === color.sent
+                      ? "border-white"
+                      : "border-transparent"
                   }`}
                   title={color.name}
                 />
               ))}
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-300 text-sm">Selected: {currentConversationColor?.name}</span>
+              <span className="text-gray-300 text-sm">
+                Selected: {currentConversationColor?.name}
+              </span>
               <button
                 onClick={() => setShowColorPicker(false)}
                 className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
