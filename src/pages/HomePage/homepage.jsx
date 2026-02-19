@@ -184,7 +184,18 @@ const HomePage1 = () => {
     },
   ];
 
-  const cardsPerView = 4;
+  const [cardsPerView, setCardsPerView] = useState(4);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCardsPerView(window.innerWidth >= 1024 ? 3 : 4); // 3 on laptop (lg+), 4 on tablet (md)
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const yourSlideCount = Math.max(
     1,
     Math.ceil(userSpaces.length / cardsPerView),
@@ -362,7 +373,7 @@ const HomePage1 = () => {
                     {Array.from({ length: yourSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full h-full"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full h-full"
                       >
                         {userSpaces
                           .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
@@ -481,7 +492,7 @@ const HomePage1 = () => {
                     {Array.from({ length: courseSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full h-full"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full h-full"
                       >
                         {courseSpaces
                           ?.slice(idx * cardsPerView, (idx + 1) * cardsPerView)
@@ -617,7 +628,7 @@ const HomePage1 = () => {
                     {Array.from({ length: friendSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0 h-full"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0 h-full"
                       >
                         {sharedSpaces
                           .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
