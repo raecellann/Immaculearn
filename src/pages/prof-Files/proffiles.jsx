@@ -17,7 +17,7 @@ const ProfFilePage = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [isAuthenticated, navigate]);
 
@@ -39,21 +39,21 @@ const ProfFilePage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-
   const { userSpaces, courseSpaces, friendSpaces } = useSpace();
   // const { space_uuid, space_name } = useParams();
 
-  
   // const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
 
   const allSpaces = new Set([
-    ...(userSpaces || []).map(space => space.space_uuid), ...(courseSpaces || []).map(space => space.space_uuid)]
-  );
+    ...(userSpaces || []).map((space) => space.space_uuid),
+    ...(courseSpaces || []).map((space) => space.space_uuid),
+  ]);
 
-  const sharedSpaces = (friendSpaces || []).filter(space =>
-    !allSpaces.has(space.space_uuid) &&
-    space.members?.some(member => member.account_id === user?.id)
-  );
+  // const sharedSpaces = (friendSpaces || []).filter(
+  //   (space) =>
+  //     !allSpaces.has(space.space_uuid) &&
+  //     space.members?.some((member) => member.account_id === user?.id),
+  // );
   // Remove duplicates by space_id
   // const uniqueSpaces = allSpaces.filter(
   //   (space, index, self) =>
@@ -63,49 +63,55 @@ const ProfFilePage = () => {
 
   // console.log(uniqueSpaces);
 
-
   // const { list } = useFileManager(currentSpace?.space_id);
   // const files = list.data || [];
 
   // Use actual space data instead of hardcoded array
   const spaces = [
     // Your spaces
-    ...(userSpaces || []).map(space => ({ 
-      name: space.space_name, 
+    ...(userSpaces || []).map((space) => ({
+      name: space.space_name,
       category: "your-space",
-      space_uuid: space.space_uuid 
+      space_uuid: space.space_uuid,
     })),
     // Course spaces
-    ...(courseSpaces || []).map(space => ({ 
-      name: space.space_name, 
+    ...(courseSpaces || []).map((space) => ({
+      name: space.space_name,
       category: "course-space",
-      space_uuid: space.space_uuid 
+      space_uuid: space.space_uuid,
     })),
     // Friend spaces (excluding user's own spaces)
     ...(friendSpaces || [])
-      .filter(space => !userSpaces?.some(userSpace => userSpace.space_id === space.space_id))
-      .map(space => ({ 
-        name: space.space_name, 
+      .filter(
+        (space) =>
+          !userSpaces?.some(
+            (userSpace) => userSpace.space_id === space.space_id,
+          ),
+      )
+      .map((space) => ({
+        name: space.space_name,
         category: "friends-space",
-        space_uuid: space.space_uuid 
-      }))
+        space_uuid: space.space_uuid,
+      })),
   ];
 
-  const spacesByCategory = spaces.reduce((acc, space) => {
-    if (!acc[space.category]) {
-      acc[space.category] = [];
-    }
-    acc[space.category].push(space);
-    return acc;
-  }, {
-    'your-space': [],
-    'course-space': [],
-    'friends-space': []
-  });
+  const spacesByCategory = spaces.reduce(
+    (acc, space) => {
+      if (!acc[space.category]) {
+        acc[space.category] = [];
+      }
+      acc[space.category].push(space);
+      return acc;
+    },
+    {
+      "your-space": [],
+      "course-space": [],
+      "friends-space": [],
+    },
+  );
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -129,7 +135,6 @@ const ProfFilePage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-
         {/* 🔥 Sticky Mobile Header */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
@@ -155,23 +160,30 @@ const ProfFilePage = () => {
 
           {/* Your Space Files */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
-            {spacesByCategory['your-space']?.length === 0 ? (
+            <h2 className="text-xl font-semibold mb-4 text-white">
+              Your Space
+            </h2>
+            {spacesByCategory["your-space"]?.length === 0 ? (
               <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
                 No space files yet
               </div>
-            ) : spacesByCategory['your-space']?.length > 0 ? (
+            ) : spacesByCategory["your-space"]?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {spacesByCategory['your-space'].map((space, index) => (
+                {spacesByCategory["your-space"].map((space, index) => (
                   <div
                     key={`your-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/prof/files/${encodeURIComponent(space.name)}/${space.space_uuid}`)}
-
+                    onClick={() =>
+                      navigate(
+                        `/prof/files/${encodeURIComponent(space.name)}/${space.space_uuid}`,
+                      )
+                    }
                   >
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.name}</p>
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">
+                        {space.name}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -182,22 +194,30 @@ const ProfFilePage = () => {
 
           {/* Course Space Files */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
-            {spacesByCategory['course-space']?.length === 0 ? (
+            <h2 className="text-xl font-semibold mb-4 text-white">
+              Course Space
+            </h2>
+            {spacesByCategory["course-space"]?.length === 0 ? (
               <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
                 No course space files yet
               </div>
-            ) : spacesByCategory['course-space']?.length > 0 ? (
+            ) : spacesByCategory["course-space"]?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {spacesByCategory['course-space'].map((space, index) => (
+                {spacesByCategory["course-space"].map((space, index) => (
                   <div
                     key={`course-space-${index}`}
                     className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/prof/files/${encodeURIComponent(space.name)}/${space.space_uuid || ''}`)}
+                    onClick={() =>
+                      navigate(
+                        `/prof/files/${encodeURIComponent(space.name)}/${space.space_uuid || ""}`,
+                      )
+                    }
                   >
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.name}</p>
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">
+                        {space.name}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -207,7 +227,7 @@ const ProfFilePage = () => {
           </div>
 
           {/* Friends Space Files */}
-          <div className="mb-8">
+          {/* <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
             {sharedSpaces?.length === 0 ? (
               <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
@@ -230,9 +250,8 @@ const ProfFilePage = () => {
               </div>
             ) : null}
             <div className="border-b border-gray-700 my-6"></div>
-          </div>
+          </div> */}
         </div>
-
       </div>
     </div>
   );
