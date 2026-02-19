@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Button = ({ text = "Share" }) => {
+const Button = ({ text = "Share", onClick }) => {
   const getIcon = () => {
     switch(text) {
       case "Add Member":
@@ -101,6 +101,7 @@ const Button = ({ text = "Share" }) => {
   return (
     <button 
       style={buttonStyle}
+      onClick={onClick}
       onMouseEnter={(e) => {
         const color = getHoverColor();
         e.target.style.background = `radial-gradient(circle at bottom, ${color} 10%, #212121 70%)`;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import ProfSidebar from "../component/profsidebar";
 import Button from "../component/Button";
+import Button2 from "../component/button_2";
 import {
   BookOpen,
   User,
@@ -165,54 +166,21 @@ const ProfHomePage = () => {
             <div className="xl:hidden mb-8 mt-6">
               <h2 className="text-lg sm:text-xl font-semibold mb-3">Task Deployed</h2>
               <div className="bg-[#1E242E] rounded-xl p-4 sm:p-6">
-                <ul className="space-y-3 text-sm">
-                  <li className="bg-[#2E3440] p-3 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="text-blue-400 w-5 h-5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">Week 7 Reflection Paper</p>
-                        <p className="text-gray-400 text-xs">Operating System – Oct 15</p>
-                      </div>
-                    </div>
-                  </li>
-                  <li className="bg-[#2E3440] p-3 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <User className="text-green-400 w-5 h-5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">Week 8 Individual Activity</p>
-                        <p className="text-gray-400 text-xs">Data Communications – Oct 24</p>
-                      </div>
-                    </div>
-                  </li>
-                  <li className="bg-[#2E3440] p-3 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <GraduationCap className="text-orange-400 w-5 h-5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">Chapter 1 Thesis Paper</p>
-                        <p className="text-gray-400 text-xs">Thesis – Oct 28</p>
-                      </div>
-                    </div>
-                  </li>
-                  <li className="bg-[#2E3440] p-3 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <FileText className="text-purple-400 w-5 h-5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">Midterm Exam Review</p>
-                        <p className="text-gray-400 text-xs">Mathematics – Nov 5</p>
-                      </div>
-                    </div>
-                  </li>
-                  <li className="bg-[#2E3440] p-3 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="text-red-400 w-5 h-5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium">Group Project Meeting</p>
-                        <p className="text-gray-400 text-xs">Software Engineering – Nov 10</p>
-                      </div>
-                    </div>
-                  </li>
-                </ul>
-                <button className="mt-4 text-[#007AFF] hover:underline text-sm bg-transparent">See All</button>
+                <div className="text-center py-8">
+                  <Calendar className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                  <p className="text-gray-400 text-sm">
+                    No tasks created yet
+                  </p>
+                  <p className="text-gray-500 text-xs mt-2">
+                    Go to your calendar to create tasks and set reminders
+                  </p>
+                  <div className="mt-6">
+                    <Button2 
+                      text="Go to Calendar"
+                      onClick={() => navigate('/prof/calendar')}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -407,54 +375,21 @@ const ProfHomePage = () => {
           <div className="hidden xl:block w-80 bg-[#1E242E] rounded-xl p-6 mr-6 my-6 flex-shrink-0 self-start sticky top-4">
             <div>
               <h4 className="font-semibold mb-3">Task Deployed:</h4>
-              <ul className="space-y-3 text-sm">
-                <li className="bg-[#2E3440] p-3 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <BookOpen className="text-blue-400 w-5 h-5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Week 7 Reflection Paper</p>
-                      <p className="text-gray-400 text-xs">Operating System – Oct 15</p>
-                    </div>
-                  </div>
-                </li>
-                <li className="bg-[#2E3440] p-3 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <User className="text-green-400 w-5 h-5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Week 8 Individual Activity</p>
-                      <p className="text-gray-400 text-xs">Data Communications – Oct 24</p>
-                    </div>
-                  </div>
-                </li>
-                <li className="bg-[#2E3440] p-3 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <GraduationCap className="text-orange-400 w-5 h-5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Chapter 1 Thesis Paper</p>
-                      <p className="text-gray-400 text-xs">Thesis – Oct 28</p>
-                    </div>
-                  </div>
-                </li>
-                <li className="bg-[#2E3440] p-3 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FileText className="text-purple-400 w-5 h-5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Midterm Exam Review</p>
-                      <p className="text-gray-400 text-xs">Mathematics – Nov 5</p>
-                    </div>
-                  </div>
-                </li>
-                <li className="bg-[#2E3440] p-3 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="text-red-400 w-5 h-5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Group Project Meeting</p>
-                      <p className="text-gray-400 text-xs">Software Engineering – Nov 10</p>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-              <button className="mt-4 text-[#007AFF] hover:underline text-sm bg-transparent">See All</button>
+              <div className="text-center py-8">
+                <Calendar className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                <p className="text-gray-400 text-sm">
+                  No tasks created yet
+                </p>
+                <p className="text-gray-500 text-xs mt-2">
+                  Go to your calendar to create tasks and set reminders
+                </p>
+                <div className="mt-6">
+                  <Button2 
+                    text="Go to Calendar"
+                    onClick={() => navigate('/prof/calendar')}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
