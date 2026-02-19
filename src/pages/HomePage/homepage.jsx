@@ -184,7 +184,7 @@ const HomePage1 = () => {
     },
   ];
 
-  const cardsPerView = 3;
+  const cardsPerView = 4;
   const yourSlideCount = Math.max(
     1,
     Math.ceil(userSpaces.length / cardsPerView),
@@ -362,7 +362,7 @@ const HomePage1 = () => {
                     {Array.from({ length: yourSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full h-full"
                       >
                         {userSpaces
                           .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
@@ -481,7 +481,7 @@ const HomePage1 = () => {
                     {Array.from({ length: courseSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full h-full"
                       >
                         {courseSpaces
                           ?.slice(idx * cardsPerView, (idx + 1) * cardsPerView)
@@ -617,7 +617,7 @@ const HomePage1 = () => {
                     {Array.from({ length: friendSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0 h-full"
                       >
                         {sharedSpaces
                           .slice(idx * cardsPerView, (idx + 1) * cardsPerView)

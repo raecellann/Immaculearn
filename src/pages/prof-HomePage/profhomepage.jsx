@@ -80,7 +80,7 @@ const ProfHomePage = () => {
   const userSpaceUUIDs = new Set(userSpaces.map((s) => s.space_uuid));
   const sharedSpaces = courseSpaces.filter((s) => !userSpaceUUIDs.has(s.space_uuid));
 
-  const cardsPerView = 3;
+  const cardsPerView = 4;
   const yourSlideCount = Math.max(1, Math.ceil(userSpaces.length / cardsPerView));
   const friendSlideCount = Math.max(1, Math.ceil(sharedSpaces.length / cardsPerView));
 
@@ -218,7 +218,7 @@ const ProfHomePage = () => {
                     style={{ transform: `translateX(-${slideIndexYourSpace * 100}%)` }}
                   >
                     {Array.from({ length: yourSlideCount }).map((_, idx) => (
-                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0">
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0 h-full">
                         {userSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
@@ -308,7 +308,7 @@ const ProfHomePage = () => {
                     style={{ transform: `translateX(-${slideIndexSpaces * 100}%)` }}
                   >
                     {Array.from({ length: friendSlideCount }).map((_, idx) => (
-                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full">
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full h-full">
                         {sharedSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
