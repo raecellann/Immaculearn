@@ -1,10 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../../component/sidebar";
 import { useNavigate, useParams } from "react-router";
 
 const ViewFilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
+
+  /* 🔹 STICKY HEADER LOGIC */
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   /* ================= GET ROUTE PARAMS ================= */
 
@@ -60,23 +79,38 @@ You can now fetch real file data using file_uuid.`);
       {/* MAIN */}
       <div className="flex-1 flex flex-col">
 
-        {/* MOBILE HEADER */}
-        <div className="lg:hidden p-4 flex items-center gap-4">
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="text-white text-2xl"
-          >
-            ☰
-          </button>
-          <h1 className="text-xl font-bold">File Viewer</h1>
+        {/* � Sticky Mobile Header */}
+        <div
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+        >
+          <div className="p-4 flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-bold">File Viewer</h1>
+          </div>
         </div>
 
         {/* PAGE CONTENT */}
-        <div className="flex-1 p-4 lg:p-10 overflow-y-auto w-full max-w-6xl mx-auto">
+        <div className="flex-1 p-4 lg:p-10 overflow-y-auto w-full max-w-6xl mx-auto pt-20 sm:pt-24 lg:pt-10">
 
           <h1 className="hidden lg:block text-4xl font-bold text-center mb-10">
             File Viewer
           </h1>
+
+          <div className="mb-4 flex items-center">
+            <button
+              onClick={() => navigate(-1)}
+              className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-lg font-medium transition-colors"
+            >
+              ← Back
+            </button>
+          </div>
 
           <div className="w-full bg-[#1E242E] rounded-xl p-6 lg:p-8 shadow-lg">
 
@@ -120,14 +154,6 @@ You can now fetch real file data using file_uuid.`);
                     </button>
                   </div>
                 )}
-
-                {/* BACK BUTTON */}
-                <button
-                  onClick={() => navigate(-1)}
-                  className="text-sm border border-gray-500 px-3 py-1 rounded hover:border-gray-300"
-                >
-                  ← Back
-                </button>
               </div>
 
               {/* META INFO */}
