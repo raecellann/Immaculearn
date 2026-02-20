@@ -90,10 +90,10 @@ const UserTaskPage = () => {
 
   const taskData = uploadedTasksQuery?.data || [];
   const draftActivities = draftedTasksQuery?.data || [];
-  const isLoadingTasks = uploadedTasksQuery?.isLoading;
-  const isLoadingDrafts = draftedTasksQuery?.isLoading;
-  const tasksError = uploadedTasksQuery?.error;
-  const draftsError = draftedTasksQuery?.error;
+  // const isLoadingTasks = uploadedTasksQuery?.isLoading;
+  // const isLoadingDrafts = draftedTasksQuery?.isLoading;
+  // const tasksError = uploadedTasksQuery?.error;
+  // const draftsError = draftedTasksQuery?.error;
   const uploadedTask = Array.isArray(taskData)
     ? taskData
     : taskData?.data || [];

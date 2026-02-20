@@ -8,13 +8,12 @@ import { useUser } from "../../contexts/user/useUser";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 
 const LoginPage = () => {
-  const {isAuthenticated, user, isLoading, checkAuth , login} = useUser();
+  const { isAuthenticated, user, isLoading, checkAuth, login } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("")
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,8 +33,7 @@ const LoginPage = () => {
         navigate(`/prof/home`);
       } else if (data.role === "admin") {
         navigate(`/admin-dashboard`);
-      } 
-
+      }
     } catch (err) {
       toast.error("Login failed");
     }
@@ -43,9 +41,10 @@ const LoginPage = () => {
 
   const handleGmailLogin = async () => {
     const popup = window.open(
+      // `https://immaculearn.up.railway.app/v1/account/oauth/google/redirect`,
       `http://localhost:3000/v1/account/oauth/google/redirect`,
       "oauthPopup",
-      `width=500,height=600,top=${(screen.height-600)/2},left=${(screen.width-500)/2},resizable=yes,scrollbars=yes`
+      `width=500,height=600,top=${(screen.height - 600) / 2},left=${(screen.width - 500) / 2},resizable=yes,scrollbars=yes`,
     );
 
     // Set up message listener for the popup
@@ -53,40 +52,39 @@ const LoginPage = () => {
       // Verify the message is from our domain
       if (event.origin !== window.location.origin) return;
 
-      
-      if (event.data.type === 'OAUTH_SUCCESS') {
+      if (event.data.type === "OAUTH_SUCCESS") {
         const { role, needsOnboarding, token } = event.data;
-        
+
         if (needsOnboarding && token) {
           // 🔐 store tempToken for onboarding
           sessionStorage.setItem("tempToken", token);
           navigate(`/onboarding?role=${role}`);
         } else {
           await checkAuth();
-          if (role === 'student') {
+          if (role === "student") {
             navigate(`/home?role=${role}`);
-          } else if (role === 'professor') {
+          } else if (role === "professor") {
             navigate(`/prof/home?role=${role}`);
-          } else if (role === 'admin') {
+          } else if (role === "admin") {
             navigate(`/admin-dashboard?role=${role}`);
           } else {
-            navigate('/');
+            navigate("/");
           }
         }
-      } else if (event.data.type === 'OAUTH_ERROR') {
-        console.error('OAuth error:', event.data.error);
-        toast.error('Failed to sign in with Google. Please try again.');
+      } else if (event.data.type === "OAUTH_ERROR") {
+        console.error("OAuth error:", event.data.error);
+        toast.error("Failed to sign in with Google. Please try again.");
       }
     };
 
     // Add event listener for messages
-    window.addEventListener('message', messageHandler);
+    window.addEventListener("message", messageHandler);
 
     // Clean up the event listener when component unmounts or popup is closed
     const checkPopup = setInterval(() => {
       if (!popup || popup.closed) {
         clearInterval(checkPopup);
-        window.removeEventListener('message', messageHandler);
+        window.removeEventListener("message", messageHandler);
       }
     }, 1000);
   };
@@ -95,18 +93,17 @@ const LoginPage = () => {
     if (!isAuthenticated) return;
 
     const handleMessage = (event) => {
-      if (event.origin !== "http://localhost:5173") return;
+      // if (event.origin !== "https://immaculearn-web.netlify.app") return;
+      if (event.origin !== "https://localhost:5173") return;
 
       if (!event.data.success) {
-        setError(event.data.error)
+        setError(event.data.error);
       }
       if (event.data.success) {
-
-        console.log(event.data)
+        console.log(event.data);
         if (event.data.needsOnboarding) {
-          navigate(`/onboarding?role=${event.data.role}`)
+          navigate(`/onboarding?role=${event.data.role}`);
         } else {
-
           // console.log(event.data.role)
           if (event.data.role === "student") {
             navigate(`/home?role=${event.data.role}`); // or onboarding
@@ -131,7 +128,6 @@ const LoginPage = () => {
     }
   }, [error]); // run only when `error` changes
 
-
   useEffect(() => {
     if (!isAuthenticated || !user?.role) return;
 
@@ -149,8 +145,6 @@ const LoginPage = () => {
       </div>
     );
   }
-
-
 
   return (
     <div
@@ -206,7 +200,6 @@ const LoginPage = () => {
             style={{ width: "100%" }}
           />
 
-          
           {/* Log in Button */}
           <Button
             type="submit"
@@ -220,7 +213,6 @@ const LoginPage = () => {
               marginTop: "8px",
               margin: "0 auto",
             }}
-            
           >
             Log in
           </Button>
@@ -273,7 +265,6 @@ const LoginPage = () => {
         <p className="text-center text-gray-600 text-sm mt-4">
           Need access? Reach out to your administrator for login details.
         </p>
-
       </div>
     </div>
   );

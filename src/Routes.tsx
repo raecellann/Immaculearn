@@ -15,7 +15,7 @@ import { NotificationProvider } from "./contexts/notification/notificationContex
 import LandingPage from "./pages/Landing/landingPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import NotificationContainer from "./components/Notification/NotificationContainer.jsx";
-import NotificationExample from "./examples/NotificationExample.jsx";
+// import NotificationExample from "./examples/NotificationExample.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,16 +26,13 @@ const queryClient = new QueryClient({
   },
 });
 
-
 export default function Routes() {
   return (
     <NotificationProvider>
       <QueryClientProvider client={queryClient}>
         <ReactRoutes>
           <Route key="landing" path="/" element={<LandingPage />} />,
-          
           {/* Public/Auth routes - no SpaceProvider needed */}
-
           {/* {AuthRoutes.map(route => (
             <Route
               key={route.key}
@@ -43,57 +40,47 @@ export default function Routes() {
               element={route.element}
             />
           ))} */}
-
-          {AuthRoutes.map(route => (
-            <Route
-              key={route.key}
-              path={route.path}
-              element={route.element}
-            />
+          {AuthRoutes.map((route) => (
+            <Route key={route.key} path={route.path} element={route.element} />
           ))}
-
-          {StudentRoutes.map(route => (
+          {StudentRoutes.map((route) => (
             <Route
               key={route.key}
               path={route.path}
               element={
                 <UserProvider>
                   <SpaceProvider>
-                    <ProtectedRoute>
-                        {route.element}
-                    </ProtectedRoute>
+                    <ProtectedRoute>{route.element}</ProtectedRoute>
                   </SpaceProvider>
                 </UserProvider>
               }
             />
           ))}
-
-          {SpaceRoutes.map(route => (
+          {SpaceRoutes.map((route) => (
             <Route
               key={route.key}
               path={route.path}
               element={
                 <UserProvider>
                   <SpaceProvider>
-                    <ProtectedRoute>
-                      {route.element}
-                    </ProtectedRoute>
+                    <ProtectedRoute>{route.element}</ProtectedRoute>
                   </SpaceProvider>
                 </UserProvider>
               }
             />
           ))}
-
-          <Route path="/prof/*" element={
-            <UserProvider>
-              <SpaceProvider>
-                <ProtectedRoute>
-                  <ProfRoutes />
-                </ProtectedRoute>
-              </SpaceProvider>
-            </UserProvider>
-          } />
-
+          <Route
+            path="/prof/*"
+            element={
+              <UserProvider>
+                <SpaceProvider>
+                  <ProtectedRoute>
+                    <ProfRoutes />
+                  </ProtectedRoute>
+                </SpaceProvider>
+              </UserProvider>
+            }
+          />
           {/* {AdminRoutes.map(route => (
             <Route
               key={route.key}
@@ -107,29 +94,22 @@ export default function Routes() {
               }
             />
           ))} */}
-
-          {AdminDataRoutes.map(route => (
+          {AdminDataRoutes.map((route) => (
             <Route
               key={route.key}
               path={route.path}
               element={
                 <UserProvider>
-                  <SpaceProvider>
-                    {route.element}
-                  </SpaceProvider>
+                  <SpaceProvider>{route.element}</SpaceProvider>
                 </UserProvider>
               }
             />
           ))}
-
-          <Route path="/example/notification" element={<NotificationExample />} />
-
-          
-
+          {/* <Route path="/example/notification" element={<NotificationExample />} /> */}
           {/* Fallback */}
           <Route path="*" element={<PageNotFound />} />
         </ReactRoutes>
-        
+
         {/* Global Notification Container */}
         <NotificationContainer />
       </QueryClientProvider>

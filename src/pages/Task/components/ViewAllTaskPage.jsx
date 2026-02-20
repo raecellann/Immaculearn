@@ -2,13 +2,55 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../../component/sidebar";
 import { useNavigate, useParams } from "react-router";
 import { useUser } from "../../../contexts/user/useUser";
+import { useSpace } from "../../../contexts/space/useSpace";
+import { capitalizeWords } from "../../../utils/capitalizeFirstLetter";
+import { useTasks } from "../../../hooks/useTasks";
 
 const ViewAllTaskPage = () => {
-  const { space_name } = useParams();
+  const { space_uuid, space_name } = useParams();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated } = useUser();
-  
+  const { isAuthenticated, user } = useUser();
+
+  const { userSpaces, courseSpaces, friendSpaces } = useSpace();
+  // ================= SPACE & OWNER LOGIC =================
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(friendSpaces || []),
+    ...(courseSpaces || []),
+  ];
+
+  const currentSpace = allSpaces.find(
+    (space) => space.space_uuid === space_uuid,
+  );
+
+  const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
+  const isOwnerSpace = currentSpace?.creator === user?.id;
+  const isFriendSpace = !isOwnerSpace;
+
+  const {
+    uploadedTasksQuery,
+    draftedTasksQuery,
+    uploadTaskMutation,
+    draftTaskMutation,
+    updateTaskStatusMutation,
+  } = useTasks(currentSpace?.space_id);
+
+  const taskData = uploadedTasksQuery?.data || [];
+  const draftActivities = draftedTasksQuery?.data || [];
+  // const isLoadingTasks = uploadedTasksQuery?.isLoading;
+  // const isLoadingDrafts = draftedTasksQuery?.isLoading;
+  // const tasksError = uploadedTasksQuery?.error;
+  // const draftsError = draftedTasksQuery?.error;
+  const uploadedTask = Array.isArray(taskData)
+    ? taskData
+    : taskData?.data || [];
+  const draftedTask = Array.isArray(draftActivities)
+    ? draftActivities
+    : draftActivities?.data || [];
+
+  const allTasks = [...(uploadedTask || []), ...(draftedTask || [])];
+
   // sticky header scroll state
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -21,7 +63,7 @@ const ViewAllTaskPage = () => {
       deadline: "November 20, 2025",
       status: "In Progress",
       spaceUuid: "abc-123",
-      spaceName: "individual-space"
+      spaceName: "individual-space",
     },
     {
       id: 2,
@@ -29,7 +71,7 @@ const ViewAllTaskPage = () => {
       deadline: "November 25, 2025",
       status: "Ended",
       spaceUuid: "def-456",
-      spaceName: "group-space"
+      spaceName: "group-space",
     },
     {
       id: 3,
@@ -37,13 +79,13 @@ const ViewAllTaskPage = () => {
       deadline: "December 1, 2025",
       status: "In Progress",
       spaceUuid: "ghi-789",
-      spaceName: "research-space"
-    }
+      spaceName: "research-space",
+    },
   ]);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [isAuthenticated, navigate]);
 
@@ -68,6 +110,8 @@ const ViewAllTaskPage = () => {
     switch (status) {
       case "Ended":
         return "bg-green-500/20 text-[#10E164] border-[#00B865]";
+      case "uploaded":
+        return "bg-green-500/20 text-[#10E164] border-[#00B865]";
       case "In Progress":
         return "bg-blue-500/20 text-[#4D9BEF] border-[#0066D2]";
       default:
@@ -76,7 +120,9 @@ const ViewAllTaskPage = () => {
   };
 
   const handleViewDetails = (task) => {
-    navigate(`/task/${task.spaceUuid}/${space_name}/${task.taskName}`);
+    navigate(
+      `/task/${currentSpace?.space_uuid}/${currentSpace?.space_name}/${task.task_title}`,
+    );
   };
 
   return (
@@ -104,7 +150,6 @@ const ViewAllTaskPage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col relative">
-
         {/* 🔥 Sticky Mobile Header */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
@@ -118,16 +163,17 @@ const ViewAllTaskPage = () => {
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold">{space_name ? `${space_name} Tasks` : 'Tasks'}</h1>
+            <h1 className="text-lg font-bold">
+              {space_name ? `${space_name} Tasks` : "Tasks"}
+            </h1>
           </div>
         </div>
 
         {/* 🔽 Added spacing here (pt-20) */}
         <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
-        
           {/* Title */}
           <h1 className="hidden lg:block text-2xl lg:text-5xl font-bold text-center mb-4 lg:mb-8 font-grotesque">
-            {space_name ? `${space_name} Tasks` : 'Tasks'}
+            {space_name ? `${space_name} Tasks` : "Tasks"}
           </h1>
 
           {/* Back Button */}
@@ -142,33 +188,48 @@ const ViewAllTaskPage = () => {
 
           {/* Tasks Table */}
           <div className="p-3 sm:p-4 lg:p-6 xl:p-8 rounded-2xl shadow-lg max-w-7xl mx-auto bg-[#1F242D]">
+            <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-4 sm:mb-6 font-inter">
+              Task List:
+            </h2>
 
-            <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-4 sm:mb-6 font-inter">Task List:</h2>
-            
             {/* Desktop Table */}
             <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-600">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300 text-sm">Status</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300 text-sm">Task Name</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300 text-sm">Deadline</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-300 text-sm">Details</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-300 text-sm">
+                      Status
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-300 text-sm">
+                      Task Name
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-300 text-sm">
+                      Deadline
+                    </th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-300 text-sm">
+                      Details
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {tasks.map((task) => (
-                    <tr key={task.id} className="border-b border-gray-700">
+                  {uploadedTask?.map((task) => (
+                    <tr key={task.task_id} className="border-b border-gray-700">
                       <td className="py-4 px-4">
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(task.status)}`}>
-                          {task.status}
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(task.task_status)}`}
+                        >
+                          {task.task_status}
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <p className="font-medium text-white text-sm">{task.taskName}</p>
+                        <p className="font-medium text-white text-sm">
+                          {task.task_title}
+                        </p>
                       </td>
                       <td className="py-4 px-4">
-                        <p className="text-gray-300 text-sm">{task.deadline}</p>
+                        <p className="text-gray-300 text-sm">
+                          {new Date(task.task_due).toLocaleDateString()}
+                        </p>
                       </td>
                       <td className="py-4 px-4 text-center">
                         <button
@@ -187,22 +248,31 @@ const ViewAllTaskPage = () => {
             {/* Mobile/Tablet Cards */}
             <div className="lg:hidden space-y-3">
               {tasks.map((task) => (
-                <div key={task.id} className="bg-[#1F242D] rounded-xl p-4 border border-gray-600">
+                <div
+                  key={task.id}
+                  className="bg-[#1F242D] rounded-xl p-4 border border-gray-600"
+                >
                   <div className="flex flex-col space-y-3">
                     {/* Header with Title and Status */}
                     <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-semibold text-white text-sm sm:text-base flex-1">{task.taskName}</h3>
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border w-fit ${getStatusColor(task.status)}`}>
+                      <h3 className="font-semibold text-white text-sm sm:text-base flex-1">
+                        {task.taskName}
+                      </h3>
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium border w-fit ${getStatusColor(task.status)}`}
+                      >
                         {task.status}
                       </span>
                     </div>
-                    
+
                     {/* Deadline */}
                     <div className="flex items-center gap-2">
                       <span className="text-gray-400 text-xs">📅</span>
-                      <p className="text-gray-300 text-xs sm:text-sm">{task.deadline}</p>
+                      <p className="text-gray-300 text-xs sm:text-sm">
+                        {task.deadline}
+                      </p>
                     </div>
-                    
+
                     {/* View Details Button */}
                     <div className="flex justify-end">
                       <button
@@ -221,12 +291,15 @@ const ViewAllTaskPage = () => {
             {tasks.length === 0 && (
               <div className="text-center py-8 sm:py-12">
                 <div className="bg-[#1A1A1A] rounded-xl p-6 sm:p-8 border border-gray-600">
-                  <p className="text-gray-400 text-base sm:text-lg">No tasks available</p>
-                  <p className="text-gray-500 text-sm sm:text-base mt-2">Tasks will appear here once they are assigned.</p>
+                  <p className="text-gray-400 text-base sm:text-lg">
+                    No tasks available
+                  </p>
+                  <p className="text-gray-500 text-sm sm:text-base mt-2">
+                    Tasks will appear here once they are assigned.
+                  </p>
                 </div>
               </div>
             )}
-
           </div>
         </div>
       </div>

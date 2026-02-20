@@ -13,8 +13,56 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const isCheckingRef = useRef(false);
+  const refreshAttemptsRef = useRef(0);
+  const maxRefreshAttempts = 3;
+  const isRefreshingRef = useRef(false);
 
-  // Core authentication check
+  // Automatic refresh with retry logic
+  const attemptRefresh = async (): Promise<boolean> => {
+    if (isRefreshingRef.current || refreshAttemptsRef.current >= maxRefreshAttempts) {
+      return false;
+    }
+
+    isRefreshingRef.current = true;
+    refreshAttemptsRef.current++;
+
+    try {
+      console.log(`🔄 Attempting token refresh (attempt ${refreshAttemptsRef.current}/${maxRefreshAttempts})`);
+      
+      const refreshRes = await api.post("/auth/refresh");
+      
+      if (refreshRes.data?.success) {
+        // Reset attempts on successful refresh
+        refreshAttemptsRef.current = 0;
+        
+        // Retry profile check after successful refresh
+        const retryProfile = await api.get("/auth/profile");
+        if (retryProfile.data?.data) {
+          setUser(retryProfile.data.data);
+          setIsAuthenticated(true);
+          console.log("✅ Token refresh successful");
+          return true;
+        }
+      }
+      
+      return false;
+    } catch (error: any) {
+      console.error(`❌ Token refresh attempt ${refreshAttemptsRef.current} failed:`, error?.response?.status);
+      
+      // If this was the last attempt, log out user
+      if (refreshAttemptsRef.current >= maxRefreshAttempts) {
+        console.error("🚫 Maximum refresh attempts reached. Logging out user.");
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+      
+      return false;
+    } finally {
+      isRefreshingRef.current = false;
+    }
+  };
+
+  // Core authentication check with automatic refresh
   const checkAuth = async (): Promise<boolean> => {
     if (isCheckingRef.current) return isAuthenticated;
     isCheckingRef.current = true;
@@ -23,33 +71,28 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     try {
       // Try profile
       const profileRes = await api.get("/auth/profile");
-      // console.log(profileRes.data?.data)
+      
       if (profileRes.data?.data) {
         setUser(profileRes.data.data);
         setIsAuthenticated(true);
+        // Reset refresh attempts on successful auth
+        refreshAttemptsRef.current = 0;
         return true;
       }
 
       throw new Error("No profile");
     } catch (error: any) {
-      const status = error?.response?.success;
-
-      // Try refresh if unauthorized
-      if (!status) {
-        try {
-          const refreshRes = await api.post("/auth/refresh");
-
-          if (refreshRes.data?.success) {
-            const retryProfile = await api.get("/auth/profile");
-            if (retryProfile.data?.data) {
-              setUser(retryProfile.data.data);
-              setIsAuthenticated(true);
-              return true;
-            }
-          }
-        } catch {}
+      const status = error?.response?.status;
+      
+      // Try automatic refresh if unauthorized (401)
+      if (status === 401) {
+        const refreshSuccess = await attemptRefresh();
+        if (refreshSuccess) {
+          return true;
+        }
       }
 
+      // If refresh failed or wasn't attempted, set unauthenticated
       setUser(null);
       setIsAuthenticated(false);
       return false;
@@ -127,9 +170,17 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   };
 
-  // Force refresh user state
+  // Force refresh user state with retry logic
   const refreshUser = async (): Promise<void> => {
+    // Reset refresh attempts to allow manual refresh
+    refreshAttemptsRef.current = 0;
     await checkAuth();
+  };
+
+  // Reset refresh attempts (useful for testing or manual intervention)
+  const resetRefreshAttempts = (): void => {
+    refreshAttemptsRef.current = 0;
+    console.log("🔄 Refresh attempts reset");
   };
 
   // Post functions
@@ -203,6 +254,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         logout,
         refreshUser,
         checkAuth,
+        resetRefreshAttempts,
         createPost,
         createComment,
         getPosts,
