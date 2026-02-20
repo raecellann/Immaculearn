@@ -17,7 +17,6 @@ export interface UserContextType {
     logout: (account_id: number) => Promise<void>;
     refreshUser: () => Promise<void>;
     checkAuth: () => Promise<boolean>;
-    resetRefreshAttempts: () => void;
     createAccount: (payload: any) => Promise<boolean>;
     createPost: (postData: PostCreateData) => Promise<{ success: boolean; message?: string; data?: Post }>;
     createComment: (commentData: CommentCreateData) => Promise<{ success: boolean; message?: string; data?: Comment }>;

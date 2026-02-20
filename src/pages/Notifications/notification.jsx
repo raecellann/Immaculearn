@@ -21,7 +21,7 @@ const NotificationPage = () => {
     useJoinRequests,
     acceptJoinRequest,
     declineJoinRequest,
-    isLoading: spaceLoading
+    isLoading: spaceLoading,
   } = useSpace();
 
   /* =========================
@@ -31,21 +31,21 @@ const NotificationPage = () => {
     const allSpaces = [
       ...(userSpaces || []),
       ...(courseSpaces || []),
-      ...(friendSpaces || [])
+      ...(friendSpaces || []),
     ];
 
-    return allSpaces.filter(space => space.creator === user?.id);
+    return allSpaces.filter((space) => space.creator === user?.id);
   }, [userSpaces, courseSpaces, friendSpaces, user]);
 
   /* =========================
      FETCH JOIN REQUESTS PER SPACE
   ========================= */
-  const allJoinRequests = ownedSpaces.flatMap(space => {
+  const allJoinRequests = ownedSpaces.flatMap((space) => {
     const { data = [] } = useJoinRequests(space.space_uuid);
-    return data.map(request => ({
+    return data.map((request) => ({
       ...request,
       space_uuid: space.space_uuid,
-      space_name: space.space_name
+      space_name: space.space_name,
     }));
   });
 
@@ -97,7 +97,6 @@ const NotificationPage = () => {
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
-      
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -121,7 +120,6 @@ const NotificationPage = () => {
 
       {/* MAIN */}
       <div className="flex-1 flex flex-col">
-
         {/* 🔥 Sticky Mobile Header */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
@@ -145,12 +143,32 @@ const NotificationPage = () => {
             Notifications
           </h1>
 
-          <div className="max-w-3xl mx-auto">
+          <div className="flex flex-col gap-3 max-w-3xl mx-auto">
             <div className="bg-[#1E242E] p-5 rounded-lg flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <FiUsers size={22} />
+                <FiUsers size={22} className="text-blue-500" />
                 <div>
                   <p className="font-semibold">Pending Join Requests</p>
+                  <p className="text-sm text-gray-400">
+                    {pendingInvitesCount} request(s)
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowPendingInvitations(true)}
+                className="text-blue-400 hover:underline"
+              >
+                View
+              </button>
+            </div>
+            <div className="bg-[#1E242E] p-5 rounded-lg flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <FiUsers size={22} className="text-green-500" />
+                <div>
+                  <p className="font-semibold">
+                    You have a new space invitation.
+                  </p>
                   <p className="text-sm text-gray-400">
                     {pendingInvitesCount} request(s)
                   </p>
@@ -172,7 +190,6 @@ const NotificationPage = () => {
       {showPendingInvitations && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Pending Invitations</h2>
               <button
@@ -189,7 +206,7 @@ const NotificationPage = () => {
                   No pending invitations
                 </p>
               ) : (
-                allJoinRequests.map(invite => (
+                allJoinRequests.map((invite) => (
                   <div
                     key={`${invite.space_uuid}-${invite.account_id}`}
                     className="bg-[#2A2F3A] rounded-lg p-4"
@@ -202,9 +219,7 @@ const NotificationPage = () => {
                       />
                       <div className="flex-1">
                         <h3 className="font-medium">{invite.fullname}</h3>
-                        <p className="text-sm text-gray-400">
-                          {invite.email}
-                        </p>
+                        <p className="text-sm text-gray-400">{invite.email}</p>
                         <p className="text-xs text-gray-500 mt-1">
                           Space: {invite.space_name}
                         </p>
