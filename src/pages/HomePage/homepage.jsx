@@ -380,7 +380,7 @@ const HomePage1 = () => {
                           .map((space) => (
                             <div
                               key={space.space_uuid}
-                              className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative"
+                              className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
                             >
                               <div
                                 onClick={() =>
@@ -499,7 +499,7 @@ const HomePage1 = () => {
                           .map((course, i) => (
                             <div
                               key={i}
-                              className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative"
+                              className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
                             >
                               <div
                                 onClick={() =>
@@ -635,7 +635,7 @@ const HomePage1 = () => {
                           .map((space) => (
                             <div
                               key={space.space_uuid}
-                              className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative"
+                              className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
                             >
                               <div
                                 onClick={() =>

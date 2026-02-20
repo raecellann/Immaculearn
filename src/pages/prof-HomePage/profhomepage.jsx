@@ -80,7 +80,18 @@ const ProfHomePage = () => {
   const userSpaceUUIDs = new Set(userSpaces.map((s) => s.space_uuid));
   const sharedSpaces = courseSpaces.filter((s) => !userSpaceUUIDs.has(s.space_uuid));
 
-  const cardsPerView = 4;
+  const [cardsPerView, setCardsPerView] = useState(4);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCardsPerView(window.innerWidth >= 1024 ? 3 : 4); // 3 on laptop (lg+), 4 on tablet (md)
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const yourSlideCount = Math.max(1, Math.ceil(userSpaces.length / cardsPerView));
   const friendSlideCount = Math.max(1, Math.ceil(sharedSpaces.length / cardsPerView));
 
@@ -218,7 +229,7 @@ const ProfHomePage = () => {
                     style={{ transform: `translateX(-${slideIndexYourSpace * 100}%)` }}
                   >
                     {Array.from({ length: yourSlideCount }).map((_, idx) => (
-                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0 h-full">
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full h-full">
                         {userSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
@@ -308,7 +319,7 @@ const ProfHomePage = () => {
                     style={{ transform: `translateX(-${slideIndexSpaces * 100}%)` }}
                   >
                     {Array.from({ length: friendSlideCount }).map((_, idx) => (
-                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 min-w-full h-full">
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full">
                         {sharedSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
@@ -321,9 +332,9 @@ const ProfHomePage = () => {
                               <SpaceCover
                                 image={space.background_img || space.image}
                                 name={space.space_name}
-                                className="w-full"
+                                className="w-full flex-shrink-0 aspect-[3/2]"
                               />
-                              <div className="p-4">
+                              <div className="p-4 flex flex-col justify-between flex-grow">
                                 <h3 className="font-medium truncate">
                                   {capitalizeWords(space.space_name)}'s Space
                                 </h3>
