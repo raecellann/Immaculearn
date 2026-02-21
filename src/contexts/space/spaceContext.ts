@@ -5,12 +5,10 @@ import {
   SpacePendingInvitation,
   Task,
   DraftTask,
-  TaskCreateData
+  TaskCreateData,
+  PendingSpaceInvitation,
 } from "../../types/space";
-import {
-  UseQueryResult,
-  UseMutationResult
-} from "@tanstack/react-query";
+import { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
 export interface SpaceContextType {
   // UI state
@@ -23,20 +21,22 @@ export interface SpaceContextType {
   friendSpaces: Space[];
   isLoading: boolean;
 
+  joinRequestsByLink: SpacePendingInvitation[];
+  joinRequestsByLinkLoading: boolean;
+
+  pendingSpaceInvitation: PendingSpaceInvitation[];
+  pendingSpaceInvitationLoading: boolean;
+
   // Queries
   useJoinRequests: (
     spaceId: string,
-    isAuthenticated: boolean
+    isAuthenticated: boolean,
   ) => UseQueryResult<SpacePendingInvitation[], Error>;
 
   // New: Task queries
-  useUploadedTasks: (
-    spaceId: string
-  ) => UseQueryResult<Task[], Error>;
+  useUploadedTasks: (spaceId: string) => UseQueryResult<Task[], Error>;
 
-  useDraftedTasks: (
-    spaceId: string
-  ) => UseQueryResult<DraftTask[], Error>;
+  useDraftedTasks: (spaceId: string) => UseQueryResult<DraftTask[], Error>;
 
   // Space mutations
   createSpace: (data: SpaceCreateData) => Promise<any>;
@@ -53,11 +53,17 @@ export interface SpaceContextType {
   acceptInvitation: (accountId: number, spaceUuid: string) => Promise<any>;
   declineInvitation: (accountId: number, spaceUuid: string) => Promise<any>;
 
+  /**
+   * SPACE INVITATION
+   */
+  acceptSpaceInvitation: (spaceUuid: string) => Promise<any>;
+  declineSpaceInvitation: (spaceUuid: string) => Promise<any>;
+
   // New: Task mutations
   uploadTaskMutation: UseMutationResult<
     any,
     Error,
-    { spaceId: number, taskData: TaskCreateData },
+    { spaceId: number; taskData: TaskCreateData },
     unknown
   >;
 
@@ -77,5 +83,5 @@ export interface SpaceContextType {
 }
 
 export const SpaceContext = createContext<SpaceContextType | undefined>(
-  undefined
+  undefined,
 );

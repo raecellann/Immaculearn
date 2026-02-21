@@ -5,9 +5,13 @@ import {
   SpaceCreateData,
   ApiResponse,
   SpacePendingInvitation,
+  PendingSpaceInvitation,
 } from "../types/space";
 
+
+
 class SpaceService {
+
   async createSpace(spaceData: SpaceCreateData): Promise<ApiResponse<Space>> {
     try {
       const response = await api.post<ApiResponse<Space>>("/spaces/", {
@@ -220,6 +224,58 @@ class SpaceService {
     }
   }
 
+  async getAllJoinSpaceRequests(
+  ): Promise<ApiResponse<SpacePendingInvitation[]>> {
+    try {
+      const response = await api.get<ApiResponse<SpacePendingInvitation[]>>(
+        `/spaces/pending-request/all`,
+      );
+
+      if (!response.data.success) {
+
+      }
+      const data = Array.isArray(response.data?.data) ? response.data.data : [];
+      return {
+        success: response.data.success,
+        message: response.data.message,
+        data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to fetch join requests",
+        data: [],
+      };
+    }
+  }
+
+  async getAllSpaceInvitation(
+  ): Promise<ApiResponse<PendingSpaceInvitation[]>> {
+    try {
+      const response = await api.get<ApiResponse<PendingSpaceInvitation[]>>(
+        `/spaces/pending-invitation/all`,
+      );
+
+      if (!response.data.success) {
+
+      }
+      const data = Array.isArray(response.data?.data) ? response.data.data : [];
+      return {
+        success: response.data.success,
+        message: response.data.message,
+        data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to fetch space invitation",
+        data: [],
+      };
+    }
+  }
+
   // Accept a join request
   async acceptJoinRequest(
     user_id: number,
@@ -248,6 +304,43 @@ class SpaceService {
     try {
       const response = await api.patch<ApiResponse>(
         `/spaces/${space_uuid}/decline/${user_id}?status=declined`,
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to decline join request",
+      };
+    }
+  }
+  // Accept a join request
+  async acceptSpaceInvitation(
+    space_uuid: string,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await api.patch<ApiResponse>(
+        `/spaces/join-direct/accept`,
+        { space_uuid },
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to accept join request",
+      };
+    }
+  }
+
+  // Decline a join request
+  async declineSpaceInvitation(
+    space_uuid: string,
+  ): Promise<ApiResponse> {
+    try {
+      const response = await api.patch<ApiResponse>(
+        `/spaces/join-direct/decline`, 
+        { space_uuid },
       );
       return response.data;
     } catch (error: any) {

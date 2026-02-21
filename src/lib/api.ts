@@ -10,3 +10,36 @@ export const api = axios.create({
         "Cache-Control": "no-cache",
     },
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If token expired and not retried yet
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        // Call refresh endpoint
+        await axios.post(
+          `${config.API_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+
+        // Retry original request
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Optional: redirect to login
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);

@@ -122,20 +122,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       queryFn: () => fetchJoinRequests(spaceId),
       enabled: !!spaceId && isAuthenticated,
 
-      // Data is considered fresh for 30 seconds
-      staleTime: 30_000, // 30 seconds
-
-      // Unused data stays in cache for 5 minutes
-      // cacheTime: 300_000, // 5 minutes
-
-      // Refetch stale data when window/tab regains focus
-      refetchOnWindowFocus: true,
-
-      // Optional: Poll every 30 seconds while component is mounted
-      refetchInterval: 30_000,
-
-      // Reduce refetching on reconnect if data is fresh
-      refetchOnReconnect: true,
+      staleTime: Infinity, // never becomes stale automatically
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     });
 
   // Task queries
@@ -222,16 +211,70 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     return result;
   };
 
+  const {
+    data: joinRequestsByLink = [],
+    isLoading: joinRequestsByLinkLoading,
+  } = useQuery({
+    queryKey: ["joinRequestsByLink"],
+    queryFn: async () => {
+      const res = await spaceService.getAllJoinSpaceRequests();
+      return res.data || [];
+    },
+    enabled: isAuthenticated,
+    staleTime: Infinity, // never becomes stale automatically
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
+  const {
+    data: pendingSpaceInvitation = [],
+    isLoading: pendingSpaceInvitationLoading,
+  } = useQuery({
+    queryKey: ["pendingSpaceInvitation"],
+    queryFn: async () => {
+      const res = await spaceService.getAllSpaceInvitation();
+      return res.data || [];
+    },
+    enabled: isAuthenticated,
+    staleTime: Infinity, // never becomes stale automatically
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
   const acceptInvitation = async (accountId: number, spaceUuid: string) => {
     const result = await spaceService.acceptInvitation(accountId, spaceUuid);
+
+    queryClient.invalidateQueries({ queryKey: ["joinRequestsByLink"] });
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+
+    return result;
+  };
+
+  const declineInvitation = async (accountId: number, spaceUuid: string) => {
+    const result = await spaceService.declineInvitation(accountId, spaceUuid);
+    queryClient.invalidateQueries({ queryKey: ["joinRequestsByLink"] });
     queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
     queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
     queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     return result;
   };
 
-  const declineInvitation = async (accountId: number, spaceUuid: string) => {
-    const result = await spaceService.declineInvitation(accountId, spaceUuid);
+  const acceptSpaceInvitation = async (spaceUuid: string) => {
+    const result = await spaceService.acceptSpaceInvitation(spaceUuid);
+
+    queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+
+    return result;
+  };
+
+  const declineSpaceInvitation = async (spaceUuid: string) => {
+    const result = await spaceService.declineSpaceInvitation(spaceUuid);
+    queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
     queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
     queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
     queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
@@ -316,6 +359,12 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     friendSpaces,
     isLoading,
 
+    joinRequestsByLink,
+    joinRequestsByLinkLoading,
+
+    pendingSpaceInvitation,
+    pendingSpaceInvitationLoading,
+
     // Queries
     useJoinRequests,
     useUploadedTasks, // New: Task queries
@@ -332,9 +381,17 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     removeUserFromSpace,
 
     // Invitation mutations
+
     getAllPendingRequest,
     acceptInvitation,
     declineInvitation,
+
+    /**
+     * SPACE INVITATION
+     */
+
+    acceptSpaceInvitation,
+    declineSpaceInvitation,
 
     // Task mutations
     uploadTaskMutation,

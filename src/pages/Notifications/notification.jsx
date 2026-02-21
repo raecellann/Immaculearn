@@ -5,51 +5,39 @@ import { FiUsers } from "react-icons/fi";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
+import { GroupCover } from "../component/groupCover";
+import { SpaceCover } from "../component/spaceCover";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 
 const NotificationPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+  const [ShowPendingSpaceInvitation, setShowPendingSpaceInvitation] =
+    useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
 
   const { user, isLoading: userLoading } = useUser();
   const {
-    userSpaces,
-    courseSpaces,
-    friendSpaces,
-    useJoinRequests,
+    joinRequestsByLink,
+    joinRequestsByLinkLoading,
+    pendingSpaceInvitation,
+    pendingSpaceInvitationLoading,
     acceptJoinRequest,
     declineJoinRequest,
+    acceptSpaceInvitation,
+    declineSpaceInvitation,
     isLoading: spaceLoading,
   } = useSpace();
 
-  /* =========================
-     GET ALL OWNED SPACES
-  ========================= */
-  const ownedSpaces = useMemo(() => {
-    const allSpaces = [
-      ...(userSpaces || []),
-      ...(courseSpaces || []),
-      ...(friendSpaces || []),
-    ];
+  const allJoinRequests = joinRequestsByLink || [];
+  const allPendingSpaceInvitation = pendingSpaceInvitation || [];
 
-    return allSpaces.filter((space) => space.creator === user?.id);
-  }, [userSpaces, courseSpaces, friendSpaces, user]);
-
-  /* =========================
-     FETCH JOIN REQUESTS PER SPACE
-  ========================= */
-  const allJoinRequests = ownedSpaces.flatMap((space) => {
-    const { data = [] } = useJoinRequests(space.space_uuid);
-    return data.map((request) => ({
-      ...request,
-      space_uuid: space.space_uuid,
-      space_name: space.space_name,
-    }));
-  });
+  console.log(allJoinRequests);
 
   const pendingInvitesCount = allJoinRequests.length;
+  const pendingSpaceInvitationCount = allPendingSpaceInvitation.length;
 
   /* =========================
      SCROLL HIDE HEADER
@@ -71,14 +59,6 @@ const NotificationPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  if (userLoading || spaceLoading) {
-    return (
-      <div className="flex h-screen justify-center items-center">
-        <MainLoading />
-      </div>
-    );
-  }
-
   const handleAccept = async (accountId, spaceUuid) => {
     try {
       await acceptJoinRequest(accountId, spaceUuid);
@@ -94,6 +74,35 @@ const NotificationPage = () => {
       console.error("Decline failed:", err);
     }
   };
+
+  const handleSpaceAccept = async (spaceUuid) => {
+    try {
+      await acceptSpaceInvitation(spaceUuid);
+    } catch (err) {
+      console.error("Accept failed:", err);
+    }
+  };
+
+  const handleSpaceDecline = async (spaceUuid) => {
+    try {
+      await declineSpaceInvitation(spaceUuid);
+    } catch (err) {
+      console.error("Decline failed:", err);
+    }
+  };
+
+  if (
+    userLoading ||
+    spaceLoading ||
+    joinRequestsByLinkLoading ||
+    pendingSpaceInvitationLoading
+  ) {
+    return (
+      <div className="flex h-screen justify-center items-center">
+        <MainLoading />
+      </div>
+    );
+  }
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
@@ -170,13 +179,13 @@ const NotificationPage = () => {
                     You have a new space invitation.
                   </p>
                   <p className="text-sm text-gray-400">
-                    {pendingInvitesCount} request(s)
+                    {pendingSpaceInvitationCount} request(s)
                   </p>
                 </div>
               </div>
 
               <button
-                onClick={() => setShowPendingInvitations(true)}
+                onClick={() => setShowPendingSpaceInvitation(true)}
                 className="text-blue-400 hover:underline"
               >
                 View
@@ -239,6 +248,82 @@ const NotificationPage = () => {
                         onClick={() =>
                           handleAccept(invite.account_id, invite.space_uuid)
                         }
+                        className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {ShowPendingSpaceInvitation && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">
+                Pending Space Invitation(s)
+              </h2>
+              <button
+                onClick={() => setShowPendingSpaceInvitation(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {allPendingSpaceInvitation.length === 0 ? (
+                <p className="text-gray-400 text-center py-4">
+                  No pending invitations
+                </p>
+              ) : (
+                allPendingSpaceInvitation.map((invite) => (
+                  <div
+                    key={`${invite.space_uuid}-${invite.account_id}`}
+                    className="bg-[#2A2F3A] rounded-lg p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* <img
+                        src={invite.owner_profile_pic}
+                        alt={invite.owner_fullname}
+                        className="w-12 h-12 rounded-full object-cover"
+                      /> */}
+
+                      <div className="relative">
+                        <SpaceCover
+                          image={invite.image}
+                          name={invite.space_name}
+                          members={invite.members || []} // default to empty array if undefined
+                          className="rounded-lg border-2 border-white h-10 w-10"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-medium">
+                          {capitalizeWords(invite.space_name)}'s space
+                        </h3>
+                        <p className="text-sm text-gray-400">
+                          Space Owner: {capitalizeWords(invite.owner_fullname)}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {/* Space: {invite.space_name} */}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 mt-3">
+                      <button
+                        onClick={() => handleSpaceDecline(invite.space_uuid)}
+                        className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md"
+                      >
+                        Decline
+                      </button>
+                      <button
+                        onClick={() => handleSpaceAccept(invite.space_uuid)}
                         className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md"
                       >
                         Accept

@@ -39,6 +39,19 @@ export interface SpacePendingInvitation {
     added_at: string;
 }
 
+export interface PendingSpaceInvitation {
+  invitation_id: number;
+  space_id: number;
+  space_uuid: string;
+  space_name: string;
+  owner_id: number;
+  invited_at: string;
+  expires_at: string;
+  owner_profile_pic: string;
+  owner_email: string;
+  owner_fullname: string;
+}
+
 export interface Space {
     space_id: string;
     space_uuid: string;
