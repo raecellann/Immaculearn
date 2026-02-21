@@ -28,8 +28,10 @@ const ProfHomePage = () => {
   const navigate = useNavigate();
 
   // Handle delete space
-  const handleDeleteSpace = async (spaceUuid) => {
+  const handleDeleteSpace = async () => {
     try {
+      // Get the space UUID from showDeleteConfirm
+      const spaceUuid = showDeleteConfirm;
       await deleteSpace(spaceUuid);
       setShowDeleteConfirm(null);
       setShowMenu(null);

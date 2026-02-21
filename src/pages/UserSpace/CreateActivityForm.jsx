@@ -67,7 +67,7 @@ const CreateActivityForm = () => {
             {/* FILE UPLOAD */}
             <div className="mt-6">
               <label className="font-semibold mb-2 block">
-                Choose a file or drag & drop it here.
+                Choose a file or drag & drop it heresdsdsd.
               </label>
               <div
                 onClick={handleFileClick}

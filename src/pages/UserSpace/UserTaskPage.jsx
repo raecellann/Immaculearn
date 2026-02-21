@@ -62,6 +62,52 @@ const UserTaskPage = () => {
   const [dueDate, setDueDate] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [taskCategory, setTaskCategory] = useState("individual-act");
+  
+  // ================= CRITERIA/RUBRICS STATE =================
+  const [criteria, setCriteria] = useState([
+    { id: 1, name: "", description: "", points: "" }
+  ]);
+  const [showCriteriaSection, setShowCriteriaSection] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  
+  // Ready-made criteria templates
+  const criteriaTemplates = {
+    essay: [
+      { name: "Content & Ideas", description: "Quality of arguments, originality, and depth of analysis", points: "30" },
+      { name: "Organization & Structure", description: "Logical flow, paragraph structure, and coherence", points: "25" },
+      { name: "Language & Grammar", description: "Grammar, spelling, vocabulary, and sentence structure", points: "20" },
+      { name: "Research & Evidence", description: "Use of sources, citations, and supporting evidence", points: "15" },
+      { name: "Critical Thinking", description: "Analysis, synthesis, and evaluation of ideas", points: "10" }
+    ],
+    research: [
+      { name: "Research Question", description: "Clarity and significance of the research question", points: "15" },
+      { name: "Literature Review", description: "Comprehensive review of existing research", points: "20" },
+      { name: "Methodology", description: "Appropriateness and rigor of research methods", points: "25" },
+      { name: "Data Analysis", description: "Accuracy and depth of data interpretation", points: "20" },
+      { name: "Conclusions", description: "Quality of findings and implications", points: "20" }
+    ],
+    presentation: [
+      { name: "Content Quality", description: "Accuracy, relevance, and depth of content", points: "30" },
+      { name: "Delivery Skills", description: "Clarity, confidence, and engagement", points: "25" },
+      { name: "Visual Aids", description: "Quality and effectiveness of slides/materials", points: "20" },
+      { name: "Organization", description: "Structure, timing, and flow", points: "15" },
+      { name: "Q&A Handling", description: "Ability to answer questions effectively", points: "10" }
+    ],
+    project: [
+      { name: "Technical Implementation", description: "Functionality, code quality, and technical skills", points: "35" },
+      { name: "Design & UX", description: "User interface, user experience, and aesthetics", points: "25" },
+      { name: "Innovation", description: "Creativity, originality, and unique features", points: "20" },
+      { name: "Documentation", description: "Code documentation, readme, and instructions", points: "10" },
+      { name: "Presentation", description: "Project demonstration and explanation", points: "10" }
+    ],
+    creative: [
+      { name: "Originality", description: "Creativity and uniqueness of the work", points: "30" },
+      { name: "Technical Skill", description: "Execution and mastery of techniques", points: "25" },
+      { name: "Concept Development", description: "Clarity and depth of the concept", points: "20" },
+      { name: "Aesthetic Quality", description: "Visual appeal and artistic merit", points: "15" },
+      { name: "Presentation", description: "Overall presentation and impact", points: "10" }
+    ]
+  };
 
   const taskCategories = [
     { value: "personal-reflection", label: "Personal Reflection", emoji: "🤔" },
@@ -127,6 +173,7 @@ const UserTaskPage = () => {
       status: status_type,
       due_date: dueDate,
       category: taskCategory,
+      criteria: criteria.filter(c => c.name.trim() && c.points.trim()),
     };
 
     if (groupsConfigured && groups.length > 0) {
@@ -177,6 +224,8 @@ const UserTaskPage = () => {
     setDueDate("");
     setSelectedFile(null);
     setTaskCategory("individual-act");
+    setCriteria([{ id: 1, name: "", description: "", points: "" }]);
+    setShowCriteriaSection(false);
     setLastGroupSaved([]);
     setGroups([
       {
@@ -851,6 +900,56 @@ const UserTaskPage = () => {
         setTimeout(() => setCopyFeedback(""), 2000);
       });
   };
+
+  // ================= CRITERIA MANAGEMENT FUNCTIONS =================
+  const addCriteria = () => {
+    const newCriteria = {
+      id: Date.now(),
+      name: "",
+      description: "",
+      points: ""
+    };
+    setCriteria([...criteria, newCriteria]);
+  };
+
+  const removeCriteria = (id) => {
+    if (criteria.length > 1) {
+      setCriteria(criteria.filter(c => c.id !== id));
+    }
+  };
+
+  const updateCriteria = (id, field, value) => {
+    setCriteria(criteria.map(c => 
+      c.id === id ? { ...c, [field]: value } : c
+    ));
+  };
+
+  const getTotalCriteriaPoints = () => {
+    return criteria.reduce((total, c) => {
+      const points = parseFloat(c.points) || 0;
+      return total + points;
+    }, 0);
+  };
+
+  // ================= TEMPLATE MANAGEMENT FUNCTIONS =================
+  const applyTemplate = (templateType) => {
+    const template = criteriaTemplates[templateType];
+    if (template) {
+      const newCriteria = template.map((criterion, index) => ({
+        id: Date.now() + index,
+        name: criterion.name,
+        description: criterion.description,
+        points: criterion.points
+      }));
+      setCriteria(newCriteria);
+      setShowTemplates(false);
+      setShowCriteriaSection(true);
+    }
+  };
+
+  const clearCriteria = () => {
+    setCriteria([{ id: 1, name: "", description: "", points: "" }]);
+  };
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       <div className="hidden lg:block">
@@ -1416,6 +1515,179 @@ const UserTaskPage = () => {
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
                       min={new Date().toISOString().split("T")[0]}
                     />
+
+                    {/* Criteria/Rubrics Section */}
+                    <div className="flex flex-col gap-3">
+                      <div className="flex justify-between items-center">
+                        <label className="font-semibold">Scoring Criteria:</label>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setShowTemplates(!showTemplates)}
+                            className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
+                          >
+                            Use Template
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowCriteriaSection(!showCriteriaSection)}
+                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                          >
+                            {showCriteriaSection ? "Hide" : "Manual"} Criteria
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Template Selection */}
+                      {showTemplates && (
+                        <div className="bg-[#23272F] rounded-lg p-4 border border-purple-600">
+                          <h4 className="text-sm font-semibold text-purple-400 mb-3">Choose a Template:</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => applyTemplate('essay')}
+                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                            >
+                              <div className="font-medium text-white">📝 Essay</div>
+                              <div className="text-xs text-gray-400">For written essays and compositions</div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyTemplate('research')}
+                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                            >
+                              <div className="font-medium text-white">🔬 Research Paper</div>
+                              <div className="text-xs text-gray-400">For academic research and analysis</div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyTemplate('presentation')}
+                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                            >
+                              <div className="font-medium text-white">🎤 Presentation</div>
+                              <div className="text-xs text-gray-400">For oral presentations and demos</div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyTemplate('project')}
+                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                            >
+                              <div className="font-medium text-white">💻 Project</div>
+                              <div className="text-xs text-gray-400">For coding and development projects</div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyTemplate('creative')}
+                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                            >
+                              <div className="font-medium text-white">🎨 Creative Work</div>
+                              <div className="text-xs text-gray-400">For artistic and creative assignments</div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={clearCriteria}
+                              className="p-3 bg-red-900/30 rounded-lg hover:bg-red-900/50 transition text-left border border-red-600/50 hover:border-red-500"
+                            >
+                              <div className="font-medium text-red-400">🗑️ Clear All</div>
+                              <div className="text-xs text-red-300">Remove all criteria</div>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {showCriteriaSection && (
+                        <div className="bg-[#23272F] rounded-lg p-4 max-h-[300px] overflow-y-auto">
+                          <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-sm font-semibold text-blue-400">
+                              {criteria.some(c => c.name.trim()) ? "Current Criteria:" : "Add Your Criteria:"}
+                            </h4>
+                            {criteria.some(c => c.name.trim()) && (
+                              <button
+                                type="button"
+                                onClick={() => setShowTemplates(true)}
+                                className="text-xs text-purple-400 hover:text-purple-300"
+                              >
+                                Change Template
+                              </button>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-3">
+                            {criteria.map((criterion, index) => (
+                              <div key={criterion.id} className="bg-[#161A20] rounded-lg p-3 border border-gray-600">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-blue-400">Criteria {index + 1}</span>
+                                  {criteria.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeCriteria(criterion.id)}
+                                      className="text-red-400 hover:text-red-300 text-sm"
+                                    >
+                                      Remove
+                                    </button>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <input
+                                    type="text"
+                                    value={criterion.name}
+                                    onChange={(e) => updateCriteria(criterion.id, 'name', e.target.value)}
+                                    placeholder="Criteria name (e.g., Content Quality)"
+                                    className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500"
+                                  />
+                                  
+                                  <textarea
+                                    value={criterion.description}
+                                    onChange={(e) => updateCriteria(criterion.id, 'description', e.target.value)}
+                                    placeholder="Description (optional)"
+                                    rows={2}
+                                    className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 resize-none"
+                                  />
+                                  
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="number"
+                                      value={criterion.points}
+                                      onChange={(e) => updateCriteria(criterion.id, 'points', e.target.value)}
+                                      placeholder="Points"
+                                      min="0"
+                                      step="0.5"
+                                      className="w-24 bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500"
+                                    />
+                                    <span className="text-sm text-gray-400">points</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            <button
+                              type="button"
+                              onClick={addCriteria}
+                              className="w-full px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm transition"
+                            >
+                              + Add Another Criteria
+                            </button>
+                            
+                            {getTotalCriteriaPoints() > 0 && (
+                              <div className="pt-2 border-t border-gray-600">
+                                <div className="flex justify-between items-center text-sm">
+                                  <span className="text-gray-300">Total Criteria Points:</span>
+                                  <span className="font-semibold text-blue-400">{getTotalCriteriaPoints()}</span>
+                                </div>
+                                {parseFloat(score) > 0 && getTotalCriteriaPoints() !== parseFloat(score) && (
+                                  <p className="text-xs text-yellow-400 mt-1">
+                                    Note: Total criteria points ({getTotalCriteriaPoints()}) 
+                                    {getTotalCriteriaPoints() > parseFloat(score) ? " exceed" : " don't match"} 
+                                    total score ({score})
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     {groupsConfigured ? (
                       <div className="flex flex-col gap-3">
