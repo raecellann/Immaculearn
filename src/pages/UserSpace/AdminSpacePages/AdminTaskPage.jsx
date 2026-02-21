@@ -7,6 +7,7 @@ import Sidebar from "../../component/sidebar";
 import Button from "../../component/button_2";
 import MainButton from "../../component/Button.jsx";
 import Logout from "../../component/logout";
+import AddMember from "../../component/AddMember";
 import {
   FiMenu,
   FiX,
@@ -59,9 +60,6 @@ const AdminTaskPage = () => {
   
   // Add Member modal state
   const [showInvitePopup, setShowInvitePopup] = useState(false);
-  const [copyFeedback, setCopyFeedback] = useState("");
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
 
   // Get tasks for current space
   const {
@@ -266,46 +264,6 @@ const AdminTaskPage = () => {
     setShowInvitePopup(true);
   };
   
-  const handleCopyLink = (space_link) => {
-    navigator.clipboard
-      .writeText(space_link)
-      .then(() => {
-        setCopyFeedback("Copied!");
-        setTimeout(() => setCopyFeedback(""), 2000);
-      })
-      .catch((err) => {
-        console.error("Failed to copy: ", err);
-        setCopyFeedback("Error!");
-        setTimeout(() => setCopyFeedback(""), 2000);
-      });
-  };
-
-  const sendInvite = () => {
-    if (inviteEmail.trim() && !emailError) {
-      // Here you would implement the actual invite sending logic
-      console.log("Sending invite to:", inviteEmail);
-      // You can add API call here to send invitation
-      alert(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail("");
-      setEmailError("");
-      // setShowInvitePopup(false); // Optional: close popup after sending
-    }
-  };
-
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
-      setEmailError("");
-      return;
-    }
-    
-    if (!emailRegex.test(email)) {
-      setEmailError("Please enter a valid email address");
-    } else {
-      setEmailError("");
-    }
-  };
-
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       <div className="hidden lg:block">
@@ -991,125 +949,11 @@ const AdminTaskPage = () => {
       </div>
       
       {/* INVITE POPUP */}
-      {showInvitePopup && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-gradient-to-br from-[#2A2F3A] to-[#1E222A] rounded-2xl w-[420px] max-w-[90vw] p-6 shadow-2xl border border-gray-700">
-            {/* HEADER */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                  <FiLink size={20} className="text-white" />
-                </div>
-                <h2 className="text-lg font-semibold text-white">
-                  Add Member
-                </h2>
-              </div>
-              <button
-                onClick={() => setShowInvitePopup(false)}
-                className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700"
-              >
-                <FiX size={20} />
-              </button>
-            </div>
-
-            {/* EMAIL INVITATION */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <p className="text-sm font-medium text-white">
-                  Invite by Email
-                </p>
-              </div>
-              <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-3">
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => {
-                      setInviteEmail(e.target.value);
-                      validateEmail(e.target.value);
-                    }}
-                    placeholder="Enter email address"
-                    className={`flex-1 bg-[#1E222A] border rounded-lg px-3 py-2 text-white text-sm outline-none transition-colors ${
-                      emailError 
-                        ? 'border-red-500 focus:border-red-500' 
-                        : 'border-gray-600 focus:border-blue-500'
-                    }`}
-                  />
-                  <button
-                    onClick={sendInvite}
-                    disabled={!inviteEmail.trim() || !!emailError}
-                    className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
-                      !inviteEmail.trim() || !!emailError
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    Send Invite
-                  </button>
-                </div>
-                {emailError && (
-                  <div className="flex items-center gap-2 text-red-400 text-xs">
-                    <div className="w-1 h-1 bg-red-400 rounded-full"></div>
-                    <span>{emailError}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* INVITATION LINK */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <p className="text-sm font-medium text-white">
-                  Share Invitation Link
-                </p>
-              </div>
-              <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-300 truncate flex-1 mr-2">
-                    {currentSpace?.space_link}
-                  </span>
-                  <button
-                    onClick={() => handleCopyLink(currentSpace?.space_link)}
-                    className={`text-sm px-3 py-1.5 rounded-lg transition-all transform hover:scale-105 ${
-                      copyFeedback
-                        ? copyFeedback === "Copied!"
-                          ? "bg-green-600 text-white shadow-lg shadow-green-600/30"
-                          : "bg-red-600 text-white shadow-lg shadow-red-600/30"
-                        : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/30"
-                    }`}
-                  >
-                    <div className="flex items-center gap-1">
-                      <FiCopy size={14} />
-                      <span>{copyFeedback || "Copy"}</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* INFO SECTION */}
-            <div className="bg-gray-800/30 border border-gray-700 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <FiLink size={14} className="text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white mb-1">
-                    How to invite members
-                  </p>
-                  <p className="text-xs text-gray-400 leading-relaxed">
-                    Copy invitation link above and share it with people
-                    you want to add to this space. They can join using this
-                    link.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AddMember
+        currentSpace={currentSpace}
+        showInvitePopup={showInvitePopup}
+        setShowInvitePopup={setShowInvitePopup}
+      />
     </div>
   );
 };
