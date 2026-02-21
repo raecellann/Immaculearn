@@ -358,6 +358,7 @@ const UserPage = () => {
   // Handle join requests
   const handleAcceptJoinRequest = async (userId) => {
     try {
+      console.log(userId);
       await acceptJoinRequest(userId, space_uuid);
       addNotification({
         type: "success",
@@ -1532,7 +1533,9 @@ const UserPage = () => {
                   <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                     <FiLink size={20} className="text-white" />
                   </div>
-                  <h2 className="text-lg font-semibold text-white">Add Member</h2>
+                  <h2 className="text-lg font-semibold text-white">
+                    Add Member
+                  </h2>
                 </div>
                 <button
                   onClick={() => setShowInvitePopup(false)}
@@ -1585,12 +1588,13 @@ const UserPage = () => {
                       How to invite members
                     </p>
                     <p className="text-xs text-gray-400 leading-relaxed">
-                      Copy the invitation link above and share it with people you want to add to this space. They can join using this link.
+                      Copy the invitation link above and share it with people
+                      you want to add to this space. They can join using this
+                      link.
                     </p>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         )}

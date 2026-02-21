@@ -49,7 +49,7 @@ export interface SpaceContextType {
   removeUserFromSpace: (spaceUuid: string, userId: number) => Promise<any>;
 
   // Invitation mutations
-  getAllPendingInvitations: (spaceUuid: string) => Promise<any>;
+  getAllPendingRequest: (spaceUuid: string) => Promise<any>;
   acceptInvitation: (accountId: number, spaceUuid: string) => Promise<any>;
   declineInvitation: (accountId: number, spaceUuid: string) => Promise<any>;
 

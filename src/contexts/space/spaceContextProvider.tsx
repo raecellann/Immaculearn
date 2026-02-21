@@ -217,8 +217,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   };
 
   // Invitation functions
-  const getAllPendingInvitations = async (spaceUuid: string) => {
-    const result = await spaceService.getAllPendingInvitations(spaceUuid);
+  const getAllPendingRequest = async (spaceUuid: string) => {
+    const result = await spaceService.getAllPendingRequest(spaceUuid);
     return result;
   };
 
@@ -332,7 +332,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     removeUserFromSpace,
 
     // Invitation mutations
-    getAllPendingInvitations,
+    getAllPendingRequest,
     acceptInvitation,
     declineInvitation,
 
