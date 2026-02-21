@@ -99,6 +99,17 @@ const UserPage = () => {
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
 
+  // Debug logging
+  console.log("Debug info:", {
+    currentSpace: currentSpace,
+    user: user,
+    currentSpaceCreator: currentSpace?.creator,
+    userId: user?.id,
+    isOwnerSpace,
+    space_uuid,
+    space_name
+  });
+
   const isFriendSpace = !isOwnerSpace;
 
   // Posts hook with React Query for 15-minute auto-re-render
@@ -928,9 +939,12 @@ const UserPage = () => {
                   Stream
                 </button>
                 <button
-                  onClick={() =>
-                    navigate(`/space/${space_uuid}/${space_name}/tasks`)
-                  }
+                  onClick={() => {
+                    console.log("Tasks button clicked:", { isOwnerSpace, space_uuid, space_name });
+                    const targetRoute = `/space/${space_uuid}/${space_name}/tasks`;
+                    console.log("Navigating to:", targetRoute);
+                    navigate(targetRoute);
+                  }}
                 >
                   Tasks
                 </button>

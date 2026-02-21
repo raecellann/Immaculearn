@@ -4,6 +4,7 @@ import UserPage from "../pages/UserSpace/zj-space.jsx";
 import UserTaskPage from "../pages/UserSpace/UserTaskPage.jsx";
 import UserFilesShared from "../pages/UserSpace/UserFilesShared.jsx";
 import UserPeoplePage from "../pages/UserSpace/UserPeoplePage.jsx";
+import AdminTaskPage from "../pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
 import SpacePage from "../pages/Space/SpacePage.jsx";
 import CreateSpaceAdmin from "../pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
 import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
@@ -40,7 +41,12 @@ export const SpaceRoutes = [
   {
     key: "/tasks",
     path: "/space/:space_uuid/:space_name/tasks",
-    element: <UserTaskPage />,
+    element: <AdminTaskPage />,
+  },
+  {
+    key: "/admin-tasks",
+    path: "/space/:space_uuid/:space_name/admin-tasks",
+    element: <AdminTaskPage />,
   },
   {
     key: "/files",
