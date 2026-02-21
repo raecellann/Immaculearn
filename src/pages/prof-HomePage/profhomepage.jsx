@@ -20,11 +20,24 @@ import { getGreeting } from "../../utils/greetings";
 import { SpaceCover } from "../component/spaceCover";
 import Logout from "../component/logout";
 import ArticlesScrape from "../component/articles_scrape";
+import { DeleteConfirmationDialog } from "../component/SweetAlert";
 
 const ProfHomePage = () => {
   const { user } = useUser();
-  const { userSpaces = [], courseSpaces = [] } = useSpace();
+  const { userSpaces = [], courseSpaces = [], deleteSpace } = useSpace();
   const navigate = useNavigate();
+
+  // Handle delete space
+  const handleDeleteSpace = async (spaceUuid) => {
+    try {
+      await deleteSpace(spaceUuid);
+      setShowDeleteConfirm(null);
+      setShowMenu(null);
+    } catch (error) {
+      console.error("Failed to delete space:", error);
+      // You could add a toast notification here if you have one
+    }
+  };
 
   // const [currentDate, setCurrentDate] = useState('');
   // const [greeting, setGreeting] = useState('');
@@ -405,35 +418,12 @@ const ProfHomePage = () => {
           </div>
 
           {/* Delete Space Confirmation Dialog */}
-          {showDeleteConfirm && (
-            <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
-                <h3 className="text-lg font-semibold mb-3">Delete Space</h3>
-                <p className="text-gray-400 text-sm mb-6">
-                  Are you sure you want to delete this space? This action cannot be undone.
-                </p>
-                <div className="flex gap-3 justify-end">
-                  <button
-                    onClick={() => setShowDeleteConfirm(null)}
-                    className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Handle delete action here
-                      console.log('Space deleted:', showDeleteConfirm);
-                      setShowDeleteConfirm(null);
-                      setShowMenu(null);
-                    }}
-                    className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <DeleteConfirmationDialog
+            isOpen={!!showDeleteConfirm}
+            onClose={() => setShowDeleteConfirm(null)}
+            onConfirm={handleDeleteSpace}
+            space={userSpaces.find(s => s.space_uuid === showDeleteConfirm) || courseSpaces.find(s => s.space_uuid === showDeleteConfirm)}
+          />
 
           {/* Leave Space Confirmation Dialog */}
           {showLeaveConfirm && (

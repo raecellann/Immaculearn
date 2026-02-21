@@ -174,14 +174,14 @@ export function DeleteConfirmationDialog({
             </button>
           </div>
 
-          <p className="text-gray-300 text-sm">
+          <p className="text-gray-300 text-base">
             Are you sure you want to delete the following workspace?
           </p>
 
           {/* Warning Box */}
           <div className="flex gap-3 bg-red-900/20 border border-red-800/50 rounded-xl p-4">
             <div className="w-1 bg-red-500 rounded-full" />
-            <div className="text-xs text-gray-300">
+            <div className="text-sm text-gray-300">
               <span className="font-semibold text-white">Warning:</span> This
               action <span className="font-semibold">cannot be undone</span>.
               Deleting a space will remove all its associated data. Any files,
@@ -197,23 +197,23 @@ export function DeleteConfirmationDialog({
                 ✓
               </div>
               <div>
-                <div className="font-medium text-white text-sm">
+                <div className="font-medium text-white text-base">
                   {space.space_name}
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="text-sm text-gray-400">
                   {filesCount} Files, {tasksCount} tasks, {peopleCount} people
                 </div>
               </div>
             </div>
 
-            <button className="text-xs border border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-700 transition text-gray-300">
+            <button className="text-sm border border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-700 transition text-gray-300">
               Go to Home
             </button>
           </div>
 
           {/* Confirmation Input */}
           <div className="space-y-2">
-            <p className="text-xs text-gray-400">
+            <p className="text-sm text-gray-400">
               To delete, type the workspace name{" "}
               <span className="font-semibold text-white">
                 {space.space_name}
@@ -226,7 +226,7 @@ export function DeleteConfirmationDialog({
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
               placeholder={`Enter ${space.space_name}`}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 placeholder-gray-500"
+              className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-base text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 placeholder-gray-500"
             />
           </div>
 
@@ -234,7 +234,7 @@ export function DeleteConfirmationDialog({
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 transition border border-gray-600"
+              className="px-4 py-2 rounded-lg text-base text-gray-300 hover:bg-gray-800 transition border border-gray-600"
             >
               Cancel
             </button>
@@ -242,7 +242,7 @@ export function DeleteConfirmationDialog({
             <button
               onClick={onConfirm}
               disabled={!isValid}
-              className={`px-4 py-2 rounded-lg text-sm text-white transition ${
+              className={`px-4 py-2 rounded-lg text-base text-white transition ${
                 isValid
                   ? "bg-red-600 hover:bg-red-700"
                   : "bg-red-800 cursor-not-allowed"

@@ -101,26 +101,25 @@ const ViewAllFilesPage = () => {
       {/* ================= MAIN CONTENT ================= */}
       <div className="flex-1 flex flex-col">
 
-        {/* 🔹 MOBILE + TABLET STICKY HEADER */}
+        {/* � Sticky Mobile Header */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
-            showHeader ? "translate-y-0" : "-translate-y-full"
-          }`}
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          transition-transform duration-300
+          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
         >
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
-          >
-            ☰
-          </button>
-          <h1 className="text-xl font-bold">Files</h1>
+          <div className="p-4 flex items-center gap-4">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="bg-transparent border-none text-white text-2xl p-0"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-bold">Files</h1>
+          </div>
         </div>
 
-        {/* 🔹 Spacer for fixed header */}
-        <div className="lg:hidden h-16" />
-
         {/* ================= PAGE CONTENT ================= */}
-        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
+        <div className="flex-1 p-4 lg:p-10 overflow-y-auto pt-20 sm:pt-24 lg:pt-10">
           <h1 className="hidden lg:block text-4xl font-bold text-center mb-10">
             { space_name } Files
           </h1>

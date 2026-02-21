@@ -17,6 +17,7 @@ import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { SpaceCover } from "../component/spaceCover";
 import ArticlesScrape from "../component/articles_scrape";
+import { DeleteConfirmationDialog } from "../component/SweetAlert";
 
 const HomePage1 = () => {
   const { user } = useUser();
@@ -730,31 +731,12 @@ const HomePage1 = () => {
           </div>
         </div>
         {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-            <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
-              <h3 className="text-lg font-semibold mb-3">Delete Space</h3>
-              <p className="text-gray-400 text-sm mb-6">
-                Are you sure you want to delete this space? This action cannot
-                be undone.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setShowDeleteConfirm(null)}
-                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleDeleteSpace(showDeleteConfirm)}
-                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <DeleteConfirmationDialog
+          isOpen={!!showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(null)}
+          onConfirm={handleDeleteSpace}
+          space={userSpaces.find(s => s.space_uuid === showDeleteConfirm) || friendSpaces.find(s => s.space_uuid === showDeleteConfirm)}
+        />
         {/* Leave Confirmation Modal */}
         {showLeaveConfirm && (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">

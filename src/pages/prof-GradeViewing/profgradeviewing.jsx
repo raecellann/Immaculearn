@@ -1,46 +1,59 @@
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../component/profsidebar";
 import Logout from "../component/logout";
+import { useSpace } from "../../contexts/space/useSpace";
 
 const ProfGradeRecordPage = () => {
-  const [yearLevel, setYearLevel] = useState("1ST YEAR");
+  const { courseSpaces } = useSpace();
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
-
-  const subjectsByYear = {
-    "1ST YEAR": [
-      "BIOLOGY-1SY2025-2026",
-      "MMW (2025-2026)",
-      "INTRO TO PROGRAMMING (2025-2026)",
-    ],
-    "2ND YEAR": [
-      "DATAStruct (2025-2026)",
-      "OOP (2025-2026)",
-      "DISCRETE MATH (2025-2026)",
-    ],
-    "3RD YEAR": [
-      "CS ELEC1 - 1SY2025-2026",
-      "OPERATING SYSTEMS (2025-2026)",
-      "BUSINTEG-1SY2025-2026",
-    ],
-    "4TH YEAR": [
-      "THESIS 1 (2025-2026)",
-      "CAPSTONE (2025-2026)",
-      "IT PRACTICUM (2025-2026)",
-    ],
-  };
-
-  const studentGrades = [
-    { name: "Abesamis, Aaron", prelim: 90, midterm: 89, preFinal: 85, final: 90 },
-    { name: "Adriano, Mary Ann", prelim: 85, midterm: 87, preFinal: 80, final: 90 },
-    { name: "Abesamis, Aaron", prelim: 90, midterm: 89, preFinal: 85, final: 90 },
-    { name: "Adriano, Mary Ann", prelim: 85, midterm: 87, preFinal: 80, final: 90 },
-  ];
+  const [studentGrades, setStudentGrades] = useState([]);
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [editForm, setEditForm] = useState({
+    prelim: '',
+    midterm: '',
+    preFinal: '',
+    final: ''
+  });
 
   /* 🔹 ADDED — STICKY + HIDE ON SCROLL */
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
+
+  const handleEditGrade = (student) => {
+    setEditingStudent(student.accountId);
+    setEditForm({
+      prelim: student.prelim || '',
+      midterm: student.midterm || '',
+      preFinal: student.preFinal || '',
+      final: student.final || ''
+    });
+  };
+
+  const handleSaveGrade = () => {
+    setStudentGrades(prevGrades => 
+      prevGrades.map(student => 
+        student.accountId === editingStudent 
+          ? { ...student, ...editForm }
+          : student
+      )
+    );
+    setEditingStudent(null);
+    setEditForm({ prelim: '', midterm: '', preFinal: '', final: '' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingStudent(null);
+    setEditForm({ prelim: '', midterm: '', preFinal: '', final: '' });
+  };
+
+  const handleInputChange = (field, value) => {
+    // Only allow numbers and empty string
+    if (value === '' || /^\d*$/.test(value)) {
+      setEditForm(prev => ({ ...prev, [field]: value }));
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +71,7 @@ const ProfGradeRecordPage = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen bg-[#161A20] text-white">
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
@@ -107,58 +120,71 @@ const ProfGradeRecordPage = () => {
           <h1 className="text-4xl font-bold text-center flex-1">Grade Record</h1>
         </div>
 
-        {/* Year Level & Back */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex-1">
-            {selectedSubject && (
-              <button
-                onClick={() => setSelectedSubject(null)}
-                className="text-gray-300 text-sm flex items-center gap-1 hover:text-white transition bg-transparent border-none"
-              >
-                ← Back
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-300">Year Level:</label>
-            <select
-              value={yearLevel}
-              onChange={(e) => {
-                setYearLevel(e.target.value);
-                setSelectedSubject(null);
-              }}
-              className="bg-[#1F242D] border border-gray-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 text-white appearance-none"
-            >
-              <option>1ST YEAR</option>
-              <option>2ND YEAR</option>
-              <option>3RD YEAR</option>
-              <option>4TH YEAR</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="border-t border-gray-700 mb-6"></div>
-
         {/* Folder View */}
         {!selectedSubject && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 justify-center">
-            {subjectsByYear[yearLevel].map((subject, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedSubject(subject)}
-                className="w-full bg-[#1F242D] hover:bg-[#2A2E36] text-left px-4 py-3 rounded-md flex items-center gap-3 transition-all shadow-md"
-              >
-                <span className="text-yellow-400 text-xl">📁</span>
-                <span className="font-semibold text-sm">{subject}</span>
-              </button>
-            ))}
-          </div>
+          <>
+            <div className="mb-12 mt-8">
+              <h2 className="text-xl font-semibold mb-4 text-white pb-2">
+                Course Space
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
+              {courseSpaces.length === 0 ? (
+                <div className="col-span-full bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                  <span className="text-4xl mb-4 block">📚</span>
+                  <p className="text-lg font-medium mb-2">No Course Spaces Yet</p>
+                  <p className="text-sm">You haven't created any course spaces. Create your first course space to start managing grades!</p>
+                </div>
+              ) : (
+                courseSpaces.map((space, index) => (
+                  <div
+                    key={`course-space-${index}`}
+                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    onClick={() => {
+                      setSelectedSubject(space);
+                      // Initialize student grades for this course space
+                      const grades = space.members
+                        .filter(member => member.role !== "Professor")
+                        .map(member => ({
+                          name: member.full_name,
+                          accountId: member.account_id,
+                          prelim: '',
+                          midterm: '',
+                          preFinal: '',
+                          final: ''
+                        }));
+                      setStudentGrades(grades);
+                    }}
+                  >
+                    <span className="text-xl">📊</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">
+                        {space.space_name}
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        {space.members?.filter(m => m.role !== "Professor").length || 0} Students
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </>
         )}
 
         {/* Grades */}
         {selectedSubject && (
           <>
+            {/* Back Button */}
+            <div className="mb-6">
+              <button
+                onClick={() => setSelectedSubject(null)}
+                className="flex items-center gap-2 px-4 py-2 bg-transparent border-none text-white hover:text-gray-300 transition"
+              >
+                <span className="text-xl">←</span>
+                <span>Back</span>
+              </button>
+            </div>
             {/* Mobile / Tablet Cards */}
             <div className="lg:hidden space-y-4">
               {studentGrades.map((student, idx) => (
@@ -167,15 +193,51 @@ const ProfGradeRecordPage = () => {
                   className="bg-[#1E222A] p-4 rounded-lg border border-gray-700"
                 >
                   <p className="font-semibold mb-1">{student.name}</p>
-                  <div className="text-sm text-gray-300 space-y-1">
-                    <p>Prelim: {student.prelim}</p>
-                    <p>Midterm: {student.midterm}</p>
-                    <p>Pre-Final: {student.preFinal}</p>
-                    <p>Final: {student.final}</p>
-                  </div>
-                  <button className="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white py-1.5 rounded-md text-sm">
-                    Edit Grade
-                  </button>
+                  {editingStudent === student.accountId ? (
+                    <div className="space-y-2">
+                      {['prelim', 'midterm', 'preFinal', 'final'].map((field) => (
+                        <div key={field} className="flex items-center gap-2">
+                          <label className="text-xs text-gray-400 w-16 capitalize">{field}:</label>
+                          <input
+                            type="text"
+                            value={editForm[field]}
+                            onChange={(e) => handleInputChange(field, e.target.value)}
+                            className="flex-1 bg-[#1F242D] border border-gray-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
+                            placeholder="0-100"
+                          />
+                        </div>
+                      ))}
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={handleSaveGrade}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white py-1.5 rounded-md text-sm"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-1.5 rounded-md text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-sm text-gray-300 space-y-1">
+                        <p>Prelim: {student.prelim || '-'}</p>
+                        <p>Midterm: {student.midterm || '-'}</p>
+                        <p>Pre-Final: {student.preFinal || '-'}</p>
+                        <p>Final: {student.final || '-'}</p>
+                      </div>
+                      <button 
+                        onClick={() => handleEditGrade(student)}
+                        className="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white py-1.5 rounded-md text-sm"
+                      >
+                        Edit Grade
+                      </button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -190,7 +252,7 @@ const ProfGradeRecordPage = () => {
                     <th className="py-3 px-4">Midterm</th>
                     <th className="py-3 px-4">Pre-Final</th>
                     <th className="py-3 px-4">Final</th>
-                    <th className="py-3 px-4">Details</th>
+                    <th className="py-3 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -200,15 +262,52 @@ const ProfGradeRecordPage = () => {
                       className="border-b border-gray-700 hover:bg-[#1F242D] transition"
                     >
                       <td className="py-2 px-4 text-left">{student.name}</td>
-                      <td>{student.prelim}</td>
-                      <td>{student.midterm}</td>
-                      <td>{student.preFinal}</td>
-                      <td>{student.final}</td>
-                      <td>
-                        <button className="text-blue-400 hover:text-blue-300 text-sm bg-transparent border-none p-0">
-                          Edit Grade
-                        </button>
-                      </td>
+                      {editingStudent === student.accountId ? (
+                        <>
+                          {['prelim', 'midterm', 'preFinal', 'final'].map((field) => (
+                            <td key={field} className="py-2 px-2">
+                              <input
+                                type="text"
+                                value={editForm[field]}
+                                onChange={(e) => handleInputChange(field, e.target.value)}
+                                className="w-16 bg-[#1F242D] border border-gray-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500 text-center"
+                                placeholder="0-100"
+                              />
+                            </td>
+                          ))}
+                          <td className="py-2 px-4">
+                            <div className="flex gap-2 justify-center">
+                              <button
+                                onClick={handleSaveGrade}
+                                className="text-green-400 hover:text-green-300 text-sm bg-transparent border-none p-0"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="text-gray-400 hover:text-gray-300 text-sm bg-transparent border-none p-0"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{student.prelim || '-'}</td>
+                          <td>{student.midterm || '-'}</td>
+                          <td>{student.preFinal || '-'}</td>
+                          <td>{student.final || '-'}</td>
+                          <td>
+                            <button 
+                              onClick={() => handleEditGrade(student)}
+                              className="text-blue-400 hover:text-blue-300 text-sm bg-transparent border-none p-0"
+                            >
+                              Edit Grade
+                            </button>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>
