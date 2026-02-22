@@ -25,6 +25,7 @@ const ProfCreateClassroomSpace = () => {
   // Cover image state
   const [coverImage, setCoverImage] = useState("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [originalImage, setOriginalImage] = useState(null);
 
   // Cropper states
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -40,7 +41,7 @@ const ProfCreateClassroomSpace = () => {
   const [startTime, setStartTime] = useState({ hour: 8, minute: 0, period: 'AM' });
   const [endTime, setEndTime] = useState({ hour: 10, minute: 0, period: 'AM' });
 
-  /* 📹 STICKY HEADER LOGIC */
+  /* STICKY HEADER LOGIC */
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -166,7 +167,9 @@ const ProfCreateClassroomSpace = () => {
 
     const url = URL.createObjectURL(file);
     setUploadedImage(url);
+    setOriginalImage(url); // Store original image
     setIsCropping(true);
+    setIsCoverModalOpen(false); // Close the modal after file selection
   };
 
   const onCropComplete = useCallback((_, croppedPixels) => {
@@ -174,8 +177,9 @@ const ProfCreateClassroomSpace = () => {
   }, []);
 
   const createCroppedImage = async (imageSrc, croppedAreaPixels) => {
+    // Always use the original image for cropping
     const image = new Image();
-    image.src = imageSrc;
+    image.src = originalImage || imageSrc;
 
     return new Promise((resolve) => {
       image.onload = () => {
@@ -206,11 +210,11 @@ const ProfCreateClassroomSpace = () => {
   };
 
   const handleCropSave = async () => {
-    if (uploadedImage && croppedAreaPixels) {
+    if ((originalImage || uploadedImage) && croppedAreaPixels) {
       const croppedImageUrl = await createCroppedImage(uploadedImage, croppedAreaPixels);
       setCoverImage(croppedImageUrl);
       setIsCropping(false);
-      setUploadedImage(null);
+      // Don't clear uploadedImage or originalImage to allow re-cropping
       setIsCoverModalOpen(false);
     }
   };
@@ -277,7 +281,7 @@ const ProfCreateClassroomSpace = () => {
                   className="absolute top-3 right-3 bg-black/60 p-1 rounded-full"
                   onClick={() => {
                     setIsCropping(false);
-                    setUploadedImage(null);
+                    // Don't clear the original image when closing cropper
                   }}
                 >
                   <X size={20} className="text-white" />
@@ -316,7 +320,7 @@ const ProfCreateClassroomSpace = () => {
                     className="px-4 py-2 text-sm bg-[#444] rounded-lg hover:bg-[#555]"
                     onClick={() => {
                       setIsCropping(false);
-                      setUploadedImage(null);
+                      // Don't clear the original image when canceling
                     }}
                   >
                     Cancel
@@ -350,11 +354,11 @@ const ProfCreateClassroomSpace = () => {
                 Change Cover
               </button>
 
-              {!coverImage.includes("gradient") && coverImage && (
+              {(!coverImage.includes("gradient") && originalImage) && (
                 <button
                   className="text-white bg-black/50 px-2 py-1 rounded text-xs"
                   onClick={() => {
-                    setUploadedImage(coverImage);
+                    setUploadedImage(originalImage); // Use original image for cropping
                     setIsCropping(true);
                   }}
                 >
@@ -407,6 +411,7 @@ const ProfCreateClassroomSpace = () => {
                       className="h-16 w-full object-cover rounded cursor-pointer"
                       onClick={() => {
                         setCoverImage(img);
+                        setOriginalImage(img); // Set original image for gallery images
                         setIsCoverModalOpen(false);
                       }}
                     />

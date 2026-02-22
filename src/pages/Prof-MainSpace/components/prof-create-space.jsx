@@ -21,6 +21,7 @@ const ProfCreateSpace = () => {
   // Cover image state
   const [coverImage, setCoverImage] = useState("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [originalImage, setOriginalImage] = useState(null);
 
   // Cropper states
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -67,15 +68,6 @@ const ProfCreateSpace = () => {
     "/src/assets/HomePage/spaces-cover/space-board.jpg",
   ];
 
-  // const handleCreateSpace = () => {
-  //   if (spaceName.trim()) {
-  //     alert(`Space "${spaceName}" created!`);
-  //     setSpaceName("");
-  //   } else {
-  //     alert("Please enter a space name.");
-  //   }
-  // };
-
   const handleCreateSpace = async () => {
     if (spaceName.trim()) {
       try {
@@ -121,7 +113,9 @@ const ProfCreateSpace = () => {
 
     const url = URL.createObjectURL(file);
     setUploadedImage(url);
+    setOriginalImage(url); // Store original image
     setIsCropping(true);
+    setIsCoverModalOpen(false); // Close the modal after file selection
   };
 
   const onCropComplete = useCallback((_, croppedPixels) => {
@@ -129,8 +123,9 @@ const ProfCreateSpace = () => {
   }, []);
 
   const createCroppedImage = async (imageSrc, croppedAreaPixels) => {
+    // Always use the original image for cropping
     const image = new Image();
-    image.src = imageSrc;
+    image.src = originalImage || imageSrc;
 
     return new Promise((resolve) => {
       image.onload = () => {
@@ -161,11 +156,11 @@ const ProfCreateSpace = () => {
   };
 
   const handleCropSave = async () => {
-    if (uploadedImage && croppedAreaPixels) {
+    if ((originalImage || uploadedImage) && croppedAreaPixels) {
       const croppedImageUrl = await createCroppedImage(uploadedImage, croppedAreaPixels);
       setCoverImage(croppedImageUrl);
       setIsCropping(false);
-      setUploadedImage(null);
+      // Don't clear uploadedImage or originalImage to allow re-cropping
       setIsCoverModalOpen(false);
     }
   };
@@ -215,11 +210,11 @@ const ProfCreateSpace = () => {
         {/* 🔹 Spacer for fixed header */}
         <div className="lg:hidden h-16" />
 
-        {/* ================= PAGE CONTENT ================= */}
-        <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
-          <h1 className="hidden lg:block text-4xl font-bold text-center mb-6 lg:mb-10">Create New Space, Here!</h1>
+      {/* ================= PAGE CONTENT ================= */}
+      <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
+        <h1 className="hidden lg:block text-4xl font-bold text-center mb-6 lg:mb-10">Create New Space, Here!</h1>
 
-          <div className="bg-[#2A2A2A] rounded-xl p-4 lg:p-6 w-full mx-auto max-w-4xl">
+        <div className="bg-[#2A2A2A] rounded-xl p-4 lg:p-6 w-full mx-auto max-w-4xl">
 
           {/* 🔵 TWITTER-STYLE CROP MODAL */}
           {isCropping && (
@@ -231,7 +226,7 @@ const ProfCreateSpace = () => {
                   className="absolute top-3 right-3 bg-black/60 p-1 rounded-full"
                   onClick={() => {
                     setIsCropping(false);
-                    setUploadedImage(null);
+                    // Don't clear the original image when closing cropper
                   }}
                 >
                   <X size={20} className="text-white" />
@@ -270,7 +265,7 @@ const ProfCreateSpace = () => {
                     className="px-4 py-2 text-sm bg-[#444] rounded-lg hover:bg-[#555]"
                     onClick={() => {
                       setIsCropping(false);
-                      setUploadedImage(null);
+                      // Don't clear the original image when canceling
                     }}
                   >
                     Cancel
@@ -304,11 +299,11 @@ const ProfCreateSpace = () => {
                 Change Cover
               </button>
 
-              {!coverImage.includes("gradient") && coverImage && (
+              {(!coverImage.includes("gradient") && originalImage) && (
                 <button
                   className="text-white bg-black/50 px-2 py-1 rounded text-xs"
                   onClick={() => {
-                    setUploadedImage(coverImage);
+                    setUploadedImage(originalImage); // Use original image for cropping
                     setIsCropping(true);
                   }}
                 >
@@ -361,6 +356,7 @@ const ProfCreateSpace = () => {
                       className="h-16 w-full object-cover rounded cursor-pointer"
                       onClick={() => {
                         setCoverImage(img);
+                        setOriginalImage(img); // Set original image for gallery images
                         setIsCoverModalOpen(false);
                       }}
                     />
