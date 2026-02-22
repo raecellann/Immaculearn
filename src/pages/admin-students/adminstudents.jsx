@@ -180,10 +180,9 @@ const AdminStudents = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
-    // Validate email when email field changes
-    if (name === 'email') {
-      setEmailError(value && !validateEmail(value));
+    // Clear error when user starts typing again
+    if (name === 'email' && emailError) {
+      setEmailError(false);
     }
   };
 

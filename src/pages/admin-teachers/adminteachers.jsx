@@ -434,7 +434,10 @@ const AdminTeachers = () => {
                   value={newTeacher.email}
                   onChange={(e) => {
                     setNewTeacher({ email: e.target.value });
-                    setEmailError(e.target.value && !validateEmail(e.target.value));
+                    // Clear error when user starts typing again
+                    if (emailError) {
+                      setEmailError(false);
+                    }
                   }}
                   className={`w-full px-3 py-2 bg-[#242B38] border rounded-lg text-white focus:outline-none focus:border-blue-500 ${
                     emailError ? 'border-red-500' : 'border-gray-600'

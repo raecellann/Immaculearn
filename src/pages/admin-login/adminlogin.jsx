@@ -12,11 +12,31 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState(false);
 
   const navigate = useNavigate();
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate email
+    if (!email) {
+      toast.error("Email is required");
+      setEmailError(true);
+      return;
+    }
+    
+    if (!validateEmail(email)) {
+      toast.error("Please enter a valid email address");
+      setEmailError(true);
+      return;
+    }
+    
     // Add admin-specific login logic here
     alert(`Logging in as Admin`);
   };
@@ -101,13 +121,30 @@ const AdminLogin = () => {
         </div>
 
         <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit}>
-          <InputField
-            type="email"
-            placeholder="Enter your admin email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ width: "100%" }}
-          />
+          <div>
+            <InputField
+              type="email"
+              placeholder="Enter your admin email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                // Clear error when user starts typing again
+                if (emailError) {
+                  setEmailError(false);
+                }
+              }}
+              style={{
+                width: "100%",
+                borderColor: emailError ? "#ef4444" : "#000",
+                boxShadow: emailError
+                  ? "2.5px 3px 0 #ef4444"
+                  : "2.5px 3px 0 #000"
+              }}
+            />
+            {emailError && (
+              <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>
+            )}
+          </div>
 
           <InputField
             type="password"
