@@ -1,12 +1,7 @@
-import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
 import Sidebar from "../../component/sidebar";
 import {
-  FiBold,
-  FiItalic,
-  FiUnderline,
-  FiUploadCloud,
-  FiArrowLeft,
   FiPlus,
   FiTrash2,
   FiPaperclip,
@@ -15,24 +10,34 @@ import {
   FiCircle,
   FiType,
   FiAlignLeft,
+  FiArrowLeft,
 } from "react-icons/fi";
 
-
-const AdminCreateActivityPage = () => {
-  const fileInputRef = useRef(null);
-  const instructionRef = useRef(null);
+const FormBuilderPage = () => {
   const navigate = useNavigate();
+  const { space_uuid, space_name } = useParams();
   
   // Form Builder State
   const [questions, setQuestions] = useState([]);
   const [attachments, setAttachments] = useState([]);
-  const [activityTitle, setActivityTitle] = useState("");
-  const [grades, setGrades] = useState("");
-  const [assignees, setAssignees] = useState("Individual");
-  const [dueDate, setDueDate] = useState("");
-  const [enableForm, setEnableForm] = useState(false);
   const [allowAttachments, setAllowAttachments] = useState(false);
-
+  const [taskTitle, setTaskTitle] = useState("");
+  const [instruction, setInstruction] = useState("");
+  
+  // Retrieve task data from sessionStorage on component mount
+  useEffect(() => {
+    const storedData = sessionStorage.getItem('taskFormData');
+    if (storedData) {
+      try {
+        const data = JSON.parse(storedData);
+        setTaskTitle(data.title || "");
+        setInstruction(data.instruction || "");
+      } catch (error) {
+        console.error('Error parsing stored task data:', error);
+      }
+    }
+  }, []);
+  
   // Question types
   const questionTypes = [
     { id: 'identification', label: 'Identification', icon: FiType },
@@ -41,16 +46,6 @@ const AdminCreateActivityPage = () => {
     { id: 'reflection', label: 'Reflection', icon: FiAlignLeft },
     { id: 'essay', label: 'Essay', icon: FiEdit3 },
   ];
-
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  // Apply formatting ONLY inside instruction box
-  const applyFormat = (command) => {
-    instructionRef.current?.focus();
-    document.execCommand(command, false, null);
-  };
 
   // Form Builder Functions
   const addQuestion = (type) => {
@@ -92,6 +87,17 @@ const AdminCreateActivityPage = () => {
     setAttachments(attachments.filter(a => a.id !== id));
   };
 
+  const handleBack = () => {
+    navigate(`/space/${space_uuid}/${space_name}/tasks`);
+  };
+
+  const handleSaveForm = () => {
+    // Here you would save the form data and navigate back or to next step
+    console.log("Saving form:", { taskTitle, instruction, questions, attachments, allowAttachments });
+    // For now, just navigate back to tasks
+    navigate(`/space/${space_uuid}/${space_name}/tasks`);
+  };
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
       {/* SIDEBAR */}
@@ -99,225 +105,89 @@ const AdminCreateActivityPage = () => {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 p-6 overflow-y-auto">
-        {/* HEADER / BANNER */}
-        <div className="relative mb-6">
-          <img
-            src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b"
-            alt="Space Banner"
-            className="w-full h-48 object-cover opacity-90 rounded-b-xl"
-          />
-          <div className="absolute top-0 z-10">
-            <div className="bg-black text-white px-10 py-3 rounded-b-[1rem] shadow-lg text-2xl font-extrabold">
-              Zeldrick’s Space
-            </div>
-          </div>
-        </div>
-
-        {/* TOP ACTION BUTTONS */}
-        <div className="flex justify-end mb-6">
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-6">
           <button
             className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
-            onClick={() => navigate("/admintaskpage")}
+            onClick={handleBack}
           >
-            <FiArrowLeft /> Back to Tasks
+            <FiArrowLeft size={16} />
+            Back to Tasks
+          </button>
+          <h1 className="text-2xl font-bold">Activity Form Builder</h1>
+          <button
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold"
+            onClick={handleSaveForm}
+          >
+            Save Form
           </button>
         </div>
 
-        {/* FORM CARD */}
+        {/* FORM CONTENT */}
         <div className="max-w-6xl mx-auto bg-black rounded-xl shadow-lg p-8 border border-white">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* LEFT SECTION */}
-            <div className="flex-1 flex flex-col gap-4">
-              <label className="font-semibold text-lg">
-                Title: <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={activityTitle}
-                onChange={(e) => setActivityTitle(e.target.value)}
-                className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
-                placeholder="Enter activity title"
-              />
-
-              {/* INSTRUCTION */}
-              <label className="font-semibold">Instruction (optional)</label>
-
-              <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
-                {/* Editable Instruction Area */}
-                <div
-                  ref={instructionRef}
-                  contentEditable
-                  className="min-h-[140px] px-4 py-3 outline-none"
-                  suppressContentEditableWarning
+          {/* BASIC INFO */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold mb-4">Activity Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block font-semibold mb-2">
+                  Activity Title: <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={taskTitle}
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                  className="w-full bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                  placeholder="Enter activity title"
                 />
-
-                {/* Divider */}
-                <div className="border-t border-[#2F3440]" />
-
-                {/* Formatting Toolbar (BOTTOM) */}
-                <div className="flex gap-4 px-4 py-2 text-gray-300">
-                  <button
-                    type="button"
-                    onClick={() => applyFormat("bold")}
-                    className="hover:text-white"
-                  >
-                    <FiBold />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => applyFormat("italic")}
-                    className="hover:text-white"
-                  >
-                    <FiItalic />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => applyFormat("underline")}
-                    className="hover:text-white"
-                  >
-                    <FiUnderline />
-                  </button>
-                </div>
               </div>
-
-              {/* ATTACHMENTS SECTION */}
-              <div className="mt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <label className="block font-semibold">
-                    Attachments
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={allowAttachments}
-                      onChange={(e) => setAllowAttachments(e.target.checked)}
-                      className="rounded"
-                    />
-                    Allow member attachments
-                  </label>
-                </div>
-
-                <div
-                  onClick={handleFileClick}
-                  className="border border-dashed border-gray-500 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer bg-[#0F1115] hover:border-blue-500 transition"
-                >
-                  <FiPaperclip size={36} className="mb-3 text-gray-300" />
-
-                  <p className="text-sm text-gray-300 mb-2">
-                    Choose a file or drag & drop it here.
-                  </p>
-
-                  <p className="text-xs text-gray-500 mb-4">
-                    DOCS, PDF, PPT AND EXCEL, UP TO 10 MB
-                  </p>
-
-                  <button
-                    type="button"
-                    className="px-4 py-1.5 border border-gray-400 rounded-md text-sm hover:bg-gray-800"
-                  >
-                    Browse Files
-                  </button>
-
-                  <input 
-                    ref={fileInputRef} 
-                    type="file" 
-                    className="hidden" 
-                    multiple
-                    onChange={handleAttachmentUpload}
-                  />
-                </div>
-
-                {/* ATTACHMENTS LIST */}
-                {attachments.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {attachments.map((attachment) => (
-                      <div key={attachment.id} className="flex items-center justify-between bg-[#23272F] p-3 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <FiPaperclip className="text-gray-400" />
-                          <div>
-                            <p className="text-sm font-medium">{attachment.name}</p>
-                            <p className="text-xs text-gray-500">
-                              {(attachment.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => removeAttachment(attachment.id)}
-                          className="text-red-400 hover:text-red-300"
-                        >
-                          <FiTrash2 size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div>
+                <label className="block font-semibold mb-2">
+                  Instruction (optional)
+                </label>
+                <textarea
+                  value={instruction}
+                  onChange={(e) => setInstruction(e.target.value)}
+                  className="w-full bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500 h-20 resize-none"
+                  placeholder="Enter instructions for this activity"
+                />
               </div>
             </div>
+          </div>
 
-            {/* RIGHT SECTION */}
-            <div className="flex-1 flex flex-col gap-4">
-              <label className="font-semibold">Grades:</label>
-              <input
-                type="text"
-                value={grades}
-                onChange={(e) => setGrades(e.target.value)}
-                className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
-                placeholder="e.g. 95/100"
-              />
-
-              <label className="font-semibold">Assignees:</label>
-              <select 
-                value={assignees}
-                onChange={(e) => setAssignees(e.target.value)}
-                className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
-              >
-                <option value="Individual">Individual</option>
-                <option value="Group">Group</option>
-              </select>
-
-              <label className="font-semibold">Due Date:</label>
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
-              />
-
-              {/* FORM BUILDER TOGGLE */}
-              <div className="mt-6">
-                <label className="flex items-center gap-3 font-semibold cursor-pointer">
+          {/* FORM BUILDER */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold">Form Questions</h3>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    checked={enableForm}
-                    onChange={(e) => setEnableForm(e.target.checked)}
-                    className="w-5 h-5 rounded"
+                    checked={allowAttachments}
+                    onChange={(e) => setAllowAttachments(e.target.checked)}
+                    className="rounded"
                   />
-                  Enable Form Builder
+                  Allow member attachments
                 </label>
-                <p className="text-sm text-gray-500 mt-1">
-                  Create custom questions for members to answer
-                </p>
               </div>
             </div>
-          </div>
-
-          {/* ACTION BUTTONS */}
-          <div className="flex justify-end gap-4 mt-8">
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold">
-              Publish Activity
-            </button>
-            <button className="bg-gray-700 hover:bg-gray-800 px-6 py-2 rounded-lg font-semibold">
-              Save as Draft
-            </button>
-          </div>
-        </div>
-
-        {/* FORM BUILDER SECTION */}
-        {enableForm && (
-          <div className="max-w-6xl mx-auto mt-6 bg-black rounded-xl shadow-lg p-8 border border-white">
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-2">Form Builder</h3>
-              <p className="text-gray-400">Create questions for members to answer when submitting this activity.</p>
+            
+            {/* Explanation for member attachments */}
+            <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800/50 rounded-lg">
+              <div className="flex items-start gap-2">
+                <div className="text-blue-400 mt-0.5">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="text-sm">
+                  <p className="text-blue-300 font-medium mb-1">What are "Member Attachments"?</p>
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    When enabled, members can upload their own files (documents, images, PDFs, etc.) when submitting this activity. 
+                    Perfect for assignments requiring essays, reports, project files, or evidence photos.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* QUESTION TYPE SELECTION */}
@@ -341,7 +211,7 @@ const AdminCreateActivityPage = () => {
             </div>
 
             {/* QUESTIONS LIST */}
-            {questions.length > 0 && (
+            {questions.length > 0 ? (
               <div className="space-y-6">
                 <h4 className="font-semibold">Questions ({questions.length})</h4>
                 {questions.map((question, index) => (
@@ -473,19 +343,65 @@ const AdminCreateActivityPage = () => {
                   </div>
                 ))}
               </div>
-            )}
-
-            {questions.length === 0 && (
+            ) : (
               <div className="text-center py-12 text-gray-500">
                 <FiPlus size={48} className="mx-auto mb-4 opacity-50" />
                 <p>No questions added yet. Select a question type above to get started.</p>
               </div>
             )}
           </div>
-        )}
+
+          {/* ATTACHMENTS SECTION */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold mb-4">Attachments</h3>
+            <div
+              onClick={() => document.getElementById('form-attachment-input')?.click()}
+              className="border border-dashed border-gray-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer bg-[#0F1115] hover:border-blue-500 transition"
+            >
+              <FiPaperclip size={36} className="mb-3 text-gray-300" />
+              <p className="text-sm text-gray-300 mb-2">
+                Choose files or drag & drop here
+              </p>
+              <p className="text-xs text-gray-500">
+                DOCS, PDF, PPT, EXCEL up to 10MB
+              </p>
+              <input
+                id="form-attachment-input"
+                type="file"
+                className="hidden"
+                multiple
+                onChange={handleAttachmentUpload}
+              />
+            </div>
+
+            {attachments.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {attachments.map((attachment) => (
+                  <div key={attachment.id} className="flex items-center justify-between bg-[#23272F] p-3 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FiPaperclip className="text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium">{attachment.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {(attachment.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeAttachment(attachment.id)}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default AdminCreateActivityPage;
+export default FormBuilderPage;

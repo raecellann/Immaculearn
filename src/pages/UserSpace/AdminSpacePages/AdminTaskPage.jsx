@@ -23,6 +23,7 @@ import {
   FiFileText,
   FiLink,
   FiAlertTriangle,
+  FiEdit3,
 } from "react-icons/fi";
 import { capitalizeWords } from "../../../utils/capitalizeFirstLetter";
 
@@ -331,12 +332,24 @@ const AdminTaskPage = () => {
 
   const addCriteria = () => {
     const newId = Math.max(...criteria.map(c => c.id), 0) + 1;
-    setCriteria([...criteria, { id: newId, name: "", description: "", points: "" }]);
+    const newCriteria = [...criteria, { id: newId, name: "", description: "", points: "" }];
+    setCriteria(newCriteria);
+    
+    // Redistribute score if total score is set
+    if (score && newCriteria.length > 0) {
+      distributeScoreAmongCriteria(score);
+    }
   };
 
   const removeCriteria = (id) => {
     if (criteria.length > 1) {
-      setCriteria(criteria.filter(c => c.id !== id));
+      const newCriteria = criteria.filter(c => c.id !== id);
+      setCriteria(newCriteria);
+      
+      // Redistribute score if total score is set
+      if (score && newCriteria.length > 0) {
+        distributeScoreAmongCriteria(score);
+      }
     }
   };
 
@@ -344,6 +357,30 @@ const AdminTaskPage = () => {
     setCriteria(criteria.map(c => 
       c.id === id ? { ...c, [field]: value } : c
     ));
+  };
+
+  // Auto-distribute score among criteria
+  const distributeScoreAmongCriteria = (totalScore) => {
+    if (!totalScore || criteria.length === 0) return;
+    
+    const score = parseFloat(totalScore);
+    if (isNaN(score) || score <= 0) return;
+    
+    const pointsPerCriteria = score / criteria.length;
+    const updatedCriteria = criteria.map(criterion => ({
+      ...criterion,
+      points: pointsPerCriteria.toFixed(2)
+    }));
+    
+    setCriteria(updatedCriteria);
+  };
+
+  // Handle score change with auto-distribution
+  const handleScoreChange = (newScore) => {
+    setScore(newScore);
+    if (newScore && criteria.length > 0) {
+      distributeScoreAmongCriteria(newScore);
+    }
   };
 
   // Effects
@@ -881,10 +918,15 @@ const AdminTaskPage = () => {
                     <input
                       type="number"
                       value={score}
-                      onChange={(e) => setScore(e.target.value)}
+                      onChange={(e) => handleScoreChange(e.target.value)}
                       className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
                       placeholder="Enter score"
                     />
+                    {score && criteria.length > 0 && (
+                      <div className="text-xs text-green-400 mt-1">
+                        ✓ Auto-distributed: {(parseFloat(score) / criteria.length).toFixed(2)} points per criterion
+                      </div>
+                    )}
 
                     <label className="font-semibold">
                       Due Date: <span className="text-red-500">*</span>
@@ -943,6 +985,26 @@ const AdminTaskPage = () => {
                           </button>
                         </div>
                       </div>
+
+                      {/* Auto-distribution explanation */}
+                      {score && score !== "" && (
+                        <div className="p-3 bg-green-900/20 border border-green-800/50 rounded-lg">
+                          <div className="flex items-start gap-2">
+                            <div className="text-green-400 mt-0.5">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <div className="text-sm">
+                              <p className="text-green-300 font-medium mb-1">Automatic Score Distribution</p>
+                              <p className="text-gray-400 text-xs leading-relaxed">
+                                Total score ({score}) is automatically distributed equally among {criteria.length} criteria. 
+                                Each criterion receives {(parseFloat(score) / criteria.length).toFixed(2)} points.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Template Selection */}
                       {showTemplates && (
@@ -1058,7 +1120,14 @@ const AdminTaskPage = () => {
                                   min="0"
                                   step="0.5"
                                   className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500"
+                                  readOnly={score && score !== ""}
+                                  title={score && score !== "" ? "Points are automatically distributed from total score" : "Enter total score above to auto-distribute points"}
                                 />
+                                {score && score !== "" && (
+                                  <div className="text-xs text-green-400 mt-1">
+                                    Auto-calculated from total score
+                                  </div>
+                                )}
                               </div>
                             ))}
                             
@@ -1072,6 +1141,33 @@ const AdminTaskPage = () => {
                           </div>
                         </div>
                       )}
+
+                      {/* FORM BUILDER SECTION */}
+                      <div className="flex flex-col gap-3 mt-6">
+                        <div className="flex justify-between items-center">
+                          <label className="font-semibold">Activity Form Builder:</label>
+                          <button
+                            onClick={() => {
+                              // Store task data in sessionStorage for form builder
+                              sessionStorage.setItem('taskFormData', JSON.stringify({
+                                title: taskTitle,
+                                instruction: instruction
+                              }));
+                              navigate(`/space/${space_uuid}/${space_name}/form-builder`);
+                            }}
+                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                          >
+                            <FiEdit3 size={16} />
+                            Open Form Builder
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Create custom questions for members to answer when submitting this task
+                        </p>
+                        <div className="text-xs text-blue-400 mt-1">
+                          💡 Members can upload files if you enable "Allow member attachments" in the form builder
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
