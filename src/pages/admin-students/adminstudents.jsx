@@ -24,6 +24,7 @@ const AdminStudents = () => {
   const [newStudent, setNewStudent] = useState({
     email: ''
   });
+  const [emailError, setEmailError] = useState(false);
 
   /* 🔹 STICKY HEADER STATE */
   const [showHeader, setShowHeader] = useState(true);
@@ -168,17 +169,33 @@ const AdminStudents = () => {
   };
 
   // Manual student entry functions
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setNewStudent(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    
+    // Validate email when email field changes
+    if (name === 'email') {
+      setEmailError(value && !validateEmail(value));
+    }
   };
 
   const handleAddStudent = async () => {
   if (!newStudent.email) {
-    toast.success("Email is required");
+    toast.error("Email is required");
+    return;
+  }
+
+  if (!validateEmail(newStudent.email)) {
+    toast.error("Please enter a valid email address");
+    setEmailError(true);
     return;
   }
 
@@ -215,6 +232,7 @@ const AdminStudents = () => {
       name: '',
       email: ''
     });
+    setEmailError(false);
   };
 
   /* 🔹 SCROLL BEHAVIOR */
@@ -603,9 +621,19 @@ const AdminStudents = () => {
                   name="email"
                   value={newStudent.email}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className={`w-full px-3 py-2 bg-[#242B38] border rounded-lg text-white focus:outline-none focus:border-blue-500 ${
+                    emailError ? 'border-red-500' : 'border-gray-600'
+                  }`}
                   placeholder="student@example.com"
+                  style={{
+                    WebkitTextFillColor: 'white',
+                    WebkitBoxShadow: '0 0 0 1000px #242B38 inset',
+                    transition: 'background-color 0s',
+                  }}
                 />
+                {emailError && (
+                  <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>
+                )}
               </div>
             </div>
 

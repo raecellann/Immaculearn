@@ -168,8 +168,8 @@ const fetchTeachers = async () => {
             <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl">
               <h2 className="text-lg sm:text-xl font-semibold mb-4">Teachers</h2>
 
-              <div className="space-y-3">
-                {teachers.map((teacher) => (
+              <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                {teachers.slice(0, 10).map((teacher) => (
                   <div
                     key={teacher.id}
                     className="bg-[#2E3440] p-4 rounded-lg hover:bg-[#363D4A] transition"
@@ -180,6 +180,11 @@ const fetchTeachers = async () => {
                     </div>
                   </div>
                 ))}
+                {teachers.length > 10 && (
+                  <div className="text-center py-2 text-gray-400 text-sm">
+                    {teachers.length - 10} more teachers...
+                  </div>
+                )}
               </div>
             </div>
 
@@ -187,8 +192,8 @@ const fetchTeachers = async () => {
             <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl">
               <h2 className="text-lg sm:text-xl font-semibold mb-4">Students</h2>
 
-              <div className="space-y-3">
-                {students.map((student) => (
+              <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                {students.slice(0, 10).map((student) => (
                   <div
                     key={student.id}
                     className="bg-[#2E3440] p-4 rounded-lg hover:bg-[#363D4A] transition"
@@ -199,6 +204,11 @@ const fetchTeachers = async () => {
                     </div>
                   </div>
                 ))}
+                {students.length > 10 && (
+                  <div className="text-center py-2 text-gray-400 text-sm">
+                    {students.length - 10} more students...
+                  </div>
+                )}
               </div>
             </div>
           </div>

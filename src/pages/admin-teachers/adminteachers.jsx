@@ -18,6 +18,7 @@ const AdminTeachers = () => {
   const [importPreview, setImportPreview] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [newTeacher, setNewTeacher] = useState({ email: "" });
+  const [emailError, setEmailError] = useState(false);
 
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -81,9 +82,20 @@ const AdminTeachers = () => {
 
   /* ================= ADD TEACHER ================= */
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleAddTeacher = async () => {
     if (!newTeacher.email) {
       toast.error("Email is required");
+      return;
+    }
+
+    if (!validateEmail(newTeacher.email)) {
+      toast.error("Please enter a valid email address");
+      setEmailError(true);
       return;
     }
 
@@ -107,6 +119,7 @@ const AdminTeachers = () => {
 
     toast.success("Teacher added successfully");
     setNewTeacher({ email: "" });
+    setEmailError(false);
     setShowAddModal(false);
   };
 
@@ -118,6 +131,12 @@ const AdminTeachers = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleCancelAdd = () => {
+    setShowAddModal(false);
+    setNewTeacher({ email: "" });
+    setEmailError(false);
   };
 
   /* ================= DELETE ================= */
@@ -413,17 +432,30 @@ const AdminTeachers = () => {
                   type="email"
                   name="email"
                   value={newTeacher.email}
-                  onChange={(e) => setNewTeacher({ email: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#242B38] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  onChange={(e) => {
+                    setNewTeacher({ email: e.target.value });
+                    setEmailError(e.target.value && !validateEmail(e.target.value));
+                  }}
+                  className={`w-full px-3 py-2 bg-[#242B38] border rounded-lg text-white focus:outline-none focus:border-blue-500 ${
+                    emailError ? 'border-red-500' : 'border-gray-600'
+                  }`}
                   placeholder="teacher@gmail.com"
+                  style={{
+                    WebkitTextFillColor: 'white',
+                    WebkitBoxShadow: '0 0 0 1000px #242B38 inset',
+                    transition: 'background-color 0s',
+                  }}
                 />
+                {emailError && (
+                  <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>
+                )}
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 mt-6">
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={handleCancelAdd}
                 className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
               >
                 Cancel
