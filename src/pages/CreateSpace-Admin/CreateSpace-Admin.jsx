@@ -23,6 +23,7 @@ const CreateSpaceAdmin = () => {
   // Cover image state
   const [coverImage, setCoverImage] = useState("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [originalImage, setOriginalImage] = useState(null);
 
   // Cropper states
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -123,7 +124,9 @@ const CreateSpaceAdmin = () => {
 
     const url = URL.createObjectURL(file);
     setUploadedImage(url);
+    setOriginalImage(url); // Store original image
     setIsCropping(true);
+    setIsCoverModalOpen(false); // Close the modal after file selection
   };
 
   const onCropComplete = useCallback((_, croppedPixels) => {
@@ -131,8 +134,9 @@ const CreateSpaceAdmin = () => {
   }, []);
 
   const createCroppedImage = async (imageSrc, croppedAreaPixels) => {
+    // Always use the original image for cropping
     const image = new Image();
-    image.src = imageSrc;
+    image.src = originalImage || imageSrc;
 
     return new Promise((resolve) => {
       image.onload = () => {
@@ -163,11 +167,11 @@ const CreateSpaceAdmin = () => {
   };
 
   const handleCropSave = async () => {
-    if (uploadedImage && croppedAreaPixels) {
+    if ((originalImage || uploadedImage) && croppedAreaPixels) {
       const croppedImageUrl = await createCroppedImage(uploadedImage, croppedAreaPixels);
       setCoverImage(croppedImageUrl);
       setIsCropping(false);
-      setUploadedImage(null);
+      // Don't clear uploadedImage or originalImage to allow re-cropping
       setIsCoverModalOpen(false);
     }
   };
@@ -234,7 +238,7 @@ const CreateSpaceAdmin = () => {
                       className="absolute top-3 right-3 bg-black/60 p-1 rounded-full"
                       onClick={() => {
                         setIsCropping(false);
-                        setUploadedImage(null);
+                        // Don't clear the original image when closing cropper
                       }}
                     >
                       <X size={20} className="text-white" />
@@ -273,7 +277,7 @@ const CreateSpaceAdmin = () => {
                         className="bg-[#3E3E3E] px-6 py-2 rounded-lg hover:bg-[#4A4A4A] text-xs w-full sm:w-auto"
                         onClick={() => {
                           setIsCropping(false);
-                          setUploadedImage(null);
+                          // Don't clear the original image when canceling
                         }}
                       >
                         Cancel
@@ -307,11 +311,11 @@ const CreateSpaceAdmin = () => {
                     Change Cover
                   </button>
 
-                  {!coverImage.includes("gradient") && coverImage && (
+                  {(!coverImage.includes("gradient") && originalImage) && (
                     <button
                       className="text-white bg-black/50 px-2 py-1 rounded text-xs"
                       onClick={() => {
-                        setUploadedImage(coverImage);
+                        setUploadedImage(originalImage); // Use original image for cropping
                         setIsCropping(true);
                       }}
                     >
@@ -364,6 +368,7 @@ const CreateSpaceAdmin = () => {
                           className="h-16 w-full object-cover rounded cursor-pointer"
                           onClick={() => {
                             setCoverImage(img);
+                            setOriginalImage(img); // Set original image for gallery images
                             setIsCoverModalOpen(false);
                           }}
                         />

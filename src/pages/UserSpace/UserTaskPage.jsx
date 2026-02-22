@@ -118,9 +118,8 @@ const UserTaskPage = () => {
           <h1 className="text-xl font-bold">{spaceName}</h1>
         </div>
         <div className="lg:hidden h-16" />
-        <div className="relative">
-          <img src="/src/assets/UserSpace/cover.png" className="w-full h-32 sm:h-40 md:h-48 object-cover" alt="cover" />
-          <div className="absolute inset-0 bg-black/50" />
+        <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 h-32 sm:h-40 md:h-48">
+          <div className="absolute inset-0 bg-black/30" />
         </div>
         <div className="p-4 sm:p-6">
           <div className="hidden md:block mb-8">
