@@ -44,7 +44,7 @@ const CreateTaskFlowModal = ({
       <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto border border-gray-200">
           <div className="p-3 bg-gradient-to-r from-blue-800 to-indigo-800 border-b border-blue-700 flex justify-between items-center">
-            <p className="text-sm font-semibold text-white flex items-center gap-2">
+            <div className="text-sm font-semibold text-white flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-600 rounded flex items-center justify-center">
                 <FiCalendar className="text-white" size={10} />
               </div>
@@ -52,7 +52,7 @@ const CreateTaskFlowModal = ({
               {contextError && (
                 <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Demo Mode</span>
               )}
-            </p>
+            </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={refreshSpaces}

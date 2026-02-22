@@ -15,6 +15,7 @@ const ProfCalendarPage = () => {
   const [showCreateTaskFlow, setShowCreateTaskFlow] = useState(false);
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState("");
+  const [showSpaceCategories, setShowSpaceCategories] = useState(false);
   const [newActivity, setNewActivity] = useState({
     title: "",
     description: "",
@@ -365,144 +366,142 @@ const ProfCalendarPage = () => {
 
           {/* Create Activity Button */}
           <div className="mb-6">
-            <div className="flex items-center gap-4">
-              <div className="relative">
+            <button
+              onClick={() => setShowCreateTaskFlow(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-md"
+            >
+              <FiPlus size={16} />
+              Create New Activity
+            </button>
+          </div>
+
+          {/* Space Filter */}
+          <div className="mb-4 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <FiCalendar className="text-blue-600" size={16} />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900">Filter by Space</label>
+                  <p className="text-xs text-gray-500">
+                    {selectedSpace 
+                      ? `Filtering: ${availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space'}` 
+                      : 'Click to select a space'
+                    }
+                  </p>
+                </div>
+              </div>
+              {selectedSpace && (
                 <button
-                  onClick={() => setShowCreateTaskFlow(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  onClick={() => setSelectedSpace("")}
+                  className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 >
-                  <FiPlus size={16} />
-                  Create New Task
+                  Clear Filter
                 </button>
-                
-                {/* Dropdown */}
-                {showCreateDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-72 bg-[#1E222A] rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
-                    {/* Dropdown Header */}
-            <div className="p-3 bg-gradient-to-r from-blue-800 to-indigo-800 border-b border-blue-700">
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm font-semibold text-white flex items-center gap-2">
-                          <div className="w-4 h-4 bg-blue-600 rounded flex items-center justify-center">
-                            <FiCalendar className="text-white" size={10} />
-                          </div>
-                          Select Space
-                          {contextError && (
-                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                              Demo Mode
-                            </span>
-                          )}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={refreshSpaces}
-                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full p-1.5 transition-colors"
-                            title="Refresh spaces"
-                          >
-                            <FiClock className="text-blue-600" size={14} />
-                          </button>
-                          <button
-                            onClick={() => setShowCreateDropdown(false)}
-                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full p-1.5 transition-colors"
-                          >
-                            <FiX size={16} />
-                          </button>
-                        </div>
-                      </div>
-                      {contextError && (
-                        <p className="text-xs text-yellow-700 mt-1">
-                          SpaceContext unavailable - showing demo spaces. Click refresh to reload.
-                        </p>
-                      )}
+              )}
+            </div>
+
+            {/* Space Categories - Hidden by default */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSpaceCategories(!showSpaceCategories)}
+                className="w-full text-left p-3 rounded-lg border-2 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">
+                    {selectedSpace 
+                      ? '📍 ' + (availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space')
+                      : '🌐 All Spaces'
+                    }
+                  </span>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm text-gray-900">
+                      {selectedSpace 
+                        ? availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space'
+                        : 'All Spaces'
+                      }
                     </div>
-                    <div className="max-h-64 overflow-y-auto">
-                      <div className="p-2 space-y-1">
-                        {(() => {
-                          console.log('Dropdown rendering - availableSpaces:', availableSpaces); // Debug log
-                          console.log('Dropdown rendering - availableSpaces.length:', availableSpaces.length); // Debug log
-                          console.log('Dropdown rendering - spacesRef.current:', spacesRef.current); // Debug log
-                          console.log('Dropdown rendering - spacesRef.current.length:', spacesRef.current.length); // Debug log
-                          console.log('Dropdown rendering - contextError:', contextError); // Debug log
-                          return null;
-                        })()}
-                        {(availableSpaces.length === 0 && spacesRef.current.length === 0) ? (
-                          <div className="p-4 text-center">
-                            <FiCalendar className="mx-auto text-gray-400 mb-3" size={32} />
-                            <p className="text-gray-500 text-sm">No spaces available</p>
-                            <p className="text-gray-400 text-xs mt-1">Create or join spaces to add activities</p>
-                            <button
-                              onClick={refreshSpaces}
-                              className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                            >
-                              <FiPlus className="inline mr-2" size={16} />
-                              Refresh Spaces
-                            </button>
-                          </div>
-                        ) : (
-                          (availableSpaces.length > 0 ? availableSpaces : spacesRef.current).map((space, index) => {
-                            console.log('Rendering space:', space); // Debug log
-                            const colors = [
-                              'bg-gradient-to-r from-blue-500 to-blue-600',
-                              'bg-gradient-to-r from-green-500 to-green-600',
-                              'bg-gradient-to-r from-purple-500 to-purple-600',
-                              'bg-gradient-to-r from-orange-500 to-orange-600',
-                              'bg-gradient-to-r from-pink-500 to-pink-600',
-                              'bg-gradient-to-r from-indigo-500 to-indigo-600',
-                              'bg-gradient-to-r from-teal-500 to-teal-600',
-                              'bg-gradient-to-r from-red-500 to-red-600'
-                            ];
-                            const icons = [
-                              '📚', '💻', '🔬', '🧠', '⚽', '💼', '🔧', '📊'
-                            ];
-                            
-                            return (
-                              <button
-                                key={space.space_uuid}
-                                onClick={() => {
-                                  setSelectedSpace(space.space_name);
-                                  setShowCreateDropdown(false);
-                                  setShowCreateModal(true);
-                                }}
-                                className="w-full group relative overflow-hidden rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg bg-gray-800"
-                              >
-                                <div className={`absolute inset-0 ${colors[index % colors.length]} opacity-10 group-hover:opacity-20 transition-opacity`}></div>
-                                <div className="relative flex items-center gap-3 px-4 py-3 text-left">
-                                  <div className={`w-10 h-10 ${colors[index % colors.length]} rounded-lg flex items-center justify-center text-white font-bold shadow-md group-hover:scale-110 transition-transform`}>
-                                    {icons[index % icons.length]}
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="font-semibold text-white group-hover:text-blue-200 transition-colors">
-                                      {space.space_name}
-                                    </p>
-                                    <p className="text-xs text-gray-200 group-hover:text-gray-100 transition-colors">
-                                      {space.space_type} • {space.members?.length || 0} members
-                                    </p>
-                                  </div>
-                                  <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                                    <FiPlus className="text-white group-hover:text-blue-200 transition-colors" size={12} />
-                                  </div>
-                                </div>
-                              </button>
-                            );
-                          })
-                        )}
-                      </div>
+                    <div className="text-xs text-gray-500">
+                      {selectedSpace 
+                        ? 'Click to change space'
+                        : 'Click to select a space'
+                      }
                     </div>
                   </div>
-                )}
-              </div>
-              
-              {selectedSpace && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-md text-sm">
-                  <span>Selected: {selectedSpace}</span>
-                  <button
-                    onClick={() => {
-                      setSelectedSpace("");
-                      setShowCreateDropdown(true);
-                    }}
-                    className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-full p-1 transition-colors"
-                  >
-                    <FiX size={14} />
-                  </button>
+                </div>
+                <svg 
+                  className={`w-5 h-5 text-gray-400 transition-transform ${showSpaceCategories ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Dropdown Categories */}
+              {showSpaceCategories && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-200 z-50 max-h-80 overflow-y-auto">
+                  <div className="p-2">
+                    {/* All Spaces Option */}
+                    <div className="mb-3">
+                      <button
+                        onClick={() => {
+                          setSelectedSpace("");
+                          setShowSpaceCategories(false);
+                        }}
+                        className={`w-full text-left p-2 rounded-lg border transition-all ${
+                          !selectedSpace
+                            ? 'border-blue-500 bg-blue-50 shadow-sm'
+                            : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🌐</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-sm text-gray-900">All Spaces</div>
+                            <div className="text-xs text-gray-500">View activities from all spaces</div>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+
+                    {(availableSpaces.length > 0) && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="text-sm font-semibold text-gray-700">Your Spaces</h4>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                            {availableSpaces.length} space{availableSpaces.length !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          {availableSpaces.map((space) => (
+                            <button
+                              key={space.space_uuid}
+                              onClick={() => {
+                                setSelectedSpace(space.space_name);
+                                setShowSpaceCategories(false);
+                              }}
+                              className={`w-full text-left p-2 rounded-lg border transition-all ${
+                                selectedSpace === space.space_name
+                                  ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                  : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">🏠</span>
+                                <div className="flex-1">
+                                  <div className="font-medium text-sm text-gray-900">{space.space_name}</div>
+                                  <div className="text-xs text-gray-500">{space.space_type}</div>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

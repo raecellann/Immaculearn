@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Sidebar from "../component/sidebar";
 import {
   FiCalendar,
@@ -23,6 +23,8 @@ const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedStatistic, setSelectedStatistic] = useState(null);
+  const [selectedSpace, setSelectedSpace] = useState(null);
+  const [showSpaceCategories, setShowSpaceCategories] = useState(false);
   const [allTasks, setAllTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [contextError, setContextError] = useState(false);
@@ -35,126 +37,62 @@ const CalendarPage = () => {
     priority: "medium",
     type: "Assignment",
   });
-  const [availableSpaces, setAvailableSpaces] = useState([]);
-  const spacesRef = useRef([]);
+  
+  // Use space context properly at the top level
+  const {
+    userSpaces,
+    courseSpaces,
+    friendSpaces,
+    isLoading: spaceLoading,
+  } = useSpace();
+  
+  // Combine all spaces from context
+  const availableSpaces = useMemo(() => {
+    const allSpaces = [
+      ...(userSpaces || []),
+      ...(courseSpaces || []),
+      ...(friendSpaces || [])
+    ];
+    console.log("Available spaces from context:", allSpaces);
+    return allSpaces;
+  }, [userSpaces, courseSpaces, friendSpaces]);
+  
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Manual refresh function
-  const refreshSpaces = () => {
-    setRefreshKey((prev) => prev + 1);
-    console.log("Manual refresh triggered"); // Debug log
-  };
-
-  // Handle space selection
-  const handleSpaceSelect = (spaceName) => {
-    console.log("handleSpaceSelect called with:", spaceName);
-    setSelectedSpace(spaceName);
-    setShowCreateDropdown(false);
-    setShowCreateModal(true);
-    console.log(
-      "After handleSpaceSelect - selectedSpace:",
-      spaceName,
-      "showCreateModal: true",
-    );
-  };
-
-  // Handle task creation
-  const handleTaskCreate = (newTask) => {
-    console.log("handleTaskCreate called with:", newTask);
-    setAllTasks([...allTasks, newTask]);
-  };
-
-  // Try to get space context, but handle errors gracefully
+  // Initialize calendar with spaces from context
   useEffect(() => {
     const initializeCalendar = async () => {
       try {
-        // First, let's set some basic spaces to ensure calendar works
-        console.log("Initializing calendar with basic spaces..."); // Debug log
-
-        // Start with mock spaces to ensure calendar renders
-        const initialSpaces = [
-          {
-            space_uuid: "arlecchino-space",
-            space_name: "Arlecchino Space",
-            space_type: "User",
-            members: [{ user_id: 1, role: "admin" }],
-          },
-          {
-            space_uuid: "sample-space",
-            space_name: "Sample Space",
-            space_type: "Course",
-            members: [{ user_id: 1, role: "professor" }],
-          },
-        ];
-
-        // Try to fetch real spaces from API
-        try {
-          const [userSpacesResponse, courseSpacesResponse] =
-            await Promise.allSettled([
-              fetch("/api/spaces/user-spaces")
-                .then((res) => res.json())
-                .catch(() => ({ data: [] })),
-              fetch("/api/spaces/course-spaces")
-                .then((res) => res.json())
-                .catch(() => ({ data: [] })),
-            ]);
-
-          const userSpaces =
-            userSpacesResponse.status === "fulfilled"
-              ? userSpacesResponse.value.data || []
-              : [];
-          const courseSpaces =
-            courseSpacesResponse.status === "fulfilled"
-              ? courseSpacesResponse.value.data || []
-              : [];
-
-          console.log("API User spaces response:", userSpacesResponse); // Debug log
-          console.log("API Course spaces response:", courseSpacesResponse); // Debug log
-          console.log("API User spaces:", userSpaces); // Debug log
-          console.log("API Course spaces:", courseSpaces); // Debug log
-
-          const allSpaces = [...userSpaces, ...courseSpaces];
-
-          if (allSpaces.length > 0) {
-            // Use real spaces if API worked
-            spacesRef.current = allSpaces;
-            setAvailableSpaces(allSpaces);
-            console.log("Using real spaces from API:", allSpaces); // Debug log
-          } else {
-            // Use initial spaces if API failed
-            spacesRef.current = initialSpaces;
-            setAvailableSpaces(initialSpaces);
-            console.log("Using initial spaces:", initialSpaces); // Debug log
-          }
-        } catch (apiError) {
-          console.warn("API failed, using initial spaces:", apiError); // Debug log
-          spacesRef.current = initialSpaces;
-          setAvailableSpaces(initialSpaces);
-        }
-
-        const finalSpaces =
-          availableSpaces.length > 0 ? availableSpaces : initialSpaces;
-        console.log("Final spaces for calendar:", finalSpaces); // Debug log
-
-        // Use regular import for space context
-        const spaceContext = useSpace();
-
-        const userSpaces = spaceContext.userSpaces || [];
-        const courseSpaces = spaceContext.courseSpaces || [];
-        const friendSpaces = spaceContext.friendSpaces || [];
-        const allSpaces = [...userSpaces, ...courseSpaces, ...friendSpaces];
-
-        if (allSpaces.length === 0) {
+        console.log("Initializing calendar with spaces from context...");
+        console.log("Available spaces:", availableSpaces);
+        console.log("userSpaces:", userSpaces);
+        console.log("courseSpaces:", courseSpaces);
+        console.log("friendSpaces:", friendSpaces);
+        
+        // Always show calendar, even if no spaces
+        if (availableSpaces.length === 0) {
+          console.log("No spaces available in context, showing empty calendar");
           setAllTasks([]);
+          setContextError(true);
           setLoading(false);
           return;
         }
 
+        console.log("Found spaces:", availableSpaces);
+        setContextError(false);
+
         // Fetch tasks from all spaces
-        const taskPromises = allSpaces.map((space) =>
+        const taskPromises = availableSpaces.map((space) =>
           fetch(`/api/spaces/${space.space_uuid}/tasks`)
-            .then((res) => res.json())
-            .catch(() => []),
+            .then((res) => {
+              if (!res.ok) throw new Error('Failed to fetch tasks');
+              return res.json();
+            })
+            .then((data) => data || [])
+            .catch((error) => {
+              console.warn(`Failed to fetch tasks for space ${space.space_uuid}:`, error);
+              return [];
+            }),
         );
 
         const taskResults = await Promise.all(taskPromises);
@@ -178,21 +116,18 @@ const CalendarPage = () => {
           spaceId: task.space_id,
         }));
 
+        console.log("Fetched tasks:", allFetchedTasks);
         setAllTasks(allFetchedTasks);
         setContextError(false);
       } catch (error) {
-        console.warn(
-          "SpaceContext not available, using fallback mode:",
-          error.message,
-        );
+        console.error("Error initializing calendar:", error);
         setContextError(true);
         // Use mock data as fallback
         setAllTasks([
           {
             id: 1,
             title: "Sample Task",
-            description:
-              "This is a sample task since SpaceContext is not available",
+            description: "This is a sample task since no spaces are available",
             dueDate: new Date().toISOString().split("T")[0],
             dueTime: "11:59 PM",
             priority: "medium",
@@ -208,7 +143,19 @@ const CalendarPage = () => {
     };
 
     initializeCalendar();
-  }, [refreshKey]); // Re-run when refreshKey changes
+  }, [availableSpaces, refreshKey]); // Re-run when availableSpaces or refreshKey changes
+
+  // Manual refresh function
+  const refreshSpaces = () => {
+    setRefreshKey((prev) => prev + 1);
+    console.log("Manual refresh triggered");
+  };
+
+  // Handle task creation
+  const handleTaskCreate = (newTask) => {
+    console.log("handleTaskCreate called with:", newTask);
+    setAllTasks([...allTasks, newTask]);
+  };
 
   // Calendar functions
   const getDaysInMonth = (date) => {
@@ -225,7 +172,11 @@ const CalendarPage = () => {
 
   const getTasksForDate = (date) => {
     const dateStr = formatDate(date);
-    return allTasks.filter((task) => task.dueDate === dateStr);
+    return allTasks.filter((task) => {
+      const matchesDate = task.dueDate === dateStr;
+      const matchesSpace = !selectedSpace || task.spaceId === selectedSpace;
+      return matchesDate && matchesSpace;
+    });
   };
 
   const getPriorityColor = (priority) => {
@@ -257,13 +208,17 @@ const CalendarPage = () => {
   };
 
   const getTasksByStatistic = (statistic) => {
+    const filteredTasks = selectedSpace 
+      ? allTasks.filter(task => task.spaceId === selectedSpace)
+      : allTasks;
+    
     switch (statistic) {
       case "total":
-        return allTasks;
+        return filteredTasks;
       case "thisweek":
         const today = new Date();
         const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-        return allTasks.filter((t) => {
+        return filteredTasks.filter((t) => {
           const taskDate = new Date(t.dueDate);
           return taskDate >= today && taskDate <= weekFromNow;
         });
@@ -325,7 +280,7 @@ const CalendarPage = () => {
           <div className="space-y-1">
             {dayTasks.slice(0, 2).map((task, index) => (
               <div
-                key={index}
+                key={`${task.id}-${index}`}
                 className={`text-xs px-1 py-0.5 rounded truncate ${getPriorityColor(task.priority)}`}
               >
                 {task.title}
@@ -429,48 +384,215 @@ const CalendarPage = () => {
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
-          ) : allTasks.length === 0 ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <FiCalendar className="mx-auto text-gray-400 mb-4" size={48} />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  No Tasks Available
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  {contextError
-                    ? "SpaceContext is not available. Please check your setup."
-                    : "No tasks have been assigned in your spaces yet."}
-                </p>
-                <p className="text-sm text-gray-400 mb-4">
-                  Tasks will appear here once they are created.
-                </p>
-                <button
-                  onClick={() => setShowCreateTaskFlow(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-all"
-                >
-                  <FiPlus className="inline mr-2" size={14} />
-                  Create Your First Task
-                </button>
-              </div>
-            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Task Statistics - Top */}
               <div className="lg:col-span-3">
-                {/* Create Activity Button - Top */}
-                <div className="mb-4">
-                  <button
-                    onClick={() => setShowCreateTaskFlow(true)}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-medium transition-all shadow-lg"
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      <FiPlus size={14} />
-                      Create New Task
-                    </span>
-                  </button>
+                {/* Space Filter */}
+                <div className="mb-4 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <FiCalendar className="text-blue-600" size={16} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-900">Filter by Space</label>
+                        <p className="text-xs text-gray-500">
+                          {selectedSpace 
+                            ? `Filtering: ${availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space'}`
+                            : 'Click to select a space'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                    {selectedSpace && (
+                      <button
+                        onClick={() => setSelectedSpace(null)}
+                        className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                      >
+                        Clear Filter
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Space Categories - Hidden by default */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowSpaceCategories(!showSpaceCategories)}
+                      className="w-full text-left p-3 rounded-lg border-2 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">
+                          {selectedSpace 
+                            ? '� ' + (availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space')
+                            : '🌐 All Spaces'
+                          }
+                        </span>
+                        <div className="flex-1">
+                          <div className="font-medium text-sm text-gray-900">
+                            {selectedSpace 
+                              ? availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space'
+                              : 'All Spaces'
+                            }
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {selectedSpace 
+                              ? 'Click to change space'
+                              : 'Click to select a space'
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <svg 
+                        className={`w-5 h-5 text-gray-400 transition-transform ${showSpaceCategories ? 'rotate-180' : ''}`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Categories */}
+                    {showSpaceCategories && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-200 z-50 max-h-80 overflow-y-auto">
+                        <div className="p-2">
+                          {/* Your Spaces */}
+                          {userSpaces && userSpaces.length > 0 && (
+                            <div className="mb-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="text-sm font-semibold text-gray-700">👤 Your Spaces</h4>
+                                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                  {userSpaces.length} space{userSpaces.length !== 1 ? 's' : ''}
+                                </span>
+                              </div>
+                              <div className="space-y-1">
+                                {userSpaces.map((space) => (
+                                  <button
+                                    key={space.space_uuid}
+                                    onClick={() => {
+                                      setSelectedSpace(space.space_uuid);
+                                      setShowSpaceCategories(false);
+                                    }}
+                                    className={`w-full text-left p-2 rounded-lg border transition-all ${
+                                      selectedSpace === space.space_uuid
+                                        ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                        : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-base">🏠</span>
+                                      <div className="flex-1">
+                                        <div className="font-medium text-sm text-gray-900">{space.space_name}</div>
+                                        <div className="text-xs text-gray-500">{space.space_type}</div>
+                                      </div>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Course Spaces */}
+                          {courseSpaces && courseSpaces.length > 0 && (
+                            <div className="mb-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="text-sm font-semibold text-gray-700">📚 Course Spaces</h4>
+                                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                  {courseSpaces.length} space{courseSpaces.length !== 1 ? 's' : ''}
+                                </span>
+                              </div>
+                              <div className="space-y-1">
+                                {courseSpaces.map((space) => (
+                                  <button
+                                    key={space.space_uuid}
+                                    onClick={() => {
+                                      setSelectedSpace(space.space_uuid);
+                                      setShowSpaceCategories(false);
+                                    }}
+                                    className={`w-full text-left p-2 rounded-lg border transition-all ${
+                                      selectedSpace === space.space_uuid
+                                        ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                        : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-base">📖</span>
+                                      <div className="flex-1">
+                                        <div className="font-medium text-sm text-gray-900">{space.space_name}</div>
+                                        <div className="text-xs text-gray-500">{space.space_type}</div>
+                                      </div>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Friend Spaces */}
+                          {friendSpaces && friendSpaces.length > 0 && (
+                            <div className="mb-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="text-sm font-semibold text-gray-700">🤝 Friend Spaces</h4>
+                                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                  {friendSpaces.length} space{friendSpaces.length !== 1 ? 's' : ''}
+                                </span>
+                              </div>
+                              <div className="space-y-1">
+                                {friendSpaces.map((space) => (
+                                  <button
+                                    key={space.space_uuid}
+                                    onClick={() => {
+                                      setSelectedSpace(space.space_uuid);
+                                      setShowSpaceCategories(false);
+                                    }}
+                                    className={`w-full text-left p-2 rounded-lg border transition-all ${
+                                      selectedSpace === space.space_uuid
+                                        ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                        : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-base">👥</span>
+                                      <div className="flex-1">
+                                        <div className="font-medium text-sm text-gray-900">{space.space_name}</div>
+                                        <div className="text-xs text-gray-500">{space.space_type}</div>
+                                      </div>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* All Spaces Option */}
+                          <div className="pt-2 border-t border-gray-200">
+                            <button
+                              onClick={() => {
+                                setSelectedSpace(null);
+                                setShowSpaceCategories(false);
+                              }}
+                              className={`w-full text-left p-2 rounded-lg border transition-all ${
+                                !selectedSpace
+                                  ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                  : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-semibold text-gray-700">🌐 All Spaces</h4>
+                                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                  {userSpaces.length + courseSpaces.length + friendSpaces.length} space{(userSpaces.length + courseSpaces.length + friendSpaces.length) !== 1 ? 's' : ''}
+                                </span>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div
                     className="bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => setSelectedStatistic("total")}
@@ -481,7 +603,7 @@ const CalendarPage = () => {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-gray-900">
-                          {allTasks.length}
+                          {getTasksByStatistic("total").length}
                         </div>
                         <div className="text-xs text-gray-600">Total Tasks</div>
                       </div>
@@ -498,18 +620,7 @@ const CalendarPage = () => {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-gray-900">
-                          {(() => {
-                            const today = new Date();
-                            const weekFromNow = new Date(
-                              today.getTime() + 7 * 24 * 60 * 60 * 1000,
-                            );
-                            return allTasks.filter((t) => {
-                              const taskDate = new Date(t.dueDate);
-                              return (
-                                taskDate >= today && taskDate <= weekFromNow
-                              );
-                            }).length;
-                          })()}
+                          {getTasksByStatistic("thisweek").length}
                         </div>
                         <div className="text-xs text-gray-600">This Week</div>
                       </div>
