@@ -21,6 +21,30 @@ const Button = ({ text = "Share", onClick }) => {
             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
           </svg>
         );
+      case "All Notifications":
+        return (
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="icon">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+          </svg>
+        );
+      case "Pending Join Requests":
+        return (
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="icon">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+          </svg>
+        );
+      case "Space Invitations":
+        return (
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="icon">
+            <path d="M12 2l-5.5 9h11z M12 22l5.5-9h-11z M3.5 9l5.5 9 5.5-9z M20.5 9l-5.5 9-5.5-9z"/>
+          </svg>
+        );
+      case "School Announcements":
+        return (
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="icon">
+            <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+          </svg>
+        );
       default:
         return (
           <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" className="icon">
@@ -38,12 +62,25 @@ const Button = ({ text = "Share", onClick }) => {
         return "rgba(59, 130, 246, 0.5)"; // Blue
       case "Delete Room":
         return "rgba(239, 68, 68, 0.5)"; // Red
+      case "All Notifications":
+        return "rgba(156, 163, 175, 0.5)"; // Gray
+      case "Pending Join Requests":
+        return "rgba(59, 130, 246, 0.5)"; // Blue
+      case "Space Invitations":
+        return "rgba(34, 197, 94, 0.5)"; // Green
+      case "School Announcements":
+        return "rgba(251, 191, 36, 0.5)"; // Amber/Yellow
       default:
         return "rgba(50, 100, 180, 0.5)"; // Default blue
     }
   };
 
   const getTextColor = () => {
+    // Always return white for all buttons
+    return "white";
+  };
+
+  const getHoverTextColor = () => {
     switch(text) {
       case "Add Member":
         return "#22c55e"; // Green
@@ -51,6 +88,14 @@ const Button = ({ text = "Share", onClick }) => {
         return "#3b82f6"; // Blue
       case "Delete Room":
         return "#ef4444"; // Red
+      case "All Notifications":
+        return "#9ca3af"; // Gray
+      case "Pending Join Requests":
+        return "#3b82f6"; // Blue
+      case "Space Invitations":
+        return "#22c55e"; // Green
+      case "School Announcements":
+        return "#fbbf24"; // Amber/Yellow
       default:
         return "white"; // Default white
     }
@@ -64,6 +109,14 @@ const Button = ({ text = "Share", onClick }) => {
         return "#3b82f6"; // Blue
       case "Delete Room":
         return "#ef4444"; // Red
+      case "All Notifications":
+        return "#9ca3af"; // Gray
+      case "Pending Join Requests":
+        return "#3b82f6"; // Blue
+      case "Space Invitations":
+        return "#22c55e"; // Green
+      case "School Announcements":
+        return "#fbbf24"; // Amber/Yellow
       default:
         return "transparent"; // Default transparent
     }
@@ -104,17 +157,19 @@ const Button = ({ text = "Share", onClick }) => {
       onClick={onClick}
       onMouseEnter={(e) => {
         const color = getHoverColor();
+        const hoverTextColor = getHoverTextColor();
         e.target.style.background = `radial-gradient(circle at bottom, ${color} 10%, #212121 70%)`;
-        e.target.style.transform = 'scale(1.1)';
+        // Remove scale transform and margin changes
+        e.target.style.transform = 'scale(1)';
         e.target.style.boxShadow = '0 0 1em 0.45em rgba(0, 0, 0, 0.1)';
-        e.target.style.margin = '0 0.5em';
+        e.target.style.margin = '0';
 
-        // 👇 Make text white
-        e.target.style.color = 'white';
+        // 👇 Change text to category color on hover
+        e.target.style.color = hoverTextColor;
 
-        // 👇 Make icon white
+        // 👇 Change icon to category color on hover
         const svg = e.target.querySelector('svg');
-        if (svg) svg.style.fill = 'white';
+        if (svg) svg.style.fill = hoverTextColor;
       }}
 
       onMouseLeave={(e) => {
