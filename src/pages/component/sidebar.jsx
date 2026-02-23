@@ -14,9 +14,11 @@ import {
 
 import { Link, useLocation } from "react-router";
 import Logout from "./logout";
+import ThemeToggle from "../../components/ThemeToggle";
 import logo from "../../assets/HomePage/logo.png";
 import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
 import { useUser } from "../../contexts/user/useUser";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const Sidebar = () => {
   const { user, logout } = useUser();

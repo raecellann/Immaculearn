@@ -39,10 +39,10 @@ const Button = ({ text = "Share", onClick }) => {
             <path d="M12 2l-5.5 9h11z M12 22l5.5-9h-11z M3.5 9l5.5 9 5.5-9z M20.5 9l-5.5 9-5.5-9z"/>
           </svg>
         );
-      case "School Announcements":
+      case "Go to Calendar":
         return (
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="icon">
-            <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.11.89 2 1.99 2H18c1.1 0 2-.9 2-2V8h-2v6zm-5-2c0-.55-.45-1-1-1s-.45 1-1 1-1 .45-1 1-1 .45 1 1 1zm4 8c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3z"/>
           </svg>
         );
       default:
@@ -76,8 +76,9 @@ const Button = ({ text = "Share", onClick }) => {
   };
 
   const getTextColor = () => {
-    // Always return white for all buttons
-    return "white";
+    // Return black for light mode, white for dark mode
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    return isDarkMode ? "white" : "black";
   };
 
   const getHoverTextColor = () => {
@@ -94,14 +95,15 @@ const Button = ({ text = "Share", onClick }) => {
         return "#3b82f6"; // Blue
       case "Space Invitations":
         return "#22c55e"; // Green
-      case "School Announcements":
-        return "#fbbf24"; // Amber/Yellow
+      case "Go to Calendar":
+        return "black"; // Black
       default:
         return "white"; // Default white
     }
   };
 
   const getBorderColor = () => {
+    const isDarkMode = document.documentElement.classList.contains('dark');
     switch(text) {
       case "Add Member":
         return "#22c55e"; // Green
@@ -117,6 +119,8 @@ const Button = ({ text = "Share", onClick }) => {
         return "#22c55e"; // Green
       case "School Announcements":
         return "#fbbf24"; // Amber/Yellow
+      case "Go to Calendar":
+        return isDarkMode ? "white" : "black"; // White border in dark mode, black in light
       default:
         return "transparent"; // Default transparent
     }

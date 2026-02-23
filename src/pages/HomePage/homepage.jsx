@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { SpaceCover } from "../component/spaceCover";
 import ArticlesScrape from "../component/articles_scrape";
@@ -21,6 +22,8 @@ import { DeleteConfirmationDialog } from "../component/SweetAlert";
 
 const HomePage1 = () => {
   const { user } = useUser();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const {
     userSpaces = [],
     friendSpaces = [],
@@ -213,7 +216,7 @@ const HomePage1 = () => {
   );
 
   return (
-    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
+    <div className="flex font-sans min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -232,9 +235,13 @@ const HomePage1 = () => {
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden ${
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden ${
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{
+          backgroundColor: currentColors.surface,
+          color: currentColors.text
+        }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
@@ -243,13 +250,19 @@ const HomePage1 = () => {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+          className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border,
+            color: currentColors.text
+          }}
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            className="bg-transparent border-none text-2xl p-0 focus:outline-none"
+            style={{ color: currentColors.text }}
           >
             ☰
           </button>
@@ -261,25 +274,28 @@ const HomePage1 = () => {
           <div className="flex-1 min-w-0">
             {/* Title and Date ABOVE the card */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-white font-grotesque">
+              <h2 className="text-xl sm:text-2xl font-bold text-white font-grotesque" style={{ color: isDarkMode ? 'white' : 'black' }}>
                 Get Productive Today!
               </h2>
-              <p className="text-gray-400 text-xs sm:text-sm font-inter">
+              <p className="text-xs sm:text-sm font-inter" style={{ color: isDarkMode ? '#9ca3af' : 'black' }}>
                 {currentDate}
               </p>
             </div>
 
             {/* Welcome Card */}
-            <div className="bg-[#1E242E] rounded-2xl p-6 mb-10">
+            <div className="rounded-xl p-6 mb-10 flex items-center justify-between" style={{ 
+              backgroundColor: currentColors.surface,
+              border: isDarkMode ? 'none' : '1px solid black'
+            }}>
               <div className="flex flex-col sm:flex-row justify-between gap-6">
                 <div>
-                  <h1 className="text-lg sm:text-xl font-semibold text-[#B0C4FF] mb-2">
+                  <h1 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: '#B0C4FF' }}>
                     {greeting}, {user?.name || "Student"}
                   </h1>
-                  <p className="text-gray-300 mb-1">
+                  <p className="mb-1" style={{ color: isDarkMode ? currentColors.textSecondary : '#333333' }}>
                     Meet your classmates and collaborate with them.
                   </p>
-                  <p className="text-gray-400 mb-5">
+                  <p className="mb-5" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>
                     Join a space or create your own.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -290,7 +306,11 @@ const HomePage1 = () => {
                       Create Space
                     </Button>
                     <Button
-                      className="border border-gray-600 hover:bg-gray-800 text-sm py-2 px-4"
+                      className="border text-sm py-2 px-4"
+                      style={{
+                        borderColor: isDarkMode ? '#4a5568' : 'black',
+                        color: isDarkMode ? 'white' : 'black'
+                      }}
                       onClick={() => navigate("/space")}
                     >
                       Join Space
@@ -306,16 +326,19 @@ const HomePage1 = () => {
             </div>
 
             <div className="xl:hidden mb-8">
-              <h2 className="text-lg sm:text-xl font-semibold mb-3">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3" style={{ color: isDarkMode ? 'white' : 'black' }}>
                 Reminders
               </h2>
-              <div className="bg-[#1E242E] rounded-xl p-4 sm:p-6">
+              <div className="rounded-xl p-4 sm:p-6" style={{ 
+                backgroundColor: currentColors.surface,
+                border: isDarkMode ? 'none' : '1px solid black'
+              }}>
                 <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                  <p className="text-gray-400 text-sm">
+                  <Calendar className="w-12 h-12 mx-auto mb-4" style={{ color: currentColors.textSecondary }} />
+                  <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
                     No tasks created yet
                   </p>
-                  <p className="text-gray-500 text-xs mt-2">
+                  <p className="text-xs mt-2" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
                     Go to your calendar to create tasks and set reminders
                   </p>
                   <div className="mt-6">
@@ -341,6 +364,7 @@ const HomePage1 = () => {
                       setSlideIndexYourSpace((p) => Math.max(0, p - 1))
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
+                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
                   >
                     ‹
                   </button>
@@ -352,17 +376,22 @@ const HomePage1 = () => {
                       )
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
+                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
                   >
                     ›
                   </button>
-                  <button className="hidden sm:block text-[#60A5FA] hover:underline text-sm">
+                  <button className="hidden sm:block hover:underline text-sm" style={{ color: isDarkMode ? '#60A5FA' : 'black' }}>
                     View All
                   </button>
                 </div>
               </div>
 
               {userSpaces.length === 0 ? (
-                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                <div className="rounded-xl p-10 text-center border border-dashed" style={{ 
+                  backgroundColor: currentColors.surface, 
+                  color: currentColors.textSecondary,
+                  borderColor: isDarkMode ? currentColors.border : 'black'
+                }}>
                   No spaces yet — create one to get started!
                 </div>
               ) : (
@@ -383,7 +412,11 @@ const HomePage1 = () => {
                           .map((space) => (
                             <div
                               key={space.space_uuid}
-                              className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
+                              className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
+                              style={{ 
+                                backgroundColor: currentColors.surface,
+                                border: isDarkMode ? 'none' : '1px solid black'
+                              }}
                             >
                               <div
                                 onClick={() =>
@@ -425,7 +458,10 @@ const HomePage1 = () => {
                                 </button>
 
                                 {showMenu === space.space_uuid && (
-                                  <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                                  <div className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]" style={{ 
+                                  backgroundColor: currentColors.surface, 
+                                  border: `1px solid ${currentColors.border}` 
+                                }}>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -460,6 +496,7 @@ const HomePage1 = () => {
                       setSlideIndexCourseSpace((p) => Math.max(0, p - 1))
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
+                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
                   >
                     ‹
                   </button>
@@ -471,17 +508,21 @@ const HomePage1 = () => {
                       )
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
+                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
                   >
                     ›
                   </button>
-                  <button className="hidden sm:block text-[#60A5FA] hover:underline text-sm">
+                  <button className="hidden sm:block hover:underline text-sm" style={{ color: isDarkMode ? '#60A5FA' : 'black' }}>
                     View All
                   </button>
                 </div>
               </div>
 
               {courseSpaces?.length === 0 ? (
-                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                <div className="rounded-xl p-10 text-center" style={{ 
+                  backgroundColor: currentColors.surface, 
+                  color: currentColors.textSecondary 
+                }}>
                   No Course Space Yet!
                 </div>
               ) : (
@@ -502,7 +543,8 @@ const HomePage1 = () => {
                           .map((course, i) => (
                             <div
                               key={i}
-                              className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
+                              className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
+                              style={{ backgroundColor: currentColors.surface }}
                             >
                               <div
                                 onClick={() =>
@@ -561,7 +603,10 @@ const HomePage1 = () => {
                                 </button>
 
                                 {showMenu === course.space_uuid && (
-                                  <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                                  <div className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]" style={{ 
+                                  backgroundColor: currentColors.surface, 
+                                  border: `1px solid ${currentColors.border}` 
+                                }}>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -596,6 +641,7 @@ const HomePage1 = () => {
                       setSlideIndexFriendsSpace((p) => Math.max(0, p - 1))
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
+                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
                   >
                     ‹
                   </button>
@@ -607,17 +653,21 @@ const HomePage1 = () => {
                       )
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
+                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
                   >
                     ›
                   </button>
-                  <button className="hidden sm:block text-[#60A5FA] hover:underline text-sm">
+                  <button className="hidden sm:block hover:underline text-sm" style={{ color: isDarkMode ? '#60A5FA' : 'black' }}>
                     View All
                   </button>
                 </div>
               </div>
 
               {sharedSpaces.length === 0 ? (
-                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                <div className="rounded-xl p-10 text-center" style={{ 
+                  backgroundColor: currentColors.surface, 
+                  color: currentColors.textSecondary 
+                }}>
                   No shared spaces yet
                 </div>
               ) : (
@@ -638,7 +688,11 @@ const HomePage1 = () => {
                           .map((space) => (
                             <div
                               key={space.space_uuid}
-                              className="bg-[#1E242E] rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
+                              className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
+                              style={{ 
+                                backgroundColor: currentColors.surface,
+                                border: isDarkMode ? 'none' : '1px solid black'
+                              }}
                             >
                               <div
                                 onClick={() =>
@@ -683,7 +737,10 @@ const HomePage1 = () => {
                                 </button>
 
                                 {showMenu === space.space_uuid && (
-                                  <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                                  <div className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]" style={{ 
+                                  backgroundColor: currentColors.surface, 
+                                  border: `1px solid ${currentColors.border}` 
+                                }}>
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -711,22 +768,28 @@ const HomePage1 = () => {
 
           {/* RIGHT SIDEBAR – visible on xl+ */}
           {/* RIGHT CONTENT - Reminders (Desktop Only - Sticky Sidebar) */}
-          <div className="hidden xl:block w-80 bg-[#1E242E] rounded-xl p-6 mr-6 my-6 flex-shrink-0 self-start sticky top-6">
-            <div>
-              <h4 className="font-semibold mb-3">Reminders</h4>
-              <div className="text-center py-8">
-                <Calendar className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                <p className="text-gray-400 text-sm">
-                  No tasks created yet
-                </p>
-                <p className="text-gray-500 text-xs mt-2">
-                  Go to your calendar to create tasks and set reminders
-                </p>
-                <div className="mt-6">
-                  <Button2 
-                    text="Go to Calendar"
-                    onClick={() => navigate('/calendar')}
-                  />
+          <div className="hidden xl:block w-80 mr-6 flex-shrink-0 self-start sticky top-6 flex flex-col gap-6">
+            {/* Reminders Section */}
+            <div className="rounded-xl p-6 flex-1" style={{ 
+              backgroundColor: currentColors.surface,
+              border: isDarkMode ? 'none' : '1px solid black'
+            }}>
+              <div>
+                <h4 className="font-semibold mb-3" style={{ color: isDarkMode ? 'white' : 'black' }}>Reminders</h4>
+                <div className="text-center py-8">
+                  <Calendar className="w-12 h-12 mx-auto mb-4" style={{ color: currentColors.textSecondary }} />
+                  <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
+                    No tasks created yet
+                  </p>
+                  <p className="text-xs mt-2" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
+                    Go to your calendar to create tasks and set reminders
+                  </p>
+                  <div className="mt-6">
+                    <Button2 
+                      text="Go to Calendar"
+                      onClick={() => navigate('/calendar')}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -742,11 +805,13 @@ const HomePage1 = () => {
         {/* Leave Confirmation Modal */}
         {showLeaveConfirm && (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-            <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
-              <h3 className="text-lg font-semibold mb-3">Leave Space</h3>
-              <p className="text-gray-400 text-sm mb-6">
-                Are you sure you want to leave this space? You'll need to be
-                re-invited to rejoin.
+            <div className="rounded-xl p-6 max-w-sm w-full" style={{ 
+              backgroundColor: currentColors.surface, 
+              border: `1px solid ${currentColors.border}` 
+            }}>
+              <h3 className="text-lg font-semibold mb-3" style={{ color: isDarkMode ? 'white' : 'black' }}>Leave Space</h3>
+              <p className="text-sm mb-6" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
+                Are you sure you want to leave this space? You'll need to be re-invited to join again.
               </p>
               <div className="flex gap-3 justify-end">
                 <button

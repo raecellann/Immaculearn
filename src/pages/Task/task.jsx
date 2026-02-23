@@ -4,6 +4,7 @@ import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const statusStyles = {
   Done: "border-2 border-[#00B865] text-[#10E164]",
@@ -14,6 +15,8 @@ const statusStyles = {
 const TaskPage = () => {
   const { user } = useUser();
   const { userSpaces, courseSpaces, friendSpaces } = useSpace();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
 
   // const allSpaces = new Set(userSpaces.map(space => space.space_id));
   const allSpaces = new Set([
@@ -64,7 +67,7 @@ const TaskPage = () => {
 
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
@@ -117,7 +120,11 @@ const TaskPage = () => {
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
               {userSpaces?.length === 0 ? (
-                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                <div className="rounded-xl p-10 text-center border border-dashed" style={{ 
+                  backgroundColor: currentColors.surface, 
+                  color: currentColors.textSecondary,
+                  borderColor: isDarkMode ? currentColors.border : 'black'
+                }}>
                   No space task yet
                 </div>
               ) : (
@@ -125,7 +132,11 @@ const TaskPage = () => {
                   {userSpaces?.map((space, index) => (
                     <div
                       key={`your-space-${index}`}
-                      className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      className="rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      style={{ 
+                        backgroundColor: currentColors.surface,
+                        border: isDarkMode ? '1px solid #4b5563' : '1px solid black'
+                      }}
                       onClick={() => navigate(`/task/${space.space_uuid}/${space.space_name}`)}
                     >
                       <span className="text-xl">📋</span>
@@ -145,7 +156,11 @@ const TaskPage = () => {
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
               {courseSpaces?.length === 0 ? (
-                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                <div className="rounded-xl p-10 text-center border border-dashed" style={{ 
+                  backgroundColor: currentColors.surface, 
+                  color: currentColors.textSecondary,
+                  borderColor: isDarkMode ? currentColors.border : 'black'
+                }}>
                   No course space task yet
                 </div>
               ) : (
@@ -153,7 +168,11 @@ const TaskPage = () => {
                   {courseSpaces?.map((space, index) => (
                     <div
                       key={`course-space-${index}`}
-                      className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      className="rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      style={{ 
+                        backgroundColor: currentColors.surface,
+                        border: isDarkMode ? '1px solid #4b5563' : '1px solid black'
+                      }}
                       onClick={() => navigate(`/task/${space.space_uuid}/${space.space_name}`)}
                     >
                       <span className="text-xl">📋</span>
@@ -173,7 +192,11 @@ const TaskPage = () => {
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
               {allFriendSpaces?.length === 0 ? (
-                <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+                <div className="rounded-xl p-10 text-center border border-dashed" style={{ 
+                  backgroundColor: currentColors.surface, 
+                  color: currentColors.textSecondary,
+                  borderColor: isDarkMode ? currentColors.border : 'black'
+                }}>
                   No friends space task yet
                 </div>
               ) : (
@@ -181,7 +204,11 @@ const TaskPage = () => {
                   {allFriendSpaces?.map((space, index) => (
                     <div
                       key={`friends-space-${index}`}
-                      className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      className="rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      style={{ 
+                        backgroundColor: currentColors.surface,
+                        border: isDarkMode ? '1px solid #4b5563' : '1px solid black'
+                      }}
                       onClick={() => navigate(`/task/${space.space_uuid}/${space.space_name}`)}
                     >
                       <span className="text-xl">📋</span>

@@ -1,0 +1,154 @@
+/* Theme CSS Variables Usage Example */
+
+/* Default theme styles */
+:root {
+  /* These will be overridden by the theme context */
+  --theme-primary: #3B82F6;
+  --theme-secondary: #6B7280;
+  --theme-background: #FFFFFF;
+  --theme-surface: #F9FAFB;
+  --theme-text: #111827;
+  --theme-text-secondary: #6B7280;
+  --theme-border: #E5E7EB;
+  --theme-accent: #10B981;
+  --theme-success: #10B981;
+  --theme-warning: #F59E0B;
+  --theme-error: #EF4444;
+  --theme-hover: #F3F4F6;
+}
+
+/* Dark theme specific styles */
+[data-theme="dark"] {
+  --theme-primary: #60A5FA;
+  --theme-secondary: #9CA3AF;
+  --theme-background: #111827;
+  --theme-surface: #1F2937;
+  --theme-text: #F9FAFB;
+  --theme-text-secondary: #D1D5DB;
+  --theme-border: #374151;
+  --theme-accent: #34D399;
+  --theme-success: #34D399;
+  --theme-warning: #FBBF24;
+  --theme-error: #F87171;
+  --theme-hover: #374151;
+}
+
+/* Example usage of theme variables */
+.theme-example {
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.theme-example:hover {
+  background-color: var(--theme-surface);
+  border-color: var(--theme-primary);
+}
+
+.theme-button {
+  background-color: var(--theme-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.theme-button:hover {
+  background-color: var(--theme-accent);
+}
+
+.theme-button-secondary {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+}
+
+.theme-button-secondary:hover {
+  background-color: var(--theme-border);
+}
+
+.theme-card {
+  background-color: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.theme-text {
+  color: var(--theme-text);
+}
+
+.theme-text-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.theme-border {
+  border-color: var(--theme-border);
+}
+
+.theme-background {
+  background-color: var(--theme-background);
+}
+
+.theme-surface {
+  background-color: var(--theme-surface);
+}
+
+/* Success, warning, and error states */
+.theme-success {
+  background-color: var(--theme-success);
+  color: white;
+}
+
+.theme-warning {
+  background-color: var(--theme-warning);
+  color: white;
+}
+
+.theme-error {
+  background-color: var(--theme-error);
+  color: white;
+}
+
+/* Responsive theme adjustments */
+@media (max-width: 768px) {
+  .theme-card {
+    padding: 1rem;
+  }
+  
+  .theme-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Focus states with theme colors */
+.theme-button:focus,
+.theme-input:focus {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+.theme-input {
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+.theme-input::placeholder {
+  color: var(--theme-text-secondary);
+}

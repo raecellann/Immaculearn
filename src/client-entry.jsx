@@ -7,12 +7,12 @@ import { BrowserRouter } from "react-router";
 import { ToastContainer } from "react-toastify";
 
 import Routes from "./Routes.tsx";
-import { ThemeProvider } from "./pages/Create-Document/contexts/ThemeContext";
+import { SpaceThemeProvider } from "./contexts/theme/spaceThemeContextProvider";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ThemeProvider>
+    <SpaceThemeProvider>
       <BrowserRouter>
         <ToastContainer
           position="top-right"
@@ -27,6 +27,6 @@ createRoot(document.getElementById("root")).render(
         />
         <Routes />
       </BrowserRouter>
-    </ThemeProvider>
+    </SpaceThemeProvider>
   </StrictMode>
 );
