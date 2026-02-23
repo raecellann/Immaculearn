@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import Button from "../component/Button";
 import Logout from "../component/logout";
@@ -13,6 +13,8 @@ import {
   X,
   Save,
   AlertCircle,
+  Menu,
+  Lock,
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import AdminSidebar from "../component/adminsidebar";
@@ -26,12 +28,16 @@ const AdminAcademicTerm = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState(null);
   const [showManagePeriodModal, setShowManagePeriodModal] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [managePeriodData, setManagePeriodData] = useState({
     gradingDueDate: "",
     submissionDeadline: "",
     extensionDeadline: "",
     remarks: ""
   });
+
+  const lastScrollY = useRef(0);
+  const [showHeader, setShowHeader] = useState(true);
 
   // Mock data for academic terms and periods
   const [academicTerms, setAcademicTerms] = useState([
@@ -178,34 +184,75 @@ const AdminAcademicTerm = () => {
     setShowManagePeriodModal(false);
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
-      {/* Desktop Sidebar */}
+      {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* Mobile Sidebar */}
-      <div className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden ${
-        false ? "translate-x-0" : "-translate-x-full"
-      }`}>
+      {/* MOBILE OVERLAY */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* MOBILE SIDEBAR */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
         <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <div className="bg-[#1E222A] p-4 border-b border-[#3B4457]">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Academic Term Management</h1>
-              <p className="text-gray-400 text-sm mt-1">Manage academic terms and grading periods</p>
-            </div>
-            
-          </div>
+      {/* MAIN CONTENT */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
+
+        {/* MOBILE HEADER */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
+          <button
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Academic Terms</h1>
         </div>
 
-        <div className="flex-1 p-6">
+        {/* HEADER SPACER */}
+        <div className="lg:hidden h-16"></div>
+
+        {/* CONTENT */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+
+          {/* DESKTOP TITLE */}
+          <h1 className="hidden lg:block text-2xl font-bold mb-6">
+            Academic Term Management
+          </h1>
+
           {/* Term Selection */}
           <div className="flex gap-4 mb-6">
             {academicTerms.filter(term => term.id === "1st-sem" || term.id === "2nd-sem").map((term) => {
@@ -226,11 +273,10 @@ const AdminAcademicTerm = () => {
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
                     <span>{term.name}</span>
                     <span className="text-xs opacity-75">({term.schoolYear})</span>
                     {isDisabled && (
-                      <span className="text-xs text-yellow-400 ml-1">(Locked)</span>
+                      <Lock className="w-4 h-4 text-yellow-400 ml-1" />
                     )}
                   </div>
                 </button>
