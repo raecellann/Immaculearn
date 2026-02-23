@@ -12,6 +12,7 @@ import CreateSpaceAdmin from "../pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
 import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
+import TaskBuilder from "../pages/EXAMPLE_PAGE/builder.jsx";
 
 export const SpaceRoutes = [
   {
@@ -73,5 +74,10 @@ export const SpaceRoutes = [
     key: "/people",
     path: "/space/:space_uuid/:space_name/people",
     element: <UserPeoplePage />,
+  },
+  {
+    key: "/task-builder",
+    path: "/space/task-builder",
+    element: <TaskBuilder />,
   },
 ];
