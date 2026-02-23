@@ -27,6 +27,7 @@ import ProfFilePage from "../pages/prof-Files/proffiles.jsx";
 import ProfViewFiles from "../pages/prof-Files/components/ProfViewAllFiles.jsx";
 import ProfCalendarPage from "../pages/Prof-Calendar/ProfCalendar.jsx";
 import ProfGradeRecordPage from "../pages/prof-GradeViewing/profgradeviewing.jsx";
+import ProfArchiveClass from "../pages/prof-Archiveclass/ProfArchiveClass.jsx";
 import ProfSettingsPage from "../pages/Prof-Settings/profsettings.jsx";
 import ProfilePage from "../pages/AccountSettings/accountsettingspage.jsx";
 import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionpage.jsx";
@@ -154,6 +155,13 @@ export const ProfRoutes = () => {
         path="grade-viewing"
         element={
             <ProfGradeRecordPage />
+        }
+      />
+      
+      <Route
+        path="archived-classes"
+        element={
+            <ProfArchiveClass />
         }
       />
 

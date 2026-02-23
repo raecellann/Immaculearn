@@ -14,18 +14,17 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { toast } from "react-toastify";
 
 const UserFilesShared = () => {
-
-  const [showPendingInvitations, setShowPendingInvitations] = useState(false)
-  const [showInvitePopup, setShowInvitePopup] = useState(false)
-  const [inviteEmail, setInviteEmail] = useState("")
-  const [copyFeedback, setCopyFeedback] = useState("")
-  const [joinRequestsData, setJoinRequestsData] = useState([])
-  const [spaceLoading, setSpaceLoading] = useState(false)
+  const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+  const [showInvitePopup, setShowInvitePopup] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [copyFeedback, setCopyFeedback] = useState("");
+  const [joinRequestsData, setJoinRequestsData] = useState([]);
+  const [spaceLoading, setSpaceLoading] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogMessage, setDialogMessage] = useState("");
   const lastScrollY = useRef(0);
 
   // File upload states
@@ -38,20 +37,29 @@ const UserFilesShared = () => {
   const [showFileOptions, setShowFileOptions] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
-
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams(); // Get params from URL
 
   const { user, isLoading } = useUser();
-  const { userSpaces, friendSpaces, deleteSpace, acceptJoinRequest, declineJoinRequest } = useSpace();
+  const {
+    userSpaces,
+    friendSpaces,
+    courseSpaces,
+    deleteSpace,
+    acceptJoinRequest,
+    declineJoinRequest,
+  } = useSpace();
 
   /* ================= SPACE & OWNER LOGIC ================= */
-  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(friendSpaces || []),
+    ...(courseSpaces || []),
+  ];
   const currentSpace = allSpaces.find(
-    (space) => space.space_uuid === space_uuid
+    (space) => space.space_uuid === space_uuid,
   );
 
-  
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
 
@@ -94,7 +102,6 @@ const UserFilesShared = () => {
     }
   };
 
-
   const handleFileClick = (file) => {
     setSelectedFile(file);
     setShowFileOptions(true);
@@ -107,7 +114,9 @@ const UserFilesShared = () => {
   };
 
   const handleDeleteFile = (file) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete "${file.filename}"? This action cannot be undone.`);
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${file.filename}"? This action cannot be undone.`,
+    );
     if (confirmDelete) {
       // Add delete logic here
       alert(`File "${file.filename}" deleted successfully!`);
@@ -125,14 +134,14 @@ const UserFilesShared = () => {
       {
         title: fileName,
         space_id: currentSpace?.space_id ?? null,
-        owner_id: user?.id ?? null, 
+        owner_id: user?.id ?? null,
         content: "",
       },
       {
         onSuccess: (newFile) => {
           toast.success(`File "${fileName}" created successfully!`, {
             duration: 3000,
-            position: 'top-center',
+            position: "top-center",
           });
 
           const url = `/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${newFile.title}`;
@@ -146,7 +155,7 @@ const UserFilesShared = () => {
           console.error(err);
           toast.error(err?.message || "Failed to create file");
         },
-      }
+      },
     );
   };
 
@@ -165,11 +174,9 @@ const UserFilesShared = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const { list , create} = useFileManager(currentSpace?.space_id || null);
+  const { list, create } = useFileManager(currentSpace?.space_id || null);
 
   const files = list?.data || [];
-
-
 
   const handleInviteMember = () => {
     setShowInvitePopup(true);
@@ -178,7 +185,7 @@ const UserFilesShared = () => {
   // Delete room
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
-    
+
     // Show delete confirmation dialog
     setDialogMessage(currentSpace.space_name);
     setShowDeleteDialog(true);
@@ -187,12 +194,12 @@ const UserFilesShared = () => {
   const handleConfirmDelete = async () => {
     // Prevent multiple executions
     if (!currentSpace || !showDeleteDialog) return;
-    
+
     setShowDeleteDialog(false);
-    
+
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-      
+
       // Navigate immediately after successful deletion
       navigate("/space");
     } catch (error) {
@@ -233,27 +240,28 @@ const UserFilesShared = () => {
 
   // Copy link
   const handleCopyLink = (space_link) => {
-    navigator.clipboard.writeText(space_link)
+    navigator.clipboard
+      .writeText(space_link)
       .then(() => {
         setCopyFeedback("Copied!");
         setTimeout(() => setCopyFeedback(""), 2000);
       })
-      .catch(err => {
-        console.error('Failed to copy: ', err);
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
         setCopyFeedback("Error!");
         setTimeout(() => setCopyFeedback(""), 2000);
       });
   };
 
-    const formatFileTitle = (filename) => {
-  if (!filename) return "";
+  const formatFileTitle = (filename) => {
+    if (!filename) return "";
 
-  const decodedFileName = decodeURIComponent(filename);
-  const nameWithoutExtension = decodedFileName.split(".")[0];
-  const cleanTitle = nameWithoutExtension.split("_")[0];
+    const decodedFileName = decodeURIComponent(filename);
+    const nameWithoutExtension = decodedFileName.split(".")[0];
+    const cleanTitle = nameWithoutExtension.split("_")[0];
 
-  return cleanTitle;
-};
+    return cleanTitle;
+  };
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
@@ -310,13 +318,18 @@ const UserFilesShared = () => {
           <div className="hidden md:block mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-400">({(currentSpace?.members?.length) || 0} member(s))</span>
+              <span className="text-xs text-gray-400">
+                ({currentSpace?.members?.length || 0} member(s))
+              </span>
               {isOwnerSpace && (
                 <>
                   <div onClick={handleInviteMember}>
                     <Button text="Add Member" />
                   </div>
-                  <div onClick={() => setShowPendingInvitations(true)} className="relative">
+                  <div
+                    onClick={() => setShowPendingInvitations(true)}
+                    className="relative"
+                  >
                     <Button text="Pending Invites" />
                     {joinRequestsData.length > 0 && (
                       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -333,7 +346,7 @@ const UserFilesShared = () => {
                 <div className="flex flex-col gap-2 mt-2">
                   <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
                     <span className="text-xs text-blue-400 break-all">
-                      {currentSpace?.space_link || 'Loading...'}
+                      {currentSpace?.space_link || "Loading..."}
                     </span>
                     <button
                       onClick={() => handleCopyLink(currentSpace?.space_link)}
@@ -345,7 +358,6 @@ const UserFilesShared = () => {
                   </div>
                 </div>
               )}
-              
             </div>
           </div>
 
@@ -353,8 +365,9 @@ const UserFilesShared = () => {
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex justify-center space-x-12">
-                <button onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}>
-                 
+                <button
+                  onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}
+                >
                   Stream
                 </button>
                 <button
@@ -362,11 +375,9 @@ const UserFilesShared = () => {
                     navigate(`/space/${space_uuid}/${space_name}/tasks`)
                   }
                 >
-                
                   Tasks
                 </button>
                 <button className="font-semibold border-b-2 border-white pb-2">
-                  
                   Files
                 </button>
                 <button
@@ -379,12 +390,16 @@ const UserFilesShared = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Add Member Button - Mobile */}
           {isOwnerSpace && (
             <div className="md:hidden flex justify-end gap-2 mb-6">
               <Button onClick={handleInviteMember} text="Add Member" />
-              <Button onClick={() => setShowPendingInvitations(true)} text="Pending Invites" className="relative">
+              <Button
+                onClick={() => setShowPendingInvitations(true)}
+                text="Pending Invites"
+                className="relative"
+              >
                 {joinRequestsData.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {joinRequestsData.length}
@@ -395,70 +410,53 @@ const UserFilesShared = () => {
             </div>
           )}
 
-          {/* Space Link - Mobile (Non-owners) */}
-          {isFriendSpace && (
-            <div className="md:hidden flex justify-end mb-6">
-              <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md max-w-full">
-                <span className="text-xs text-blue-400 break-all flex-1">
-                  {currentSpace?.space_link || 'Loading...'}
-                </span>
-                <button
-                  onClick={() => handleCopyLink(currentSpace?.space_link)}
-                  className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors flex-shrink-0"
-                  title="Copy to clipboard"
+          {/* Action Ribbon */}
+          {activeFile && (
+            <div className="sticky top-0 z-20 mb-6 bg-[#1E222A] border border-gray-700 rounded-xl p-4 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <FiFileText />
+                <span
+                  key={activeFile.file_id}
+                  className="font-semibold truncate max-w-[220px]"
                 >
-                  <FiCopy size={16} />
+                  {activeFile.filename}
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() =>
+                    window.open(
+                      `/space/${space_uuid}/${space_name}/files/${activeFile.file_uuid}/${activeFile.filename}`,
+                      "_blank",
+                      "noopener,noreferrer",
+                    )
+                  }
+                  className="px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-sm"
+                >
+                  Open
+                </button>
+
+                <button
+                  onClick={() => setShareModalOpen(true)}
+                  className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm"
+                >
+                  Share
+                </button>
+
+                <button className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">
+                  Upload Version
+                </button>
+
+                <button
+                  onClick={() => setActiveFile(null)}
+                  className="px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-sm"
+                >
+                  Close
                 </button>
               </div>
             </div>
           )}
-
-
-          {/* Action Ribbon */}
-          {activeFile && (
-            <div className="sticky top-0 z-20 mb-6 bg-[#1E222A] border border-gray-700 rounded-xl p-4 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <FiFileText />
-              <span key={activeFile.file_id} className="font-semibold truncate max-w-[220px]">
-                {activeFile.filename}
-              </span>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() =>
-                  window.open(
-                    `/space/${space_uuid}/${space_name}/files/${activeFile.file_uuid}/${activeFile.filename}`,
-                    "_blank",
-                    "noopener,noreferrer"
-                  )
-                }
-                className="px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-sm"
-              >
-                Open
-              </button>
-
-              <button
-                onClick={() => setShareModalOpen(true)}
-                className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm"
-              >
-                Share
-              </button>
-
-              <button className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">
-                Upload Version
-              </button>
-
-              <button
-                onClick={() => setActiveFile(null)}
-                className="px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-sm"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-          )}
-
 
           {/* ================= FILES ================= */}
           <div className="max-w-5xl mx-auto">
@@ -495,15 +493,15 @@ const UserFilesShared = () => {
                     </div>
                     <span>{formatFileTitle(file.filename)}</span>
                   </div>
-                  
-                  <div>
-                    {new Date(file.created_at).toLocaleDateString()}
-                  </div>
-                  <div>{file.owner_id === user.id ? "You" : currentSpace.members.find(
-                      member => member.account_id === file.owner_id
-                    )?.full_name}
-                  </div>
 
+                  <div>{new Date(file.created_at).toLocaleDateString()}</div>
+                  <div>
+                    {file.owner_id === user.id
+                      ? "You"
+                      : currentSpace.members.find(
+                          (member) => member.account_id === file.owner_id,
+                        )?.full_name}
+                  </div>
                 </div>
               ))}
             </div>
@@ -520,16 +518,26 @@ const UserFilesShared = () => {
                     <div className="bg-[#23272F] p-2 rounded-md">
                       <FiFileText />
                     </div>
-                    <p className="font-semibold">{formatFileTitle(file.filename)}</p>
+                    <p className="font-semibold">
+                      {formatFileTitle(file.filename)}
+                    </p>
                   </div>
 
                   <p className="text-sm text-gray-400">
-                    Date: <span className="text-white">{new Date(file.created_at).toLocaleDateString()}</span>
+                    Date:{" "}
+                    <span className="text-white">
+                      {new Date(file.created_at).toLocaleDateString()}
+                    </span>
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
-                    Posted by: <span className="text-white">{file.owner_id === user.id ? "You" : currentSpace.members.find(
-                      member => member.account_id === file.owner_id
-                    )?.full_name}</span>
+                    Posted by:{" "}
+                    <span className="text-white">
+                      {file.owner_id === user.id
+                        ? "You"
+                        : currentSpace.members.find(
+                            (member) => member.account_id === file.owner_id,
+                          )?.full_name}
+                    </span>
                   </p>
                 </div>
               ))}
@@ -604,8 +612,6 @@ const UserFilesShared = () => {
 
               {/* CREATE FILE BUTTON */}
               <button
-
-
                 // Kapag clinick ito lalabas yung set filename sa ibaba
                 onClick={() => setIsCreatingFile(true)}
                 className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center space-x-2 bg-white mb-6"
@@ -657,7 +663,9 @@ const UserFilesShared = () => {
             {/* Header */}
             <div className="p-6 border-b border-gray-700">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">File Options</h2>
+                <h2 className="text-lg font-semibold text-white">
+                  File Options
+                </h2>
                 <button
                   onClick={() => setShowFileOptions(false)}
                   className="text-gray-400 hover:text-white p-1"
@@ -670,7 +678,11 @@ const UserFilesShared = () => {
             {/* Content */}
             <div className="p-6">
               <p className="text-white mb-4">
-                What would you like to do with "<span className="font-semibold">{formatFileTitle(selectedFile.filename)}</span>"?
+                What would you like to do with "
+                <span className="font-semibold">
+                  {formatFileTitle(selectedFile.filename)}
+                </span>
+                "?
               </p>
 
               <div className="flex justify-end gap-3">
@@ -681,14 +693,14 @@ const UserFilesShared = () => {
                   Cancel
                 </button>
                 {selectedFile?.owner_id === user?.id && (
-                <button 
-                  onClick={() => handleDeleteFile(selectedFile)}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
-                >
-                  Delete
-                </button>
-              )}
-                <button 
+                  <button
+                    onClick={() => handleDeleteFile(selectedFile)}
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
+                  >
+                    Delete
+                  </button>
+                )}
+                <button
                   onClick={() => handleOpenFile(selectedFile)}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
                 >
@@ -744,7 +756,7 @@ const UserFilesShared = () => {
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleCreateFile}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
                 >
@@ -755,7 +767,6 @@ const UserFilesShared = () => {
           </div>
         </div>
       )}
-
 
       {/* PENDING INVITATIONS POPUP */}
       {showPendingInvitations && (
@@ -775,10 +786,15 @@ const UserFilesShared = () => {
             {/* Invitations List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {joinRequestsData.length === 0 ? (
-                <p className="text-gray-400 text-center py-4">No pending invitations</p>
+                <p className="text-gray-400 text-center py-4">
+                  No pending invitations
+                </p>
               ) : (
                 joinRequestsData.map((invitation) => (
-                  <div key={invitation.account_id} className="bg-[#2A2F3A] rounded-lg p-4">
+                  <div
+                    key={invitation.account_id}
+                    className="bg-[#2A2F3A] rounded-lg p-4"
+                  >
                     <div className="flex items-start gap-3">
                       <img
                         src={invitation.profile_pic}
@@ -787,24 +803,34 @@ const UserFilesShared = () => {
                       />
                       <div className="flex-1">
                         <h3 className="font-medium">{invitation.fullname}</h3>
-                        <p className="text-sm text-gray-400">{invitation.email}</p>
-                        <p className="text-sm mt-1">{invitation.message || "Hello world"}</p>
+                        <p className="text-sm text-gray-400">
+                          {invitation.email}
+                        </p>
+                        <p className="text-sm mt-1">
+                          {invitation.message || "Hello world"}
+                        </p>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-gray-500">{invitation.added_at}</span>
+                          <span className="text-xs text-gray-500">
+                            {invitation.added_at}
+                          </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-3">
                       <button
                         disabled={spaceLoading}
-                        onClick={() => handleDeclineJoinRequest(invitation.account_id)}
+                        onClick={() =>
+                          handleDeclineJoinRequest(invitation.account_id)
+                        }
                         className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition"
                       >
                         Decline
                       </button>
                       <button
                         disabled={spaceLoading}
-                        onClick={() => handleAcceptJoinRequest(invitation.account_id)}
+                        onClick={() =>
+                          handleAcceptJoinRequest(invitation.account_id)
+                        }
                         className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition"
                       >
                         Accept
@@ -825,7 +851,6 @@ const UserFilesShared = () => {
         showInvitePopup={showInvitePopup}
         setShowInvitePopup={setShowInvitePopup}
       />
-
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}

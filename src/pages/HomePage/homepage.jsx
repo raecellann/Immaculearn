@@ -198,8 +198,8 @@ const HomePage1 = () => {
     };
 
     handleResize(); // Initial check
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const yourSlideCount = Math.max(
@@ -342,9 +342,9 @@ const HomePage1 = () => {
                     Go to your calendar to create tasks and set reminders
                   </p>
                   <div className="mt-6">
-                    <Button2 
+                    <Button2
                       text="Go to Calendar"
-                      onClick={() => navigate('/calendar')}
+                      onClick={() => navigate("/calendar")}
                     />
                   </div>
                 </div>
@@ -581,6 +581,11 @@ const HomePage1 = () => {
                                       ))}
                                   </p>
                                   <p className="text-gray-500 text-xs mt-1">
+                                    {course.space_day} (
+                                    {`${course.space_time_start} - ${course.space_time_end}`}
+                                    )
+                                  </p>
+                                  <p className="text-gray-500 text-xs mt-1">
                                     Opened just now
                                   </p>
                                 </div>
@@ -800,7 +805,10 @@ const HomePage1 = () => {
           isOpen={!!showDeleteConfirm}
           onClose={() => setShowDeleteConfirm(null)}
           onConfirm={handleDeleteSpace}
-          space={userSpaces.find(s => s.space_uuid === showDeleteConfirm) || friendSpaces.find(s => s.space_uuid === showDeleteConfirm)}
+          space={
+            userSpaces.find((s) => s.space_uuid === showDeleteConfirm) ||
+            friendSpaces.find((s) => s.space_uuid === showDeleteConfirm)
+          }
         />
         {/* Leave Confirmation Modal */}
         {showLeaveConfirm && (

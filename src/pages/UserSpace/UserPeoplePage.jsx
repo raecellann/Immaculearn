@@ -45,6 +45,8 @@ const UserPeoplePage = () => {
   ];
   const activeSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
 
+  console.log("ACTIVE", activeSpace);
+
   // Separate creator/admin and other members
   const creator = activeSpace?.members.find((m) => m.role === "creator") || {
     account_id: user.id,

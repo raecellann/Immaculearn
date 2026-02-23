@@ -17,12 +17,13 @@ const ProfSpacePage = () => {
   const { user } = useUser();
   const { userSpaces, courseSpaces } = useSpace();
 
-  console.log(courseSpaces)
+  console.log(courseSpaces);
 
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("All");
   const [showLogout, setShowLogout] = useState(false);
@@ -49,18 +50,30 @@ const ProfSpacePage = () => {
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showMenu && !event.target.closest('.menu-container')) {
+      if (showMenu && !event.target.closest(".menu-container")) {
         setShowMenu(null);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
+
+  // Filter course spaces by year level
+  const filterCourseSpacesByYear = (spaces, filter) => {
+    if (!spaces || filter === "All") return spaces;
+    return spaces.filter(space => space.space_yr_lvl === parseInt(filter));
+  };
+
+  const handleArchiveSpace = (spaceId) => {
+    // TODO: Add API call to archive space
+    console.log("Archive space:", spaceId);
+    setShowArchiveConfirm(null);
+    setShowMenu(null);
+  };
 
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white">
-
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -85,7 +98,6 @@ const ProfSpacePage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-
         {/* 🔹 STICKY MOBILE / TABLET HEADER */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457] px-4 transition-transform duration-300 ${
@@ -117,7 +129,11 @@ const ProfSpacePage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
               <div>
                 <h2 className="text-2xl font-bold text-[#60A5FA] mb-2">
-                  {getGreeting()}, {prefixName(capitalizeWords(user?.name?.split(" ")[0]), user?.gender) || "Professor"}
+                  {getGreeting()},{" "}
+                  {prefixName(
+                    capitalizeWords(user?.name?.split(" ")[0]),
+                    user?.gender,
+                  ) || "Professor"}
                 </h2>
                 <p className="text-gray-300 text-sm">
                   Meet your students and collaborate with them.
@@ -127,7 +143,7 @@ const ProfSpacePage = () => {
                 </p>
               </div>
               <div className="flex md:justify-end">
-                <Button onClick={() => navigate('/prof/space/create')}>
+                <Button onClick={() => navigate("/prof/space/create")}>
                   Create Space
                 </Button>
               </div>
@@ -144,8 +160,12 @@ const ProfSpacePage = () => {
                     key={space.space_id}
                     className="group bg-[#1E242E] rounded-lg overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer relative"
                   >
-                    <div 
-                      onClick={() => navigate(`/prof/space/${space?.space_uuid}/${space.space_name}`)}
+                    <div
+                      onClick={() =>
+                        navigate(
+                          `/prof/space/${space?.space_uuid}/${space.space_name}`,
+                        )
+                      }
                       className="cursor-pointer"
                     >
                       <div className="relative h-40 bg-gray-800 overflow-hidden">
@@ -164,19 +184,23 @@ const ProfSpacePage = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     {/* Three dots menu */}
                     <div className="absolute top-2 right-2 menu-container">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShowMenu(showMenu === `your-${space.space_id}` ? null : `your-${space.space_id}`);
+                          setShowMenu(
+                            showMenu === `your-${space.space_id}`
+                              ? null
+                              : `your-${space.space_id}`,
+                          );
                         }}
                         className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
-                      
+
                       {showMenu === `your-${space.space_id}` && (
                         <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
                           <button
@@ -208,21 +232,23 @@ const ProfSpacePage = () => {
 
               <div className="flex flex-wrap items-start gap-2 sm:gap-3 justify-end">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">Year Level:</span>
+                  <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+                    Year Level:
+                  </span>
                   <select
                     value={yearFilter}
                     onChange={(e) => setYearFilter(e.target.value)}
                     className="bg-[#1E242E] border border-[#3B4457] text-xs sm:text-sm text-white rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-1 focus:ring-[#0EA5E9]"
                   >
                     <option value="All">All Years</option>
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
                   </select>
                 </div>
-                <Button 
-                  onClick={() => navigate('/prof/spaces/classroom/create')}
+                <Button
+                  onClick={() => navigate("/prof/spaces/classroom/create")}
                   className="px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm"
                 >
                   Create Space
@@ -232,60 +258,81 @@ const ProfSpacePage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {courseSpaces && courseSpaces.length > 0 ? (
-                courseSpaces?.map((space, id) => (
-                  <div
-                    key={id}
-                    className="group bg-[#1E242E] rounded-xl overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer relative"
-                  >
-                    <div 
-                      onClick={() => navigate(`/prof/space/${space?.space_uuid}/${space.space_name}`)}
-                      className="cursor-pointer"
+                filterCourseSpacesByYear(courseSpaces, yearFilter)?.length > 0 ? (
+                  filterCourseSpacesByYear(courseSpaces, yearFilter)?.map((space, id) => (
+                    <div
+                      key={id}
+                      className="group bg-[#1E242E] rounded-xl overflow-hidden border border-[#3B4457] hover:shadow-lg transition cursor-pointer relative"
                     >
-                      <div className="relative h-40 bg-gray-800 overflow-hidden">
-                        <SpaceCover
-                          image={space.space_cover}
-                          name={space.space_name}
-                          className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-white text-sm">
-                          {space.space_name}
-                        </h3>
-                        <p className="text-gray-400 text-xs">
-                          {space.members?.length -1 || 0} Students
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Three dots menu */}
-                    <div className="absolute top-2 right-2 menu-container">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowMenu(showMenu === space.space_id ? null : space.space_id);
-                        }}
-                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      <div
+                        onClick={() =>
+                          navigate(
+                            `/prof/space/${space?.space_uuid}/${space.space_name}`,
+                          )
+                        }
+                        className="cursor-pointer"
                       >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                      
-                      {showMenu === space.space_id && (
-                        <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowLeaveConfirm(space.space_id);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
-                          >
-                            Delete Space
-                          </button>
+                        <div className="relative h-40 bg-gray-800 overflow-hidden">
+                          <SpaceCover
+                            image={space.space_cover}
+                            name={space.space_name}
+                            className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
+                          />
                         </div>
-                      )}
+                        <div className="p-4">
+                          <h3 className="font-semibold text-white text-sm">
+                            {space.space_name}
+                          </h3>
+                          <p className="text-gray-400 text-xs">
+                            {space.members?.length - 1 || 0} Students
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Three dots menu */}
+                      <div className="absolute top-2 right-2 menu-container">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowMenu(
+                              showMenu === space.space_id ? null : space.space_id,
+                            );
+                          }}
+                          className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {showMenu === space.space_id && (
+                          <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[140px]">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowArchiveConfirm(space.space_id);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-[#60A5FA] hover:bg-[#3B4457] rounded-t-lg"
+                            >
+                              Archive Space
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowLeaveConfirm(space.space_id);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-b-lg border-t border-[#3B4457]"
+                            >
+                              Delete Space
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="col-span-full p-4 bg-[#1E242E] rounded-lg border border-[#3B4457] text-center text-gray-400">
+                    No Course Spaces found for {yearFilter === "All" ? "any year level" : `${yearFilter}${yearFilter === "1" ? "st" : yearFilter === "2" ? "nd" : yearFilter === "3" ? "rd" : "th"} year`}
                   </div>
-                ))
+                )
               ) : (
                 <div className="col-span-full p-4 bg-[#1E242E] rounded-lg border border-[#3B4457] text-center text-gray-400">
                   No Course Space Yet!
@@ -300,7 +347,8 @@ const ProfSpacePage = () => {
               <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
                 <h3 className="text-lg font-semibold mb-3">Delete Space</h3>
                 <p className="text-gray-400 text-sm mb-6">
-                  Are you sure you want to delete this space? This action cannot be undone.
+                  Are you sure you want to delete this space? This action cannot
+                  be undone.
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button
@@ -312,7 +360,7 @@ const ProfSpacePage = () => {
                   <button
                     onClick={() => {
                       // Handle delete action here
-                      console.log('Space deleted:', showDeleteConfirm);
+                      console.log("Space deleted:", showDeleteConfirm);
                       setShowDeleteConfirm(null);
                       setShowMenu(null);
                     }}
@@ -331,7 +379,8 @@ const ProfSpacePage = () => {
               <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
                 <h3 className="text-lg font-semibold mb-3">Delete Space</h3>
                 <p className="text-gray-400 text-sm mb-6">
-                  Are you sure you want to delete this space? This action cannot be undone.
+                  Are you sure you want to delete this space? This action cannot
+                  be undone.
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button
@@ -343,13 +392,43 @@ const ProfSpacePage = () => {
                   <button
                     onClick={() => {
                       // Handle leave action here
-                      console.log('Space left:', showLeaveConfirm);
+                      console.log("Space left:", showLeaveConfirm);
                       setShowLeaveConfirm(null);
                       setShowMenu(null);
                     }}
                     className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
                   >
                     Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Archive Course Space Confirmation Dialog */}
+          {showArchiveConfirm && (
+            <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
+                <h3 className="text-lg font-semibold mb-3">Archive Space</h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Are you sure you want to archive this course space? It will be
+                  moved to your Archived Classes and can be restored anytime.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => {
+                      setShowArchiveConfirm(null);
+                      setShowMenu(null);
+                    }}
+                    className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleArchiveSpace(showArchiveConfirm)}
+                    className="px-5 py-2 rounded-lg bg-[#60A5FA] hover:bg-[#3B82F6] text-white text-sm"
+                  >
+                    Archive
                   </button>
                 </div>
               </div>

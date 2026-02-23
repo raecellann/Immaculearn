@@ -9,8 +9,8 @@ import MainButton from "../../component/Button.jsx";
 import Logout from "../../component/logout";
 import AddMember from "../../component/AddMember";
 import { DeleteConfirmationDialog } from "../../component/SweetAlert";
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   FiMenu,
   FiX,
@@ -31,14 +31,19 @@ const AdminTaskPage = () => {
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams();
   const { user } = useUser();
-  const { userSpaces, friendSpaces } = useSpace();
-  
+  const { userSpaces, friendSpaces, courseSpaces } = useSpace();
+
   // Find current space
-  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(friendSpaces || []),
+    ...(courseSpaces || []),
+  ];
   const currentSpace = allSpaces.find(
     (space) => space.space_uuid === space_uuid,
   );
-  
+  console.log("ACTIVE", currentSpace);
+
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
   const isOwnerSpace = currentSpace?.creator === user?.id;
   const isFriendSpace = !isOwnerSpace;
@@ -50,25 +55,27 @@ const AdminTaskPage = () => {
   const [dueDate, setDueDate] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [taskCategory, setTaskCategory] = useState("individual-act");
-  
+
   // Criteria management state
-  const [criteria, setCriteria] = useState([{ id: 1, name: "", description: "", points: "" }]);
+  const [criteria, setCriteria] = useState([
+    { id: 1, name: "", description: "", points: "" },
+  ]);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showCriteriaSection, setShowCriteriaSection] = useState(false);
-  
+
   // Task management
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
-  
+
   // Add Member modal state
   const [showInvitePopup, setShowInvitePopup] = useState(false);
-  
+
   // Pending Invites modal state
   const [showPendingInvites, setShowPendingInvites] = useState(false);
-  
+
   // Delete Room modal state
   const [showDeleteRoom, setShowDeleteRoom] = useState(false);
 
@@ -114,40 +121,140 @@ const AdminTaskPage = () => {
   // Criteria templates
   const criteriaTemplates = {
     essay: [
-      { name: "Content Quality", description: "Clarity, coherence, and depth of analysis", points: "30" },
-      { name: "Research & Evidence", description: "Use of credible sources and proper citation", points: "25" },
-      { name: "Organization", description: "Logical structure and flow of ideas", points: "20" },
-      { name: "Grammar & Style", description: "Proper grammar, spelling, and academic writing style", points: "15" },
-      { name: "Originality", description: "Original thinking and avoidance of plagiarism", points: "10" }
+      {
+        name: "Content Quality",
+        description: "Clarity, coherence, and depth of analysis",
+        points: "30",
+      },
+      {
+        name: "Research & Evidence",
+        description: "Use of credible sources and proper citation",
+        points: "25",
+      },
+      {
+        name: "Organization",
+        description: "Logical structure and flow of ideas",
+        points: "20",
+      },
+      {
+        name: "Grammar & Style",
+        description: "Proper grammar, spelling, and academic writing style",
+        points: "15",
+      },
+      {
+        name: "Originality",
+        description: "Original thinking and avoidance of plagiarism",
+        points: "10",
+      },
     ],
     research: [
-      { name: "Research Question", description: "Clarity and significance of research question", points: "20" },
-      { name: "Methodology", description: "Appropriate research methods and design", points: "25" },
-      { name: "Data Analysis", description: "Proper analysis and interpretation of data", points: "25" },
-      { name: "Literature Review", description: "Comprehensive review of relevant literature", points: "20" },
-      { name: "Conclusions", description: "Logical conclusions based on findings", points: "10" }
+      {
+        name: "Research Question",
+        description: "Clarity and significance of research question",
+        points: "20",
+      },
+      {
+        name: "Methodology",
+        description: "Appropriate research methods and design",
+        points: "25",
+      },
+      {
+        name: "Data Analysis",
+        description: "Proper analysis and interpretation of data",
+        points: "25",
+      },
+      {
+        name: "Literature Review",
+        description: "Comprehensive review of relevant literature",
+        points: "20",
+      },
+      {
+        name: "Conclusions",
+        description: "Logical conclusions based on findings",
+        points: "10",
+      },
     ],
     presentation: [
-      { name: "Content", description: "Relevance and accuracy of content", points: "30" },
-      { name: "Organization", description: "Clear structure and logical flow", points: "20" },
-      { name: "Visual Aids", description: "Quality and effectiveness of visual materials", points: "20" },
-      { name: "Delivery", description: "Clarity, confidence, and engagement", points: "20" },
-      { name: "Time Management", description: "Appropriate pacing and time allocation", points: "10" }
+      {
+        name: "Content",
+        description: "Relevance and accuracy of content",
+        points: "30",
+      },
+      {
+        name: "Organization",
+        description: "Clear structure and logical flow",
+        points: "20",
+      },
+      {
+        name: "Visual Aids",
+        description: "Quality and effectiveness of visual materials",
+        points: "20",
+      },
+      {
+        name: "Delivery",
+        description: "Clarity, confidence, and engagement",
+        points: "20",
+      },
+      {
+        name: "Time Management",
+        description: "Appropriate pacing and time allocation",
+        points: "10",
+      },
     ],
     project: [
-      { name: "Functionality", description: "Code works as intended without errors", points: "30" },
-      { name: "Code Quality", description: "Clean, readable, and well-structured code", points: "25" },
-      { name: "Documentation", description: "Clear and comprehensive documentation", points: "20" },
-      { name: "Innovation", description: "Creative solutions and original thinking", points: "15" },
-      { name: "Testing", description: "Thorough testing and error handling", points: "10" }
+      {
+        name: "Functionality",
+        description: "Code works as intended without errors",
+        points: "30",
+      },
+      {
+        name: "Code Quality",
+        description: "Clean, readable, and well-structured code",
+        points: "25",
+      },
+      {
+        name: "Documentation",
+        description: "Clear and comprehensive documentation",
+        points: "20",
+      },
+      {
+        name: "Innovation",
+        description: "Creative solutions and original thinking",
+        points: "15",
+      },
+      {
+        name: "Testing",
+        description: "Thorough testing and error handling",
+        points: "10",
+      },
     ],
     creative: [
-      { name: "Creativity", description: "Originality and innovative thinking", points: "30" },
-      { name: "Technical Skill", description: "Execution and technical proficiency", points: "25" },
-      { name: "Composition", description: "Balance, harmony, and visual appeal", points: "20" },
-      { name: "Concept", description: "Clarity and strength of concept", points: "15" },
-      { name: "Effort", description: "Time and effort invested in the work", points: "10" }
-    ]
+      {
+        name: "Creativity",
+        description: "Originality and innovative thinking",
+        points: "30",
+      },
+      {
+        name: "Technical Skill",
+        description: "Execution and technical proficiency",
+        points: "25",
+      },
+      {
+        name: "Composition",
+        description: "Balance, harmony, and visual appeal",
+        points: "20",
+      },
+      {
+        name: "Concept",
+        description: "Clarity and strength of concept",
+        points: "15",
+      },
+      {
+        name: "Effort",
+        description: "Time and effort invested in the work",
+        points: "10",
+      },
+    ],
   };
 
   const getCategoryDisplay = (categoryValue) => {
@@ -166,8 +273,10 @@ const AdminTaskPage = () => {
       // Check file size (limit to 5MB)
       const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSizeInBytes) {
-        toast.error('The file is too large to upload. Please choose a file smaller than 5MB.');
-        event.target.value = ''; // Clear the file input
+        toast.error(
+          "The file is too large to upload. Please choose a file smaller than 5MB.",
+        );
+        event.target.value = ""; // Clear the file input
         return;
       }
 
@@ -178,32 +287,37 @@ const AdminTaskPage = () => {
 
   const extractTextFromFile = async (file) => {
     try {
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-      let extractedText = '';
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+      let extractedText = "";
 
-      if (fileExtension === 'pdf') {
+      if (fileExtension === "pdf") {
         extractedText = await extractTextFromPDF(file);
-      } else if (['doc', 'docx'].includes(fileExtension)) {
+      } else if (["doc", "docx"].includes(fileExtension)) {
         extractedText = await extractTextFromDocx(file);
-      } else if (['ppt', 'pptx'].includes(fileExtension)) {
+      } else if (["ppt", "pptx"].includes(fileExtension)) {
         extractedText = await extractTextFromPptx(file);
-      } else if (['xls', 'xlsx'].includes(fileExtension)) {
+      } else if (["xls", "xlsx"].includes(fileExtension)) {
         extractedText = await extractTextFromExcel(file);
-      } else if (['txt', 'text'].includes(fileExtension)) {
+      } else if (["txt", "text"].includes(fileExtension)) {
         extractedText = await extractTextFromText(file);
       }
 
       if (extractedText) {
         // Count words (split by whitespace and filter out empty strings)
-        const wordCount = extractedText.trim().split(/\s+/).filter(word => word.length > 0).length;
+        const wordCount = extractedText
+          .trim()
+          .split(/\s+/)
+          .filter((word) => word.length > 0).length;
         const maxWordLimit = 1000;
 
         // Check if word count exceeds limit
         if (wordCount > maxWordLimit) {
-          toast.error(`The file is too large to extract. It contains ${wordCount} words, but the maximum allowed is ${maxWordLimit} words. Please find your correct file task with shorter content.`);
+          toast.error(
+            `The file is too large to extract. It contains ${wordCount} words, but the maximum allowed is ${maxWordLimit} words. Please find your correct file task with shorter content.`,
+          );
           // Clear the file input
           if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+            fileInputRef.current.value = "";
           }
           setSelectedFile(null);
           return;
@@ -216,14 +330,18 @@ const AdminTaskPage = () => {
         }
 
         // Show success message with word count
-        toast.success(`File content extracted successfully: ${wordCount} words`);
+        toast.success(
+          `File content extracted successfully: ${wordCount} words`,
+        );
       }
     } catch (error) {
-      console.error('Error extracting text from file:', error);
-      toast.error('The file could not be processed. Please try a different file or check if the file is corrupted.');
+      console.error("Error extracting text from file:", error);
+      toast.error(
+        "The file could not be processed. Please try a different file or check if the file is corrupted.",
+      );
       // Clear the file input on error
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
       setSelectedFile(null);
     }
@@ -247,12 +365,12 @@ const AdminTaskPage = () => {
   const extractTextFromDocx = async (file) => {
     try {
       // Use mammoth library which is already installed
-      const mammoth = await import('mammoth');
+      const mammoth = await import("mammoth");
       const arrayBuffer = await file.arrayBuffer();
       const result = await mammoth.extractRawText({ arrayBuffer });
       return result.value;
     } catch (error) {
-      console.error('Error extracting DOCX:', error);
+      console.error("Error extracting DOCX:", error);
       return `[DOCX Content from ${file.name}]\n\nError extracting content from ${file.name}. Please ensure the file is a valid Word document.`;
     }
   };
@@ -274,21 +392,21 @@ const AdminTaskPage = () => {
   const extractTextFromExcel = async (file) => {
     try {
       // Use xlsx library which is already installed
-      const XLSX = await import('xlsx');
+      const XLSX = await import("xlsx");
       const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-      let extractedText = '';
-      
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      let extractedText = "";
+
       // Iterate through all sheets
-      workbook.SheetNames.forEach(sheetName => {
+      workbook.SheetNames.forEach((sheetName) => {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_txt(worksheet);
         extractedText += `Sheet: ${sheetName}\n${jsonData}\n\n`;
       });
-      
+
       return `[Excel Content from ${file.name}]\n\n${extractedText}`;
     } catch (error) {
-      console.error('Error extracting Excel:', error);
+      console.error("Error extracting Excel:", error);
       return `[Excel Content from ${file.name}]\n\nError extracting content from ${file.name}. Please ensure the file is a valid Excel document.`;
     }
   };
@@ -316,7 +434,7 @@ const AdminTaskPage = () => {
         id: Date.now() + index,
         name: criterion.name,
         description: criterion.description,
-        points: criterion.points
+        points: criterion.points,
       }));
       setCriteria(newCriteria);
       setShowTemplates(false);
@@ -331,10 +449,13 @@ const AdminTaskPage = () => {
   };
 
   const addCriteria = () => {
-    const newId = Math.max(...criteria.map(c => c.id), 0) + 1;
-    const newCriteria = [...criteria, { id: newId, name: "", description: "", points: "" }];
+    const newId = Math.max(...criteria.map((c) => c.id), 0) + 1;
+    const newCriteria = [
+      ...criteria,
+      { id: newId, name: "", description: "", points: "" },
+    ];
     setCriteria(newCriteria);
-    
+
     // Redistribute score if total score is set
     if (score && newCriteria.length > 0) {
       distributeScoreAmongCriteria(score);
@@ -343,9 +464,9 @@ const AdminTaskPage = () => {
 
   const removeCriteria = (id) => {
     if (criteria.length > 1) {
-      const newCriteria = criteria.filter(c => c.id !== id);
+      const newCriteria = criteria.filter((c) => c.id !== id);
       setCriteria(newCriteria);
-      
+
       // Redistribute score if total score is set
       if (score && newCriteria.length > 0) {
         distributeScoreAmongCriteria(score);
@@ -354,24 +475,24 @@ const AdminTaskPage = () => {
   };
 
   const updateCriteria = (id, field, value) => {
-    setCriteria(criteria.map(c => 
-      c.id === id ? { ...c, [field]: value } : c
-    ));
+    setCriteria(
+      criteria.map((c) => (c.id === id ? { ...c, [field]: value } : c)),
+    );
   };
 
   // Auto-distribute score among criteria
   const distributeScoreAmongCriteria = (totalScore) => {
     if (!totalScore || criteria.length === 0) return;
-    
+
     const score = parseFloat(totalScore);
     if (isNaN(score) || score <= 0) return;
-    
+
     const pointsPerCriteria = score / criteria.length;
-    const updatedCriteria = criteria.map(criterion => ({
+    const updatedCriteria = criteria.map((criterion) => ({
       ...criterion,
-      points: pointsPerCriteria.toFixed(2)
+      points: pointsPerCriteria.toFixed(2),
     }));
-    
+
     setCriteria(updatedCriteria);
   };
 
@@ -427,42 +548,43 @@ const AdminTaskPage = () => {
     instructionRef.current?.focus();
     document.execCommand(command, false, null);
   };
-  
+
   // Add Member functions
   const handleInviteMember = () => {
     setShowInvitePopup(true);
   };
-  
+
   // Pending Invites functions
   const handlePendingInvites = () => {
     setShowPendingInvites(true);
   };
-  
+
   // Delete Room functions
   const handleDeleteRoom = () => {
     setShowDeleteRoom(true);
   };
-  
+
   const confirmDeleteRoom = () => {
     // Here you would implement the actual delete logic
     toast.success(`Room "${currentSpace?.space_name}" has been deleted.`);
     setShowDeleteRoom(false);
     // Navigate back to spaces or home page
-    navigate('/spaces');
+    navigate("/spaces");
   };
 
   // Copy link function
   const handleCopyLink = (space_link) => {
-    navigator.clipboard.writeText(space_link)
+    navigator.clipboard
+      .writeText(space_link)
       .then(() => {
         toast.success("Link copied to clipboard!");
       })
-      .catch(err => {
-        console.error('Failed to copy: ', err);
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
         toast.error("Failed to copy link");
       });
   };
-  
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       <div className="hidden lg:block">
@@ -945,7 +1067,9 @@ const AdminTaskPage = () => {
                     />
                     {score && criteria.length > 0 && (
                       <div className="text-xs text-green-400 mt-1">
-                        ✓ Auto-distributed: {(parseFloat(score) / criteria.length).toFixed(2)} points per criterion
+                        ✓ Auto-distributed:{" "}
+                        {(parseFloat(score) / criteria.length).toFixed(2)}{" "}
+                        points per criterion
                       </div>
                     )}
 
@@ -970,7 +1094,9 @@ const AdminTaskPage = () => {
                           Choose File
                         </button>
                         {selectedFile && (
-                          <span className="text-sm text-gray-400">{selectedFile.name}</span>
+                          <span className="text-sm text-gray-400">
+                            {selectedFile.name}
+                          </span>
                         )}
                         <input
                           ref={fileInputRef}
@@ -981,14 +1107,17 @@ const AdminTaskPage = () => {
                         />
                       </div>
                       <div className="text-xs text-gray-500">
-                        Accepted formats: DOC, DOCX, PDF, PPT, PPTX, XLS, XLSX, TXT | Max size: 5MB | Max content: 1000 words
+                        Accepted formats: DOC, DOCX, PDF, PPT, PPTX, XLS, XLSX,
+                        TXT | Max size: 5MB | Max content: 1000 words
                       </div>
                     </div>
 
                     {/* Criteria/Rubrics Section */}
                     <div className="flex flex-col gap-3">
                       <div className="flex justify-between items-center">
-                        <label className="font-semibold">Scoring Criteria:</label>
+                        <label className="font-semibold">
+                          Scoring Criteria:
+                        </label>
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -999,7 +1128,9 @@ const AdminTaskPage = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => setShowCriteriaSection(!showCriteriaSection)}
+                            onClick={() =>
+                              setShowCriteriaSection(!showCriteriaSection)
+                            }
                             className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                           >
                             {showCriteriaSection ? "Hide" : "Manual"} Criteria
@@ -1012,15 +1143,30 @@ const AdminTaskPage = () => {
                         <div className="p-3 bg-green-900/20 border border-green-800/50 rounded-lg">
                           <div className="flex items-start gap-2">
                             <div className="text-green-400 mt-0.5">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              <svg
+                                className="w-4 h-4"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clipRule="evenodd"
+                                />
                               </svg>
                             </div>
                             <div className="text-sm">
-                              <p className="text-green-300 font-medium mb-1">Automatic Score Distribution</p>
+                              <p className="text-green-300 font-medium mb-1">
+                                Automatic Score Distribution
+                              </p>
                               <p className="text-gray-400 text-xs leading-relaxed">
-                                Total score ({score}) is automatically distributed equally among {criteria.length} criteria. 
-                                Each criterion receives {(parseFloat(score) / criteria.length).toFixed(2)} points.
+                                Total score ({score}) is automatically
+                                distributed equally among {criteria.length}{" "}
+                                criteria. Each criterion receives{" "}
+                                {(parseFloat(score) / criteria.length).toFixed(
+                                  2,
+                                )}{" "}
+                                points.
                               </p>
                             </div>
                           </div>
@@ -1030,55 +1176,81 @@ const AdminTaskPage = () => {
                       {/* Template Selection */}
                       {showTemplates && (
                         <div className="bg-[#23272F] rounded-lg p-4 border border-purple-600">
-                          <h4 className="text-sm font-semibold text-purple-400 mb-3">Choose a Template:</h4>
+                          <h4 className="text-sm font-semibold text-purple-400 mb-3">
+                            Choose a Template:
+                          </h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <button
                               type="button"
-                              onClick={() => applyTemplate('essay')}
+                              onClick={() => applyTemplate("essay")}
                               className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
                             >
-                              <div className="font-medium text-white">📝 Essay</div>
-                              <div className="text-xs text-gray-400">For written essays and compositions</div>
+                              <div className="font-medium text-white">
+                                📝 Essay
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                For written essays and compositions
+                              </div>
                             </button>
                             <button
                               type="button"
-                              onClick={() => applyTemplate('research')}
+                              onClick={() => applyTemplate("research")}
                               className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
                             >
-                              <div className="font-medium text-white">🔬 Research Paper</div>
-                              <div className="text-xs text-gray-400">For academic research and analysis</div>
+                              <div className="font-medium text-white">
+                                🔬 Research Paper
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                For academic research and analysis
+                              </div>
                             </button>
                             <button
                               type="button"
-                              onClick={() => applyTemplate('presentation')}
+                              onClick={() => applyTemplate("presentation")}
                               className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
                             >
-                              <div className="font-medium text-white">🎤 Presentation</div>
-                              <div className="text-xs text-gray-400">For oral presentations and demos</div>
+                              <div className="font-medium text-white">
+                                🎤 Presentation
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                For oral presentations and demos
+                              </div>
                             </button>
                             <button
                               type="button"
-                              onClick={() => applyTemplate('project')}
+                              onClick={() => applyTemplate("project")}
                               className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
                             >
-                              <div className="font-medium text-white">💻 Project</div>
-                              <div className="text-xs text-gray-400">For coding and development projects</div>
+                              <div className="font-medium text-white">
+                                💻 Project
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                For coding and development projects
+                              </div>
                             </button>
                             <button
                               type="button"
-                              onClick={() => applyTemplate('creative')}
+                              onClick={() => applyTemplate("creative")}
                               className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
                             >
-                              <div className="font-medium text-white">🎨 Creative</div>
-                              <div className="text-xs text-gray-400">For artistic and creative works</div>
+                              <div className="font-medium text-white">
+                                🎨 Creative
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                For artistic and creative works
+                              </div>
                             </button>
                             <button
                               type="button"
                               onClick={clearCriteria}
                               className="p-3 bg-red-900/30 rounded-lg hover:bg-red-900/50 transition text-left border border-red-600/50 hover:border-red-500"
                             >
-                              <div className="font-medium text-red-400">🗑️ Clear All</div>
-                              <div className="text-xs text-red-300">Remove all criteria</div>
+                              <div className="font-medium text-red-400">
+                                🗑️ Clear All
+                              </div>
+                              <div className="text-xs text-red-300">
+                                Remove all criteria
+                              </div>
                             </button>
                           </div>
                         </div>
@@ -1088,9 +1260,11 @@ const AdminTaskPage = () => {
                         <div className="bg-[#23272F] rounded-lg p-4 max-h-[300px] overflow-y-auto">
                           <div className="flex justify-between items-center mb-3">
                             <h4 className="text-sm font-semibold text-blue-400">
-                              {criteria.some(c => c.name.trim()) ? "Current Criteria:" : "Add Your Criteria:"}
+                              {criteria.some((c) => c.name.trim())
+                                ? "Current Criteria:"
+                                : "Add Your Criteria:"}
                             </h4>
-                            {criteria.some(c => c.name.trim()) && (
+                            {criteria.some((c) => c.name.trim()) && (
                               <button
                                 type="button"
                                 onClick={() => setShowTemplates(true)}
@@ -1100,49 +1274,78 @@ const AdminTaskPage = () => {
                               </button>
                             )}
                           </div>
-                          
+
                           <div className="space-y-3">
                             {criteria.map((criterion, index) => (
-                              <div key={criterion.id} className="bg-[#161A20] rounded-lg p-3 border border-gray-600">
+                              <div
+                                key={criterion.id}
+                                className="bg-[#161A20] rounded-lg p-3 border border-gray-600"
+                              >
                                 <div className="flex justify-between items-center mb-2">
-                                  <span className="text-sm font-medium text-blue-400">Criteria {index + 1}</span>
+                                  <span className="text-sm font-medium text-blue-400">
+                                    Criteria {index + 1}
+                                  </span>
                                   {criteria.length > 1 && (
                                     <button
                                       type="button"
-                                      onClick={() => removeCriteria(criterion.id)}
+                                      onClick={() =>
+                                        removeCriteria(criterion.id)
+                                      }
                                       className="text-red-400 hover:text-red-300 text-sm"
                                     >
                                       Remove
                                     </button>
                                   )}
                                 </div>
-                                
+
                                 <input
                                   type="text"
                                   value={criterion.name}
-                                  onChange={(e) => updateCriteria(criterion.id, 'name', e.target.value)}
+                                  onChange={(e) =>
+                                    updateCriteria(
+                                      criterion.id,
+                                      "name",
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="Criteria name (e.g., Content Quality)"
                                   className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500"
                                 />
-                                
+
                                 <textarea
                                   value={criterion.description}
-                                  onChange={(e) => updateCriteria(criterion.id, 'description', e.target.value)}
+                                  onChange={(e) =>
+                                    updateCriteria(
+                                      criterion.id,
+                                      "description",
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="Description (optional)"
                                   rows={2}
                                   className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 resize-none"
                                 />
-                                
+
                                 <input
                                   type="number"
                                   value={criterion.points}
-                                  onChange={(e) => updateCriteria(criterion.id, 'points', e.target.value)}
+                                  onChange={(e) =>
+                                    updateCriteria(
+                                      criterion.id,
+                                      "points",
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="Points"
                                   min="0"
                                   step="0.5"
                                   className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500"
                                   readOnly={score && score !== ""}
-                                  title={score && score !== "" ? "Points are automatically distributed from total score" : "Enter total score above to auto-distribute points"}
+                                  title={
+                                    score && score !== ""
+                                      ? "Points are automatically distributed from total score"
+                                      : "Enter total score above to auto-distribute points"
+                                  }
                                 />
                                 {score && score !== "" && (
                                   <div className="text-xs text-green-400 mt-1">
@@ -1151,7 +1354,7 @@ const AdminTaskPage = () => {
                                 )}
                               </div>
                             ))}
-                            
+
                             <button
                               type="button"
                               onClick={addCriteria}
@@ -1166,15 +1369,22 @@ const AdminTaskPage = () => {
                       {/* FORM BUILDER SECTION */}
                       <div className="flex flex-col gap-3 mt-6">
                         <div className="flex justify-between items-center">
-                          <label className="font-semibold">Activity Form Builder:</label>
+                          <label className="font-semibold">
+                            Activity Form Builder:
+                          </label>
                           <button
                             onClick={() => {
                               // Store task data in sessionStorage for form builder
-                              sessionStorage.setItem('taskFormData', JSON.stringify({
-                                title: taskTitle,
-                                instruction: instruction
-                              }));
-                              navigate(`/space/${space_uuid}/${space_name}/form-builder`);
+                              sessionStorage.setItem(
+                                "taskFormData",
+                                JSON.stringify({
+                                  title: taskTitle,
+                                  instruction: instruction,
+                                }),
+                              );
+                              navigate(
+                                `/space/${space_uuid}/${space_name}/form-builder`,
+                              );
                             }}
                             className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                           >
@@ -1183,10 +1393,12 @@ const AdminTaskPage = () => {
                           </button>
                         </div>
                         <p className="text-xs text-gray-500">
-                          Create custom questions for members to answer when submitting this task
+                          Create custom questions for members to answer when
+                          submitting this task
                         </p>
                         <div className="text-xs text-blue-400 mt-1">
-                          💡 Members can upload files if you enable "Allow member attachments" in the form builder
+                          💡 Members can upload files if you enable "Allow
+                          member attachments" in the form builder
                         </div>
                       </div>
                     </div>
@@ -1207,7 +1419,14 @@ const AdminTaskPage = () => {
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                     onClick={() => {
                       // Handle task creation logic here
-                      console.log("Creating task:", { taskTitle, instruction, score, dueDate, taskCategory, criteria });
+                      console.log("Creating task:", {
+                        taskTitle,
+                        instruction,
+                        score,
+                        dueDate,
+                        taskCategory,
+                        criteria,
+                      });
                       setIsCreatingTask(false);
                     }}
                   >
@@ -1219,20 +1438,22 @@ const AdminTaskPage = () => {
           )}
         </div>
       </div>
-      
+
       {/* INVITE POPUP */}
       <AddMember
         currentSpace={currentSpace}
         showInvitePopup={showInvitePopup}
         setShowInvitePopup={setShowInvitePopup}
       />
-      
+
       {/* PENDING INVITES MODAL */}
       {showPendingInvites && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-[#1E222A] rounded-xl shadow-2xl max-w-md w-full border border-gray-700">
             <div className="flex items-center justify-between p-6 border-b border-gray-700">
-              <h3 className="text-xl font-semibold text-white">Pending Invites</h3>
+              <h3 className="text-xl font-semibold text-white">
+                Pending Invites
+              </h3>
               <button
                 onClick={() => setShowPendingInvites(false)}
                 className="text-gray-400 hover:text-white transition-colors p-1 hover:bg-gray-700 rounded-lg"
@@ -1241,9 +1462,12 @@ const AdminTaskPage = () => {
               </button>
             </div>
             <div className="p-6">
-              <p className="text-gray-300 mb-4">No pending invitations at the moment.</p>
+              <p className="text-gray-300 mb-4">
+                No pending invitations at the moment.
+              </p>
               <div className="text-sm text-gray-500">
-                Invited members will appear here once they haven't accepted your invitation yet.
+                Invited members will appear here once they haven't accepted your
+                invitation yet.
               </div>
             </div>
             <div className="flex justify-end p-6 border-t border-gray-700">
@@ -1257,7 +1481,7 @@ const AdminTaskPage = () => {
           </div>
         </div>
       )}
-      
+
       {/* DELETE ROOM MODAL */}
       <DeleteConfirmationDialog
         isOpen={showDeleteRoom}
@@ -1267,7 +1491,7 @@ const AdminTaskPage = () => {
           space_name: currentSpace?.space_name || "Unknown Space",
           members: currentSpace?.members || [],
           files: currentSpace?.files || [],
-          tasks: uploadedTask || []
+          tasks: uploadedTask || [],
         }}
       />
     </div>
