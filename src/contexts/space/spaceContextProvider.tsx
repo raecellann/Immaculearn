@@ -33,8 +33,11 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       transports: ["websocket"],
     });
 
-    socket.on("space_invitation_updated", () => {
+    socket.on("add-by-owner", () => {
       queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+      queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+      queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+      queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     });
 
     socket.on("join_space_by_link", () => {
@@ -153,34 +156,12 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     staleTime: 60_000,
   });
 
-  const fetchAllJoinRequests = async (): Promise<SpacePendingInvitation[]> => {
-    try {
-      const res = await spaceService.getAllJoinSpaceRequests();
-      return res.data || [];
-    } catch (error) {
-      console.error("Error fetching all join requests:", error);
-      return [];
-    }
-  };
-
-  const {
-    data: allJoinRequestsData = [],
-    isLoading: allJoinRequestsLoading,
-  } = useQuery({
-    queryKey: ["allJoinRequests"],
-    queryFn: fetchAllJoinRequests,
-    enabled: isAuthenticated,
-    staleTime: 30_000,
-  });
-
-  const useJoinRequests = (spaceId: string) =>
+  const useJoinRequests = (spaceId: string, isAuthenticated: boolean) =>
     useQuery({
       queryKey: ["joinRequests", spaceId],
-      queryFn: async () => {
-        const result = await fetchJoinRequests(spaceId);
-        return result || [];
-      },
+      queryFn: () => fetchJoinRequests(spaceId),
       enabled: !!spaceId && isAuthenticated,
+
       staleTime: Infinity, // never becomes stale automatically
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
@@ -239,10 +220,10 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   ): Promise<ApiResponse> => {
     // const spaceuuid = inviteCode.split("=").pop() || "";
     const result = await spaceService.inviteUser(space_uuid, email);
-    queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
-    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
-    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
-    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    // queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+    // queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    // queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    // queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     return result;
   };
 
@@ -436,9 +417,6 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
 
     pendingSpaceInvitation,
     pendingSpaceInvitationLoading,
-
-    allJoinRequestsData,
-    allJoinRequestsLoading,
 
     // Queries
     useJoinRequests,

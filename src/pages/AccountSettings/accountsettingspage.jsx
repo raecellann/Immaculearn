@@ -3,8 +3,7 @@ import Sidebar from "../component/sidebar";
 import { useUser } from "../../contexts/user/useUser";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
-import Cropper from 'react-easy-crop';
-import Button from "../component/Button";
+import { departmentOptions, genderOptions } from "../component/enumOptions";
 
 const ProfilePage = () => {
   const { user, isAuthenticated } = useUser();
@@ -12,58 +11,16 @@ const ProfilePage = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
-  
-  // Cropping states
-  const [showCropper, setShowCropper] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  
-  // Edit profile states
-  const [isEditing, setIsEditing] = useState(false);
-  const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || '');
-  const [lastName, setLastName] = useState(user?.name?.split(' ')[1] || '');
-  const [bio, setBio] = useState(user?.bio || '');
-  const [year, setYear] = useState(user?.year || '');  
-  const [course, setCourse] = useState(user?.course || '');
-  const [gmail, setGmail] = useState(user?.email || '');
-  const [gender, setGender] = useState(user?.gender || '');
 
-  // Department options
-  const departmentOptions = [
-      { code: "BSCS", name: "Bachelor of Science in Computer Science" },
-      { code: "BSTM", name: "Bachelor of Science in Tourism Management" },
-      { code: "BSBA", name: "Bachelor of Science in Business Administration" },
-      { code: "BSHM", name: "Bachelor of Science in Hospitality Management" },
-      { code: "BSA", name: "Bachelor of Science in Accountancy" },
-      { code: "ACT", name: "Associate in Computer Technology" },
-      { code: "BSNE", name: "Bachelor of Special Needs Education" },
-      { code: "BEED", name: "Bachelor of Elementary Education" },
-      { code: "BSED-ENG", name: "Bachelor of Secondary Education Major in English" },
-      { code: "BSED-FIL", name: "Bachelor of Secondary Education Major in Filipino" }
-    ];  
+  const departmentFullName =
+  departmentOptions.find(
+    (dept) => dept.code === user?.course
+  )?.name || '';
 
-  const genderOptions = [
-    { code: "M", name: "Male" },
-    { code: "F", name: "Female" },
-  ]
-
-  let genderValue;
-
-  if (isEditing) {
-    genderValue = gender;
-  } else {
-    genderValue = user?.gender || '';
-  }
-  
-  let departmentValue;
-
-  if (isEditing) {
-    departmentValue = course;
-  } else {
-    departmentValue = user?.course || '';
-  }
+  const genderFullName =
+  genderOptions.find(
+    (gender) => gender.code === user?.gender
+  )?.name || '';
 
 
   // Calculate School Year (SY) based on current date
@@ -81,117 +38,9 @@ const ProfilePage = () => {
 
   const schoolYear = getCurrentSchoolYear();
 
-  const profileName = isEditing 
-    ? `${firstName} ${lastName}`.trim()
-    : user?.name || '';
+  const profileName = user?.name || '';
 
-  // Upload profile picture
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setSelectedImage(reader.result);
-        setShowCropper(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Cropper functions
-  const onCropComplete = (croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  };
-
-  const createCroppedImage = async () => {
-    if (!selectedImage || !croppedAreaPixels) return;
-
-    const image = new Image();
-    image.src = selectedImage;
-    
-    await new Promise((resolve) => {
-      image.onload = resolve;
-    });
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-
-    canvas.width = croppedAreaPixels.width;
-    canvas.height = croppedAreaPixels.height;
-
-    ctx.drawImage(
-      image,
-      croppedAreaPixels.x * scaleX,
-      croppedAreaPixels.y * scaleY,
-      croppedAreaPixels.width * scaleX,
-      croppedAreaPixels.height * scaleY,
-      0,
-      0,
-      croppedAreaPixels.width,
-      croppedAreaPixels.height
-    );
-
-    const croppedImageUrl = canvas.toDataURL('image/jpeg');
-    setProfileImage(croppedImageUrl);
-    setShowCropper(false);
-    setSelectedImage(null);
-  };
-
-  const cancelCrop = () => {
-    setShowCropper(false);
-    setSelectedImage(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-  };
-
-  // Handle edit profile
-  const handleEditProfile = () => {
-    setIsEditing(true);
-  };
-
-  // Handle save profile
-  const handleSaveProfile = () => {
-    // Here you would typically make an API call to update the user profile
-    const updatedProfile = {
-      name: `${firstName} ${lastName}`,
-      bio: bio,
-      course: course,
-      gender: gender,
-      email: gmail,
-      profile_pic: profileImage
-    };
-    
-    console.log('Updated profile:', updatedProfile);
-    
-    // Simulate updating the user context (in real app, this would be an API call)
-    // For now, we'll update the local state to show the changes
-    if (typeof window !== 'undefined') {
-      // Store in localStorage to persist changes
-      localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
-    }
-    
-    // Show success message
-    alert('Profile updated successfully!');
-    setIsEditing(false);
-    
-    // Force a re-render to show the updated data
-    window.location.reload();
-  };
-
-  // Handle cancel edit
-  const handleCancelEdit = () => {
-    // Reset to original values
-    setFirstName(user?.name?.split(' ')[0] || '');
-    setLastName(user?.name?.split(' ')[1] || '');
-    setBio(user?.bio || '');
-    setGender(user?.gender || '');
-    setGmail(user?.email || '');
-    setCourse(user?.course || '');
-    setIsEditing(false);
-  };
+  
 
   useEffect(() => {
     if (user?.profile_pic) {
@@ -277,7 +126,7 @@ const ProfilePage = () => {
             Your Profile
           </h1>
           <p className="text-gray-300 mb-8 text-center">
-            View and edit all your information here
+            View  your information here
           </p>
             </div>
 
@@ -285,19 +134,10 @@ const ProfilePage = () => {
 
               {/* Profile Card */}
               <div className="bg-[#1E222A] rounded-2xl p-3 sm:p-4 lg:p-6 w-full xl:w-72 2xl:w-80 mx-auto xl:mx-0 text-center shadow-lg border border-white h-fit">
-                <input
-                  type="file"
-                  id="upload-img"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
+                
 
                 <div
                   className="mt-2 lg:mt-4 cursor-pointer group relative"
-                  onClick={() =>
-                    document.getElementById("upload-img").click()
-                  }
                 >
                   {profileImage ? (
                     <div className="relative inline-block">
@@ -306,15 +146,7 @@ const ProfilePage = () => {
                         alt="Profile"
                         className="w-32 h-32 lg:w-40 lg:h-40 mx-auto rounded-xl object-cover border-4 border-[#3A7BFF] group-hover:opacity-80 transition"
                       />
-                      <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition w-32 h-32 lg:w-40 lg:h-40">
-                        <div className="text-center">
-                          <svg className="w-6 h-6 text-white mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <p className="text-white text-xs font-medium">Change Avatar</p>
-                        </div>
-                      </div>
+                      
                     </div>
                   ) : (
                     <div className="w-32 h-32 lg:w-40 lg:h-40 mx-auto rounded-xl border-4 border-dashed border-[#3A7BFF] flex items-center justify-center text-gray-400 text-sm group-hover:text-white transition">
@@ -340,29 +172,7 @@ const ProfilePage = () => {
               <div className="bg-[#1E222A] rounded-2xl flex-1 p-3 sm:p-4 lg:p-6 border border-white shadow-lg">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold">Personal Details</h3>
-                  {!isEditing ? (
-                    <Button 
-                      onClick={handleEditProfile}
-                      className="text-xs px-3 py-1"
-                    >
-                      Edit Profile
-                    </Button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={handleSaveProfile}
-                        className="text-xs bg-green-600 px-3 py-2 rounded-md font-semibold hover:bg-green-700 transition"
-                      >
-                        Save
-                      </button>
-                      <button 
-                        onClick={handleCancelEdit}
-                        className="text-xs bg-gray-600 px-3 py-2 rounded-md font-semibold hover:bg-gray-700 transition"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
+                  
                 </div>
 
                 <div className="space-y-2 sm:space-y-3">
@@ -371,10 +181,9 @@ const ProfilePage = () => {
                       <label className="block text-xs font-medium text-gray-400 mb-1">First Name</label>
                       <input
                         type="text"
-                        value={isEditing ? firstName : (user?.name?.split(' ')[0] || '')}
-                        onChange={(e) => isEditing && setFirstName(e.target.value)}
+                        value={(user?.name?.split(' ')[0] || '')}
                         placeholder="First Name"
-                        readOnly={!isEditing}
+                        readOnly
                         className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
                       />
                     </div>
@@ -382,10 +191,9 @@ const ProfilePage = () => {
                       <label className="block text-xs font-medium text-gray-400 mb-1">Last Name</label>
                       <input
                         type="text"
-                        value={isEditing ? lastName : (user?.name?.split(' ')[1] || '')}
-                        onChange={(e) => isEditing && setLastName(e.target.value)}
+                        value={(user?.name?.split(' ')[1] || '')}
                         placeholder="Last Name"
-                        readOnly={!isEditing}
+                        readOnly
                         className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
                       />
                     </div>
@@ -394,21 +202,16 @@ const ProfilePage = () => {
                   <div className="grid grid-cols-2 gap-2 sm:gap-4">
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-1">Department</label>
-                      <select
-                        value={departmentValue}
-                        onChange={(e) => isEditing && setCourse(e.target.value)}
-                        disabled={!isEditing}
-                        className="bg-[#2A2E36] p-2 rounded-md border border-white text-white w-full text-sm"
-                      >
-                        <option value="">Select Department</option>
-
-                        {departmentOptions.map((dept) => (
-                          <option key={dept.code} value={dept.code}>
-                            {dept.name}
-                          </option>
-                        ))}
-
-                      </select>
+                      
+                      <input
+                        type="text"
+                        
+                        value={departmentFullName}
+                        placeholder="Department"
+                        readOnly
+                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
+                      />
+                      
 
                     </div>
                   
@@ -429,43 +232,23 @@ const ProfilePage = () => {
                       <label className="block text-xs font-medium text-gray-400 mb-1">Google Mail</label>
                       <input
                         type="email"
-                        value={isEditing ? gmail : (user?.email || '')}
-                        onChange={(e) => isEditing && setGmail(e.target.value)}
+                        value={(user?.email || '')}
                         placeholder="your.email@gmail.com"
-                        readOnly={!isEditing}
+                        readOnly
                         className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
                       />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-1">Gender</label>
-                      <select
-                        value={genderValue}
-                        onChange={(e) => isEditing && setGender(e.target.value)}
-                        disabled={!isEditing}
-                        className="bg-[#2A2E36] p-2 rounded-md border border-white text-white w-full text-sm"
-                      >
-                        <option value="">Select Gender</option>
-
-                        {genderOptions.map((gen) => (
-                          <option key={gen.code} value={gen.code}>
-                            {gen.name}
-                          </option>
-                        ))}
-
-                      </select>
+                      <input
+                        type="text"
+                        value={genderFullName}
+                        readOnly
+                        className="bg-[#2A2E36] p-1.5 sm:p-2 rounded-md border border-white outline-none text-white w-full text-sm"
+                      />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-1">Bio</label>
-                    <textarea
-                      value={isEditing ? bio : (user?.bio || '')}
-                      onChange={(e) => isEditing && setBio(e.target.value)}
-                      placeholder="Tell us about yourself..."
-                      readOnly={!isEditing}
-                      className="bg-[#2A2E36] p-2 sm:p-3 rounded-md w-full h-20 sm:h-24 border border-white outline-none resize-none text-white text-sm"
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -474,63 +257,7 @@ const ProfilePage = () => {
 
       </div>
 
-      {/* IMAGE CROPPER MODAL */}
-      {showCropper && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-2xl">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">Crop Profile Picture</h2>
-              <button
-                onClick={cancelCrop}
-                className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="relative w-full h-80 bg-black rounded-lg mb-4">
-              <Cropper
-                image={selectedImage}
-                crop={crop}
-                zoom={zoom}
-                aspect={1}
-                onCropChange={setCrop}
-                onCropComplete={onCropComplete}
-                onZoomChange={setZoom}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Zoom</label>
-              <input
-                type="range"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.1}
-                onChange={(e) => setZoom(e.target.value)}
-                className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={cancelCrop}
-                className="flex-1 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createCroppedImage}
-                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-              >
-                Save & Apply
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>

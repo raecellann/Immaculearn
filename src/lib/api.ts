@@ -25,10 +25,8 @@ api.interceptors.response.use(
 
       try {
         // Call refresh endpoint
-        await axios.post(
-          `${config.API_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
+        await api.post(
+          `/auth/refresh`,
         );
 
         // Retry original request
