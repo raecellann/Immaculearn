@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useState, useEffect } from "react";
 import { SpaceContext, SpaceContextType } from "./spaceContext";
 import { spaceService } from "../../services/spaceService";
 import {
@@ -18,6 +18,7 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
+import { io } from "socket.io-client";
 
 export interface SpaceProviderProps {
   children: ReactNode;
@@ -27,6 +28,46 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   const { isAuthenticated } = useUser();
   const queryClient = useQueryClient();
   const [currentSpace, setCurrentSpace] = useState<Space | null>(null);
+
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const socket = io("http://localhost:3000", {
+      transports: ["websocket"],
+    });
+
+    socket.on("space_invitation_updated", () => {
+      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+    });
+
+    socket.on("join_space_by_link", () => {
+      queryClient.invalidateQueries({ queryKey: ["joinRequests"] });
+    });
+
+    socket.on("decline_space_invitation", () => {
+      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+    });
+
+    socket.on("accept_space_invitation", () => {
+      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+      queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+      queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+      queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    });
+
+    socket.on("connect", () => {
+      console.log("Connected to WebSocket for space updates");
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected from WebSocket");
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [isAuthenticated, queryClient]);
 
   // ----------------------------
   // API FUNCTIONS
