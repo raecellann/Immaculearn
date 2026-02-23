@@ -5,6 +5,7 @@ import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
 import { useFileManager } from "../../hooks/useFileManager";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { FiFolder, FiBook, FiUsers } from "react-icons/fi";
 
 const FilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -107,7 +108,7 @@ const FilePage = () => {
   });
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+    <div className="flex min-h-screen" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
@@ -163,8 +164,11 @@ const FilePage = () => {
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4" style={{ color: currentColors.text }}>Your Space</h2>
             {spacesByCategory['your-space']?.length === 0 ? (
-              <div className="rounded-xl p-10 text-center border border-dashed" style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary, borderColor: currentColors.border }}>
-                No space files yet
+              <div className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto" style={{ backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface, color: currentColors.textSecondary, borderColor: isDarkMode ? currentColors.border : "black" }}>
+                <div className="flex items-center justify-center gap-3">
+                  <FiFolder className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                  <span>No space files yet</span>
+                </div>
               </div>
             ) : spacesByCategory['your-space']?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
@@ -190,8 +194,11 @@ const FilePage = () => {
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4" style={{ color: currentColors.text }}>Course Space</h2>
             {spacesByCategory['course-space']?.length === 0 ? (
-              <div className="rounded-xl p-10 text-center border border-dashed" style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary, borderColor: currentColors.border }}>
-                No course space files yet
+              <div className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto" style={{ backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface, color: currentColors.textSecondary, borderColor: isDarkMode ? currentColors.border : "black" }}>
+                <div className="flex items-center justify-center gap-3">
+                  <FiBook className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                  <span>No course space files yet</span>
+                </div>
               </div>
             ) : spacesByCategory['course-space']?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
@@ -217,8 +224,11 @@ const FilePage = () => {
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4" style={{ color: currentColors.text }}>Friends Space</h2>
             {sharedSpaces?.length === 0 ? (
-              <div className="rounded-xl p-10 text-center border border-dashed" style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary, borderColor: currentColors.border }}>
-                No friends space files yet
+              <div className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto" style={{ backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface, color: currentColors.textSecondary, borderColor: isDarkMode ? currentColors.border : "black" }}>
+                <div className="flex items-center justify-center gap-3">
+                  <FiUsers className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                  <span>No friends space files yet</span>
+                </div>
               </div>
             ) : sharedSpaces?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">

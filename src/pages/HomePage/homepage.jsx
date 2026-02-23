@@ -219,7 +219,7 @@ const HomePage1 = () => {
     <div
       className="flex font-sans min-h-screen"
       style={{
-        backgroundColor: currentColors.background,
+        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
         color: currentColors.text,
       }}
     >
@@ -238,19 +238,6 @@ const HomePage1 = () => {
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
-
-      {/* Mobile Sidebar */}
-      <div
-        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden ${
-          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-        style={{
-          backgroundColor: currentColors.surface,
-          color: currentColors.text,
-        }}
-      >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
-      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -298,7 +285,7 @@ const HomePage1 = () => {
             <div
               className="rounded-xl p-6 mb-10 flex items-center justify-between"
               style={{
-                backgroundColor: currentColors.surface,
+                backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                 border: isDarkMode ? "none" : "1px solid black",
               }}
             >
@@ -368,7 +355,7 @@ const HomePage1 = () => {
               <div
                 className="rounded-xl p-4 sm:p-6"
                 style={{
-                  backgroundColor: currentColors.surface,
+                  backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                   border: isDarkMode ? "none" : "1px solid black",
                 }}
               >
@@ -445,7 +432,7 @@ const HomePage1 = () => {
                 <div
                   className="rounded-xl p-10 text-center border border-dashed"
                   style={{
-                    backgroundColor: currentColors.surface,
+                    backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                     color: currentColors.textSecondary,
                     borderColor: isDarkMode ? currentColors.border : "black",
                   }}
@@ -458,6 +445,7 @@ const HomePage1 = () => {
                     className="flex transition-transform duration-500 ease-out"
                     style={{
                       transform: `translateX(-${slideIndexYourSpace * 100}%)`,
+                      backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                     }}
                   >
                     {Array.from({ length: yourSlideCount }).map((_, idx) => (
@@ -587,7 +575,7 @@ const HomePage1 = () => {
                 <div
                   className="rounded-xl p-10 text-center"
                   style={{
-                    backgroundColor: currentColors.surface,
+                    backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                     color: currentColors.textSecondary,
                   }}
                 >
@@ -750,7 +738,7 @@ const HomePage1 = () => {
                 <div
                   className="rounded-xl p-10 text-center"
                   style={{
-                    backgroundColor: currentColors.surface,
+                    backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                     color: currentColors.textSecondary,
                   }}
                 >
@@ -863,7 +851,7 @@ const HomePage1 = () => {
             <div
               className="rounded-xl p-6 flex-1"
               style={{
-                backgroundColor: currentColors.surface,
+                backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                 border: isDarkMode ? "none" : "1px solid black",
               }}
             >

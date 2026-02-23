@@ -163,7 +163,7 @@ const NotificationPage = () => {
     <div
       className="flex font-sans min-h-screen"
       style={{
-        backgroundColor: currentColors.background,
+        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
         color: currentColors.text,
       }}
     >
@@ -232,8 +232,8 @@ const NotificationPage = () => {
             <div
               className="p-4 rounded-lg border"
               style={{
-                backgroundColor: currentColors.surface,
-                borderColor: currentColors.border,
+                backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                borderColor: isDarkMode ? currentColors.border : "black",
               }}
             >
               <div className="flex items-center gap-2 mb-3">
@@ -273,8 +273,8 @@ const NotificationPage = () => {
               <div
                 className="p-5 rounded-lg border"
                 style={{
-                  backgroundColor: currentColors.surface,
-                  borderColor: currentColors.border,
+                  backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                  borderColor: isDarkMode ? currentColors.border : "black",
                 }}
               >
                 <div className="flex items-center justify-between mb-4">
@@ -310,8 +310,8 @@ const NotificationPage = () => {
                     key={`${invite.space_uuid}-${invite.account_id}`}
                     className="mt-3 p-3 rounded-lg border"
                     style={{
-                      backgroundColor: currentColors.surface,
-                      borderColor: currentColors.border,
+                      backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                      borderColor: isDarkMode ? currentColors.border : "black",
                     }}
                   >
                     <div className="flex items-center gap-3">
@@ -353,8 +353,8 @@ const NotificationPage = () => {
               <div
                 className="p-5 rounded-lg border"
                 style={{
-                  backgroundColor: currentColors.surface,
-                  borderColor: currentColors.border,
+                  backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                  borderColor: isDarkMode ? currentColors.border : "black",
                 }}
               >
                 <div className="flex items-center justify-between mb-4">
@@ -390,8 +390,8 @@ const NotificationPage = () => {
                     key={`${invite.space_uuid || invite.c_space_uuid}-${invite.account_id}`}
                     className="mt-3 p-3 rounded-lg border"
                     style={{
-                      backgroundColor: currentColors.surface,
-                      borderColor: currentColors.border,
+                      backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                      borderColor: isDarkMode ? currentColors.border : "black",
                     }}
                   >
                     <div className="flex items-center gap-3">
@@ -438,8 +438,8 @@ const NotificationPage = () => {
               <div
                 className="p-5 rounded-lg border"
                 style={{
-                  backgroundColor: currentColors.surface,
-                  borderColor: currentColors.border,
+                  backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                  borderColor: isDarkMode ? currentColors.border : "black",
                 }}
               >
                 <div className="flex items-center gap-3 mb-4">
@@ -466,8 +466,8 @@ const NotificationPage = () => {
                     key={announcement.id}
                     className="mt-3 p-3 rounded-lg border"
                     style={{
-                      backgroundColor: currentColors.surface,
-                      borderColor: currentColors.border,
+                      backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                      borderColor: isDarkMode ? currentColors.border : "black",
                     }}
                   >
                     <div className="flex items-start justify-between">
