@@ -10,7 +10,6 @@ import {
   User,
   Settings,
   LogOut,
-  Archive,
 } from "lucide-react";
 
 import { Link, useLocation } from "react-router";
@@ -52,7 +51,6 @@ const ProfSidebar = () => {
       path: "/prof/grade-viewing",
     },
     { icon: <MessageCircle size={20} />, label: "Chats", path: "/prof/chats" },
-    { icon: <Archive size={20} />, label: "Archived Classes", path: "/prof/archived-classes" },
   ];
 
   const accountItems = [
@@ -147,14 +145,15 @@ const ProfSidebar = () => {
             className="w-8 h-8 rounded-full"
           />
           {/* Text Container */}
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">
-              {user?.name || "User"}
-            </span>
-            <span className="text-xs text-gray-400">
-              {user?.role || "Role"}
-            </span>
-          </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">
+                {user?.name || "User"}
+              </span>
+              <span className="text-xs text-gray-400">
+                {user?.role || "Role"}
+              </span>
+            </div>
+
         </div>
       </div>
 
