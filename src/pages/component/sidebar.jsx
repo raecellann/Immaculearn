@@ -44,6 +44,10 @@ const Sidebar = () => {
     { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
   ];
 
+  // Check if current page is related to settings
+  const isSettingsPage = location.pathname === "/settings" || 
+                        location.pathname.startsWith("/space-settings");
+
   return (
     <div
       className="
@@ -110,7 +114,7 @@ const Sidebar = () => {
               <SidebarItem
                 key={item.label}
                 {...item}
-                active={location.pathname === item.path}
+                active={item.path === "/settings" ? isSettingsPage : location.pathname === item.path}
               />
             ))}
 

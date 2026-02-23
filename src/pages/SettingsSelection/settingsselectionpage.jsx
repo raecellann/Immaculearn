@@ -47,7 +47,7 @@ const SettingsSelectionPage = () => {
     user?.role === "professor" ? ProfSidebar : Sidebar;
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+    <div className="flex min-h-screen" style={{ backgroundColor: isDarkMode ? '#161A20' : '#ffffff', color: currentColors.text }}>
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />

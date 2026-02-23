@@ -5,6 +5,7 @@ import ProfSidebar from "../component/profsidebar";
 import { ArrowLeft, Users, Settings as SettingsIcon, Link, Trash2, UserX } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import Logout from "../component/logout";
 
 const IndividualSpaceSettings = () => {
@@ -12,6 +13,8 @@ const IndividualSpaceSettings = () => {
   const { userSpaces } = useSpace();
   const { spaceUuid, spaceName } = useParams();
   const navigate = useNavigate();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
 
@@ -99,14 +102,14 @@ const IndividualSpaceSettings = () => {
 
   if (!currentSpace) {
     return (
-      <div className="flex min-h-screen bg-[#161A20] text-white">
+      <div className="flex min-h-screen" style={{ backgroundColor: isDarkMode ? '#161A20' : '#ffffff', color: currentColors.text }}>
         <div className="hidden lg:block">
           <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">Space Not Found</h2>
-            <p className="text-gray-400 mb-4">The space you're looking for doesn't exist or you don't have access to it.</p>
+            <p style={{ color: currentColors.textSecondary }} className="mb-4">The space you're looking for doesn't exist or you don't have access to it.</p>
             <button
               onClick={handleBackToSpaces}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -120,7 +123,7 @@ const IndividualSpaceSettings = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen" style={{ backgroundColor: isDarkMode ? '#161A20' : '#ffffff', color: currentColors.text }}>
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -136,9 +139,13 @@ const IndividualSpaceSettings = () => {
 
       {/* MOBILE SIDEBAR */}
       <div
-        className={`fixed left-0 top-0 h-full w-64 bg-[#1E222A] text-white transform transition-transform duration-300 z-50 md:block lg:hidden ${
+        className={`fixed left-0 top-0 h-full w-64 transform transition-transform duration-300 z-50 md:block lg:hidden ${
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{
+          backgroundColor: currentColors.surface,
+          color: currentColors.text
+        }}
       >
         <ActiveSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
@@ -149,18 +156,23 @@ const IndividualSpaceSettings = () => {
         <div
           className={`
             lg:hidden
-            bg-[#1E222A]
             p-4
-            border-b border-[#3B4457]
+            border-b
             flex items-center gap-4
             fixed top-0 left-0 right-0 z-30
             transition-transform duration-300
             ${showHeader ? "translate-y-0" : "-translate-y-full"}
           `}
+          style={{
+            backgroundColor: currentColors.background,
+            borderColor: currentColors.border,
+            color: currentColors.text
+          }}
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            className="bg-transparent border-none text-2xl p-0 focus:outline-none"
+            style={{ color: currentColors.text }}
           >
             ☰
           </button>
@@ -175,7 +187,8 @@ const IndividualSpaceSettings = () => {
           <div className="absolute top-4 left-4 z-20 lg:hidden">
             <button
               onClick={() => navigate(-1)}
-              className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-sm font-medium transition-colors"
+              className="bg-transparent border-none p-2 text-sm font-medium transition-colors"
+              style={{ color: currentColors.textSecondary }}
             >
              ← Back
             </button>
@@ -187,7 +200,7 @@ const IndividualSpaceSettings = () => {
               <h1 className="text-4xl font-bold text-center mb-2">
                 Space Settings
               </h1>
-              <p className="text-gray-300 mb-8 text-center">
+              <p style={{ color: currentColors.textSecondary }} className="mb-8 text-center">
                 Configure your learning space preferences and permissions
               </p>
             </div> 
@@ -195,20 +208,21 @@ const IndividualSpaceSettings = () => {
             <div className="hidden lg:block mb-4">
               <button
                 onClick={() => navigate(-1)}
-                className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-sm font-medium transition-colors"
+                className="bg-transparent border-none p-2 text-sm font-medium transition-colors"
+                style={{ color: currentColors.textSecondary }}
               >
                ← Back
               </button>
             </div>
-              <div className="bg-[#1E242E] rounded-lg p-4 inline-block mb-2">
-                <h2 className="text-lg font-semibold text-blue-400">{currentSpace.space_name}</h2>
-                <p className="text-sm text-gray-400">{currentSpace.members?.length || 0} members</p>
+              <div className="rounded-lg p-4 inline-block mb-2" style={{ backgroundColor: currentColors.surface }}>
+                <h2 className="text-lg font-semibold" style={{ color: '#3b82f6' }}>{currentSpace.space_name}</h2>
+                <p className="text-sm" style={{ color: currentColors.textSecondary }}>{currentSpace.members?.length || 0} members</p>
               </div>
 
 
 
             {/* SPACE SETTINGS FORM */}
-            <div className="bg-[#1E242E] rounded-xl p-6 sm:p-8">
+            <div className="rounded-xl p-6 sm:p-8" style={{ backgroundColor: currentColors.surface }}>
               {/* Basic Settings */}
               <div className="mb-8">
                 <h2 className="text-lg font-semibold mb-6 flex items-center">
@@ -223,7 +237,12 @@ const IndividualSpaceSettings = () => {
                       type="text"
                       value={spaceSettings.spaceName}
                       onChange={(e) => handleSettingChange('spaceName', e.target.value)}
-                      className="w-full px-4 py-2 bg-[#2E3440] border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 resize-none"
+                      style={{
+                        backgroundColor: currentColors.input,
+                        borderColor: currentColors.border,
+                        color: currentColors.text
+                      }}
                     />
                   </div>
 
@@ -233,7 +252,12 @@ const IndividualSpaceSettings = () => {
                       value={spaceSettings.spaceDescription}
                       onChange={(e) => handleSettingChange('spaceDescription', e.target.value)}
                       rows={3}
-                      className="w-full px-4 py-2 bg-[#2E3440] border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-white resize-none"
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 resize-none"
+                      style={{
+                        backgroundColor: currentColors.input,
+                        borderColor: currentColors.border,
+                        color: currentColors.text
+                      }}
                     />
                   </div>
                 </div>
@@ -246,11 +270,11 @@ const IndividualSpaceSettings = () => {
                   Space Code
                 </h2>
                 
-                <div className="bg-[#2E3440] rounded-lg p-4">
+                <div className="rounded-lg p-4" style={{ backgroundColor: currentColors.input }}>
                   <div className="flex items-center justify-between">
                     <div className="flex-1 mr-4">
-                      <p className="text-sm text-gray-400 mb-1">Share this code with others to join your space:</p>
-                      <p className="text-sm text-blue-400 font-mono">{getSpaceLink()}</p>
+                      <p className="text-sm mb-1" style={{ color: currentColors.textSecondary }}>Share this code with others to join your space:</p>
+                      <p className="text-sm font-mono" style={{ color: '#3b82f6' }}>{getSpaceLink()}</p>
                     </div>
                     <button
                       onClick={copySpaceLink}
@@ -273,7 +297,10 @@ const IndividualSpaceSettings = () => {
                   {currentSpace.members?.map((member) => (
                     <div
                       key={member.account_id}
-                      className="bg-[#2E3440] rounded-lg p-4 flex items-center justify-between"
+                      className="rounded-lg p-4 flex items-center justify-between"
+                      style={{
+                        backgroundColor: currentColors.input
+                      }}
                     >
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
@@ -282,8 +309,8 @@ const IndividualSpaceSettings = () => {
                           </span>
                         </div>
                         <div>
-                          <h4 className="font-medium text-white">{member.full_name}</h4>
-                          <p className="text-sm text-gray-400">
+                          <h4 className="font-medium" style={{ color: currentColors.text }}>{member.full_name}</h4>
+                          <p className="text-sm" style={{ color: currentColors.textSecondary }}>
                             {member.role} • {member.course} • {member.year_level}
                           </p>
                         </div>
@@ -292,7 +319,16 @@ const IndividualSpaceSettings = () => {
                       {member.role !== "Professor" && member.account_id !== user?.account_id && (
                         <button
                           onClick={() => handleKickMember(member.account_id, member.full_name)}
-                          className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="p-2 rounded-lg transition-colors"
+                          style={{
+                            color: '#ef4444'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
                           title="Remove member"
                         >
                           <UserX size={18} />
