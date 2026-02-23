@@ -23,6 +23,7 @@ const ProfSpacePage = () => {
   const [showMenu, setShowMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("All");
   const [showLogout, setShowLogout] = useState(false);
@@ -62,6 +63,13 @@ const ProfSpacePage = () => {
   const filterCourseSpacesByYear = (spaces, filter) => {
     if (!spaces || filter === "All") return spaces;
     return spaces.filter(space => space.space_yr_lvl === parseInt(filter));
+  };
+
+  const handleArchiveSpace = (spaceId) => {
+    // TODO: Add API call to archive space
+    console.log("Archive space:", spaceId);
+    setShowArchiveConfirm(null);
+    setShowMenu(null);
   };
 
   return (
@@ -296,13 +304,22 @@ const ProfSpacePage = () => {
                         </button>
 
                         {showMenu === space.space_id && (
-                          <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
+                          <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[140px]">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowArchiveConfirm(space.space_id);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-[#60A5FA] hover:bg-[#3B4457] rounded-t-lg"
+                            >
+                              Archive Space
+                            </button>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setShowLeaveConfirm(space.space_id);
                               }}
-                              className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                              className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-b-lg border-t border-[#3B4457]"
                             >
                               Delete Space
                             </button>
@@ -382,6 +399,36 @@ const ProfSpacePage = () => {
                     className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
                   >
                     Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Archive Course Space Confirmation Dialog */}
+          {showArchiveConfirm && (
+            <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+              <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
+                <h3 className="text-lg font-semibold mb-3">Archive Space</h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Are you sure you want to archive this course space? It will be
+                  moved to your Archived Classes and can be restored anytime.
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => {
+                      setShowArchiveConfirm(null);
+                      setShowMenu(null);
+                    }}
+                    className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleArchiveSpace(showArchiveConfirm)}
+                    className="px-5 py-2 rounded-lg bg-[#60A5FA] hover:bg-[#3B82F6] text-white text-sm"
+                  >
+                    Archive
                   </button>
                 </div>
               </div>

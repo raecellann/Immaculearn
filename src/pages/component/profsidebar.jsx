@@ -10,6 +10,7 @@ import {
   User,
   Settings,
   LogOut,
+  Archive,
 } from "lucide-react";
 
 import { Link, useLocation } from "react-router";
@@ -51,6 +52,7 @@ const ProfSidebar = () => {
       path: "/prof/grade-viewing",
     },
     { icon: <MessageCircle size={20} />, label: "Chats", path: "/prof/chats" },
+    { icon: <Archive size={20} />, label: "Archived Classes", path: "/prof/archived-classes" },
   ];
 
   const accountItems = [
