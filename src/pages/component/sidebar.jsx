@@ -131,9 +131,15 @@ const Sidebar = () => {
             alt="Profile"
             className="w-8 h-8 rounded-full"
           />
-          <span className="text-sm font-medium">
-            {user?.name || "User"}
-          </span>
+          {/* Text Container */}
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">
+              {user?.name || "User"}
+            </span>
+            <span className="text-xs text-gray-400">
+              {user?.role || "Role"}
+            </span>
+          </div>
         </div>
       </div>
 
