@@ -14,7 +14,6 @@ import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 
 export const SpaceRoutes = [
-
   {
     key: "/space",
     path: "/space",
@@ -43,7 +42,7 @@ export const SpaceRoutes = [
   {
     key: "/tasks",
     path: "/space/:space_uuid/:space_name/tasks",
-    element: <AdminTaskPage />,
+    element: <UserTaskPage />,
   },
   {
     key: "/admin-tasks",
@@ -75,6 +74,4 @@ export const SpaceRoutes = [
     path: "/space/:space_uuid/:space_name/people",
     element: <UserPeoplePage />,
   },
-  
-
 ];

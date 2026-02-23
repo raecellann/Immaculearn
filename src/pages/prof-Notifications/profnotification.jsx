@@ -4,6 +4,8 @@ import Logout from "../component/logout";
 import { FiUsers, FiBell, FiFilter } from "react-icons/fi";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useQueryClient } from "@tanstack/react-query";
+import { io } from "socket.io-client";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 import { GroupCover } from "../component/groupCover";
 import { SpaceCover } from "../component/spaceCover";
@@ -19,6 +21,7 @@ const ProfNotificationPage = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
 
   const { user, isLoading: userLoading } = useUser();
+  const queryClient = useQueryClient();
   const {
     userSpaces,
     courseSpaces,
@@ -28,6 +31,46 @@ const ProfNotificationPage = () => {
     declineJoinRequest,
     isLoading: spaceLoading
   } = useSpace();
+
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const socket = io("http://localhost:3000", {
+      transports: ["websocket"],
+    });
+
+    socket.on("space_invitation_updated", () => {
+      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+    });
+
+    socket.on("join_space_by_link", () => {
+      queryClient.invalidateQueries({ queryKey: ["joinRequests"] });
+    });
+
+    socket.on("decline_space_invitation", () => {
+      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+    });
+
+    socket.on("accept_space_invitation", () => {
+      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+      queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+      queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+      queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    });
+
+    socket.on("connect", () => {
+      console.log("Connected to WebSocket for professor notifications");
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected from WebSocket");
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user?.id, queryClient]);
 
   /* =========================
      GET ALL OWNED SPACES

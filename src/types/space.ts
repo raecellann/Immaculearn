@@ -24,6 +24,14 @@ export interface SpaceCreateData {
     description?: string;
     settings?: SpaceSettings;
 }
+export interface CourseSpaceCreateData {
+    space_name: string;
+    space_day: string;
+    space_time_start: string;
+    space_time_end: string;
+    space_yr_lvl: number;
+    space_settings?: SpaceSettings;
+}
 
 export interface ApiResponse<T = any> {
     success: boolean;
@@ -63,6 +71,23 @@ export interface Space {
     created_by: string; // User ID
     created_at: string;
     updated_at: string;
+}
+
+export interface CourseSPace {
+    space_id: string;
+    space_uuid: string;
+    space_name: string;
+    space_day: string;
+    space_time_start: string;
+    space_time_end: string;
+    space_yr_lvl: string;
+    // space_type: string;
+    members: SpaceMemberProfile[];
+    // description: string | null;
+    settings?: SpaceSettings;
+    created_by: string; // User ID
+    created_at: string;
+    // updated_at: string;
 }
 
 

@@ -195,8 +195,8 @@ const HomePage1 = () => {
     };
 
     handleResize(); // Initial check
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const yourSlideCount = Math.max(
@@ -312,16 +312,14 @@ const HomePage1 = () => {
               <div className="bg-[#1E242E] rounded-xl p-4 sm:p-6">
                 <div className="text-center py-8">
                   <Calendar className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                  <p className="text-gray-400 text-sm">
-                    No tasks created yet
-                  </p>
+                  <p className="text-gray-400 text-sm">No tasks created yet</p>
                   <p className="text-gray-500 text-xs mt-2">
                     Go to your calendar to create tasks and set reminders
                   </p>
                   <div className="mt-6">
-                    <Button2 
+                    <Button2
                       text="Go to Calendar"
-                      onClick={() => navigate('/calendar')}
+                      onClick={() => navigate("/calendar")}
                     />
                   </div>
                 </div>
@@ -539,6 +537,11 @@ const HomePage1 = () => {
                                       ))}
                                   </p>
                                   <p className="text-gray-500 text-xs mt-1">
+                                    {course.space_day} (
+                                    {`${course.space_time_start} - ${course.space_time_end}`}
+                                    )
+                                  </p>
+                                  <p className="text-gray-500 text-xs mt-1">
                                     Opened just now
                                   </p>
                                 </div>
@@ -716,16 +719,14 @@ const HomePage1 = () => {
               <h4 className="font-semibold mb-3">Reminders</h4>
               <div className="text-center py-8">
                 <Calendar className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                <p className="text-gray-400 text-sm">
-                  No tasks created yet
-                </p>
+                <p className="text-gray-400 text-sm">No tasks created yet</p>
                 <p className="text-gray-500 text-xs mt-2">
                   Go to your calendar to create tasks and set reminders
                 </p>
                 <div className="mt-6">
-                  <Button2 
+                  <Button2
                     text="Go to Calendar"
-                    onClick={() => navigate('/calendar')}
+                    onClick={() => navigate("/calendar")}
                   />
                 </div>
               </div>
@@ -737,7 +738,10 @@ const HomePage1 = () => {
           isOpen={!!showDeleteConfirm}
           onClose={() => setShowDeleteConfirm(null)}
           onConfirm={handleDeleteSpace}
-          space={userSpaces.find(s => s.space_uuid === showDeleteConfirm) || friendSpaces.find(s => s.space_uuid === showDeleteConfirm)}
+          space={
+            userSpaces.find((s) => s.space_uuid === showDeleteConfirm) ||
+            friendSpaces.find((s) => s.space_uuid === showDeleteConfirm)
+          }
         />
         {/* Leave Confirmation Modal */}
         {showLeaveConfirm && (

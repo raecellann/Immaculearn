@@ -6,18 +6,14 @@ import {
   SpaceCreateData,
   ApiResponse,
   SpacePendingInvitation,
-  SpaceMemberProfile,
   Task,
   DraftTask,
   TaskCreateData,
+  CourseSpaceCreateData,
+  CourseSPace,
 } from "../../types/space";
 import { useUser } from "../user/useUser";
-import {
-  useQuery,
-  useQueryClient,
-  useMutation,
-  UseMutationResult,
-} from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { io } from "socket.io-client";
 
 export interface SpaceProviderProps {
@@ -83,7 +79,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     }
   };
 
-  const fetchCourseSpaces = async (): Promise<Space[]> => {
+  const fetchCourseSpaces = async (): Promise<CourseSPace[]> => {
     try {
       const res = await spaceService.getCourseSpaces();
       const spaces = res.data || [];
@@ -199,7 +195,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   };
 
   const createCourseSpace = async (
-    data: SpaceCreateData,
+    data: CourseSpaceCreateData,
   ): Promise<ApiResponse<Space>> => {
     const result = await spaceService.createCourseSpace(data);
     queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });

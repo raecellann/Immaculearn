@@ -14,7 +14,6 @@ const SpacePage = () => {
   const { user } = useUser();
   const { userSpaces, friendSpaces, courseSpaces, joinSpace } = useSpace();
 
-
   const [showMenu, setShowMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
@@ -52,13 +51,13 @@ const SpacePage = () => {
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showMenu && !event.target.closest('.menu-container')) {
+      if (showMenu && !event.target.closest(".menu-container")) {
         setShowMenu(null);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
 
   // Join Space Functionality (from sample)
@@ -72,7 +71,7 @@ const SpacePage = () => {
 
     try {
       const result = await joinSpace(joinCode);
-      
+
       if (result.success) {
         alert("Successfully joined the space!");
         setJoinCode("");
@@ -89,15 +88,15 @@ const SpacePage = () => {
 
   // Filter shared spaces (same logic as sample)
   const allSpaces = new Set([
-    ...(userSpaces || []).map(space => space.space_uuid),
-    ...(courseSpaces || []).map(space => space.space_uuid)
+    ...(userSpaces || []).map((space) => space.space_uuid),
+    ...(courseSpaces || []).map((space) => space.space_uuid),
   ]);
 
-  const sharedSpaces = (friendSpaces || []).filter(space =>
-    !allSpaces.has(space.space_uuid) &&
-    space.members?.some(member => member.account_id === user?.id)
+  const sharedSpaces = (friendSpaces || []).filter(
+    (space) =>
+      !allSpaces.has(space.space_uuid) &&
+      space.members?.some((member) => member.account_id === user?.id),
   );
-
 
   // Course Spaces Data (from homepage logic)
   // const courseSpaces = courseSpaces?.filter((s) => !allSpaces.has(s.space_uuid));
@@ -177,7 +176,10 @@ const SpacePage = () => {
                   />
 
                   <div className="mt-6">
-                    <Button disabled={loading} onClick={handleJoinRequestSubmit}>
+                    <Button
+                      disabled={loading}
+                      onClick={handleJoinRequestSubmit}
+                    >
                       {loading ? "Joining..." : "Join Space"}
                     </Button>
                   </div>
@@ -200,7 +202,11 @@ const SpacePage = () => {
                     <div
                       role="button"
                       tabIndex={0}
-                      onClick={() => navigate(`/space/${space?.space_uuid}/${space.space_name}`)}
+                      onClick={() =>
+                        navigate(
+                          `/space/${space?.space_uuid}/${space.space_name}`,
+                        )
+                      }
                       className="cursor-pointer"
                     >
                       <div className="relative overflow-hidden h-40 bg-gray-800">
@@ -209,7 +215,6 @@ const SpacePage = () => {
                           name={space.space_name}
                           className="w-full h-full"
                         />
-
                       </div>
 
                       <div className="p-4">
@@ -223,19 +228,23 @@ const SpacePage = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     {/* Three dots menu */}
                     <div className="absolute top-2 right-2 menu-container">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShowMenu(showMenu === space.space_uuid ? null : space.space_uuid);
+                          setShowMenu(
+                            showMenu === space.space_uuid
+                              ? null
+                              : space.space_uuid,
+                          );
                         }}
                         className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
-                      
+
                       {showMenu === space.space_uuid && (
                         <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
                           <button
@@ -272,7 +281,11 @@ const SpacePage = () => {
                     className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
                   >
                     <div
-                      onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
+                      onClick={() =>
+                        navigate(
+                          `/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`,
+                        )
+                      }
                       className="cursor-pointer"
                     >
                       <div className="relative h-48 bg-gray-800">
@@ -288,28 +301,48 @@ const SpacePage = () => {
                           {capitalizeWords(course.space_name)}'s Space
                         </h3>
                         <p className="text-gray-400 text-xs mb-1">
-                          {course.members?.filter(m => m.role === "creator").map(m => (
-                            <span key={m.account_id}>
-                              {m.account_id === user?.id ? `You` : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])}`}
-                            </span>
-                          ))} • {course.space_type === "course" ? (course.members?.length -1) : (course.members?.length) || 0} Students
+                          {course.members
+                            ?.filter((m) => m.role === "creator")
+                            .map((m) => (
+                              <span key={m.account_id}>
+                                {m.account_id === user?.id
+                                  ? `You`
+                                  : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])}`}
+                              </span>
+                            ))}{" "}
+                          •{" "}
+                          {course.space_type === "course"
+                            ? course.members?.length - 1
+                            : course.members?.length || 0}{" "}
+                          Students
                         </p>
-                        <p className="text-gray-500 text-xs mb-2">Opened just now</p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {course.space_day} (
+                          {`${course.space_time_start} - ${course.space_time_end}`}
+                          )
+                        </p>
+                        <p className="text-gray-500 text-xs mb-2">
+                          Opened just now
+                        </p>
                       </div>
                     </div>
-                    
+
                     {/* Three dots menu */}
                     <div className="absolute top-2 right-2 menu-container">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShowMenu(showMenu === course.space_uuid ? null : course.space_uuid);
+                          setShowMenu(
+                            showMenu === course.space_uuid
+                              ? null
+                              : course.space_uuid,
+                          );
                         }}
                         className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
-                      
+
                       {showMenu === course.space_uuid && (
                         <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
                           <button
@@ -348,7 +381,11 @@ const SpacePage = () => {
                     <div
                       role="button"
                       tabIndex={0}
-                      onClick={() => navigate(`/space/${space?.space_uuid}/${space.space_name}`)}
+                      onClick={() =>
+                        navigate(
+                          `/space/${space?.space_uuid}/${space.space_name}`,
+                        )
+                      }
                       className="cursor-pointer"
                     >
                       <div className="relative h-40 bg-gray-800">
@@ -357,7 +394,6 @@ const SpacePage = () => {
                           name={space.space_name}
                           className="w-full h-full"
                         />
-
                       </div>
 
                       <div className="p-4">
@@ -371,19 +407,23 @@ const SpacePage = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     {/* Three dots menu */}
                     <div className="absolute top-2 right-2 menu-container">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShowMenu(showMenu === space.space_uuid ? null : space.space_uuid);
+                          setShowMenu(
+                            showMenu === space.space_uuid
+                              ? null
+                              : space.space_uuid,
+                          );
                         }}
                         className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
-                      
+
                       {showMenu === space.space_uuid && (
                         <div className="absolute top-8 right-0 bg-[#2C3038] border border-[#3B4457] rounded-lg shadow-lg z-10 min-w-[120px]">
                           <button
@@ -407,8 +447,6 @@ const SpacePage = () => {
               )}
             </div>
           </div>
-
-          
         </div>
 
         {/* Delete Confirmation Modal */}
@@ -417,7 +455,8 @@ const SpacePage = () => {
             <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
               <h3 className="text-lg font-semibold mb-3">Delete Space</h3>
               <p className="text-gray-400 text-sm mb-6">
-                Are you sure you want to delete this space? This action cannot be undone.
+                Are you sure you want to delete this space? This action cannot
+                be undone.
               </p>
               <div className="flex gap-3 justify-end">
                 <button
@@ -448,7 +487,8 @@ const SpacePage = () => {
             <div className="bg-[#1E242E] rounded-xl p-6 max-w-sm w-full border border-[#3B4457]">
               <h3 className="text-lg font-semibold mb-3">Leave Space</h3>
               <p className="text-gray-400 text-sm mb-6">
-                Are you sure you want to leave this space? You'll need to be re-invited to rejoin.
+                Are you sure you want to leave this space? You'll need to be
+                re-invited to rejoin.
               </p>
               <div className="flex gap-3 justify-end">
                 <button

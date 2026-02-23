@@ -6,6 +6,8 @@ import {
   ApiResponse,
   SpacePendingInvitation,
   PendingSpaceInvitation,
+  CourseSpaceCreateData,
+  CourseSPace,
 } from "../types/space";
 
 class SpaceService {
@@ -26,15 +28,18 @@ class SpaceService {
     }
   }
   async createCourseSpace(
-    spaceData: SpaceCreateData,
+    spaceData: CourseSpaceCreateData,
   ): Promise<ApiResponse<Space>> {
     try {
       const response = await api.post<ApiResponse<Space>>(
         "/spaces/course-space",
         {
           space_name: spaceData.space_name,
-          description: spaceData.description || "",
-          settings: spaceData.settings || { space_cover: null, max_member: 50 },
+          space_day: spaceData.space_day,
+          space_time_start: spaceData.space_time_start,
+          space_time_end: spaceData.space_time_end,
+          space_yr_lvl: spaceData.space_yr_lvl,
+          space_settings: spaceData.space_settings || { space_cover: null, max_member: 50 },
         },
       );
 
@@ -68,9 +73,9 @@ class SpaceService {
     }
   }
 
-  async getCourseSpaces(): Promise<ApiResponse<Space[]>> {
+  async getCourseSpaces(): Promise<ApiResponse<CourseSPace[]>> {
     try {
-      const response = await api.get<ApiResponse<Space[]>>(
+      const response = await api.get<ApiResponse<CourseSPace[]>>(
         "/spaces/course-spaces",
       );
       const data = Array.isArray(response.data?.data) ? response.data.data : [];

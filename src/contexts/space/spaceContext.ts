@@ -7,6 +7,8 @@ import {
   DraftTask,
   TaskCreateData,
   PendingSpaceInvitation,
+  CourseSpaceCreateData,
+  CourseSPace,
 } from "../../types/space";
 import { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
@@ -17,7 +19,7 @@ export interface SpaceContextType {
 
   // Server data
   userSpaces: Space[];
-  courseSpaces: Space[];
+  courseSpaces: CourseSPace[];
   friendSpaces: Space[];
   isLoading: boolean;
 
@@ -40,7 +42,7 @@ export interface SpaceContextType {
 
   // Space mutations
   createSpace: (data: SpaceCreateData) => Promise<any>;
-  createCourseSpace: (data: SpaceCreateData) => Promise<any>;
+  createCourseSpace: (data: CourseSpaceCreateData) => Promise<any>;
   joinSpace: (inviteCode: string) => Promise<any>;
   inviteUser: (space_uuid: string, email: string) => Promise<any>;
   acceptJoinRequest: (userId: number, spaceUuid: string) => Promise<any>;
