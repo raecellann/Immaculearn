@@ -300,7 +300,8 @@ const HomePage1 = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
-                      className="bg-[#007AFF] hover:bg-blue-700 text-white text-sm py-2 px-4"
+                      className="bg-[#007AFF] hover:bg-blue-700 text-sm py-2 px-4"
+                      style={{ color: 'white' }}
                       onClick={() => navigate("/space/create")}
                     >
                       Create Space
@@ -452,7 +453,8 @@ const HomePage1 = () => {
                                         : space.space_uuid,
                                     );
                                   }}
-                                  className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  style={{ color: currentColors.text }}
                                 >
                                   <MoreVertical className="w-4 h-4" />
                                 </button>
@@ -605,7 +607,8 @@ const HomePage1 = () => {
                                         : course.space_uuid,
                                     );
                                   }}
-                                  className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  style={{ color: currentColors.text }}
                                 >
                                   <MoreVertical className="w-4 h-4" />
                                 </button>
@@ -739,7 +742,8 @@ const HomePage1 = () => {
                                         : space.space_uuid,
                                     );
                                   }}
-                                  className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  style={{ color: currentColors.text }}
                                 >
                                   <MoreVertical className="w-4 h-4" />
                                 </button>
@@ -827,7 +831,8 @@ const HomePage1 = () => {
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setShowLeaveConfirm(null)}
-                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
+                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm"
+                  style={{ color: 'white' }}
                 >
                   Cancel
                 </button>
@@ -838,7 +843,8 @@ const HomePage1 = () => {
                     setShowLeaveConfirm(null);
                     setShowMenu(null);
                   }}
-                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
+                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-sm"
+                  style={{ color: 'white' }}
                 >
                   Leave
                 </button>

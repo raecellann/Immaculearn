@@ -153,12 +153,34 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     staleTime: 60_000,
   });
 
-  const useJoinRequests = (spaceId: string, isAuthenticated: boolean) =>
+  const fetchAllJoinRequests = async (): Promise<SpacePendingInvitation[]> => {
+    try {
+      const res = await spaceService.getAllJoinSpaceRequests();
+      return res.data || [];
+    } catch (error) {
+      console.error("Error fetching all join requests:", error);
+      return [];
+    }
+  };
+
+  const {
+    data: allJoinRequestsData = [],
+    isLoading: allJoinRequestsLoading,
+  } = useQuery({
+    queryKey: ["allJoinRequests"],
+    queryFn: fetchAllJoinRequests,
+    enabled: isAuthenticated,
+    staleTime: 30_000,
+  });
+
+  const useJoinRequests = (spaceId: string) =>
     useQuery({
       queryKey: ["joinRequests", spaceId],
-      queryFn: () => fetchJoinRequests(spaceId),
+      queryFn: async () => {
+        const result = await fetchJoinRequests(spaceId);
+        return result || [];
+      },
       enabled: !!spaceId && isAuthenticated,
-
       staleTime: Infinity, // never becomes stale automatically
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
@@ -414,6 +436,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
 
     pendingSpaceInvitation,
     pendingSpaceInvitationLoading,
+
+    allJoinRequestsData,
+    allJoinRequestsLoading,
 
     // Queries
     useJoinRequests,

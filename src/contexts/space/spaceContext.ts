@@ -29,10 +29,12 @@ export interface SpaceContextType {
   pendingSpaceInvitation: PendingSpaceInvitation[];
   pendingSpaceInvitationLoading: boolean;
 
+  allJoinRequestsData: SpacePendingInvitation[];
+  allJoinRequestsLoading: boolean;
+
   // Queries
   useJoinRequests: (
     spaceId: string,
-    isAuthenticated: boolean,
   ) => UseQueryResult<SpacePendingInvitation[], Error>;
 
   // New: Task queries

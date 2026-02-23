@@ -182,7 +182,7 @@ const Button = ({ text = "Share", onClick }) => {
         e.target.style.boxShadow = '0 0 1em 1em rgba(0, 0, 0, 0.1)';
         e.target.style.margin = '0';
 
-        // 👇 Restore original color
+        // Restore original color
         e.target.style.color = getTextColor();
 
         const svg = e.target.querySelector('svg');
