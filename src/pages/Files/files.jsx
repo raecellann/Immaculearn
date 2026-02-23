@@ -4,6 +4,7 @@ import Sidebar from "../component/sidebar";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
 import { useFileManager } from "../../hooks/useFileManager";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const FilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -14,6 +15,8 @@ const FilePage = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
 
   const { isAuthenticated, user } = useUser();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -104,7 +107,7 @@ const FilePage = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
 
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
@@ -121,8 +124,9 @@ const FilePage = () => {
 
       {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{ backgroundColor: currentColors.surface }}
       >
         <Sidebar />
       </div>
@@ -132,32 +136,34 @@ const FilePage = () => {
 
         {/* 🔥 Sticky Mobile Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
         >
           <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-white text-2xl p-0"
+              className="bg-transparent border-none text-2xl p-0"
+              style={{ color: currentColors.text }}
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold">Files</h1>
+            <h1 className="text-lg font-bold" style={{ color: currentColors.text }}>Files</h1>
           </div>
         </div>
 
         {/* ✅ CONTENT (FOLDER-LIKE DISPLAY) */}
         <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
-          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
+          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10" style={{ color: currentColors.text }}>
             Files
           </h1>
 
           {/* Your Space Files */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+            <h2 className="text-xl font-semibold mb-4" style={{ color: currentColors.text }}>Your Space</h2>
             {spacesByCategory['your-space']?.length === 0 ? (
-              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+              <div className="rounded-xl p-10 text-center border border-dashed" style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary, borderColor: currentColors.border }}>
                 No space files yet
               </div>
             ) : spacesByCategory['your-space']?.length > 0 ? (
@@ -165,7 +171,8 @@ const FilePage = () => {
                 {spacesByCategory['your-space'].map((space, index) => (
                   <div
                     key={`your-space-${index}`}
-                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    className="border rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
+                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                     onClick={() => navigate(`/files/${space.name}/${space.space_uuid || ''}`)}
                   >
                     <span className="text-xl">📁</span>
@@ -176,14 +183,14 @@ const FilePage = () => {
                 ))}
               </div>
             ) : null}
-            <div className="border-b border-gray-700 my-6"></div>
+            <div className="my-6" style={{ borderBottom: `1px solid ${currentColors.border}` }}></div>
           </div>
 
           {/* Course Space Files */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+            <h2 className="text-xl font-semibold mb-4" style={{ color: currentColors.text }}>Course Space</h2>
             {spacesByCategory['course-space']?.length === 0 ? (
-              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+              <div className="rounded-xl p-10 text-center border border-dashed" style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary, borderColor: currentColors.border }}>
                 No course space files yet
               </div>
             ) : spacesByCategory['course-space']?.length > 0 ? (
@@ -191,25 +198,26 @@ const FilePage = () => {
                 {spacesByCategory['course-space'].map((space, index) => (
                   <div
                     key={`course-space-${index}`}
-                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    className="border rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
+                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                     onClick={() => navigate(`/files/${space.name}/${space.space_uuid || ''}`)}
                   >
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.name}</p>
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap" style={{ color: currentColors.text }}>{space.name}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : null}
-            <div className="border-b border-gray-700 my-6"></div>
+            <div className="my-6" style={{ borderBottom: `1px solid ${currentColors.border}` }}></div>
           </div>
 
           {/* Friends Space Files */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
+            <h2 className="text-xl font-semibold mb-4" style={{ color: currentColors.text }}>Friends Space</h2>
             {sharedSpaces?.length === 0 ? (
-              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+              <div className="rounded-xl p-10 text-center border border-dashed" style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary, borderColor: currentColors.border }}>
                 No friends space files yet
               </div>
             ) : sharedSpaces?.length > 0 ? (
@@ -217,18 +225,19 @@ const FilePage = () => {
                 {sharedSpaces.map((space, index) => (
                   <div
                     key={`friends-space-${index}`}
-                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    className="border rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
+                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                     onClick={() => navigate(`/files/${space.space_name}/${space.space_uuid || ''}`)}
                   >
                     <span className="text-xl">📁</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap" style={{ color: currentColors.text }}>{space.space_name}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : null}
-            <div className="border-b border-gray-700 my-6"></div>
+            <div className="my-6" style={{ borderBottom: `1px solid ${currentColors.border}` }}></div>
           </div>
         </div>
 

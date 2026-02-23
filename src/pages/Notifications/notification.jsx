@@ -4,6 +4,7 @@ import Logout from "../component/logout";
 import { FiUsers, FiBell, FiFilter } from "react-icons/fi";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 import { GroupCover } from "../component/groupCover";
 import { SpaceCover } from "../component/spaceCover";
@@ -21,6 +22,8 @@ const NotificationPage = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
 
   const { user, isLoading: userLoading } = useUser();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const {
     joinRequestsByLink,
     joinRequestsByLinkLoading,
@@ -140,7 +143,7 @@ const NotificationPage = () => {
   }
 
   return (
-    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
+    <div className="flex font-sans min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -156,8 +159,9 @@ const NotificationPage = () => {
 
       {/* MOBILE SIDEBAR */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{ backgroundColor: currentColors.surface }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
@@ -166,33 +170,35 @@ const NotificationPage = () => {
       <div className="flex-1 flex flex-col">
         {/* 🔥 Sticky Mobile Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
         >
           <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-white text-2xl p-0"
+              className="bg-transparent border-none text-2xl p-0"
+              style={{ color: currentColors.text }}
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold">Notifications</h1>
+            <h1 className="text-lg font-bold" style={{ color: currentColors.text }}>Notifications</h1>
           </div>
         </div>
 
         {/* ✅ CONTENT */}
         <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
-          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
+          <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10" style={{ color: currentColors.text }}>
             Notifications
           </h1>
 
           {/* Filter Section */}
           <div className="max-w-3xl mx-auto mb-6">
-            <div className="bg-[#1E242E] p-4 rounded-lg">
+            <div className="p-4 rounded-lg border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
               <div className="flex items-center gap-2 mb-3">
                 <FiFilter className="text-blue-400" />
-                <span className="font-medium">Filter by Category:</span>
+                <span className="font-medium" style={{ color: currentColors.text }}>Filter by Category:</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button 
@@ -219,20 +225,21 @@ const NotificationPage = () => {
           <div className="flex flex-col gap-4 max-w-3xl mx-auto">
             {/* Pending Join Requests Section */}
             {filteredSections.showJoinRequests && (
-              <div className="bg-[#1E242E] p-5 rounded-lg">
+              <div className="p-5 rounded-lg border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <FiUsers size={22} className="text-blue-500" />
                     <div>
-                      <p className="font-semibold">Pending Join Requests</p>
-                      <p className="text-sm text-gray-400">
+                      <p className="font-semibold" style={{ color: currentColors.text }}>Pending Join Requests</p>
+                      <p className="text-sm" style={{ color: currentColors.textSecondary }}>
                         {pendingInvitesCount} request(s)
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={() => setShowPendingInvitations(true)}
-                    className="text-blue-400 hover:underline"
+                    className="hover:underline"
+                    style={{ color: '#60A5FA' }}
                   >
                     View
                   </button>
@@ -240,7 +247,7 @@ const NotificationPage = () => {
                 
                 {/* Preview of recent join requests */}
                 {allJoinRequests.slice(0, 2).map((invite) => (
-                  <div key={`${invite.space_uuid}-${invite.account_id}`} className="mt-3 p-3 bg-[#2A2F3A] rounded-lg">
+                  <div key={`${invite.space_uuid}-${invite.account_id}`} className="mt-3 p-3 rounded-lg border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                     <div className="flex items-center gap-3">
                       <img
                         src={invite.profile_pic}
@@ -248,14 +255,14 @@ const NotificationPage = () => {
                         className="w-8 h-8 rounded-full object-cover"
                       />
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{invite.fullname}</p>
-                        <p className="text-xs text-gray-400">wants to join {invite.space_name}</p>
+                        <p className="text-sm font-medium" style={{ color: currentColors.text }}>{invite.fullname}</p>
+                        <p className="text-xs" style={{ color: currentColors.textSecondary }}>wants to join {invite.space_name}</p>
                       </div>
                     </div>
                   </div>
                 ))}
                 {allJoinRequests.length > 2 && (
-                  <p className="text-xs text-gray-400 mt-2 text-center">
+                  <p className="text-xs mt-2 text-center" style={{ color: currentColors.textSecondary }}>
                     And {allJoinRequests.length - 2} more...
                   </p>
                 )}
@@ -264,20 +271,21 @@ const NotificationPage = () => {
 
             {/* Space Invitations Section */}
             {filteredSections.showSpaceInvitations && (
-              <div className="bg-[#1E242E] p-5 rounded-lg">
+              <div className="p-5 rounded-lg border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <FiUsers size={22} className="text-green-500" />
                     <div>
-                      <p className="font-semibold">Space Invitations</p>
-                      <p className="text-sm text-gray-400">
+                      <p className="font-semibold" style={{ color: currentColors.text }}>Space Invitations</p>
+                      <p className="text-sm" style={{ color: currentColors.textSecondary }}>
                         {pendingSpaceInvitationCount} invitation(s)
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={() => setShowPendingSpaceInvitation(true)}
-                    className="text-blue-400 hover:underline"
+                    className="hover:underline"
+                    style={{ color: '#60A5FA' }}
                   >
                     View
                   </button>
@@ -285,7 +293,7 @@ const NotificationPage = () => {
                 
                 {/* Preview of recent space invitations */}
                 {allPendingSpaceInvitation.slice(0, 2).map((invite) => (
-                  <div key={`${invite.space_uuid}-${invite.account_id}`} className="mt-3 p-3 bg-[#2A2F3A] rounded-lg">
+                  <div key={`${invite.space_uuid}-${invite.account_id}`} className="mt-3 p-3 rounded-lg border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <SpaceCover
@@ -296,14 +304,14 @@ const NotificationPage = () => {
                         />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{capitalizeWords(invite.space_name)}</p>
-                        <p className="text-xs text-gray-400">from {capitalizeWords(invite.owner_fullname)}</p>
+                        <p className="text-sm font-medium" style={{ color: currentColors.text }}>{capitalizeWords(invite.space_name)}</p>
+                        <p className="text-xs" style={{ color: currentColors.textSecondary }}>from {capitalizeWords(invite.owner_fullname)}</p>
                       </div>
                     </div>
                   </div>
                 ))}
                 {allPendingSpaceInvitation.length > 2 && (
-                  <p className="text-xs text-gray-400 mt-2 text-center">
+                  <p className="text-xs mt-2 text-center" style={{ color: currentColors.textSecondary }}>
                     And {allPendingSpaceInvitation.length - 2} more...
                   </p>
                 )}
@@ -312,12 +320,12 @@ const NotificationPage = () => {
 
             {/* School Announcements Section */}
             {filteredSections.showAnnouncements && (
-              <div className="bg-[#1E242E] p-5 rounded-lg">
+              <div className="p-5 rounded-lg border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                 <div className="flex items-center gap-3 mb-4">
                   <FiBell size={22} className="text-yellow-500" />
                   <div>
-                    <p className="font-semibold">School Announcements</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="font-semibold" style={{ color: currentColors.text }}>School Announcements</p>
+                    <p className="text-sm" style={{ color: currentColors.textSecondary }}>
                       {announcementsCount} announcement(s)
                     </p>
                   </div>
@@ -325,12 +333,12 @@ const NotificationPage = () => {
                 
                 {/* Display announcements */}
                 {schoolAnnouncements.map((announcement) => (
-                  <div key={announcement.id} className="mt-3 p-3 bg-[#2A2F3A] rounded-lg">
+                  <div key={announcement.id} className="mt-3 p-3 rounded-lg border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{announcement.title}</p>
-                        <p className="text-xs text-gray-300 mt-1">{announcement.message}</p>
-                        <p className="text-xs text-gray-500 mt-2">{announcement.date}</p>
+                        <p className="text-sm font-medium" style={{ color: currentColors.text }}>{announcement.title}</p>
+                        <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>{announcement.message}</p>
+                        <p className="text-xs mt-2" style={{ color: currentColors.textSecondary }}>{announcement.date}</p>
                       </div>
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         announcement.priority === 'high' 
@@ -351,12 +359,13 @@ const NotificationPage = () => {
       {/* MODAL */}
       {showPendingInvitations && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Pending Invitations</h2>
+          <div className="rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" style={{ backgroundColor: currentColors.surface }}>
+            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
+              <h2 className="text-lg font-semibold" style={{ color: currentColors.text }}>Pending Invitations</h2>
               <button
                 onClick={() => setShowPendingInvitations(false)}
-                className="text-gray-400 hover:text-white text-2xl"
+                className="text-2xl hover:opacity-80"
+                style={{ color: currentColors.textSecondary }}
               >
                 ×
               </button>
@@ -364,14 +373,15 @@ const NotificationPage = () => {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {allJoinRequests.length === 0 ? (
-                <p className="text-gray-400 text-center py-4">
+                <p className="text-center py-4" style={{ color: currentColors.textSecondary }}>
                   No pending invitations
                 </p>
               ) : (
                 allJoinRequests.map((invite) => (
                   <div
                     key={`${invite.space_uuid}-${invite.account_id}`}
-                    className="bg-[#2A2F3A] rounded-lg p-4"
+                    className="rounded-lg p-4 border"
+                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                   >
                     <div className="flex items-start gap-3">
                       <img
@@ -380,9 +390,9 @@ const NotificationPage = () => {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                       <div className="flex-1">
-                        <h3 className="font-medium">{invite.fullname}</h3>
-                        <p className="text-sm text-gray-400">{invite.email}</p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <h3 className="font-medium" style={{ color: currentColors.text }}>{invite.fullname}</h3>
+                        <p className="text-sm" style={{ color: currentColors.textSecondary }}>{invite.email}</p>
+                        <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
                           Space: {invite.space_name}
                         </p>
                       </div>
@@ -416,14 +426,15 @@ const NotificationPage = () => {
 
       {ShowPendingSpaceInvitation && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
+          <div className="rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" style={{ backgroundColor: currentColors.surface }}>
+            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
+              <h2 className="text-lg font-semibold" style={{ color: currentColors.text }}>
                 Pending Space Invitation(s)
               </h2>
               <button
                 onClick={() => setShowPendingSpaceInvitation(false)}
-                className="text-gray-400 hover:text-white text-2xl"
+                className="text-2xl hover:opacity-80"
+                style={{ color: currentColors.textSecondary }}
               >
                 ×
               </button>
@@ -431,14 +442,15 @@ const NotificationPage = () => {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {allPendingSpaceInvitation.length === 0 ? (
-                <p className="text-gray-400 text-center py-4">
+                <p className="text-center py-4" style={{ color: currentColors.textSecondary }}>
                   No pending invitations
                 </p>
               ) : (
                 allPendingSpaceInvitation.map((invite) => (
                   <div
                     key={`${invite.space_uuid}-${invite.account_id}`}
-                    className="bg-[#2A2F3A] rounded-lg p-4"
+                    className="rounded-lg p-4 border"
+                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                   >
                     <div className="flex items-start gap-3">
                       {/* <img
@@ -456,13 +468,13 @@ const NotificationPage = () => {
                         />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-medium">
+                        <h3 className="font-medium" style={{ color: currentColors.text }}>
                           {capitalizeWords(invite.space_name)}'s space
                         </h3>
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm" style={{ color: currentColors.textSecondary }}>
                           Space Owner: {capitalizeWords(invite.owner_fullname)}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
                           {/* Space: {invite.space_name} */}
                         </p>
                       </div>

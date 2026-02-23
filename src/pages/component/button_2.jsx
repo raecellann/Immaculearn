@@ -78,7 +78,11 @@ const Button = ({ text = "Share", onClick }) => {
   const getTextColor = () => {
     // Return black for light mode, white for dark mode
     const isDarkMode = document.documentElement.classList.contains('dark');
-    return isDarkMode ? "white" : "black";
+    // Also check for hardcoded dark backgrounds (like in notification page)
+    const hasDarkBackground = document.body.style.backgroundColor === '' && 
+                             (document.body.classList.contains('bg-[#161A20]') || 
+                              getComputedStyle(document.body).backgroundColor === 'rgb(22, 26, 32)');
+    return (isDarkMode || hasDarkBackground) ? "white" : "black";
   };
 
   const getHoverTextColor = () => {
@@ -104,6 +108,10 @@ const Button = ({ text = "Share", onClick }) => {
 
   const getBorderColor = () => {
     const isDarkMode = document.documentElement.classList.contains('dark');
+    // Also check for hardcoded dark backgrounds (like in notification page)
+    const hasDarkBackground = document.body.style.backgroundColor === '' && 
+                             (document.body.classList.contains('bg-[#161A20]') || 
+                              getComputedStyle(document.body).backgroundColor === 'rgb(22, 26, 32)');
     switch(text) {
       case "Add Member":
         return "#22c55e"; // Green
@@ -120,7 +128,7 @@ const Button = ({ text = "Share", onClick }) => {
       case "School Announcements":
         return "#fbbf24"; // Amber/Yellow
       case "Go to Calendar":
-        return isDarkMode ? "white" : "black"; // White border in dark mode, black in light
+        return (isDarkMode || hasDarkBackground) ? "white" : "black"; // White border in dark mode, black in light
       default:
         return "transparent"; // Default transparent
     }
@@ -177,9 +185,9 @@ const Button = ({ text = "Share", onClick }) => {
       }}
 
       onMouseLeave={(e) => {
-        e.target.style.background = '#212121';
+        e.target.style.background = 'transparent';
         e.target.style.transform = 'scale(1)';
-        e.target.style.boxShadow = '0 0 1em 1em rgba(0, 0, 0, 0.1)';
+        e.target.style.boxShadow = 'none';
         e.target.style.margin = '0';
 
         // Restore original color
