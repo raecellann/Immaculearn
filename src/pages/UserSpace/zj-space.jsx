@@ -1027,6 +1027,24 @@ const UserPage = () => {
             </div>
           )}
 
+          {/* Space Link - Mobile (Non-owners) */}
+          {isFriendSpace && (
+            <div className="md:hidden flex justify-end mb-6">
+              <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md max-w-full">
+                <span className="text-xs text-blue-400 break-all flex-1">
+                  {currentSpace?.space_link || "Loading..."}
+                </span>
+                <button
+                  onClick={() => handleCopyLink(currentSpace?.space_link)}
+                  className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors flex-shrink-0"
+                  title="Copy to clipboard"
+                >
+                  <FiCopy size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* MAIN CONTENT GRID */}
           <div className="flex flex-col lg:flex-row gap-4 md:gap-6 mt-4">
             {/* LEFT SIDEBAR - 30% */}
