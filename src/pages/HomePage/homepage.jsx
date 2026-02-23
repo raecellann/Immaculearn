@@ -289,7 +289,7 @@ const HomePage1 = () => {
             }}>
               <div className="flex flex-col sm:flex-row justify-between gap-6">
                 <div>
-                  <h1 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: '#B0C4FF' }}>
+                  <h1 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: isDarkMode ? '#B0C4FF' : '#1e3a8a' }}>
                     {greeting}, {user?.name || "Student"}
                   </h1>
                   <p className="mb-1" style={{ color: isDarkMode ? currentColors.textSecondary : '#333333' }}>
@@ -309,7 +309,7 @@ const HomePage1 = () => {
                       className="border text-sm py-2 px-4"
                       style={{
                         borderColor: isDarkMode ? '#4a5568' : 'black',
-                        color: isDarkMode ? 'white' : 'black'
+                        color: isDarkMode ? 'black' : 'white'
                       }}
                       onClick={() => navigate("/space")}
                     >
@@ -544,7 +544,10 @@ const HomePage1 = () => {
                             <div
                               key={i}
                               className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
-                              style={{ backgroundColor: currentColors.surface }}
+                              style={{ 
+                                backgroundColor: currentColors.surface,
+                                border: isDarkMode ? 'none' : '1px solid black'
+                              }}
                             >
                               <div
                                 onClick={() =>
