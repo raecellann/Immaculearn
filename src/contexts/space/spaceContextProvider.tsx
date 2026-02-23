@@ -174,6 +174,19 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     return result;
   };
 
+  const inviteUser = async (
+    space_uuid: string,
+    email: string,
+  ): Promise<ApiResponse> => {
+    // const spaceuuid = inviteCode.split("=").pop() || "";
+    const result = await spaceService.inviteUser(space_uuid, email);
+    queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    return result;
+  };
+
   const acceptJoinRequest = async (userId: number, spaceId: string) => {
     await spaceService.acceptJoinRequest(userId, spaceId);
     queryClient.invalidateQueries({ queryKey: ["joinRequests", spaceId] });
@@ -374,6 +387,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     createSpace,
     createCourseSpace,
     joinSpace,
+    inviteUser,
     acceptJoinRequest,
     declineJoinRequest,
     leaveSpace,

@@ -42,6 +42,7 @@ export interface SpaceContextType {
   createSpace: (data: SpaceCreateData) => Promise<any>;
   createCourseSpace: (data: SpaceCreateData) => Promise<any>;
   joinSpace: (inviteCode: string) => Promise<any>;
+  inviteUser: (space_uuid: string, email: string) => Promise<any>;
   acceptJoinRequest: (userId: number, spaceUuid: string) => Promise<any>;
   declineJoinRequest: (userId: number, spaceUuid: string) => Promise<any>;
   leaveSpace: (spaceUuid: string) => Promise<any>;

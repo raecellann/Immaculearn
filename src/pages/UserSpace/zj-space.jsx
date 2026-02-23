@@ -33,6 +33,7 @@ import MainLoading from "../../components/LoadingComponents/mainLoading";
 import PageNotFound from "../PageNotFound/pageNotFound";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { timeAgo } from "../../utils/timeAgo.js";
+import isValidEmail from "../../utils/isValidEmail.js";
 
 const UserPage = () => {
   const { space_uuid, space_name } = useParams();
@@ -84,6 +85,7 @@ const UserPage = () => {
     acceptJoinRequest,
     declineJoinRequest,
     deleteSpace,
+    inviteUser,
   } = useSpace();
 
   // Find current space
@@ -414,16 +416,56 @@ const UserPage = () => {
   };
 
   // Send invite
-  const sendInvite = () => {
-    if (inviteEmail.trim()) {
+  const sendInvite = async () => {
+    const email = inviteEmail.trim();
+    
+    if (!email) {
       addNotification({
-        type: "success",
-        title: "Invitation Sent",
-        message: `Invitation has been sent to ${inviteEmail}`,
+        type: "error",
+        title: "Invalid Email",
+        message: "Please enter an email address",
         duration: 3000,
       });
-      setInviteEmail("");
-      setShowInvitePopup(false);
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      addNotification({
+        type: "error",
+        title: "Invalid Email",
+        message: "Please enter a valid Gmail address",
+        duration: 3000,
+      });
+      return;
+    }
+
+    try {
+      const result = await inviteUser(space_uuid, email);
+      
+      if (result.success) {
+        addNotification({
+          type: "success",
+          title: "Invitation Sent",
+          message: `Invitation has been sent to ${email}`,
+          duration: 3000,
+        });
+        setInviteEmail("");
+        setShowInvitePopup(false);
+      } else {
+        addNotification({
+          type: "error",
+          title: "Invitation Failed",
+          message: result.message || "Failed to send invitation",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      addNotification({
+        type: "error",
+        title: "Invitation Failed",
+        message: "Failed to send invitation. Please try again.",
+        duration: 3000,
+      });
     }
   };
 

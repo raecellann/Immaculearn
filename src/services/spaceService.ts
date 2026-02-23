@@ -8,10 +8,7 @@ import {
   PendingSpaceInvitation,
 } from "../types/space";
 
-
-
 class SpaceService {
-
   async createSpace(spaceData: SpaceCreateData): Promise<ApiResponse<Space>> {
     try {
       const response = await api.post<ApiResponse<Space>>("/spaces/", {
@@ -139,6 +136,23 @@ class SpaceService {
     }
   }
 
+  async inviteUser(space_uuid: string, email: string): Promise<ApiResponse> {
+    try {
+      const response = await api.post<ApiResponse>("/spaces/add-by-owner", {
+        space_uuid: space_uuid,
+        email: email,
+      });
+
+      console.log(response.data)
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to join space",
+      };
+    }
+  }
+
   async getAllPendingRequest(
     space_uuid: string,
   ): Promise<ApiResponse<SpacePendingInvitation[]>> {
@@ -224,15 +238,15 @@ class SpaceService {
     }
   }
 
-  async getAllJoinSpaceRequests(
-  ): Promise<ApiResponse<SpacePendingInvitation[]>> {
+  async getAllJoinSpaceRequests(): Promise<
+    ApiResponse<SpacePendingInvitation[]>
+  > {
     try {
       const response = await api.get<ApiResponse<SpacePendingInvitation[]>>(
         `/spaces/pending-request/all`,
       );
 
       if (!response.data.success) {
-
       }
       const data = Array.isArray(response.data?.data) ? response.data.data : [];
       return {
@@ -250,15 +264,15 @@ class SpaceService {
     }
   }
 
-  async getAllSpaceInvitation(
-  ): Promise<ApiResponse<PendingSpaceInvitation[]>> {
+  async getAllSpaceInvitation(): Promise<
+    ApiResponse<PendingSpaceInvitation[]>
+  > {
     try {
       const response = await api.get<ApiResponse<PendingSpaceInvitation[]>>(
         `/spaces/pending-invitation/all`,
       );
 
       if (!response.data.success) {
-
       }
       const data = Array.isArray(response.data?.data) ? response.data.data : [];
       return {
@@ -315,9 +329,7 @@ class SpaceService {
     }
   }
   // Accept a join request
-  async acceptSpaceInvitation(
-    space_uuid: string,
-  ): Promise<ApiResponse> {
+  async acceptSpaceInvitation(space_uuid: string): Promise<ApiResponse> {
     try {
       const response = await api.patch<ApiResponse>(
         `/spaces/join-direct/accept`,
@@ -334,12 +346,10 @@ class SpaceService {
   }
 
   // Decline a join request
-  async declineSpaceInvitation(
-    space_uuid: string,
-  ): Promise<ApiResponse> {
+  async declineSpaceInvitation(space_uuid: string): Promise<ApiResponse> {
     try {
       const response = await api.patch<ApiResponse>(
-        `/spaces/join-direct/decline`, 
+        `/spaces/join-direct/decline`,
         { space_uuid },
       );
       return response.data;

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { FiLink, FiCopy, FiX } from "react-icons/fi";
+import { useSpace } from "../../contexts/space/useSpace";
+import { useNotification } from "../../contexts/notification/notificationContextProvider";
+import isValidEmail from "../../utils/isValidEmail.js";
 
 const AddMember = ({ 
   currentSpace, 
-  onInviteMember, 
   showInvitePopup, 
   setShowInvitePopup,
   customStyles = {} 
@@ -11,6 +13,10 @@ const AddMember = ({
   const [copyFeedback, setCopyFeedback] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  
+  const { inviteUser } = useSpace();
+  const { addNotification } = useNotification();
 
   const handleCopyLink = (space_link) => {
     navigator.clipboard
@@ -26,27 +32,52 @@ const AddMember = ({
       });
   };
 
-  const sendInvite = () => {
-    if (inviteEmail.trim() && !emailError) {
-      // Here you would implement the actual invite sending logic
-      console.log("Sending invite to:", inviteEmail);
-      // You can add API call here to send invitation
-      alert(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail("");
-      setEmailError("");
-      // setShowInvitePopup(false); // Optional: close popup after sending
+  const sendInvite = async () => {
+    const email = inviteEmail.trim();
+    
+    if (!email) {
+      setEmailError("Please enter an email address");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setEmailError("Please enter a valid Gmail address");
+      return;
+    }
+
+    setIsSending(true);
+    
+    try {
+      const result = await inviteUser(currentSpace?.space_uuid, email);
+      
+      if (result.success) {
+        addNotification({
+          type: "success",
+          title: "Invitation Sent",
+          message: `Invitation has been sent to ${email}`,
+          duration: 3000,
+        });
+        setInviteEmail("");
+        setEmailError("");
+        setShowInvitePopup(false);
+      } else {
+        setEmailError(result.message || "Failed to send invitation");
+      }
+    } catch (error) {
+      setEmailError("Failed to send invitation. Please try again.");
+    } finally {
+      setIsSending(false);
     }
   };
 
   const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim()) {
       setEmailError("");
       return;
     }
     
-    if (!emailRegex.test(email)) {
-      setEmailError("Please enter a valid email address");
+    if (!isValidEmail(email)) {
+      setEmailError("Please enter a valid Gmail address");
     } else {
       setEmailError("");
     }
@@ -124,14 +155,14 @@ const AddMember = ({
               />
               <button
                 onClick={sendInvite}
-                disabled={!inviteEmail.trim() || !!emailError}
+                disabled={!inviteEmail.trim() || !!emailError || isSending}
                 className={`${styles.sendButton} ${
-                  !inviteEmail.trim() || !!emailError
+                  !inviteEmail.trim() || !!emailError || isSending
                     ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
-                Send Invite
+                {isSending ? 'Sending...' : 'Send Invite'}
               </button>
             </div>
             {emailError && (
