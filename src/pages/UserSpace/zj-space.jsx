@@ -80,7 +80,7 @@ const UserPage = () => {
     userSpaces,
     courseSpaces,
     friendSpaces,
-    useJoinRequests,
+    joinRequestsByLink,
     isLoading: spaceLoading,
     acceptJoinRequest,
     declineJoinRequest,
@@ -110,7 +110,7 @@ const UserPage = () => {
     userId: user?.id,
     isOwnerSpace,
     space_uuid,
-    space_name
+    space_name,
   });
 
   const isFriendSpace = !isOwnerSpace;
@@ -219,14 +219,14 @@ const UserPage = () => {
   };
 
   // Join requests - MUST BE AT THE TOP (unconditionally)
-  const {
-    data: joinRequestsData = [],
-    isLoading: joinRequestsLoading,
-    refetch: refetchJoinRequests,
-  } = useJoinRequests(space_uuid || "");
+  // const {
+  //   data: joinRequestsByLink = [],
+  //   isLoading: joinRequestsLoading,
+  //   refetch: refetchJoinRequests,
+  // } = useJoinRequests(space_uuid || "");
 
   // Calculate pending invites count
-  const pendingInvitesCount = joinRequestsData?.length || 0;
+  const pendingInvitesCount = joinRequestsByLink?.length || 0;
 
   // Scroll handler
   useEffect(() => {
@@ -373,7 +373,7 @@ const UserPage = () => {
   const handleAcceptJoinRequest = async (userId) => {
     try {
       console.log(userId);
-      await acceptJoinRequest(userId, space_uuid);
+      await acceptJoinRequest(userId, currentSpace?.space_uuid);
       addNotification({
         type: "success",
         title: "Request Accepted",
@@ -403,7 +403,7 @@ const UserPage = () => {
         duration: 3000,
       });
       // Immediately refetch to update the UI
-      refetchJoinRequests();
+      // refetchJoinRequests();
     } catch (error) {
       console.error("Failed to decline join request:", error);
       addNotification({
@@ -418,7 +418,7 @@ const UserPage = () => {
   // Send invite
   const sendInvite = async () => {
     const email = inviteEmail.trim();
-    
+
     if (!email) {
       addNotification({
         type: "error",
@@ -441,7 +441,7 @@ const UserPage = () => {
 
     try {
       const result = await inviteUser(space_uuid, email);
-      
+
       if (result.success) {
         addNotification({
           type: "success",
@@ -978,7 +978,11 @@ const UserPage = () => {
                 </button>
                 <button
                   onClick={() => {
-                    console.log("Tasks button clicked:", { isOwnerSpace, space_uuid, space_name });
+                    console.log("Tasks button clicked:", {
+                      isOwnerSpace,
+                      space_uuid,
+                      space_name,
+                    });
                     const targetRoute = `/space/${space_uuid}/${space_name}/tasks`;
                     console.log("Navigating to:", targetRoute);
                     navigate(targetRoute);
@@ -1534,12 +1538,12 @@ const UserPage = () => {
 
               {/* Invitations List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {joinRequestsData.length === 0 ? (
+                {joinRequestsByLink.length === 0 ? (
                   <p className="text-gray-400 text-center py-4">
                     No pending invitations
                   </p>
                 ) : (
-                  joinRequestsData.map((invitation) => (
+                  joinRequestsByLink.map((invitation) => (
                     <div
                       key={invitation.account_id}
                       className="bg-[#2A2F3A] rounded-lg p-4"

@@ -322,7 +322,10 @@ class SpaceService {
   ): Promise<ApiResponse> {
     try {
       const response = await api.patch<ApiResponse>(
-        `/spaces/${space_uuid}/decline/${user_id}?status=declined`,
+        `/spaces/join-by-link/decline`, {
+          space_uuid: space_uuid,
+          invited_account_id: user_id
+        }
       );
       return response.data;
     } catch (error: any) {

@@ -630,6 +630,22 @@ const AdminTaskPage = () => {
                   </div>
                 </>
               )}
+              {isFriendSpace && (
+                <div className="flex flex-col gap-2 mt-2">
+                  <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
+                    <span className="text-xs text-blue-400 break-all">
+                      {currentSpace?.space_link || "Loading..."}
+                    </span>
+                    <button
+                      onClick={() => handleCopyLink(currentSpace?.space_link)}
+                      className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
+                      title="Copy to clipboard"
+                    >
+                      <FiCopy size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">

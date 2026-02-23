@@ -105,7 +105,13 @@ const SpacePage = () => {
   // const courseSpaces = courseSpaces?.filter((s) => !allSpaces.has(s.space_uuid));
 
   return (
-    <div className="flex font-sans min-h-screen" style={{ backgroundColor: isDarkMode ? '#161A20' : currentColors.background, color: currentColors.text }}>
+    <div
+      className="flex font-sans min-h-screen"
+      style={{
+        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -124,7 +130,7 @@ const SpacePage = () => {
         md:block lg:hidden`}
         style={{
           backgroundColor: currentColors.surface,
-          color: currentColors.text
+          color: currentColors.text,
         }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -139,7 +145,7 @@ const SpacePage = () => {
           style={{
             backgroundColor: currentColors.surface,
             borderColor: currentColors.border,
-            color: currentColors.text
+            color: currentColors.text,
           }}
         >
           <button
@@ -156,39 +162,61 @@ const SpacePage = () => {
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           <div className="hidden md:flex items-center justify-center mb-8">
-            <h1 className="text-4xl font-bold" style={{ color: isDarkMode ? 'white' : 'black' }}>Spaces</h1>
+            <h1
+              className="text-4xl font-bold"
+              style={{ color: isDarkMode ? "white" : "black" }}
+            >
+              Spaces
+            </h1>
           </div>
 
           {/* Welcome Section */}
-          <div className="rounded-xl p-6 mb-8" style={{ 
-            background: 'linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)',
-            border: isDarkMode ? '1px solid #3B4457' : '1px solid black'
-          }}>
+          <div
+            className="rounded-xl p-6 mb-8"
+            style={{
+              background:
+                "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
+              border: isDarkMode ? "1px solid #3B4457" : "1px solid black",
+            }}
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <h2 className="text-2xl font-bold mb-2" style={{ color: 'white' }}>
+                <h2
+                  className="text-2xl font-bold mb-2"
+                  style={{ color: "white" }}
+                >
                   Good Morning, {user && user.name}
                 </h2>
-                <p className="text-sm mb-4" style={{ color: 'white' }}>
+                <p className="text-sm mb-4" style={{ color: "white" }}>
                   Join space or create your own.
                 </p>
 
-                <Button 
+                <Button
                   onClick={() => navigate("/space/create")}
-                  style={{ border: '1px solid black' }}
+                  style={{ border: "1px solid black" }}
                 >
                   Create Space
                 </Button>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-3" style={{ color: 'white' }}>
+                <h3
+                  className="text-lg font-semibold mb-3"
+                  style={{ color: "white" }}
+                >
                   Enter Code to Join Space
                 </h3>
-                <div className="rounded-lg p-4" style={{ 
-                  backgroundColor: isDarkMode ? '#1E242E' : currentColors.surface,
-                  border: isDarkMode ? '1px solid #3B4457' : '1px solid black'
-                }}>
+                <div
+                  className="rounded-lg p-4"
+                  style={{
+                    backgroundColor: isDarkMode
+                      ? "#1E242E"
+                      : currentColors.surface,
+                    border: isDarkMode
+                      ? "1px solid #3B4457"
+                      : "1px solid black",
+                  }}
+                >
                   <input
                     type="text"
                     value={joinCode}
@@ -196,8 +224,8 @@ const SpacePage = () => {
                     placeholder="Enter join code..."
                     className="w-full bg-transparent border-b pb-2 focus:outline-none placeholder-gray-500"
                     style={{
-                      borderColor: isDarkMode ? '#3B4457' : 'black',
-                      color: isDarkMode ? 'white' : 'white'
+                      borderColor: isDarkMode ? "#3B4457" : "black",
+                      color: isDarkMode ? "white" : "black",
                     }}
                   />
 
@@ -205,7 +233,7 @@ const SpacePage = () => {
                     <Button
                       disabled={loading}
                       onClick={handleJoinRequestSubmit}
-                      style={{ border: '1px solid black' }}
+                      style={{ border: "1px solid black" }}
                     >
                       {loading ? "Joining..." : "Join Space"}
                     </Button>
@@ -217,7 +245,12 @@ const SpacePage = () => {
 
           {/* YOUR SPACES - Dynamic */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-4" style={{ color: isDarkMode ? 'white' : 'black' }}>Your Spaces</h2>
+            <h2
+              className="text-2xl font-bold mb-4"
+              style={{ color: isDarkMode ? "white" : "black" }}
+            >
+              Your Spaces
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {userSpaces && userSpaces.length > 0 ? (
@@ -225,9 +258,13 @@ const SpacePage = () => {
                   <div
                     key={i}
                     className="rounded-lg overflow-hidden hover:shadow-lg transition group cursor-pointer relative"
-                    style={{ 
-                      backgroundColor: isDarkMode ? '#1E242E' : currentColors.surface,
-                      border: isDarkMode ? '1px solid #3B4457' : '1px solid black'
+                    style={{
+                      backgroundColor: isDarkMode
+                        ? "#1E242E"
+                        : currentColors.surface,
+                      border: isDarkMode
+                        ? "1px solid #3B4457"
+                        : "1px solid black",
                     }}
                   >
                     <div
@@ -240,7 +277,12 @@ const SpacePage = () => {
                       }
                       className="cursor-pointer"
                     >
-                      <div className="relative overflow-hidden h-40" style={{ backgroundColor: isDarkMode ? '#374151' : '#e5e7eb' }}>
+                      <div
+                        className="relative overflow-hidden h-40"
+                        style={{
+                          backgroundColor: isDarkMode ? "#374151" : "#e5e7eb",
+                        }}
+                      >
                         <SpaceCover
                           image={space.image}
                           name={space.space_name}
@@ -249,10 +291,16 @@ const SpacePage = () => {
                       </div>
 
                       <div className="p-4">
-                        <h3 className="font-semibold text-sm truncate" style={{ color: isDarkMode ? 'white' : 'black' }}>
+                        <h3
+                          className="font-semibold text-sm truncate"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
                           {capitalizeWords(space.space_name) + "'s Space"}
                         </h3>
-                        <p className="text-xs mt-1" style={{ color: isDarkMode ? '#9ca3af' : '#666666' }}>
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: isDarkMode ? "#9ca3af" : "#666666" }}
+                        >
                           {space.members != null
                             ? `${space?.members?.length} Members`
                             : "No members"}
@@ -271,7 +319,7 @@ const SpacePage = () => {
                               : space.space_uuid,
                           );
                         }}
-                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -293,11 +341,18 @@ const SpacePage = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-full p-4 rounded-lg text-center" style={{ 
-                  backgroundColor: isDarkMode ? '#1E242E' : currentColors.surface,
-                  border: isDarkMode ? '1px solid #3B4457' : '1px solid black',
-                  color: currentColors.textSecondary
-                }}>
+                <div
+                  className="col-span-full p-4 rounded-lg text-center"
+                  style={{
+                    backgroundColor: isDarkMode
+                      ? "#1E242E"
+                      : currentColors.surface,
+                    border: isDarkMode
+                      ? "1px solid #3B4457"
+                      : "1px solid black",
+                    color: currentColors.textSecondary,
+                  }}
+                >
                   No spaces yet — create one to get started!
                 </div>
               )}
@@ -306,14 +361,22 @@ const SpacePage = () => {
 
           {/* Course Spaces - Dynamic Data */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-4" style={{ color: isDarkMode ? 'white' : 'black' }}>Courses Spaces</h2>
+            <h2
+              className="text-2xl font-bold mb-4"
+              style={{ color: isDarkMode ? "white" : "black" }}
+            >
+              Courses Spaces
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {courseSpaces && courseSpaces.length > 0 ? (
                 courseSpaces.map((course, i) => (
                   <div
                     key={i}
-                    className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
+                    style={{
+                      backgroundColor: isDarkMode ? "#374151" : "#e5e7eb",
+                    }}
+                    className="rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
                   >
                     <div
                       onClick={() =>
@@ -323,7 +386,12 @@ const SpacePage = () => {
                       }
                       className="cursor-pointer"
                     >
-                      <div className="relative h-48" style={{ backgroundColor: isDarkMode ? '#374151' : '#e5e7eb' }}>
+                      <div
+                        className="relative h-48"
+                        style={{
+                          backgroundColor: isDarkMode ? "#374151" : "white",
+                        }}
+                      >
                         <SpaceCover
                           image={course.background_img || course.image}
                           name={course.space_name}
@@ -332,7 +400,7 @@ const SpacePage = () => {
                       </div>
 
                       <div className="p-4">
-                        <h3 className="font-semibold text-white text-sm mb-1 truncate">
+                        <h3 className="font-semibold text-sm mb-1 truncate">
                           {capitalizeWords(course.space_name)}'s Space
                         </h3>
                         <p className="text-gray-400 text-xs mb-1">
@@ -351,12 +419,18 @@ const SpacePage = () => {
                             : course.members?.length || 0}{" "}
                           Students
                         </p>
-                        <p className="text-xs mt-1" style={{ color: isDarkMode ? '#6b7280' : '#4b5563' }}>
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: isDarkMode ? "#6b7280" : "#4b5563" }}
+                        >
                           {course.space_day} (
                           {`${course.space_time_start} - ${course.space_time_end}`}
                           )
                         </p>
-                        <p className="text-xs mb-2" style={{ color: isDarkMode ? '#6b7280' : '#4b5563' }}>
+                        <p
+                          className="text-xs mb-2"
+                          style={{ color: isDarkMode ? "#6b7280" : "#4b5563" }}
+                        >
                           Opened just now
                         </p>
                       </div>
@@ -373,7 +447,7 @@ const SpacePage = () => {
                               : course.space_uuid,
                           );
                         }}
-                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -395,11 +469,18 @@ const SpacePage = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-full p-4 rounded-lg text-center" style={{ 
-                  backgroundColor: isDarkMode ? '#1E242E' : currentColors.surface,
-                  border: isDarkMode ? '1px solid #3B4457' : '1px solid black',
-                  color: currentColors.textSecondary
-                }}>
+                <div
+                  className="col-span-full p-4 rounded-lg text-center"
+                  style={{
+                    backgroundColor: isDarkMode
+                      ? "#1E242E"
+                      : currentColors.surface,
+                    border: isDarkMode
+                      ? "1px solid #3B4457"
+                      : "1px solid black",
+                    color: currentColors.textSecondary,
+                  }}
+                >
                   No Course Space Yet!
                 </div>
               )}
@@ -408,7 +489,12 @@ const SpacePage = () => {
 
           {/* FRIENDS SPACES - Dynamic */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-4" style={{ color: isDarkMode ? 'white' : 'black' }}>Friends Space</h2>
+            <h2
+              className="text-2xl font-bold mb-4"
+              style={{ color: isDarkMode ? "white" : "black" }}
+            >
+              Friends Space
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sharedSpaces.length > 0 ? (
@@ -427,7 +513,12 @@ const SpacePage = () => {
                       }
                       className="cursor-pointer"
                     >
-                      <div className="relative h-40" style={{ backgroundColor: isDarkMode ? '#374151' : '#e5e7eb' }}>
+                      <div
+                        className="relative h-40"
+                        style={{
+                          backgroundColor: isDarkMode ? "#374151" : "#e5e7eb",
+                        }}
+                      >
                         <SpaceCover
                           image={space.image}
                           name={space.space_name}
@@ -436,7 +527,7 @@ const SpacePage = () => {
                       </div>
 
                       <div className="p-4">
-                        <h3 className="font-semibold text-white text-sm mb-1 truncate">
+                        <h3 className="font-semibold text-sm mb-1 truncate">
                           {capitalizeWords(space.space_name) + "'s Space"}
                         </h3>
                         <p className="text-gray-400 text-xs mb-1">
@@ -458,7 +549,7 @@ const SpacePage = () => {
                               : space.space_uuid,
                           );
                         }}
-                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -480,11 +571,18 @@ const SpacePage = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-full p-4 rounded-lg text-center" style={{ 
-                  backgroundColor: isDarkMode ? '#1E242E' : currentColors.surface,
-                  border: isDarkMode ? '1px solid #3B4457' : '1px solid black',
-                  color: currentColors.textSecondary
-                }}>
+                <div
+                  className="col-span-full p-4 rounded-lg text-center"
+                  style={{
+                    backgroundColor: isDarkMode
+                      ? "#1E242E"
+                      : currentColors.surface,
+                    border: isDarkMode
+                      ? "1px solid #3B4457"
+                      : "1px solid black",
+                    color: currentColors.textSecondary,
+                  }}
+                >
                   No friends space found
                 </div>
               )}
@@ -495,19 +593,32 @@ const SpacePage = () => {
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-            <div className="rounded-xl p-6 max-w-sm w-full" style={{ 
-              backgroundColor: currentColors.surface, 
-              border: `1px solid ${currentColors.border}` 
-            }}>
-              <h3 className="text-lg font-semibold mb-3" style={{ color: isDarkMode ? 'white' : 'black' }}>Delete Space</h3>
-              <p className="text-sm mb-6" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
+            <div
+              className="rounded-xl p-6 max-w-sm w-full"
+              style={{
+                backgroundColor: currentColors.surface,
+                border: `1px solid ${currentColors.border}`,
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-3"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
+                Delete Space
+              </h3>
+              <p
+                className="text-sm mb-6"
+                style={{
+                  color: isDarkMode ? currentColors.textSecondary : "black",
+                }}
+              >
                 Are you sure you want to delete this space? This action cannot
                 be undone.
               </p>
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setShowDeleteConfirm(null)}
-                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
+                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm"
                 >
                   Cancel
                 </button>
@@ -518,7 +629,7 @@ const SpacePage = () => {
                     setShowDeleteConfirm(null);
                     setShowMenu(null);
                   }}
-                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
+                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-sm"
                 >
                   Delete
                 </button>
@@ -530,19 +641,32 @@ const SpacePage = () => {
         {/* Leave Confirmation Modal */}
         {showLeaveConfirm && (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-            <div className="rounded-xl p-6 max-w-sm w-full" style={{ 
-              backgroundColor: currentColors.surface, 
-              border: `1px solid ${currentColors.border}` 
-            }}>
-              <h3 className="text-lg font-semibold mb-3" style={{ color: isDarkMode ? 'white' : 'black' }}>Leave Space</h3>
-              <p className="text-sm mb-6" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
+            <div
+              className="rounded-xl p-6 max-w-sm w-full"
+              style={{
+                backgroundColor: currentColors.surface,
+                border: `1px solid ${currentColors.border}`,
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-3"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
+                Leave Space
+              </h3>
+              <p
+                className="text-sm mb-6"
+                style={{
+                  color: isDarkMode ? currentColors.textSecondary : "black",
+                }}
+              >
                 Are you sure you want to leave this space? You'll need to be
                 re-invited to rejoin.
               </p>
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setShowLeaveConfirm(null)}
-                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
+                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm"
                 >
                   Cancel
                 </button>
@@ -553,7 +677,7 @@ const SpacePage = () => {
                     setShowLeaveConfirm(null);
                     setShowMenu(null);
                   }}
-                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
+                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-sm"
                 >
                   Leave
                 </button>

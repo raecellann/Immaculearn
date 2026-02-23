@@ -216,7 +216,13 @@ const HomePage1 = () => {
   );
 
   return (
-    <div className="flex font-sans min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+    <div
+      className="flex font-sans min-h-screen"
+      style={{
+        backgroundColor: currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -240,7 +246,7 @@ const HomePage1 = () => {
         }`}
         style={{
           backgroundColor: currentColors.surface,
-          color: currentColors.text
+          color: currentColors.text,
         }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -256,7 +262,7 @@ const HomePage1 = () => {
           style={{
             backgroundColor: currentColors.surface,
             borderColor: currentColors.border,
-            color: currentColors.text
+            color: currentColors.text,
           }}
         >
           <button
@@ -274,34 +280,60 @@ const HomePage1 = () => {
           <div className="flex-1 min-w-0">
             {/* Title and Date ABOVE the card */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-white font-grotesque" style={{ color: isDarkMode ? 'white' : 'black' }}>
+              <h2
+                className="text-xl sm:text-2xl font-bold text-white font-grotesque"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
                 Get Productive Today!
               </h2>
-              <p className="text-xs sm:text-sm font-inter" style={{ color: isDarkMode ? '#9ca3af' : 'black' }}>
+              <p
+                className="text-xs sm:text-sm font-inter"
+                style={{ color: isDarkMode ? "#9ca3af" : "black" }}
+              >
                 {currentDate}
               </p>
             </div>
 
             {/* Welcome Card */}
-            <div className="rounded-xl p-6 mb-10 flex items-center justify-between" style={{ 
-              backgroundColor: currentColors.surface,
-              border: isDarkMode ? 'none' : '1px solid black'
-            }}>
+            <div
+              className="rounded-xl p-6 mb-10 flex items-center justify-between"
+              style={{
+                backgroundColor: currentColors.surface,
+                border: isDarkMode ? "none" : "1px solid black",
+              }}
+            >
               <div className="flex flex-col sm:flex-row justify-between gap-6">
                 <div>
-                  <h1 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: isDarkMode ? '#B0C4FF' : '#1e3a8a' }}>
+                  <h1
+                    className="text-lg sm:text-xl font-semibold mb-2"
+                    style={{ color: isDarkMode ? "#B0C4FF" : "#1e3a8a" }}
+                  >
                     {greeting}, {user?.name || "Student"}
                   </h1>
-                  <p className="mb-1" style={{ color: isDarkMode ? currentColors.textSecondary : '#333333' }}>
+                  <p
+                    className="mb-1"
+                    style={{
+                      color: isDarkMode
+                        ? currentColors.textSecondary
+                        : "#333333",
+                    }}
+                  >
                     Meet your classmates and collaborate with them.
                   </p>
-                  <p className="mb-5" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>
+                  <p
+                    className="mb-5"
+                    style={{
+                      color: isDarkMode
+                        ? currentColors.textSecondary
+                        : "#666666",
+                    }}
+                  >
                     Join a space or create your own.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                       className="bg-[#007AFF] hover:bg-blue-700 text-sm py-2 px-4"
-                      style={{ color: 'white' }}
+                      style={{ color: "white" }}
                       onClick={() => navigate("/space/create")}
                     >
                       Create Space
@@ -309,8 +341,8 @@ const HomePage1 = () => {
                     <Button
                       className="border text-sm py-2 px-4"
                       style={{
-                        borderColor: isDarkMode ? '#4a5568' : 'black',
-                        color: isDarkMode ? 'black' : 'white'
+                        borderColor: isDarkMode ? "#4a5568" : "black",
+                        color: isDarkMode ? "black" : "white",
                       }}
                       onClick={() => navigate("/space")}
                     >
@@ -327,19 +359,38 @@ const HomePage1 = () => {
             </div>
 
             <div className="xl:hidden mb-8">
-              <h2 className="text-lg sm:text-xl font-semibold mb-3" style={{ color: isDarkMode ? 'white' : 'black' }}>
+              <h2
+                className="text-lg sm:text-xl font-semibold mb-3"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
                 Reminders
               </h2>
-              <div className="rounded-xl p-4 sm:p-6" style={{ 
-                backgroundColor: currentColors.surface,
-                border: isDarkMode ? 'none' : '1px solid black'
-              }}>
+              <div
+                className="rounded-xl p-4 sm:p-6"
+                style={{
+                  backgroundColor: currentColors.surface,
+                  border: isDarkMode ? "none" : "1px solid black",
+                }}
+              >
                 <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 mx-auto mb-4" style={{ color: currentColors.textSecondary }} />
-                  <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
+                  <Calendar
+                    className="w-12 h-12 mx-auto mb-4"
+                    style={{ color: currentColors.textSecondary }}
+                  />
+                  <p
+                    className="text-sm"
+                    style={{
+                      color: isDarkMode ? currentColors.textSecondary : "black",
+                    }}
+                  >
                     No tasks created yet
                   </p>
-                  <p className="text-xs mt-2" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
+                  <p
+                    className="text-xs mt-2"
+                    style={{
+                      color: isDarkMode ? currentColors.textSecondary : "black",
+                    }}
+                  >
                     Go to your calendar to create tasks and set reminders
                   </p>
                   <div className="mt-6">
@@ -365,7 +416,7 @@ const HomePage1 = () => {
                       setSlideIndexYourSpace((p) => Math.max(0, p - 1))
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
-                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
+                    style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
                     ‹
                   </button>
@@ -377,22 +428,28 @@ const HomePage1 = () => {
                       )
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
-                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
+                    style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
                     ›
                   </button>
-                  <button className="hidden sm:block hover:underline text-sm" style={{ color: isDarkMode ? '#60A5FA' : 'black' }}>
+                  <button
+                    className="hidden sm:block hover:underline text-sm"
+                    style={{ color: isDarkMode ? "#60A5FA" : "black" }}
+                  >
                     View All
                   </button>
                 </div>
               </div>
 
               {userSpaces.length === 0 ? (
-                <div className="rounded-xl p-10 text-center border border-dashed" style={{ 
-                  backgroundColor: currentColors.surface, 
-                  color: currentColors.textSecondary,
-                  borderColor: isDarkMode ? currentColors.border : 'black'
-                }}>
+                <div
+                  className="rounded-xl p-10 text-center border border-dashed"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    color: currentColors.textSecondary,
+                    borderColor: isDarkMode ? currentColors.border : "black",
+                  }}
+                >
                   No spaces yet — create one to get started!
                 </div>
               ) : (
@@ -414,9 +471,9 @@ const HomePage1 = () => {
                             <div
                               key={space.space_uuid}
                               className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
-                              style={{ 
+                              style={{
                                 backgroundColor: currentColors.surface,
-                                border: isDarkMode ? 'none' : '1px solid black'
+                                border: isDarkMode ? "none" : "1px solid black",
                               }}
                             >
                               <div
@@ -460,10 +517,13 @@ const HomePage1 = () => {
                                 </button>
 
                                 {showMenu === space.space_uuid && (
-                                  <div className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]" style={{ 
-                                  backgroundColor: currentColors.surface, 
-                                  border: `1px solid ${currentColors.border}` 
-                                }}>
+                                  <div
+                                    className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]"
+                                    style={{
+                                      backgroundColor: currentColors.surface,
+                                      border: `1px solid ${currentColors.border}`,
+                                    }}
+                                  >
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -498,7 +558,7 @@ const HomePage1 = () => {
                       setSlideIndexCourseSpace((p) => Math.max(0, p - 1))
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
-                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
+                    style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
                     ‹
                   </button>
@@ -510,21 +570,27 @@ const HomePage1 = () => {
                       )
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
-                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
+                    style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
                     ›
                   </button>
-                  <button className="hidden sm:block hover:underline text-sm" style={{ color: isDarkMode ? '#60A5FA' : 'black' }}>
+                  <button
+                    className="hidden sm:block hover:underline text-sm"
+                    style={{ color: isDarkMode ? "#60A5FA" : "black" }}
+                  >
                     View All
                   </button>
                 </div>
               </div>
 
               {courseSpaces?.length === 0 ? (
-                <div className="rounded-xl p-10 text-center" style={{ 
-                  backgroundColor: currentColors.surface, 
-                  color: currentColors.textSecondary 
-                }}>
+                <div
+                  className="rounded-xl p-10 text-center"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    color: currentColors.textSecondary,
+                  }}
+                >
                   No Course Space Yet!
                 </div>
               ) : (
@@ -546,9 +612,9 @@ const HomePage1 = () => {
                             <div
                               key={i}
                               className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
-                              style={{ 
+                              style={{
                                 backgroundColor: currentColors.surface,
-                                border: isDarkMode ? 'none' : '1px solid black'
+                                border: isDarkMode ? "none" : "1px solid black",
                               }}
                             >
                               <div
@@ -614,10 +680,13 @@ const HomePage1 = () => {
                                 </button>
 
                                 {showMenu === course.space_uuid && (
-                                  <div className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]" style={{ 
-                                  backgroundColor: currentColors.surface, 
-                                  border: `1px solid ${currentColors.border}` 
-                                }}>
+                                  <div
+                                    className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]"
+                                    style={{
+                                      backgroundColor: currentColors.surface,
+                                      border: `1px solid ${currentColors.border}`,
+                                    }}
+                                  >
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -652,7 +721,7 @@ const HomePage1 = () => {
                       setSlideIndexFriendsSpace((p) => Math.max(0, p - 1))
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
-                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
+                    style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
                     ‹
                   </button>
@@ -664,21 +733,27 @@ const HomePage1 = () => {
                       )
                     }
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
-                    style={{ color: isDarkMode ? '#9ca3af' : 'black' }}
+                    style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
                     ›
                   </button>
-                  <button className="hidden sm:block hover:underline text-sm" style={{ color: isDarkMode ? '#60A5FA' : 'black' }}>
+                  <button
+                    className="hidden sm:block hover:underline text-sm"
+                    style={{ color: isDarkMode ? "#60A5FA" : "black" }}
+                  >
                     View All
                   </button>
                 </div>
               </div>
 
               {sharedSpaces.length === 0 ? (
-                <div className="rounded-xl p-10 text-center" style={{ 
-                  backgroundColor: currentColors.surface, 
-                  color: currentColors.textSecondary 
-                }}>
+                <div
+                  className="rounded-xl p-10 text-center"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    color: currentColors.textSecondary,
+                  }}
+                >
                   No shared spaces yet
                 </div>
               ) : (
@@ -700,9 +775,9 @@ const HomePage1 = () => {
                             <div
                               key={space.space_uuid}
                               className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
-                              style={{ 
+                              style={{
                                 backgroundColor: currentColors.surface,
-                                border: isDarkMode ? 'none' : '1px solid black'
+                                border: isDarkMode ? "none" : "1px solid black",
                               }}
                             >
                               <div
@@ -749,10 +824,13 @@ const HomePage1 = () => {
                                 </button>
 
                                 {showMenu === space.space_uuid && (
-                                  <div className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]" style={{ 
-                                  backgroundColor: currentColors.surface, 
-                                  border: `1px solid ${currentColors.border}` 
-                                }}>
+                                  <div
+                                    className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]"
+                                    style={{
+                                      backgroundColor: currentColors.surface,
+                                      border: `1px solid ${currentColors.border}`,
+                                    }}
+                                  >
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -782,24 +860,45 @@ const HomePage1 = () => {
           {/* RIGHT CONTENT - Reminders (Desktop Only - Sticky Sidebar) */}
           <div className="hidden xl:block w-80 mr-6 flex-shrink-0 self-start sticky top-6 flex flex-col gap-6">
             {/* Reminders Section */}
-            <div className="rounded-xl p-6 flex-1" style={{ 
-              backgroundColor: currentColors.surface,
-              border: isDarkMode ? 'none' : '1px solid black'
-            }}>
+            <div
+              className="rounded-xl p-6 flex-1"
+              style={{
+                backgroundColor: currentColors.surface,
+                border: isDarkMode ? "none" : "1px solid black",
+              }}
+            >
               <div>
-                <h4 className="font-semibold mb-3" style={{ color: isDarkMode ? 'white' : 'black' }}>Reminders</h4>
+                <h4
+                  className="font-semibold mb-3"
+                  style={{ color: isDarkMode ? "white" : "black" }}
+                >
+                  Reminders
+                </h4>
                 <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 mx-auto mb-4" style={{ color: currentColors.textSecondary }} />
-                  <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
+                  <Calendar
+                    className="w-12 h-12 mx-auto mb-4"
+                    style={{ color: currentColors.textSecondary }}
+                  />
+                  <p
+                    className="text-sm"
+                    style={{
+                      color: isDarkMode ? currentColors.textSecondary : "black",
+                    }}
+                  >
                     No tasks created yet
                   </p>
-                  <p className="text-xs mt-2" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
+                  <p
+                    className="text-xs mt-2"
+                    style={{
+                      color: isDarkMode ? currentColors.textSecondary : "black",
+                    }}
+                  >
                     Go to your calendar to create tasks and set reminders
                   </p>
                   <div className="mt-6">
-                    <Button2 
+                    <Button2
                       text="Go to Calendar"
-                      onClick={() => navigate('/calendar')}
+                      onClick={() => navigate("/calendar")}
                     />
                   </div>
                 </div>
@@ -820,19 +919,33 @@ const HomePage1 = () => {
         {/* Leave Confirmation Modal */}
         {showLeaveConfirm && (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-            <div className="rounded-xl p-6 max-w-sm w-full" style={{ 
-              backgroundColor: currentColors.surface, 
-              border: `1px solid ${currentColors.border}` 
-            }}>
-              <h3 className="text-lg font-semibold mb-3" style={{ color: isDarkMode ? 'white' : 'black' }}>Leave Space</h3>
-              <p className="text-sm mb-6" style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}>
-                Are you sure you want to leave this space? You'll need to be re-invited to join again.
+            <div
+              className="rounded-xl p-6 max-w-sm w-full"
+              style={{
+                backgroundColor: currentColors.surface,
+                border: `1px solid ${currentColors.border}`,
+              }}
+            >
+              <h3
+                className="text-lg font-semibold mb-3"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
+                Leave Space
+              </h3>
+              <p
+                className="text-sm mb-6"
+                style={{
+                  color: isDarkMode ? currentColors.textSecondary : "black",
+                }}
+              >
+                Are you sure you want to leave this space? You'll need to be
+                re-invited to join again.
               </p>
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setShowLeaveConfirm(null)}
                   className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm"
-                  style={{ color: 'white' }}
+                  style={{ color: "white" }}
                 >
                   Cancel
                 </button>
@@ -844,7 +957,7 @@ const HomePage1 = () => {
                     setShowMenu(null);
                   }}
                   className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-sm"
-                  style={{ color: 'white' }}
+                  style={{ color: "white" }}
                 >
                   Leave
                 </button>

@@ -31,6 +31,10 @@ const ProfNotificationPage = () => {
     friendSpaces,
     joinRequestsByLink,
     joinRequestsByLinkLoading,
+
+    // joinRequestsByLink,
+    pendingSpaceInvitation,
+
     acceptJoinRequest,
     declineJoinRequest,
     isLoading: spaceLoading,
@@ -108,7 +112,7 @@ const ProfNotificationPage = () => {
       });
   }, [joinRequestsByLink, ownedSpaces]);
 
-  const pendingInvitesCount = allJoinRequests?.length;
+  const pendingInvitesCount = joinRequestsByLink?.length;
 
   // Mock school announcements data - replace with actual data source
   const schoolAnnouncements = [
@@ -276,7 +280,18 @@ const ProfNotificationPage = () => {
 
           {/* Filter Section */}
           <div className="max-w-3xl mx-auto mb-6">
-            <div className="p-4 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(45, 55, 72, 0.5)' : currentColors.surface, backdropFilter: isDarkMode ? 'blur(10px)' : 'none', borderColor: isDarkMode ? 'rgb(55 65 81 / var(--tw-border-opacity, 1))' : 'black' }}>
+            <div
+              className="p-4 rounded-lg border"
+              style={{
+                backgroundColor: isDarkMode
+                  ? "rgba(45, 55, 72, 0.5)"
+                  : currentColors.surface,
+                backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                borderColor: isDarkMode
+                  ? "rgb(55 65 81 / var(--tw-border-opacity, 1))"
+                  : "black",
+              }}
+            >
               <div className="flex items-center gap-2 mb-3">
                 <FiFilter className="text-blue-400" />
                 <span
@@ -311,7 +326,18 @@ const ProfNotificationPage = () => {
           <div className="flex flex-col gap-4 max-w-3xl mx-auto">
             {/* Pending Join Requests Section */}
             {filteredSections.showJoinRequests && (
-              <div className="p-5 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.5)' : currentColors.surface, backdropFilter: isDarkMode ? 'blur(10px)' : 'none', borderColor: isDarkMode ? 'rgb(55 65 81 / var(--tw-border-opacity, 1))' : 'black' }}>
+              <div
+                className="p-5 rounded-lg border"
+                style={{
+                  backgroundColor: isDarkMode
+                    ? "rgba(31, 41, 55, 0.5)"
+                    : currentColors.surface,
+                  backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                  borderColor: isDarkMode
+                    ? "rgb(55 65 81 / var(--tw-border-opacity, 1))"
+                    : "black",
+                }}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <FiUsers size={22} className="text-blue-500" />
@@ -330,7 +356,7 @@ const ProfNotificationPage = () => {
                             : "#666666",
                         }}
                       >
-                        {pendingInvitesCount} request(s)
+                        {joinRequestsByLink?.length} request(s)
                       </p>
                     </div>
                   </div>
@@ -344,8 +370,17 @@ const ProfNotificationPage = () => {
                 </div>
 
                 {/* Preview of recent join requests */}
-                {allJoinRequests.slice(0, 2).map((invite) => (
-                  <div key={`${invite.space_uuid}-${invite.account_id}`} className="mt-3 p-3 rounded-lg" style={{ backgroundColor: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : currentColors.surface, backdropFilter: isDarkMode ? 'blur(10px)' : 'none' }}>
+                {joinRequestsByLink.slice(0, 2).map((invite) => (
+                  <div
+                    key={`${invite.space_uuid || invite.c_space_uuid}-${invite.account_id}`}
+                    className="mt-3 p-3 rounded-lg"
+                    style={{
+                      backgroundColor: isDarkMode
+                        ? "rgba(55, 65, 81, 0.5)"
+                        : currentColors.surface,
+                      backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                    }}
+                  >
                     <div className="flex items-center gap-3">
                       <img
                         src={invite.profile_pic}
@@ -373,7 +408,7 @@ const ProfNotificationPage = () => {
                     </div>
                   </div>
                 ))}
-                {allJoinRequests?.length > 2 && (
+                {joinRequestsByLink?.length > 2 && (
                   <p
                     className="text-xs mt-2 text-center"
                     style={{
@@ -382,7 +417,7 @@ const ProfNotificationPage = () => {
                         : "#666666",
                     }}
                   >
-                    And {allJoinRequests?.length - 2} more...
+                    And {joinRequestsByLink?.length - 2} more...
                   </p>
                 )}
               </div>
@@ -390,7 +425,18 @@ const ProfNotificationPage = () => {
 
             {/* Space Invitations Section */}
             {filteredSections.showSpaceInvitations && (
-              <div className="p-5 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.5)' : currentColors.surface, backdropFilter: isDarkMode ? 'blur(10px)' : 'none', borderColor: isDarkMode ? 'rgb(55 65 81 / var(--tw-border-opacity, 1))' : 'black' }}>
+              <div
+                className="p-5 rounded-lg border"
+                style={{
+                  backgroundColor: isDarkMode
+                    ? "rgba(31, 41, 55, 0.5)"
+                    : currentColors.surface,
+                  backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                  borderColor: isDarkMode
+                    ? "rgb(55 65 81 / var(--tw-border-opacity, 1))"
+                    : "black",
+                }}
+              >
                 <div className="flex items-center gap-3 mb-4">
                   <FiUsers size={22} className="text-green-500" />
                   <div>
@@ -427,7 +473,18 @@ const ProfNotificationPage = () => {
 
             {/* School Announcements Section */}
             {filteredSections.showAnnouncements && (
-              <div className="p-5 rounded-lg border" style={{ backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.5)' : currentColors.surface, backdropFilter: isDarkMode ? 'blur(10px)' : 'none', borderColor: isDarkMode ? 'rgb(55 65 81 / var(--tw-border-opacity, 1))' : 'black' }}>
+              <div
+                className="p-5 rounded-lg border"
+                style={{
+                  backgroundColor: isDarkMode
+                    ? "rgba(31, 41, 55, 0.5)"
+                    : currentColors.surface,
+                  backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                  borderColor: isDarkMode
+                    ? "rgb(55 65 81 / var(--tw-border-opacity, 1))"
+                    : "black",
+                }}
+              >
                 <div className="flex items-center gap-3 mb-4">
                   <FiBell size={22} className="text-yellow-500" />
                   <div>
@@ -504,10 +561,25 @@ const ProfNotificationPage = () => {
       {/* MODAL */}
       {showPendingInvitations && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" style={{ backgroundColor: isDarkMode ? 'rgba(45, 55, 72, 0.5)' : currentColors.surface, backdropFilter: isDarkMode ? 'blur(10px)' : 'none' }}>
-
-            <div className="p-4 border-b" style={{ borderColor: currentColors.border }}>
-              <h2 className="text-lg font-semibold" style={{ color: isDarkMode ? 'white' : 'black' }}>Pending Invitations</h2>
+          <div
+            className="rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col"
+            style={{
+              backgroundColor: isDarkMode
+                ? "rgba(45, 55, 72, 0.5)"
+                : currentColors.surface,
+              backdropFilter: isDarkMode ? "blur(10px)" : "none",
+            }}
+          >
+            <div
+              className="p-4 border-b"
+              style={{ borderColor: currentColors.border }}
+            >
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
+                Pending Invitations
+              </h2>
               <button
                 onClick={() => setShowPendingInvitations(false)}
                 className="text-2xl"
@@ -521,7 +593,10 @@ const ProfNotificationPage = () => {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {allJoinRequests.length === 0 ? (
-                <p className="text-center py-4" style={{ color: currentColors.textSecondary }}>
+                <p
+                  className="text-center py-4"
+                  style={{ color: currentColors.textSecondary }}
+                >
                   No pending invitations
                 </p>
               ) : (
@@ -529,7 +604,15 @@ const ProfNotificationPage = () => {
                   <div
                     key={`${invite.space_uuid}-${invite.account_id}`}
                     className="rounded-lg p-4 border"
-                    style={{ backgroundColor: isDarkMode ? 'rgba(45, 55, 72, 0.3)' : currentColors.surface, backdropFilter: isDarkMode ? 'blur(10px)' : 'none', borderColor: isDarkMode ? 'rgb(55 65 81 / var(--tw-border-opacity, 1))' : 'black' }}
+                    style={{
+                      backgroundColor: isDarkMode
+                        ? "rgba(45, 55, 72, 0.3)"
+                        : currentColors.surface,
+                      backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                      borderColor: isDarkMode
+                        ? "rgb(55 65 81 / var(--tw-border-opacity, 1))"
+                        : "black",
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       <img
@@ -573,9 +656,9 @@ const ProfNotificationPage = () => {
                           handleDecline(invite.account_id, invite.space_uuid)
                         }
                         className="px-3 py-1.5 text-sm rounded-md"
-                        style={{ 
-                          backgroundColor: isDarkMode ? '#4B5563' : '#E5E7EB',
-                          color: isDarkMode ? 'white' : 'black'
+                        style={{
+                          backgroundColor: isDarkMode ? "#4B5563" : "#E5E7EB",
+                          color: isDarkMode ? "white" : "black",
                         }}
                       >
                         Decline
@@ -585,7 +668,9 @@ const ProfNotificationPage = () => {
                           handleAccept(invite.account_id, invite.space_uuid)
                         }
                         className="px-3 py-1.5 text-sm rounded-md text-white"
-                        style={{ backgroundColor: isDarkMode ? '#2563EB' : '#3B82F6' }}
+                        style={{
+                          backgroundColor: isDarkMode ? "#2563EB" : "#3B82F6",
+                        }}
                       >
                         Accept
                       </button>
