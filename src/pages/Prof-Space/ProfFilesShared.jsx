@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
+import AddMember from "../component/AddMember";
 import { FiFileText, FiMenu, FiX, FiUpload, FiCopy } from "react-icons/fi";
 import Logout from "../component/logout";
 import { useUser } from "../../contexts/user/useUser";
@@ -528,118 +529,13 @@ const ProfFilesShared = () => {
       )}
 
 
-      {/* INVITE POPUP */}
-      {showInvitePopup && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-[#E6E6E6] rounded-2xl w-[420px] max-w-[90vw] p-6 shadow-xl">
-
-            
-            {/* HEADER */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-black">Add Member</h2>
-              <button
-                onClick={() => setShowInvitePopup(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-
-
-            {/* INVITATION LINK */}
-            <div className="mb-4">
-              <p className="text-sm font-medium text-black mb-1">
-                Invitation Link
-              </p>
-              <div className="flex items-center justify-between bg-white px-3 py-1 rounded-md border border-gray-300">
-                <span className="text-xs text-gray-600 truncate flex-1">
-                  {currentSpace?.space_link}
-                </span>
-                <button 
-                  onClick={() => handleCopyLink(currentSpace?.space_link)} 
-                  className={`text-sm ml-2 px-2 py-1 rounded transition-colors ${
-                    copyFeedback 
-                      ? copyFeedback === "Copied!" 
-                        ? "text-green-600 bg-green-50" 
-                        : "text-red-600 bg-red-50"
-                      : "text-gray-500 hover:text-black hover:bg-gray-100"
-                  }`}
-                >
-                  {copyFeedback || "Copy Link"}
-                </button>
-              </div>
-            </div>
-
-
-            {/* INPUT */}
-            <div className="mb-4">
-              <p className="text-sm font-medium text-black mb-1">
-                Type username or email
-              </p>
-              <input
-                type="text"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                className="
-                  w-full
-                  px-3
-                  py-2
-                  rounded-md
-                  border
-                  border-purple-500
-                  bg-white
-                  text-black
-                  outline-none
-                  focus:ring-2
-                  focus:ring-purple-500
-                "
-              />
-            </div>
-
-            {/* SUGGESTED USERS */}
-            <div>
-              <p className="text-sm font-medium text-black mb-2">
-                Suggested Users
-              </p>
-
-              <div className="space-y-3">
-                {[
-                  {
-                    name: "Raecell Ann Galvez",
-                    email: "raecellanngalvez@gmail.com",
-                    avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
-                  },
-                  {
-                    name: "Nathaniel Faborada",
-                    email: "faboradanathaniel@gmail.com",
-                    avatar: "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
-                  },
-                  {
-                    name: "Wilson Esmabe",
-                    email: "wilsonesmabe2003@gmail.com",
-                    avatar: "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419202/wilson_fw2qoz.jpg",
-                  },
-                ].map((user, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 bg-transparent hover:bg-gray-200 px-2 py-2 rounded-lg cursor-pointer"
-                  >
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <div className="text-sm">
-                      <p className="font-medium text-black">{user.name}</p>
-                      <p className="text-xs text-gray-600">{user.email}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ADD MEMBER POPUP */}
+      <AddMember
+        currentSpace={currentSpace}
+        onInviteMember={sendInvite}
+        showInvitePopup={showInvitePopup}
+        setShowInvitePopup={setShowInvitePopup}
+      />
 
 
       {/* CREATE/UPLOAD POPUP MODAL */}
