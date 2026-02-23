@@ -129,8 +129,7 @@ const ProfCreateClassroomSpace = () => {
   const handleCreateCourseSpace = async () => {
     if (spaceName.trim()) {
       try {
-
-        console.log(timeSchedule)
+        console.log(timeSchedule);
         // Parse time schedule to get start and end times
         const timeParts = timeSchedule.split(" - ");
         const timeStart = timeParts[0] || "";
@@ -141,13 +140,13 @@ const ProfCreateClassroomSpace = () => {
           const [time, period] = timeStr.split(" ");
           const [hour, minute] = time.split(":");
           let hour24 = parseInt(hour);
-          
+
           if (period === "PM" && hour24 !== 12) {
             hour24 += 12;
           } else if (period === "AM" && hour24 === 12) {
             hour24 = 0;
           }
-          
+
           return `${hour24.toString().padStart(2, "0")}:${minute}`;
         };
 
@@ -168,7 +167,8 @@ const ProfCreateClassroomSpace = () => {
         const result = await createCourseSpace(spaceData);
 
         if (result.success) {
-          const space_uuid = result.data?.space_uuid;
+          const space_uuid = result?.space_uuid;
+          console.log(space_uuid);
           toast.success(`Course Space "${spaceName}" created successfully!`);
           // alert(`Space "${spaceName}" created successfully!`);
 
