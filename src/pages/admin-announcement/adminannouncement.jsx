@@ -1,25 +1,13 @@
-import React, { useState } from "react";
-import Button from "../component/Button";
+import React, { useState, useEffect, useRef } from "react";
 import Logout from "../component/logout";
 import {
-  Megaphone,
-  Plus,
-  Edit,
-  Trash2,
-  Calendar,
-  Clock,
-  User,
-  Send,
-  X,
-  Bell,
-  Settings,
-  FileText,
-  Image as ImageIcon,
-  Link2,
   Menu,
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import AdminSidebar from "../component/adminsidebar";
+import AnnouncementList from "./components/AnnouncementList";
+import AnnouncementForm from "./components/AnnouncementForm";
+import AnnouncementDetail from "./components/AnnouncementDetail";
 
 const AdminAnnouncement = () => {
   const { user } = useUser();
@@ -28,18 +16,17 @@ const AdminAnnouncement = () => {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-
-  // Form state for creating/editing announcements
+  const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     priority: "normal",
     targetAudience: "all",
     scheduledDate: "",
+    scheduledTime: "",
     attachments: []
   });
-
-  // Mock data for announcements
+  const [publishOption, setPublishOption] = useState("now"); // "now", "draft", "schedule"
   const [announcements, setAnnouncements] = useState([
     {
       id: 1,
@@ -99,6 +86,50 @@ const AdminAnnouncement = () => {
     }
   ]);
 
+  const lastScrollY = useRef(0);
+  const [showHeader, setShowHeader] = useState(true);
+
+  useEffect(() => {
+    const checkScheduledAnnouncements = () => {
+      const now = new Date();
+      const currentDateTime = now.toISOString();
+      
+      setAnnouncements(prevAnnouncements => 
+        prevAnnouncements.map(announcement => {
+          if (announcement.status === "scheduled") {
+            const scheduledDateTime = new Date(`${announcement.date} ${announcement.time}`).toISOString();
+            if (scheduledDateTime <= currentDateTime) {
+              return { ...announcement, status: "published" };
+            }
+          }
+          return announcement;
+        })
+      );
+    };
+
+    const interval = setInterval(checkScheduledAnnouncements, 60000); // Check every minute
+    checkScheduledAnnouncements(); // Check immediately on mount
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const getPriorityColor = (priority) => {
     switch (priority) {
       case "high":
@@ -126,14 +157,27 @@ const AdminAnnouncement = () => {
   };
 
   const handleCreateAnnouncement = () => {
+    const now = new Date();
+    let announcementStatus = "published";
+    let announcementDate = now.toISOString().split('T')[0];
+    let announcementTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    if (publishOption === "draft") {
+      announcementStatus = "draft";
+    } else if (publishOption === "schedule" && formData.scheduledDate && formData.scheduledTime) {
+      announcementStatus = "scheduled";
+      announcementDate = formData.scheduledDate;
+      announcementTime = formData.scheduledTime;
+    }
+
     const newAnnouncement = {
       id: announcements.length + 1,
       ...formData,
       author: user?.name || "Admin",
-      date: new Date().toISOString().split('T')[0],
-      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      status: "published",
-      views: 0,
+      date: announcementDate,
+      time: announcementTime,
+      status: announcementStatus,
+      views: announcementStatus === "published" ? 0 : 0,
       likes: 0
     };
     setAnnouncements([newAnnouncement, ...announcements]);
@@ -143,8 +187,10 @@ const AdminAnnouncement = () => {
       priority: "normal",
       targetAudience: "all",
       scheduledDate: "",
+      scheduledTime: "",
       attachments: []
     });
+    setPublishOption("now");
     setShowCreateModal(false);
   };
 
@@ -153,272 +199,132 @@ const AdminAnnouncement = () => {
     setSelectedAnnouncement(null);
   };
 
+  const handleEditAnnouncement = (announcement) => {
+    setEditingAnnouncement(announcement);
+    setFormData({
+      title: announcement.title,
+      content: announcement.content,
+      priority: announcement.priority,
+      targetAudience: announcement.targetAudience,
+      scheduledDate: "",
+      scheduledTime: "",
+      attachments: announcement.attachments
+    });
+  };
+
+  const handleClearForm = () => {
+    setFormData({
+      title: "",
+      content: "",
+      priority: "normal",
+      targetAudience: "all",
+      scheduledDate: "",
+      scheduledTime: "",
+      attachments: []
+    });
+    setPublishOption("now");
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  const filteredAnnouncements = announcements.filter((a) =>
+    a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    a.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    a.author.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
-      {/* Desktop Sidebar */}
+      {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* Mobile Sidebar */}
-      <div className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden ${
-        mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
-      </div>
-
-      {/* Mobile Overlay */}
+      {/* MOBILE OVERLAY */}
       {mobileSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
-      {/* Main Content */}
-      <div className="flex-1 flex min-w-0">
-        {/* Burger Menu Button */}
-        <button
-          onClick={() => setMobileSidebarOpen(true)}
-          className="lg:hidden fixed top-4 left-4 z-30 p-2 bg-[#1E222A] rounded-lg text-white hover:bg-[#2A2F3A] transition-colors"
+      {/* MOBILE SIDEBAR */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
+
+        {/* MOBILE HEADER */}
+        <div
+          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
         >
-          <Menu className="w-6 h-6" />
-        </button>
-
-        {/* Middle Column - Announcement Creation/Viewing */}
-        <div className="flex-1 bg-[#161A20] overflow-y-auto">
-          <div className="pt-20 lg:pt-6 p-4 lg:p-6">
-            {selectedAnnouncement ? (
-              // View selected announcement
-              <div>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                  <div className="w-full">
-                    <button
-                      onClick={() => setSelectedAnnouncement(false)}
-                      className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-lg font-medium transition-colors mb-4"
-                    >
-                      ← Back
-                    </button>
-                    <h1 className="text-xl lg:text-2xl font-bold text-white mb-2">{selectedAnnouncement.title}</h1>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
-                      <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
-                        <span>{selectedAnnouncement.author}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{formatDate(selectedAnnouncement.date)}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        <span>{selectedAnnouncement.time}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(selectedAnnouncement.priority)}`}>
-                      {selectedAnnouncement.priority}
-                    </span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(selectedAnnouncement.status)}`}>
-                      {selectedAnnouncement.status}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-[#1E242E] rounded-xl p-6 mb-6">
-                  <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{selectedAnnouncement.content}</p>
-                </div>
-
-                {selectedAnnouncement.attachments.length > 0 && (
-                  <div className="bg-[#1E242E] rounded-xl p-6 mb-6">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <FileText className="w-5 h-5" />
-                      Attachments
-                    </h3>
-                    <div className="space-y-2">
-                      {selectedAnnouncement.attachments.map((attachment, index) => (
-                        <div key={index} className="flex items-center gap-3 p-3 bg-[#2A2F3A] rounded-lg">
-                          <FileText className="w-4 h-4 text-blue-400" />
-                          <span className="text-sm">{attachment}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <Button
-                    className="w-full sm:w-auto bg-[#007AFF] hover:bg-blue-700 text-white px-4 py-2"
-                    onClick={() => {
-                      setEditingAnnouncement(selectedAnnouncement);
-                      setFormData({
-                        title: selectedAnnouncement.title,
-                        content: selectedAnnouncement.content,
-                        priority: selectedAnnouncement.priority,
-                        targetAudience: selectedAnnouncement.targetAudience,
-                        scheduledDate: "",
-                        attachments: selectedAnnouncement.attachments
-                      });
-                    }}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button
-                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2"
-                    onClick={() => handleDeleteAnnouncement(selectedAnnouncement.id)}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              // Create new announcement form
-              <div>
-                <div className="mb-6">
-                  <h1 className="text-2xl font-bold text-white mb-2">Create Announcement</h1>
-                  <p className="text-gray-400">Create and publish announcements for students and faculty</p>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Title</label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full bg-[#1E242E] border border-[#3B4457] rounded-lg px-4 py-3 focus:outline-none focus:border-[#007AFF]"
-                      placeholder="Enter announcement title..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Content</label>
-                    <textarea
-                      value={formData.content}
-                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                      className="w-full bg-[#1E242E] border border-[#3B4457] rounded-lg px-4 py-3 h-64 focus:outline-none focus:border-[#007AFF] resize-none"
-                      placeholder="Write your announcement content..."
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    
-                    {/* <div>
-                      <label className="block text-sm font-medium mb-2">Priority</label>
-                      <select
-                        value={formData.priority}
-                        onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                        className="w-full bg-[#1E242E] border border-[#3B4457] rounded-lg px-4 py-3 focus:outline-none focus:border-[#007AFF]"
-                      >
-                        <option value="normal">Normal</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                      </select>
-                    </div> */}
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Target Audience</label>
-                      <select
-                        value={formData.targetAudience}
-                        onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
-                        className="w-full bg-[#1E242E] border border-[#3B4457] rounded-lg px-4 py-3 focus:outline-none focus:border-[#007AFF]"
-                      >
-                        <option value="all">All Users</option>
-                        <option value="faculty">Professors Only</option>
-                        <option value="students">Students Only</option>
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row justify-center items-center mt-6 gap-3">
-                      <Button
-                        className="flex h-12 justify-between items-center bg-[#007AFF] hover:bg-blue-700 text-white px-6 py-3"
-                        onClick={handleCreateAnnouncement}
-                      >
-                        <Send className="w-4 h-4 mr-2" />
-                        Publish Announcement
-                      </Button>
-                      <Button
-                        className="h-12 bg-white hover:bg-gray-700 text-white px-6 py-3"
-                        onClick={() => setFormData({
-                          title: "",
-                          content: "",
-                          priority: "normal",
-                          targetAudience: "all",
-                          scheduledDate: "",
-                          attachments: []
-                        })}
-                      >
-                        Clear
-                      </Button>
-                    </div>
-                  </div>
-
-                  
-                </div>
-              </div>
-            )}
-          </div>
+          <button
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Announcements</h1>
         </div>
 
-        {/* Left Column - Announcements List */}
-        <div className="w-80 bg-[#1E222A] border-r border-[#3B4457] overflow-y-auto hidden md:block">
-          <div className="p-4 border-b border-[#3B4457]">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Megaphone className="w-5 h-5 text-blue-400" />
-                Announcements
-              </h2>
-              <span className="bg-[#007AFF] text-white text-xs px-2 py-1 rounded-full">
-                {announcements.length}
-              </span>
-            </div>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search announcements..."
-                className="w-full bg-[#2A2F3A] border border-[#3B4457] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007AFF]"
-              />
-            </div>
-          </div>
+        {/* HEADER SPACER */}
+        <div className="lg:hidden h-16"></div>
 
-          <div className="p-4 space-y-3">
-            {announcements.map((announcement) => (
-              <div
-                key={announcement.id}
-                onClick={() => setSelectedAnnouncement(announcement)}
-                className={`p-4 rounded-lg border cursor-pointer transition-all hover:border-[#4A5568] ${
-                  selectedAnnouncement?.id === announcement.id
-                    ? "bg-[#2A2F3A] border-[#007AFF]"
-                    : "bg-[#1E242E] border-[#3B4457]"
-                }`}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-medium text-sm line-clamp-2">{announcement.title}</h3>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(announcement.priority)}`}>
-                    {announcement.priority}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-400 line-clamp-2 mb-3">{announcement.content}</p>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>{formatDate(announcement.date)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>{announcement.views} views</span>
-                    <span>•</span>
-                    <span>{announcement.likes} likes</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* CONTENT */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+
+          {/* DESKTOP TITLE */}
+          <h1 className="hidden lg:block text-2xl font-bold mb-6">
+            Announcements
+          </h1>
+
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+            {/* MAIN COLUMN - Form or Selected Announcement */}
+            <div className="flex-1">
+              {selectedAnnouncement ? (
+                <AnnouncementDetail
+                  selectedAnnouncement={selectedAnnouncement}
+                  onBack={() => setSelectedAnnouncement(null)}
+                  onDelete={handleDeleteAnnouncement}
+                  onEdit={handleEditAnnouncement}
+                  getPriorityColor={getPriorityColor}
+                  getStatusColor={getStatusColor}
+                  formatDate={formatDate}
+                />
+              ) : (
+                <AnnouncementForm
+                  formData={formData}
+                  setFormData={setFormData}
+                  publishOption={publishOption}
+                  setPublishOption={setPublishOption}
+                  onCreateAnnouncement={handleCreateAnnouncement}
+                  onClear={handleClearForm}
+                />
+              )}
+            </div>
+
+            {/* SIDE COLUMN - Announcements List */}
+            <AnnouncementList
+              announcements={announcements}
+              filteredAnnouncements={filteredAnnouncements}
+              selectedAnnouncement={selectedAnnouncement}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onAnnouncementClick={setSelectedAnnouncement}
+              getPriorityColor={getPriorityColor}
+              getStatusColor={getStatusColor}
+              formatDate={formatDate}
+            />
           </div>
         </div>
       </div>
