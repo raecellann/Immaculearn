@@ -33,7 +33,7 @@ const ProfNotificationPage = () => {
     allJoinRequestsLoading,
     acceptJoinRequest,
     declineJoinRequest,
-    isLoading: spaceLoading
+    isLoading: spaceLoading,
   } = useSpace();
 
   // WebSocket connection for real-time updates
@@ -83,29 +83,31 @@ const ProfNotificationPage = () => {
     const allSpaces = [
       ...(userSpaces || []),
       ...(courseSpaces || []),
-      ...(friendSpaces || [])
+      ...(friendSpaces || []),
     ];
 
-    return allSpaces.filter(space => space.creator === user?.id);
+    return allSpaces.filter((space) => space.creator === user?.id);
   }, [userSpaces, courseSpaces, friendSpaces, user]);
 
   /* =========================
      FETCH JOIN REQUESTS PER SPACE
   ========================= */
   const allJoinRequests = useMemo(() => {
-    const ownedSpaceIds = new Set(ownedSpaces.map(space => space.space_uuid));
-    return allJoinRequestsData.filter(request => 
-      ownedSpaceIds.has(request.space_uuid)
-    ).map(request => {
-      const space = ownedSpaces.find(s => s.space_uuid === request.space_uuid);
-      return {
-        ...request,
-        space_name: space?.space_name || 'Unknown Space'
-      };
-    });
+    const ownedSpaceIds = new Set(ownedSpaces.map((space) => space.space_uuid));
+    return allJoinRequestsData
+      ?.filter((request) => ownedSpaceIds.has(request.space_uuid))
+      .map((request) => {
+        const space = ownedSpaces.find(
+          (s) => s.space_uuid === request.space_uuid,
+        );
+        return {
+          ...request,
+          space_name: space?.space_name || "Unknown Space",
+        };
+      });
   }, [allJoinRequestsData, ownedSpaces]);
 
-  const pendingInvitesCount = allJoinRequests.length;
+  const pendingInvitesCount = allJoinRequests?.length;
 
   // Mock school announcements data - replace with actual data source
   const schoolAnnouncements = [
@@ -114,15 +116,16 @@ const ProfNotificationPage = () => {
       title: "Faculty Meeting Notice",
       message: "Monthly faculty meeting scheduled for Friday at 3 PM.",
       date: "2024-02-20",
-      priority: "high"
+      priority: "high",
     },
     {
       id: 2,
       title: "New Course Materials",
-      message: "Updated course materials are now available in the faculty portal.",
+      message:
+        "Updated course materials are now available in the faculty portal.",
       date: "2024-02-19",
-      priority: "medium"
-    }
+      priority: "medium",
+    },
   ];
 
   const announcementsCount = schoolAnnouncements.length;
@@ -131,13 +134,29 @@ const ProfNotificationPage = () => {
   const filteredSections = useMemo(() => {
     switch (selectedFilter) {
       case "join-requests":
-        return { showJoinRequests: true, showSpaceInvitations: false, showAnnouncements: false };
+        return {
+          showJoinRequests: true,
+          showSpaceInvitations: false,
+          showAnnouncements: false,
+        };
       case "space-invitations":
-        return { showJoinRequests: false, showSpaceInvitations: true, showAnnouncements: false };
+        return {
+          showJoinRequests: false,
+          showSpaceInvitations: true,
+          showAnnouncements: false,
+        };
       case "announcements":
-        return { showJoinRequests: false, showSpaceInvitations: false, showAnnouncements: true };
+        return {
+          showJoinRequests: false,
+          showSpaceInvitations: false,
+          showAnnouncements: true,
+        };
       default:
-        return { showJoinRequests: true, showSpaceInvitations: true, showAnnouncements: true };
+        return {
+          showJoinRequests: true,
+          showSpaceInvitations: true,
+          showAnnouncements: true,
+        };
     }
   }, [selectedFilter]);
 
@@ -186,8 +205,13 @@ const ProfNotificationPage = () => {
   };
 
   return (
-    <div className="flex font-sans min-h-screen" style={{ backgroundColor: isDarkMode ? '#121212' : currentColors.background, color: currentColors.text }}>
-      
+    <div
+      className="flex font-sans min-h-screen"
+      style={{
+        backgroundColor: isDarkMode ? "#121212" : currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -207,7 +231,7 @@ const ProfNotificationPage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           backgroundColor: currentColors.surface,
-          color: currentColors.text
+          color: currentColors.text,
         }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -215,7 +239,6 @@ const ProfNotificationPage = () => {
 
       {/* MAIN */}
       <div className="flex-1 flex flex-col">
-
         {/* 🔥 Sticky Mobile Header */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 px-4 transition-transform duration-300 ${
@@ -224,7 +247,7 @@ const ProfNotificationPage = () => {
           style={{
             backgroundColor: currentColors.surface,
             borderColor: currentColors.border,
-            color: currentColors.text
+            color: currentColors.text,
           }}
         >
           <div className="p-4 flex items-center gap-4">
@@ -235,7 +258,12 @@ const ProfNotificationPage = () => {
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold" style={{ color: isDarkMode ? 'white' : 'black' }}>Notifications</h1>
+            <h1
+              className="text-lg font-bold"
+              style={{ color: isDarkMode ? "white" : "black" }}
+            >
+              Notifications
+            </h1>
           </div>
         </div>
 
@@ -247,26 +275,34 @@ const ProfNotificationPage = () => {
 
           {/* Filter Section */}
           <div className="max-w-3xl mx-auto mb-6">
-            <div className="p-4 rounded-lg" style={{ backgroundColor: currentColors.surface }}>
+            <div
+              className="p-4 rounded-lg"
+              style={{ backgroundColor: currentColors.surface }}
+            >
               <div className="flex items-center gap-2 mb-3">
                 <FiFilter className="text-blue-400" />
-                <span className="font-medium" style={{ color: isDarkMode ? 'white' : 'black' }}>Filter by Category:</span>
+                <span
+                  className="font-medium"
+                  style={{ color: isDarkMode ? "white" : "black" }}
+                >
+                  Filter by Category:
+                </span>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button 
-                  text="All Notifications" 
+                <Button
+                  text="All Notifications"
                   onClick={() => setSelectedFilter("all")}
                 />
-                <Button 
-                  text="Pending Join Requests" 
+                <Button
+                  text="Pending Join Requests"
                   onClick={() => setSelectedFilter("join-requests")}
                 />
-                <Button 
-                  text="Space Invitations" 
+                <Button
+                  text="Space Invitations"
                   onClick={() => setSelectedFilter("space-invitations")}
                 />
-                <Button 
-                  text="School Announcements" 
+                <Button
+                  text="School Announcements"
                   onClick={() => setSelectedFilter("announcements")}
                 />
               </div>
@@ -277,13 +313,28 @@ const ProfNotificationPage = () => {
           <div className="flex flex-col gap-4 max-w-3xl mx-auto">
             {/* Pending Join Requests Section */}
             {filteredSections.showJoinRequests && (
-              <div className="p-5 rounded-lg" style={{ backgroundColor: currentColors.surface }}>
+              <div
+                className="p-5 rounded-lg"
+                style={{ backgroundColor: currentColors.surface }}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <FiUsers size={22} className="text-blue-500" />
                     <div>
-                      <p className="font-semibold" style={{ color: isDarkMode ? 'white' : 'black' }}>Pending Join Requests</p>
-                      <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>
+                      <p
+                        className="font-semibold"
+                        style={{ color: isDarkMode ? "white" : "black" }}
+                      >
+                        Pending Join Requests
+                      </p>
+                      <p
+                        className="text-sm"
+                        style={{
+                          color: isDarkMode
+                            ? currentColors.textSecondary
+                            : "#666666",
+                        }}
+                      >
                         {pendingInvitesCount} request(s)
                       </p>
                     </div>
@@ -291,15 +342,19 @@ const ProfNotificationPage = () => {
                   <button
                     onClick={() => setShowPendingInvitations(true)}
                     className="text-blue-400 hover:underline"
-                    style={{ color: isDarkMode ? '#60A5FA' : '#007AFF' }}
+                    style={{ color: isDarkMode ? "#60A5FA" : "#007AFF" }}
                   >
                     View
                   </button>
                 </div>
-                
+
                 {/* Preview of recent join requests */}
-                {allJoinRequests.slice(0, 2).map((invite) => (
-                  <div key={`${invite.space_uuid}-${invite.account_id}`} className="mt-3 p-3 rounded-lg" style={{ backgroundColor: currentColors.surface }}>
+                {allJoinRequests?.slice(0, 2).map((invite) => (
+                  <div
+                    key={`${invite.space_uuid}-${invite.account_id}`}
+                    className="mt-3 p-3 rounded-lg"
+                    style={{ backgroundColor: currentColors.surface }}
+                  >
                     <div className="flex items-center gap-3">
                       <img
                         src={invite.profile_pic}
@@ -307,15 +362,36 @@ const ProfNotificationPage = () => {
                         className="w-8 h-8 rounded-full object-cover"
                       />
                       <div className="flex-1">
-                        <p className="text-sm font-medium" style={{ color: isDarkMode ? 'white' : 'black' }}>{invite.fullname}</p>
-                        <p className="text-xs" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>wants to join {invite.space_name}</p>
+                        <p
+                          className="text-sm font-medium"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
+                          {invite.fullname}
+                        </p>
+                        <p
+                          className="text-xs"
+                          style={{
+                            color: isDarkMode
+                              ? currentColors.textSecondary
+                              : "#666666",
+                          }}
+                        >
+                          wants to join {invite.space_name}
+                        </p>
                       </div>
                     </div>
                   </div>
                 ))}
-                {allJoinRequests.length > 2 && (
-                  <p className="text-xs mt-2 text-center" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>
-                    And {allJoinRequests.length - 2} more...
+                {allJoinRequests?.length > 2 && (
+                  <p
+                    className="text-xs mt-2 text-center"
+                    style={{
+                      color: isDarkMode
+                        ? currentColors.textSecondary
+                        : "#666666",
+                    }}
+                  >
+                    And {allJoinRequests?.length - 2} more...
                   </p>
                 )}
               </div>
@@ -323,50 +399,112 @@ const ProfNotificationPage = () => {
 
             {/* Space Invitations Section */}
             {filteredSections.showSpaceInvitations && (
-              <div className="p-5 rounded-lg" style={{ backgroundColor: currentColors.surface }}>
+              <div
+                className="p-5 rounded-lg"
+                style={{ backgroundColor: currentColors.surface }}
+              >
                 <div className="flex items-center gap-3 mb-4">
                   <FiUsers size={22} className="text-green-500" />
                   <div>
-                    <p className="font-semibold" style={{ color: isDarkMode ? 'white' : 'black' }}>Space Invitations</p>
-                    <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>
+                    <p
+                      className="font-semibold"
+                      style={{ color: isDarkMode ? "white" : "black" }}
+                    >
+                      Space Invitations
+                    </p>
+                    <p
+                      className="text-sm"
+                      style={{
+                        color: isDarkMode
+                          ? currentColors.textSecondary
+                          : "#666666",
+                      }}
+                    >
                       No space invitations available
                     </p>
                   </div>
                 </div>
-                
-                <p className="text-sm text-center py-4" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>
-                  Professors typically create their own spaces rather than receiving invitations.
+
+                <p
+                  className="text-sm text-center py-4"
+                  style={{
+                    color: isDarkMode ? currentColors.textSecondary : "#666666",
+                  }}
+                >
+                  Professors typically create their own spaces rather than
+                  receiving invitations.
                 </p>
               </div>
             )}
 
             {/* School Announcements Section */}
             {filteredSections.showAnnouncements && (
-              <div className="p-5 rounded-lg" style={{ backgroundColor: currentColors.surface }}>
+              <div
+                className="p-5 rounded-lg"
+                style={{ backgroundColor: currentColors.surface }}
+              >
                 <div className="flex items-center gap-3 mb-4">
                   <FiBell size={22} className="text-yellow-500" />
                   <div>
-                    <p className="font-semibold" style={{ color: isDarkMode ? 'white' : 'black' }}>School Announcements</p>
-                    <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>
+                    <p
+                      className="font-semibold"
+                      style={{ color: isDarkMode ? "white" : "black" }}
+                    >
+                      School Announcements
+                    </p>
+                    <p
+                      className="text-sm"
+                      style={{
+                        color: isDarkMode
+                          ? currentColors.textSecondary
+                          : "#666666",
+                      }}
+                    >
                       {announcementsCount} announcement(s)
                     </p>
                   </div>
                 </div>
-                
+
                 {/* Display announcements */}
                 {schoolAnnouncements.map((announcement) => (
-                  <div key={announcement.id} className="mt-3 p-3 rounded-lg" style={{ backgroundColor: currentColors.surface }}>
+                  <div
+                    key={announcement.id}
+                    className="mt-3 p-3 rounded-lg"
+                    style={{ backgroundColor: currentColors.surface }}
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{announcement.title}</p>
-                        <p className="text-sm mt-1" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>{announcement.message}</p>
-                        <p className="text-xs" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>{announcement.date}</p>
+                        <p className="text-sm font-medium">
+                          {announcement.title}
+                        </p>
+                        <p
+                          className="text-sm mt-1"
+                          style={{
+                            color: isDarkMode
+                              ? currentColors.textSecondary
+                              : "#666666",
+                          }}
+                        >
+                          {announcement.message}
+                        </p>
+                        <p
+                          className="text-xs"
+                          style={{
+                            color: isDarkMode
+                              ? currentColors.textSecondary
+                              : "#666666",
+                          }}
+                        >
+                          {announcement.date}
+                        </p>
                       </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        announcement.priority === 'high' 
-                          ? 'bg-red-600 text-white' 
-                          : 'bg-yellow-600 text-white'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          announcement.priority === "high"
+                            ? "bg-red-600 text-white"
+                            : "bg-yellow-600 text-white"
+                        }`}
+                      >
                         {announcement.priority}
                       </span>
                     </div>
@@ -382,13 +520,22 @@ const ProfNotificationPage = () => {
       {showPendingInvitations && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-
-            <div className="p-4 border-b" style={{ borderColor: currentColors.border }}>
-              <h2 className="text-lg font-semibold" style={{ color: isDarkMode ? 'white' : 'black' }}>Pending Invitations</h2>
+            <div
+              className="p-4 border-b"
+              style={{ borderColor: currentColors.border }}
+            >
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
+                Pending Invitations
+              </h2>
               <button
                 onClick={() => setShowPendingInvitations(false)}
                 className="text-2xl"
-                style={{ color: isDarkMode ? currentColors.textSecondary : 'black' }}
+                style={{
+                  color: isDarkMode ? currentColors.textSecondary : "black",
+                }}
               >
                 ×
               </button>
@@ -400,7 +547,7 @@ const ProfNotificationPage = () => {
                   No pending invitations
                 </p>
               ) : (
-                allJoinRequests.map(invite => (
+                allJoinRequests.map((invite) => (
                   <div
                     key={`${invite.space_uuid}-${invite.account_id}`}
                     className="bg-[#2A2F3A] rounded-lg p-4"
@@ -412,11 +559,30 @@ const ProfNotificationPage = () => {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                       <div className="flex-1">
-                        <h3 className="font-medium" style={{ color: isDarkMode ? 'white' : 'black' }}>{invite.fullname}</h3>
-                        <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>
+                        <h3
+                          className="font-medium"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
+                          {invite.fullname}
+                        </h3>
+                        <p
+                          className="text-sm"
+                          style={{
+                            color: isDarkMode
+                              ? currentColors.textSecondary
+                              : "#666666",
+                          }}
+                        >
                           {invite.email}
                         </p>
-                        <p className="text-xs mt-1" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>
+                        <p
+                          className="text-xs mt-1"
+                          style={{
+                            color: isDarkMode
+                              ? currentColors.textSecondary
+                              : "#666666",
+                          }}
+                        >
                           Space: {invite.space_name}
                         </p>
                       </div>
