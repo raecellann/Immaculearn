@@ -14,10 +14,13 @@ import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
 import { GroupCover } from "../component/groupCover";
 import ProfSidebar from "../component/profsidebar";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const ProfChatPage = () => {
   const { userSpaces, friendSpaces } = useSpace();
   const { user } = useUser();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // sticky header scroll state
@@ -313,7 +316,7 @@ const ProfChatPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <ProfSidebar />
@@ -329,8 +332,12 @@ const ProfChatPage = () => {
 
       {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{
+          backgroundColor: currentColors.surface,
+          color: currentColors.text
+        }}
       >
         <ProfSidebar />
       </div>
@@ -339,14 +346,20 @@ const ProfChatPage = () => {
       <div className="flex-1 flex flex-col">
         {/* Mobile + Tablet Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border,
+            color: currentColors.text
+          }}
         >
           <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+              className="bg-transparent border-none text-2xl p-0 focus:outline-none"
+              style={{ color: currentColors.text }}
             >
               ☰
             </button>
@@ -374,15 +387,21 @@ const ProfChatPage = () => {
                   placeholder="Search People"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-5 pr-4 py-2 bg-gray-800 text-white rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-5 pr-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6',
+                    color: currentColors.text
+                  }}
                 />
-                <FiSearch className="absolute right-3 top-3 text-gray-400" />
+                <FiSearch className="absolute right-3 top-3" style={{ color: currentColors.textSecondary }} />
               </div>
             </div>
 
             {/* PEOPLE */}
-            <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar">
-              <h2 className="font-semibold text-sm mb-3 text-gray-300">
+            <div className="rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar" style={{ 
+              backgroundColor: currentColors.surface 
+            }}>
+              <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>
                 Students
               </h2>
               {uniqueMembers
@@ -398,7 +417,17 @@ const ProfChatPage = () => {
                         setActiveSpaceUuid(uuid);
                         setShowMobileChat(true);
                       }}
-                      className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
+                      className="flex items-center gap-3 py-3 rounded-lg cursor-pointer transition-colors"
+                      style={{
+                        backgroundColor: 'transparent',
+                        color: currentColors.text
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
                     >
                       <div className="relative">
                         <img
@@ -410,10 +439,10 @@ const ProfChatPage = () => {
                         ></div>
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-sm text-white">
+                        <p className="font-semibold text-sm" style={{ color: currentColors.text }}>
                           {m.full_name}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                           {participantStatus}
                         </p>
                       </div>
@@ -423,8 +452,10 @@ const ProfChatPage = () => {
             </div>
 
             {/* GROUPS */}
-            <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar">
-              <h2 className="font-semibold text-sm mb-3 text-gray-300">
+            <div className="rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar" style={{ 
+              backgroundColor: currentColors.surface 
+            }}>
+              <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>
                 Courses
               </h2>
               {uniqueSpaces.map((space) => (
@@ -434,7 +465,17 @@ const ProfChatPage = () => {
                     setActiveSpaceUuid(space.space_uuid);
                     setShowMobileChat(true);
                   }}
-                  className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
+                  className="flex items-center gap-3 py-3 rounded-lg cursor-pointer transition-colors"
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: currentColors.text
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                 >
                   <div className="relative">
                     <GroupCover
@@ -450,10 +491,10 @@ const ProfChatPage = () => {
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm text-white">
+                    <p className="font-semibold text-sm" style={{ color: currentColors.text }}>
                       {space.space_name}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                       {getOnlineCountForSpace(space)} online •{" "}
                       {space.members?.length || 0} members
                     </p>
@@ -465,22 +506,29 @@ const ProfChatPage = () => {
 
           {/* CHAT PANEL */}
           <div
-            className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 bg-[#1E2330] rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`}
+            className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`}
+            style={{
+              backgroundColor: currentColors.surface
+            }}
           >
             {!activeSpaceUuid ? (
-              <div className="flex-1 flex items-center justify-center text-gray-400 min-h-[400px] mt-16">
-                <div className="text-center text-lg">
+              <div className="flex-1 flex items-center justify-center min-h-[400px] mt-16">
+                <div className="text-center text-lg" style={{ color: currentColors.textSecondary }}>
                   Select a chat to start messaging
                 </div>
               </div>
             ) : (
               <>
                 {/* Fixed Header - Always Visible */}
-                <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center relative bg-[#1E2330] rounded-t-xl sticky top-0 z-10">
+                <div className="p-3 sm:p-4 border-b flex justify-between items-center relative rounded-t-xl sticky top-0 z-10" style={{ 
+                  backgroundColor: currentColors.surface,
+                  borderColor: currentColors.border
+                }}>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setShowMobileChat(false)}
-                      className="lg:hidden text-gray-400 hover:text-white bg-transparent border-none p-0"
+                      className="lg:hidden bg-transparent border-none p-0"
+                      style={{ color: currentColors.textSecondary }}
                     >
                       ←
                     </button>
@@ -509,7 +557,7 @@ const ProfChatPage = () => {
                         ></div>
                       </div>
                       <div>
-                        <h2 className="font-semibold text-white">
+                        <h2 className="font-semibold" style={{ color: currentColors.text }}>
                           {activeSpace?.space_name || "Chat"}
                         </h2>
                         <p className={`text-xs ${statusColorClass}`}>
@@ -521,17 +569,31 @@ const ProfChatPage = () => {
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => setShowDropdown(!showDropdown)}
-                      className="text-gray-400 cursor-pointer hover:text-white bg-transparent border-none p-0"
+                      className="cursor-pointer bg-transparent border-none p-0"
+                      style={{ color: currentColors.textSecondary }}
                     >
                       <FiMoreVertical />
                     </button>
 
                     {/* Dropdown Menu */}
                     {showDropdown && (
-                      <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-[#2A2F3E] rounded-lg shadow-lg border border-gray-600 z-50">
+                      <div className="absolute right-0 mt-2 w-44 sm:w-48 rounded-lg shadow-lg border z-50" style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border
+                      }}>
                         <button
                           onClick={handleThemeChange}
-                          className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg flex items-center gap-3"
+                          className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm rounded-t-lg flex items-center gap-3 transition-colors"
+                          style={{
+                            color: currentColors.textSecondary,
+                            backgroundColor: 'transparent'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = currentColors.hover;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
                         >
                           <FiSettings className="text-sm" />
                           Change Color Theme
@@ -578,7 +640,10 @@ const ProfChatPage = () => {
                       <div key={dateLabel}>
                         {/* Date Separator */}
                         <div className="flex items-center justify-center py-2">
-                          <div className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
+                          <div className="text-xs px-3 py-1 rounded-full" style={{
+                            backgroundColor: isDarkMode ? '#374151' : '#e5e7eb',
+                            color: currentColors.textSecondary
+                          }}>
                             {dateLabel}
                           </div>
                         </div>
@@ -602,7 +667,10 @@ const ProfChatPage = () => {
                             <React.Fragment key={m.id}>
                               {showUnreadSeparator && (
                                 <div className="flex items-center justify-center py-2">
-                                  <div className="bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
+                                  <div className="text-xs px-3 py-1 rounded-full" style={{
+                                    backgroundColor: '#3b82f6',
+                                    color: 'white'
+                                  }}>
                                     Unread messages
                                   </div>
                                 </div>
@@ -665,8 +733,13 @@ const ProfChatPage = () => {
                 </div>
 
                 {/* Fixed Input - Always Visible */}
-                <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700 bg-[#1E2330] rounded-b-xl sticky bottom-0">
-                  <div className="flex gap-2 sm:gap-3 bg-gray-800 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center">
+                <div className="p-2 sm:p-3 md:p-4 border-t rounded-b-xl sticky bottom-0" style={{ 
+                  backgroundColor: currentColors.surface,
+                  borderColor: currentColors.border
+                }}>
+                  <div className="flex gap-2 sm:gap-3 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center" style={{
+                    backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6'
+                  }}>
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -675,7 +748,8 @@ const ProfChatPage = () => {
                       accept="image/*"
                     />
                     <FiPaperclip
-                      className="text-gray-400 cursor-pointer hover:text-white"
+                      className="cursor-pointer transition-colors"
+                      style={{ color: currentColors.textSecondary }}
                       onClick={() => fileInputRef.current?.click()}
                     />
                     <input
@@ -685,12 +759,17 @@ const ProfChatPage = () => {
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleSend();
                       }}
-                      className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-sm sm:text-base"
+                      className="flex-1 bg-transparent outline-none text-sm sm:text-base"
+                      style={{
+                        color: currentColors.text,
+                        placeholderColor: currentColors.textSecondary
+                      }}
                       placeholder="Type your message here..."
                     />
                     <button
                       onClick={handleSend}
-                      className="text-blue-500 hover:text-blue-400 transition-colors p-1 sm:p-0 bg-transparent border-none"
+                      className="transition-colors p-1 sm:p-0 bg-transparent border-none"
+                      style={{ color: '#3b82f6' }}
                       disabled={!input.trim()}
                     >
                       <FiSend />
@@ -706,8 +785,11 @@ const ProfChatPage = () => {
       {/* Color Picker Dialog */}
       {showColorPicker && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-[#2A2F3E] rounded-xl p-6 w-80 max-w-[90%] border border-gray-600">
-            <h3 className="text-white font-semibold mb-4">Choose Chat Color</h3>
+          <div className="rounded-xl p-6 w-80 max-w-[90%] border" style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border
+          }}>
+            <h3 className="font-semibold mb-4" style={{ color: currentColors.text }}>Choose Chat Color</h3>
             <div className="grid grid-cols-4 gap-3 mb-4">
               {colorOptions.map((color) => (
                 <button
@@ -723,12 +805,16 @@ const ProfChatPage = () => {
               ))}
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-300 text-sm">
+              <span className="text-sm" style={{ color: currentColors.textSecondary }}>
                 Selected: {currentConversationColor?.name}
               </span>
               <button
                 onClick={() => setShowColorPicker(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+                className="px-4 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: isDarkMode ? '#4b5563' : '#6b7280',
+                  color: 'white'
+                }}
               >
                 Cancel
               </button>

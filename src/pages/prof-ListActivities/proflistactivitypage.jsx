@@ -5,13 +5,14 @@ import Logout from "../component/logout";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useNavigate } from "react-router";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const ProfListActivityPage = () => {
-
   const { user } = useUser();
   const { userSpaces, courseSpaces } = useSpace();
   const navigate = useNavigate();
-
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
 
   const [showModal, setShowModal] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -70,7 +71,7 @@ const ProfListActivityPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -86,8 +87,12 @@ const ProfListActivityPage = () => {
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{
+          backgroundColor: currentColors.surface,
+          color: currentColors.text
+        }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
@@ -96,14 +101,20 @@ const ProfListActivityPage = () => {
       <div className="flex-1 flex flex-col">
         {/* 🔥 Sticky Mobile Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border,
+            color: currentColors.text
+          }}
         >
           <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-white text-2xl p-0"
+              className="bg-transparent border-none text-2xl p-0"
+              style={{ color: currentColors.text }}
             >
               ☰
             </button>
@@ -119,9 +130,13 @@ const ProfListActivityPage = () => {
 
           {/* Your Space Activities */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-white">Your Space</h2>
+            <h2 className="text-xl font-semibold mb-4">Your Space</h2>
             {userSpaces?.length === 0 ? (
-              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+              <div className="rounded-xl p-10 text-center border border-dashed" style={{
+                backgroundColor: currentColors.surface,
+                color: currentColors.textSecondary,
+                borderColor: currentColors.border
+              }}>
                 No space list activity yet
               </div>
             ) : userSpaces?.length > 0 ? (
@@ -130,7 +145,11 @@ const ProfListActivityPage = () => {
                   <div
                     key={`your-space-${index}`}
                     onClick={() => navigate(`/prof/list-activity/${space.space_uuid}/${space.space_name}`)}
-                    className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    className="rounded-lg p-4 flex items-center gap-3 transition cursor-pointer"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      border: `1px solid ${currentColors.border}`
+                    }}
                   >
                     <span className="text-xl">📋</span>
                     <div className="flex-1 min-w-0">
@@ -145,9 +164,13 @@ const ProfListActivityPage = () => {
 
           {/* Course Space Activities */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-white">Course Space</h2>
+            <h2 className="text-xl font-semibold mb-4">Course Space</h2>
             {courseSpaces?.length === 0 ? (
-              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
+              <div className="rounded-xl p-10 text-center border border-dashed" style={{
+                backgroundColor: currentColors.surface,
+                color: currentColors.textSecondary,
+                borderColor: currentColors.border
+              }}>
                 No course space list activity yet
               </div>
             ) : courseSpaces?.length > 0 ? (
@@ -156,7 +179,11 @@ const ProfListActivityPage = () => {
                   <div
                     key={`course-space-${index}`}
                     onClick={() => navigate(`/prof/list-activity/${space.space_uuid}/${space.space_name}`)}
-                    className="bg-[#1E222A] border border-gray-700 rounded-lg p-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                    className="rounded-lg p-4 flex items-center gap-3 transition cursor-pointer"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      border: `1px solid ${currentColors.border}`
+                    }}
                   >
                     <span className="text-xl">📋</span>
                     <div className="flex-1 min-w-0">
