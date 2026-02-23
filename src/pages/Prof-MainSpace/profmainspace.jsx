@@ -76,7 +76,7 @@ const ProfSpacePage = () => {
   };
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: isDarkMode ? '#121212' : currentColors.background, color: currentColors.text }}>
+    <div className="flex min-h-screen" style={{ backgroundColor: isDarkMode ? '#161A20' : currentColors.background, color: currentColors.text }}>
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />

@@ -209,7 +209,7 @@ const ProfNotificationPage = () => {
     <div
       className="flex font-sans min-h-screen"
       style={{
-        backgroundColor: isDarkMode ? "#121212" : currentColors.background,
+        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
         color: currentColors.text,
       }}
     >

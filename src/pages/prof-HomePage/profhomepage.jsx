@@ -150,7 +150,7 @@ const ProfHomePage = () => {
       </div>
 
       {/* ================= Main Content ================= */}
-      <div className="flex-1 flex flex-col min-w-0" style={{ backgroundColor: isDarkMode ? '#121212' : currentColors.background }}>
+      <div className="flex-1 flex flex-col min-w-0" style={{ backgroundColor: isDarkMode ? '#161A20' : currentColors.background }}>
         {/* ================= Header (Mobile + Tablet) ================= */}
         <div
           className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${

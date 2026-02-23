@@ -105,7 +105,7 @@ const SpacePage = () => {
   // const courseSpaces = courseSpaces?.filter((s) => !allSpaces.has(s.space_uuid));
 
   return (
-    <div className="flex font-sans min-h-screen" style={{ backgroundColor: isDarkMode ? '#121212' : currentColors.background, color: currentColors.text }}>
+    <div className="flex font-sans min-h-screen" style={{ backgroundColor: isDarkMode ? '#161A20' : currentColors.background, color: currentColors.text }}>
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
