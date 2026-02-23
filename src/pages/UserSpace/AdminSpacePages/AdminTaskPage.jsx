@@ -572,6 +572,19 @@ const AdminTaskPage = () => {
     navigate("/spaces");
   };
 
+  // Copy link function
+  const handleCopyLink = (space_link) => {
+    navigator.clipboard
+      .writeText(space_link)
+      .then(() => {
+        toast.success("Link copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+        toast.error("Failed to copy link");
+      });
+  };
+
   return (
     <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
       <div className="hidden lg:block">
@@ -629,6 +642,20 @@ const AdminTaskPage = () => {
                     <Button text="Delete Room" />
                   </div>
                 </>
+              )}
+              {isFriendSpace && (
+                <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
+                  <span className="text-xs text-blue-400 break-all">
+                    {currentSpace?.space_link || "Loading..."}
+                  </span>
+                  <button
+                    onClick={() => handleCopyLink(currentSpace?.space_link)}
+                    className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
+                    title="Copy to clipboard"
+                  >
+                    <FiCopy size={16} />
+                  </button>
+                </div>
               )}
             </div>
           </div>
