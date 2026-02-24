@@ -54,7 +54,12 @@ const AdminTaskPage = () => {
   const [score, setScore] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-  const [taskCategory, setTaskCategory] = useState("individual-act");
+  const [taskCategory, setTaskCategory] = useState("individual-activity");
+
+  // Form builder state
+  const [formFields, setFormFields] = useState([]);
+  const [showFormBuilder, setShowFormBuilder] = useState(false);
+  const [selectedFieldType, setSelectedFieldType] = useState("text");
 
   // Criteria management state
   const [criteria, setCriteria] = useState([
@@ -112,147 +117,97 @@ const AdminTaskPage = () => {
 
   // Task categories
   const taskCategories = [
-    { value: "personal-reflection", label: "Personal Reflection", emoji: "🤔" },
-    { value: "individual-act", label: "Individual Activity", emoji: "📝" },
-    { value: "group-project", label: "Group Project", emoji: "👥" },
-    { value: "individual-project", label: "Individual Project", emoji: "🎯" },
+    { value: "quiz", label: "Quiz", emoji: "�" },
+    { value: "group-activity", label: "Group Activity", emoji: "👥" },
+    { value: "individual-activity", label: "Individual Activity", emoji: "📝" },
+  ];
+
+  // Form field types
+  const fieldTypes = [
+    { value: "text", label: "Short Answer", icon: "📝" },
+    { value: "textarea", label: "Long Answer", icon: "📄" },
+    { value: "multiple-choice", label: "Multiple Choice", icon: "🔘" },
+    { value: "checkbox", label: "Checkbox", icon: "☑️" },
+    { value: "number", label: "Number", icon: "🔢" },
+    { value: "date", label: "Date", icon: "📅" },
   ];
 
   // Criteria templates
   const criteriaTemplates = {
-    essay: [
+    quiz: [
+      {
+        name: "Correct Answers",
+        description: "Accuracy of responses and correct solutions",
+        points: "40",
+      },
+      {
+        name: "Understanding",
+        description: "Demonstration of concept comprehension",
+        points: "30",
+      },
+      {
+        name: "Problem Solving",
+        description: "Ability to apply knowledge to solve problems",
+        points: "20",
+      },
+      {
+        name: "Clarity",
+        description: "Clear and organized presentation of answers",
+        points: "10",
+      },
+    ],
+    "individual-activity": [
       {
         name: "Content Quality",
-        description: "Clarity, coherence, and depth of analysis",
+        description: "Depth, accuracy, and relevance of content",
         points: "30",
       },
       {
-        name: "Research & Evidence",
-        description: "Use of credible sources and proper citation",
+        name: "Critical Thinking",
+        description: "Analysis, evaluation, and independent thought",
         points: "25",
       },
       {
         name: "Organization",
-        description: "Logical structure and flow of ideas",
+        description: "Structure, coherence, and logical flow",
         points: "20",
       },
       {
-        name: "Grammar & Style",
-        description: "Proper grammar, spelling, and academic writing style",
+        name: "Completeness",
+        description: "Thoroughness and attention to requirements",
         points: "15",
       },
       {
-        name: "Originality",
-        description: "Original thinking and avoidance of plagiarism",
+        name: "Presentation",
+        description: "Clarity, formatting, and professional appearance",
         points: "10",
       },
     ],
-    research: [
+    "group-activity": [
       {
-        name: "Research Question",
-        description: "Clarity and significance of research question",
-        points: "20",
-      },
-      {
-        name: "Methodology",
-        description: "Appropriate research methods and design",
+        name: "Collaboration",
+        description: "Teamwork, communication, and cooperation",
         points: "25",
       },
       {
-        name: "Data Analysis",
-        description: "Proper analysis and interpretation of data",
+        name: "Content Quality",
+        description: "Accuracy, depth, and relevance of work",
         points: "25",
       },
       {
-        name: "Literature Review",
-        description: "Comprehensive review of relevant literature",
+        name: "Individual Contribution",
+        description: "Each member's participation and effort",
         points: "20",
       },
       {
-        name: "Conclusions",
-        description: "Logical conclusions based on findings",
-        points: "10",
-      },
-    ],
-    presentation: [
-      {
-        name: "Content",
-        description: "Relevance and accuracy of content",
-        points: "30",
-      },
-      {
-        name: "Organization",
-        description: "Clear structure and logical flow",
-        points: "20",
-      },
-      {
-        name: "Visual Aids",
-        description: "Quality and effectiveness of visual materials",
-        points: "20",
-      },
-      {
-        name: "Delivery",
-        description: "Clarity, confidence, and engagement",
-        points: "20",
-      },
-      {
-        name: "Time Management",
-        description: "Appropriate pacing and time allocation",
-        points: "10",
-      },
-    ],
-    project: [
-      {
-        name: "Functionality",
-        description: "Code works as intended without errors",
-        points: "30",
-      },
-      {
-        name: "Code Quality",
-        description: "Clean, readable, and well-structured code",
-        points: "25",
-      },
-      {
-        name: "Documentation",
-        description: "Clear and comprehensive documentation",
-        points: "20",
-      },
-      {
-        name: "Innovation",
-        description: "Creative solutions and original thinking",
+        name: "Process & Planning",
+        description: "Organization, time management, and workflow",
         points: "15",
       },
       {
-        name: "Testing",
-        description: "Thorough testing and error handling",
-        points: "10",
-      },
-    ],
-    creative: [
-      {
-        name: "Creativity",
-        description: "Originality and innovative thinking",
-        points: "30",
-      },
-      {
-        name: "Technical Skill",
-        description: "Execution and technical proficiency",
-        points: "25",
-      },
-      {
-        name: "Composition",
-        description: "Balance, harmony, and visual appeal",
-        points: "20",
-      },
-      {
-        name: "Concept",
-        description: "Clarity and strength of concept",
+        name: "Final Output",
+        description: "Quality and completeness of the final deliverable",
         points: "15",
-      },
-      {
-        name: "Effort",
-        description: "Time and effort invested in the work",
-        points: "10",
       },
     ],
   };
@@ -504,6 +459,68 @@ const AdminTaskPage = () => {
     }
   };
 
+  // Form builder functions
+  const addFormField = () => {
+    const newField = {
+      id: Date.now(),
+      type: selectedFieldType,
+      label: "",
+      required: false,
+      options: selectedFieldType === "multiple-choice" ? ["", ""] : [],
+    };
+    setFormFields([...formFields, newField]);
+  };
+
+  const updateFormField = (id, field, value) => {
+    setFormFields(
+      formFields.map((field) =>
+        field.id === id ? { ...field, [field]: value } : field
+      )
+    );
+  };
+
+  const removeFormField = (id) => {
+    setFormFields(formFields.filter((field) => field.id !== id));
+  };
+
+  const addOption = (fieldId) => {
+    setFormFields(
+      formFields.map((field) =>
+        field.id === fieldId
+          ? { ...field, options: [...field.options, ""] }
+          : field
+      )
+    );
+  };
+
+  const updateOption = (fieldId, optionIndex, value) => {
+    setFormFields(
+      formFields.map((field) =>
+        field.id === fieldId
+          ? {
+              ...field,
+              options: field.options.map((option, index) =>
+                index === optionIndex ? value : option
+              ),
+            }
+          : field
+      )
+    );
+  };
+
+  const removeOption = (fieldId, optionIndex) => {
+    setFormFields(
+      formFields.map((field) =>
+        field.id === fieldId
+          ? {
+              ...field,
+              options: field.options.filter((_, index) => index !== optionIndex),
+            }
+          : field
+      )
+    );
+  };
+
   // Effects
   useEffect(() => {
     const handleScroll = () => {
@@ -537,7 +554,9 @@ const AdminTaskPage = () => {
     setScore("");
     setDueDate("");
     setSelectedFile(null);
-    setTaskCategory("individual-act");
+    setTaskCategory("individual-activity");
+    setFormFields([]);
+    setShowFormBuilder(false);
     setCriteria([{ id: 1, name: "", description: "", points: "" }]);
     if (instructionRef.current) {
       instructionRef.current.innerHTML = "";
@@ -963,8 +982,7 @@ const AdminTaskPage = () => {
                 <button
                   className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
                   onClick={() => {
-                    resetTaskForm();
-                    setIsCreatingTask(false);
+                    navigate(-1);
                   }}
                 >
                   <FiArrowLeft size={16} />
@@ -972,8 +990,8 @@ const AdminTaskPage = () => {
                   <span className="sm:hidden">Back</span>
                 </button>
               </div>
-              <div className="bg-black rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border border-white">
-                <div className="flex flex-col lg:flex-row gap-6">
+              <div className="bg-black rounded-xl shadow-lg p-3 sm:p-4 md:p-6 lg:p-8 border border-white">
+                <div className="flex flex-col xl:flex-row gap-4 lg:gap-6">
                   <div className="flex-1 flex flex-col gap-4">
                     <label className="font-semibold text-lg">
                       Title: <span className="text-red-500">*</span>
@@ -983,7 +1001,7 @@ const AdminTaskPage = () => {
                       type="text"
                       value={taskTitle}
                       onChange={(e) => setTaskTitle(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      className="bg-[#23272F] rounded-lg px-3 py-2 sm:px-4 sm:py-2 outline-none border border-[#23272F] focus:border-blue-500 text-sm sm:text-base"
                       placeholder="Enter task title"
                     />
 
@@ -994,7 +1012,7 @@ const AdminTaskPage = () => {
                     <select
                       value={taskCategory}
                       onChange={(e) => setTaskCategory(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500 w-full"
+                      className="bg-[#23272F] rounded-lg px-3 py-2 sm:px-4 sm:py-2 outline-none border border-[#23272F] focus:border-blue-500 w-full text-sm sm:text-base"
                     >
                       {taskCategories.map((category) => (
                         <option key={category.value} value={category.value}>
@@ -1011,11 +1029,11 @@ const AdminTaskPage = () => {
                       <div
                         ref={instructionRef}
                         contentEditable
-                        className="min-h-[140px] px-4 py-3 outline-none"
+                        className="min-h-[120px] sm:min-h-[140px] px-3 py-2 sm:px-4 sm:py-3 outline-none text-sm sm:text-base"
                         suppressContentEditableWarning
                       />
                       <div className="border-t border-[#2F3440]" />
-                      <div className="flex gap-4 px-4 py-2 text-gray-300">
+                      <div className="flex gap-2 sm:gap-4 px-3 py-2 sm:px-4 sm:py-2 text-gray-300">
                         <button
                           type="button"
                           onClick={() => applyFormat("bold")}
@@ -1041,49 +1059,19 @@ const AdminTaskPage = () => {
                         </button>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex-1 flex flex-col gap-4">
-                    <label className="font-semibold">
-                      Score: <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      value={score}
-                      onChange={(e) => handleScoreChange(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
-                      placeholder="Enter score"
-                    />
-                    {score && criteria.length > 0 && (
-                      <div className="text-xs text-green-400 mt-1">
-                        ✓ Auto-distributed:{" "}
-                        {(parseFloat(score) / criteria.length).toFixed(2)}{" "}
-                        points per criterion
-                      </div>
-                    )}
-
-                    <label className="font-semibold">
-                      Due Date: <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
-                    />
 
                     <label className="font-semibold">File (optional)</label>
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-4">
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          className="bg-[#23272F] hover:bg-[#2F3440] px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                          className="bg-[#23272F] hover:bg-[#2F3440] px-3 py-2 sm:px-4 sm:py-2 rounded-lg flex items-center gap-2 transition-colors text-sm sm:text-base"
                         >
                           <FiUploadCloud size={16} />
                           Choose File
                         </button>
                         {selectedFile && (
-                          <span className="text-sm text-gray-400">
+                          <span className="text-xs sm:text-sm text-gray-400 truncate max-w-[120px] sm:max-w-none">
                             {selectedFile.name}
                           </span>
                         )}
@@ -1100,18 +1088,48 @@ const AdminTaskPage = () => {
                         TXT | Max size: 5MB | Max content: 1000 words
                       </div>
                     </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col gap-3 sm:gap-4">
+                    <label className="font-semibold text-sm sm:text-base">
+                      Score: <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={score}
+                      onChange={(e) => handleScoreChange(e.target.value)}
+                      className="bg-[#23272F] rounded-lg px-3 py-2 sm:px-4 sm:py-2 outline-none border border-[#23272F] focus:border-blue-500 text-sm sm:text-base"
+                      placeholder="Enter score"
+                    />
+                    {score && criteria.length > 0 && (
+                      <div className="text-xs text-green-400 mt-1">
+                        ✓ Auto-distributed:{" "}
+                        {(parseFloat(score) / criteria.length).toFixed(2)}{" "}
+                        points per criterion
+                      </div>
+                    )}
+
+                    <label className="font-semibold text-sm sm:text-base">
+                      Due Date: <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="bg-[#23272F] rounded-lg px-3 py-2 sm:px-4 sm:py-2 outline-none border border-[#23272F] focus:border-blue-500 text-sm sm:text-base"
+                    />
 
                     {/* Criteria/Rubrics Section */}
-                    <div className="flex flex-col gap-3">
-                      <div className="flex justify-between items-center">
-                        <label className="font-semibold">
+                    <div className="flex flex-col gap-2 sm:gap-3">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                        <label className="font-semibold text-sm sm:text-base">
                           Scoring Criteria:
                         </label>
                         <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => setShowTemplates(!showTemplates)}
-                            className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
+                            className="px-2 py-1 text-xs sm:text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
                           >
                             Use Template
                           </button>
@@ -1120,7 +1138,7 @@ const AdminTaskPage = () => {
                             onClick={() =>
                               setShowCriteriaSection(!showCriteriaSection)
                             }
-                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                            className="px-2 py-1 text-xs sm:text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                           >
                             {showCriteriaSection ? "Hide" : "Manual"} Criteria
                           </button>
@@ -1129,11 +1147,11 @@ const AdminTaskPage = () => {
 
                       {/* Auto-distribution explanation */}
                       {score && score !== "" && (
-                        <div className="p-3 bg-green-900/20 border border-green-800/50 rounded-lg">
+                        <div className="p-2 sm:p-3 bg-green-900/20 border border-green-800/50 rounded-lg">
                           <div className="flex items-start gap-2">
                             <div className="text-green-400 mt-0.5">
                               <svg
-                                className="w-4 h-4"
+                                className="w-3 h-3 sm:w-4 sm:h-4"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                               >
@@ -1145,7 +1163,7 @@ const AdminTaskPage = () => {
                               </svg>
                             </div>
                             <div className="text-sm">
-                              <p className="text-green-300 font-medium mb-1">
+                              <p className="text-green-300 font-medium mb-1 text-xs sm:text-sm">
                                 Automatic Score Distribution
                               </p>
                               <p className="text-gray-400 text-xs leading-relaxed">
@@ -1164,77 +1182,53 @@ const AdminTaskPage = () => {
 
                       {/* Template Selection */}
                       {showTemplates && (
-                        <div className="bg-[#23272F] rounded-lg p-4 border border-purple-600">
-                          <h4 className="text-sm font-semibold text-purple-400 mb-3">
+                        <div className="bg-[#23272F] rounded-lg p-3 sm:p-4 border border-purple-600">
+                          <h4 className="text-sm font-semibold text-purple-400 mb-2 sm:mb-3">
                             Choose a Template:
                           </h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <button
                               type="button"
-                              onClick={() => applyTemplate("essay")}
-                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                              onClick={() => applyTemplate("quiz")}
+                              className="p-2 sm:p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
                             >
-                              <div className="font-medium text-white">
-                                📝 Essay
+                              <div className="font-medium text-white text-sm sm:text-base">
+                                📝 Quiz
                               </div>
                               <div className="text-xs text-gray-400">
-                                For written essays and compositions
+                                For quizzes and assessments
                               </div>
                             </button>
                             <button
                               type="button"
-                              onClick={() => applyTemplate("research")}
-                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                              onClick={() => applyTemplate("individual-activity")}
+                              className="p-2 sm:p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
                             >
-                              <div className="font-medium text-white">
-                                🔬 Research Paper
+                              <div className="font-medium text-white text-sm sm:text-base">
+                                👤 Individual Activity
                               </div>
                               <div className="text-xs text-gray-400">
-                                For academic research and analysis
+                                For individual assignments and tasks
                               </div>
                             </button>
                             <button
                               type="button"
-                              onClick={() => applyTemplate("presentation")}
-                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                              onClick={() => applyTemplate("group-activity")}
+                              className="p-2 sm:p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
                             >
-                              <div className="font-medium text-white">
-                                🎤 Presentation
+                              <div className="font-medium text-white text-sm sm:text-base">
+                                👥 Group Activity
                               </div>
                               <div className="text-xs text-gray-400">
-                                For oral presentations and demos
-                              </div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => applyTemplate("project")}
-                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
-                            >
-                              <div className="font-medium text-white">
-                                💻 Project
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                For coding and development projects
-                              </div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => applyTemplate("creative")}
-                              className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
-                            >
-                              <div className="font-medium text-white">
-                                🎨 Creative
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                For artistic and creative works
+                                For collaborative projects and group work
                               </div>
                             </button>
                             <button
                               type="button"
                               onClick={clearCriteria}
-                              className="p-3 bg-red-900/30 rounded-lg hover:bg-red-900/50 transition text-left border border-red-600/50 hover:border-red-500"
+                              className="p-2 sm:p-3 bg-red-900/30 rounded-lg hover:bg-red-900/50 transition text-left border border-red-600/50 hover:border-red-500"
                             >
-                              <div className="font-medium text-red-400">
+                              <div className="font-medium text-red-400 text-sm sm:text-base">
                                 🗑️ Clear All
                               </div>
                               <div className="text-xs text-red-300">
@@ -1246,8 +1240,8 @@ const AdminTaskPage = () => {
                       )}
 
                       {showCriteriaSection && (
-                        <div className="bg-[#23272F] rounded-lg p-4 max-h-[300px] overflow-y-auto">
-                          <div className="flex justify-between items-center mb-3">
+                        <div className="bg-[#23272F] rounded-lg p-3 sm:p-4 max-h-[250px] sm:max-h-[300px] overflow-y-auto">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-3">
                             <h4 className="text-sm font-semibold text-blue-400">
                               {criteria.some((c) => c.name.trim())
                                 ? "Current Criteria:"
@@ -1264,13 +1258,13 @@ const AdminTaskPage = () => {
                             )}
                           </div>
 
-                          <div className="space-y-3">
+                          <div className="space-y-2 sm:space-y-3">
                             {criteria.map((criterion, index) => (
                               <div
                                 key={criterion.id}
-                                className="bg-[#161A20] rounded-lg p-3 border border-gray-600"
+                                className="bg-[#161A20] rounded-lg p-2 sm:p-3 border border-gray-600"
                               >
-                                <div className="flex justify-between items-center mb-2">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
                                   <span className="text-sm font-medium text-blue-400">
                                     Criteria {index + 1}
                                   </span>
@@ -1280,7 +1274,7 @@ const AdminTaskPage = () => {
                                       onClick={() =>
                                         removeCriteria(criterion.id)
                                       }
-                                      className="text-red-400 hover:text-red-300 text-sm"
+                                      className="text-red-400 hover:text-red-300 text-xs sm:text-sm"
                                     >
                                       Remove
                                     </button>
@@ -1394,9 +1388,9 @@ const AdminTaskPage = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-4 mt-8">
+                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-6 sm:mt-8">
                   <button
-                    className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                    className="px-4 py-2 sm:px-6 sm:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base w-full sm:w-auto"
                     onClick={() => {
                       resetTaskForm();
                       setIsCreatingTask(false);
@@ -1405,7 +1399,7 @@ const AdminTaskPage = () => {
                     Cancel
                   </button>
                   <button
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    className="px-4 py-2 sm:px-6 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base w-full sm:w-auto"
                     onClick={() => {
                       // Handle task creation logic here
                       console.log("Creating task:", {
@@ -1415,6 +1409,7 @@ const AdminTaskPage = () => {
                         dueDate,
                         taskCategory,
                         criteria,
+                        formFields, // Include form fields in task creation
                       });
                       setIsCreatingTask(false);
                     }}

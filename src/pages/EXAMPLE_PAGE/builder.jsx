@@ -1131,7 +1131,7 @@ export default function TaskBuilder() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">Create New Task</h2>
               <button
-                onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}
+                onClick={() => navigate(-1)}
                 className="text-gray-400 hover:text-white flex items-center gap-2"
               >
                 <FiArrowLeft size={16} />

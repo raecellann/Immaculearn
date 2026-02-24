@@ -4,6 +4,7 @@ import {
   FiItalic,
   FiUnderline,
   FiUploadCloud,
+  FiX,
 } from "react-icons/fi";
 
 const CreateActivityForm = () => {
@@ -13,7 +14,7 @@ const CreateActivityForm = () => {
   const [score, setScore] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-  const [taskCategory, setTaskCategory] = useState("individual-act");
+  const [taskCategory, setTaskCategory] = useState("individual-activity");
   const [criteria, setCriteria] = useState([{ id: 1, name: "", description: "", points: "" }]);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showCriteriaSection, setShowCriteriaSection] = useState(false);
@@ -23,10 +24,9 @@ const CreateActivityForm = () => {
 
   // Task categories
   const taskCategories = [
-    { value: "personal-reflection", label: "Personal Reflection", emoji: "🤔" },
-    { value: "individual-act", label: "Individual Activity", emoji: "📝" },
-    { value: "group-project", label: "Group Project", emoji: "👥" },
-    { value: "individual-project", label: "Individual Project", emoji: "🎯" },
+    { value: "quiz", label: "Quiz", emoji: "�" },
+    { value: "group-activity", label: "Group Activity", emoji: "👥" },
+    { value: "individual-activity", label: "Individual Activity", emoji: "📝" },
   ];
 
   // Criteria templates
@@ -232,7 +232,7 @@ const CreateActivityForm = () => {
               type="text"
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+              className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500"
               placeholder="Enter activity title"
             />
 
@@ -243,7 +243,7 @@ const CreateActivityForm = () => {
             <select
               value={taskCategory}
               onChange={(e) => setTaskCategory(e.target.value)}
-              className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500 w-full"
+              className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500 w-full"
             >
               {taskCategories.map((category) => (
                 <option key={category.value} value={category.value}>
@@ -256,7 +256,7 @@ const CreateActivityForm = () => {
             <label className="font-semibold">
               Instruction (optional)
             </label>
-            <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
+            <div className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus-within:border-blue-500">
               <div
                 ref={instructionRef}
                 contentEditable
@@ -339,7 +339,7 @@ const CreateActivityForm = () => {
               type="number"
               value={score}
               onChange={(e) => setScore(e.target.value)}
-              className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+              className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500"
               placeholder="Enter score (e.g., 100)"
               min="0"
             />
@@ -351,7 +351,7 @@ const CreateActivityForm = () => {
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+              className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500"
               min={new Date().toISOString().split("T")[0]}
             />
 
@@ -379,8 +379,17 @@ const CreateActivityForm = () => {
 
               {/* Template Selection */}
               {showTemplates && (
-                <div className="bg-[#23272F] rounded-lg p-4 border border-purple-600">
-                  <h4 className="text-sm font-semibold text-purple-400 mb-3">Choose a Template:</h4>
+                <div className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-4 border border-purple-600">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-sm font-semibold text-purple-400">Choose a Template:</h4>
+                    <button
+                      type="button"
+                      onClick={() => setShowTemplates(false)}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      <FiX size={18} />
+                    </button>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <button
                       type="button"
@@ -435,7 +444,7 @@ const CreateActivityForm = () => {
               )}
 
               {showCriteriaSection && (
-                <div className="bg-[#23272F] rounded-lg p-4 max-h-[300px] overflow-y-auto">
+                <div className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-4 max-h-[300px] overflow-y-auto">
                   <div className="flex justify-between items-center mb-3">
                     <h4 className="text-sm font-semibold text-blue-400">
                       {criteria.some(c => c.name.trim()) ? "Current Criteria:" : "Add Your Criteria:"}

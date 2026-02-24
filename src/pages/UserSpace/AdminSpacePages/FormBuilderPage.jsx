@@ -88,14 +88,14 @@ const FormBuilderPage = () => {
   };
 
   const handleBack = () => {
-    navigate(`/space/${space_uuid}/${space_name}/tasks`);
+    navigate(-1);
   };
 
   const handleSaveForm = () => {
     // Here you would save the form data and navigate back or to next step
     console.log("Saving form:", { taskTitle, instruction, questions, attachments, allowAttachments });
-    // For now, just navigate back to tasks
-    navigate(`/space/${space_uuid}/${space_name}/tasks`);
+    // Navigate back to previous page
+    navigate(-1);
   };
 
   return (
@@ -137,7 +137,7 @@ const FormBuilderPage = () => {
                   type="text"
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
-                  className="w-full bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                  className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500"
                   placeholder="Enter activity title"
                 />
               </div>
@@ -148,7 +148,7 @@ const FormBuilderPage = () => {
                 <textarea
                   value={instruction}
                   onChange={(e) => setInstruction(e.target.value)}
-                  className="w-full bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500 h-20 resize-none"
+                  className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500 h-20 resize-none"
                   placeholder="Enter instructions for this activity"
                 />
               </div>
@@ -200,7 +200,7 @@ const FormBuilderPage = () => {
                     <button
                       key={type.id}
                       onClick={() => addQuestion(type.id)}
-                      className="flex flex-col items-center gap-2 p-4 bg-[#23272F] rounded-lg hover:bg-[#2F3440] transition border border-[#23272F] hover:border-blue-500"
+                      className="flex flex-col items-center gap-2 p-4 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg hover:bg-[#2F3440] transition border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] hover:border-blue-500"
                     >
                       <Icon size={24} className="text-blue-400" />
                       <span className="text-sm">{type.label}</span>
@@ -215,13 +215,13 @@ const FormBuilderPage = () => {
               <div className="space-y-6">
                 <h4 className="font-semibold">Questions ({questions.length})</h4>
                 {questions.map((question, index) => (
-                  <div key={question.id} className="bg-[#23272F] rounded-lg p-6 border border-[#2F3440]">
+                  <div key={question.id} className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-6 border border-[#2F3440]">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
                           Q{index + 1}
                         </span>
-                        <span className="px-3 py-1 bg-[#1E222A] rounded-full text-sm text-gray-300">
+                        <span className="px-3 py-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-full text-sm text-gray-300">
                           {questionTypes.find(t => t.id === question.type)?.label}
                         </span>
                       </div>
@@ -240,7 +240,7 @@ const FormBuilderPage = () => {
                         type="text"
                         value={question.question}
                         onChange={(e) => updateQuestion(question.id, 'question', e.target.value)}
-                        className="w-full bg-[#161A20] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                        className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
                         placeholder="Enter your question here..."
                       />
                     </div>
@@ -261,7 +261,7 @@ const FormBuilderPage = () => {
                                   newOptions[optionIndex] = e.target.value;
                                   updateQuestion(question.id, 'options', newOptions);
                                 }}
-                                className="flex-1 bg-[#161A20] rounded-lg px-3 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                                className="flex-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-3 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
                                 placeholder={`Option ${optionIndex + 1}`}
                               />
                             </div>
@@ -306,7 +306,7 @@ const FormBuilderPage = () => {
                         <select
                           value={question.correctAnswer}
                           onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
-                          className="w-full bg-[#161A20] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                          className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
                         >
                           <option value="">Select correct answer</option>
                           {question.options.map((option, index) => (
@@ -327,7 +327,7 @@ const FormBuilderPage = () => {
                           min="1"
                           value={question.points}
                           onChange={(e) => updateQuestion(question.id, 'points', parseInt(e.target.value) || 1)}
-                          className="w-20 bg-[#161A20] rounded-lg px-3 py-1 outline-none border border-[#2F3440] focus:border-blue-500"
+                          className="w-20 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-3 py-1 outline-none border border-[#2F3440] focus:border-blue-500"
                         />
                       </div>
                       <label className="flex items-center gap-2 text-sm">
@@ -377,7 +377,7 @@ const FormBuilderPage = () => {
             {attachments.length > 0 && (
               <div className="mt-4 space-y-2">
                 {attachments.map((attachment) => (
-                  <div key={attachment.id} className="flex items-center justify-between bg-[#23272F] p-3 rounded-lg">
+                  <div key={attachment.id} className="flex items-center justify-between bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] p-3 rounded-lg">
                     <div className="flex items-center gap-3">
                       <FiPaperclip className="text-gray-400" />
                       <div>

@@ -54,7 +54,7 @@ const AdminTaskPage = () => {
   const [score, setScore] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-  const [taskCategory, setTaskCategory] = useState("individual-act");
+  const [taskCategory, setTaskCategory] = useState("individual-activity");
 
   // Criteria management state
   const [criteria, setCriteria] = useState([
@@ -112,10 +112,9 @@ const AdminTaskPage = () => {
 
   // Task categories
   const taskCategories = [
-    { value: "personal-reflection", label: "Personal Reflection", emoji: "🤔" },
-    { value: "individual-act", label: "Individual Activity", emoji: "📝" },
-    { value: "group-project", label: "Group Project", emoji: "👥" },
-    { value: "individual-project", label: "Individual Project", emoji: "🎯" },
+    { value: "quiz", label: "Quiz", emoji: "�" },
+    { value: "group-activity", label: "Group Activity", emoji: "👥" },
+    { value: "individual-activity", label: "Individual Activity", emoji: "📝" },
   ];
 
   // Criteria templates
