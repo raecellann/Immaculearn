@@ -20,6 +20,7 @@ import AddMember from "../component/AddMember";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const ProfTaskPage = () => {
   // ================= TASK FORM STATE =================
@@ -54,6 +55,8 @@ const ProfTaskPage = () => {
   const { space_uuid, space_name } = useParams();
   
   const { user, isLoading: userLoading } = useUser();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const {
     userSpaces,
     courseSpaces,
@@ -736,7 +739,7 @@ const ProfTaskPage = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         {/* <ProfSidebar onLogoutClick={() => setShowLogout(true)} /> */}
@@ -753,25 +756,33 @@ const ProfTaskPage = () => {
 
       {/* ================= MOBILE/TABLET SIDEBAR ================= */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
+        style={{
+          backgroundColor: currentColors.surface
+        }}
       >
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* ================= MAIN ================= */}
-      <div className="flex-1 flex flex-col w-full">
+      <div className="flex-1 flex flex-col w-full" style={{ backgroundColor: currentColors.surface }}>
         {/* ================= HEADER ================= */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
+          className={`lg:hidden p-4 border-b
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border
+          }}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0"
+            className="bg-transparent border-none text-2xl p-0"
+            style={{ color: currentColors.text }}
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
@@ -1116,11 +1127,22 @@ const ProfTaskPage = () => {
             </div>
           ) : (
             /* ================= CREATE TASK FORM ================= */
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-5xl mx-auto" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
               {/* BACK BUTTON */}
               <div className="flex justify-end mb-6">
                 <button
-                  className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow transition-colors"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    color: currentColors.text,
+                    border: `1px solid ${currentColors.border}`
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = currentColors.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = currentColors.surface;
+                  }}
                   onClick={() => setIsCreatingTask(false)}
                 >
                   <FiArrowLeft size={16} />
@@ -1130,18 +1152,29 @@ const ProfTaskPage = () => {
               </div>
 
               {/* FORM CARD */}
-              <div className="bg-black rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border border-white">
+              <div className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* LEFT SECTION */}
                   <div className="flex-1 flex flex-col gap-4">
-                    <label className="font-semibold text-lg">
+                    <label className="font-semibold text-lg" style={{ color: currentColors.text }}>
                       Title: <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={taskTitle}
                       onChange={(e) => setTaskTitle(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        color: currentColors.text,
+                        borderColor: currentColors.border
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                       placeholder="Enter task title"
                     />
 
@@ -1151,7 +1184,18 @@ const ProfTaskPage = () => {
                     <select
                       value={taskCategory}
                       onChange={(e) => setTaskCategory(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500 w-full"
+                      className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        color: currentColors.text,
+                        borderColor: currentColors.border
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                     >
                       {taskCategories.map((category) => (
                         <option key={category.value} value={category.value}>
@@ -1161,24 +1205,28 @@ const ProfTaskPage = () => {
                     </select>
 
                     {/* INSTRUCTION */}
-                    <label className="font-semibold">
+                    <label className="font-semibold" style={{ color: currentColors.text }}>
                       Instruction (optional)
                     </label>
 
-                    <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
+                    <div className="rounded-lg border transition-colors" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
                       {/* Editable Instruction Area */}
                       <div
                         ref={instructionRef}
                         contentEditable
                         className="min-h-[140px] px-4 py-3 outline-none"
+                        style={{
+                          backgroundColor: currentColors.background,
+                          color: currentColors.text
+                        }}
                         suppressContentEditableWarning
                       />
 
                       {/* Divider */}
-                      <div className="border-t border-[#2F3440]" />
+                      <div className="border-t" style={{ borderColor: currentColors.border }} />
 
                       {/* Formatting Toolbar (BOTTOM) */}
-                      <div className="flex gap-4 px-4 py-2 text-gray-300">
+                      <div className="flex gap-4 px-4 py-2" style={{ color: currentColors.textSecondary }}>
                         <button
                           type="button"
                           onClick={() => applyFormat("bold")}
@@ -1205,30 +1253,51 @@ const ProfTaskPage = () => {
 
                     {/* FILE UPLOAD */}
                     <div className="mt-6">
-                      <label className="block font-semibold mb-2">
+                      <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
                         Choose a file or drag & drop it here.
                       </label>
 
                       <div
                         onClick={handleFileClick}
-                        className="border border-dashed border-gray-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer bg-[#0F1115] hover:border-blue-500 transition"
+                        className="border border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition-colors"
+                        style={{
+                          borderColor: currentColors.border,
+                          backgroundColor: currentColors.background
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.borderColor = currentColors.accent;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.borderColor = currentColors.border;
+                        }}
                       >
                         <FiUploadCloud
                           size={36}
-                          className="mb-3 text-gray-300"
+                          className="mb-3" style={{ color: currentColors.textSecondary }}
                         />
 
-                        <p className="text-sm text-gray-300 mb-2">
+                        <p className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
                           Choose a file or drag & drop it here.
                         </p>
 
-                        <p className="text-xs text-gray-500 mb-4">
+                        <p className="text-xs mb-4" style={{ color: currentColors.textSecondary }}>
                           DOCS, PDF, PPT AND EXCEL, UP TO 10 MB
                         </p>
 
                         <button
                           type="button"
-                          className="px-4 py-1.5 border border-gray-400 rounded-md text-sm hover:bg-gray-800"
+                          className="px-4 py-1.5 border rounded-md text-sm transition-colors"
+                          style={{
+                            borderColor: currentColors.border,
+                            backgroundColor: currentColors.background,
+                            color: currentColors.text
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = currentColors.hover;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = currentColors.background;
+                          }}
                         >
                           Browse Files
                         </button>
@@ -1245,22 +1314,44 @@ const ProfTaskPage = () => {
 
                   {/* RIGHT SECTION */}
                   <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
-                    <label className="font-semibold">Score: <span className="text-red-500">*</span></label>
+                    <label className="font-semibold" style={{ color: currentColors.text }}>Score: <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       value={score}
                       onChange={(e) => setScore(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      className="rounded-lg px-4 py-2 outline-none border transition-colors"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        color: currentColors.text,
+                        borderColor: currentColors.border
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                       placeholder="Enter score (e.g., 100)"
                       min="0"
                     />
 
-                    <label className="font-semibold">Due Date: <span className="text-red-500">*</span></label>
+                    <label className="font-semibold" style={{ color: currentColors.text }}>Due Date: <span className="text-red-500">*</span></label>
                     <input
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      className="rounded-lg px-4 py-2 outline-none border transition-colors"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        color: currentColors.text,
+                        borderColor: currentColors.border
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                       min={new Date().toISOString().split('T')[0]}
                     />
 
@@ -1268,7 +1359,7 @@ const ProfTaskPage = () => {
                       // View Groups section when groups are configured
                       <div className="flex flex-col gap-3">
                         <div className="flex justify-between items-center">
-                          <label className="font-semibold">View Groups:</label>
+                          <label className="font-semibold" style={{ color: currentColors.text }}>View Groups:</label>
                           <div className="flex gap-2">
                             <button
                               type="button"
@@ -1320,8 +1411,8 @@ const ProfTaskPage = () => {
                       // Assign Groups section when groups are not configured
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-3">
-                          <label className="font-semibold">Assign Groups:</label>
-                          <div className="flex items-center bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
+                          <label className="font-semibold" style={{ color: currentColors.text }}>Assign Groups:</label>
+                          <div className="flex items-center rounded-lg border transition-colors" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
                             <button
                               type="button"
                               className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
@@ -1335,7 +1426,10 @@ const ProfTaskPage = () => {
                             <input
                               id="groups-input"
                               type="number"
-                              className="bg-transparent w-12 text-center outline-none text-white text-sm [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+                              className="bg-transparent w-12 text-center outline-none text-sm"
+                              style={{
+                                color: currentColors.text
+                              }}
                               defaultValue={1}
                               min="1"
                             />
@@ -1375,13 +1469,34 @@ const ProfTaskPage = () => {
                 {/* ACTION BUTTONS */}
                 <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
                   <button
-                    className="bg-blue-600 hover:bg-blue-700 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
+                    className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+                    style={{
+                      backgroundColor: '#2563eb',
+                      color: '#ffffff'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#1d4ed8';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#2563eb';
+                    }}
                     onClick={() => handleUpload("uploaded")}
                   >
                     {uploadTaskMutation.isLoading ? "Publishing..." : "Publish Task"}
                   </button>
                   <button
-                    className="bg-gray-700 hover:bg-gray-800 px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto"
+                    className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      color: currentColors.text,
+                      border: `1px solid ${currentColors.border}`
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = currentColors.hover;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = currentColors.surface;
+                    }}
                     onClick={() => handleUpload("draft")}
                   >
                     {draftTaskMutation.isLoading ? "Saving..." : "Save as Draft"}

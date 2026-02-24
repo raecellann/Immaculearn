@@ -134,10 +134,10 @@ const ProfArchiveClass = () => {
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 px-4 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
-          }`}
+          } border-b`}
           style={{
             backgroundColor: currentColors.surface,
-            borderColor: currentColors.border,
+            borderColor: '#000000',
             color: currentColors.text
           }}
         >
@@ -158,7 +158,7 @@ const ProfArchiveClass = () => {
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           {/* Desktop Title */}
-          <div className="hidden md:flex justify-center mb-8">
+          <div className="hidden lg:flex justify-center mb-8">
             <h1 className="text-4xl font-bold">Archived Classes</h1>
           </div>
 
@@ -167,7 +167,7 @@ const ProfArchiveClass = () => {
             background: isDarkMode ? 'linear-gradient(to right, #1e3a8a, #0f172a)' : 'linear-gradient(to right, #3b82f6, #1e40af)',
             borderColor: currentColors.border
           }}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div className="flex flex-col md:flex-row md:justify-between gap-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2" style={{ color: '#60A5FA' }}>
                   Archived Course Space
@@ -179,17 +179,15 @@ const ProfArchiveClass = () => {
                   Restore classes when needed or keep them for your records.
                 </p>
               </div>
-              <div className="flex md:justify-end">
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-white">
-                    {archivedClasses.length}
-                  </p>
-                  <p className="text-sm" style={{ color: '#e2e8f0' }}>
-                    {archivedClasses.length === 1
-                      ? "Class Archived"
-                      : "Classes Archived"}
-                  </p>
-                </div>
+              <div className="flex items-center gap-2 md:self-end">
+                <p className="text-sm" style={{ color: '#e2e8f0' }}>
+                  {archivedClasses.length === 1
+                    ? "Class Archived"
+                    : "Classes Archived"}
+                </p>
+                <p className="text-2xl font-bold text-white">
+                  {archivedClasses.length}
+                </p>
               </div>
             </div>
           </div>

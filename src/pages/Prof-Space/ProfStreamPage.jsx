@@ -23,6 +23,7 @@ import AddMember from "../component/AddMember";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import ChatPopup from "../component/ChatPopup";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const ProfStreamPage = () => {
   const { space_uuid, space_name } = useParams();
@@ -66,6 +67,8 @@ const ProfStreamPage = () => {
   // Custom hooks - MUST BE AT THE TOP
   const { user, isLoading: userLoading } = useUser();
   const { addNotification, showGlobalNotification } = useNotification();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const {
     userSpaces,
     courseSpaces,
@@ -368,7 +371,7 @@ const ProfStreamPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -384,9 +387,12 @@ const ProfStreamPage = () => {
 
       {/* ================= MOBILE/TABLET SIDEBAR ================= */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
+        style={{
+          backgroundColor: currentColors.surface
+        }}
       >
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
@@ -395,14 +401,19 @@ const ProfStreamPage = () => {
       <div className="flex-1 flex flex-col w-full">
         {/* ================= HEADER ================= */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
+          className={`lg:hidden p-4 border-b
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border
+          }}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0"
+            className="bg-transparent border-none text-2xl p-0"
+            style={{ color: currentColors.text }}
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
@@ -427,7 +438,7 @@ const ProfStreamPage = () => {
           <div className="hidden md:block mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-400">({currentSpace?.space_type === "course" ? (currentSpace?.members?.length - 1) + " student(s)": (currentSpace?.members?.length) + " member(s)" || 0})</span>
+              <span className="text-xs" style={{ color: currentColors.textSecondary }}>({currentSpace?.space_type === "course" ? (currentSpace?.members?.length - 1) + " student(s)": (currentSpace?.members?.length) + " member(s)" || 0})</span>
               {isOwnerSpace && (
                 <>
                   <div onClick={handleInviteMember}>
@@ -448,13 +459,25 @@ const ProfStreamPage = () => {
               )}
               {isFriendSpace && (
                 <div className="flex flex-col gap-2 mt-2">
-                  <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
-                    <span className="text-xs text-blue-400 break-all">
+                  <div className="flex items-center gap-2 p-2 rounded-md" style={{ backgroundColor: currentColors.surface }}>
+                    <span className="text-xs break-all" style={{ color: currentColors.accent }}>
                       {currentSpace?.space_link || 'Loading...'}
                     </span>
                     <button
                       onClick={() => handleCopyLink(currentSpace?.space_link)}
-                      className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
+                      className="p-1 rounded transition-colors"
+                      style={{
+                        color: currentColors.textSecondary,
+                        backgroundColor: 'transparent'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = currentColors.hover;
+                        e.target.style.color = currentColors.text;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'transparent';
+                        e.target.style.color = currentColors.textSecondary;
+                      }}
                       title="Copy to clipboard"
                     >
                       <FiCopy size={16} />
@@ -467,20 +490,23 @@ const ProfStreamPage = () => {
           </div>
 
           {/* ================= TABS ================= */}
-          <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
+          <div className="w-full overflow-x-auto no-scrollbar border-b pb-4 mb-6" style={{ borderColor: currentColors.border }}>
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex justify-center space-x-12">
-                <button className="font-semibold border-b-2 border-white pb-2">
+                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
                   Stream
                 </button>
                 <button
-                 onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/tasks`)}>
+                 onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/tasks`)}
+                 style={{ color: currentColors.textSecondary }}
+                >
                   Tasks
                 </button>
                 <button
                   onClick={() =>
                     navigate(`/prof/space/${space_uuid}/${space_name}/files`)
                   }
+                  style={{ color: currentColors.textSecondary }}
                 >
                   Files
                 </button>
@@ -488,6 +514,7 @@ const ProfStreamPage = () => {
                   onClick={() =>
                     navigate(`/prof/space/${space_uuid}/${space_name}/people`)
                   }
+                  style={{ color: currentColors.textSecondary }}
                 >
                   People
                 </button>
@@ -526,7 +553,7 @@ const ProfStreamPage = () => {
                           <div
                             className={`
                             bg-white rounded-xl border cursor-text transition
-                            ${isFocused ? "border-black" : "border-transparent"}
+                            ${isFocused ? "border-black" : "border-black"}
                             hover:border-black
                           `}
                             onClick={() => editorRef.current?.focus()}
@@ -590,7 +617,7 @@ const ProfStreamPage = () => {
                                 <>
                                   {/* FORMAT */}
 
-                                  <div className="mt-4 border-t border-gray-300" />
+                                  <div className="mt-4 border-t" style={{ borderColor: currentColors.border }} />
 
                                   {/* FOOTER */}
                                   <div className="mt-4 flex justify-between items-center">
@@ -633,11 +660,15 @@ const ProfStreamPage = () => {
 
                       {/* REMINDERS - STICKY */}
                       <div
-                        className={`sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
+                        className={`sticky top-4 border rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
+                        style={{
+                          backgroundColor: currentColors.surface,
+                          borderColor: currentColors.border
+                        }}
                       >
                         <h2 className="font-bold mb-4">Reminders</h2>
                         <div className="text-center py-6">
-                          <div className="text-gray-500 mb-2">
+                          <div className="mb-2" style={{ color: currentColors.textSecondary }}>
                             <svg
                               className="w-12 h-12 mx-auto"
                               fill="none"
@@ -655,7 +686,7 @@ const ProfStreamPage = () => {
                           <p className="text-gray-400 text-sm">
                             No reminders posted yet
                           </p>
-                          <p className="text-gray-500 text-xs mt-1">
+                          <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
                             Reminders will appear here when created
                           </p>
                         </div>
@@ -663,7 +694,18 @@ const ProfStreamPage = () => {
                         {/* CHAT */}
                         <button
                           onClick={handleEnterChat}
-                          className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-black border border-gray-700 hover:bg-gray-900"
+                          className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
+                          style={{
+                            backgroundColor: isDarkMode ? '#000000' : 'transparent',
+                            borderColor: currentColors.border,
+                            color: currentColors.text
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = isDarkMode ? '#1f2937' : currentColors.hover;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = isDarkMode ? '#000000' : 'transparent';
+                          }}
                         >
                           <FiMessageCircle />
                           Enter Chat
@@ -679,7 +721,7 @@ const ProfStreamPage = () => {
                           <div
                             className={`
                             bg-white rounded-xl border cursor-text transition
-                            ${isFocused ? "border-black" : "border-transparent"}
+                            ${isFocused ? "border-black" : "border-black"}
                             hover:border-black
                           `}
                             onClick={() => editorRef.current?.focus()}
@@ -786,13 +828,17 @@ const ProfStreamPage = () => {
 
                       {/* POSTS FEED */}
                       <div
-                        className={`bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${!isOwnerSpace && "h-full"} `}
+                        className={`border rounded-xl p-6 ${!isOwnerSpace && "h-full"}`}
+                        style={{
+                          backgroundColor: currentColors.surface,
+                          borderColor: currentColors.border
+                        }}
                       >
                         <h2 className="font-bold mb-4">Announcement Feed</h2>
         
                         {isLoadingPosts ? (
                           <div className="text-center py-8">
-                            <p className="text-gray-400">Loading posts...</p>
+                            <p style={{ color: currentColors.textSecondary }}>Loading posts...</p>
                           </div>
                         ) : postsError ? (
                           <div className="text-center py-8">
@@ -800,8 +846,8 @@ const ProfStreamPage = () => {
                           </div>
                         ) : posts.length === 0 ? (
                           <div className="text-center py-8">
-                            <p className="text-gray-400 text-lg">No posts yet</p>
-                            <p className="text-gray-500 text-sm mt-1">
+                            <p style={{ color: currentColors.textSecondary }} className="text-lg">No posts yet</p>
+                            <p className="text-sm mt-1" style={{ color: currentColors.textSecondary }}>
                               Posts will appear here when created
                             </p>
                           </div>
@@ -810,12 +856,21 @@ const ProfStreamPage = () => {
                             {posts.map((post) => (
                               <div
                                 key={post.post_id}
-                                className="bg-gray-800 rounded-lg p-4 border border-gray-700"
+                                className="rounded-lg p-4 border"
+                                style={{
+                                  backgroundColor: currentColors.background,
+                                  borderColor: currentColors.border
+                                }}
                               >
                                 <div className="flex items-start space-x-3">
                                   {/* Avatar */}
                                   {post.profile_pic ? (
-                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center"
+                                      style={{
+                                        backgroundColor: currentColors.surface,
+                                        borderColor: currentColors.border
+                                      }}
+                                    >
                                       <img
                                         src={post.profile_pic}
                                         alt={post.user_full_name || "User"}
@@ -832,26 +887,33 @@ const ProfStreamPage = () => {
                                   {/* Post Content */}
                                   <div className="flex-1">
                                     <div className="flex items-center space-x-2 mb-2">
-                                      <span className="font-semibold text-white">
+                                      <span className="font-semibold text-sm" style={{ color: currentColors.text }}>
                                         {post.user_full_name || "Unknown User"}
                                       </span>
-                                      <span className="text-gray-400 text-sm">
+                                      <span className="text-sm" style={{ color: currentColors.textSecondary }}>
                                         {timeAgo(post?.created_at)}
                                       </span>
                                     </div>
-                                    <p className="text-gray-200 whitespace-pre-wrap mb-3">
+                                    <p className="whitespace-pre-wrap mb-3" style={{ color: currentColors.text }}>
                                       {post.post_content}
                                     </p>
         
                                     {/* Comment Button */}
                                     <button
                                       onClick={() => toggleComments(post.post_id)}
-                                      className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors text-sm"
+                                      className="flex items-center space-x-2 transition-colors text-sm"
+                                      style={{ color: currentColors.textSecondary }}
+                                      onMouseEnter={(e) => {
+                                        e.target.style.color = currentColors.text;
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.target.style.color = currentColors.textSecondary;
+                                      }}
                                     >
                                       <FiMessageCircle size={16} />
                                       <span>Comments</span>
                                       {post.reply_count > 0 && (
-                                        <span className="text-xs bg-gray-700 px-2 py-1 rounded-full">
+                                        <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary }}>
                                           {post.reply_count}
                                         </span>
                                       )}
@@ -859,7 +921,7 @@ const ProfStreamPage = () => {
         
                                     {/* Comments Section */}
                                     {expandedPosts.has(post.post_id) && (
-                                      <div className="mt-4 border-t border-gray-700 pt-4">
+                                      <div className="mt-4 pt-4" style={{ borderColor: currentColors.border }}>
                                         {/* Existing Comments */}
                                         {comments[post.post_id] &&
                                           comments[post.post_id].length > 0 && (
@@ -876,7 +938,7 @@ const ProfStreamPage = () => {
                                                   </div> */}
         
                                                   {post.profile_pic ? (
-                                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center" style={{ backgroundColor: currentColors.surface }}>
                                                       <img
                                                         src={comment.profile_pic}
                                                         alt={
@@ -887,7 +949,7 @@ const ProfStreamPage = () => {
                                                       />
                                                     </div>
                                                   ) : (
-                                                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold" style={{ backgroundColor: currentColors.surface, color: currentColors.text }}>
                                                       {post.user_full_name
                                                         ?.charAt(0)
                                                         ?.toUpperCase() || "U"}
@@ -895,15 +957,15 @@ const ProfStreamPage = () => {
                                                   )}
                                                   <div className="flex-1">
                                                     <div className="flex items-center space-x-2 mb-1">
-                                                      <span className="font-medium text-white text-sm">
+                                                      <span className="font-medium text-sm" style={{ color: currentColors.text }}>
                                                         {comment.user_full_name ||
                                                           "Unknown User"}
                                                       </span>
-                                                      <span className="text-gray-400 text-xs">
+                                                      <span className="text-xs" style={{ color: currentColors.textSecondary }}>
                                                         {timeAgo(comment?.created_at)}
                                                       </span>
                                                     </div>
-                                                    <p className="text-gray-200 text-sm whitespace-pre-wrap">
+                                                    <p className="text-sm whitespace-pre-wrap" style={{ color: currentColors.text }}>
                                                       {comment.post_content}
                                                     </p>
                                                   </div>
@@ -915,7 +977,7 @@ const ProfStreamPage = () => {
                                         {/* Comment Loading */}
                                         {isLoadingComments[post.post_id] && (
                                           <div className="text-center py-2">
-                                            <p className="text-gray-400 text-sm">
+                                            <p className="text-sm" style={{ color: currentColors.textSecondary }}>
                                               Loading comments...
                                             </p>
                                           </div>
@@ -952,7 +1014,12 @@ const ProfStreamPage = () => {
                                                 )
                                               }
                                               placeholder="Write a comment..."
-                                              className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                              className="w-full rounded-lg p-2 resize-none focus:outline-none focus:ring-2"
+                                              style={{
+                                                backgroundColor: currentColors.background,
+                                                color: currentColors.text,
+                                                borderColor: currentColors.border
+                                              }}
                                               rows="2"
                                             />
                                             <div className="flex justify-end mt-2">
@@ -1003,7 +1070,7 @@ const ProfStreamPage = () => {
         {`
           .editor:empty:before {
             content: "Post something to your space";
-            color: #9ca3af;
+                                  color: ${currentColors.textSecondary};
             pointer-events: none;
           }
         `}

@@ -6,10 +6,13 @@ import Logout from "../component/logout";
 import DeleteButton from "../component/DeleteButton";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const ProfPeoplePage = () => {
   const { user } = useUser();
   const { userSpaces, courseSpaces } = useSpace();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const navigate = useNavigate();
   const { space_uuid } = useParams();
 
@@ -43,7 +46,7 @@ const ProfPeoplePage = () => {
   // Handle not found
   if (!activeSpace) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-white bg-[#161A20]">
+      <div className="flex items-center justify-center min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
         <p className="text-xl">Space not found.</p>
       </div>
     );
@@ -81,7 +84,7 @@ const ProfPeoplePage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -97,9 +100,12 @@ const ProfPeoplePage = () => {
 
       {/* ================= MOBILE/TABLET SIDEBAR ================= */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
+        style={{
+          backgroundColor: currentColors.surface
+        }}
       >
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
@@ -108,14 +114,19 @@ const ProfPeoplePage = () => {
       <div className="flex-1 flex flex-col w-full">
         {/* ================= HEADER ================= */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
+          className={`lg:hidden p-4 border-b
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border
+          }}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0"
+            className="bg-transparent border-none text-2xl p-0"
+            style={{ color: currentColors.text }}
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
@@ -144,7 +155,14 @@ const ProfPeoplePage = () => {
 
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition"
+              className="flex items-center gap-2 transition"
+              style={{ color: currentColors.textSecondary }}
+              onMouseEnter={(e) => {
+                e.target.style.color = currentColors.text;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.color = currentColors.textSecondary;
+              }}
             >
               <FiChevronLeft />
               Back
@@ -155,7 +173,7 @@ const ProfPeoplePage = () => {
           {creator && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4">Adviser</h2>
-              <div className="border-t border-gray-600 pt-4">
+              <div className="border-t pt-4" style={{ borderColor: currentColors.border }}>
                 <div className="flex items-center gap-4">
                   <img
                     src={creator.profile_pic || "/src/assets/default-avatar.jpg"}
@@ -171,7 +189,7 @@ const ProfPeoplePage = () => {
           {/* MEMBERS SECTION */}
           <div>
             <h2 className="text-xl font-semibold mb-4">Students</h2>
-            <div className="border-t border-gray-600 pt-4 space-y-4">
+            <div className="border-t pt-4 space-y-4" style={{ borderColor: currentColors.border }}>
               {otherMembers.length > 0 ? (
                 otherMembers.map((member) => (
                   <div key={member.account_id} className="flex items-center justify-between gap-4">
@@ -189,7 +207,7 @@ const ProfPeoplePage = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-400">No members yet.</p>
+                <p style={{ color: currentColors.textSecondary }}>No members yet.</p>
               )}
             </div>
           </div>
@@ -202,9 +220,9 @@ const ProfPeoplePage = () => {
       {/* REMOVE MEMBER WARNING MODAL */}
       {showRemoveWarning && memberToRemove && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1E222A] rounded-lg p-6 max-w-md w-full">
-            <p className="text-gray-300 mb-6">
-              Are you sure you want to remove <span className="font-medium text-white">{memberToRemove.full_name}</span> from this space? 
+          <div className="rounded-lg p-6 max-w-md w-full" style={{ backgroundColor: currentColors.surface }}>
+            <p className="mb-6" style={{ color: currentColors.textSecondary }}>
+              Are you sure you want to remove <span className="font-medium" style={{ color: currentColors.text }}>{memberToRemove.full_name}</span> from this space? 
               They will lose access to all content and resources in this space.
             </p>
             <div className="flex gap-3 justify-end">

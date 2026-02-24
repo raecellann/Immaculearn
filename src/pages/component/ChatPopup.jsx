@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiMessageCircle, FiX, FiSend, FiUsers } from 'react-icons/fi';
+import { useSpaceTheme } from '../../contexts/theme/useSpaceTheme';
 
 const ChatPopup = ({ 
   isOpen, 
@@ -11,6 +12,8 @@ const ChatPopup = ({
   messages = [],
   className = ""
 }) => {
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const [newMessage, setNewMessage] = useState('');
   const [showMembersList, setShowMembersList] = useState(false);
   const messagesEndRef = useRef(null);
@@ -49,9 +52,9 @@ const ChatPopup = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1E222A] rounded-2xl w-full max-w-4xl h-[85vh] overflow-hidden flex flex-col shadow-2xl">
+      <div className="rounded-2xl w-full max-w-4xl h-[85vh] overflow-hidden flex flex-col shadow-2xl" style={{ backgroundColor: currentColors.surface }}>
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#2A2F3A] to-[#1E222A] p-4 border-b border-gray-700">
+        <div className="p-4 border-b" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -59,10 +62,10 @@ const ChatPopup = ({
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E222A]"></div>
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-semibold" style={{ color: currentColors.text }}>
                   {spaceName} Chat
                 </h2>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                   {spaceMembers.length} members • {messages.length} messages
                 </p>
               </div>
@@ -70,14 +73,38 @@ const ChatPopup = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowMembersList(!showMembersList)}
-                className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-lg transition-colors"
+                style={{
+                  color: currentColors.textSecondary,
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = currentColors.hover;
+                  e.target.style.color = currentColors.text;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = currentColors.textSecondary;
+                }}
                 title="View Members"
               >
                 <FiUsers size={20} />
               </button>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-lg transition-colors"
+                style={{
+                  color: currentColors.textSecondary,
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = currentColors.hover;
+                  e.target.style.color = currentColors.text;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = currentColors.textSecondary;
+                }}
                 title="Close Chat"
               >
                 <FiX size={20} />
@@ -88,18 +115,24 @@ const ChatPopup = ({
 
         {/* Members Sidebar */}
         {showMembersList && (
-          <div className="bg-[#141820] border-b border-gray-700 p-4">
+          <div className="border-b p-4" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {spaceMembers.map((member, index) => (
-                <div key={index} className="flex items-center gap-2 p-2 rounded-lg hover:bg-[#2A2F3A] transition-colors">
+                <div key={index} className="flex items-center gap-2 p-2 rounded-lg transition-colors" style={{ backgroundColor: 'transparent' }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = currentColors.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                  }}>
                   <img
                     src={member.avatar || "/src/assets/HomePage/frieren-avatar.jpg"}
                     alt={member.name}
                     className="w-6 h-6 rounded-full"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm truncate">{member.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{member.email}</p>
+                    <p className="text-sm truncate" style={{ color: currentColors.text }}>{member.name}</p>
+                    <p className="text-xs truncate" style={{ color: currentColors.textSecondary }}>{member.email}</p>
                   </div>
                   <div className={`w-2 h-2 rounded-full ${
                     member.online ? 'bg-green-500' : 'bg-gray-500'
@@ -111,7 +144,7 @@ const ChatPopup = ({
         )}
 
         {/* Chat Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#141820]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: currentColors.background }}>
           {/* Welcome Message */}
           {messages.length === 0 && (
             <div className="text-center py-12">
@@ -119,13 +152,13 @@ const ChatPopup = ({
                 <FiMessageCircle className="text-gray-500 mx-auto" size={64} />
                 <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
               </div>
-              <h3 className="text-gray-300 text-xl font-semibold mb-2">
+              <h3 className="text-xl font-semibold mb-2" style={{ color: currentColors.text }}>
                 Welcome to {spaceName} Chat
               </h3>
-              <p className="text-gray-500 text-sm mb-4">
+              <p className="text-sm mb-4" style={{ color: currentColors.textSecondary }}>
                 Start a conversation with space members
               </p>
-              <div className="flex justify-center gap-4 text-xs text-gray-400">
+              <div className="flex justify-center gap-4 text-xs" style={{ color: currentColors.textSecondary }}>
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <span>Online</span>
@@ -152,16 +185,21 @@ const ChatPopup = ({
                   <div className={`rounded-2xl px-4 py-3 ${
                     isCurrentUser 
                       ? 'bg-blue-600 text-white rounded-br-sm' 
-                      : 'bg-gray-700 text-white rounded-bl-sm'
-                  }`}>
+                      : ''
+                  }`}
+                  style={{
+                    backgroundColor: isCurrentUser ? '#2563eb' : currentColors.background,
+                    color: isCurrentUser ? '#ffffff' : currentColors.text,
+                    border: isCurrentUser ? 'none' : `1px solid ${currentColors.border}`
+                  }}>
                     <p className="text-sm break-words">{message.content || message.text}</p>
                   </div>
                   <div className={`flex items-center gap-2 mt-1 text-xs ${
                     isCurrentUser ? 'flex-row-reverse' : ''
                   }`}>
-                    <span className="text-gray-500">{message.senderName}</span>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-gray-400">
+                    <span style={{ color: currentColors.textSecondary }}>{message.senderName}</span>
+                    <span style={{ color: currentColors.textSecondary }}>•</span>
+                    <span style={{ color: currentColors.textSecondary }}>
                     {message.timestamp === 'Just now' 
                       ? 'Just now' 
                       : new Date(message.timestamp).toLocaleTimeString([], {
@@ -182,7 +220,7 @@ const ChatPopup = ({
         </div>
 
         {/* Chat Input */}
-        <div className="p-4 border-t border-gray-700 bg-[#1E222A]">
+        <div className="p-4 border-t" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
           <div className="flex items-end gap-3">
             <div className="flex-1">
               <textarea
@@ -191,9 +229,11 @@ const ChatPopup = ({
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
-                className="w-full bg-[#2A2F3A] text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 resize-none"
-                rows={2}
+                className="w-full px-4 py-3 rounded-xl outline-none focus:ring-2 resize-none"
                 style={{
+                  backgroundColor: currentColors.surface,
+                  color: currentColors.text,
+                  borderColor: currentColors.border,
                   height: '80px'
                 }}
               />
@@ -204,14 +244,19 @@ const ChatPopup = ({
               className={`p-3 rounded-xl transition-all transform hover:scale-105 ${
                 newMessage.trim()
                   ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg' 
-                  : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : ''
               }`}
+              style={{
+                backgroundColor: newMessage.trim() ? '#2563eb' : currentColors.surface,
+                color: newMessage.trim() ? '#ffffff' : currentColors.textSecondary,
+                border: newMessage.trim() ? 'none' : `1px solid ${currentColors.border}`
+              }}
               title="Send message"
             >
               <FiSend size={18} />
             </button>
           </div>
-          <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+          <div className="flex items-center justify-between mt-2 text-xs" style={{ color: currentColors.textSecondary }}>
             <span>Press Enter to send, Shift+Enter for new line</span>
             <span>{newMessage.length}/500</span>
           </div>
