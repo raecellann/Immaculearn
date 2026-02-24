@@ -457,7 +457,7 @@ const HomePage1 = () => {
                     className="flex transition-transform duration-500 ease-out"
                     style={{
                       transform: `translateX(-${slideIndexYourSpace * 100}%)`,
-                      backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                      backgroundColor: isDarkMode ? "" : "white",
                     }}
                   >
                     {Array.from({ length: yourSlideCount }).map((_, idx) => (
@@ -472,7 +472,7 @@ const HomePage1 = () => {
                               key={space.space_uuid}
                               className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
                               style={{
-                                backgroundColor: currentColors.surface,
+                                backgroundColor: isDarkMode ? "rgb(27, 31, 38)" : "white",
                                 border: isDarkMode ? "none" : "1px solid black",
                               }}
                             >
@@ -613,7 +613,8 @@ const HomePage1 = () => {
                               key={i}
                               className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
                               style={{
-                                backgroundColor: currentColors.surface,
+                                backgroundColor: isDarkMode ? "rgb(27, 31, 38)" : "white",
+
                                 border: isDarkMode ? "none" : "1px solid black",
                               }}
                             >
@@ -776,7 +777,7 @@ const HomePage1 = () => {
                               key={space.space_uuid}
                               className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
                               style={{
-                                backgroundColor: currentColors.surface,
+                                backgroundColor: isDarkMode ? "rgb(27, 31, 38)" : "white",
                                 border: isDarkMode ? "none" : "1px solid black",
                               }}
                             >
