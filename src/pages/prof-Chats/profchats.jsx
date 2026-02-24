@@ -390,7 +390,8 @@ const ProfChatPage = () => {
                   className="w-full pl-5 pr-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                   style={{
                     backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6',
-                    color: currentColors.text
+                    color: currentColors.text,
+                    border: isDarkMode ? 'none' : '1px solid black'
                   }}
                 />
                 <FiSearch className="absolute right-3 top-3" style={{ color: currentColors.textSecondary }} />
@@ -399,7 +400,8 @@ const ProfChatPage = () => {
 
             {/* PEOPLE */}
             <div className="rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar" style={{ 
-              backgroundColor: currentColors.surface 
+              backgroundColor: currentColors.surface,
+              border: isDarkMode ? 'none' : '1px solid black'
             }}>
               <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>
                 Students
@@ -453,7 +455,8 @@ const ProfChatPage = () => {
 
             {/* GROUPS */}
             <div className="rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar" style={{ 
-              backgroundColor: currentColors.surface 
+              backgroundColor: currentColors.surface,
+              border: isDarkMode ? 'none' : '1px solid black'
             }}>
               <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>
                 Courses
@@ -508,7 +511,8 @@ const ProfChatPage = () => {
           <div
             className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`}
             style={{
-              backgroundColor: currentColors.surface
+              backgroundColor: currentColors.surface,
+              border: isDarkMode ? 'none' : '1px solid black'
             }}
           >
             {!activeSpaceUuid ? (

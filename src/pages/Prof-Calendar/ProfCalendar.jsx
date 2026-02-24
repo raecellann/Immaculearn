@@ -405,7 +405,7 @@ const ProfCalendarPage = () => {
                   <FiCalendar className="text-blue-600" size={16} />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold">Filter by Space</label>
+                  <label className="block text-sm font-semibold" style={{ color: '#3b82f6' }}>Filter by Space</label>
                   <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                     {selectedSpace 
                       ? `Filtering: ${availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space'}` 
@@ -440,14 +440,14 @@ const ProfCalendarPage = () => {
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">
+                  <span className="text-lg" style={{ color: '#3b82f6' }}>
                     {selectedSpace 
                       ? '📍 ' + (availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space')
                       : '🌐 All Spaces'
                     }
                   </span>
                   <div className="flex-1">
-                    <div className="font-medium text-sm" style={{ color: currentColors.text }}>
+                    <div className="font-medium text-sm" style={{ color: '#3b82f6' }}>
                       {selectedSpace 
                         ? availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space'
                         : 'All Spaces'
@@ -500,7 +500,7 @@ const ProfCalendarPage = () => {
                         <div className="flex items-center gap-2">
                           <span className="text-lg">🌐</span>
                           <div className="flex-1">
-                            <div className="font-medium text-sm" style={{ color: currentColors.text }}>All Spaces</div>
+                            <div className="font-medium text-sm" style={{ color: '#3b82f6' }}>All Spaces</div>
                             <div className="text-xs" style={{ color: currentColors.textSecondary }}>View activities from all spaces</div>
                           </div>
                         </div>

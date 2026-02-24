@@ -350,7 +350,8 @@ const ChatList = () => {
                 className="w-full pl-5 pr-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                 style={{
                   backgroundColor: currentColors.surface,
-                  color: currentColors.text
+                  color: currentColors.text,
+                  border: isDarkMode ? 'none' : '1px solid black'
                 }}
               />
               <FiSearch className="absolute right-3 top-3" style={{ color: currentColors.textSecondary }} />
@@ -358,7 +359,10 @@ const ChatList = () => {
           </div>
 
           {/* PEOPLE */}
-          <div className="rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar" style={{ backgroundColor: currentColors.surface }}>
+          <div className="rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar" style={{ 
+            backgroundColor: currentColors.surface,
+            border: isDarkMode ? 'none' : '1px solid black'
+          }}>
             <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>People</h2>
             {uniqueMembers
               .filter(m => m.full_name?.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -391,7 +395,10 @@ const ChatList = () => {
           </div>
 
           {/* GROUPS */}
-          <div className="rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar" style={{ backgroundColor: currentColors.surface }}>
+          <div className="rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar" style={{ 
+            backgroundColor: currentColors.surface,
+            border: isDarkMode ? 'none' : '1px solid black'
+          }}>
             <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>Groups</h2>
             {uniqueSpaces.map((space) => (
               <div
@@ -426,7 +433,10 @@ const ChatList = () => {
         </div>
 
         {/* CHAT PANEL */}
-        <div className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`} style={{ backgroundColor: currentColors.surface }}>
+        <div className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`} style={{ 
+          backgroundColor: currentColors.surface,
+          border: isDarkMode ? 'none' : '1px solid black'
+        }}>
           {!activeSpaceUuid ? (
             <div className="flex-1 flex items-center justify-center min-h-[400px] mt-16">
               <div className="text-center text-lg" style={{ color: currentColors.textSecondary }}>
@@ -436,7 +446,10 @@ const ChatList = () => {
           ) : (
             <>
               {/* Fixed Header - Always Visible */}
-              <div className="p-3 sm:p-4 border-b flex justify-between items-center relative rounded-t-xl sticky top-0 z-10" style={{ borderColor: currentColors.border, backgroundColor: currentColors.surface }}>
+              <div className="p-3 sm:p-4 border-b flex justify-between items-center relative rounded-t-xl sticky top-0 z-10" style={{ 
+                borderColor: currentColors.border, 
+                backgroundColor: currentColors.surface 
+              }}>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowMobileChat(false)}
@@ -478,7 +491,10 @@ const ChatList = () => {
                   
                   {/* Dropdown Menu */}
                   {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-44 sm:w-48 rounded-lg shadow-lg border z-50" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+                    <div className="absolute right-0 mt-2 w-44 sm:w-48 rounded-lg shadow-lg border z-50" style={{ 
+                      backgroundColor: currentColors.surface, 
+                      borderColor: currentColors.border 
+                    }}>
                       <button
                         onClick={handleThemeChange}
                         className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm rounded-t-lg flex items-center gap-3 transition-colors"
@@ -587,8 +603,13 @@ const ChatList = () => {
               </div>
 
               {/* Fixed Input - Always Visible */}
-              <div className="p-2 sm:p-3 md:p-4 border-t border-gray-700 bg-[#1E2330] rounded-b-xl sticky bottom-0">
-                <div className="flex gap-2 sm:gap-3 bg-gray-800 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center">
+              <div className="p-2 sm:p-3 md:p-4 border-t rounded-b-xl sticky bottom-0" style={{ 
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border
+              }}>
+                <div className="flex gap-2 sm:gap-3 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center" style={{
+                  backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6'
+                }}>
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -597,7 +618,8 @@ const ChatList = () => {
                     accept="image/*"
                   />
                   <FiPaperclip 
-                    className="text-gray-400 cursor-pointer hover:text-white" 
+                    className="cursor-pointer transition-colors" 
+                    style={{ color: currentColors.textSecondary }}
                     onClick={() => fileInputRef.current?.click()}
                   />
                   <input
@@ -607,12 +629,17 @@ const ChatList = () => {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
-                    className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-sm sm:text-base"
+                    className="flex-1 bg-transparent outline-none text-sm sm:text-base"
+                    style={{
+                      color: currentColors.text,
+                      placeholderColor: currentColors.textSecondary
+                    }}
                     placeholder="Type your message here..."
                   />
                   <button 
                     onClick={handleSend} 
-                    className="text-blue-500 hover:text-blue-400 transition-colors p-1 sm:p-0 bg-transparent border-none"
+                    className="transition-colors p-1 sm:p-0 bg-transparent border-none"
+                    style={{ color: '#3b82f6' }}
                     disabled={!input.trim()}
                   >
                     <FiSend />

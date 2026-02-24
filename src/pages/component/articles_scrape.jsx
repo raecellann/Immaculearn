@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useSpaceTheme } from '../../contexts/theme/useSpaceTheme';
 
 // Create client (should be in app root in real project)
 const queryClient = new QueryClient({
@@ -74,6 +75,8 @@ const fetchArticles = async (category) => {
 
 const ArticlesInner = () => {
   const [category, setCategory] = useState('all');
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
 
   const {
     data: articles = [],
@@ -93,10 +96,10 @@ const ArticlesInner = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-[#1E242E] rounded-xl p-6">
+      <div className="rounded-xl p-6" style={{ backgroundColor: currentColors.surface }}>
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-600 rounded mb-4 w-1/4"></div>
-          <div className="h-40 bg-gray-600 rounded mb-4"></div>
+          <div className="h-6 rounded mb-4 w-1/4" style={{ backgroundColor: currentColors.border }}></div>
+          <div className="h-40 rounded mb-4" style={{ backgroundColor: currentColors.border }}></div>
         </div>
       </div>
     );
@@ -104,9 +107,9 @@ const ArticlesInner = () => {
 
   if (isError) {
     return (
-      <div className="bg-[#1E242E] rounded-xl p-6">
-        <p className="text-gray-400">Failed to load articles</p>
-        <button onClick={() => refetch()} className="text-[#007AFF]">Try Again</button>
+      <div className="rounded-xl p-6" style={{ backgroundColor: currentColors.surface }}>
+        <p style={{ color: currentColors.textSecondary }}>Failed to load articles</p>
+        <button onClick={() => refetch()} style={{ color: '#007AFF' }}>Try Again</button>
       </div>
     );
   }
@@ -114,14 +117,23 @@ const ArticlesInner = () => {
   return (
     <section>
       <div className="flex justify-between items-center mb-5">
-        <h2 className="text-xl md:text-2xl font-semibold">Articles</h2>
+        <h2 className="text-xl md:text-2xl font-semibold" style={{ color: currentColors.text }}>Articles</h2>
 
         <nav className="hidden sm:flex gap-4">
           {['all', 'world', 'business', 'technology', 'science'].map((c) => (
             <button
               key={c}
               onClick={() => setCategory(c)}
-              className="text-gray-400 hover:text-white text-sm transition-colors capitalize"
+              className={`text-sm transition-colors capitalize ${
+                category === c 
+                  ? 'font-semibold' 
+                  : ''
+              }`}
+              style={{
+                color: category === c 
+                  ? (isDarkMode ? '#60A5FA' : '#007AFF')
+                  : currentColors.textSecondary
+              }}
             >
               {c}
             </button>
@@ -131,7 +143,14 @@ const ArticlesInner = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {articles.slice(0, 12).map((article, index) => (
-          <div key={index} className="bg-[#1E242E] rounded-xl overflow-hidden hover:bg-[#242B38] transition-colors">
+          <div 
+            key={index} 
+            className="rounded-xl overflow-hidden transition-colors hover:opacity-90" 
+            style={{ 
+              backgroundColor: currentColors.surface,
+              border: isDarkMode ? 'none' : '1px solid black'
+            }}
+          >
             <a href={article.url} target="_blank" rel="noopener noreferrer">
               <img
                 src={getImageSrc(article)}
@@ -139,9 +158,9 @@ const ArticlesInner = () => {
                 className="h-20 w-full object-cover"
               />
               <div className="p-3">
-                <h3 className="font-medium text-white line-clamp-2 text-xs">{article.title}</h3>
-                <p className="text-gray-400 text-xs mt-1">{article.section}</p>
-                <p className="text-gray-500 text-xs mt-1">{article.byline}</p>
+                <h3 className="font-medium line-clamp-2 text-xs" style={{ color: currentColors.text }}>{article.title}</h3>
+                <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>{article.section}</p>
+                <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>{article.byline}</p>
               </div>
             </a>
           </div>

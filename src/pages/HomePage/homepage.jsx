@@ -219,7 +219,7 @@ const HomePage1 = () => {
     <div
       className="flex font-sans min-h-screen"
       style={{
-        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+        backgroundColor: currentColors.background,
         color: currentColors.text,
       }}
     >
