@@ -76,16 +76,16 @@ export default function GlobalNotification() {
   const fileName = globalNotification.data?.fileName || '';
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm w-full">
+    <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm md:max-w-md lg:max-w-lg z-50">
       {/* Notification Content */}
       <div className="transform transition-all" data-notification-id={globalNotification.id}>
         <div className={`bg-white rounded-lg shadow-2xl border-2 ${getBackgroundClass(globalNotification.type)}`}>
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <div className="flex items-center space-x-3 flex-1 min-w-0">
-              <NotificationIcon type={globalNotification.type} />
+          <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200">
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+              <NotificationIcon type={globalNotification.type} size="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-gray-900 truncate">
+                <h3 className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
                   {globalNotification.title}
                 </h3>
                 {fileName && (
@@ -95,29 +95,29 @@ export default function GlobalNotification() {
             </div>
             <button
               onClick={hideGlobalNotification}
-              className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 ml-2"
+              className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 ml-1 sm:ml-2"
               disabled={globalNotification.persistent && uploadStatus !== 'completed' && uploadStatus !== 'error'}
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
           </div>
 
           {/* Body */}
-          <div className="p-4">
+          <div className="p-3 sm:p-4">
             {globalNotification.message && (
-              <p className="text-sm text-gray-700 mb-3 notification-message line-clamp-2">
+              <p className="text-xs sm:text-sm text-gray-700 mb-2 sm:mb-3 notification-message line-clamp-2">
                 {globalNotification.message}
               </p>
             )}
 
             {/* Progress Bar for Uploads */}
             {globalNotification.type === 'loading' && currentProgress > 0 && (
-              <div className="mb-3">
+              <div className="mb-2 sm:mb-3">
                 <div className="flex justify-between text-xs text-gray-600 mb-1">
-                  <span>Upload Progress</span>
-                  <span>{currentProgress}%</span>
+                  <span className="text-xs">Upload Progress</span>
+                  <span className="text-xs">{currentProgress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-gray-200 rounded-full h-1 sm:h-1.5 overflow-hidden">
                   <div 
                     className="h-full bg-blue-600 transition-all duration-300 ease-out"
                     style={{ width: `${currentProgress}%` }}
@@ -134,7 +134,7 @@ export default function GlobalNotification() {
 
             {/* Error Details */}
             {globalNotification.type === 'error' && globalNotification.data?.error && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-3">
+              <div className="bg-red-50 border border-red-200 rounded-md p-2 sm:p-3 mb-2 sm:mb-3">
                 <h4 className="text-xs font-medium text-red-700 mb-1">Error Details:</h4>
                 <p className="text-xs text-red-600">{globalNotification.data.error}</p>
                 {globalNotification.data.retryCount > 0 && (
@@ -147,12 +147,12 @@ export default function GlobalNotification() {
 
             {/* Actions */}
             {globalNotification.actions && globalNotification.actions.length > 0 && (
-              <div className="flex space-x-2 justify-end">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 justify-end">
                 {globalNotification.actions.map((action, index) => (
                   <button
                     key={index}
                     onClick={() => handleAction(action)}
-                    className={`${getButtonClass(action.variant)} text-xs px-3 py-1.5`}
+                    className={`${getButtonClass(action.variant)} text-xs px-2 py-1.5 sm:px-3 sm:py-1.5 w-full sm:w-auto`}
                   >
                     {action.label}
                   </button>
@@ -163,7 +163,7 @@ export default function GlobalNotification() {
 
           {/* Progress indicator for loading notifications */}
           {globalNotification.type === 'loading' && !currentProgress && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 rounded-b-lg overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 sm:h-1 bg-gray-200 rounded-b-lg overflow-hidden">
               <div className="h-full bg-blue-600 animate-pulse" />
             </div>
           )}

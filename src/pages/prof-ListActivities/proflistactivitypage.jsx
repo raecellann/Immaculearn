@@ -153,7 +153,7 @@ const ProfListActivityPage = () => {
                   >
                     <span className="text-xl">📋</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-lg font-medium truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
+                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
                     </div>
                   </div>
                 ))}

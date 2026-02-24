@@ -86,24 +86,8 @@ const Button = ({ text = "Share", onClick }) => {
   };
 
   const getHoverTextColor = () => {
-    switch(text) {
-      case "Add Member":
-        return "#22c55e"; // Green
-      case "Pending Invites":
-        return "#3b82f6"; // Blue
-      case "Delete Room":
-        return "#ef4444"; // Red
-      case "All Notifications":
-        return "#9ca3af"; // Gray
-      case "Pending Join Requests":
-        return "#3b82f6"; // Blue
-      case "Space Invitations":
-        return "#22c55e"; // Green
-      case "Go to Calendar":
-        return "white"; // White
-      default:
-        return "white"; // Default white
-    }
+    // Always return white for hover state in both light and dark modes
+    return "white";
   };
 
   const getBorderColor = () => {

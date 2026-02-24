@@ -128,6 +128,9 @@ const ProfFilesShared = () => {
     let notificationId = null;
     
     try {
+      // Close the upload modal immediately when upload starts
+      setShowCreateUploadModal(false);
+      
       // Show initial loading notification
       notificationId = showGlobalNotification({
         type: 'loading',
@@ -906,7 +909,7 @@ const ProfFilesShared = () => {
       {showCreateUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div
-            className="rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto relative"
+            className="rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative sm:max-w-lg md:max-w-2xl lg:max-w-3xl"
             style={{ backgroundColor: currentColors.surface }}
           >
             {/* CLOSE BUTTON */}
@@ -930,7 +933,7 @@ const ProfFilesShared = () => {
             </button>
 
             {/* CONTENT */}
-            <div className="p-8 pt-12">
+            <div className="p-4 sm:p-6 lg:p-8 pt-8 sm:pt-10 lg:pt-12">
               {/* TITLE */}
               <h2
                 className="text-xl font-semibold mb-6"
@@ -945,7 +948,7 @@ const ProfFilesShared = () => {
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-8 text-center mb-4 cursor-pointer transition relative ${
+                className={`border-2 border-dashed rounded-lg p-4 sm:p-6 lg:p-8 text-center mb-4 cursor-pointer transition relative ${
                   dragActive ? "border-blue-500 bg-blue-50" : ""
                 }`}
                 style={{
@@ -954,6 +957,7 @@ const ProfFilesShared = () => {
                     ? "#eff6ff"
                     : currentColors.background,
                 }}
+                onClick={() => document.getElementById("file-upload").click()}
               >
                 <input
                   type="file"
@@ -962,62 +966,44 @@ const ProfFilesShared = () => {
                   multiple
                   className="hidden"
                 />
-                <FiUpload
-                  size={40}
-                  className="mx-auto mb-3"
-                  style={{ color: currentColors.textSecondary }}
-                />
-                <p
-                  className="font-medium text-sm"
-                  style={{ color: currentColors.text }}
-                >
-                  Choose a file or drag & drop it here.
-                </p>
-                <p
-                  className="text-xs mt-1"
-                  style={{ color: currentColors.textSecondary }}
-                >
-                  DOCS, PDF, PPT AND EXCEL, UP TO 50 MB
-                </p>
-              </div>
-
-              {/* BROWSE BUTTON */}
-              <button
-                onClick={() => document.getElementById("file-upload").click()}
-                className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition mb-4 bg-white"
-              >
-                Browse Files
-              </button>
-
-              {/* UPLOADED FILES LIST */}
-              {uploadedFiles.length > 0 && (
-                <div
-                  className="pt-4 border-t"
-                  style={{ borderColor: currentColors.border }}
-                >
-                  <h3
-                    className="text-sm font-semibold mb-3"
-                    style={{ color: currentColors.text }}
-                  >
-                    Uploaded Files ({uploadedFiles.length}/5)
-                  </h3>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                {uploadedFiles.length === 0 ? (
+                  <>
+                    <FiUpload
+                      size={32}
+                      className="mx-auto mb-3 sm:mb-4"
+                      style={{ color: currentColors.textSecondary }}
+                    />
+                    <p
+                      className="font-medium text-sm sm:text-base"
+                      style={{ color: currentColors.text }}
+                    >
+                      Choose a file or drag & drop it here.
+                    </p>
+                    <p
+                      className="text-xs sm:text-sm mt-1"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      DOCS, PDF, PPT AND EXCEL, UP TO 50 MB
+                    </p>
+                  </>
+                ) : (
+                  <div className="space-y-2 sm:space-y-3">
                     {uploadedFiles.map((file) => (
                       <div
                         key={file.id}
-                        className="p-4 rounded-lg border"
+                        className="p-3 sm:p-4 rounded-lg border"
                         style={{
-                          backgroundColor: currentColors.background,
+                          backgroundColor: currentColors.surface,
                           borderColor: currentColors.border,
                         }}
                       >
                         {/* FILE HEADER */}
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-start space-x-3 flex-1">
-                            <span className="text-2xl">📄</span>
+                        <div className="flex items-start justify-between mb-2 sm:mb-3">
+                          <div className="flex items-start space-x-2 sm:space-x-3 flex-1">
+                            <span className="text-xl sm:text-2xl">📄</span>
                             <div className="flex-1 min-w-0">
                               <p
-                                className="text-sm font-semibold truncate"
+                                className="text-xs sm:text-sm font-semibold truncate"
                                 style={{ color: currentColors.text }}
                               >
                                 {file.name.toUpperCase()}
@@ -1033,7 +1019,7 @@ const ProfFilesShared = () => {
                         </div>
                         {/* UPLOAD BUTTON */}
                         <button
-                          className="w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                          className="w-full px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                           style={{
                             backgroundColor: "#2563eb",
                             color: "#ffffff",
@@ -1044,15 +1030,18 @@ const ProfFilesShared = () => {
                           onMouseLeave={(e) => {
                             e.target.style.backgroundColor = "#2563eb";
                           }}
-                          onClick={() => handleUploadFile(file)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUploadFile(file);
+                          }}
                         >
                           Upload File
                         </button>
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
