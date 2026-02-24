@@ -41,5 +41,6 @@ export interface NotificationContextType {
   
   // Utility methods
   updateNotificationData: (id: string, data: any) => void;
+  updateNotificationMessage: (id: string, message: string) => void;
   getNotificationById: (id: string) => Notification | undefined;
 }

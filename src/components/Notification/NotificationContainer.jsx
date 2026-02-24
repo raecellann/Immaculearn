@@ -9,10 +9,10 @@ export default function NotificationContainer() {
 
   return (
     <>
-      {/* Global Notification (Full Screen Overlay) */}
+      {/* Global Notification (Bottom Right Corner) */}
       <GlobalNotification />
       
-      {/* Toast Notifications */}
+      {/* Toast Notifications (Top Right) */}
       <div className="fixed top-4 right-4 z-40 space-y-2 pointer-events-none">
         {notifications.map((notification) => (
           <div key={notification.id} className="pointer-events-auto">

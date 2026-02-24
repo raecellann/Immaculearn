@@ -58,7 +58,7 @@ const NotificationPage = () => {
     },
   ];
 
-  console.log(allJoinRequests);
+  // console.log(allJoinRequests);
 
   const pendingInvitesCount = allJoinRequests.length;
   const pendingSpaceInvitationCount = allPendingSpaceInvitation.length;
@@ -197,7 +197,9 @@ const NotificationPage = () => {
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
           style={{
-            backgroundColor: isDarkMode ? "rgb(22, 26, 32)" : currentColors.surface,
+            backgroundColor: isDarkMode
+              ? "rgb(22, 26, 32)"
+              : currentColors.surface,
             borderColor: isDarkMode ? "rgb(55, 65, 81)" : currentColors.border,
             color: isDarkMode ? "white" : currentColors.text,
           }}
@@ -233,7 +235,9 @@ const NotificationPage = () => {
             <div
               className="p-4 rounded-lg border"
               style={{
-                backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                backgroundColor: isDarkMode
+                  ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                  : "white",
                 borderColor: isDarkMode ? currentColors.border : "black",
               }}
             >
@@ -274,7 +278,9 @@ const NotificationPage = () => {
               <div
                 className="p-5 rounded-lg border"
                 style={{
-                  backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                  backgroundColor: isDarkMode
+                    ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                    : "white",
                   borderColor: isDarkMode ? currentColors.border : "black",
                 }}
               >
@@ -311,7 +317,9 @@ const NotificationPage = () => {
                     key={`${invite.space_uuid}-${invite.account_id}`}
                     className="mt-3 p-3 rounded-lg border"
                     style={{
-                      backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                      backgroundColor: isDarkMode
+                        ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                        : "white",
                       borderColor: isDarkMode ? currentColors.border : "black",
                     }}
                   >
@@ -354,7 +362,9 @@ const NotificationPage = () => {
               <div
                 className="p-5 rounded-lg border"
                 style={{
-                  backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                  backgroundColor: isDarkMode
+                    ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                    : "white",
                   borderColor: isDarkMode ? currentColors.border : "black",
                 }}
               >
@@ -391,7 +401,9 @@ const NotificationPage = () => {
                     key={`${invite.space_uuid || invite.c_space_uuid}-${invite.account_id}`}
                     className="mt-3 p-3 rounded-lg border"
                     style={{
-                      backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                      backgroundColor: isDarkMode
+                        ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                        : "white",
                       borderColor: isDarkMode ? currentColors.border : "black",
                     }}
                   >
@@ -439,7 +451,9 @@ const NotificationPage = () => {
               <div
                 className="p-5 rounded-lg border"
                 style={{
-                  backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                  backgroundColor: isDarkMode
+                    ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                    : "white",
                   borderColor: isDarkMode ? currentColors.border : "black",
                 }}
               >
@@ -467,7 +481,9 @@ const NotificationPage = () => {
                     key={announcement.id}
                     className="mt-3 p-3 rounded-lg border"
                     style={{
-                      backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
+                      backgroundColor: isDarkMode
+                        ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                        : "white",
                       borderColor: isDarkMode ? currentColors.border : "black",
                     }}
                   >

@@ -119,6 +119,24 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }));
   }, []);
 
+  // Update notification message
+  const updateNotificationMessage = useCallback((id: string, message: string) => {
+    setState(prev => ({
+      ...prev,
+      notifications: prev.notifications.map(n => 
+        n.id === id ? { ...n, message } : n
+      ),
+    }));
+
+    // Also update global notification if it matches
+    setState(prev => ({
+      ...prev,
+      globalNotification: prev.globalNotification?.id === id 
+        ? { ...prev.globalNotification, message }
+        : prev.globalNotification,
+    }));
+  }, []);
+
   // Get notification by ID
   const getNotificationById = useCallback((id: string) => {
     return state.notifications.find(n => n.id === id) || 
@@ -149,6 +167,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     showGlobalNotification,
     hideGlobalNotification,
     updateNotificationData,
+    updateNotificationMessage,
     getNotificationById,
   };
 
