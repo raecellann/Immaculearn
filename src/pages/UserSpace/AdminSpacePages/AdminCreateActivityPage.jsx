@@ -110,7 +110,8 @@ const AdminCreateActivityPage = () => {
             className="w-full h-48 object-cover opacity-90 rounded-b-xl"
           />
           <div className="absolute top-0 z-10">
-            <div className="bg-black text-white px-10 py-3 rounded-b-[1rem] shadow-lg text-2xl font-extrabold">
+            <div className="bg-black text-white px-10 py-3 rounded-b-[1rem] shadow-lg text-2xl font-extrabold" 
+                 style={{ backgroundColor: currentColors.text, color: 'white' }}>
               Zeldrick’s Space
             </div>
           </div>
@@ -119,7 +120,10 @@ const AdminCreateActivityPage = () => {
         {/* TOP ACTION BUTTONS */}
         <div className="flex justify-end mb-6">
           <button
-            className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow transition"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'white' }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'}
             onClick={() => navigate("/admintaskpage")}
           >
             <FiArrowLeft /> Back to Tasks
@@ -127,7 +131,8 @@ const AdminCreateActivityPage = () => {
         </div>
 
         {/* FORM CARD */}
-        <div className="max-w-6xl mx-auto bg-black rounded-xl shadow-lg p-8 border border-white">
+        <div className="max-w-6xl mx-auto rounded-xl shadow-lg p-8" 
+             style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}>
           <div className="flex flex-col md:flex-row gap-6">
             {/* LEFT SECTION */}
             <div className="flex-1 flex flex-col gap-4">
@@ -155,28 +160,37 @@ const AdminCreateActivityPage = () => {
                 />
 
                 {/* Divider */}
-                <div className="border-t border-[#2F3440]" />
+                <div className="border-t" style={{ borderColor: currentColors.border }} />
 
                 {/* Formatting Toolbar (BOTTOM) */}
-                <div className="flex gap-4 px-4 py-2 text-gray-300">
+                <div className="flex gap-4 px-4 py-2" style={{ color: currentColors.textSecondary }}>
                   <button
                     type="button"
                     onClick={() => applyFormat("bold")}
-                    className="hover:text-white"
+                    className="hover:text-white transition-colors"
+                  style={{ color: currentColors.textSecondary }}
+                  onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                  onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                   >
                     <FiBold />
                   </button>
                   <button
                     type="button"
                     onClick={() => applyFormat("italic")}
-                    className="hover:text-white"
+                    className="hover:text-white transition-colors"
+                  style={{ color: currentColors.textSecondary }}
+                  onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                  onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                   >
                     <FiItalic />
                   </button>
                   <button
                     type="button"
                     onClick={() => applyFormat("underline")}
-                    className="hover:text-white"
+                    className="hover:text-white transition-colors"
+                  style={{ color: currentColors.textSecondary }}
+                  onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                  onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                   >
                     <FiUnderline />
                   </button>
@@ -309,7 +323,10 @@ const AdminCreateActivityPage = () => {
             <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold">
               Publish Activity
             </button>
-            <button className="bg-gray-700 hover:bg-gray-800 px-6 py-2 rounded-lg font-semibold">
+            <button className="bg-gray-700 hover:bg-gray-800 px-6 py-2 rounded-lg font-semibold" 
+                    style={{ backgroundColor: currentColors.textSecondary, color: 'white' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.text}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.textSecondary}>
               Save as Draft
             </button>
           </div>
@@ -317,7 +334,8 @@ const AdminCreateActivityPage = () => {
 
         {/* FORM BUILDER SECTION */}
         {enableForm && (
-          <div className="max-w-6xl mx-auto mt-6 bg-black rounded-xl shadow-lg p-8 border border-white">
+          <div className="max-w-6xl mx-auto mt-6 rounded-xl shadow-lg p-8" 
+               style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}>
             <div className="mb-6">
               <h3 className="text-xl font-semibold mb-2">Form Builder</h3>
               <p className="text-gray-400">Create questions for members to answer when submitting this activity.</p>
@@ -351,10 +369,12 @@ const AdminCreateActivityPage = () => {
                   <div key={question.id} className="rounded-lg p-6 border" style={{ backgroundColor: currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}>
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold" 
+                              style={{ backgroundColor: currentColors.accent }}>
                           Q{index + 1}
                         </span>
-                        <span className="px-3 py-1 rounded-full text-sm" style={{ backgroundColor: isDarkMode ? "#1E222A" : currentColors.surface, color: isDarkMode ? "#D1D5DB" : currentColors.textSecondary }}>
+                        <span className="px-3 py-1 rounded-full text-sm" 
+                              style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary }}>
                           {questionTypes.find(t => t.id === question.type)?.label}
                         </span>
                       </div>
@@ -373,7 +393,8 @@ const AdminCreateActivityPage = () => {
                         type="text"
                         value={question.question}
                         onChange={(e) => updateQuestion(question.id, 'question', e.target.value)}
-                        className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}
+                        className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+                        style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                         placeholder="Enter your question here..."
                       />
                     </div>
@@ -394,7 +415,8 @@ const AdminCreateActivityPage = () => {
                                   newOptions[optionIndex] = e.target.value;
                                   updateQuestion(question.id, 'options', newOptions);
                                 }}
-                                className="flex-1 rounded-lg px-3 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}
+                                className="flex-1 rounded-lg px-3 py-2 outline-none border focus:border-blue-500"
+                                style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                                 placeholder={`Option ${optionIndex + 1}`}
                               />
                             </div>
@@ -439,7 +461,8 @@ const AdminCreateActivityPage = () => {
                         <select
                           value={question.correctAnswer}
                           onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
-                          className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}
+                          className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+                          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                         >
                           <option value="">Select correct answer</option>
                           {question.options.map((option, index) => (
@@ -460,7 +483,8 @@ const AdminCreateActivityPage = () => {
                           min="1"
                           value={question.points}
                           onChange={(e) => updateQuestion(question.id, 'points', parseInt(e.target.value) || 1)}
-                          className="w-20 rounded-lg px-3 py-1 outline-none border focus:border-blue-500" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}
+                          className="w-20 rounded-lg px-3 py-1 outline-none border focus:border-blue-500"
+                          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                         />
                       </div>
                       <label className="flex items-center gap-2 text-sm">

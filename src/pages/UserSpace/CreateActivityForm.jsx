@@ -247,16 +247,20 @@ const CreateActivityForm = () => {
           className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-b-xl"
           alt="cover"
         />
-        <div className="absolute inset-0 bg-black/50 rounded-b-xl" />
+        <div className="absolute inset-0 rounded-b-xl" style={{ 
+          backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.2)'
+        }} />
         <div className="absolute top-0 left-0 z-10">
-          <div className="bg-black text-white px-6 sm:px-10 py-3 rounded-br-[1rem] text-xl sm:text-2xl font-extrabold">
+          <div className="px-6 sm:px-10 py-3 rounded-br-[1rem] text-xl sm:text-2xl font-extrabold" 
+               style={{ backgroundColor: currentColors.text, color: 'white' }}>
             Zeldrick's Space
           </div>
         </div>
       </div>
 
       {/* FORM CARD */}
-      <div className="max-w-6xl mx-auto bg-black rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border border-white">
+      <div className="max-w-6xl mx-auto rounded-xl shadow-lg p-4 sm:p-6 md:p-8" 
+           style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}>
         <div className="flex flex-col lg:flex-row gap-6">
           {/* LEFT */}
           <div className="flex-1 flex flex-col gap-4">
@@ -267,7 +271,8 @@ const CreateActivityForm = () => {
               type="text"
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500"
+              className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+              style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
               placeholder="Enter activity title"
             />
 
@@ -291,19 +296,23 @@ const CreateActivityForm = () => {
             <label className="font-semibold">
               Instruction (optional)
             </label>
-            <div className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus-within:border-blue-500">
+            <div className="rounded-lg border focus-within:border-blue-500"
+                 style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
               <div
                 ref={instructionRef}
                 contentEditable
                 className="min-h-[140px] px-4 py-3 outline-none"
                 suppressContentEditableWarning
               />
-              <div className="border-t border-[#2F3440]" />
-              <div className="flex gap-4 px-4 py-2 text-gray-300">
+                      <div className="border-t" style={{ borderColor: currentColors.border }} />
+              <div className="flex gap-4 px-4 py-2" style={{ color: currentColors.textSecondary }}>
                 <button
                   type="button"
                   onClick={() => applyFormat("bold")}
-                  className="hover:text-white"
+                  className="transition-colors"
+                  style={{ color: currentColors.textSecondary }}
+                  onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                  onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                 >
                   <FiBold />
                 </button>
@@ -311,7 +320,10 @@ const CreateActivityForm = () => {
                 <button
                   type="button"
                   onClick={() => applyFormat("italic")}
-                  className="hover:text-white"
+                  className="transition-colors"
+                  style={{ color: currentColors.textSecondary }}
+                  onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                  onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                 >
                   <FiItalic />
                 </button>
@@ -319,7 +331,10 @@ const CreateActivityForm = () => {
                 <button
                   type="button"
                   onClick={() => applyFormat("underline")}
-                  className="hover:text-white"
+                  className="transition-colors"
+                  style={{ color: currentColors.textSecondary }}
+                  onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                  onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                 >
                   <FiUnderline />
                 </button>
@@ -334,13 +349,16 @@ const CreateActivityForm = () => {
 
               <div
                 onClick={handleFileClick}
-                className="border border-dashed border-gray-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer bg-[#0F1115] hover:border-blue-500 transition"
+                className="border border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition"
+                style={{ borderColor: currentColors.border, backgroundColor: currentColors.surface }}
+                onMouseEnter={(e) => e.target.style.borderColor = currentColors.accent}
+                onMouseLeave={(e) => e.target.style.borderColor = currentColors.border}
               >
                 <FiUploadCloud
                   size={36}
-                  className="mb-3 text-gray-300"
+                  className="mb-3" style={{ color: currentColors.textSecondary }}
                 />
-                <p className="text-sm text-gray-300 mb-2">
+                <p className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
                   {selectedFile
                     ? selectedFile.name
                     : "Choose a file or drag & drop it here."}
@@ -374,7 +392,8 @@ const CreateActivityForm = () => {
               type="number"
               value={score}
               onChange={(e) => setScore(e.target.value)}
-              className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500"
+              className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+              style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
               placeholder="Enter score (e.g., 100)"
               min="0"
             />
@@ -386,7 +405,8 @@ const CreateActivityForm = () => {
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500"
+              className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+              style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
               min={new Date().toISOString().split("T")[0]}
             />
 
@@ -398,14 +418,20 @@ const CreateActivityForm = () => {
                   <button
                     type="button"
                     onClick={() => setShowTemplates(!showTemplates)}
-                    className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
+                    className="px-3 py-1 text-sm rounded-md transition"
+                    style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#9333ea'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}
                   >
                     Use Template
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCriteriaSection(!showCriteriaSection)}
-                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                    className="px-3 py-1 text-sm rounded-md transition"
+                    style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}
                   >
                     {showCriteriaSection ? "Hide" : "Manual"} Criteria
                   </button>
@@ -414,13 +440,17 @@ const CreateActivityForm = () => {
 
               {/* Template Selection */}
               {showTemplates && (
-                <div className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-4 border border-purple-600">
+                <div className="rounded-lg p-4 border" 
+                     style={{ backgroundColor: currentColors.surface, borderColor: currentColors.accent }}>
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-semibold text-purple-400">Choose a Template:</h4>
+                    <h4 className="text-sm font-semibold" style={{ color: currentColors.accent }}>Choose a Template:</h4>
                     <button
                       type="button"
                       onClick={() => setShowTemplates(false)}
-                      className="text-gray-400 hover:text-white transition-colors"
+                      className="transition-colors"
+                      style={{ color: currentColors.textSecondary }}
+                      onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                      onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                     >
                       <FiX size={18} />
                     </button>
@@ -429,42 +459,68 @@ const CreateActivityForm = () => {
                     <button
                       type="button"
                       onClick={() => applyTemplate('essay')}
-                      className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                      className="p-3 rounded-lg transition text-left border"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
+                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
                     >
-                      <div className="font-medium text-white">📝 Essay</div>
-                      <div className="text-xs text-gray-400">For written essays and compositions</div>
+                      <div className="font-medium" style={{ color: currentColors.text }}>📝 Essay</div>
+                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For written essays and compositions</div>
                     </button>
                     <button
                       type="button"
                       onClick={() => applyTemplate('research')}
-                      className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                      className="p-3 rounded-lg transition text-left border"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
+                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
                     >
-                      <div className="font-medium text-white">🔬 Research Paper</div>
-                      <div className="text-xs text-gray-400">For academic research and analysis</div>
+                      <div className="font-medium" style={{ color: currentColors.text }}>🔬 Research Paper</div>
+                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For academic research and analysis</div>
                     </button>
                     <button
                       type="button"
                       onClick={() => applyTemplate('presentation')}
-                      className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                      className="p-3 rounded-lg transition text-left border"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
+                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
                     >
-                      <div className="font-medium text-white">🎤 Presentation</div>
-                      <div className="text-xs text-gray-400">For oral presentations and demos</div>
+                      <div className="font-medium" style={{ color: currentColors.text }}>🎤 Presentation</div>
+                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For oral presentations and demos</div>
                     </button>
                     <button
                       type="button"
                       onClick={() => applyTemplate('project')}
-                      className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                      className="p-3 rounded-lg transition text-left border"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
+                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
                     >
-                      <div className="font-medium text-white">💻 Project</div>
-                      <div className="text-xs text-gray-400">For coding and development projects</div>
+                      <div className="font-medium" style={{ color: currentColors.text }}>💻 Project</div>
+                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For coding and development projects</div>
                     </button>
                     <button
                       type="button"
                       onClick={() => applyTemplate('creative')}
-                      className="p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
+                      className="p-3 rounded-lg transition text-left border"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
+                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
                     >
                       <div className="font-medium text-white">🎨 Creative</div>
                       <div className="text-xs text-gray-400">For artistic and creative works</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyTemplate('case-study')}
+                      className="p-3 rounded-lg transition text-left border"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
+                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
+                    >
+                      <div className="font-medium" style={{ color: currentColors.text }}>📊 Case Study</div>
+                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For business case studies and analysis</div>
                     </button>
                     <button
                       type="button"
@@ -479,16 +535,20 @@ const CreateActivityForm = () => {
               )}
 
               {showCriteriaSection && (
-                <div className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-4 max-h-[300px] overflow-y-auto">
+                <div className="rounded-lg p-4 max-h-[300px] overflow-y-auto" 
+                     style={{ backgroundColor: currentColors.surface }}>
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-semibold text-blue-400">
+                    <h4 className="text-sm font-semibold" style={{ color: currentColors.accent }}>
                       {criteria.some(c => c.name.trim()) ? "Current Criteria:" : "Add Your Criteria:"}
                     </h4>
                     {criteria.some(c => c.name.trim()) && (
                       <button
                         type="button"
                         onClick={() => setShowTemplates(true)}
-                        className="text-xs text-purple-400 hover:text-purple-300"
+                        className="text-xs transition-colors"
+                        style={{ color: currentColors.accent }}
+                        onMouseEnter={(e) => e.target.style.color = '#a78bfa'}
+                        onMouseLeave={(e) => e.target.style.color = currentColors.accent}
                       >
                         Change Template
                       </button>
@@ -497,14 +557,18 @@ const CreateActivityForm = () => {
                   
                   <div className="space-y-3">
                     {criteria.map((criterion, index) => (
-                      <div key={criterion.id} className="bg-[#161A20] rounded-lg p-3 border border-gray-600">
+                      <div className="rounded-lg p-3 border" 
+                           style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium text-blue-400">Criteria {index + 1}</span>
+                          <span className="text-sm font-medium" style={{ color: currentColors.accent }}>Criteria {index + 1}</span>
                           {criteria.length > 1 && (
                             <button
                               type="button"
                               onClick={() => removeCriteria(criterion.id)}
-                              className="text-red-400 hover:text-red-300 text-sm"
+                              className="text-sm transition-colors"
+                              style={{ color: '#ef4444' }}
+                              onMouseEnter={(e) => e.target.style.color = '#f87171'}
+                              onMouseLeave={(e) => e.target.style.color = '#ef4444'}
                             >
                               Remove
                             </button>
@@ -524,7 +588,8 @@ const CreateActivityForm = () => {
                           onChange={(e) => updateCriteria(criterion.id, 'description', e.target.value)}
                           placeholder="Description (optional)"
                           rows={2}
-                          className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 resize-none"
+                          className="w-full rounded px-3 py-2 text-sm outline-none border focus:border-blue-500 resize-none"
+                          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                         />
                         
                         <input
@@ -555,10 +620,16 @@ const CreateActivityForm = () => {
 
         {/* ACTIONS */}
         <div className="flex justify-end gap-4 mt-8">
-          <button className="bg-gray-700 px-6 py-2 rounded-lg">
+          <button className="px-6 py-2 rounded-lg transition" 
+                  style={{ backgroundColor: currentColors.textSecondary, color: 'white' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.text}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.textSecondary}>
             Save as Draft
           </button>
-          <button className="bg-blue-600 px-6 py-2 rounded-lg">
+          <button className="px-6 py-2 rounded-lg transition" 
+                  style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}>
             Publish Activity
           </button>
         </div>

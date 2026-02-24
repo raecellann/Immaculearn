@@ -155,7 +155,10 @@ const FormBuilderPage = () => {
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <button
-            className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow transition"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'white' }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'}
             onClick={handleBack}
           >
             <FiArrowLeft size={16} />
@@ -171,7 +174,8 @@ const FormBuilderPage = () => {
         </div>
 
         {/* FORM CONTENT */}
-        <div className="max-w-6xl mx-auto bg-black rounded-xl shadow-lg p-8 border border-white">
+        <div className="max-w-6xl mx-auto rounded-xl shadow-lg p-8" 
+             style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}>
           {/* BASIC INFO */}
           <div className="mb-8">
             <h3 className="text-xl font-semibold mb-4">Activity Details</h3>
@@ -184,7 +188,8 @@ const FormBuilderPage = () => {
                   type="text"
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
-                  className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500"
+                  className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+                  style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                   placeholder="Enter activity title"
                 />
               </div>
@@ -195,7 +200,8 @@ const FormBuilderPage = () => {
                 <textarea
                   value={instruction}
                   onChange={(e) => setInstruction(e.target.value)}
-                  className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] focus:border-blue-500 h-20 resize-none"
+                  className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500 h-20 resize-none"
+                  style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                   placeholder="Enter instructions for this activity"
                 />
               </div>
@@ -214,10 +220,11 @@ const FormBuilderPage = () => {
                   const Icon = type.icon;
                   const questionsOfType = questions.filter(q => q.type === type.id);
                   return (
-                    <div key={type.id} className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-4 border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))]">
+                    <div className="rounded-lg p-4 border" 
+                         style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                       <div className="flex flex-col items-center gap-2">
-                        <Icon size={24} className="text-blue-400" />
-                        <span className="text-sm font-medium text-center">{type.label}</span>
+                        <Icon size={24} style={{ color: currentColors.accent }} />
+                        <span className="text-sm font-medium text-center" style={{ color: currentColors.text }}>{type.label}</span>
                         <span className="text-xs text-gray-400">({questionsOfType.length} added)</span>
                         <div className="flex flex-col items-center gap-2 w-full">
                           <input
@@ -226,28 +233,37 @@ const FormBuilderPage = () => {
                             max="50"
                             value={questionQuantities[type.id]}
                             onChange={(e) => updateQuestionQuantity(type.id, e.target.value)}
-                            className="w-full bg-[#1E222A] rounded px-2 py-1 text-white text-sm outline-none border border-[#2F3440] focus:border-blue-500 text-center"
+                            className="w-full rounded px-2 py-1 text-sm outline-none border focus:border-blue-500 text-center"
+                            style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                             placeholder="total no. of questions"
                           />
                           <button
                             onClick={() => addMultipleQuestions(type.id, questionQuantities[type.id] || 0)}
-                            className="w-full px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-xs font-medium"
-                            disabled={!questionQuantities[type.id]}
+                            className="w-full px-3 py-1 rounded text-xs font-medium transition"
                             style={{ 
+                              backgroundColor: currentColors.accent, 
+                              color: 'white',
                               opacity: !questionQuantities[type.id] ? 0.5 : 1,
                               cursor: !questionQuantities[type.id] ? 'not-allowed' : 'pointer'
                             }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#2563eb'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}
+                            disabled={!questionQuantities[type.id]}
                           >
                             Add {questionQuantities[type.id] || 0}
                           </button>
                           <button
                             onClick={() => deleteQuestionsByType(type.id)}
-                            className="w-full px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-xs font-medium mt-2 flex items-center justify-center gap-1"
-                            disabled={questionsOfType.length === 0}
+                            className="w-full px-3 py-1 rounded text-xs font-medium transition flex items-center justify-center gap-1 mt-2"
                             style={{ 
+                              backgroundColor: '#dc2626', 
+                              color: 'white',
                               opacity: questionsOfType.length === 0 ? 0.5 : 1,
                               cursor: questionsOfType.length === 0 ? 'not-allowed' : 'pointer'
                             }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#b91c1c'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#dc2626'}
+                            disabled={questionsOfType.length === 0}
                           >
                             <FiTrash2 size={14} /> Delete All {type.label}
                           </button>
@@ -268,20 +284,24 @@ const FormBuilderPage = () => {
                   const questionsOfType = questions.filter(q => q.type === question.type);
                   
                   return (
-                    <div key={question.id} className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-6 border border-[#2F3440]">
+                    <div className="rounded-lg p-6 border" 
+                         style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                          <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold" 
+                                style={{ backgroundColor: currentColors.accent }}>
                             Q{index + 1}
                           </span>
-                          <span className="px-3 py-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-full text-sm text-gray-300">
+                          <span 
+                                className="px-3 py-1 rounded-full text-sm" 
+                                style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary }}>
                             {questionTypes.find(t => t.id === question.type)?.label}
                           </span>
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => deleteQuestion(question.id)}
-                            className="text-red-400 hover:text-red-300"
+                            className="text-red-400 hover:text-red-300 transition-colors"
                             title="Delete this question"
                           >
                             <FiTrash2 size={18} />
@@ -309,7 +329,8 @@ const FormBuilderPage = () => {
                           type="text"
                           value={question.correctAnswer || ''}
                           onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
-                          className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                          className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+                          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                           placeholder="Enter the correct answer for identification"
                         />
                       </div>
@@ -330,7 +351,8 @@ const FormBuilderPage = () => {
                                   newOptions[optionIndex] = e.target.value;
                                   updateQuestion(question.id, 'options', newOptions);
                                 }}
-                                className="flex-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-3 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                                className="flex-1 rounded-lg px-3 py-2 outline-none border focus:border-blue-500"
+                                style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                                 placeholder={`Option ${optionIndex + 1}`}
                               />
                             </div>
@@ -384,7 +406,8 @@ const FormBuilderPage = () => {
                                   newAnswers[index] = e.target.value;
                                   updateQuestion(question.id, 'expectedAnswers', newAnswers);
                                 }}
-                                className="flex-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-3 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                                className="flex-1 rounded-lg px-3 py-2 outline-none border focus:border-blue-500"
+                                style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                                 placeholder={`Expected answer ${index + 1}`}
                               />
                               {question.expectedAnswers.length > 1 && (
@@ -422,7 +445,8 @@ const FormBuilderPage = () => {
                         <textarea
                           value={question.correctAnswer || ''}
                           onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
-                          className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500 h-20 resize-none mb-4"
+                          className="w-full px-3 py-2 rounded text-sm font-medium transition"
+                          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                           placeholder="Enter a sample answer or key points for evaluation (optional)"
                         />
                         
@@ -438,7 +462,8 @@ const FormBuilderPage = () => {
                                   newCriteria[index] = e.target.value;
                                   updateQuestion(question.id, 'scoringCriteria', newCriteria);
                                 }}
-                                className="flex-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-3 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                                className="flex-1 rounded-lg px-3 py-2 outline-none border focus:border-blue-500"
+                                style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                                 placeholder={`Criterion ${index + 1} (e.g., Content Quality: 30%)`}
                               />
                               {question.scoringCriteria.length > 1 && (
@@ -476,7 +501,8 @@ const FormBuilderPage = () => {
                         <select
                           value={question.correctAnswer}
                           onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
-                          className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                          className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+                          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
                         >
                           <option value="">Select correct answer</option>
                           {question.options.map((option, index) => (

@@ -1170,6 +1170,10 @@ const UserPage = () => {
               {/* REMINDERS - STICKY */}
               <div
                 className={`sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
+                style={{
+                  backgroundColor: currentColors.surface,
+                  borderColor: currentColors.border
+                  }}
               >
                 <h2 className="font-bold mb-4">Reminders</h2>
                 <div className="text-center py-6">
@@ -1197,13 +1201,24 @@ const UserPage = () => {
                 </div>
 
                 {/* CHAT */}
-                <button
-                  onClick={handleEnterChat}
-                  className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-black border border-gray-700 hover:bg-gray-900"
-                >
-                  <FiMessageCircle />
-                  Enter Chat
-                </button>
+                        <button
+                          onClick={handleEnterChat}
+                          className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
+                          style={{
+                            backgroundColor: isDarkMode ? '#000000' : 'transparent',
+                            borderColor: currentColors.border,
+                            color: currentColors.text
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = isDarkMode ? '#1f2937' : currentColors.hover;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = isDarkMode ? '#000000' : 'transparent';
+                          }}
+                        >
+                          <FiMessageCircle />
+                          Enter Chat
+                        </button>
               </div>
             </div>
 
@@ -1215,7 +1230,7 @@ const UserPage = () => {
                   <div
                     className={`
                     bg-white rounded-xl border cursor-text transition
-                    ${isFocused ? "border-black" : "border-transparent"}
+                    ${isFocused ? "border-black" : "border-black"}
                     hover:border-black
                   `}
                     onClick={() => editorRef.current?.focus()}
@@ -1323,6 +1338,10 @@ const UserPage = () => {
               {/* POSTS FEED */}
               <div
                 className={`bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${!isOwnerSpace && "h-full"} `}
+                style={{
+                  backgroundColor: currentColors.surface,
+                  borderColor: currentColors.border
+                }}
               >
                 <h2 className="font-bold mb-4">Announcement Feed</h2>
 

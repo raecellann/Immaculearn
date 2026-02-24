@@ -594,28 +594,32 @@ const AdminTaskPage = () => {
       </div>
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
+          className="fixed inset-0 z-40 md:block lg:hidden"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
+        style={{ backgroundColor: currentColors.surface }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
       <div className="flex-1 flex flex-col w-full">
         {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
+          className={`lg:hidden p-4 border-b
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0"
+            className="bg-transparent border-none text-2xl p-0"
+            style={{ color: currentColors.text }}
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
@@ -623,7 +627,10 @@ const AdminTaskPage = () => {
         </div>
         <div className="lg:hidden h-16" />
         <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 h-32 sm:h-40 md:h-48">
-          <div className="absolute inset-0 bg-black/30" />
+          <div 
+            className="absolute inset-0" 
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+          />
         </div>
         <div className="p-4 sm:p-6">
           <div className="hidden md:block mb-8">
@@ -646,13 +653,22 @@ const AdminTaskPage = () => {
                 </>
               )}
               {isFriendSpace && (
-                <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
+                <div className="flex items-center gap-2 p-2 rounded-md" style={{ backgroundColor: currentColors.surface }}>
                   <span className="text-xs text-blue-400 break-all">
                     {currentSpace?.space_link || "Loading..."}
                   </span>
                   <button
                     onClick={() => handleCopyLink(currentSpace?.space_link)}
-                    className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
+                    className="p-1 rounded transition-colors"
+                    style={{ color: currentColors.textSecondary }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = currentColors.hover;
+                      e.target.style.color = currentColors.text;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = 'transparent';
+                      e.target.style.color = currentColors.textSecondary;
+                    }}
                     title="Copy to clipboard"
                   >
                     <FiCopy size={16} />
@@ -669,7 +685,7 @@ const AdminTaskPage = () => {
                 >
                   Stream
                 </button>
-                <button className="font-semibold border-b-2 border-white pb-2">
+                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
                   Tasks
                 </button>
                 <button
@@ -711,7 +727,8 @@ const AdminTaskPage = () => {
             <div className="max-w-5xl mx-auto">
               {isOwnerSpace && (
                 <button
-                  className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
+                  className="ml-auto px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
+                  style={{ backgroundColor: currentColors.accent, color: 'white' }}
                   onClick={() => setIsCreatingTask(true)}
                 >
                   <FiFileText size={16} />
@@ -738,7 +755,10 @@ const AdminTaskPage = () => {
                     {uploadedTask?.map((task, index) => (
                       <tr
                         key={index}
-                        className="border-b border-gray-700 hover:bg-[#1E222A]"
+                        className="border-b hover:transition-colors"
+                        style={{ borderColor: currentColors.border }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
                         <td className="py-3 px-4">
                           <div className="relative inline-block">
@@ -746,13 +766,17 @@ const AdminTaskPage = () => {
                               onClick={() =>
                                 setOpenIndex(openIndex === index ? null : index)
                               }
-                              className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.task_status]}`}
+                              className={`px-4 py-1 rounded-full text-sm ${statusStyles[task.task_status]}`}
+                              style={{ backgroundColor: currentColors.text, color: 'white' }}
                             >
                               {task.task_status} ▼
                             </button>
 
                             {openIndex === index && (
-                              <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50 shadow-lg">
+                              <div 
+                                className="absolute left-0 mt-2 w-44 rounded-lg p-3 z-50 shadow-lg"
+                                style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}
+                              >
                                 <div className="flex flex-col gap-2">
                                   {Object.keys(statusStyles).map((st) => (
                                     <button
@@ -760,7 +784,8 @@ const AdminTaskPage = () => {
                                       onClick={() =>
                                         handleStatusChange(index, st)
                                       }
-                                      className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90 whitespace-nowrap`}
+                                      className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 whitespace-nowrap`}
+                                      style={{ backgroundColor: currentColors.text, color: 'white' }}
                                     >
                                       {st}
                                     </button>
@@ -792,7 +817,8 @@ const AdminTaskPage = () => {
                         </td>
                         <td className="py-3 px-4">
                           <MainButton
-                            className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                            className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium"
+                      style={{ backgroundColor: currentColors.accent, color: 'white' }}
                             onClick={() =>
                               navigate(
                                 `/task/${currentSpace?.space_uuid}/${currentSpace?.space_name}/${task.task_title}`,
@@ -813,7 +839,8 @@ const AdminTaskPage = () => {
                 {uploadedTask?.map((task, index) => (
                   <div
                     key={index}
-                    className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                    className="border rounded-xl p-4"
+                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                   >
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-2">
@@ -830,7 +857,8 @@ const AdminTaskPage = () => {
                         onClick={() =>
                           setOpenIndex(openIndex === index ? null : index)
                         }
-                        className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.task_status]}`}
+                        className={`px-3 py-1 rounded-full text-xs ${statusStyles[task.task_status]}`}
+                        style={{ backgroundColor: currentColors.text, color: 'white' }}
                       >
                         {task.task_status}
                       </button>
@@ -838,7 +866,7 @@ const AdminTaskPage = () => {
 
                     <p className="text-sm text-gray-400">
                       Deadline:{" "}
-                      <span className="text-white">
+                      <span style={{ color: currentColors.text }}>
                         {new Date(task.task_due).toLocaleDateString("en-US")}
                       </span>
                     </p>
@@ -865,7 +893,8 @@ const AdminTaskPage = () => {
                     <div className="mt-3 pt-3 border-t border-gray-700">
                       <a
                         href="/prof-task-view"
-                        className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                        className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium"
+                      style={{ backgroundColor: currentColors.accent, color: 'white' }}
                       >
                         View Details
                       </a>
@@ -899,10 +928,16 @@ const AdminTaskPage = () => {
                       {draftedTask?.map((draft, index) => (
                         <tr
                           key={index}
-                          className="border-b border-gray-700 hover:bg-[#1E222A]"
+                          className="border-b hover:transition-colors"
+                          style={{ borderColor: currentColors.border }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                         >
                           <td className="py-3 px-4">
-                            <span className="px-6 py-1 rounded-full bg-black text-sm font-bold border-2 border-gray-500 text-gray-400 inline-block min-w-[120px] text-center">
+                            <span
+                              className="px-6 py-1 rounded-full text-sm font-bold min-w-[120px] text-center"
+                              style={{ backgroundColor: currentColors.text, color: currentColors.textSecondary, border: `2px solid ${currentColors.border}` }}
+                            >
                               Draft
                             </span>
                           </td>
@@ -922,7 +957,8 @@ const AdminTaskPage = () => {
                           <td className="py-3 px-4">
                             <a
                               href="/prof-task-view"
-                              className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                              className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium"
+                      style={{ backgroundColor: currentColors.accent, color: 'white' }}
                             >
                               View Details
                             </a>
@@ -937,21 +973,23 @@ const AdminTaskPage = () => {
                   {draftedTask?.map((draft, index) => (
                     <div
                       key={index}
-                      className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                      className="border rounded-xl p-4"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                     >
                       <div className="flex justify-between items-center mb-3">
                         <p className="text-sm font-semibold">
                           {draft.task_title}
                         </p>
 
-                        <span className="px-3 py-1 rounded-full bg-black text-xs border-2 border-gray-500 text-gray-400 font-bold">
+                        <span className="px-3 py-1 rounded-full text-xs border-2 font-bold"
+                          style={{ backgroundColor: currentColors.text, color: currentColors.textSecondary, borderColor: currentColors.border }}>
                           Draft
                         </span>
                       </div>
 
                       <p className="text-xs text-gray-400">
                         Deadline:{" "}
-                        <span className="text-white">
+                        <span style={{ color: currentColors.text }}>
                           {new Date(draft.task_due).toLocaleDateString("en-US")}
                         </span>
                       </p>
@@ -959,7 +997,8 @@ const AdminTaskPage = () => {
                       <div className="mt-3 pt-3 border-t border-gray-700">
                         <a
                           href="/prof-task-view"
-                          className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                          className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium"
+                      style={{ backgroundColor: currentColors.accent, color: 'white' }}
                         >
                           View Details
                         </a>
@@ -974,7 +1013,10 @@ const AdminTaskPage = () => {
             <div className="max-w-5xl mx-auto">
               <div className="flex justify-end mb-6">
                 <button
-                  className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow"
+                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'white' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'}
                   onClick={() => {
                     resetTaskForm();
                     setIsCreatingTask(false);
@@ -985,7 +1027,8 @@ const AdminTaskPage = () => {
                   <span className="sm:hidden">Back</span>
                 </button>
               </div>
-              <div className="bg-black rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border border-white">
+              <div className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8" 
+                   style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}>
                 <div className="flex flex-col lg:flex-row gap-6">
                   <div className="flex-1 flex flex-col gap-4">
                     <label className="font-semibold text-lg">
@@ -996,7 +1039,8 @@ const AdminTaskPage = () => {
                       type="text"
                       value={taskTitle}
                       onChange={(e) => setTaskTitle(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                       placeholder="Enter task title"
                     />
 
@@ -1007,7 +1051,8 @@ const AdminTaskPage = () => {
                     <select
                       value={taskCategory}
                       onChange={(e) => setTaskCategory(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500 w-full"
+                      className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500 w-full"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                     >
                       {taskCategories.map((category) => (
                         <option key={category.value} value={category.value}>
@@ -1020,19 +1065,24 @@ const AdminTaskPage = () => {
                     <label className="font-semibold">
                       Instruction (optional)
                     </label>
-                    <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
+                    <div className="rounded-lg border focus-within:border-blue-500"
+                         style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                       <div
                         ref={instructionRef}
                         contentEditable
                         className="min-h-[140px] px-4 py-3 outline-none"
+                        style={{ color: currentColors.text }}
                         suppressContentEditableWarning
                       />
-                      <div className="border-t border-[#2F3440]" />
-                      <div className="flex gap-4 px-4 py-2 text-gray-300">
+                      <div className="border-t" style={{ borderColor: currentColors.border }} />
+                      <div className="flex gap-4 px-4 py-2" style={{ color: currentColors.textSecondary }}>
                         <button
                           type="button"
                           onClick={() => applyFormat("bold")}
-                          className="hover:text-white"
+                          className="transition-colors"
+                          style={{ color: currentColors.textSecondary }}
+                          onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                          onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                         >
                           <FiBold />
                         </button>
@@ -1040,7 +1090,10 @@ const AdminTaskPage = () => {
                         <button
                           type="button"
                           onClick={() => applyFormat("italic")}
-                          className="hover:text-white"
+                          className="transition-colors"
+                          style={{ color: currentColors.textSecondary }}
+                          onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                          onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                         >
                           <FiItalic />
                         </button>
@@ -1048,7 +1101,10 @@ const AdminTaskPage = () => {
                         <button
                           type="button"
                           onClick={() => applyFormat("underline")}
-                          className="hover:text-white"
+                          className="transition-colors"
+                          style={{ color: currentColors.textSecondary }}
+                          onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                          onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
                         >
                           <FiUnderline />
                         </button>
@@ -1064,7 +1120,8 @@ const AdminTaskPage = () => {
                       type="number"
                       value={score}
                       onChange={(e) => handleScoreChange(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                       placeholder="Enter score"
                     />
                     {score && criteria.length > 0 && (
@@ -1082,7 +1139,8 @@ const AdminTaskPage = () => {
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                      className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
+                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                     />
 
                     <label className="font-semibold">File (optional)</label>
@@ -1090,7 +1148,10 @@ const AdminTaskPage = () => {
                       <div className="flex items-center gap-4">
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          className="bg-[#23272F] hover:bg-[#2F3440] px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                          className="px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.surface}
                         >
                           <FiUploadCloud size={16} />
                           Choose File
