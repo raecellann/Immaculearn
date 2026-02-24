@@ -205,15 +205,15 @@ const ProfCreateSpace = () => {
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
           style={{
-            backgroundColor: currentColors.surface,
-            borderColor: currentColors.border,
-            color: currentColors.text
+            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
+            borderColor: isDarkMode ? "#374151" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text
           }}
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-2xl p-0 focus:outline-none"
-            style={{ color: currentColors.text }}
+            style={{ color: isDarkMode ? "white" : currentColors.text }}
           >
             ☰
           </button>

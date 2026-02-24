@@ -85,16 +85,16 @@ const ProfSpacePage = () => {
       {/* Mobile Overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
       {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300
-        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        md:block lg:hidden`}
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden ${
+          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
         style={{
           backgroundColor: currentColors.surface,
           color: currentColors.text
@@ -104,36 +104,34 @@ const ProfSpacePage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* 🔹 STICKY MOBILE / TABLET HEADER */}
+      <div className="flex-1 flex flex-col" style={{ backgroundColor: isDarkMode ? '#161A20' : currentColors.background }}>
+        {/* ================= Header (Mobile + Tablet) ================= */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 px-4 transition-transform duration-300 ${
+          className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
           style={{
-            backgroundColor: currentColors.surface,
-            borderColor: currentColors.border,
-            color: currentColors.text
+            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
+            borderColor: isDarkMode ? "#374151" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text
           }}
         >
-          <div className="flex items-center h-14 pt-[env(safe-area-inset-top)] gap-3">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-2xl p-0 focus:outline-none"
-              style={{ color: currentColors.text }}
-            >
-              ☰
-            </button>
-            <h1 className="text-lg font-semibold">Spaces</h1>
-          </div>
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-2xl p-0 focus:outline-none"
+            style={{ color: isDarkMode ? "white" : currentColors.text }}
+          >
+            ☰
+          </button>
+          <h1 className="text-xl font-bold">Spaces</h1>
         </div>
 
-        {/* 🔹 Spacer */}
-        <div className="lg:hidden h-16" />
+        {/* ================= Spacer for fixed header ================= */}
+        <div className="lg:hidden h-16"></div>
 
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           {/* Desktop Title */}
-          <div className="hidden md:flex justify-center mb-8">
+          <div className="hidden lg:flex justify-center mb-8">
             <h1 className="text-4xl font-bold" style={{ color: isDarkMode ? 'white' : 'black' }}>Spaces</h1>
           </div>
 

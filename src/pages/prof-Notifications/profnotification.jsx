@@ -246,30 +246,28 @@ const ProfNotificationPage = () => {
       <div className="flex-1 flex flex-col">
         {/* 🔥 Sticky Mobile Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 px-4 transition-transform duration-300 ${
+          className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
           style={{
-            backgroundColor: currentColors.surface,
-            borderColor: currentColors.border,
-            color: currentColors.text,
+            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
+            borderColor: isDarkMode ? "#374151" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text,
           }}
         >
-          <div className="p-4 flex items-center gap-4">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-2xl p-0"
-              style={{ color: currentColors.text }}
-            >
-              ☰
-            </button>
-            <h1
-              className="text-lg font-bold"
-              style={{ color: isDarkMode ? "white" : "black" }}
-            >
-              Notifications
-            </h1>
-          </div>
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-2xl p-0"
+            style={{ color: currentColors.text }}
+          >
+            ☰
+          </button>
+          <h1
+            className="text-lg font-bold"
+            style={{ color: isDarkMode ? "white" : "black" }}
+          >
+            Notifications
+          </h1>
         </div>
 
         {/* ✅ CONTENT */}
