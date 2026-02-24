@@ -361,7 +361,7 @@ const ChatList = () => {
           <div className="rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar" style={{ backgroundColor: currentColors.surface }}>
             <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>People</h2>
             {uniqueMembers
-              .filter(m => m.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
+              .filter(m => m.full_name?.toLowerCase().includes(searchQuery.toLowerCase()))
               .map((m) => {
                 const uuid = getPrivateSpaceUuid(user.id, m.account_id);
                 return (
