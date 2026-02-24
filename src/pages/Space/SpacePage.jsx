@@ -10,10 +10,12 @@ import Button from "../component/Button";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { prefixName } from "../../utils/prefixNameFormat";
 import { SpaceCover } from "../component/spaceCover";
+import { DeleteConfirmationDialog } from "../component/SweetAlert";
 
 const SpacePage = () => {
   const { user } = useUser();
-  const { userSpaces, friendSpaces, courseSpaces, joinSpace } = useSpace();
+  const { userSpaces, friendSpaces, courseSpaces, joinSpace, deleteSpace } =
+    useSpace();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -33,6 +35,20 @@ const SpacePage = () => {
   // Hide-on-scroll header
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
+
+  // Handle delete space
+  const handleDeleteSpace = async () => {
+    try {
+      // Get the space UUID from showDeleteConfirm
+      const spaceUuid = showDeleteConfirm;
+      await deleteSpace(spaceUuid);
+      setShowDeleteConfirm(null);
+      setShowMenu(null);
+    } catch (error) {
+      console.error("Failed to delete space:", error);
+      // You could add a toast notification here if you have one
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -143,7 +159,9 @@ const SpacePage = () => {
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
           style={{
-            backgroundColor: isDarkMode ? "rgb(22, 26, 32)" : currentColors.surface,
+            backgroundColor: isDarkMode
+              ? "rgb(22, 26, 32)"
+              : currentColors.surface,
             borderColor: isDarkMode ? "rgb(55, 65, 81)" : currentColors.border,
             color: isDarkMode ? "white" : currentColors.text,
           }}
@@ -155,7 +173,12 @@ const SpacePage = () => {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold" style={{ color: isDarkMode ? "white" : currentColors.text }}>Spaces</h1>
+          <h1
+            className="text-xl font-bold"
+            style={{ color: isDarkMode ? "white" : currentColors.text }}
+          >
+            Spaces
+          </h1>
         </div>
 
         <div className="lg:hidden h-16"></div>
@@ -589,6 +612,17 @@ const SpacePage = () => {
             </div>
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationDialog
+          isOpen={!!showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(null)}
+          onConfirm={handleDeleteSpace}
+          space={
+            userSpaces.find((s) => s.space_uuid === showDeleteConfirm) ||
+            friendSpaces.find((s) => s.space_uuid === showDeleteConfirm)
+          }
+        />
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
