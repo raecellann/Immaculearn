@@ -544,12 +544,19 @@ const AdminTaskPage = () => {
       const handleInput = () => {
         setInstruction(instructionRef.current.innerHTML);
       };
+      
       instructionRef.current.addEventListener("input", handleInput);
+      
+      // Update innerHTML when instruction state changes
+      if (instruction !== instructionRef.current.innerHTML) {
+        instructionRef.current.innerHTML = instruction;
+      }
+      
       return () => {
         instructionRef.current?.removeEventListener("input", handleInput);
       };
     }
-  }, [isCreatingTask]);
+  }, [instruction, isCreatingTask]);
 
   const resetTaskForm = () => {
     setTaskTitle("");
@@ -596,11 +603,22 @@ const AdminTaskPage = () => {
 
   useEffect(() => {
       const stored = localStorage.getItem("saved-form")
-      const savedItem = JSON.stringify(stored);
   
-      if (savedItem) {
-        
-        setIsCreatingTask(true)
+      if (stored) {
+        try {
+          const savedData = JSON.parse(stored);
+          setTaskTitle(savedData.taskTitle || "");
+          setInstruction(savedData.instruction || "");
+          setIsCreatingTask(true);
+          // Set the innerHTML after a short delay to ensure the ref is available
+          setTimeout(() => {
+            if (instructionRef.current && savedData.instruction) {
+              instructionRef.current.innerHTML = savedData.instruction;
+            }
+          }, 0);
+        } catch (error) {
+          console.error('Error parsing saved form data:', error);
+        }
       }
   
     }, [])
@@ -1371,11 +1389,11 @@ const AdminTaskPage = () => {
                           </label>
                           <button
                             onClick={() => {
-                              // Store task data in sessionStorage for form builder
-                              sessionStorage.setItem(
+                              // Store task data in localStorage for form builder
+                              localStorage.setItem(
                                 "taskFormData",
                                 JSON.stringify({
-                                  title: taskTitle,
+                                  taskTitle: taskTitle,
                                   instruction: instruction,
                                 }),
                               );

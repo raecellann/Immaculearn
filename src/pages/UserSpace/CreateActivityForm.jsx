@@ -195,31 +195,48 @@ const CreateActivityForm = () => {
     setCriteria([{ id: 1, name: "", description: "", points: "" }]);
   };
 
+
+  useEffect(() => {
+    const stored = localStorage.getItem("saved-form")
+    console.log(stored)
+
+    if (stored) {
+      try {
+        const savedData = JSON.parse(stored);
+        setTaskTitle(savedData.taskTitle || "");
+        setInstruction(savedData.instruction || "");
+        // Set the innerHTML after a short delay to ensure the ref is available
+        setTimeout(() => {
+          if (instructionRef.current && savedData.instruction) {
+            instructionRef.current.innerHTML = savedData.instruction;
+          }
+        }, 0);
+      } catch (error) {
+        console.error('Error parsing saved form data:', error);
+      }
+    }
+
+  }, [])
+
+  // Sync instruction state with contentEditable ref
   useEffect(() => {
     if (instructionRef.current) {
       const handleInput = () => {
         setInstruction(instructionRef.current.innerHTML);
       };
+      
       instructionRef.current.addEventListener("input", handleInput);
+      
+      // Update innerHTML when instruction state changes
+      if (instruction !== instructionRef.current.innerHTML) {
+        instructionRef.current.innerHTML = instruction;
+      }
+      
       return () => {
         instructionRef.current?.removeEventListener("input", handleInput);
       };
     }
-  }, []);
-
-
-  useEffect(() => {
-    const stored = localStorage.getItem("saved-form")
-    console.log(stored)
-    const savedItem = JSON.stringify(stored);
-
-    if (savedItem) {
-      
-      setTaskTitle(savedItem.taskTitle);
-      setInstruction(savedItem.instruction);
-    }
-
-  }, [])
+  }, [instruction]);
 
   return (
     <div className="font-sans p-4 sm:p-6 md:p-8" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>

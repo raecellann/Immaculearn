@@ -43,13 +43,13 @@ const FormBuilderPage = () => {
     questionLabel: ''
   });
   
-  // Retrieve task data from sessionStorage on component mount
+  // Retrieve task data from localStorage on component mount
   useEffect(() => {
-    const storedData = sessionStorage.getItem('taskFormData');
+    const storedData = localStorage.getItem('taskFormData');
     if (storedData) {
       try {
         const data = JSON.parse(storedData);
-        setTaskTitle(data.title || "");
+        setTaskTitle(data.taskTitle || "");
         setInstruction(data.instruction || "");
       } catch (error) {
         console.error('Error parsing stored task data:', error);
@@ -140,6 +140,8 @@ const FormBuilderPage = () => {
     const data = {taskTitle, instruction, questions};
     // Navigate back to previous page
     localStorage.setItem("saved-form", JSON.stringify(data));
+    // Clear the taskFormData since we're done with it
+    localStorage.removeItem("taskFormData");
     navigate(`/space/${space_uuid}/${space_name}/tasks`);
   };
 
