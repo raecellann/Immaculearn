@@ -137,8 +137,10 @@ const FormBuilderPage = () => {
   const handleSaveForm = () => {
     // Here you would save the form data and navigate back or to next step
     console.log("Saving form:", { taskTitle, instruction, questions });
+    const data = {taskTitle, instruction, questions};
     // Navigate back to previous page
-    navigate(-1);
+    localStorage.setItem("saved-form", JSON.stringify(data));
+    navigate(`/space/${space_uuid}/${space_name}/tasks`);
   };
 
   return (

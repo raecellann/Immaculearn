@@ -594,6 +594,17 @@ const AdminTaskPage = () => {
     navigate("/spaces");
   };
 
+  useEffect(() => {
+      const stored = localStorage.getItem("saved-form")
+      const savedItem = JSON.stringify(stored);
+  
+      if (savedItem) {
+        
+        setIsCreatingTask(true)
+      }
+  
+    }, [])
+
   return (
     <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       <div className="hidden lg:block">

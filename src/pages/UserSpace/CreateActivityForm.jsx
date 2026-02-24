@@ -25,6 +25,7 @@ const CreateActivityForm = () => {
   const fileInputRef = useRef(null);
   const instructionRef = useRef(null);
 
+
   // Task categories
   const taskCategories = [
     { value: "quiz", label: "Quiz", emoji: "�" },
@@ -205,6 +206,20 @@ const CreateActivityForm = () => {
       };
     }
   }, []);
+
+
+  useEffect(() => {
+    const stored = localStorage.getItem("saved-form")
+    console.log(stored)
+    const savedItem = JSON.stringify(stored);
+
+    if (savedItem) {
+      
+      setTaskTitle(savedItem.taskTitle);
+      setInstruction(savedItem.instruction);
+    }
+
+  }, [])
 
   return (
     <div className="font-sans p-4 sm:p-6 md:p-8" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
