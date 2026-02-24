@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
 import { toast } from "react-toastify";
+import { genderOptions, departmentOptions } from "../component/enumOptions";
 
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
@@ -23,6 +24,23 @@ const AdminTeachers = () => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
+  // Helper function to get gender display name
+  const getGenderName = (code) => {
+    if (code === null || code === undefined) {
+      return '-';
+    }
+    const gender = genderOptions.find(option => option.code === code);
+    return gender ? gender.name : '-';
+  };
+
+  const getDepartmentName = (code) => {
+    if (code === null || code === undefined) {
+      return '-';
+    }
+    const department = departmentOptions.find(option => option.code === code);
+    return department ? department.name : '-';
+  };
+
   /* 🔹 STICKY HEADER STATE */
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
@@ -39,22 +57,28 @@ const AdminTeachers = () => {
   };
 
   useEffect(() => {
-    const fetchTeachers = async () => {
-      const res = await adminDashboardService.getAllProfEmails();
+  const fetchTeachers = async () => {
+    const res = await adminDashboardService.getAllProfEmails();
 
-      if (res.success && res.data) {
-        setTeachers(
-          res.data.emails.map((email) => ({
-            id: email,
-            name: email.split("@")[0],
-            email,
-          }))
-        );
-      }
-    };
+    if (res.success && res.data?.emails) {
+      setTeachers(
+        res.data.emails.map((teacher, index) => ({
+          id: teacher.email ?? `temp-${index}`,
+          firstName: teacher.prof_fn || '-',
+          lastName: teacher.prof_ln || '-',
+          name: `${teacher.prof_fn || ''} ${teacher.prof_ln || ''}`.trim() || teacher.email.split('@')[0],
+          email: teacher.email || '-',
+          gender: getGenderName(teacher.prof_gender) || '-',
+          department: getDepartmentName(teacher.prof_department) || '-'
+        }))
+      );
+    } else {
+      console.error(res.message);
+    }
+  };
 
-    fetchTeachers();
-  }, []);
+  fetchTeachers();
+}, []);
 
   /* 🔹 SCROLL BEHAVIOR */
   useEffect(() => {
@@ -88,17 +112,18 @@ const AdminTeachers = () => {
   };
 
   const handleAddTeacher = async () => {
-    if (!newTeacher.email) {
-      toast.error("Email is required");
-      return;
-    }
+  if (!newTeacher.email) {
+    toast.error("Email is required");
+    return;
+  }
 
-    if (!validateEmail(newTeacher.email)) {
-      toast.error("Please enter a valid email address");
-      setEmailError(true);
-      return;
-    }
+  if (!validateEmail(newTeacher.email)) {
+    toast.error("Please enter a valid email address");
+    setEmailError(true);
+    return;
+  }
 
+  try {
     const res = await adminDashboardService.registerProfEmail({
       email: newTeacher.email,
     });
@@ -108,20 +133,31 @@ const AdminTeachers = () => {
       return;
     }
 
-    setTeachers((prev) => [
-      ...prev,
-      {
-        id: newTeacher.email,
-        name: newTeacher.email.split("@")[0],
-        email: newTeacher.email,
-      },
-    ]);
-
-    toast.success("Teacher added successfully");
     setNewTeacher({ email: "" });
     setEmailError(false);
     setShowAddModal(false);
-  };
+    toast.success("Teacher added successfully");
+    
+    // Refresh data after adding
+    const refreshRes = await adminDashboardService.getAllProfEmails();
+    if (refreshRes.success && refreshRes.data?.emails) {
+      setTeachers(
+        refreshRes.data.emails.map((teacher, index) => ({
+          id: teacher.email ?? `temp-${index}`,
+          firstName: teacher.prof_fn || '-',
+          lastName: teacher.prof_ln || '-',
+          name: `${teacher.prof_fn || ''} ${teacher.prof_ln || ''}`.trim() || teacher.email.split('@')[0],
+          email: teacher.email || '-',
+          gender: getGenderName(teacher.prof_gender) || '-',
+          department: getDepartmentName(teacher.prof_department) || '-'
+        }))
+      );
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Something went wrong");
+  }
+};
 
 
   const handleCancelImport = () => {
@@ -172,11 +208,12 @@ const AdminTeachers = () => {
   };
 
   const handleImportTeachers = async () => {
-    if (!importFile) {
-      toast.error("Please upload a file");
-      return;
-    }
+  if (!importFile) {
+    toast.error("Please upload a file");
+    return;
+  }
 
+  try {
     const res = await adminDashboardService.bulkRegisterProfFile(importFile);
 
     if (!res.success) {
@@ -188,7 +225,28 @@ const AdminTeachers = () => {
     setShowImportModal(false);
     setImportFile(null);
     setImportPreview([]);
-  };
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
+    // Refresh data after import
+    const refreshRes = await adminDashboardService.getAllProfEmails();
+    if (refreshRes.success && refreshRes.data?.emails) {
+      setTeachers(
+        refreshRes.data.emails.map((teacher, index) => ({
+          id: teacher.email ?? `temp-${index}`,
+          firstName: teacher.prof_fn,
+          lastName: teacher.prof_ln,
+          name: `${teacher.prof_fn || ''} ${teacher.prof_ln || ''}`.trim() || teacher.email.split('@')[0],
+          email: teacher.email,
+          gender: getGenderName(teacher.prof_gender),
+          department: getDepartmentName(teacher.prof_department)
+        }))
+      );
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to import teachers");
+  }
+};
 
   /* ================= UI ================= */
 
@@ -353,6 +411,12 @@ const AdminTeachers = () => {
                 <p className="text-sm text-gray-400 mb-1">
                   {teacher.email}
                 </p>
+                <p className="text-sm text-gray-400 mb-1">
+                  {teacher.gender}
+                </p>
+                <p className="text-sm text-gray-400 mb-3">
+                  {teacher.department}
+                </p>
 
                 <div className="flex items-center gap-2">
                   <button
@@ -371,8 +435,11 @@ const AdminTeachers = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-400 border-b border-gray-700">
-                  <th className="py-3">Name</th>
+                  <th className="py-3">First Name</th>
+                  <th className="py-3">Last Name</th>
                   <th className="py-3">Email</th>
+                  <th className="py-3">Gender</th>
+                  <th className="py-3">Department</th>
                   <th className="py-3">Actions</th>
                 </tr>
               </thead>
@@ -382,8 +449,11 @@ const AdminTeachers = () => {
                     key={teacher.id}
                     className="border-b border-gray-800 hover:bg-[#242B38]"
                   >
-                    <td className="py-4 text-sm">{teacher.name}</td>
+                    <td className="py-4 text-sm">{teacher.firstName}</td>
+                    <td className="py-4 text-sm">{teacher.lastName}</td>
                     <td className="py-4 text-sm">{teacher.email}</td>
+                    <td className="py-4 text-sm">{teacher.gender}</td>
+                    <td className="py-4 text-sm">{teacher.department}</td>
                     <td className="py-4">
                       <button
                         onClick={() => setShowDeleteConfirm(teacher.id)}

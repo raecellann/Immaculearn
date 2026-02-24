@@ -4,6 +4,7 @@ import { Users, GraduationCap, UserCheck, Menu } from "lucide-react";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
+import { genderOptions, yearLevelOptions, departmentOptions } from "../component/enumOptions";
 
 
 const AdminDashboard = () => {
@@ -18,6 +19,39 @@ const AdminDashboard = () => {
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
 
+  // Helper functions to get display names
+  const getGenderName = (code) => {
+    if (code === null || code === undefined) {
+      return '-';
+    }
+    const gender = genderOptions.find(option => option.code === code);
+    return gender ? gender.name : '-';
+  };
+
+  const getDepartmentName = (code) => {
+    if (code === null || code === undefined) {
+      return '-';
+    }
+    const department = departmentOptions.find(option => option.code === code);
+    return department ? department.name : '-';
+  };
+
+  const getCourseName = (code) => {
+    if (code === null || code === undefined) {
+      return '-';
+    }
+    const department = departmentOptions.find(option => option.code === code);
+    return department ? department.name : '-';
+  };
+
+  const getYearLevelName = (code) => {
+    if (code === null || code === undefined) {
+      return '-';
+    }
+    const codeStr = String(code);
+    const yearLevel = yearLevelOptions.find(option => option.code === codeStr);
+    return yearLevel ? yearLevel.name : '-';
+  };
   const [stats, setStats] = useState({
     teachers: 0,
     students: 0,
@@ -27,11 +61,14 @@ const AdminDashboard = () => {
   const res = await adminDashboardService.getAllStudentEmails();
 
   if (res.success && res.data) {
-    const mapped = res.data.emails.map((email, index) => ({
-      id: index + 1,
-      name: email.split("@")[0], // temporary display name
-      email,
-    }));
+    const mapped = res.data.students?.map((student, index) => ({
+      id: student.student_id ?? `temp-${index}`,
+      name: `${student.student_fn || ''} ${student.student_ln || ''}`.trim() || student.email.split('@')[0],
+      email: student.email,
+      course: getCourseName(student.student_course),
+      gender: getGenderName(student.student_gender),
+      yearLevel: getYearLevelName(student.student_yr_lvl)
+    })) || [];
 
     setStudents(mapped);
     setStats(prev => ({
@@ -44,11 +81,13 @@ const fetchTeachers = async () => {
   const res = await adminDashboardService.getAllProfEmails();
 
   if (res.success && res.data) {
-    const mapped = res.data.emails.map((email, index) => ({
-      id: index + 1,
-      name: email.split("@")[0],
-      email,
-    }));
+    const mapped = res.data.emails?.map((teacher, index) => ({
+      id: teacher.email ?? `temp-${index}`,
+      name: `${teacher.prof_fn || ''} ${teacher.prof_ln || ''}`.trim() || teacher.email.split('@')[0],
+      email: teacher.email,
+      gender: getGenderName(teacher.prof_gender),
+      department: getDepartmentName(teacher.prof_department)
+    })) || [];
 
     setTeachers(mapped);
     setStats(prev => ({
@@ -177,6 +216,8 @@ const fetchTeachers = async () => {
                     <div>
                       <p className="font-medium text-sm">{teacher.name}</p>
                       <p className="text-gray-400 text-xs">{teacher.email}</p>
+                      <p className="text-gray-400 text-xs">{teacher.gender}</p>
+                      <p className="text-gray-400 text-xs">{teacher.department}</p>
                     </div>
                   </div>
                 ))}
@@ -201,6 +242,9 @@ const fetchTeachers = async () => {
                     <div>
                       <p className="font-medium text-sm">{student.name}</p>
                       <p className="text-gray-400 text-xs">{student.email}</p>
+                      <p className="text-gray-400 text-xs">{student.gender}</p>
+                      <p className="text-gray-400 text-xs">{student.course}</p>
+                      <p className="text-gray-400 text-xs">{student.yearLevel}</p>
                     </div>
                   </div>
                 ))}

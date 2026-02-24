@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
 import { toast } from "react-toastify";
+import { genderOptions, yearLevelOptions } from "../component/enumOptions";
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
@@ -19,6 +20,25 @@ const AdminStudents = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+
+  // Helper functions to get display names
+  const getGenderName = (code) => {
+    if (code === null || code === undefined) {
+      return '-';
+    }
+    const gender = genderOptions.find(option => option.code === code);
+    return gender ? gender.name : '-';
+  };
+
+  const getYearLevelName = (code) => {
+    if (code === null || code === undefined) {
+      return '-';
+    }
+    // Convert to string to ensure proper comparison
+    const codeStr = String(code);
+    const yearLevel = yearLevelOptions.find(option => option.code === codeStr);
+    return yearLevel ? yearLevel.name : '-'; // Return '-' if not found
+  };
 
   // Manual student entry form state
   const [newStudent, setNewStudent] = useState({
@@ -41,24 +61,24 @@ const AdminStudents = () => {
 
   useEffect(() => {
   const fetchStudents = async () => {
-  const res = await adminDashboardService.getAllStudentEmails();
+    const res = await adminDashboardService.getAllStudentEmails();
 
-  if (res.success && res.data?.students) {
-    setStudents(
-      res.data.students.map(student => ({
-        id: student.student_id,
-        firstName: student.student_fn,
-        lastName: student.student_ln,
-        email: student.email,
-        gender: student.student_gender,
-        course: student.student_course,
-        yearLevel: student.student_yr_lvl
-      }))
-    );
-  } else {
-    console.error(res.message);
-  }
-};
+    if (res.success && res.data?.students) {
+      setStudents(
+        res.data.students.map((student, index) => ({
+          id: student.student_id ?? `temp-${index}`,
+          firstName: student.student_fn || '-',
+          lastName: student.student_ln || '-',
+          email: student.email || '-',
+          gender: getGenderName(student.student_gender) || '-',
+          course: student.student_course || '-',
+          yearLevel: getYearLevelName(student.student_yr_lvl) || '-',
+        }))
+      );
+    } else {
+      console.error(res.message);
+    }
+  };
 
   fetchStudents();
 }, []);
@@ -155,6 +175,22 @@ const AdminStudents = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
 
     toast.success(`Successfully imported ${res.data.total} students!`);
+    
+    // Refresh data after import
+    const refreshRes = await adminDashboardService.getAllStudentEmails();
+    if (refreshRes.success && refreshRes.data?.students) {
+      setStudents(
+        refreshRes.data.students.map((student, index) => ({
+          id: student.student_id ?? `temp-${index}`,
+          firstName: student.student_fn,
+          lastName: student.student_ln,
+          email: student.email,
+          gender: getGenderName(student.student_gender),
+          course: student.student_course,
+          yearLevel: getYearLevelName(student.student_yr_lvl)
+        }))
+      );
+    }
   } catch (err) {
     console.error(err);
     toast.err("Failed to import students");
@@ -218,6 +254,22 @@ const AdminStudents = () => {
     setNewStudent({ name: "", email: "" });
     setShowAddModal(false);
     toast.success("Student registered successfully!");
+    
+    // Refresh data after adding
+    const refreshRes = await adminDashboardService.getAllStudentEmails();
+    if (refreshRes.success && refreshRes.data?.students) {
+      setStudents(
+        refreshRes.data.students.map((student, index) => ({
+          id: student.student_id ?? `temp-${index}`,
+          firstName: student.student_fn,
+          lastName: student.student_ln,
+          email: student.email,
+          gender: getGenderName(student.student_gender),
+          course: student.student_course,
+          yearLevel: getYearLevelName(student.student_yr_lvl)
+        }))
+      );
+    }
   } catch (err) {
     console.error(err);
     toast.error("Something went wrong");
