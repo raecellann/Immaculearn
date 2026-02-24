@@ -4,6 +4,7 @@ import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
 import Button from "../component/button_2";
 import AddMember from "../component/AddMember";
+import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
 import {
   DeleteConfirmationDialog,
   SuccessDialog,
@@ -39,6 +40,8 @@ const UserPage = () => {
   const { space_uuid, space_name } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
 
   // Add loading state for post creation
   const [isCreatingPost, setIsCreatingPost] = useState(false);
@@ -872,7 +875,7 @@ const UserPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />

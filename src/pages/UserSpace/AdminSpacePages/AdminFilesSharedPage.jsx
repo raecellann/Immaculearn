@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../../component/sidebar";
+import { useSpaceTheme } from "../../../contexts/theme/spaceThemeContextProvider";
 import { FiFileText, FiX, FiAlertTriangle } from "react-icons/fi";
 import { DeleteConfirmationDialog } from "../../component/SweetAlert";
 import { toast } from 'react-toastify';
@@ -8,6 +9,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const AdminFilesSharedPage = () => {
   const navigate = useNavigate(); // ✅ REQUIRED
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   
   // State variables
   const [showPendingInvites, setShowPendingInvites] = useState(false);
@@ -36,7 +39,7 @@ const AdminFilesSharedPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       {/* SIDEBAR */}
       <Sidebar />
 
@@ -102,7 +105,7 @@ const AdminFilesSharedPage = () => {
         </div>
 
         {/* FILES TABLE */}
-        <div className="bg-[#0F1115] rounded-xl p-6 shadow-lg">
+        <div className="rounded-xl p-6 shadow-lg" style={{ backgroundColor: isDarkMode ? "#0F1115" : currentColors.surface }}>
           {/* BUTTONS */}
           <div className="flex gap-4 mb-4">
             <button
@@ -148,10 +151,10 @@ const AdminFilesSharedPage = () => {
           ].map((file, index) => (
             <div
               key={index}
-              className="grid grid-cols-4 items-center bg-[#161A20] rounded-lg px-4 py-3 mt-4"
+              className="grid grid-cols-4 items-center rounded-lg px-4 py-3 mt-4" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.surface }}
             >
               <div className="flex items-center gap-3">
-                <div className="bg-[#23272F] p-2 rounded-md">
+                <div className="p-2 rounded-md" style={{ backgroundColor: isDarkMode ? "#23272F" : currentColors.surface }}>
                   <FiFileText />
                 </div>
                 <span>{file.name}</span>
@@ -167,7 +170,7 @@ const AdminFilesSharedPage = () => {
       {/* PENDING INVITES MODAL */}
       {showPendingInvites && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1E222A] rounded-xl shadow-2xl max-w-md w-full border border-gray-700">
+          <div className="rounded-xl shadow-2xl max-w-md w-full border" style={{ backgroundColor: isDarkMode ? "#1E222A" : currentColors.surface, borderColor: isDarkMode ? "#374151" : currentColors.border }}>
             <div className="flex items-center justify-between p-6 border-b border-gray-700">
               <h3 className="text-xl font-semibold text-white">Pending Invites</h3>
               <button

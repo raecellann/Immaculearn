@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
 import {
   FiBold,
   FiItalic,
@@ -8,6 +9,8 @@ import {
 } from "react-icons/fi";
 
 const CreateActivityForm = () => {
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   // State management
   const [taskTitle, setTaskTitle] = useState("");
   const [instruction, setInstruction] = useState("");
@@ -204,7 +207,7 @@ const CreateActivityForm = () => {
   }, []);
 
   return (
-    <div className="bg-[#161A20] text-white font-sans p-4 sm:p-6 md:p-8">
+    <div className="font-sans p-4 sm:p-6 md:p-8" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       {/* COVER */}
       <div className="relative mb-6">
         <img

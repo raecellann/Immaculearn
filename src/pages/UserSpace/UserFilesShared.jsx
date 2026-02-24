@@ -10,10 +10,13 @@ import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { useFileManager } from "../../hooks/useFileManager.js";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { toast } from "react-toastify";
 
 const UserFilesShared = () => {
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
   const [showInvitePopup, setShowInvitePopup] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -265,7 +268,7 @@ const UserFilesShared = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />

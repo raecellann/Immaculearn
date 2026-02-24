@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import Sidebar from "../../component/sidebar";
+import { useSpaceTheme } from "../../../contexts/theme/spaceThemeContextProvider";
 import {
   FiBold,
   FiItalic,
@@ -22,6 +23,8 @@ const AdminCreateActivityPage = () => {
   const fileInputRef = useRef(null);
   const instructionRef = useRef(null);
   const navigate = useNavigate();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   
   // Form Builder State
   const [questions, setQuestions] = useState([]);
@@ -93,7 +96,7 @@ const AdminCreateActivityPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       {/* SIDEBAR */}
       <Sidebar />
 
@@ -135,14 +138,14 @@ const AdminCreateActivityPage = () => {
                 type="text"
                 value={activityTitle}
                 onChange={(e) => setActivityTitle(e.target.value)}
-                className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.surface }}
                 placeholder="Enter activity title"
               />
 
               {/* INSTRUCTION */}
               <label className="font-semibold">Instruction (optional)</label>
 
-              <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
+              <div className="rounded-lg border focus-within:border-blue-500" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.surface }}>
                 {/* Editable Instruction Area */}
                 <div
                   ref={instructionRef}
@@ -199,7 +202,7 @@ const AdminCreateActivityPage = () => {
 
                 <div
                   onClick={handleFileClick}
-                  className="border border-dashed border-gray-500 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer bg-[#0F1115] hover:border-blue-500 transition"
+                  className="border border-dashed border-gray-500 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition" style={{ backgroundColor: isDarkMode ? "#0F1115" : currentColors.surface }}
                 >
                   <FiPaperclip size={36} className="mb-3 text-gray-300" />
 
@@ -231,7 +234,7 @@ const AdminCreateActivityPage = () => {
                 {attachments.length > 0 && (
                   <div className="mt-4 space-y-2">
                     {attachments.map((attachment) => (
-                      <div key={attachment.id} className="flex items-center justify-between bg-[#23272F] p-3 rounded-lg">
+                      <div key={attachment.id} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: currentColors.surface }}>
                         <div className="flex items-center gap-3">
                           <FiPaperclip className="text-gray-400" />
                           <div>
@@ -261,7 +264,7 @@ const AdminCreateActivityPage = () => {
                 type="text"
                 value={grades}
                 onChange={(e) => setGrades(e.target.value)}
-                className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.surface }}
                 placeholder="e.g. 95/100"
               />
 
@@ -269,7 +272,7 @@ const AdminCreateActivityPage = () => {
               <select 
                 value={assignees}
                 onChange={(e) => setAssignees(e.target.value)}
-                className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.surface }}
               >
                 <option value="Individual">Individual</option>
                 <option value="Group">Group</option>
@@ -280,7 +283,7 @@ const AdminCreateActivityPage = () => {
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="bg-[#23272F] rounded-lg px-4 py-2 outline-none border border-[#23272F] focus:border-blue-500"
+                className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.surface }}
               />
 
               {/* FORM BUILDER TOGGLE */}
@@ -330,7 +333,7 @@ const AdminCreateActivityPage = () => {
                     <button
                       key={type.id}
                       onClick={() => addQuestion(type.id)}
-                      className="flex flex-col items-center gap-2 p-4 bg-[#23272F] rounded-lg hover:bg-[#2F3440] transition border border-[#23272F] hover:border-blue-500"
+                      className="flex flex-col items-center gap-2 p-4 rounded-lg hover:transition border hover:border-blue-500" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.surface }}
                     >
                       <Icon size={24} className="text-blue-400" />
                       <span className="text-sm">{type.label}</span>
@@ -345,13 +348,13 @@ const AdminCreateActivityPage = () => {
               <div className="space-y-6">
                 <h4 className="font-semibold">Questions ({questions.length})</h4>
                 {questions.map((question, index) => (
-                  <div key={question.id} className="bg-[#23272F] rounded-lg p-6 border border-[#2F3440]">
+                  <div key={question.id} className="rounded-lg p-6 border" style={{ backgroundColor: currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}>
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
                           Q{index + 1}
                         </span>
-                        <span className="px-3 py-1 bg-[#1E222A] rounded-full text-sm text-gray-300">
+                        <span className="px-3 py-1 rounded-full text-sm" style={{ backgroundColor: isDarkMode ? "#1E222A" : currentColors.surface, color: isDarkMode ? "#D1D5DB" : currentColors.textSecondary }}>
                           {questionTypes.find(t => t.id === question.type)?.label}
                         </span>
                       </div>
@@ -370,7 +373,7 @@ const AdminCreateActivityPage = () => {
                         type="text"
                         value={question.question}
                         onChange={(e) => updateQuestion(question.id, 'question', e.target.value)}
-                        className="w-full bg-[#161A20] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                        className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}
                         placeholder="Enter your question here..."
                       />
                     </div>
@@ -391,7 +394,7 @@ const AdminCreateActivityPage = () => {
                                   newOptions[optionIndex] = e.target.value;
                                   updateQuestion(question.id, 'options', newOptions);
                                 }}
-                                className="flex-1 bg-[#161A20] rounded-lg px-3 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                                className="flex-1 rounded-lg px-3 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}
                                 placeholder={`Option ${optionIndex + 1}`}
                               />
                             </div>
@@ -436,7 +439,7 @@ const AdminCreateActivityPage = () => {
                         <select
                           value={question.correctAnswer}
                           onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
-                          className="w-full bg-[#161A20] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                          className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}
                         >
                           <option value="">Select correct answer</option>
                           {question.options.map((option, index) => (
@@ -457,7 +460,7 @@ const AdminCreateActivityPage = () => {
                           min="1"
                           value={question.points}
                           onChange={(e) => updateQuestion(question.id, 'points', parseInt(e.target.value) || 1)}
-                          className="w-20 bg-[#161A20] rounded-lg px-3 py-1 outline-none border border-[#2F3440] focus:border-blue-500"
+                          className="w-20 rounded-lg px-3 py-1 outline-none border focus:border-blue-500" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.surface, borderColor: isDarkMode ? "#2F3440" : currentColors.border }}
                         />
                       </div>
                       <label className="flex items-center gap-2 text-sm">

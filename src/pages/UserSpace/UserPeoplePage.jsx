@@ -6,6 +6,7 @@ import Logout from "../component/logout";
 import DeleteButton from "../component/DeleteButton";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
+import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
 
 const UserPeoplePage = () => {
   const { user } = useUser();
@@ -13,6 +14,8 @@ const UserPeoplePage = () => {
     useSpace();
   const navigate = useNavigate();
   const { space_uuid } = useParams();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
 
   /* ================= HEADER + SIDEBAR ================= */
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -63,7 +66,7 @@ const UserPeoplePage = () => {
   // Handle not found - moved after all hooks
   if (!activeSpace) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-white bg-[#161A20]">
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
         <p className="text-xl">Space not found.</p>
       </div>
     );
@@ -94,7 +97,7 @@ const UserPeoplePage = () => {
     setMemberToRemove(null);
   };
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />

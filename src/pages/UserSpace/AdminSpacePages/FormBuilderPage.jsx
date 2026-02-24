@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import Sidebar from "../../component/sidebar";
+import { useSpaceTheme } from "../../../contexts/theme/spaceThemeContextProvider";
 import {
   FiPlus,
   FiTrash2,
@@ -16,6 +17,8 @@ import {
 const FormBuilderPage = () => {
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   
   // Form Builder State
   const [questions, setQuestions] = useState([]);
@@ -99,7 +102,7 @@ const FormBuilderPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       {/* SIDEBAR */}
       <Sidebar />
 

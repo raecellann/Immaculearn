@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { useUser } from "../../../contexts/user/useUser";
 import { useSpace } from "../../../contexts/space/useSpace";
 import { useTasks } from "../../../hooks/useTasks";
+import { useSpaceTheme } from "../../../contexts/theme/spaceThemeContextProvider";
 import Sidebar from "../../component/sidebar";
 import Button from "../../component/button_2";
 import MainButton from "../../component/Button.jsx";
@@ -32,6 +33,8 @@ const AdminTaskPage = () => {
   const { space_uuid, space_name } = useParams();
   const { user } = useUser();
   const { userSpaces, friendSpaces, courseSpaces } = useSpace();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
 
   // Find current space
   const allSpaces = [
@@ -585,7 +588,7 @@ const AdminTaskPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
