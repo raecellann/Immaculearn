@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "../../component/sidebar";
 import { useNavigate, useParams } from "react-router";
+import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 
 const ViewFilePage = () => {
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -53,7 +56,7 @@ You can now fetch real file data using file_uuid.`);
   /* ================= UI ================= */
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white font-sans">
+    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
 
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
@@ -70,8 +73,9 @@ You can now fetch real file data using file_uuid.`);
 
       {/* MOBILE SIDEBAR */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{ backgroundColor: currentColors.surface }}
       >
         <Sidebar />
       </div>
@@ -81,42 +85,52 @@ You can now fetch real file data using file_uuid.`);
 
         {/* � Sticky Mobile Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{
+            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
+            borderColor: isDarkMode ? "#374151" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text
+          }}
         >
           <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-white text-2xl p-0"
+              className="bg-transparent border-none text-2xl p-0"
+              style={{ color: isDarkMode ? "white" : currentColors.text }}
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold">File Viewer</h1>
+            <h1 className="text-lg font-bold" style={{ color: isDarkMode ? "white" : currentColors.text }}>File Viewer</h1>
           </div>
         </div>
 
         {/* PAGE CONTENT */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto w-full max-w-6xl mx-auto pt-20 sm:pt-24 lg:pt-10">
-
-          <h1 className="hidden lg:block text-4xl font-bold text-center mb-10">
+          <h1 className="hidden lg:block text-4xl font-bold text-center mb-10" style={{ color: currentColors.text }}>
             File Viewer
           </h1>
 
           <div className="mb-4 flex items-center">
             <button
               onClick={() => navigate(-1)}
-              className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-lg font-medium transition-colors"
+              className="bg-transparent border-none p-2 text-lg font-medium transition-colors"
+              style={{ color: currentColors.textSecondary }}
+              onMouseEnter={(e) => e.currentTarget.style.color = currentColors.text}
+              onMouseLeave={(e) => e.currentTarget.style.color = currentColors.textSecondary}
             >
               ← Back
             </button>
           </div>
 
-          <div className="w-full bg-[#1E242E] rounded-xl p-6 lg:p-8 shadow-lg">
+          <div className="w-full bg-[#1E222A] border border-gray-700 rounded-lg p-6" style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border
+          }}>
 
             {/* HEADER SECTION */}
             <div className="mb-6">
-
               <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
 
                 {/* EDITABLE TITLE */}
@@ -125,19 +139,32 @@ You can now fetch real file data using file_uuid.`);
                     <input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="bg-[#2A2F38] border border-gray-600 px-3 py-2 rounded text-white w-full"
+                      className="px-3 py-2 rounded w-full"
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                        color: currentColors.text
+                      }}
                       autoFocus
                     />
                     <div className="flex gap-2">
                       <button
                         onClick={() => setIsEditingTitle(false)}
-                        className="text-sm border border-gray-600 px-3 py-1 rounded"
+                        className="text-sm px-3 py-1 rounded"
+                        style={{
+                          borderColor: currentColors.border,
+                          color: currentColors.textSecondary
+                        }}
                       >
                         Cancel
                       </button>
                       <button
                         onClick={() => setIsEditingTitle(false)}
-                        className="text-sm border border-blue-500 text-blue-400 px-3 py-1 rounded"
+                        className="text-sm px-3 py-1 rounded"
+                        style={{
+                          backgroundColor: currentColors.primary,
+                          color: currentColors.text
+                        }}
                       >
                         Save
                       </button>
@@ -145,10 +172,11 @@ You can now fetch real file data using file_uuid.`);
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold">{title}</h2>
+                    <h2 className="text-2xl font-semibold" style={{ color: currentColors.text }}>{title}</h2>
                     <button
                       onClick={() => setIsEditingTitle(true)}
-                      className="text-blue-400 text-sm hover:underline"
+                      className="text-sm hover:underline"
+                      style={{ color: currentColors.primary }}
                     >
                       ✏ Edit
                     </button>
@@ -157,9 +185,9 @@ You can now fetch real file data using file_uuid.`);
               </div>
 
               {/* META INFO */}
-              <div className="text-sm text-gray-400 space-y-1">
-                <p><span className="text-gray-300 font-medium">File UUID:</span> {file_uuid}</p>
-                <p><span className="text-gray-300 font-medium">File Name:</span> {decodedFileName}</p>
+              <div className="text-sm space-y-1" style={{ color: currentColors.textSecondary }}>
+                <p><span className="font-medium" style={{ color: currentColors.text }}>File UUID:</span> {file_uuid}</p>
+                <p><span className="font-medium" style={{ color: currentColors.text }}>File Name:</span> {decodedFileName}</p>
               </div>
 
             </div>

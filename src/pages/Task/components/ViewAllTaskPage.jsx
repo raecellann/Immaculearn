@@ -5,9 +5,12 @@ import { useUser } from "../../../contexts/user/useUser";
 import { useSpace } from "../../../contexts/space/useSpace";
 import { capitalizeWords } from "../../../utils/capitalizeFirstLetter";
 import { useTasks } from "../../../hooks/useTasks";
+import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 
 const ViewAllTaskPage = () => {
   const { space_uuid, space_name } = useParams();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated, user } = useUser();
@@ -126,7 +129,8 @@ const ViewAllTaskPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -142,8 +146,9 @@ const ViewAllTaskPage = () => {
 
       {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{ backgroundColor: currentColors.surface }}
       >
         <Sidebar />
       </div>
@@ -152,27 +157,31 @@ const ViewAllTaskPage = () => {
       <div className="flex-1 flex flex-col relative">
         {/* 🔥 Sticky Mobile Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{
+            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
+            borderColor: isDarkMode ? "#374151" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text
+          }}
         >
           <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-white text-2xl p-0"
+              className="bg-transparent border-none text-2xl p-0"
+              style={{ color: isDarkMode ? "white" : currentColors.text }}
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold">
-              {space_name ? `${space_name} Tasks` : "Tasks"}
-            </h1>
+            <h1 className="text-lg font-bold" style={{ color: isDarkMode ? "white" : currentColors.text }}>{space_name ? `${space_name} Tasks` : "Tasks"}</h1>
           </div>
         </div>
 
         {/* 🔽 Added spacing here (pt-20) */}
         <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
           {/* Title */}
-          <h1 className="hidden lg:block text-2xl lg:text-5xl font-bold text-center mb-4 lg:mb-8 font-grotesque">
+          <h1 className="hidden lg:block text-2xl lg:text-5xl font-bold text-center mb-4 lg:mb-8" style={{ color: currentColors.text }}>
             {space_name ? `${space_name} Tasks` : "Tasks"}
           </h1>
 
@@ -180,108 +189,103 @@ const ViewAllTaskPage = () => {
           <div className="mb-4 flex items-center">
             <button
               onClick={() => navigate(-1)}
-              className="text-gray-400 hover:text-white bg-transparent border-none p-2 text-lg font-medium transition-colors"
+              className="bg-transparent border-none p-2 text-lg font-medium transition-colors"
+              style={{ color: currentColors.textSecondary }}
+              onMouseEnter={(e) => e.currentTarget.style.color = currentColors.text}
+              onMouseLeave={(e) => e.currentTarget.style.color = currentColors.textSecondary}
             >
               ← Back
             </button>
           </div>
 
           {/* Tasks Table */}
-          <div className="p-3 sm:p-4 lg:p-6 xl:p-8 rounded-2xl shadow-lg max-w-7xl mx-auto bg-[#1F242D]">
-            <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-4 sm:mb-6 font-inter">
-              Task List:
-            </h2>
+          <div className="p-3 sm:p-4 lg:p-6 xl:p-8 rounded-2xl shadow-lg" style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border
+          }}>
+            <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-4" style={{ color: currentColors.text }}>Task List:</h2>
 
             {/* Desktop Table */}
             <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-600">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300 text-sm">
-                      Status
-                    </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300 text-sm">
-                      Task Name
-                    </th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300 text-sm">
-                      Deadline
-                    </th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-300 text-sm">
-                      Details
-                    </th>
+                  <tr className="border-b" style={{ borderColor: currentColors.border }}>
+                    <th className="text-left py-3 px-4 font-semibold text-sm" style={{ color: currentColors.textSecondary }}>Status</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm" style={{ color: currentColors.textSecondary }}>Task Name</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm" style={{ color: currentColors.textSecondary }}>Deadline</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm" style={{ color: currentColors.textSecondary }}>Details</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {uploadedTask?.map((task) => (
-                    <tr key={task.task_id} className="border-b border-gray-700">
-                      <td className="py-4 px-4">
-                        <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(task.task_status)}`}
-                        >
-                          {task.task_status}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <p className="font-medium text-white text-sm">
-                          {task.task_title}
-                        </p>
-                      </td>
-                      <td className="py-4 px-4">
-                        <p className="text-gray-300 text-sm">
-                          {new Date(task.task_due).toLocaleDateString()}
-                        </p>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <button
-                          onClick={() => handleViewDetails(task)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors text-xs font-medium"
-                        >
-                          View Details
-                        </button>
+                <tbody className="divide-y" style={{ borderColor: currentColors.border }}>
+                  {tasks.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="text-center py-8" style={{ color: currentColors.textSecondary }}>
+                        No tasks available
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    tasks.map((task) => (
+                      <tr key={task.id} className="border-b" style={{ borderColor: currentColors.border }}>
+                        <td className="py-4 px-4">
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(task.task_status)}`} style={{ color: currentColors.text }}>
+                            {task.task_status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <p className="font-medium text-sm" style={{ color: currentColors.text }}>{task.task_name}</p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <p className="text-gray-400 text-sm" style={{ color: currentColors.textSecondary }}>{new Date(task.task_due).toLocaleDateString()}</p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <button
+                            onClick={() => handleViewDetails(task)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium w-full sm:w-auto"
+                            style={{ backgroundColor: currentColors.primary, color: 'white' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentColors.primary}
+                          >
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
 
             {/* Mobile/Tablet Cards */}
             <div className="lg:hidden space-y-3">
+              {tasks.length === 0 && (
+                <div className="text-center py-8" style={{ color: currentColors.textSecondary }}>
+                  No tasks available
+                </div>
+              )}
               {tasks.map((task) => (
                 <div
                   key={task.id}
                   className="bg-[#1F242D] rounded-xl p-4 border border-gray-600"
                 >
-                  <div className="flex flex-col space-y-3">
-                    {/* Header with Title and Status */}
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-semibold text-white text-sm sm:text-base flex-1">
-                        {task.taskName}
-                      </h3>
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium border w-fit ${getStatusColor(task.status)}`}
-                      >
-                        {task.status}
-                      </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <h3 className="font-semibold text-white text-sm sm:text-base flex-1">{task.task_name}</h3>
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(task.task_status)}`}>{task.task_status}</span>
                     </div>
-
-                    {/* Deadline */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-400 text-xs">📅</span>
-                      <p className="text-gray-300 text-xs sm:text-sm">
-                        {task.deadline}
-                      </p>
+                    <div>
+                      <p className="text-gray-400 text-xs">📅 {new Date(task.task_due).toLocaleDateString()}</p>
                     </div>
-
-                    {/* View Details Button */}
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => handleViewDetails(task)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium w-full sm:w-auto"
-                      >
-                        View Details
-                      </button>
-                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleViewDetails(task)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+                      style={{ backgroundColor: currentColors.primary, color: 'white' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = currentColors.primary}
+                    >
+                      View Details
+                    </button>
                   </div>
                 </div>
               ))}

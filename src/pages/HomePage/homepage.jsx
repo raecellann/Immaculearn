@@ -239,6 +239,18 @@ const HomePage1 = () => {
         />
       )}
 
+      {/* Mobile Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{
+          backgroundColor: currentColors.surface,
+          color: currentColors.text
+        }}
+      >
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+      </div>
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
@@ -247,19 +259,19 @@ const HomePage1 = () => {
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
           style={{
-            backgroundColor: currentColors.surface,
-            borderColor: currentColors.border,
-            color: currentColors.text,
+            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
+            borderColor: isDarkMode ? "#374151" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text,
           }}
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-2xl p-0 focus:outline-none"
-            style={{ color: currentColors.text }}
+            style={{ color: isDarkMode ? "white" : currentColors.text }}
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">Home</h1>
+          <h1 className="text-xl font-bold" style={{ color: isDarkMode ? "white" : currentColors.text }}>Home</h1>
         </div>
         <div className="lg:hidden h-16" /> {/* spacer */}
         <div className="flex-1 flex flex-col xl:flex-row gap-6 p-4 md:p-6 lg:p-8">

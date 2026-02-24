@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Sidebar from "../component/profsidebar";
 import Button from "../component/Button";
 import { useUser } from "../../contexts/user/useUser";
 import { useNavigate } from "react-router";
 import { departmentOptions, genderOptions } from "../component/enumOptions";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import Logout from "../component/logout";
 
 const ProfProfilePage = () => {
   const { user, isAuthenticated } = useUser();
@@ -13,6 +14,11 @@ const ProfProfilePage = () => {
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const [profileImage, setProfileImage] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+
+  // 🔹 ADDED: hide-on-scroll header
+  const [showHeader, setShowHeader] = useState(true);
+  const lastScrollY = useRef(null);
   
   const departmentFullName =
     departmentOptions.find(
@@ -45,18 +51,34 @@ const ProfProfilePage = () => {
     }
   }, [user]);
 
+  // 🔹 ADDED: hide-on-scroll header
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   useEffect(() => {
     if (!isAuthenticated) return navigate('/login')
   }, [isAuthenticated, navigate]);
 
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
-      {/* Desktop Sidebar */}
+    <div className="flex font-grotesque min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+      {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile + Tablet Sidebar Overlay */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -64,7 +86,7 @@ const ProfProfilePage = () => {
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile + Tablet Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
@@ -73,39 +95,30 @@ const ProfProfilePage = () => {
           color: currentColors.text
         }}
       >
-        <Sidebar />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* ✅ MOBILE / TABLET HEADER */}
+        {/* Mobile + Tablet Header with hide-on-scroll */}
         <div
-          className="
-            lg:hidden
-            sticky top-0 z-30
-            px-4
-            pt-[env(safe-area-inset-top)]
-            border-b
-          "
+          className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+            showHeader ? "translate-y-0" : "-translate-y-full"
+          }`}
           style={{
             backgroundColor: currentColors.surface,
             borderColor: currentColors.border,
             color: currentColors.text
           }}
         >
-          <div className="flex items-center h-14">
-            {/* Hamburger */}
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="text-2xl bg-transparent p-0 border-none focus:outline-none"
-              style={{ WebkitTapHighlightColor: "transparent", color: currentColors.text }}
-            >
-              ☰
-            </button>
-
-            {/* Title */}
-            <h1 className="text-xl sm:text-2xl font-bold">Your Profile</h1>
-          </div>
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="bg-transparent border-none text-2xl p-0 focus:outline-none"
+            style={{ color: currentColors.text }}
+          >
+            ☰
+          </button>
+          <h1 className="text-xl sm:text-2xl font-bold">Your Profile</h1>
         </div>
 
         {/* Spacer for fixed header */}
@@ -121,36 +134,43 @@ const ProfProfilePage = () => {
             Your Profile
           </h1>
           <p className="text-gray-300 mb-8 text-center">
-            View and edit all your information here
+            View your information here
           </p>
             </div>
             <div className="flex flex-col xl:flex-row gap-3 sm:gap-4 xl:gap-6">
               {/* Profile Card */}
               <div className="rounded-2xl p-3 sm:p-4 lg:p-6 w-full xl:w-72 2xl:w-80 mx-auto xl:mx-0 text-center shadow-lg border h-fit" style={{
                 backgroundColor: currentColors.surface,
-                borderColor: currentColors.border
+                borderColor: isDarkMode ? 'white' : currentColors.border
               }}>
                 
                 <div
-                  className="mt-4 cursor-pointer group"
+                  className="mt-2 lg:mt-4 cursor-pointer group relative"
                 >
                   {profileImage ? (
-                    <img
-                      src={profileImage}
-                      alt="Profile"
-                      className="w-36 h-36 mx-auto rounded-xl object-cover border-4 border-[#3A7BFF] group-hover:opacity-80 transition"
-                    />
+                    <div className="relative inline-block">
+                      <img
+                        src={profileImage}
+                        alt="Profile"
+                        className="w-32 h-32 lg:w-40 lg:h-40 mx-auto rounded-xl object-cover border-4 border-[#3A7BFF] group-hover:opacity-80 transition"
+                      />
+                      
+                    </div>
                   ) : (
-                    <div className="w-36 h-36 mx-auto rounded-xl border-4 border-dashed flex items-center justify-center text-sm group-hover:text-white transition" style={{
-                      borderColor: '#3A7BFF',
+                    <div className="w-32 h-32 lg:w-40 lg:h-40 mx-auto rounded-xl border-4 border-dashed border-[#3A7BFF] flex items-center justify-center text-sm group-hover:text-white transition" style={{
                       color: currentColors.textSecondary
                     }}>
-                      Upload Image
+                      <div className="text-center">
+                        <svg className="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <p className="text-xs">Upload Image</p>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                <h2 className="text-xl font-bold mt-4" style={{ color: currentColors.text }}>{profileName}</h2>
+                <h2 className="text-xl font-bold mt-3 lg:mt-4" style={{ color: currentColors.text }}>{profileName}</h2>
                 <p className="mt-1 text-sm font-medium" style={{ color: '#3A7BFF' }}>
                   {user?.role || 'Professor'}
                 </p>
@@ -159,7 +179,7 @@ const ProfProfilePage = () => {
               {/* Personal Details */}
               <div className="rounded-2xl flex-1 p-3 sm:p-4 lg:p-6 border shadow-lg" style={{
                 backgroundColor: currentColors.surface,
-                borderColor: currentColors.border
+                borderColor: isDarkMode ? 'white' : currentColors.border
               }}>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold">Personal Details</h3>
@@ -271,6 +291,10 @@ const ProfProfilePage = () => {
           </div>
         </div>
       </div>
+
+      
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

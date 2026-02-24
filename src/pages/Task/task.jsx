@@ -100,18 +100,24 @@ const TaskPage = () => {
       <div className="flex-1 flex flex-col relative">
         {/* 🔥 Sticky Mobile Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{
+            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
+            borderColor: isDarkMode ? "#374151" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text
+          }}
         >
           <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
               className="bg-transparent border-none text-2xl p-0"
+              style={{ color: isDarkMode ? "white" : currentColors.text }}
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold">Tasks</h1>
+            <h1 className="text-lg font-bold" style={{ color: currentColors.text }}>Tasks</h1>
           </div>
         </div>
 
@@ -139,16 +145,14 @@ const TaskPage = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                   {userSpaces?.map((space, index) => (
                     <div
                       key={`your-space-${index}`}
-                      className="rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      className="border rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
                       style={{
                         backgroundColor: currentColors.surface,
-                        border: isDarkMode
-                          ? "1px solid #4b5563"
-                          : "1px solid black",
+                        borderColor: currentColors.border,
                       }}
                       onClick={() =>
                         navigate(
@@ -189,16 +193,14 @@ const TaskPage = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                   {courseSpaces?.map((space, index) => (
                     <div
                       key={`course-space-${index}`}
-                      className="rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      className="border rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
                       style={{
                         backgroundColor: currentColors.surface,
-                        border: isDarkMode
-                          ? "1px solid #4b5563"
-                          : "1px solid black",
+                        borderColor: currentColors.border,
                       }}
                       onClick={() =>
                         navigate(
@@ -239,16 +241,14 @@ const TaskPage = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                   {allFriendSpaces?.map((space, index) => (
                     <div
                       key={`friends-space-${index}`}
-                      className="rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
+                      className="border rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
                       style={{
                         backgroundColor: currentColors.surface,
-                        border: isDarkMode
-                          ? "1px solid #4b5563"
-                          : "1px solid black",
+                        borderColor: currentColors.border,
                       }}
                       onClick={() =>
                         navigate(

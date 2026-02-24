@@ -197,21 +197,22 @@ const NotificationPage = () => {
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
           style={{
-            backgroundColor: currentColors.surface,
-            borderColor: currentColors.border,
+            backgroundColor: isDarkMode ? "rgb(22, 26, 32)" : currentColors.surface,
+            borderColor: isDarkMode ? "rgb(55, 65, 81)" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text,
           }}
         >
           <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
               className="bg-transparent border-none text-2xl p-0"
-              style={{ color: currentColors.text }}
+              style={{ color: isDarkMode ? "white" : currentColors.text }}
             >
               ☰
             </button>
             <h1
               className="text-lg font-bold"
-              style={{ color: currentColors.text }}
+              style={{ color: isDarkMode ? "white" : currentColors.text }}
             >
               Notifications
             </h1>

@@ -4,11 +4,14 @@ import { FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCheck, FiCheckCircle, 
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { GroupCover } from "../component/groupCover";
 
 const ChatList = () => {
   const { userSpaces, friendSpaces } = useSpace();
   const { user } = useUser();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // sticky header scroll state
@@ -280,7 +283,7 @@ const ChatList = () => {
   
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -296,8 +299,9 @@ const ChatList = () => {
 
       {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{ backgroundColor: currentColors.surface }}
       >
         <Sidebar />
       </div>
@@ -306,18 +310,24 @@ const ChatList = () => {
       <div className="flex-1 flex flex-col">
         {/* Mobile + Tablet Header */}
         <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#1E222A] border-b border-[#3B4457]
+          className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{
+            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
+            borderColor: isDarkMode ? "#374151" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text
+          }}
         >
           <div className="p-4 flex items-center gap-4">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+              className="bg-transparent border-none text-2xl p-0 focus:outline-none"
+              style={{ color: isDarkMode ? "white" : currentColors.text }}
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold">Chats</h1>
+            <h1 className="text-lg font-bold" style={{ color: currentColors.text }}>Chats</h1>
           </div>
         </div>
 
@@ -337,15 +347,19 @@ const ChatList = () => {
                 placeholder="Search People"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-5 pr-4 py-2 bg-gray-800 text-white rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-5 pr-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                style={{
+                  backgroundColor: currentColors.surface,
+                  color: currentColors.text
+                }}
               />
-              <FiSearch className="absolute right-3 top-3 text-gray-400" />
+              <FiSearch className="absolute right-3 top-3" style={{ color: currentColors.textSecondary }} />
             </div>
           </div>
 
           {/* PEOPLE */}
-          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar">
-            <h2 className="font-semibold text-sm mb-3 text-gray-300">People</h2>
+          <div className="rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar" style={{ backgroundColor: currentColors.surface }}>
+            <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>People</h2>
             {uniqueMembers
               .filter(m => m.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
               .map((m) => {
@@ -357,18 +371,19 @@ const ChatList = () => {
                       setActiveSpaceUuid(uuid);
                       setShowMobileChat(true);
                     }}
-                    className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
+                    className="flex items-center gap-3 py-3 rounded-lg cursor-pointer transition-colors"
+                    style={{ ':hover': { backgroundColor: currentColors.hover } }}
                   >
                     <div className="relative">
                       <img
                         src={m.profile_pic || "/default-avatar.png"}
                         className="w-10 h-10 rounded-full"
                       />
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2" style={{ borderColor: currentColors.surface }}></div>
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-sm text-white">{m.full_name}</p>
-                      <p className="text-xs text-gray-400">Online</p>
+                      <p className="font-semibold text-sm" style={{ color: currentColors.text }}>{m.full_name}</p>
+                      <p className="text-xs" style={{ color: currentColors.textSecondary }}>Online</p>
                     </div>
                   </div>
                 );
@@ -376,8 +391,8 @@ const ChatList = () => {
           </div>
 
           {/* GROUPS */}
-          <div className="bg-[#1E2330] rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar">
-            <h2 className="font-semibold text-sm mb-3 text-gray-300">Groups</h2>
+          <div className="rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar" style={{ backgroundColor: currentColors.surface }}>
+            <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>Groups</h2>
             {uniqueSpaces.map((space) => (
               <div
                 key={space.space_uuid}
@@ -385,7 +400,8 @@ const ChatList = () => {
                   setActiveSpaceUuid(space.space_uuid);
                   setShowMobileChat(true);
                 }}
-                className="flex items-center gap-3 py-3 hover:bg-[#2A2F3E] rounded-lg cursor-pointer transition-colors"
+                className="flex items-center gap-3 py-3 rounded-lg cursor-pointer transition-colors"
+                style={{ ':hover': { backgroundColor: currentColors.hover } }}
               >
                 <div className="relative">
                   <GroupCover
@@ -395,12 +411,12 @@ const ChatList = () => {
                     className="w-10 h-10"
                   />
                   {getOnlineCountForSpace(space) > 0 && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2" style={{ borderColor: currentColors.surface }}></div>
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-sm text-white">{space.space_name}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="font-semibold text-sm" style={{ color: currentColors.text }}>{space.space_name}</p>
+                  <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                     {getOnlineCountForSpace(space)} online • {space.members?.length || 0} members
                   </p>
                 </div>
@@ -410,21 +426,22 @@ const ChatList = () => {
         </div>
 
         {/* CHAT PANEL */}
-        <div className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 bg-[#1E2330] rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`}>
+        <div className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`} style={{ backgroundColor: currentColors.surface }}>
           {!activeSpaceUuid ? (
-            <div className="flex-1 flex items-center justify-center text-gray-400 min-h-[400px] mt-16">
-              <div className="text-center text-lg">
+            <div className="flex-1 flex items-center justify-center min-h-[400px] mt-16">
+              <div className="text-center text-lg" style={{ color: currentColors.textSecondary }}>
                 Select a chat to start messaging
               </div>
             </div>
           ) : (
             <>
               {/* Fixed Header - Always Visible */}
-              <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center relative bg-[#1E2330] rounded-t-xl sticky top-0 z-10">
+              <div className="p-3 sm:p-4 border-b flex justify-between items-center relative rounded-t-xl sticky top-0 z-10" style={{ borderColor: currentColors.border, backgroundColor: currentColors.surface }}>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowMobileChat(false)}
-                    className="lg:hidden text-gray-400 hover:text-white bg-transparent border-none p-0"
+                    className="lg:hidden bg-transparent border-none p-0"
+                    style={{ color: currentColors.textSecondary }}
                   >
                     ←
                   </button>
@@ -442,10 +459,10 @@ const ChatList = () => {
                         }
                         className="w-10 h-10 rounded-full"
                       />
-                      <div className={`absolute bottom-0 right-0 w-3 h-3 ${statusDotClass} rounded-full border-2 border-[#1E2330]`}></div>
+                      <div className={`absolute bottom-0 right-0 w-3 h-3 ${statusDotClass} rounded-full border-2`} style={{ borderColor: currentColors.surface }}></div>
                     </div>
                     <div>
-                      <h2 className="font-semibold text-white">{activeSpace?.space_name || "Chat"}</h2>
+                      <h2 className="font-semibold" style={{ color: currentColors.text }}>{activeSpace?.space_name || "Chat"}</h2>
                       <p className={`text-xs ${statusColorClass}`}>{participantStatus}</p>
                     </div>
                   </div>
@@ -453,17 +470,21 @@ const ChatList = () => {
                 <div className="relative dropdown-container">
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
-                    className="text-gray-400 cursor-pointer hover:text-white bg-transparent border-none p-0"
+                    className="cursor-pointer bg-transparent border-none p-0"
+                    style={{ color: currentColors.textSecondary }}
                   >
                     <FiMoreVertical />
                   </button>
                   
                   {/* Dropdown Menu */}
                   {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-[#2A2F3E] rounded-lg shadow-lg border border-gray-600 z-50">
+                    <div className="absolute right-0 mt-2 w-44 sm:w-48 rounded-lg shadow-lg border z-50" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                       <button
                         onClick={handleThemeChange}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-t-lg flex items-center gap-3"
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm rounded-t-lg flex items-center gap-3 transition-colors"
+                        style={{ color: currentColors.textSecondary }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.hover}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         <FiSettings className="text-sm" />
                         Change Color Theme
@@ -477,7 +498,10 @@ const ChatList = () => {
                             // Add delete conversation logic here
                           }
                         }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-b-lg flex items-center gap-3"
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm rounded-b-lg flex items-center gap-3 transition-colors"
+                        style={{ color: currentColors.textSecondary }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.hover}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         <FiTrash2 className="text-sm" />
                         Delete Conversation
