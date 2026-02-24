@@ -37,7 +37,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       // Try refresh if unauthorized
       if (!status) {
         try {
-          const refreshRes = await api.post("/auth/refresh");
+          const refreshRes = await api.get("/auth/refresh");
 
           if (refreshRes.data?.success) {
             const retryProfile = await api.get("/auth/profile");

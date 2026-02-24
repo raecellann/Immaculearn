@@ -370,10 +370,10 @@ class SpaceService {
     }
   }
 
-  async leaveSpace(spaceUuid: string): Promise<ApiResponse> {
+  async leaveSpace(space_uuid: string): Promise<ApiResponse> {
     try {
       const response = await api.delete<ApiResponse>(
-        `/spaces/${spaceUuid}/leave`,
+        `/spaces/${space_uuid}/leave`,
       );
       return response.data;
     } catch (error: any) {

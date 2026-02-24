@@ -49,7 +49,7 @@ export interface SpaceContextType {
   inviteUser: (space_uuid: string, email: string) => Promise<any>;
   acceptJoinRequest: (userId: number, spaceUuid: string) => Promise<any>;
   declineJoinRequest: (userId: number, spaceUuid: string) => Promise<any>;
-  leaveSpace: (spaceUuid: string) => Promise<any>;
+  leaveSpace: (space_uuid: string) => Promise<any>;
   deleteSpace: (spaceUuid: string) => Promise<any>;
   removeUserFromSpace: (spaceUuid: string, userId: number) => Promise<any>;
 

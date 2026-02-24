@@ -230,7 +230,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     const spaceuuid = inviteCode.split("=").pop() || "";
     const result = await spaceService.joinSpace(spaceuuid);
     queryClient.invalidateQueries({
-      queryKey: ["all"],
+      queryKey: ["joinRequestsByLink"],
     });
     queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
     queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
@@ -268,10 +268,15 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     });
   };
 
-  const leaveSpace = async (spaceId: string) => {
-    await spaceService.leaveSpace(spaceId);
-    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
-    if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
+  const leaveSpace = async (space_uuid: string) => {
+    await spaceService.leaveSpace(space_uuid);
+    if (courseSpaces.some((s) => s.space_uuid === space_uuid)) {
+      queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+      queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    }
+    if (currentSpace?.space_uuid === space_uuid) setCurrentSpace(null);
   };
 
   const deleteSpace = async (spaceId: string) => {

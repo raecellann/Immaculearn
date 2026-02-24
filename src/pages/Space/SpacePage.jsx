@@ -14,8 +14,14 @@ import { DeleteConfirmationDialog } from "../component/SweetAlert";
 
 const SpacePage = () => {
   const { user } = useUser();
-  const { userSpaces, friendSpaces, courseSpaces, joinSpace, deleteSpace } =
-    useSpace();
+  const {
+    userSpaces,
+    friendSpaces,
+    courseSpaces,
+    joinSpace,
+    deleteSpace,
+    leaveSpace,
+  } = useSpace();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -43,6 +49,19 @@ const SpacePage = () => {
       const spaceUuid = showDeleteConfirm;
       await deleteSpace(spaceUuid);
       setShowDeleteConfirm(null);
+      setShowMenu(null);
+    } catch (error) {
+      console.error("Failed to delete space:", error);
+      // You could add a toast notification here if you have one
+    }
+  };
+
+  const handleLeaveSpace = async () => {
+    try {
+      // Get the space UUID from showDeleteConfirm
+      const spaceUuid = showLeaveConfirm;
+      await leaveSpace(spaceUuid);
+      setShowLeaveConfirm(null);
       setShowMenu(null);
     } catch (error) {
       console.error("Failed to delete space:", error);
@@ -705,12 +724,7 @@ const SpacePage = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    // TODO: implement actual leave logic
-                    console.log("Leaving:", showLeaveConfirm);
-                    setShowLeaveConfirm(null);
-                    setShowMenu(null);
-                  }}
+                  onClick={handleLeaveSpace}
                   className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-sm"
                 >
                   Leave
