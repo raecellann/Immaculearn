@@ -2,9 +2,12 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import Sidebar from "../component/profsidebar";
 import { FiCalendar, FiClock, FiCheck, FiAlertCircle, FiMenu, FiX, FiChevronLeft, FiChevronRight, FiEdit, FiPlus } from "react-icons/fi";
 import Logout from "../component/logout";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import CreateTaskFlowModal from "../component/CreateTaskFlowModal";
 
 const ProfCalendarPage = () => {
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -266,7 +269,7 @@ const ProfCalendarPage = () => {
     
     // Add empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-20 sm:h-24 border border-gray-200"></div>);
+      days.push(<div key={`empty-${i}`} className="h-20 sm:h-24 border" style={{ borderColor: currentColors.border }}></div>);
     }
     
     // Add days of the month
@@ -283,11 +286,25 @@ const ProfCalendarPage = () => {
             setSelectedDate(date);
             setSelectedStatistic(null);
           }}
-          className={`h-20 sm:h-24 border border-gray-200 p-1 cursor-pointer transition-colors ${
-            isToday ? 'bg-blue-50' : ''
-          } ${isSelected ? 'ring-2 ring-blue-500' : ''} hover:bg-gray-50`}
+          className={`h-20 sm:h-24 border p-1 cursor-pointer transition-colors ${
+            isToday ? (isDarkMode ? 'bg-blue-900' : 'bg-blue-50') : ''
+          } ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+          style={{ 
+            borderColor: currentColors.border,
+            backgroundColor: isToday && !isSelected ? (isDarkMode ? '#1e3a8a' : '#dbeafe') : (isSelected ? (isDarkMode ? '#1e40af' : '#3b82f6') : 'transparent')
+          }}
+          onMouseEnter={(e) => {
+            if (!isToday && !isSelected) {
+              e.target.style.backgroundColor = currentColors.hover;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isToday && !isSelected) {
+              e.target.style.backgroundColor = 'transparent';
+            }
+          }}
         >
-          <div className="text-xs font-semibold text-gray-700 mb-1">{day}</div>
+          <div className="text-xs font-semibold mb-1" style={{ color: currentColors.text }}>{day}</div>
           <div className="space-y-1">
             {dayActivities.slice(0, 2).map((activity, index) => (
               <div
@@ -298,7 +315,7 @@ const ProfCalendarPage = () => {
               </div>
             ))}
             {dayActivities.length > 2 && (
-              <div className="text-xs text-gray-500">+{dayActivities.length - 2} more</div>
+              <div className="text-xs" style={{ color: currentColors.textSecondary }}>+{dayActivities.length - 2} more</div>
             )}
           </div>
         </div>
@@ -318,7 +335,7 @@ const ProfCalendarPage = () => {
   const selectedDateActivities = getActivitiesForDate(selectedDate);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background }}>
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -344,22 +361,23 @@ const ProfCalendarPage = () => {
       {/* ================= MAIN ================= */}
       <div className="flex-1 flex flex-col w-full">
         {/* ================= MOBILE HEADER ================= */}
-        <div className="lg:hidden bg-white p-4 border-b border-gray-200 flex items-center gap-4">
+        <div className="lg:hidden p-4 border-b flex items-center gap-4" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-gray-700 text-2xl p-0"
+            className="bg-transparent border-none text-2xl p-0"
+            style={{ color: currentColors.text }}
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold text-gray-900">Activity Calendar</h1>
+          <h1 className="text-xl font-bold" style={{ color: currentColors.text }}>Activity Calendar</h1>
         </div>
 
         {/* ================= CONTENT ================= */}
         <div className="p-4 sm:p-6">
           {/* Desktop Header */}
           <div className="hidden lg:block mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Activity Calendar</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl font-bold mb-2" style={{ color: currentColors.text }}>Activity Calendar</h1>
+            <p style={{ color: currentColors.textSecondary }}>
               {contextError ? "Showing sample data (SpaceContext not available)" : "Track all activity due dates and manage your class schedules"}
             </p>
           </div>
@@ -368,7 +386,11 @@ const ProfCalendarPage = () => {
           <div className="mb-6">
             <button
               onClick={() => setShowCreateTaskFlow(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-md"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors shadow-md"
+              style={{ 
+                backgroundColor: currentColors.accent,
+                color: 'white'
+              }}
             >
               <FiPlus size={16} />
               Create New Activity
@@ -376,15 +398,15 @@ const ProfCalendarPage = () => {
           </div>
 
           {/* Space Filter */}
-          <div className="mb-4 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="mb-4 rounded-xl shadow-sm border p-4" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                   <FiCalendar className="text-blue-600" size={16} />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900">Filter by Space</label>
-                  <p className="text-xs text-gray-500">
+                  <label className="block text-sm font-semibold">Filter by Space</label>
+                  <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                     {selectedSpace 
                       ? `Filtering: ${availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space'}` 
                       : 'Click to select a space'
@@ -395,7 +417,12 @@ const ProfCalendarPage = () => {
               {selectedSpace && (
                 <button
                   onClick={() => setSelectedSpace("")}
-                  className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+                  style={{ 
+                    color: currentColors.textSecondary,
+                    backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
+                    border: 'none'
+                  }}
                 >
                   Clear Filter
                 </button>
@@ -406,7 +433,11 @@ const ProfCalendarPage = () => {
             <div className="relative">
               <button
                 onClick={() => setShowSpaceCategories(!showSpaceCategories)}
-                className="w-full text-left p-3 rounded-lg border-2 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all flex items-center justify-between"
+                className="w-full text-left p-3 rounded-lg border-2 transition-all flex items-center justify-between"
+                style={{ 
+                  backgroundColor: currentColors.surface,
+                  borderColor: currentColors.border
+                }}
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">
@@ -416,13 +447,13 @@ const ProfCalendarPage = () => {
                     }
                   </span>
                   <div className="flex-1">
-                    <div className="font-medium text-sm text-gray-900">
+                    <div className="font-medium text-sm" style={{ color: currentColors.text }}>
                       {selectedSpace 
                         ? availableSpaces.find(s => s.space_uuid === selectedSpace)?.space_name || 'Unknown Space'
                         : 'All Spaces'
                       }
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs" style={{ color: currentColors.textSecondary }}>
                       {selectedSpace 
                         ? 'Click to change space'
                         : 'Click to select a space'
@@ -431,10 +462,11 @@ const ProfCalendarPage = () => {
                   </div>
                 </div>
                 <svg 
-                  className={`w-5 h-5 text-gray-400 transition-transform ${showSpaceCategories ? 'rotate-180' : ''}`} 
+                  className={`w-5 h-5 transition-transform ${showSpaceCategories ? 'rotate-180' : ''}`} 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
+                  style={{ color: currentColors.textSecondary }}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -442,7 +474,7 @@ const ProfCalendarPage = () => {
 
               {/* Dropdown Categories */}
               {showSpaceCategories && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-200 z-50 max-h-80 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 rounded-xl shadow-lg border z-50 max-h-80 overflow-y-auto" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                   <div className="p-2">
                     {/* All Spaces Option */}
                     <div className="mb-3">
@@ -453,15 +485,23 @@ const ProfCalendarPage = () => {
                         }}
                         className={`w-full text-left p-2 rounded-lg border transition-all ${
                           !selectedSpace
-                            ? 'border-blue-500 bg-blue-50 shadow-sm'
-                            : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                            ? 'border-blue-500 shadow-sm'
+                            : 'border-gray-200 hover:border-blue-300'
                         }`}
+                        style={{ 
+                          backgroundColor: !selectedSpace 
+                            ? (isDarkMode ? '#1e3a8a' : '#dbeafe')
+                            : currentColors.surface,
+                          borderColor: !selectedSpace 
+                            ? '#3b82f6'
+                            : currentColors.border
+                        }}
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-lg">🌐</span>
                           <div className="flex-1">
-                            <div className="font-medium text-sm text-gray-900">All Spaces</div>
-                            <div className="text-xs text-gray-500">View activities from all spaces</div>
+                            <div className="font-medium text-sm" style={{ color: currentColors.text }}>All Spaces</div>
+                            <div className="text-xs" style={{ color: currentColors.textSecondary }}>View activities from all spaces</div>
                           </div>
                         </div>
                       </button>
@@ -470,8 +510,8 @@ const ProfCalendarPage = () => {
                     {(availableSpaces.length > 0) && (
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <h4 className="text-sm font-semibold text-gray-700">Your Spaces</h4>
-                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                          <h4 className="text-sm font-semibold" style={{ color: currentColors.text }}>Your Spaces</h4>
+                          <span className="text-xs px-2 py-1 rounded-full" style={{ color: currentColors.textSecondary, backgroundColor: isDarkMode ? '#374151' : '#f3f4f6' }}>
                             {availableSpaces.length} space{availableSpaces.length !== 1 ? 's' : ''}
                           </span>
                         </div>
@@ -485,15 +525,23 @@ const ProfCalendarPage = () => {
                               }}
                               className={`w-full text-left p-2 rounded-lg border transition-all ${
                                 selectedSpace === space.space_name
-                                  ? 'border-blue-500 bg-blue-50 shadow-sm'
-                                  : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                                  ? 'border-blue-500 shadow-sm'
+                                  : 'border-gray-200 hover:border-blue-300'
                               }`}
+                              style={{ 
+                                backgroundColor: selectedSpace === space.space_name 
+                                  ? (isDarkMode ? '#1e3a8a' : '#dbeafe')
+                                  : currentColors.surface,
+                                borderColor: selectedSpace === space.space_name 
+                                  ? '#3b82f6'
+                                  : currentColors.border
+                              }}
                             >
                               <div className="flex items-center gap-2">
                                 <span className="text-base">🏠</span>
                                 <div className="flex-1">
-                                  <div className="font-medium text-sm text-gray-900">{space.space_name}</div>
-                                  <div className="text-xs text-gray-500">{space.space_type}</div>
+                                  <div className="font-medium text-sm" style={{ color: currentColors.text }}>{space.space_name}</div>
+                                  <div className="text-xs" style={{ color: currentColors.textSecondary }}>{space.space_type}</div>
                                 </div>
                               </div>
                             </button>
@@ -553,7 +601,8 @@ const ProfCalendarPage = () => {
               <div className="lg:col-span-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div 
-                    className="bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
+                    className="rounded-lg p-4 border cursor-pointer hover:shadow-md transition-shadow"
+                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                     onClick={() => setSelectedStatistic('total')}
                   >
                     <div className="flex items-center gap-2">
@@ -561,14 +610,15 @@ const ProfCalendarPage = () => {
                         <FiCalendar className="text-blue-600" />
                       </div>
                       <div>
-                        <div className="text-2xl font-bold text-gray-900">{activities.length}</div>
-                        <div className="text-xs text-gray-600">Total Activities</div>
+                        <div className="text-2xl font-bold" style={{ color: currentColors.text }}>{activities.length}</div>
+                        <div className="text-xs" style={{ color: currentColors.textSecondary }}>Total Activities</div>
                       </div>
                     </div>
                   </div>
                   
                   <div 
-                    className="bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
+                    className="rounded-lg p-4 border cursor-pointer hover:shadow-md transition-shadow"
+                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                     onClick={() => setSelectedStatistic('thisweek')}
                   >
                     <div className="flex items-center gap-2">
@@ -576,7 +626,7 @@ const ProfCalendarPage = () => {
                         <FiClock className="text-yellow-600" />
                       </div>
                       <div>
-                        <div className="text-2xl font-bold text-gray-900">
+                        <div className="text-2xl font-bold" style={{ color: currentColors.text }}>
                           {(() => {
                             const today = new Date();
                             const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -586,7 +636,7 @@ const ProfCalendarPage = () => {
                             }).length;
                           })()}
                         </div>
-                        <div className="text-xs text-gray-600">This Week</div>
+                        <div className="text-xs" style={{ color: currentColors.textSecondary }}>This Week</div>
                       </div>
                     </div>
                   </div>
@@ -595,23 +645,29 @@ const ProfCalendarPage = () => {
 
               {/* Calendar Section */}
               <div className="lg:col-span-2">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div className="rounded-xl shadow-sm border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                   {/* Calendar Header */}
-                  <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white">
+                  <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
                     <button
                       onClick={() => changeMonth(-1)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-2 rounded-lg transition-colors"
+                      style={{ backgroundColor: 'transparent' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                     >
-                      <FiChevronLeft className="text-gray-600" size={20} />
+                      <FiChevronLeft size={20} style={{ color: currentColors.textSecondary }} />
                     </button>
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <h2 className="text-lg font-semibold" style={{ color: currentColors.text }}>
                       {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                     </h2>
                     <button
                       onClick={() => changeMonth(1)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-2 rounded-lg transition-colors"
+                      style={{ backgroundColor: 'transparent' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                     >
-                      <FiChevronRight className="text-gray-600" size={20} />
+                      <FiChevronRight size={20} style={{ color: currentColors.textSecondary }} />
                     </button>
                   </div>
 
@@ -620,7 +676,7 @@ const ProfCalendarPage = () => {
                     {/* Day headers */}
                     <div className="grid grid-cols-7 gap-1 mb-2">
                       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                        <div key={day} className="text-center text-xs font-semibold text-gray-600 py-2">
+                        <div key={day} className="text-center text-xs font-semibold py-2" style={{ color: currentColors.textSecondary }}>
                           {day}
                         </div>
                       ))}
@@ -636,12 +692,12 @@ const ProfCalendarPage = () => {
 
               {/* Activity List Section */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                  <div className="p-4 border-b border-gray-200">
-                    <h3 className="font-semibold text-gray-900">
+                <div className="rounded-xl shadow-sm border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+                  <div className="p-4 border-b" style={{ borderColor: currentColors.border }}>
+                    <h3 className="font-semibold" style={{ color: currentColors.text }}>
                       {selectedStatistic ? getStatisticTitle(selectedStatistic) : `Activities for ${selectedDate.toLocaleDateString()}`}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm mt-1" style={{ color: currentColors.textSecondary }}>
                       {selectedStatistic 
                         ? `${getActivitiesByStatistic(selectedStatistic).length} activit${getActivitiesByStatistic(selectedStatistic).length !== 1 ? 'ies' : 'y'} found`
                         : `${selectedDateActivities.length} activit${selectedDateActivities.length !== 1 ? 'ies' : 'y'} scheduled`
@@ -653,42 +709,42 @@ const ProfCalendarPage = () => {
                     {selectedStatistic ? (
                       getActivitiesByStatistic(selectedStatistic).length === 0 ? (
                         <div className="p-8 text-center">
-                          <FiCalendar className="mx-auto text-gray-400 mb-3" size={32} />
-                          <p className="text-gray-500">No activities found</p>
+                          <FiCalendar className="mx-auto mb-3" size={32} style={{ color: currentColors.textSecondary }} />
+                          <p style={{ color: currentColors.textSecondary }}>No activities found</p>
                         </div>
                       ) : (
                         <div className="p-4 space-y-3">
                           {getActivitiesByStatistic(selectedStatistic).map(activity => (
-                            <div key={activity.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                            <div key={activity.id} className="border rounded-lg p-3 hover:shadow-md transition-shadow" style={{ borderColor: currentColors.border }}>
                               <div className="flex items-start gap-3">
                                 <div className={`w-2 h-2 rounded-full mt-2 ${getSubjectColor(activity.subject)}`}></div>
                                 <div className="flex-1">
                                   <div className="flex items-start gap-2">
                                     <span className="text-lg">{getTypeIcon(activity.type)}</span>
                                     <div className="flex-1">
-                                      <h4 className="font-medium text-gray-900 text-sm">{activity.title}</h4>
-                                      <p className="text-xs text-gray-600 mt-1">{activity.description}</p>
+                                      <h4 className="font-medium text-sm" style={{ color: currentColors.text }}>{activity.title}</h4>
+                                      <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>{activity.description}</p>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2 mt-2">
                                     <span className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(activity.priority)}`}>
                                       {activity.priority}
                                     </span>
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs" style={{ color: currentColors.textSecondary }}>
                                       <FiClock className="inline mr-1" size={10} />
                                       {activity.dueTime}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2 mt-1">
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                                       {activity.subject} • {activity.yearLevel}
                                     </p>
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs" style={{ color: currentColors.textSecondary }}>
                                       Due: {new Date(activity.dueDate).toLocaleDateString()}
                                     </span>
                                   </div>
                                   <div className="flex items-center justify-between mt-2">
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                                       {activity.studentsCount} students
                                     </p>
                                     <button className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
@@ -705,39 +761,39 @@ const ProfCalendarPage = () => {
                     ) : (
                       selectedDateActivities.length === 0 ? (
                         <div className="p-8 text-center">
-                          <FiCalendar className="mx-auto text-gray-400 mb-3" size={32} />
-                          <p className="text-gray-500">No activities for this date</p>
+                          <FiCalendar className="mx-auto mb-3" size={32} style={{ color: currentColors.textSecondary }} />
+                          <p style={{ color: currentColors.textSecondary }}>No activities for this date</p>
                         </div>
                       ) : (
                         <div className="p-4 space-y-3">
                           {selectedDateActivities.map(activity => (
-                            <div key={activity.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                            <div key={activity.id} className="border rounded-lg p-3 hover:shadow-md transition-shadow" style={{ borderColor: currentColors.border }}>
                               <div className="flex items-start gap-3">
                                 <div className={`w-2 h-2 rounded-full mt-2 ${getSubjectColor(activity.subject)}`}></div>
                                 <div className="flex-1">
                                   <div className="flex items-start gap-2">
                                     <span className="text-lg">{getTypeIcon(activity.type)}</span>
                                     <div className="flex-1">
-                                      <h4 className="font-medium text-gray-900 text-sm">{activity.title}</h4>
-                                      <p className="text-xs text-gray-600 mt-1">{activity.description}</p>
+                                      <h4 className="font-medium text-sm" style={{ color: currentColors.text }}>{activity.title}</h4>
+                                      <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>{activity.description}</p>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2 mt-2">
                                     <span className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(activity.priority)}`}>
                                       {activity.priority}
                                     </span>
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs" style={{ color: currentColors.textSecondary }}>
                                       <FiClock className="inline mr-1" size={10} />
                                       {activity.dueTime}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2 mt-1">
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                                       {activity.subject} • {activity.yearLevel}
                                     </p>
                                   </div>
                                   <div className="flex items-center justify-between mt-2">
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs" style={{ color: currentColors.textSecondary }}>
                                       {activity.studentsCount} students
                                     </p>
                                     <button className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">

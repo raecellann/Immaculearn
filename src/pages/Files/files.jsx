@@ -191,7 +191,7 @@ const FilePage = () => {
                 ))}
               </div>
             ) : null}
-            <div className="my-6" style={{ borderBottom: `1px solid ${currentColors.border}` }}></div>
+            <div className="border-b border-gray-700 my-6"></div>
           </div>
 
           {/* Course Space Files */}
@@ -221,7 +221,7 @@ const FilePage = () => {
                 ))}
               </div>
             ) : null}
-            <div className="my-6" style={{ borderBottom: `1px solid ${currentColors.border}` }}></div>
+            <div className="border-b border-gray-700 my-6"></div>
           </div>
 
           {/* Friends Space Files */}
@@ -251,7 +251,7 @@ const FilePage = () => {
                 ))}
               </div>
             ) : null}
-            <div className="my-6" style={{ borderBottom: `1px solid ${currentColors.border}` }}></div>
+            <div className="border-b border-gray-700 my-6"></div>
           </div>
         </div>
 
