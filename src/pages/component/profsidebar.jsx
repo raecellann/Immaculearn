@@ -27,16 +27,13 @@ const ProfSidebar = ({ isMinimized = false, onToggleMinimize }) => {
   const location = useLocation();
 
   // Load minimize state from localStorage on mount
-  const [localMinimized, setLocalMinimized] = useState(() => {
-    const saved = localStorage.getItem('profSidebarMinimized');
-    return saved !== null ? JSON.parse(saved) : isMinimized;
-  });
+  const [localMinimized, setLocalMinimized] = useState(false);
 
   // Update localStorage when minimize state changes
   const handleToggleMinimize = () => {
     const newState = !localMinimized;
     setLocalMinimized(newState);
-    localStorage.setItem('profSidebarMinimized', JSON.stringify(newState));
+    // localStorage.setItem('profSidebarMinimized', JSON.stringify(newState));
     if (onToggleMinimize) {
       onToggleMinimize();
     }
