@@ -103,15 +103,16 @@ const UserFilesShared = () => {
   };
 
   const handleFileClick = (file) => {
+    console.log(file);
     setSelectedFile(file);
     setShowFileOptions(true);
   };
 
   const handleOpenFile = (file) => {
-    const url = `/space/${space_uuid}/${space_name}/files/${file.fuuid}/${file.filename}`;
-    navigate(url);
-    setShowFileOptions(false);
-  };
+  const url = `/space/${space_uuid}/${space_name}/files/${file.file_uuid}/${file.filename}`;
+  navigate(url);
+  setShowFileOptions(false);
+};
 
   const handleDeleteFile = (file) => {
     const confirmDelete = window.confirm(
