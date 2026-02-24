@@ -100,7 +100,7 @@ const Button = ({ text = "Share", onClick }) => {
       case "Space Invitations":
         return "#22c55e"; // Green
       case "Go to Calendar":
-        return "black"; // Black
+        return "white"; // White
       default:
         return "white"; // Default white
     }

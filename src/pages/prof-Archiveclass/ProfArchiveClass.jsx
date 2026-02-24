@@ -172,10 +172,10 @@ const ProfArchiveClass = () => {
                 <h2 className="text-2xl font-bold mb-2" style={{ color: '#60A5FA' }}>
                   Archived Course Space
                 </h2>
-                <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                <p className="text-sm" style={{ color: '#e2e8f0' }}>
                   View and manage your archived classes.
                 </p>
-                <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                <p className="text-sm" style={{ color: '#e2e8f0' }}>
                   Restore classes when needed or keep them for your records.
                 </p>
               </div>
@@ -184,7 +184,7 @@ const ProfArchiveClass = () => {
                   <p className="text-2xl font-bold text-white">
                     {archivedClasses.length}
                   </p>
-                  <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                  <p className="text-sm" style={{ color: '#e2e8f0' }}>
                     {archivedClasses.length === 1
                       ? "Class Archived"
                       : "Classes Archived"}
@@ -201,17 +201,17 @@ const ProfArchiveClass = () => {
 
               <div className="flex flex-wrap items-start gap-2 sm:gap-3 justify-end">
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <span className="text-xs sm:text-sm text-gray-400 whitespace-nowrap">
+                  <span className="text-xs sm:text-sm whitespace-nowrap" style={{ color: currentColors.text }}>
                     Year Level:
                   </span>
                   <select
                     value={yearFilter}
                     onChange={(e) => setYearFilter(e.target.value)}
-                    className="text-xs sm:text-sm text-white rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-1"
+                    className="text-xs sm:text-sm rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-1 border"
                     style={{
-                      backgroundColor: isDarkMode ? '#1e242e' : '#374151',
+                      backgroundColor: isDarkMode ? '#1e242e' : '#f1f5f9',
                       borderColor: currentColors.border,
-                      color: currentColors.text
+                      color: isDarkMode ? '#ffffff' : '#1e293b'
                     }}
                   >
                     <option value="All">All Years</option>

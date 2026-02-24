@@ -159,7 +159,7 @@ export const ProfRoutes = () => {
       />
       
       <Route
-        path="archived-classes"
+        path="archive"
         element={
             <ProfArchiveClass />
         }
