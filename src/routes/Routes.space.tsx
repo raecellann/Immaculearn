@@ -13,6 +13,7 @@ import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 import TaskBuilder from "../pages/EXAMPLE_PAGE/builder.jsx";
+import TaskPreview from "../pages/EXAMPLE_PAGE/preview.jsx";
 
 export const SpaceRoutes = [
   {
@@ -79,5 +80,10 @@ export const SpaceRoutes = [
     key: "/task-builder",
     path: "/space/task-builder",
     element: <TaskBuilder />,
+  },
+  {
+    key: "/task-builder-preview",
+    path: "/space/task-builder/preview",
+    element: <TaskPreview />,
   },
 ];

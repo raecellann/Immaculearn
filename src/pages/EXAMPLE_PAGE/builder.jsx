@@ -52,7 +52,7 @@ export default function TaskBuilder() {
   // Task form state
   const [taskTitle, setTaskTitle] = useState("");
   const [instruction, setInstruction] = useState("");
-  const [score, setScore] = useState("");
+  const [score, setScore] = useState("1");
   const [dueDate, setDueDate] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [taskCategory, setTaskCategory] = useState("activity");
@@ -60,7 +60,7 @@ export default function TaskBuilder() {
   // Quiz/Activity items state
   const [itemsCount, setItemsCount] = useState(1);
   const [items, setItems] = useState([
-    { id: 1, text: "", type: "multiple_choice", points: 0, options: [] }
+    { id: 1, text: "", type: "multiple_choice", points: 1, options: [] }
   ]);
 
   // Quiz configuration state
@@ -88,6 +88,73 @@ export default function TaskBuilder() {
   ]);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showCriteriaSection, setShowCriteriaSection] = useState(false);
+
+  // Load task data from localStorage on component mount
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem('taskPreviewData');
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        
+        // Restore task data from localStorage
+        setTaskTitle(parsedData.title || "");
+        setInstruction(parsedData.description || "");
+        setTaskCategory(parsedData.type || "activity");
+        setScore(parsedData.total_score?.toString() || "1");
+        setDueDate(parsedData.due_date || "");
+        
+        // Restore items if available
+        if (parsedData.items && parsedData.items.length > 0) {
+          const restoredItems = parsedData.items.map((item, index) => ({
+            id: item.id || index + 1,
+            text: item.question_text || "",
+            type: item.question_type || "essay",
+            points: item.points || 1,
+            options: item.options?.map(opt => ({
+              id: opt.id || index + 1,
+              text: opt.option_text || "",
+              is_correct: opt.is_correct || false
+            })) || []
+          }));
+          setItems(restoredItems);
+          setItemsCount(restoredItems.length);
+        }
+        
+        // Restore criteria if available
+        if (parsedData.criteria && parsedData.criteria.length > 0) {
+          const restoredCriteria = parsedData.criteria.map((criterion, index) => ({
+            id: index + 1,
+            name: criterion.criteria_name || "",
+            description: criterion.description || "",
+            points: criterion.max_score?.toString() || ""
+          }));
+          setCriteria(restoredCriteria);
+        }
+        
+        // Restore group members if available
+        if (parsedData.groupsData && parsedData.groupsData.length > 0) {
+          // Note: In a real app, you'd need to map member IDs back to member objects
+          // For now, we'll just show that there were members
+          console.log("Group data found:", parsedData.groupsData);
+        }
+        
+        // Restore quiz configuration if it's a quiz
+        if (parsedData.type === "quiz") {
+          // You could add logic to restore quiz configuration here
+          // For now, it will use default configuration
+        }
+        
+        // Restore group configuration if it's a group activity
+        if (parsedData.is_group_task) {
+          // You could add logic to restore group configuration here
+          // For now, it will use default configuration
+        }
+      }
+    } catch (error) {
+      console.error("Error loading task data:", error);
+      // If there's an error, continue with default values
+    }
+  }, []);
 
   // Task management
   const [isCreatingTask, setIsCreatingTask] = useState(true);
@@ -372,7 +439,7 @@ export default function TaskBuilder() {
           id: i,
           text: "",
           type: itemType,
-          points: 0,
+          points: 1,
           options: itemType === "multiple_choice" ? [
             { id: 1, text: "", is_correct: false },
             { id: 2, text: "", is_correct: false },
@@ -423,7 +490,7 @@ export default function TaskBuilder() {
         id: i,
         text: items[i - 1]?.text || "",
         type: itemType,
-        points: items[i - 1]?.points || 0,
+        points: items[i - 1]?.points || 1,
         options: itemType === "multiple_choice" ? 
           (items[i - 1]?.options || [
             { id: 1, text: "", is_correct: false },
@@ -476,7 +543,7 @@ export default function TaskBuilder() {
           id: i,
           text: items[i - 1]?.text || "",
           type: itemType,
-          points: items[i - 1]?.points || 0,
+          points: items[i - 1]?.points || 1,
           options: itemType === "multiple_choice" ? 
             (items[i - 1]?.options || [
               { id: 1, text: "", is_correct: false },
@@ -563,7 +630,7 @@ export default function TaskBuilder() {
         id: i,
         text: items[i - 1]?.text || "",
         type: itemType,
-        points: items[i - 1]?.points || 0,
+        points: items[i - 1]?.points || 1,
         options: [] // Group activities don't have options
       });
     }
@@ -624,7 +691,7 @@ export default function TaskBuilder() {
           id: i,
           text: items[i - 1]?.text || "",
           type: itemType,
-          points: items[i - 1]?.points || 0,
+          points: items[i - 1]?.points || 1,
           options: []
         });
       }
@@ -696,15 +763,17 @@ export default function TaskBuilder() {
   const distributeScoreAmongCriteria = (totalScore) => {
     if (!totalScore || criteria.length === 0) return;
 
-    const score = parseFloat(totalScore);
-    if (isNaN(score) || score <= 0) return;
+    const score = parseInt(totalScore);
+    if (isNaN(score) || score < 1) return;
 
-    const pointsPerCriteria = score / criteria.length;
-    const updatedCriteria = criteria.map((criterion) => ({
+    const pointsPerCriteria = Math.floor(score / criteria.length);
+    const remainder = score % criteria.length;
+    
+    const updatedCriteria = criteria.map((criterion, index) => ({
       ...criterion,
-      points: pointsPerCriteria.toFixed(2),
+      points: (pointsPerCriteria + (index < remainder ? 1 : 0)).toString(),
     }));
-
+    
     setCriteria(updatedCriteria);
   };
 
@@ -746,12 +815,12 @@ export default function TaskBuilder() {
   const resetTaskForm = () => {
     setTaskTitle("");
     setInstruction("");
-    setScore("");
+    setScore("1");
     setDueDate("");
     setSelectedFile(null);
     setTaskCategory("activity");
     setItemsCount(1);
-    setItems([{ id: 1, text: "", type: "multiple_choice", points: 0, options: [] }]);
+    setItems([{ id: 1, text: "", type: "multiple_choice", points: 1, options: [] }]);
     setQuizConfig("all_multiple");
     setCustomConfig({ multipleChoice: 0, identification: 0, essay: 0 });
     setGroupConfig("all_essay");
@@ -804,8 +873,8 @@ export default function TaskBuilder() {
       return;
     }
 
-    if (!score || parseFloat(score) <= 0) {
-      toast.error("Please enter a valid score");
+    if (!score || parseInt(score) < 1) {
+      toast.error("Please enter a valid score (minimum 1)");
       return;
     }
 
@@ -829,7 +898,7 @@ export default function TaskBuilder() {
         description: instruction,
         type: taskCategory,
         is_group_task: isGroupTask,
-        total_score: parseFloat(score),
+        total_score: parseInt(score),
         due_date: dueDate,
         status: isDraft ? "draft" : "published",
         // Include items for quiz and activity
@@ -850,9 +919,12 @@ export default function TaskBuilder() {
         criteria: criteria.map(c => ({
           criteria_name: c.name,
           description: c.description,
-          max_score: parseFloat(c.points) || 0
+          max_score: parseInt(c.points) || 0
         })).filter(c => c.criteria_name.trim() !== "")
       };
+
+      // Store task data in localStorage for preview
+      localStorage.setItem('taskPreviewData', JSON.stringify(taskData));
 
       // Display JSON data in alert for debugging
       alert("Task Data to be submitted:\n\n" + JSON.stringify(taskData, null, 2));
@@ -881,6 +953,53 @@ export default function TaskBuilder() {
       console.error("Error creating task:", error);
       toast.error("Failed to create task. Please try again.");
     }
+  };
+
+  // Save task data to localStorage for preview
+  const saveTaskForPreview = () => {
+    if (!taskTitle.trim()) {
+      toast.error("Please enter a task title before previewing");
+      return;
+    }
+
+    // Determine if this is a group task based on category
+    const isGroupTask = taskCategory === "project";
+    
+    const taskData = {
+      title: taskTitle,
+      description: instruction,
+      type: taskCategory,
+      is_group_task: isGroupTask,
+      total_score: parseInt(score) || 1,
+      due_date: dueDate,
+      status: "preview",
+      // Include items for quiz and activity
+      items: taskCategory !== "project" ? items.map(item => ({
+        question_text: item.text,
+        question_type: item.type,
+        points: item.points,
+        options: item.options.map(opt => ({
+          option_text: opt.text,
+          is_correct: opt.is_correct
+        }))
+      })) : [],
+      // Include group members for group activity
+      groupsData: isGroupTask ? [{
+        group_name: `${taskTitle} Group`,
+        members: groupMembers.map(member => member.id)
+      }] : [],
+      criteria: criteria.map(c => ({
+        criteria_name: c.name,
+        description: c.description,
+        max_score: parseInt(c.points) || 0
+      })).filter(c => c.criteria_name.trim() !== "")
+    };
+
+    // Store task data in localStorage for preview
+    localStorage.setItem('taskPreviewData', JSON.stringify(taskData));
+    
+    // Navigate to preview
+    navigate(`/space/task-builder/preview`);
   };
 
   return (
@@ -1254,10 +1373,9 @@ export default function TaskBuilder() {
                               <input
                                 type="number"
                                 value={item.points}
-                                onChange={(e) => updateItem(item.id, "points", parseFloat(e.target.value) || 0)}
+                                onChange={(e) => updateItem(item.id, "points", parseInt(e.target.value) || 0)}
                                 className="w-20 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                                min="0"
-                                step="0.01"
+                                min="1"
                               />
                             </div>
 
@@ -1647,9 +1765,8 @@ export default function TaskBuilder() {
                     value={score}
                     onChange={(e) => handleScoreChange(e.target.value)}
                     className="w-full bg-[#1E222A] border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                    placeholder="Enter total score..."
-                    min="0"
-                    step="0.01"
+                    placeholder="Enter total score"
+                    min="1"
                   />
                 </div>
                 <div>
@@ -1775,22 +1892,32 @@ export default function TaskBuilder() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4">
-                <button
-                  onClick={() => handleTaskSubmit(false)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
-                >
-                  Create Task
-                </button>
-                <button
-                  onClick={() => handleTaskSubmit(true)}
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium"
-                >
-                  Save as Draft
-                </button>
+              <div className="flex justify-between items-center pt-6 border-t border-gray-700">
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleTaskSubmit(false)}
+                    disabled={isCreatingTask}
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg font-medium transition-colors"
+                  >
+                    {isCreatingTask ? "Creating..." : "Create Task"}
+                  </button>
+                  <button
+                    onClick={() => handleTaskSubmit(true)}
+                    disabled={isCreatingTask}
+                    className="px-6 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-700 rounded-lg font-medium transition-colors"
+                  >
+                    Save as Draft
+                  </button>
+                  <button
+                    onClick={saveTaskForPreview}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors"
+                  >
+                    Preview Task
+                  </button>
+                </div>
                 <button
                   onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}
-                  className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium"
+                  className="px-6 py-2 border border-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors"
                 >
                   Cancel
                 </button>
