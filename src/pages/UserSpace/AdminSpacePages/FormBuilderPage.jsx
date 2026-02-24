@@ -5,13 +5,13 @@ import { useSpaceTheme } from "../../../contexts/theme/spaceThemeContextProvider
 import {
   FiPlus,
   FiTrash2,
-  FiPaperclip,
   FiEdit3,
   FiCheckSquare,
   FiCircle,
   FiType,
   FiAlignLeft,
   FiArrowLeft,
+  FiList,
 } from "react-icons/fi";
 
 const FormBuilderPage = () => {
@@ -20,12 +20,28 @@ const FormBuilderPage = () => {
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   
+  // Question types
+  const questionTypes = [
+    { id: 'identification', label: 'Identification', icon: FiType },
+    { id: 'multiple_choice', label: 'Multiple Choice', icon: FiCheckSquare },
+    { id: 'true_false', label: 'True or False', icon: FiCircle },
+    { id: 'reflection_essay', label: 'Reflection/Essay', icon: FiAlignLeft },
+    { id: 'enumeration', label: 'Enumeration', icon: FiList },
+  ];
+  
   // Form Builder State
   const [questions, setQuestions] = useState([]);
-  const [attachments, setAttachments] = useState([]);
-  const [allowAttachments, setAllowAttachments] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
   const [instruction, setInstruction] = useState("");
+  const [questionQuantities, setQuestionQuantities] = useState(
+    Object.fromEntries(questionTypes.map(type => [type.id, '']))
+  );
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    questionType: '',
+    questionCount: 0,
+    questionLabel: ''
+  });
   
   // Retrieve task data from sessionStorage on component mount
   useEffect(() => {
@@ -41,27 +57,33 @@ const FormBuilderPage = () => {
     }
   }, []);
   
-  // Question types
-  const questionTypes = [
-    { id: 'identification', label: 'Identification', icon: FiType },
-    { id: 'multiple_choice', label: 'Multiple Choice', icon: FiCheckSquare },
-    { id: 'true_false', label: 'True or False', icon: FiCircle },
-    { id: 'reflection', label: 'Reflection', icon: FiAlignLeft },
-    { id: 'essay', label: 'Essay', icon: FiEdit3 },
-  ];
-
   // Form Builder Functions
-  const addQuestion = (type) => {
-    const newQuestion = {
-      id: Date.now(),
-      type: type,
-      question: "",
-      options: type === 'multiple_choice' ? ['', '', '', ''] : [],
-      correctAnswer: type === 'true_false' ? '' : (type === 'multiple_choice' ? '' : ''),
-      points: 1,
-      required: true,
-    };
-    setQuestions([...questions, newQuestion]);
+  const addMultipleQuestions = (type, quantity) => {
+    const newQuestions = [];
+    for (let i = 0; i < quantity; i++) {
+      const newQuestion = {
+        id: Date.now() + i,
+        type: type,
+        question: "",
+        options: type === 'multiple_choice' ? ['', '', '', ''] : [],
+        correctAnswer: type === 'true_false' ? '' : (type === 'multiple_choice' ? '' : (type === 'enumeration' ? [''] : '')),
+        points: 1,
+        required: true,
+        scoringCriteria: type === 'reflection_essay' ? [''] : [],
+        expectedAnswers: type === 'enumeration' ? [''] : [],
+      };
+      newQuestions.push(newQuestion);
+    }
+    setQuestions([...questions, ...newQuestions]);
+  };
+
+  const updateQuestionQuantity = (type, value) => {
+    // Allow empty values or limit between 1-50
+    const quantity = value === '' ? '' : Math.max(1, Math.min(50, parseInt(value) || 1));
+    setQuestionQuantities(prev => ({
+      ...prev,
+      [type]: quantity
+    }));
   };
 
   const updateQuestion = (id, field, value) => {
@@ -74,20 +96,38 @@ const FormBuilderPage = () => {
     setQuestions(questions.filter(q => q.id !== id));
   };
 
-  const handleAttachmentUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newAttachments = files.map(file => ({
-      id: Date.now() + Math.random(),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      file: file
-    }));
-    setAttachments([...attachments, ...newAttachments]);
+  const deleteQuestionsByType = (type) => {
+    const questionsToDelete = questions.filter(q => q.type === type);
+    if (questionsToDelete.length === 0) {
+      return; // No questions of this type to delete
+    }
+    
+    const questionType = questionTypes.find(t => t.id === type);
+    setDeleteModal({
+      isOpen: true,
+      questionType: type,
+      questionCount: questionsToDelete.length,
+      questionLabel: questionType?.label || type
+    });
   };
 
-  const removeAttachment = (id) => {
-    setAttachments(attachments.filter(a => a.id !== id));
+  const confirmDeleteQuestions = () => {
+    setQuestions(questions.filter(q => q.type !== deleteModal.questionType));
+    setDeleteModal({
+      isOpen: false,
+      questionType: '',
+      questionCount: 0,
+      questionLabel: ''
+    });
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({
+      isOpen: false,
+      questionType: '',
+      questionCount: 0,
+      questionLabel: ''
+    });
   };
 
   const handleBack = () => {
@@ -96,7 +136,7 @@ const FormBuilderPage = () => {
 
   const handleSaveForm = () => {
     // Here you would save the form data and navigate back or to next step
-    console.log("Saving form:", { taskTitle, instruction, questions, attachments, allowAttachments });
+    console.log("Saving form:", { taskTitle, instruction, questions });
     // Navigate back to previous page
     navigate(-1);
   };
@@ -160,38 +200,7 @@ const FormBuilderPage = () => {
 
           {/* FORM BUILDER */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold">Form Questions</h3>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={allowAttachments}
-                    onChange={(e) => setAllowAttachments(e.target.checked)}
-                    className="rounded"
-                  />
-                  Allow member attachments
-                </label>
-              </div>
-            </div>
-            
-            {/* Explanation for member attachments */}
-            <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800/50 rounded-lg">
-              <div className="flex items-start gap-2">
-                <div className="text-blue-400 mt-0.5">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="text-sm">
-                  <p className="text-blue-300 font-medium mb-1">What are "Member Attachments"?</p>
-                  <p className="text-gray-400 text-xs leading-relaxed">
-                    When enabled, members can upload their own files (documents, images, PDFs, etc.) when submitting this activity. 
-                    Perfect for assignments requiring essays, reports, project files, or evidence photos.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <h3 className="text-xl font-semibold mb-6">Form Questions</h3>
 
             {/* QUESTION TYPE SELECTION */}
             <div className="mb-6">
@@ -199,15 +208,48 @@ const FormBuilderPage = () => {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {questionTypes.map((type) => {
                   const Icon = type.icon;
+                  const questionsOfType = questions.filter(q => q.type === type.id);
                   return (
-                    <button
-                      key={type.id}
-                      onClick={() => addQuestion(type.id)}
-                      className="flex flex-col items-center gap-2 p-4 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg hover:bg-[#2F3440] transition border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))] hover:border-blue-500"
-                    >
-                      <Icon size={24} className="text-blue-400" />
-                      <span className="text-sm">{type.label}</span>
-                    </button>
+                    <div key={type.id} className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-4 border border-[rgb(30_36_46_/var(--tw-bg-opacity,1))]">
+                      <div className="flex flex-col items-center gap-2">
+                        <Icon size={24} className="text-blue-400" />
+                        <span className="text-sm font-medium text-center">{type.label}</span>
+                        <span className="text-xs text-gray-400">({questionsOfType.length} added)</span>
+                        <div className="flex flex-col items-center gap-2 w-full">
+                          <input
+                            type="number"
+                            min="0"
+                            max="50"
+                            value={questionQuantities[type.id]}
+                            onChange={(e) => updateQuestionQuantity(type.id, e.target.value)}
+                            className="w-full bg-[#1E222A] rounded px-2 py-1 text-white text-sm outline-none border border-[#2F3440] focus:border-blue-500 text-center"
+                            placeholder="total no. of questions"
+                          />
+                          <button
+                            onClick={() => addMultipleQuestions(type.id, questionQuantities[type.id] || 0)}
+                            className="w-full px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-xs font-medium"
+                            disabled={!questionQuantities[type.id]}
+                            style={{ 
+                              opacity: !questionQuantities[type.id] ? 0.5 : 1,
+                              cursor: !questionQuantities[type.id] ? 'not-allowed' : 'pointer'
+                            }}
+                          >
+                            Add {questionQuantities[type.id] || 0}
+                          </button>
+                          <button
+                            onClick={() => deleteQuestionsByType(type.id)}
+                            className="w-full px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-xs font-medium mt-2 flex items-center justify-center gap-1"
+                            disabled={questionsOfType.length === 0}
+                            style={{ 
+                              opacity: questionsOfType.length === 0 ? 0.5 : 1,
+                              cursor: questionsOfType.length === 0 ? 'not-allowed' : 'pointer'
+                            }}
+                          >
+                            <FiTrash2 size={14} /> Delete All {type.label}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
@@ -217,24 +259,31 @@ const FormBuilderPage = () => {
             {questions.length > 0 ? (
               <div className="space-y-6">
                 <h4 className="font-semibold">Questions ({questions.length})</h4>
-                {questions.map((question, index) => (
-                  <div key={question.id} className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-6 border border-[#2F3440]">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                          Q{index + 1}
-                        </span>
-                        <span className="px-3 py-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-full text-sm text-gray-300">
-                          {questionTypes.find(t => t.id === question.type)?.label}
-                        </span>
+                {questions.map((question, index) => {
+                  const isFirstOfItsType = index === 0 || questions[index - 1]?.type !== question.type;
+                  const questionsOfType = questions.filter(q => q.type === question.type);
+                  
+                  return (
+                    <div key={question.id} className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg p-6 border border-[#2F3440]">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                            Q{index + 1}
+                          </span>
+                          <span className="px-3 py-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-full text-sm text-gray-300">
+                            {questionTypes.find(t => t.id === question.type)?.label}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => deleteQuestion(question.id)}
+                            className="text-red-400 hover:text-red-300"
+                            title="Delete this question"
+                          >
+                            <FiTrash2 size={18} />
+                          </button>
+                        </div>
                       </div>
-                      <button
-                        onClick={() => deleteQuestion(question.id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        <FiTrash2 size={18} />
-                      </button>
-                    </div>
 
                     {/* QUESTION TEXT */}
                     <div className="mb-4">
@@ -249,6 +298,19 @@ const FormBuilderPage = () => {
                     </div>
 
                     {/* QUESTION TYPE SPECIFIC OPTIONS */}
+                    {question.type === 'identification' && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">Correct Answer:</label>
+                        <input
+                          type="text"
+                          value={question.correctAnswer || ''}
+                          onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
+                          className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                          placeholder="Enter the correct answer for identification"
+                        />
+                      </div>
+                    )}
+
                     {question.type === 'multiple_choice' && (
                       <div className="mb-4">
                         <label className="block text-sm font-medium mb-2">Options:</label>
@@ -303,6 +365,107 @@ const FormBuilderPage = () => {
                       </div>
                     )}
 
+                    {question.type === 'enumeration' && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">Expected Answers:</label>
+                        <div className="space-y-2">
+                          {question.expectedAnswers.map((answer, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <span className="text-gray-400 w-6">{index + 1}.</span>
+                              <input
+                                type="text"
+                                value={answer}
+                                onChange={(e) => {
+                                  const newAnswers = [...question.expectedAnswers];
+                                  newAnswers[index] = e.target.value;
+                                  updateQuestion(question.id, 'expectedAnswers', newAnswers);
+                                }}
+                                className="flex-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-3 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                                placeholder={`Expected answer ${index + 1}`}
+                              />
+                              {question.expectedAnswers.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newAnswers = question.expectedAnswers.filter((_, i) => i !== index);
+                                    updateQuestion(question.id, 'expectedAnswers', newAnswers);
+                                  }}
+                                  className="text-red-400 hover:text-red-300"
+                                  title="Remove this answer"
+                                >
+                                  <FiTrash2 size={16} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newAnswers = [...question.expectedAnswers, ''];
+                              updateQuestion(question.id, 'expectedAnswers', newAnswers);
+                            }}
+                            className="w-full px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm transition"
+                          >
+                            + Add Expected Answer
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {question.type === 'reflection_essay' && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">Sample Answer / Key Points (Optional):</label>
+                        <textarea
+                          value={question.correctAnswer || ''}
+                          onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
+                          className="w-full bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-4 py-2 outline-none border border-[#2F3440] focus:border-blue-500 h-20 resize-none mb-4"
+                          placeholder="Enter a sample answer or key points for evaluation (optional)"
+                        />
+                        
+                        <label className="block text-sm font-medium mb-2">Scoring Criteria:</label>
+                        <div className="space-y-2">
+                          {question.scoringCriteria.map((criterion, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={criterion}
+                                onChange={(e) => {
+                                  const newCriteria = [...question.scoringCriteria];
+                                  newCriteria[index] = e.target.value;
+                                  updateQuestion(question.id, 'scoringCriteria', newCriteria);
+                                }}
+                                className="flex-1 bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-lg px-3 py-2 outline-none border border-[#2F3440] focus:border-blue-500"
+                                placeholder={`Criterion ${index + 1} (e.g., Content Quality: 30%)`}
+                              />
+                              {question.scoringCriteria.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newCriteria = question.scoringCriteria.filter((_, i) => i !== index);
+                                    updateQuestion(question.id, 'scoringCriteria', newCriteria);
+                                  }}
+                                  className="text-red-400 hover:text-red-300"
+                                  title="Remove this criterion"
+                                >
+                                  <FiTrash2 size={16} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newCriteria = [...question.scoringCriteria, ''];
+                              updateQuestion(question.id, 'scoringCriteria', newCriteria);
+                            }}
+                            className="w-full px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm transition"
+                          >
+                            + Add Scoring Criterion
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {question.type === 'multiple_choice' && (
                       <div className="mb-4">
                         <label className="block text-sm font-medium mb-2">Correct Answer:</label>
@@ -344,7 +507,8 @@ const FormBuilderPage = () => {
                       </label>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-12 text-gray-500">
@@ -353,56 +517,48 @@ const FormBuilderPage = () => {
               </div>
             )}
           </div>
-
-          {/* ATTACHMENTS SECTION */}
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold mb-4">Attachments</h3>
-            <div
-              onClick={() => document.getElementById('form-attachment-input')?.click()}
-              className="border border-dashed border-gray-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer bg-[#0F1115] hover:border-blue-500 transition"
-            >
-              <FiPaperclip size={36} className="mb-3 text-gray-300" />
-              <p className="text-sm text-gray-300 mb-2">
-                Choose files or drag & drop here
-              </p>
-              <p className="text-xs text-gray-500">
-                DOCS, PDF, PPT, EXCEL up to 10MB
-              </p>
-              <input
-                id="form-attachment-input"
-                type="file"
-                className="hidden"
-                multiple
-                onChange={handleAttachmentUpload}
-              />
-            </div>
-
-            {attachments.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {attachments.map((attachment) => (
-                  <div key={attachment.id} className="flex items-center justify-between bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] p-3 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <FiPaperclip className="text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium">{attachment.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {(attachment.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeAttachment(attachment.id)}
-                      className="text-red-400 hover:text-red-300"
-                    >
-                      <FiTrash2 size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
+
+      {/* Custom Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-black flex items-center justify-center z-[9999]">
+          <div className="bg-[rgb(30_36_46_/var(--tw-bg-opacity,1))] rounded-xl p-6 max-w-md w-full mx-4 border border-[#2F3440]">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+                <FiTrash2 size={24} className="text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Delete All {deleteModal.questionLabel} Questions</h3>
+                <p className="text-sm text-gray-400">
+                  Are you sure you want to delete all {deleteModal.questionCount} {deleteModal.questionLabel.toLowerCase()} question{deleteModal.questionCount > 1 ? 's' : ''}?
+                </p>
+              </div>
+            </div>
+            
+            <div className="bg-red-900/20 border border-red-600/50 rounded-lg p-3 mb-6">
+              <p className="text-sm text-red-300">
+                <strong>Warning:</strong> This action cannot be undone. All questions of this type will be permanently removed from your form.
+              </p>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteQuestions}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+              >
+                Delete All {deleteModal.questionCount}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
