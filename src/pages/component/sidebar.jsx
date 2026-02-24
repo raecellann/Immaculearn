@@ -41,22 +41,22 @@ const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
   };
 
   const menuItems = [
-    { icon: <Home size={24} />, label: "Home", path: "/home" },
-    { icon: <Users size={24} />, label: "Spaces", path: "/space" },
-    { icon: <Bell size={24} />, label: "Notifications", path: "/notifications" },
-    { icon: <Calendar size={24} />, label: "Tasks", path: "/task" },
-    { icon: <Folder size={24} />, label: "Files", path: "/files" },
+    { icon: <Home size={20} />, label: "Home", path: "/home" },
+    { icon: <Users size={20} />, label: "Spaces", path: "/space" },
+    { icon: <Bell size={20} />, label: "Notifications", path: "/notifications" },
+    { icon: <Calendar size={20} />, label: "Tasks", path: "/task" },
+    { icon: <Folder size={20} />, label: "Files", path: "/files" },
   ];
 
   const privateItems = [
-    { icon: <Calendar size={24} />, label: "Calendar", path: "/calendar" },
-    { icon: <ClipboardList size={24} />, label: "Grade Viewing", path: "/grade-viewing" },
-    { icon: <MessageCircle size={24} />, label: "Chats", path: "/chatlist" },
+    { icon: <Calendar size={20} />, label: "Calendar", path: "/calendar" },
+    { icon: <ClipboardList size={20} />, label: "Grade Viewing", path: "/grade-viewing" },
+    { icon: <MessageCircle size={20} />, label: "Chats", path: "/chatlist" },
   ];
 
   const accountItems = [
-    { icon: <User size={24} />, label: "Account", path: "/accsettings" },
-    { icon: <Settings size={24} />, label: "Settings", path: "/settings" },
+    { icon: <User size={20} />, label: "Account", path: "/accsettings" },
+    { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
   ];
 
   // Check if current page is related to settings
@@ -144,7 +144,7 @@ const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
             ))}
 
             <SidebarItem
-              icon={<LogOut size={24} />}
+              icon={<LogOut size={20} />}
               label="Log Out Account"
               onClick={() => setShowLogout(true)}
               isMinimized={localMinimized}
