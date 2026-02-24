@@ -41,19 +41,24 @@ const AdminStudents = () => {
 
   useEffect(() => {
   const fetchStudents = async () => {
-    const res = await adminDashboardService.getAllStudentEmails();
+  const res = await adminDashboardService.getAllStudentEmails();
 
-    if (res.success && res.data) {
-      setStudents(
-        res.data.emails.map(email => ({
-          id: email,      // ✅ stable unique key
-          email
-        }))
-      );
-    } else {
-      console.error(res.message);
-    }
-  };
+  if (res.success && res.data?.students) {
+    setStudents(
+      res.data.students.map(student => ({
+        id: student.student_id,
+        firstName: student.student_fn,
+        lastName: student.student_ln,
+        email: student.email,
+        gender: student.student_gender,
+        course: student.student_course,
+        yearLevel: student.student_yr_lvl
+      }))
+    );
+  } else {
+    console.error(res.message);
+  }
+};
 
   fetchStudents();
 }, []);
@@ -443,6 +448,7 @@ const AdminStudents = () => {
                   <th className="py-3">First Name</th>
                   <th className="py-3">Last Name</th>
                   <th className="py-3">Email</th>
+                  <th className="py-3">Gender</th>
                   <th className="py-3">Course</th>
                   <th className="py-3">Year Level</th>
                   <th className="py-3">Actions</th>
@@ -456,11 +462,12 @@ const AdminStudents = () => {
                     className="border-b border-gray-800 hover:bg-[#242B38]"
                   >
 
-                    <td className="py-4 text-sm"></td>
-                    <td className="py-4 text-sm"></td>
+                    <td className="py-4 text-sm">{student.firstName}</td>
+                    <td className="py-4 text-sm">{student.lastName}</td>
                     <td className="py-4 text-sm">{student.email}</td>
-                    <td className="py-4 text-sm"></td>
-                    <td className="py-4 text-sm"></td>
+                    <td className="py-4 text-sm">{student.gender}</td>
+                    <td className="py-4 text-sm">{student.course}</td>
+                    <td className="py-4 text-sm">{student.yearLevel}</td>
                     
                    
                     <td className="py-4">
