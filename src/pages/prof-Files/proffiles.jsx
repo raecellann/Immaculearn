@@ -5,6 +5,7 @@ import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
 import { useFileManager } from "../../hooks/useFileManager";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { FiFolder, FiBook, FiUsers } from "react-icons/fi";
 
 const ProfFilePage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -177,12 +178,15 @@ const ProfFilePage = () => {
               Your Space
             </h2>
             {spacesByCategory["your-space"]?.length === 0 ? (
-              <div className="rounded-xl p-10 text-center border border-dashed" style={{ 
-                backgroundColor: currentColors.surface, 
+              <div className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto" style={{ 
+                backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface, 
                 color: currentColors.textSecondary,
-                borderColor: currentColors.border
+                borderColor: isDarkMode ? currentColors.border : "black"
               }}>
-                No space files yet
+                <div className="flex items-center justify-center gap-3">
+                  <FiFolder className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                  <span>No space files yet</span>
+                </div>
               </div>
             ) : spacesByCategory["your-space"]?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
@@ -219,12 +223,15 @@ const ProfFilePage = () => {
               Course Space
             </h2>
             {spacesByCategory["course-space"]?.length === 0 ? (
-              <div className="rounded-xl p-10 text-center border border-dashed" style={{ 
-                backgroundColor: currentColors.surface, 
+              <div className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto" style={{ 
+                backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface, 
                 color: currentColors.textSecondary,
-                borderColor: currentColors.border
+                borderColor: isDarkMode ? currentColors.border : "black"
               }}>
-                No course space files yet
+                <div className="flex items-center justify-center gap-3">
+                  <FiBook className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                  <span>No course space files yet</span>
+                </div>
               </div>
             ) : spacesByCategory["course-space"]?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">

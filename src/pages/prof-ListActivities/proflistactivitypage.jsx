@@ -6,6 +6,7 @@ import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useNavigate } from "react-router";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { FiFolder, FiBook } from "react-icons/fi";
 
 const ProfListActivityPage = () => {
   const { user } = useUser();
@@ -132,12 +133,15 @@ const ProfListActivityPage = () => {
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Your Space</h2>
             {userSpaces?.length === 0 ? (
-              <div className="rounded-xl p-10 text-center border border-dashed" style={{
-                backgroundColor: currentColors.surface,
+              <div className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto" style={{
+                backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface,
                 color: currentColors.textSecondary,
-                borderColor: currentColors.border
+                borderColor: isDarkMode ? currentColors.border : "black"
               }}>
-                No space list activity yet
+                <div className="flex items-center justify-center gap-3">
+                  <FiFolder className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                  <span>No space list activity yet</span>
+                </div>
               </div>
             ) : userSpaces?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
@@ -166,12 +170,15 @@ const ProfListActivityPage = () => {
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Course Space</h2>
             {courseSpaces?.length === 0 ? (
-              <div className="rounded-xl p-10 text-center border border-dashed" style={{
-                backgroundColor: currentColors.surface,
+              <div className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto" style={{
+                backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface,
                 color: currentColors.textSecondary,
-                borderColor: currentColors.border
+                borderColor: isDarkMode ? currentColors.border : "black"
               }}>
-                No course space list activity yet
+                <div className="flex items-center justify-center gap-3">
+                  <FiBook className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                  <span>No course space list activity yet</span>
+                </div>
               </div>
             ) : courseSpaces?.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">

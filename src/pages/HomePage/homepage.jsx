@@ -585,10 +585,11 @@ const HomePage1 = () => {
 
               {courseSpaces?.length === 0 ? (
                 <div
-                  className="rounded-xl p-10 text-center"
+                  className="rounded-xl p-10 text-center border border-dashed"
                   style={{
                     backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                     color: currentColors.textSecondary,
+                    borderColor: isDarkMode ? currentColors.border : "black",
                   }}
                 >
                   No Course Space Yet!
@@ -749,10 +750,11 @@ const HomePage1 = () => {
 
               {sharedSpaces.length === 0 ? (
                 <div
-                  className="rounded-xl p-10 text-center"
+                  className="rounded-xl p-10 text-center border border-dashed"
                   style={{
                     backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                     color: currentColors.textSecondary,
+                    borderColor: isDarkMode ? currentColors.border : "black",
                   }}
                 >
                   No shared spaces yet

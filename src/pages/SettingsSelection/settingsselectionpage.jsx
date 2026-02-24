@@ -119,16 +119,17 @@ const SettingsSelectionPage = () => {
               </p>
             </div>
 
-            {/* SETTINGS CARDS AND QUICK INFO */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            {/* SETTINGS CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
 
               {/* SPACE SETTINGS */}
               <button
                 onClick={handleSpaceSettings}
-                className="rounded-xl p-8 hover:opacity-90 transition-all duration-200 group"
+                className="rounded-xl p-8 hover:opacity-90 transition-all duration-200 group border"
                 style={{
                   backgroundColor: currentColors.surface,
-                  color: currentColors.text
+                  color: currentColors.text,
+                  borderColor: isDarkMode ? 'white' : currentColors.border
                 }}
               >
                 <div className="flex flex-col items-center text-center">
@@ -140,9 +141,21 @@ const SettingsSelectionPage = () => {
                     Space Settings
                   </h2>
 
-                  <p style={{ color: currentColors.textSecondary }} className="text-sm">
+                  <p style={{ color: currentColors.textSecondary }} className="text-sm mb-4">
                     Configure spaces, permissions, and features
                   </p>
+
+                  <div className="mt-auto pt-4 border-t" style={{ borderColor: currentColors.border }}>
+                    <h4 className="font-medium mb-2 text-sm" style={{ color: currentColors.text }}>
+                      Features:
+                    </h4>
+                    <ul className="space-y-1 text-xs" style={{ color: currentColors.textSecondary }}>
+                      <li>• Space configuration</li>
+                      <li>• Member permissions</li>
+                      <li>• Feature toggles</li>
+                      <li>• Access control</li>
+                    </ul>
+                  </div>
 
                   <span className="mt-4 text-sm font-medium group-hover:opacity-80" style={{ color: '#10b981' }}>
                     Configure Space →
@@ -153,10 +166,11 @@ const SettingsSelectionPage = () => {
               {/* THEME SETTINGS */}
               <button
                 onClick={toggleTheme}
-                className="rounded-xl p-8 hover:opacity-90 transition-all duration-200 group"
+                className="rounded-xl p-8 hover:opacity-90 transition-all duration-200 group border"
                 style={{
                   backgroundColor: currentColors.surface,
-                  color: currentColors.text
+                  color: currentColors.text,
+                  borderColor: isDarkMode ? 'white' : currentColors.border
                 }}
               >
                 <div className="flex flex-col items-center text-center">
@@ -168,9 +182,21 @@ const SettingsSelectionPage = () => {
                     Theme Settings
                   </h2>
 
-                  <p style={{ color: currentColors.textSecondary }} className="text-sm">
+                  <p style={{ color: currentColors.textSecondary }} className="text-sm mb-4">
                     Switch between light and dark mode
                   </p>
+
+                  <div className="mt-auto pt-4 border-t" style={{ borderColor: currentColors.border }}>
+                    <h4 className="font-medium mb-2 text-sm" style={{ color: currentColors.text }}>
+                      Features:
+                    </h4>
+                    <ul className="space-y-1 text-xs" style={{ color: currentColors.textSecondary }}>
+                      <li>• Light/Dark mode toggle</li>
+                      <li>• Automatic theme saving</li>
+                      <li>• System preference detection</li>
+                      <li>• Smooth transitions</li>
+                    </ul>
+                  </div>
 
                   <span className="mt-4 text-sm font-medium group-hover:opacity-80" style={{ color: '#3b82f6' }}>
                     {isDarkMode ? 'Switch to Light →' : 'Switch to Dark →'}
@@ -178,44 +204,6 @@ const SettingsSelectionPage = () => {
                 </div>
               </button>
 
-              {/* QUICK INFO */}
-              <div 
-                className="rounded-xl p-6"
-                style={{
-                  backgroundColor: currentColors.surface,
-                  color: currentColors.text
-                }}
-              >
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <SettingsIcon size={20} className="mr-2" />
-                  Quick Info
-                </h3>
-
-                <div style={{ color: currentColors.textSecondary }}>
-                  <div>
-                    <h4 className="font-medium mb-2" style={{ color: currentColors.text }}>
-                      Space Settings
-                    </h4>
-                    <ul className="space-y-1">
-                      <li>• Space configuration</li>
-                      <li>• Member permissions</li>
-                      <li>• Feature toggles</li>
-                      <li>• Access control</li>
-                    </ul>
-                  </div>
-                  <div className="mt-4">
-                    <h4 className="font-medium mb-2" style={{ color: currentColors.text }}>
-                      Theme Settings
-                    </h4>
-                    <ul className="space-y-1">
-                      <li>• Light/Dark mode toggle</li>
-                      <li>• Automatic theme saving</li>
-                      <li>• System preference detection</li>
-                      <li>• Smooth transitions</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
             </div>
 
           </div>

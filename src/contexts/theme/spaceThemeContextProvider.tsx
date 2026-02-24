@@ -60,7 +60,7 @@ export const SpaceThemeProvider: React.FC<SpaceThemeProviderProps> = ({ children
       },
       light: {
         background: '#ffffff',
-        surface: '#f8fafc',
+        surface: '#f3f4f6',
         border: '#22282fff',
         text: '#1a202c',
         textSecondary: '#4a5568',
