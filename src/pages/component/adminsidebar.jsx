@@ -5,7 +5,9 @@ import {
   Users,
   LogOut,
   Bell,
-  School
+  School,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import Logout from "./logout";
@@ -13,10 +15,26 @@ import logo from "../../assets/HomePage/logo.png";
 import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
 import { useUser } from "../../contexts/user/useUser";
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ isMinimized = false, onToggleMinimize }) => {
   const { user, logout } = useUser();
   const [showLogout, setShowLogout] = useState(false);
   const location = useLocation();
+
+  // Load minimize state from localStorage on mount
+  const [localMinimized, setLocalMinimized] = useState(() => {
+    const saved = localStorage.getItem('adminSidebarMinimized');
+    return saved !== null ? JSON.parse(saved) : isMinimized;
+  });
+
+  // Update localStorage when minimize state changes
+  const handleToggleMinimize = () => {
+    const newState = !localMinimized;
+    setLocalMinimized(newState);
+    localStorage.setItem('adminSidebarMinimized', JSON.stringify(newState));
+    if (onToggleMinimize) {
+      onToggleMinimize();
+    }
+  };
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin/dashboard" },
@@ -31,18 +49,25 @@ const AdminSidebar = () => {
 
   return (
     <div
-      className="
-        h-screen w-64 lg:w-60 text-white flex flex-col font-inter
-        sticky top-0 overflow-hidden
+      className={`
+        h-screen text-white flex flex-col font-inter
+        sticky top-0 overflow-hidden transition-all duration-300
         bg-gradient-to-b from-[#6cadf3] via-[#2c81e1] to-[#0066d2]
-      "
+        ${localMinimized ? "lg:w-20" : "w-64 lg:w-60"}
+      `}
     >
-      {/* Logo Section */}
-      <div className="p-6">
-        <div className="flex items-center space-x-2">
+      {/* Logo and Minimize Button */}
+      <div className="p-6 flex items-center justify-between">
+        <div className={`flex items-center space-x-2 ${localMinimized ? "hidden lg:hidden" : ""}`}>
           <img src={logo} alt="ImmacuLearn Logo" className="w-8 h-8" />
           <h1 className="text-lg font-bold">ImmacuLearn</h1>
         </div>
+        <button
+          onClick={handleToggleMinimize}
+          className="hidden lg:block p-2 rounded-lg hover:bg-white/10 transition-colors"
+        >
+          {localMinimized ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
       </div>
 
       {/* Navigation */}
@@ -69,12 +94,13 @@ const AdminSidebar = () => {
                 key={item.label}
                 {...item}
                 active={location.pathname === item.path}
+                isMinimized={localMinimized}
               />
             ))}
           </nav>
 
           {/* Private */}
-          <div className="mt-4">
+          <div className={`mt-4 ${localMinimized ? "hidden" : ""}`}>
             <h2 className="text-sm font-semibold mb-3 text-blue-100">
               Private
             </h2>
@@ -84,6 +110,7 @@ const AdminSidebar = () => {
                   key={item.label}
                   {...item}
                   active={location.pathname === item.path}
+                  isMinimized={localMinimized}
                 />
               ))}
             </nav>
@@ -96,6 +123,7 @@ const AdminSidebar = () => {
                 key={item.label}
                 {...item}
                 active={location.pathname === item.path}
+                isMinimized={localMinimized}
               />
             ))}
 
@@ -103,22 +131,29 @@ const AdminSidebar = () => {
               icon={<LogOut size={20} />}
               label="Log Out Account"
               onClick={() => setShowLogout(true)}
+              isMinimized={localMinimized}
             />
           </div>
         </div>
       </div>
 
       {/* User Profile */}
-      <div className="px-6 py-2 pt-3 border-t border-blue-500">
-        <div className="flex items-center gap-3">
+      <div className={`px-6 py-2 pt-3 border-t border-blue-500 ${localMinimized ? "lg:text-center" : ""}`}>
+        <div className={`flex items-center gap-3 ${localMinimized ? "lg:flex-col" : ""}`}>
           <img
             src={user ? user.profile_pic : frierenAvatar}
             alt="Profile"
             className="w-8 h-8 rounded-full"
           />
-          <span className="text-sm font-medium">
-            {user?.name || "Admin"}
-          </span>
+          {/* Text Container */}
+          <div className={`flex flex-col ${localMinimized ? "hidden lg:hidden" : ""}`}>
+            <span className="text-sm font-medium">
+              {user?.name || "Admin"}
+            </span>
+            <span className="text-xs text-gray-400">
+              {user?.role || "Admin"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -132,7 +167,7 @@ const AdminSidebar = () => {
   );
 };
 
-const SidebarItem = ({ icon, label, path, onClick, active }) => {
+const SidebarItem = ({ icon, label, path, onClick, active, isMinimized }) => {
   const Component = path ? Link : "div";
 
   return (
@@ -140,9 +175,9 @@ const SidebarItem = ({ icon, label, path, onClick, active }) => {
       to={path}
       onClick={onClick}
       className={`
-        relative flex items-center gap-3 py-3 pl-5 text-xs font-medium
+        relative flex items-center gap-3 py-3 text-xs font-medium
         rounded-l-full cursor-pointer overflow-hidden
-        transition-all duration-700
+        transition-all duration-700 group
 
         before:absolute before:inset-0
         before:bg-[rgba(255,255,255,0.05)]
@@ -156,12 +191,21 @@ const SidebarItem = ({ icon, label, path, onClick, active }) => {
             ? "bg-[#161A20] text-white shadow-lg"
             : "text-blue-100 hover:text-white hover:shadow-md before:hover:scale-x-100"
         }
+        ${isMinimized ? "lg:px-2 lg:justify-center" : "pl-5"}
       `}
+      title={isMinimized ? label : ""}
     >
       <div className="relative z-10 flex items-center gap-3">
         {icon}
-        <span>{label}</span>
+        <span className={`${isMinimized ? "hidden lg:hidden" : ""}`}>{label}</span>
       </div>
+      
+      {/* Tooltip for minimized state */}
+      {isMinimized && (
+        <div className="hidden lg:block absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+          {label}
+        </div>
+      )}
     </Component>
   );
 };

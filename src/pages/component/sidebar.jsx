@@ -119,8 +119,8 @@ const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
           </nav>
 
           {/* Private */}
-          <div className={`mt-4 ${localMinimized ? "hidden" : ""}`}>
-            <h2 className="text-sm font-semibold mb-3 text-blue-100">
+          <div className={`mt-4 ${localMinimized ? "" : ""}`}>
+            <h2 className={`text-sm font-semibold mb-3 text-blue-100 ${localMinimized ? "hidden" : ""}`}>
               Private
             </h2>
             <nav className="space-y-1">
