@@ -12,6 +12,7 @@ const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
   const [showLogout, setShowLogout] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -98,11 +99,16 @@ const AdminTeachers = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* ================= SEARCH ================= */
+  /* ================= SEARCH & FILTER ================= */
 
-  const filteredTeachers = teachers.filter((teacher) =>
-    teacher.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Get unique departments from departmentOptions
+  const uniqueDepartments = departmentOptions.map(dept => dept.name).sort();
+
+  const filteredTeachers = teachers.filter((teacher) => {
+    const matchesSearch = teacher.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDepartment = !selectedDepartment || teacher.department === selectedDepartment;
+    return matchesSearch && matchesDepartment;
+  });
 
   /* ================= ADD TEACHER ================= */
 
@@ -305,15 +311,30 @@ const AdminTeachers = () => {
           
           {/* DESKTOP BUTTONS */}
           <div className="hidden lg:flex justify-between items-center mb-6">
-            <div className="relative w-64">
-              <input
-                type="text"
-                placeholder="Search teacher..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            <div className="flex gap-3 items-center">
+              <div className="relative w-64">
+                <input
+                  type="text"
+                  placeholder="Search teacher..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+              </div>
+              <div className="relative">
+                <select
+                  value={selectedDepartment}
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                  className="px-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-10"
+                >
+                  <option value="">All Departments</option>
+                  {uniqueDepartments.map(department => (
+                    <option key={department} value={department}>{department}</option>
+                  ))}
+                </select>
+                <span className="absolute right-3 top-2.5 text-gray-400 pointer-events-none">▼</span>
+              </div>
             </div>
             <div className="flex gap-3">
               <button
@@ -334,16 +355,31 @@ const AdminTeachers = () => {
           </div>
 
           {/* MOBILE LARGE TO TABLET: SEARCH AND BUTTONS ALIGNED */}
-          <div className="hidden md:flex lg:hidden justify-between items-center mb-6">
-            <div className="relative w-64">
-              <input
-                type="text"
-                placeholder="Search teacher..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+          <div className="hidden md:flex lg:hidden flex-col gap-4 mb-6">
+            <div className="flex gap-3 items-center">
+              <div className="relative w-64">
+                <input
+                  type="text"
+                  placeholder="Search teacher..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+              </div>
+              <div className="relative">
+                <select
+                  value={selectedDepartment}
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                  className="px-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-10"
+                >
+                  <option value="">All Departments</option>
+                  {uniqueDepartments.map(department => (
+                    <option key={department} value={department}>{department}</option>
+                  ))}
+                </select>
+                <span className="absolute right-3 top-2.5 text-gray-400 pointer-events-none">▼</span>
+              </div>
             </div>
             <div className="flex gap-3">
               <button
@@ -383,8 +419,8 @@ const AdminTeachers = () => {
               </button>
             </div>
 
-            {/* MOBILE SEARCH */}
-            <div className="mb-4">
+            {/* MOBILE SEARCH AND FILTER */}
+            <div className="mb-4 space-y-3">
               <div className="relative max-w-sm">
                 <input
                   type="text"
@@ -394,6 +430,19 @@ const AdminTeachers = () => {
                   className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
                 />
                 <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+              </div>
+              <div className="relative max-w-sm">
+                <select
+                  value={selectedDepartment}
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                  className="w-full px-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-10"
+                >
+                  <option value="">All Departments</option>
+                  {uniqueDepartments.map(department => (
+                    <option key={department} value={department}>{department}</option>
+                  ))}
+                </select>
+                <span className="absolute right-3 top-2.5 text-gray-400 pointer-events-none">▼</span>
               </div>
             </div>
           </div>
