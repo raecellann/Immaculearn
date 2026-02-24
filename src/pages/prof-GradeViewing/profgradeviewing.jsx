@@ -14,10 +14,10 @@ const ProfGradeRecordPage = () => {
   const [studentGrades, setStudentGrades] = useState([]);
   const [editingStudent, setEditingStudent] = useState(null);
   const [editForm, setEditForm] = useState({
-    prelim: '',
-    midterm: '',
-    preFinal: '',
-    final: ''
+    prelim: "",
+    midterm: "",
+    preFinal: "",
+    final: "",
   });
 
   const [showHeader, setShowHeader] = useState(true);
@@ -26,33 +26,33 @@ const ProfGradeRecordPage = () => {
   const handleEditGrade = (student) => {
     setEditingStudent(student.accountId);
     setEditForm({
-      prelim: student.prelim || '',
-      midterm: student.midterm || '',
-      preFinal: student.preFinal || '',
-      final: student.final || ''
+      prelim: student.prelim || "",
+      midterm: student.midterm || "",
+      preFinal: student.preFinal || "",
+      final: student.final || "",
     });
   };
 
   const handleSaveGrade = () => {
-    setStudentGrades(prevGrades =>
-      prevGrades.map(student =>
+    setStudentGrades((prevGrades) =>
+      prevGrades.map((student) =>
         student.accountId === editingStudent
           ? { ...student, ...editForm }
-          : student
-      )
+          : student,
+      ),
     );
     setEditingStudent(null);
-    setEditForm({ prelim: '', midterm: '', preFinal: '', final: '' });
+    setEditForm({ prelim: "", midterm: "", preFinal: "", final: "" });
   };
 
   const handleCancelEdit = () => {
     setEditingStudent(null);
-    setEditForm({ prelim: '', midterm: '', preFinal: '', final: '' });
+    setEditForm({ prelim: "", midterm: "", preFinal: "", final: "" });
   };
 
   const handleInputChange = (field, value) => {
-    if (value === '' || /^\d*$/.test(value)) {
-      setEditForm(prev => ({ ...prev, [field]: value }));
+    if (value === "" || /^\d*$/.test(value)) {
+      setEditForm((prev) => ({ ...prev, [field]: value }));
     }
   };
 
@@ -72,8 +72,13 @@ const ProfGradeRecordPage = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
-
+    <div
+      className="flex min-h-screen font-sans"
+      style={{
+        backgroundColor: currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -93,7 +98,7 @@ const ProfGradeRecordPage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           backgroundColor: currentColors.surface,
-          color: currentColors.text
+          color: currentColors.text,
         }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -101,7 +106,6 @@ const ProfGradeRecordPage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-
         {/* Mobile / Tablet Sticky Header */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
@@ -110,7 +114,7 @@ const ProfGradeRecordPage = () => {
           style={{
             backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
             borderColor: isDarkMode ? "#374151" : currentColors.border,
-            color: isDarkMode ? "white" : currentColors.text
+            color: isDarkMode ? "white" : currentColors.text,
           }}
         >
           <div className="p-4 flex items-center gap-4">
@@ -127,7 +131,6 @@ const ProfGradeRecordPage = () => {
 
         {/* Content */}
         <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
-
           {/* Desktop Header */}
           <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
             Grade Record
@@ -136,26 +139,32 @@ const ProfGradeRecordPage = () => {
           {/* Folder View */}
           {!selectedSubject && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">
-                Course Space
-              </h2>
+              <h2 className="text-xl font-semibold mb-4">Course Space</h2>
 
               {courseSpaces.length === 0 ? (
-                <div className="rounded-xl p-10 text-center border border-dashed" style={{ 
-                  backgroundColor: currentColors.surface, 
-                  color: currentColors.textSecondary,
-                  borderColor: currentColors.border
-                }}>
+                <div
+                  className="rounded-xl p-10 text-center border border-dashed"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    color: currentColors.textSecondary,
+                    borderColor: currentColors.border,
+                  }}
+                >
                   <span className="text-4xl mb-4 block">📚</span>
-                  <p className="text-lg font-medium mb-2">No Course Spaces Yet</p>
-                  <p className="text-sm">You haven't created any course spaces. Create your first course space to start managing grades!</p>
+                  <p className="text-lg font-medium mb-2">
+                    No Course Spaces Yet
+                  </p>
+                  <p className="text-sm">
+                    You haven't created any course spaces. Create your first
+                    course space to start managing grades!
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
                   {courseSpaces.map((space, index) => {
                     // ✅ FIX: Only count members whose role is strictly "Student"
                     const studentMembers = (space.members || []).filter(
-                      (member) => member.role === "Student"
+                      (member) => member.role === "student",
                     );
 
                     return (
@@ -164,7 +173,7 @@ const ProfGradeRecordPage = () => {
                         className="rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
                         style={{
                           backgroundColor: currentColors.surface,
-                          border: `1px solid ${currentColors.border}`
+                          border: `1px solid ${currentColors.border}`,
                         }}
                         onClick={() => {
                           setSelectedSubject(space);
@@ -172,10 +181,10 @@ const ProfGradeRecordPage = () => {
                           const grades = studentMembers.map((member) => ({
                             name: member.full_name,
                             accountId: member.account_id,
-                            prelim: '',
-                            midterm: '',
-                            preFinal: '',
-                            final: ''
+                            prelim: "",
+                            midterm: "",
+                            preFinal: "",
+                            final: "",
                           }));
                           setStudentGrades(grades);
                         }}
@@ -185,8 +194,12 @@ const ProfGradeRecordPage = () => {
                           <p className="text-lg truncate overflow-hidden whitespace-nowrap">
                             {space.space_name}
                           </p>
-                          <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                            {studentMembers.length} Student{studentMembers.length !== 1 ? 's' : ''}
+                          <p
+                            className="text-sm"
+                            style={{ color: currentColors.textSecondary }}
+                          >
+                            {studentMembers.length} Student
+                            {studentMembers.length !== 1 ? "s" : ""}
                           </p>
                         </div>
                       </div>
@@ -218,14 +231,19 @@ const ProfGradeRecordPage = () => {
 
               {/* No students state */}
               {studentGrades.length === 0 ? (
-                <div className="rounded-xl p-10 text-center border border-dashed" style={{ 
-                  backgroundColor: currentColors.surface, 
-                  color: currentColors.textSecondary,
-                  borderColor: currentColors.border
-                }}>
+                <div
+                  className="rounded-xl p-10 text-center border border-dashed"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    color: currentColors.textSecondary,
+                    borderColor: currentColors.border,
+                  }}
+                >
                   <span className="text-4xl mb-4 block">🎓</span>
                   <p className="text-lg font-medium mb-2">No Students Yet</p>
-                  <p className="text-sm">No students have joined this course space yet.</p>
+                  <p className="text-sm">
+                    No students have joined this course space yet.
+                  </p>
                 </div>
               ) : (
                 <>
@@ -237,29 +255,45 @@ const ProfGradeRecordPage = () => {
                         className="p-4 rounded-lg border"
                         style={{
                           backgroundColor: currentColors.surface,
-                          borderColor: currentColors.border
+                          borderColor: currentColors.border,
                         }}
                       >
                         <p className="font-semibold mb-1">{student.name}</p>
                         {editingStudent === student.accountId ? (
                           <div className="space-y-2">
-                            {['prelim', 'midterm', 'preFinal', 'final'].map((field) => (
-                              <div key={field} className="flex items-center gap-2">
-                                <label className="text-xs w-16 capitalize" style={{ color: currentColors.textSecondary }}>{field}:</label>
-                                <input
-                                  type="text"
-                                  value={editForm[field]}
-                                  onChange={(e) => handleInputChange(field, e.target.value)}
-                                  className="flex-1 rounded px-2 py-1 text-sm focus:outline-none"
-                                  style={{
-                                    backgroundColor: isDarkMode ? '#1F242D' : '#f8fafc',
-                                    border: `1px solid ${currentColors.border}`,
-                                    color: currentColors.text
-                                  }}
-                                  placeholder="0-100"
-                                />
-                              </div>
-                            ))}
+                            {["prelim", "midterm", "preFinal", "final"].map(
+                              (field) => (
+                                <div
+                                  key={field}
+                                  className="flex items-center gap-2"
+                                >
+                                  <label
+                                    className="text-xs w-16 capitalize"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    {field}:
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={editForm[field]}
+                                    onChange={(e) =>
+                                      handleInputChange(field, e.target.value)
+                                    }
+                                    className="flex-1 rounded px-2 py-1 text-sm focus:outline-none"
+                                    style={{
+                                      backgroundColor: isDarkMode
+                                        ? "#1F242D"
+                                        : "#f8fafc",
+                                      border: `1px solid ${currentColors.border}`,
+                                      color: currentColors.text,
+                                    }}
+                                    placeholder="0-100"
+                                  />
+                                </div>
+                              ),
+                            )}
                             <div className="flex gap-2 mt-3">
                               <button
                                 onClick={handleSaveGrade}
@@ -277,11 +311,14 @@ const ProfGradeRecordPage = () => {
                           </div>
                         ) : (
                           <>
-                            <div className="text-sm space-y-1" style={{ color: currentColors.textSecondary }}>
-                              <p>Prelim: {student.prelim || '-'}</p>
-                              <p>Midterm: {student.midterm || '-'}</p>
-                              <p>Pre-Final: {student.preFinal || '-'}</p>
-                              <p>Final: {student.final || '-'}</p>
+                            <div
+                              className="text-sm space-y-1"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              <p>Prelim: {student.prelim || "-"}</p>
+                              <p>Midterm: {student.midterm || "-"}</p>
+                              <p>Pre-Final: {student.preFinal || "-"}</p>
+                              <p>Final: {student.final || "-"}</p>
                             </div>
                             <button
                               onClick={() => handleEditGrade(student)}
@@ -299,7 +336,10 @@ const ProfGradeRecordPage = () => {
                   <div className="hidden lg:block">
                     <table className="w-full border-collapse text-center text-sm">
                       <thead>
-                        <tr className="border-b" style={{ color: currentColors.textSecondary }}>
+                        <tr
+                          className="border-b"
+                          style={{ color: currentColors.textSecondary }}
+                        >
                           <th className="py-3 px-4 text-left">Name</th>
                           <th className="py-3 px-4">Prelim</th>
                           <th className="py-3 px-4">Midterm</th>
@@ -314,41 +354,58 @@ const ProfGradeRecordPage = () => {
                             key={index}
                             className="border-b transition"
                             style={{
-                              borderColor: currentColors.border
+                              borderColor: currentColors.border,
                             }}
                           >
-                            <td className="py-2 px-4 text-left">{student.name}</td>
+                            <td className="py-2 px-4 text-left">
+                              {student.name}
+                            </td>
                             {editingStudent === student.accountId ? (
                               <>
-                                {['prelim', 'midterm', 'preFinal', 'final'].map((field) => (
-                                  <td key={field} className="py-2 px-2">
-                                    <input
-                                      type="text"
-                                      value={editForm[field]}
-                                      onChange={(e) => handleInputChange(field, e.target.value)}
-                                      className="w-16 rounded px-2 py-1 text-sm focus:outline-none text-center"
-                                      style={{
-                                        backgroundColor: isDarkMode ? '#1F242D' : '#f8fafc',
-                                        border: `1px solid ${currentColors.border}`,
-                                        color: currentColors.text
-                                      }}
-                                      placeholder="0-100"
-                                    />
-                                  </td>
-                                ))}
+                                {["prelim", "midterm", "preFinal", "final"].map(
+                                  (field) => (
+                                    <td key={field} className="py-2 px-2">
+                                      <input
+                                        type="text"
+                                        value={editForm[field]}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            field,
+                                            e.target.value,
+                                          )
+                                        }
+                                        className="w-16 rounded px-2 py-1 text-sm focus:outline-none text-center"
+                                        style={{
+                                          backgroundColor: isDarkMode
+                                            ? "#1F242D"
+                                            : "#f8fafc",
+                                          border: `1px solid ${currentColors.border}`,
+                                          color: currentColors.text,
+                                        }}
+                                        placeholder="0-100"
+                                      />
+                                    </td>
+                                  ),
+                                )}
                                 <td className="py-2 px-4">
                                   <div className="flex gap-2 justify-center">
                                     <button
                                       onClick={handleSaveGrade}
                                       className="text-sm bg-transparent border-none p-0"
-                                      style={{ color: isDarkMode ? '#10b981' : '#059669' }}
+                                      style={{
+                                        color: isDarkMode
+                                          ? "#10b981"
+                                          : "#059669",
+                                      }}
                                     >
                                       Save
                                     </button>
                                     <button
                                       onClick={handleCancelEdit}
                                       className="text-sm bg-transparent border-none p-0"
-                                      style={{ color: currentColors.textSecondary }}
+                                      style={{
+                                        color: currentColors.textSecondary,
+                                      }}
                                     >
                                       Cancel
                                     </button>
@@ -357,15 +414,17 @@ const ProfGradeRecordPage = () => {
                               </>
                             ) : (
                               <>
-                                <td>{student.prelim || '-'}</td>
-                                <td>{student.midterm || '-'}</td>
-                                <td>{student.preFinal || '-'}</td>
-                                <td>{student.final || '-'}</td>
+                                <td>{student.prelim || "-"}</td>
+                                <td>{student.midterm || "-"}</td>
+                                <td>{student.preFinal || "-"}</td>
+                                <td>{student.final || "-"}</td>
                                 <td>
                                   <button
                                     onClick={() => handleEditGrade(student)}
                                     className="text-sm bg-transparent border-none p-0"
-                                    style={{ color: isDarkMode ? '#60a5fa' : '#2563eb' }}
+                                    style={{
+                                      color: isDarkMode ? "#60a5fa" : "#2563eb",
+                                    }}
                                   >
                                     Edit Grade
                                   </button>
