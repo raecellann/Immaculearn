@@ -20,13 +20,13 @@ export const AdminDataRoutes = [
   {
     key: "/admin-students",
     path: "/admin/students",
-    element: <AdminStudents />,
+    element: (<UserProvider><AdminStudents /></UserProvider>),
   },
 
   {
     key: "/admin-teachers",
     path: "/admin/teachers",
-    element: <AdminTeachers />,
+    element: (<UserProvider><AdminTeachers /></UserProvider>),
   },
   {
     key: "/admin-announcement",
