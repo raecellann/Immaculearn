@@ -14,7 +14,7 @@ export const AdminDataRoutes = [
   {
     key: "/admin-dashboard",
     path: "/admin/dashboard",
-    element: <AdminDashboard />,
+    element: (<UserProvider><AdminDashboard /></UserProvider>),
   },
 
   {
