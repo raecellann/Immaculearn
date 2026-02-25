@@ -222,19 +222,23 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     data: CourseSpaceCreateData,
   ): Promise<ApiResponse<Space>> => {
     const result = await spaceService.createCourseSpace(data);
-    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    if (result.success)
+      queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     return result;
   };
 
   const joinSpace = async (inviteCode: string): Promise<ApiResponse> => {
     const spaceuuid = inviteCode.split("=").pop() || "";
     const result = await spaceService.joinSpace(spaceuuid);
-    queryClient.invalidateQueries({
-      queryKey: ["joinRequestsByLink"],
-    });
-    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
-    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
-    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+
+    if (result.success) {
+      queryClient.invalidateQueries({
+        queryKey: ["joinRequestsByLink"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+      queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+      queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    }
     return result;
   };
 

@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthRoutes } from "./routes/Routes.auth";
 import { StudentRoutes } from "./routes/Routes.student";
 import { SpaceRoutes } from "./routes/Routes.space";
-import { AdminDataRoutes } from "./routes/Routes.adminDashboard.tsx";
+import { AdminDataRoutes } from "./routes/Routes.admin.tsx";
 // import { AdminRoutes } from "./routes/Routes.admin";
 import { ProfRoutes } from "./routes/Routes.professor.js";
 import PageNotFound from "./pages/PageNotFound/pageNotFound.jsx";
@@ -15,6 +15,7 @@ import { NotificationProvider } from "./contexts/notification/notificationContex
 import LandingPage from "./pages/Landing/landingPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import NotificationContainer from "./components/Notification/NotificationContainer.jsx";
+import { AdminProvider } from "./contexts/admin/adminContextProvider.tsx";
 // import NotificationExample from "./examples/NotificationExample.jsx";
 
 const queryClient = new QueryClient({
@@ -99,9 +100,9 @@ export default function Routes() {
               key={route.key}
               path={route.path}
               element={
-                <UserProvider>
-                  <SpaceProvider>{route.element}</SpaceProvider>
-                </UserProvider>
+                <AdminProvider>
+                  {route.element}
+                </AdminProvider>
               }
             />
           ))}

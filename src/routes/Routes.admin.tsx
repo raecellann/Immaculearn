@@ -5,6 +5,8 @@ import AdminTeachers from "../pages/admin-teachers/adminteachers.jsx";
 import AdminLogin from "../pages/admin-login/adminlogin.jsx";
 import AdminAnnouncement from "../pages/admin-announcement/adminannouncement.jsx";
 import AdminAcademicTerm from "../pages/admin-academic-term/adminaccademicterm.jsx";
+import { AdminProvider } from "../contexts/admin/adminContextProvider.tsx";
+import { UserProvider } from "../contexts/user/userContextProvider.tsx";
 
 
 export const AdminDataRoutes = [
@@ -29,7 +31,9 @@ export const AdminDataRoutes = [
   {
     key: "/admin-announcement",
     path: "/admin/announcement",
-    element: <AdminAnnouncement />,
+    element: (<UserProvider>
+      <AdminAnnouncement />
+    </UserProvider>),
   },
   {
     key: "/admin-academic-term",

@@ -4,11 +4,11 @@ import Button from "@/pages/component/Button";
 import { Mail } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
-import { useUser } from "../../contexts/user/useUser";
+import { useAdmin } from "../../contexts/admin/useAdmin";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 
 const AdminLogin = () => {
-  const { isAuthenticated, user, isLoading } = useUser();
+  const { isAuthenticated, admin, isLoading } = useAdmin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -76,9 +76,9 @@ const AdminLogin = () => {
   };
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'admin') return;
+    if (!isAuthenticated || admin?.role !== 'admin') return;
     navigate('/admin-dashboard');
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, admin, navigate]);
 
   if (isLoading) {
     return (

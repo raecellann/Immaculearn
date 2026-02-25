@@ -138,7 +138,7 @@ const ProfGradeRecordPage = () => {
 
           {/* Folder View */}
           {!selectedSubject && (
-            <div className="mb-8">
+            <div className="mb-12 mt-8">
               <h2 className="text-xl font-semibold mb-4">Course Space</h2>
 
               {courseSpaces.length === 0 ? (
@@ -170,11 +170,20 @@ const ProfGradeRecordPage = () => {
                     return (
                       <div
                         key={`course-space-${index}`}
-                        className="rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
+                        className="border rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
                         style={{
                           backgroundColor: currentColors.surface,
-                          border: `1px solid ${currentColors.border}`,
+                          borderColor: currentColors.border,
+                          color: currentColors.text,
                         }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            currentColors.hover)
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            currentColors.surface)
+                        }
                         onClick={() => {
                           setSelectedSubject(space);
                           // ✅ FIX: Only initialize grades for actual students

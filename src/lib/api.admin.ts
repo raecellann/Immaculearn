@@ -1,7 +1,7 @@
 import axios from "axios";
 import config from "../config";
 
-export const api = axios.create({
+export const adminApi = axios.create({
   baseURL: "http://localhost:3000/v1",
   withCredentials: true,
   headers: {
@@ -23,7 +23,7 @@ const onRefreshed = () => {
   refreshSubscribers = [];
 };
 
-api.interceptors.response.use(
+adminApi.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
@@ -38,8 +38,8 @@ api.interceptors.response.use(
 
     // 🚨 Do NOT retry refresh or profile endpoints
     if (
-      originalRequest?.url?.includes("/auth/refresh") ||
-      originalRequest?.url?.includes("/auth/profile")
+      originalRequest?.url?.includes("/admin/refresh") ||
+      originalRequest?.url?.includes("/admin/profile")
     ) {
       return Promise.reject(error);
     }
@@ -52,7 +52,7 @@ api.interceptors.response.use(
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh(() => {
-            resolve(api(originalRequest));
+            resolve(adminApi(originalRequest));
           });
         });
       }
@@ -60,18 +60,18 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.get("/auth/refresh");
+        await adminApi.get("/admin/refresh");
 
         isRefreshing = false;
         onRefreshed();
 
-        return api(originalRequest);
+        return adminApi(originalRequest);
       } catch (refreshError) {
         isRefreshing = false;
         refreshSubscribers = [];
 
         // 🔐 Redirect to login if refresh fails
-        window.location.href = "/login";
+        window.location.href = "/admin/login";
         return Promise.reject(refreshError);
       }
     }
