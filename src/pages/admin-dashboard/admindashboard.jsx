@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
 import { genderOptions, yearLevelOptions, departmentOptions } from "../component/enumOptions";
+import { toast } from "react-toastify";
 
 
 const AdminDashboard = () => {
@@ -256,11 +257,11 @@ const fetchTeachers = async () => {
               </div>
             </div>
           </div>
-
-          
         </div>
       </div>
-    </div>
+
+    
+  </div>
   );
 };
 

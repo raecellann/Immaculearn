@@ -283,8 +283,37 @@ const AdminStudents = () => {
 };
 
 
-  const handleDeleteStudent = (studentId) => {
-    setStudents(students.filter(student => student.id !== studentId));
+  const handleDeleteStudent = async (studentEmail) => {
+    console.log('Deleting student with email:', studentEmail);
+    try {
+      const res = await adminDashboardService.deleteStudent(studentEmail);
+      console.log('Delete response:', res);
+      
+      if (res.success) {
+        // Refresh data after deletion
+        const refreshRes = await adminDashboardService.getAllStudentEmails();
+        console.log('Refresh response:', refreshRes);
+        if (refreshRes.success && refreshRes.data?.students) {
+          setStudents(
+            refreshRes.data.students.map((student, index) => ({
+              id: student.student_id ?? `temp-${index}`,
+              firstName: student.student_fn,
+              lastName: student.student_ln,
+              email: student.email,
+              gender: getGenderName(student.student_gender),
+              course: student.student_course,
+              yearLevel: getYearLevelName(student.student_yr_lvl)
+            }))
+          );
+        }
+        toast.success("Student deleted successfully");
+      } else {
+        toast.error(res.message || "Failed to delete student");
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      toast.error("Something went wrong");
+    }
     setShowDeleteConfirm(null);
   };
 
@@ -531,7 +560,7 @@ const AdminStudents = () => {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setShowDeleteConfirm(student.id)}
+                    onClick={() => setShowDeleteConfirm(student.email)}
                     className="flex items-center gap-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
                   >
                     Delete
@@ -573,7 +602,7 @@ const AdminStudents = () => {
                    
                     <td className="py-4">
                       <button
-                        onClick={() => setShowDeleteConfirm(student.id)}
+                        onClick={() => setShowDeleteConfirm(student.email)}
                         className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
                       >
                         Delete

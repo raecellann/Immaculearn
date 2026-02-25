@@ -234,6 +234,54 @@ class AdminDashboardService {
     }
     }
 
+  // Delete student by email
+  async deleteStudent(email: string): Promise<ApiResponse<{ message: string }>> {
+    try {
+      const response = await api.delete(
+        `/register_student/delete/${email}`
+      );
+
+      // Clear student cache after deletion
+      this.clearCache('student');
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Failed to delete student",
+      };
+    }
+  }
+
+  // Delete professor by email
+  async deleteProfessor(email: string): Promise<ApiResponse<{ message: string }>> {
+    try {
+      const response = await api.delete(
+        `/register_prof/delete/${email}`
+      );
+
+      // Clear professor cache after deletion
+      this.clearCache('prof');
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Failed to delete professor",
+      };
+    }
+  }
+
 
 }
 

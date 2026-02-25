@@ -4,6 +4,7 @@ import Button from "@/pages/component/Button";
 import { Eye, EyeOff, ChevronDown } from "lucide-react"; 
 import { useNavigate, useSearchParams } from "react-router";
 import { useUser } from "../../contexts/user/useUser";
+import { departmentOptions, genderOptions, yearLevelOptions } from "../component/enumOptions";
 
 const OnBoarding = () => {
 
@@ -40,18 +41,7 @@ const OnBoarding = () => {
 
   const [showDeptDropdown, setShowDeptDropdown] = useState(false);
 
-  const departments = [
-    { code: "BSCS", name: "Bachelor of Science in Computer Science" },
-    { code: "BSTM", name: "Bachelor of Science in Tourism Management" },
-    { code: "BSBA", name: "Bachelor of Science in Business Administration" },
-    { code: "BSHM", name: "Bachelor of Science in Hospitality Management" },
-    { code: "BSA", name: "Bachelor of Science in Accountancy" },
-    { code: "ACT", name: "Associate in Computer Technology" },
-    { code: "BSNE", name: "Bachelor of Special Needs Education" },
-    { code: "BEED", name: "Bachelor of Elementary Education" },
-    { code: "BSED-ENG", name: "Bachelor of Secondary Education Major in English" },
-    { code: "BSED-FIL", name: "Bachelor of Secondary Education Major in Filipino" }
-  ];
+  
 
   const handleNext = () => {
     if (!password || !passwordConfirm) {
@@ -100,9 +90,7 @@ const OnBoarding = () => {
       alert("Account creation failed. Please try again.");
     }
   };
-
-
-
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden px-4" style={{ backgroundColor: "#FDFBEE" }}>
       {/* Decorative Images */}
@@ -178,7 +166,7 @@ const OnBoarding = () => {
                     >
                       <span className="text-gray-900">
                         {studentCourse 
-                          ? departments.find(d => d.code === studentCourse)?.name || "Select Department"
+                          ? departmentOptions.find(d => d.code === studentCourse)?.name || "Select Department"
                           : "Select Department"
                         }
                       </span>
@@ -187,7 +175,7 @@ const OnBoarding = () => {
                     
                     {showDeptDropdown && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-black rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                        {departments.map((dept) => (
+                        {departmentOptions.map((dept) => (
                           <button
                             key={dept.code}
                             type="button"
@@ -205,16 +193,19 @@ const OnBoarding = () => {
                   </div>
                   <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={studentYrLvl} onChange={(e) => setStudentYrLvl(e.target.value)}>
                     <option value="" className="text-black">Select Year Level</option>
-                    <option value="1" className="text-black">1st Year</option>
-                    <option value="2" className="text-black">2nd Year</option>
-                    <option value="3" className="text-black">3rd Year</option>
-                    <option value="4" className="text-black">4th Year</option>
+                    {yearLevelOptions.map((yearLevel) => (
+                      <option key={yearLevel.code} value={yearLevel.code} className="text-black">
+                        {yearLevel.name}
+                      </option>
+                    ))}
                   </select>
                   <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={studentGender} onChange={(e) => setStudentGender(e.target.value)}>
                     <option value="" className="text-black">Select Gender</option>
-                    <option value="Male" className="text-black">Male</option>
-                    <option value="Female" className="text-black">Female</option>
-                    <option value="Other" className="text-black">Other</option>
+                    {genderOptions.map((gender) => (
+                      <option key={gender.code} value={gender.code} className="text-black">
+                        {gender.name}
+                      </option>
+                    ))}
                   </select>
                 </>
               )}
@@ -231,7 +222,7 @@ const OnBoarding = () => {
                     >
                       <span className="text-gray-900">
                         {profDept 
-                          ? departments.find(d => d.code === profDept)?.name || "Select Department"
+                          ? departmentOptions.find(d => d.code === profDept)?.name || "Select Department"
                           : "Select Department"
                         }
                       </span>
@@ -240,7 +231,7 @@ const OnBoarding = () => {
                     
                     {showDeptDropdown && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-black rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                        {departments.map((dept) => (
+                        {departmentOptions.map((dept) => (
                           <button
                             key={dept.code}
                             type="button"
@@ -259,9 +250,11 @@ const OnBoarding = () => {
                   <InputField type="date" placeholder="Birthdate" value={profBd} onChange={(e) => setProfBd(e.target.value)} />
                   <select className="border border-black rounded-lg px-4 py-2 w-full text-black" value={profGender} onChange={(e) => setProfGender(e.target.value)}>
                     <option value="" className="text-black">Select Gender</option>
-                    <option value="Male" className="text-black">Male</option>
-                    <option value="Female" className="text-black">Female</option>
-                    <option value="Other" className="text-black">Other</option>
+                    {genderOptions.map((gender) => (
+                      <option key={gender.code} value={gender.code} className="text-black">
+                        {gender.name}
+                      </option>
+                    ))}
                   </select>
                 </>
               )}

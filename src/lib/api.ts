@@ -12,9 +12,9 @@ export const api = axios.create({
 
 // 🔐 Refresh state management
 let isRefreshing = false;
-let refreshSubscribers = [];
+let refreshSubscribers: any[] = [];
 
-const subscribeTokenRefresh = (callback) => {
+const subscribeTokenRefresh = (callback: any) => {
   refreshSubscribers.push(callback);
 };
 

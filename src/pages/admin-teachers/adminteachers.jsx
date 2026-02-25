@@ -183,8 +183,34 @@ const AdminTeachers = () => {
 
   /* ================= DELETE ================= */
 
-  const handleDeleteTeacher = (teacherId) => {
-    setTeachers((prev) => prev.filter((t) => t.id !== teacherId));
+  const handleDeleteTeacher = async (teacherEmail) => {
+    try {
+      const res = await adminDashboardService.deleteProfessor(teacherEmail);
+      
+      if (res.success) {
+        // Refresh data after deletion
+        const refreshRes = await adminDashboardService.getAllProfEmails();
+        if (refreshRes.success && refreshRes.data?.emails) {
+          setTeachers(
+            refreshRes.data.emails.map((teacher, index) => ({
+              id: teacher.email ?? `temp-${index}`,
+              firstName: teacher.prof_fn,
+              lastName: teacher.prof_ln,
+              name: `${teacher.prof_fn || ''} ${teacher.prof_ln || ''}`.trim() || teacher.email.split('@')[0],
+              email: teacher.email,
+              gender: getGenderName(teacher.prof_gender),
+              department: getDepartmentName(teacher.prof_department)
+            }))
+          );
+        }
+        toast.success("Teacher deleted successfully");
+      } else {
+        toast.error(res.message || "Failed to delete teacher");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong");
+    }
     setShowDeleteConfirm(null);
   };
 
@@ -469,7 +495,7 @@ const AdminTeachers = () => {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setShowDeleteConfirm(teacher.id)}
+                    onClick={() => setShowDeleteConfirm(teacher.email)}
                     className="flex items-center gap-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
                   >
                     Delete
@@ -505,7 +531,7 @@ const AdminTeachers = () => {
                     <td className="py-4 text-sm">{teacher.department}</td>
                     <td className="py-4">
                       <button
-                        onClick={() => setShowDeleteConfirm(teacher.id)}
+                        onClick={() => setShowDeleteConfirm(teacher.email)}
                         className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
                       >
                         Delete
