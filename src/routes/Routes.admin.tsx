@@ -38,12 +38,14 @@ export const AdminDataRoutes = [
   {
     key: "/admin-academic-term",
     path: "/admin/academic-term",
-    element: <AdminAcademicTerm />,
+    // element: <AdminAcademicTerm />,
+    element: (<UserProvider><AdminAcademicTerm /></UserProvider>),
   },
   {
     key: "/admin-login",
     path: "/admin/login",
     element: <AdminLogin />,
+
   },
 
 ];

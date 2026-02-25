@@ -1,17 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
-import { Users, GraduationCap, UserCheck, Menu } from "lucide-react";
+import { Users, GraduationCap, UserCheck, Menu, TrendingUp, Activity, BarChart3, PieChart, Megaphone, Calendar } from "lucide-react";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
 import { genderOptions, yearLevelOptions, departmentOptions } from "../component/enumOptions";
 import { toast } from "react-toastify";
+import DashboardCharts from "./components/DashboardCharts";
+import DashboardStyles from "./components/DashboardStyles";
 
 
 const AdminDashboard = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [animatedStats, setAnimatedStats] = useState({ teachers: 0, students: 0, pending: 0 });
 
   /* STICKY HEADER STATE */
   const [showHeader, setShowHeader] = useState(true);
@@ -58,45 +62,74 @@ const AdminDashboard = () => {
     students: 0,
     pending: 0,
   });
+
+  // Animate stats on load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimatedStats(stats);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [stats]);
+
+  // Loading animation
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
   const fetchStudents = async () => {
-  const res = await adminDashboardService.getAllStudentEmails();
+    setIsLoading(true);
+    try {
+      const res = await adminDashboardService.getAllStudentEmails();
 
-  if (res.success && res.data) {
-    const mapped = res.data.students?.map((student, index) => ({
-      id: student.student_id ?? `temp-${index}`,
-      name: `${student.student_fn || ''} ${student.student_ln || ''}`.trim() || student.email.split('@')[0],
-      email: student.email,
-      course: getCourseName(student.student_course),
-      gender: getGenderName(student.student_gender),
-      yearLevel: getYearLevelName(student.student_yr_lvl)
-    })) || [];
+      if (res.success && res.data) {
+        const mapped = res.data.students?.map((student, index) => ({
+          id: student.student_id ?? `temp-${index}`,
+          name: `${student.student_fn || ''} ${student.student_ln || ''}`.trim() || student.email.split('@')[0],
+          email: student.email,
+          course: getCourseName(student.student_course),
+          courseCode: student.student_course || "Unknown",
+          gender: getGenderName(student.student_gender),
+          yearLevel: getYearLevelName(student.student_yr_lvl)
+        })) || [];
 
-    setStudents(mapped);
-    setStats(prev => ({
-      ...prev,
-      students: mapped.length,
-    }));
-  }
-};
-const fetchTeachers = async () => {
-  const res = await adminDashboardService.getAllProfEmails();
+        setStudents(mapped);
+        setStats(prev => ({
+          ...prev,
+          students: mapped.length,
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching students:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const fetchTeachers = async () => {
+    setIsLoading(true);
+    try {
+      const res = await adminDashboardService.getAllProfEmails();
 
-  if (res.success && res.data) {
-    const mapped = res.data.emails?.map((teacher, index) => ({
-      id: teacher.email ?? `temp-${index}`,
-      name: `${teacher.prof_fn || ''} ${teacher.prof_ln || ''}`.trim() || teacher.email.split('@')[0],
-      email: teacher.email,
-      gender: getGenderName(teacher.prof_gender),
-      department: getDepartmentName(teacher.prof_department)
-    })) || [];
+      if (res.success && res.data) {
+        const mapped = res.data.emails?.map((teacher, index) => ({
+          id: teacher.email ?? `temp-${index}`,
+          name: `${teacher.prof_fn || ''} ${teacher.prof_ln || ''}`.trim() || teacher.email.split('@')[0],
+          email: teacher.email,
+          gender: getGenderName(teacher.prof_gender),
+          department: getDepartmentName(teacher.prof_department)
+        })) || [];
 
-    setTeachers(mapped);
-    setStats(prev => ({
-      ...prev,
-      teachers: mapped.length,
-    }));
-  }
-};
+        setTeachers(mapped);
+        setStats(prev => ({
+          ...prev,
+          teachers: mapped.length,
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 
   useEffect(() => {
@@ -132,7 +165,9 @@ const fetchTeachers = async () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <>
+      <DashboardStyles />
+      <div className="flex min-h-screen bg-[#161A20] text-white">
 
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
@@ -179,79 +214,161 @@ const fetchTeachers = async () => {
 
         {/* PAGE CONTENT */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          {/* Loading Overlay */}
+          {isLoading && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="bg-[#1E242E] p-8 rounded-2xl shadow-2xl">
+                <div className="flex items-center space-x-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                  <span className="text-white text-lg">Loading Dashboard...</span>
+                </div>
+              </div>
+            </div>
+          )}
 
-          <h1 className="hidden lg:block text-2xl font-bold mb-8 text-center">
-            Admin Dashboard
-          </h1>
+          {/* Header with animation */}
+          <div className="mb-8 animate-fade-in">
+            <h1 className="hidden lg:block text-3xl font-bold text-center text-white">
+              Admin Dashboard
+            </h1>
+            <p className="text-center text-gray-400 mt-2">Welcome back! Here's your overview.</p>
+          </div>
 
-          {/* ===== STAT CARDS ===== */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5 mb-8 max-w-4xl mx-auto">
+          {/* ===== ENHANCED STAT CARDS ===== */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
             <StatCard 
               icon={GraduationCap} 
               label="Teachers" 
-              value={stats.teachers} 
+              value={animatedStats.teachers} 
               color="blue" 
               onClick={navigateToTeachers}
+              trend="+12%"
+              iconBg={TrendingUp}
             />
             <StatCard 
               icon={Users} 
               label="Students" 
-              value={stats.students} 
+              value={animatedStats.students} 
               color="green" 
               onClick={navigateToStudents}
+              trend="+8%"
+              iconBg={Activity}
+            />
+            <StatCard 
+              icon={Megaphone} 
+              label="Announcements" 
+              value="5" 
+              color="orange" 
+              onClick={() => navigate('/admin/announcement')}
+              trend="+2"
+              iconBg={Activity}
+            />
+            <StatCard 
+              icon={Calendar} 
+              label="Academic Term" 
+              value="2024-2025" 
+              color="indigo" 
+              onClick={() => navigate('/admin/academic-term')}
+              trend="Active"
+              iconBg={TrendingUp}
             />
           </div>
 
-          {/* ===== TEACHERS AND STUDENTS LISTS SIDE BY SIDE ===== */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* ===== TEACHERS LIST (LEFT SIDE) ===== */}
-            <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Teachers</h2>
+          {/* ===== DASHBOARD CHARTS ===== */}
+          <div className="mb-8">
+            <DashboardCharts students={students} teachers={teachers} />
+          </div>
 
-              <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
-                {teachers.slice(0, 10).map((teacher) => (
+          {/* ===== ENHANCED TEACHERS AND STUDENTS LISTS ===== */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+            {/* ===== TEACHERS LIST ===== */}
+            <div className="bg-[#1E242E] p-4 sm:p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                  <span className="hidden sm:inline">Teachers</span>
+                  <span className="sm:hidden">Tchrs</span>
+                </h2>
+                <span className="text-xs sm:text-sm text-gray-400 bg-[#2E3440] px-2 sm:px-3 py-1 rounded-full">
+                  {teachers.length}
+                </span>
+              </div>
+
+              <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto custom-scrollbar">
+                {teachers.slice(0, 8).map((teacher, index) => (
                   <div
                     key={teacher.id}
-                    className="bg-[#2E3440] p-4 rounded-lg hover:bg-[#363D4A] transition"
+                    className="bg-[#2E3440] p-3 sm:p-4 rounded-lg hover:bg-[#363D4A] transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg cursor-pointer"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <div>
-                      <p className="font-medium text-sm">{teacher.name}</p>
-                      <p className="text-gray-400 text-xs">{teacher.email}</p>
-                      <p className="text-gray-400 text-xs">{teacher.gender}</p>
-                      <p className="text-gray-400 text-xs">{teacher.department}</p>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium text-xs sm:text-sm text-white mb-1 truncate">{teacher.name}</p>
+                        <p className="text-gray-400 text-xs mb-1 truncate">{teacher.email}</p>
+                        <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
+                          <span className="text-xs bg-blue-500/20 text-blue-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                            {teacher.gender}
+                          </span>
+                          <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded truncate max-w-[100px] sm:max-w-none">
+                            {teacher.department}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="w-2 h-2 bg-green-400 rounded-full mt-2 animate-pulse"></div>
                     </div>
                   </div>
                 ))}
-                {teachers.length > 10 && (
-                  <div className="text-center py-2 text-gray-400 text-sm">
-                    {teachers.length - 10} more teachers...
+                {teachers.length > 8 && (
+                  <div className="text-center py-3 text-gray-400 text-sm hover:text-white transition-colors cursor-pointer">
+                    View all {teachers.length} teachers →
                   </div>
                 )}
               </div>
             </div>
 
-            {/* ===== STUDENTS LIST (RIGHT SIDE) ===== */}
-            <div className="bg-[#1E242E] p-5 sm:p-6 rounded-xl">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Students</h2>
+            {/* ===== STUDENTS LIST ===== */}
+            <div className="bg-[#1E242E] p-4 sm:p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
+                  <span className="hidden sm:inline">Students</span>
+                  <span className="sm:hidden">Stds</span>
+                </h2>
+                <span className="text-xs sm:text-sm text-gray-400 bg-[#2E3440] px-2 sm:px-3 py-1 rounded-full">
+                  {students.length}
+                </span>
+              </div>
 
-              <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
-                {students.slice(0, 10).map((student) => (
+              <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto custom-scrollbar">
+                {students.slice(0, 8).map((student, index) => (
                   <div
                     key={student.id}
-                    className="bg-[#2E3440] p-4 rounded-lg hover:bg-[#363D4A] transition"
+                    className="bg-[#2E3440] p-3 sm:p-4 rounded-lg hover:bg-[#363D4A] transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg cursor-pointer"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <div>
-                      <p className="font-medium text-sm">{student.name}</p>
-                      <p className="text-gray-400 text-xs">{student.email}</p>
-                      <p className="text-gray-400 text-xs">{student.gender}</p>
-                      <p className="text-gray-400 text-xs">{student.course}</p>
-                      <p className="text-gray-400 text-xs">{student.yearLevel}</p>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium text-xs sm:text-sm text-white mb-1 truncate">{student.name}</p>
+                        <p className="text-gray-400 text-xs mb-1 truncate">{student.email}</p>
+                        <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
+                          <span className="text-xs bg-green-500/20 text-green-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                            {student.gender}
+                          </span>
+                          <span className="text-xs bg-amber-500/20 text-amber-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded truncate max-w-[80px] sm:max-w-none">
+                            {student.course}
+                          </span>
+                          <span className="text-xs bg-indigo-500/20 text-indigo-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                            {student.yearLevel}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="w-2 h-2 bg-green-400 rounded-full mt-2 animate-pulse"></div>
                     </div>
                   </div>
                 ))}
-                {students.length > 10 && (
-                  <div className="text-center py-2 text-gray-400 text-sm">
-                    {students.length - 10} more students...
+                {students.length > 8 && (
+                  <div className="text-center py-3 text-gray-400 text-sm hover:text-white transition-colors cursor-pointer">
+                    View all {students.length} students →
                   </div>
                 )}
               </div>
@@ -262,43 +379,93 @@ const fetchTeachers = async () => {
 
     
   </div>
+    </>
   );
 };
 
-/* 🔹 REUSABLE STAT CARD */
-const StatCard = ({ icon: Icon, label, value, color, onClick }) => {
+/* 🔹 ENHANCED STAT CARD WITH ANIMATIONS */
+const StatCard = ({ icon: Icon, label, value, color, onClick, trend, iconBg: IconBg }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [displayValue, setDisplayValue] = useState(0);
+  
+  // Animate number counting
+  useEffect(() => {
+    const duration = 1500;
+    const steps = 30;
+    const increment = value / steps;
+    let current = 0;
+    
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= value) {
+        setDisplayValue(value);
+        clearInterval(timer);
+      } else {
+        setDisplayValue(Math.floor(current));
+      }
+    }, duration / steps);
+    
+    return () => clearInterval(timer);
+  }, [value]);
+
   const colorGradients = {
-    blue: 'from-blue-600 to-indigo-700',
-    green: 'from-emerald-600 to-teal-700',
-    yellow: 'from-yellow-500 to-amber-600',
+    blue: 'from-blue-600 via-blue-500 to-indigo-600',
+    green: 'from-emerald-600 via-green-500 to-teal-600',
+    orange: 'from-orange-600 via-amber-500 to-yellow-600',
+    indigo: 'from-indigo-600 via-violet-500 to-purple-600',
+    purple: 'from-purple-600 via-violet-500 to-indigo-600',
+    amber: 'from-amber-600 via-orange-500 to-yellow-600',
   };
 
   const iconBackgrounds = {
-    blue: 'bg-blue-500/20 text-blue-200',
-    green: 'bg-emerald-500/20 text-emerald-200',
-    yellow: 'bg-amber-500/20 text-amber-200',
+    blue: 'bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-200 border border-blue-400/30',
+    green: 'bg-gradient-to-br from-emerald-500/20 to-green-600/20 text-emerald-200 border border-emerald-400/30',
+    orange: 'bg-gradient-to-br from-orange-500/20 to-amber-600/20 text-orange-200 border border-orange-400/30',
+    indigo: 'bg-gradient-to-br from-indigo-500/20 to-violet-600/20 text-indigo-200 border border-indigo-400/30',
+    purple: 'bg-gradient-to-br from-purple-500/20 to-violet-600/20 text-purple-200 border border-purple-400/30',
+    amber: 'bg-gradient-to-br from-amber-500/20 to-orange-600/20 text-amber-200 border border-amber-400/30',
   };
 
   return (
     <button 
       onClick={onClick}
-      className={`w-full text-left p-6 rounded-xl flex items-center gap-5 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`w-full text-left p-3 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col gap-3 sm:gap-4 
         bg-gradient-to-br ${colorGradients[color]} 
-        shadow-lg hover:shadow-xl hover:shadow-${color}-500/20 
-        transition-all duration-300 transform hover:-translate-y-1 
+        shadow-lg hover:shadow-2xl hover:shadow-${color}-500/30 
+        transition-all duration-500 transform hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-[1.02] sm:hover:scale-105 
         active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 
         focus:ring-offset-[#1E242E] focus:ring-${color}-400
-        border border-${color}-400/20`}
+        border border-${color}-400/20 relative overflow-hidden group`}
     >
-      <div className={`${iconBackgrounds[color]} p-3.5 rounded-xl backdrop-blur-sm`}>
-        <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
+      {/* Animated background pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
       </div>
-      <div className="text-white">
-        <p className="text-opacity-80 text-sm font-medium">{label}</p>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{value}</h2>
+      
+      <div className="flex items-start justify-between relative z-10">
+        <div className={`${iconBackgrounds[color]} p-2 sm:p-3.5 rounded-lg sm:rounded-xl backdrop-blur-sm transform transition-transform duration-300 ${isHovered ? 'rotate-12 scale-110' : ''}`}>
+          <Icon className="w-4 h-4 sm:w-6 sm:h-6" />
+        </div>
+        {trend && (
+          <div className="flex items-center gap-1 text-xs text-white/80 bg-white/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+            <IconBg className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+            <span className="hidden xs:inline">{trend}</span>
+            <span className="xs:hidden">{trend.charAt(0)}</span>
+          </div>
+        )}
       </div>
-      <div className="ml-auto opacity-80">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      
+      <div className="text-white relative z-10">
+        <p className="text-white/80 text-xs sm:text-sm font-medium mb-1">{label}</p>
+        <h2 className="text-xl sm:text-3xl font-bold tracking-tight tabular-nums">
+          {displayValue.toLocaleString()}
+        </h2>
+      </div>
+      
+      <div className="ml-auto opacity-80 transform transition-transform duration-300 group-hover:translate-x-1 hidden sm:block">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
         </svg>
       </div>

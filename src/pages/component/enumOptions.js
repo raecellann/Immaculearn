@@ -5,7 +5,7 @@ export const departmentOptions = [
   { code: "BSHM", name: "Bachelor of Science in Hospitality Management" },
   { code: "BSA", name: "Bachelor of Science in Accountancy" },
   { code: "ACT", name: "Associate in Computer Technology" },
-  { code: "BSNE", name: "Bachelor of Special Needs Education" },
+  { code: "BSNED", name: "Bachelor of Special Needs Education" },
   { code: "BEED", name: "Bachelor of Elementary Education" },
   { code: "BSED-ENG", name: "Bachelor of Secondary Education Major in English" },
   { code: "BSED-FIL", name: "Bachelor of Secondary Education Major in Filipino" },
