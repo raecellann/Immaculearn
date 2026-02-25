@@ -8,6 +8,7 @@ import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { useFileManager } from "../../hooks/useFileManager.js";
+import { useFile } from "../../contexts/file/useFile";
 import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
@@ -15,7 +16,13 @@ import { useNotification } from "../../contexts/notification/notificationContext
 
 const ProfFilesShared = () => {
   const navigate = useNavigate();
-  const { showGlobalLoading, showGlobalNotification, hideGlobalNotification, updateNotificationData, updateNotificationMessage } = useNotification();
+  const {
+    showGlobalLoading,
+    showGlobalNotification,
+    hideGlobalNotification,
+    updateNotificationData,
+    updateNotificationMessage,
+  } = useNotification();
   const { space_uuid, space_name } = useParams();
 
   // Custom hooks
@@ -58,7 +65,16 @@ const ProfFilesShared = () => {
   // Space name
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
   const { list, create } = useFileManager(currentSpace?.space_id || null);
-  const files = list?.data || [];
+  const {
+    files: contextFiles,
+    uploadResource,
+    isUploading,
+    uploadProgress,
+    createFile: createFileWithContext,
+    refreshFiles,
+  } = useFile();
+
+  const files = list?.data || contextFiles;
 
   /* ================= HEADER + SIDEBAR ================= */
 
@@ -90,51 +106,63 @@ const ProfFilesShared = () => {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      if (uploadedFiles.length >= 5) {
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 5) {
         alert("Maximum 5 files allowed");
         return;
       }
-      const newFile = {
-        id: Date.now(),
-        name: e.dataTransfer.files[0].name,
-        size: e.dataTransfer.files[0].size,
-      };
-      setUploadedFiles((prev) => [...prev, newFile]);
+      try {
+        await uploadResource(files, space_uuid);
+        // Refresh the file list after successful upload
+        if (currentSpace?.space_id) {
+          await refreshFiles(space_uuid);
+        }
+        setShowCreateUploadModal(false);
+        setUploadedFiles([]);
+      } catch (error) {
+        console.error("Upload failed:", error);
+      }
     }
   };
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      if (uploadedFiles.length >= 5) {
+  const handleFileChange = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      if (files.length > 5) {
         alert("Maximum 5 files allowed");
         return;
       }
-      const newFile = {
-        id: Date.now(),
-        name: e.target.files[0].name,
-        size: e.target.files[0].size,
-      };
-      setUploadedFiles((prev) => [...prev, newFile]);
+      try {
+        await uploadResource(files, space_uuid);
+        // Refresh the file list after successful upload
+        if (currentSpace?.space_uuid) {
+          await refreshFiles(space_uuid);
+        }
+        setShowCreateUploadModal(false);
+        setUploadedFiles([]);
+      } catch (error) {
+        console.error("Upload failed:", error);
+      }
     }
   };
 
   const handleUploadFile = async (file, retryCount = 0) => {
     const maxRetries = 3;
     let notificationId = null;
-    
+
     try {
       // Close the upload modal immediately when upload starts
       setShowCreateUploadModal(false);
-      
+
       // Show initial loading notification
       notificationId = showGlobalNotification({
-        type: 'loading',
-        title: 'Uploading File',
+        type: "loading",
+        title: "Uploading File",
         message: `Uploading "${file.name}"...`,
         duration: null, // Keep visible until manually closed
         persistent: true,
@@ -142,31 +170,32 @@ const ProfFilesShared = () => {
           fileName: file.name,
           fileSize: file.size,
           progress: 0,
-          status: 'uploading',
+          status: "uploading",
           retryCount,
-          startTime: new Date().toISOString()
-        }
+          startTime: new Date().toISOString(),
+        },
       });
 
       // Simulate upload progress (replace with actual upload logic)
       const simulateProgress = async () => {
         const progressSteps = [10, 25, 50, 75, 90, 100];
-        
+
         for (const progress of progressSteps) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
+          await new Promise((resolve) => setTimeout(resolve, 500));
+
           if (notificationId) {
             updateNotificationData(notificationId, {
               ...file,
               progress,
-              status: progress === 100 ? 'processing' : 'uploading'
+              status: progress === 100 ? "processing" : "uploading",
             });
-            
+
             // Update message based on progress
-            const message = progress === 100 
-              ? `Processing "${file.name}"...` 
-              : `Uploading "${file.name}" - ${progress}%`;
-              
+            const message =
+              progress === 100
+                ? `Processing "${file.name}"...`
+                : `Uploading "${file.name}" - ${progress}%`;
+
             // Update the notification message using the context function
             updateNotificationMessage(notificationId, message);
           }
@@ -178,19 +207,21 @@ const ProfFilesShared = () => {
 
       // Actual file upload logic (replace with your API call)
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('space_id', currentSpace?.space_id);
-      formData.append('owner_id', user?.id);
+      formData.append("file", file);
+      formData.append("space_id", currentSpace?.space_id);
+      formData.append("owner_id", user?.id);
 
       // Simulate API call with potential failure (replace with actual API)
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       // Simulate random failure for demonstration (remove in production)
       const shouldFail = Math.random() < 0.3; // 30% chance of failure for testing
       if (shouldFail && retryCount < maxRetries) {
-        throw new Error(`Upload interrupted (attempt ${retryCount + 1}/${maxRetries})`);
+        throw new Error(
+          `Upload interrupted (attempt ${retryCount + 1}/${maxRetries})`,
+        );
       }
-      
+
       // For now, simulate success (replace with actual API response)
       const uploadResult = { success: true, file_id: Date.now() };
 
@@ -200,86 +231,88 @@ const ProfFilesShared = () => {
           updateNotificationData(notificationId, {
             ...file,
             progress: 100,
-            status: 'completed',
+            status: "completed",
             fileId: uploadResult.file_id,
-            completedTime: new Date().toISOString()
+            completedTime: new Date().toISOString(),
           });
         }
 
         // Show success notification
         showGlobalNotification({
-          type: 'success',
-          title: 'Upload Complete',
+          type: "success",
+          title: "Upload Complete",
           message: `"${file.name}" has been successfully uploaded.`,
           duration: 3000,
           data: {
             fileName: file.name,
-            fileId: uploadResult.file_id
+            fileId: uploadResult.file_id,
           },
           actions: [
             {
-              label: 'View File',
-              variant: 'primary',
+              label: "View File",
+              variant: "primary",
               onClick: () => {
                 // Navigate to the uploaded file
-                navigate(`/prof/space/${space_uuid}/${space_name}/files/${uploadResult.file_id}/${file.name}`);
+                navigate(
+                  `/prof/space/${space_uuid}/${space_name}/files/${uploadResult.file_id}/${file.name}`,
+                );
                 hideGlobalNotification();
-              }
+              },
             },
             {
-              label: 'Close',
-              variant: 'secondary',
-              onClick: () => hideGlobalNotification()
-            }
-          ]
+              label: "Close",
+              variant: "secondary",
+              onClick: () => hideGlobalNotification(),
+            },
+          ],
         });
       } else {
-        throw new Error(uploadResult.error || 'Upload failed');
+        throw new Error(uploadResult.error || "Upload failed");
       }
-
     } catch (error) {
-      console.error('Upload error:', error);
-      
+      console.error("Upload error:", error);
+
       // Check if we should retry
-      if (retryCount < maxRetries && error.message.includes('interrupted')) {
+      if (retryCount < maxRetries && error.message.includes("interrupted")) {
         // Update notification to show retry attempt
         if (notificationId) {
           updateNotificationData(notificationId, {
             ...file,
             progress: 0,
-            status: 'retrying',
+            status: "retrying",
             retryCount: retryCount + 1,
-            error: error.message
+            error: error.message,
           });
-          
-          updateNotificationMessage(notificationId, 
-            `Upload interrupted. Retrying... (${retryCount + 1}/${maxRetries})`
+
+          updateNotificationMessage(
+            notificationId,
+            `Upload interrupted. Retrying... (${retryCount + 1}/${maxRetries})`,
           );
         }
 
         // Wait a moment before retrying
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
         // Retry the upload
         return handleUploadFile(file, retryCount + 1);
       }
-      
+
       // Final error state after all retries exhausted
       if (notificationId) {
         updateNotificationData(notificationId, {
           ...file,
           progress: 0,
-          status: 'error',
+          status: "error",
           error: error.message,
           retryCount,
-          failedTime: new Date().toISOString()
+          failedTime: new Date().toISOString(),
         });
       }
 
       // Show error notification with retry option
       showGlobalNotification({
-        type: 'error',
-        title: 'Upload Failed',
+        type: "error",
+        title: "Upload Failed",
         message: `Failed to upload "${file.name}". ${error.message}`,
         duration: null, // Keep visible until manually closed
         persistent: true,
@@ -288,24 +321,24 @@ const ProfFilesShared = () => {
           error: error.message,
           originalFile: file,
           retryCount,
-          canRetry: retryCount < maxRetries
+          canRetry: retryCount < maxRetries,
         },
         actions: [
           {
-            label: retryCount < maxRetries ? 'Retry Upload' : 'Start Fresh',
-            variant: 'primary',
+            label: retryCount < maxRetries ? "Retry Upload" : "Start Fresh",
+            variant: "primary",
             onClick: () => {
               hideGlobalNotification();
               // Retry the upload with reset counter
               handleUploadFile(file, 0);
-            }
+            },
           },
           {
-            label: 'Cancel',
-            variant: 'secondary',
-            onClick: () => hideGlobalNotification()
-          }
-        ]
+            label: "Cancel",
+            variant: "secondary",
+            onClick: () => hideGlobalNotification(),
+          },
+        ],
       });
     }
   };
@@ -413,33 +446,28 @@ const ProfFilesShared = () => {
     navigate(url);
   };
 
-  const handleCreateFile = () => {
+  const handleCreateFile = async () => {
     if (!fileName.trim()) {
       alert("File title is required");
       return;
     }
 
-    create.mutate(
-      {
-        title: fileName,
-        space_id: currentSpace?.space_id ?? null,
-        owner_id: user?.id ?? null,
-        content: "",
-      },
-      {
-        onSuccess: (newFile) => {
-          alert(`File "${fileName}" created successfully!`);
-          const url = `/prof/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${newFile.title}`;
-          navigate(url);
-          setFileName("");
-          setIsCreatingFile(false);
-        },
-        onError: (err) => {
-          console.error(err);
-          alert(err?.message || "Failed to create file");
-        },
-      },
-    );
+    try {
+      const newFile = await createFileWithContext(
+        fileName,
+        currentSpace?.space_id ?? "",
+        "",
+      );
+
+      const url = `/prof/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${newFile.title}`;
+      navigate(url);
+
+      setFileName("");
+      setIsCreatingFile(false);
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || "Failed to create file");
+    }
   };
 
   const formatFileTitle = (filename) => {
@@ -1039,6 +1067,73 @@ const ProfFilesShared = () => {
                         </button>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* UPLOAD BUTTON AND PROGRESS */}
+                {uploadedFiles.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {isUploading && (
+                      <div className="w-full">
+                        <div
+                          className="flex justify-between text-sm mb-1"
+                          style={{ color: currentColors.textSecondary }}
+                        >
+                          <span>Uploading resources...</span>
+                          <span>{uploadProgress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={async () => {
+                        const fileInput =
+                          document.getElementById("file-upload");
+                        const files = Array.from(fileInput.files || []);
+
+                        if (files.length > 0) {
+                          try {
+                            await uploadResource(files, space_uuid);
+                            if (space_uuid) {
+                              await refreshFiles(space_uuid);
+                            }
+                            setShowCreateUploadModal(false);
+                            setUploadedFiles([]);
+                          } catch (error) {
+                            console.error("Upload failed:", error);
+                          }
+                        }
+                      }}
+                      disabled={isUploading}
+                      className="w-full px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center space-x-2"
+                      style={{
+                        backgroundColor: isUploading ? "#9ca3af" : "#2563eb",
+                        color: "#ffffff",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isUploading) {
+                          e.target.style.backgroundColor = "#1d4ed8";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isUploading) {
+                          e.target.style.backgroundColor = "#2563eb";
+                        }
+                      }}
+                    >
+                      <FiUpload size={16} />
+                      <span>
+                        {isUploading
+                          ? "Uploading..."
+                          : `Upload ${uploadedFiles.length} Resource${uploadedFiles.length > 1 ? "s" : ""}`}
+                      </span>
+                    </button>
                   </div>
                 )}
               </div>

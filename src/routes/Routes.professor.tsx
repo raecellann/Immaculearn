@@ -34,6 +34,7 @@ import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionp
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
+import { FileProvider } from "../contexts/file/fileContextProvider.js";
 export const ProfRoutes = () => {
   const { user } = useUser();
   if (!user) return null; // Or a loading spinner
@@ -168,6 +169,7 @@ export const ProfRoutes = () => {
       <Route
         path="account"
         element={
+
             <ProfProfilePage />
         }
       />
@@ -237,7 +239,9 @@ export const ProfRoutes = () => {
         path="/space/:space_uuid/:space_name/files"
         element={
           <SpaceProvider>
-              <ProfFilesShared />
+              <FileProvider>
+                <ProfFilesShared />
+              </FileProvider>
           </SpaceProvider>
         }
       />

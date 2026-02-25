@@ -34,3 +34,36 @@ export interface UploadResponse {
     size: number;
     status: "uploaded";
 }
+
+
+
+
+
+/**
+ * GET DATA FROM SUPABASE
+ */
+export interface SupabaseFileMetadata {
+  eTag: string;
+  size: number;
+  mimetype: string;
+  cacheControl: string;
+  lastModified: string;
+  contentLength: number;
+  httpStatusCode: number;
+}
+
+export interface ResourceFile {
+  name: string;
+  id: string;
+  updated_at: string;
+  created_at: string;
+  last_accessed_at: string;
+  metadata: SupabaseFileMetadata;
+  url: string;
+}
+
+export interface ListResourcesResponse {
+  success: boolean;
+  data: ResourceFile[];
+  message: string;
+}
