@@ -5,7 +5,7 @@ import UserTaskPage from "../pages/UserSpace/UserTaskPage.jsx";
 import UserFilesShared from "../pages/UserSpace/UserFilesShared.jsx";
 import UserPeoplePage from "../pages/UserSpace/UserPeoplePage.jsx";
 import AdminTaskPage from "../pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
-import AdminCreateActivityPage from "../pages/UserSpace/AdminSpacePages/AdminCreateActivityPage.jsx";
+import CreateActivityPage from "../pages/UserSpace/CreateActivity/CreateActivityPage";
 import FormBuilderPage from "../pages/UserSpace/AdminSpacePages/FormBuilderPage.jsx";
 import SpacePage from "../pages/Space/SpacePage.jsx";
 import CreateSpaceAdmin from "../pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
@@ -54,7 +54,17 @@ export const SpaceRoutes = [
   {
     key: "/create-activity",
     path: "/space/:space_uuid/:space_name/create-activity",
-    element: <AdminCreateActivityPage />,
+    element: <CreateActivityPage />,
+  },
+  {
+    key: "/essay-form",
+    path: "/space/:space_uuid/:space_name/essay-form",
+    element: <div>Essay Form Creation Page (Coming Soon)</div>,
+  },
+  {
+    key: "/create-document",
+    path: "/space/:space_uuid/:space_name/create-document",
+    element: <div>Collaborative Document Creation Page (Coming Soon)</div>,
   },
   {
     key: "/form-builder",

@@ -78,6 +78,43 @@ const AdminTaskPage = () => {
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
+  // Quick task creation modal state
+  const [showQuickTaskModal, setShowQuickTaskModal] = useState(false);
+  const [quickTaskTitle, setQuickTaskTitle] = useState("");
+  const [quickLessonUnder, setQuickLessonUnder] = useState("");
+  const [quickTaskCategory, setQuickTaskCategory] = useState("quiz");
+  const [quickTaskErrors, setQuickTaskErrors] = useState({
+    quickTaskTitle: "",
+    quickLessonUnder: ""
+  });
+  const [lessons, setLessons] = useState([]);
+  const [showAddLesson, setShowAddLesson] = useState(false);
+  const [newLesson, setNewLesson] = useState("");
+
+  // Exam filter state
+  const [examFilter, setExamFilter] = useState("all"); // "all", "prelim", "midterm", "prefinals", "finals"
+
+  // Function to filter tasks by exam type
+  const filterTasksByExam = (tasks) => {
+    if (examFilter === "all") return tasks;
+    
+    return tasks.filter(task => {
+      const lessonUnder = task.lessonUnder?.toLowerCase() || "";
+      switch (examFilter) {
+        case "prelim":
+          return lessonUnder.includes("prelim");
+        case "midterm":
+          return lessonUnder.includes("midterm");
+        case "prefinals":
+          return lessonUnder.includes("prefinals");
+        case "finals":
+          return lessonUnder.includes("finals");
+        default:
+          return true;
+      }
+    });
+  };
+
   // Add Member modal state
   const [showInvitePopup, setShowInvitePopup] = useState(false);
 
@@ -593,6 +630,90 @@ const AdminTaskPage = () => {
     setShowDeleteRoom(true);
   };
 
+  // Quick Task Creation functions
+  const clearQuickTaskError = (field) => {
+    setQuickTaskErrors(prev => ({
+      ...prev,
+      [field]: ""
+    }));
+  };
+
+  const handleAddNewLesson = () => {
+    if (newLesson.trim()) {
+      if (!lessons.includes(newLesson.trim())) {
+        setLessons(prev => [...prev, newLesson.trim()]);
+      }
+      setQuickLessonUnder(newLesson.trim());
+      setNewLesson("");
+      setShowAddLesson(false);
+      clearQuickTaskError('quickLessonUnder');
+    }
+  };
+
+  const handleQuickTaskCreate = () => {
+    // Clear previous errors
+    const newErrors = {
+      quickTaskTitle: "",
+      quickLessonUnder: ""
+    };
+    
+    let hasErrors = false;
+
+    // Validate required fields
+    if (!quickTaskTitle.trim()) {
+      newErrors.quickTaskTitle = "Task title is required";
+      hasErrors = true;
+    } else if (quickTaskTitle.trim().length < 3) {
+      newErrors.quickTaskTitle = "Title must be at least 3 characters long";
+      hasErrors = true;
+    }
+
+    if (!quickLessonUnder.trim()) {
+      newErrors.quickLessonUnder = "Lesson under is required";
+      hasErrors = true;
+    }
+
+    // Set errors if any
+    if (hasErrors) {
+      setQuickTaskErrors(newErrors);
+      return;
+    }
+
+    // Clear errors if validation passes
+    setQuickTaskErrors({
+      quickTaskTitle: "",
+      quickLessonUnder: ""
+    });
+
+    // Store task data in localStorage for the next page
+    const taskData = {
+      taskTitle: quickTaskTitle,
+      lessonUnder: quickLessonUnder,
+      taskCategory: quickTaskCategory,
+      instruction: "",
+      score: "",
+      dueDate: "",
+      selectedFile: null,
+      criteria: [{ id: 1, name: "", description: "", points: "" }]
+    };
+    localStorage.setItem("taskFormData", JSON.stringify(taskData));
+
+    // Navigate to CreateActivityForm
+    navigate(`/space/${space_uuid}/${space_name}/create-activity`);
+
+    // Reset modal state
+    setShowQuickTaskModal(false);
+    setQuickTaskTitle("");
+    setQuickLessonUnder("");
+    setQuickTaskCategory("quiz");
+    setQuickTaskErrors({
+      quickTaskTitle: "",
+      quickLessonUnder: ""
+    });
+    setShowAddLesson(false);
+    setNewLesson("");
+  };
+
   const confirmDeleteRoom = () => {
     // Here you would implement the actual delete logic
     toast.success(`Room "${currentSpace?.space_name}" has been deleted.`);
@@ -743,18 +864,62 @@ const AdminTaskPage = () => {
             </div>
           )}
 
-          {!isCreatingTask ? (
-            /* TASKS LIST VIEW */
-
+          {/* TASKS LIST VIEW */}
             <div className="max-w-5xl mx-auto">
               {isOwnerSpace && (
-                <button
-                  className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
-                  onClick={() => setIsCreatingTask(true)}
-                >
-                  <FiFileText size={16} />
-                  Create Task
-                </button>
+                <div className="flex items-center justify-between mb-6">
+                  {/* Exam Filter - Left Side */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium" style={{ color: currentColors.text, fontSize: '0.65rem' }}>
+                        Filter:
+                      </span>
+                      {[
+                        { value: "all", label: "All" },
+                        { value: "prelim", label: "Prelim" },
+                        { value: "midterm", label: "Midterm" },
+                        { value: "prefinals", label: "Prefinals" },
+                        { value: "finals", label: "Finals" }
+                      ].map((filter) => (
+                        <button
+                          key={filter.value}
+                          onClick={() => setExamFilter(filter.value)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                            examFilter === filter.value
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-600 text-gray-300 hover:bg-gray-500"
+                          }`}
+                          style={{ fontSize: '0.65rem' }}
+                        >
+                          {filter.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs" style={{ color: currentColors.textSecondary, fontSize: '0.6rem' }}>
+                        {filterTasksByExam(uploadedTask).length} of {uploadedTask.length}
+                      </span>
+                      {examFilter !== "all" && (
+                        <button
+                          onClick={() => setExamFilter("all")}
+                          className="px-3 py-1 rounded-full text-xs bg-gray-600 text-gray-300 hover:bg-gray-500 transition-colors"
+                          style={{ fontSize: '0.65rem' }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Create Task Button - Right Side */}
+                  <button
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                    onClick={() => setShowQuickTaskModal(true)}
+                  >
+                    <FiFileText size={16} />
+                    Create Task
+                  </button>
+                </div>
               )}
 
               <div className="mb-6">
@@ -773,7 +938,7 @@ const AdminTaskPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {uploadedTask?.map((task, index) => (
+                    {filterTasksByExam(uploadedTask)?.map((task, index) => (
                       <tr
                         key={index}
                         className="border-b border-gray-700 hover:bg-[#1E222A]"
@@ -848,7 +1013,7 @@ const AdminTaskPage = () => {
 
               {/* Mobile Cards */}
               <div className="md:hidden space-y-4">
-                {uploadedTask?.map((task, index) => (
+                {filterTasksByExam(uploadedTask)?.map((task, index) => (
                   <div
                     key={index}
                     className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
@@ -1007,451 +1172,6 @@ const AdminTaskPage = () => {
                 </div>
               </div>
             </div>
-          ) : (
-            /* CREATE TASK FORM */
-            <div className="max-w-5xl mx-auto">
-              <div className="flex justify-end mb-6">
-                <button
-                  className="flex items-center gap-2 bg-black/70 hover:bg-black px-4 py-2 rounded-lg text-white text-sm font-medium shadow"
-                  onClick={() => {
-                    navigate(-1);
-                  }}
-                >
-                  <FiArrowLeft size={16} />
-                  <span className="hidden sm:inline">Back to Tasks</span>
-                  <span className="sm:hidden">Back</span>
-                </button>
-              </div>
-              <div className="bg-black rounded-xl shadow-lg p-3 sm:p-4 md:p-6 lg:p-8 border border-white">
-                <div className="flex flex-col xl:flex-row gap-4 lg:gap-6">
-                  <div className="flex-1 flex flex-col gap-4">
-                    <label className="font-semibold text-lg">
-                      Title: <span className="text-red-500">*</span>
-                    </label>
-
-                    <input
-                      type="text"
-                      value={taskTitle}
-                      onChange={(e) => setTaskTitle(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-3 py-2 sm:px-4 sm:py-2 outline-none border border-[#23272F] focus:border-blue-500 text-sm sm:text-base"
-                      placeholder="Enter task title"
-                    />
-
-                    {/* Task Category */}
-                    <label className="font-semibold">
-                      Category: <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={taskCategory}
-                      onChange={(e) => setTaskCategory(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-3 py-2 sm:px-4 sm:py-2 outline-none border border-[#23272F] focus:border-blue-500 w-full text-sm sm:text-base"
-                    >
-                      {taskCategories.map((category) => (
-                        <option key={category.value} value={category.value}>
-                          {category.emoji} {category.label}
-                        </option>
-                      ))}
-                    </select>
-
-                    {/* Instruction */}
-                    <label className="font-semibold">
-                      Instruction (optional)
-                    </label>
-                    <div className="bg-[#23272F] rounded-lg border border-[#23272F] focus-within:border-blue-500">
-                      <div
-                        ref={instructionRef}
-                        contentEditable
-                        className="min-h-[120px] sm:min-h-[140px] px-3 py-2 sm:px-4 sm:py-3 outline-none text-sm sm:text-base"
-                        suppressContentEditableWarning
-                      />
-                      <div className="border-t border-[#2F3440]" />
-                      <div className="flex gap-2 sm:gap-4 px-3 py-2 sm:px-4 sm:py-2 text-gray-300">
-                        <button
-                          type="button"
-                          onClick={() => applyFormat("bold")}
-                          className="hover:text-white"
-                        >
-                          <FiBold />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => applyFormat("italic")}
-                          className="hover:text-white"
-                        >
-                          <FiItalic />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => applyFormat("underline")}
-                          className="hover:text-white"
-                        >
-                          <FiUnderline />
-                        </button>
-                      </div>
-                    </div>
-
-                    <label className="font-semibold">File (optional)</label>
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-4">
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="bg-[#23272F] hover:bg-[#2F3440] px-3 py-2 sm:px-4 sm:py-2 rounded-lg flex items-center gap-2 transition-colors text-sm sm:text-base"
-                        >
-                          <FiUploadCloud size={16} />
-                          Choose File
-                        </button>
-                        {selectedFile && (
-                          <span className="text-xs sm:text-sm text-gray-400 truncate max-w-[120px] sm:max-w-none">
-                            {selectedFile.name}
-                          </span>
-                        )}
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          className="hidden"
-                          onChange={handleFileChange}
-                          accept=".doc,.docx,.pdf,.ppt,.pptx,.xls,.xlsx,.txt,.text"
-                        />
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Accepted formats: DOC, DOCX, PDF, PPT, PPTX, XLS, XLSX,
-                        TXT | Max size: 5MB | Max content: 1000 words
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 flex flex-col gap-3 sm:gap-4">
-                    <label className="font-semibold text-sm sm:text-base">
-                      Score: <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      value={score}
-                      onChange={(e) => handleScoreChange(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-3 py-2 sm:px-4 sm:py-2 outline-none border border-[#23272F] focus:border-blue-500 text-sm sm:text-base"
-                      placeholder="Enter score"
-                    />
-                    {score && criteria.length > 0 && (
-                      <div className="text-xs text-green-400 mt-1">
-                        ✓ Auto-distributed:{" "}
-                        {(parseFloat(score) / criteria.length).toFixed(2)}{" "}
-                        points per criterion
-                      </div>
-                    )}
-
-                    <label className="font-semibold text-sm sm:text-base">
-                      Due Date: <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="bg-[#23272F] rounded-lg px-3 py-2 sm:px-4 sm:py-2 outline-none border border-[#23272F] focus:border-blue-500 text-sm sm:text-base"
-                    />
-
-                    {/* Criteria/Rubrics Section */}
-                    <div className="flex flex-col gap-2 sm:gap-3">
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                        <label className="font-semibold text-sm sm:text-base">
-                          Scoring Criteria:
-                        </label>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setShowTemplates(!showTemplates)}
-                            className="px-2 py-1 text-xs sm:text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 transition"
-                          >
-                            Use Template
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowCriteriaSection(!showCriteriaSection)
-                            }
-                            className="px-2 py-1 text-xs sm:text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-                          >
-                            {showCriteriaSection ? "Hide" : "Manual"} Criteria
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Auto-distribution explanation */}
-                      {score && score !== "" && (
-                        <div className="p-2 sm:p-3 bg-green-900/20 border border-green-800/50 rounded-lg">
-                          <div className="flex items-start gap-2">
-                            <div className="text-green-400 mt-0.5">
-                              <svg
-                                className="w-3 h-3 sm:w-4 sm:h-4"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            </div>
-                            <div className="text-sm">
-                              <p className="text-green-300 font-medium mb-1 text-xs sm:text-sm">
-                                Automatic Score Distribution
-                              </p>
-                              <p className="text-gray-400 text-xs leading-relaxed">
-                                Total score ({score}) is automatically
-                                distributed equally among {criteria.length}{" "}
-                                criteria. Each criterion receives{" "}
-                                {(parseFloat(score) / criteria.length).toFixed(
-                                  2,
-                                )}{" "}
-                                points.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Template Selection */}
-                      {showTemplates && (
-                        <div className="bg-[#23272F] rounded-lg p-3 sm:p-4 border border-purple-600">
-                          <h4 className="text-sm font-semibold text-purple-400 mb-2 sm:mb-3">
-                            Choose a Template:
-                          </h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => applyTemplate("quiz")}
-                              className="p-2 sm:p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
-                            >
-                              <div className="font-medium text-white text-sm sm:text-base">
-                                📝 Quiz
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                For quizzes and assessments
-                              </div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => applyTemplate("individual-activity")}
-                              className="p-2 sm:p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
-                            >
-                              <div className="font-medium text-white text-sm sm:text-base">
-                                👤 Individual Activity
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                For individual assignments and tasks
-                              </div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => applyTemplate("group-activity")}
-                              className="p-2 sm:p-3 bg-[#161A20] rounded-lg hover:bg-[#1E222A] transition text-left border border-gray-600 hover:border-purple-500"
-                            >
-                              <div className="font-medium text-white text-sm sm:text-base">
-                                👥 Group Activity
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                For collaborative projects and group work
-                              </div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={clearCriteria}
-                              className="p-2 sm:p-3 bg-red-900/30 rounded-lg hover:bg-red-900/50 transition text-left border border-red-600/50 hover:border-red-500"
-                            >
-                              <div className="font-medium text-red-400 text-sm sm:text-base">
-                                🗑️ Clear All
-                              </div>
-                              <div className="text-xs text-red-300">
-                                Remove all criteria
-                              </div>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {showCriteriaSection && (
-                        <div className="bg-[#23272F] rounded-lg p-3 sm:p-4 max-h-[250px] sm:max-h-[300px] overflow-y-auto">
-                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-3">
-                            <h4 className="text-sm font-semibold text-blue-400">
-                              {criteria.some((c) => c.name.trim())
-                                ? "Current Criteria:"
-                                : "Add Your Criteria:"}
-                            </h4>
-                            {criteria.some((c) => c.name.trim()) && (
-                              <button
-                                type="button"
-                                onClick={() => setShowTemplates(true)}
-                                className="text-xs text-purple-400 hover:text-purple-300"
-                              >
-                                Change Template
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="space-y-2 sm:space-y-3">
-                            {criteria.map((criterion, index) => (
-                              <div
-                                key={criterion.id}
-                                className="bg-[#161A20] rounded-lg p-2 sm:p-3 border border-gray-600"
-                              >
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                                  <span className="text-sm font-medium text-blue-400">
-                                    Criteria {index + 1}
-                                  </span>
-                                  {criteria.length > 1 && (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        removeCriteria(criterion.id)
-                                      }
-                                      className="text-red-400 hover:text-red-300 text-xs sm:text-sm"
-                                    >
-                                      Remove
-                                    </button>
-                                  )}
-                                </div>
-
-                                <input
-                                  type="text"
-                                  value={criterion.name}
-                                  onChange={(e) =>
-                                    updateCriteria(
-                                      criterion.id,
-                                      "name",
-                                      e.target.value,
-                                    )
-                                  }
-                                  placeholder="Criteria name (e.g., Content Quality)"
-                                  className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500"
-                                />
-
-                                <textarea
-                                  value={criterion.description}
-                                  onChange={(e) =>
-                                    updateCriteria(
-                                      criterion.id,
-                                      "description",
-                                      e.target.value,
-                                    )
-                                  }
-                                  placeholder="Description (optional)"
-                                  rows={2}
-                                  className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 resize-none"
-                                />
-
-                                <input
-                                  type="number"
-                                  value={criterion.points}
-                                  onChange={(e) =>
-                                    updateCriteria(
-                                      criterion.id,
-                                      "points",
-                                      e.target.value,
-                                    )
-                                  }
-                                  placeholder="Points"
-                                  min="0"
-                                  step="0.5"
-                                  className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500"
-                                  readOnly={score && score !== ""}
-                                  title={
-                                    score && score !== ""
-                                      ? "Points are automatically distributed from total score"
-                                      : "Enter total score above to auto-distribute points"
-                                  }
-                                />
-                                {score && score !== "" && (
-                                  <div className="text-xs text-green-400 mt-1">
-                                    Auto-calculated from total score
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-
-                            <button
-                              type="button"
-                              onClick={addCriteria}
-                              className="w-full px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm transition"
-                            >
-                              + Add Criteria
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* FORM BUILDER SECTION */}
-                      <div className="flex flex-col gap-3 mt-6">
-                        <div className="flex justify-between items-center">
-                          <label className="font-semibold">
-                            Activity Form Builder:
-                          </label>
-                          <button
-                            onClick={() => {
-                              // Store task data in localStorage for form builder
-                              localStorage.setItem(
-                                "taskFormData",
-                                JSON.stringify({
-                                  taskTitle: taskTitle,
-                                  instruction: instruction,
-                                }),
-                              );
-                              navigate(
-                                `/space/${space_uuid}/${space_name}/form-builder`,
-                              );
-                            }}
-                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                          >
-                            <FiEdit3 size={16} />
-                            Open Form Builder
-                          </button>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          Create custom questions for members to answer when
-                          submitting this task
-                        </p>
-                        <div className="text-xs text-blue-400 mt-1">
-                          💡 Members can upload files if you enable "Allow
-                          member attachments" in the form builder
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-6 sm:mt-8">
-                  <button
-                    className="px-4 py-2 sm:px-6 sm:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base w-full sm:w-auto"
-                    onClick={() => {
-                      resetTaskForm();
-                      setIsCreatingTask(false);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="px-4 py-2 sm:px-6 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base w-full sm:w-auto"
-                    onClick={() => {
-                      // Handle task creation logic here
-                      console.log("Creating task:", {
-                        taskTitle,
-                        instruction,
-                        score,
-                        dueDate,
-                        taskCategory,
-                        criteria,
-                        formFields, // Include form fields in task creation
-                      });
-                      setIsCreatingTask(false);
-                    }}
-                  >
-                    Create Task
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -1510,6 +1230,228 @@ const AdminTaskPage = () => {
           tasks: uploadedTask || [],
         }}
       />
+
+      {/* QUICK TASK CREATION MODAL */}
+      {showQuickTaskModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div 
+            className="rounded-xl p-6 w-full max-w-md mx-4"
+            style={{ backgroundColor: currentColors.surface, border: `1px solid ${currentColors.border}` }}
+          >
+            <h3 className="text-xl font-semibold mb-4" style={{ color: currentColors.text }}>
+              Create New Task
+            </h3>
+            
+            <div className="space-y-4">
+              {/* Title Activity */}
+              <div>
+                <label className="block text-sm font-medium mb-1" style={{ color: currentColors.text }}>
+                  Title Activity: <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={quickTaskTitle}
+                  onChange={(e) => {
+                    setQuickTaskTitle(e.target.value);
+                    clearQuickTaskError('quickTaskTitle');
+                  }}
+                  className={`w-full px-3 py-2 rounded-lg border outline-none transition-colors ${
+                    quickTaskErrors.quickTaskTitle ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'
+                  }`}
+                  style={{ 
+                    backgroundColor: currentColors.background, 
+                    borderColor: quickTaskErrors.quickTaskTitle ? '#ef4444' : currentColors.border,
+                    color: currentColors.text
+                  }}
+                  placeholder="Enter task title"
+                />
+                {quickTaskErrors.quickTaskTitle && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <FiX size={12} />
+                    {quickTaskErrors.quickTaskTitle}
+                  </p>
+                )}
+              </div>
+
+              {/* Lesson Under */}
+              <div>
+                <label className="block text-sm font-medium mb-1" style={{ color: currentColors.text }}>
+                  Lesson Under: <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    value={quickLessonUnder}
+                    onChange={(e) => {
+                      setQuickLessonUnder(e.target.value);
+                      clearQuickTaskError('quickLessonUnder');
+                    }}
+                    className={`flex-1 px-3 py-2 rounded-lg border outline-none transition-colors ${
+                      quickTaskErrors.quickLessonUnder ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'
+                    }`}
+                    style={{ 
+                      backgroundColor: currentColors.background, 
+                      borderColor: quickTaskErrors.quickLessonUnder ? '#ef4444' : currentColors.border,
+                      color: currentColors.text
+                    }}
+                  >
+                    <option value="">
+                      {lessons.length === 0 ? "Add lessons below to get started..." : "Select a lesson..."}
+                    </option>
+                    {lessons.map((lesson, index) => (
+                      <option key={index} value={lesson}>
+                        {lesson}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddLesson(!showAddLesson)}
+                    className="px-3 py-2 rounded-lg border transition-colors hover:scale-105"
+                    style={{ 
+                      backgroundColor: currentColors.accent, 
+                      borderColor: currentColors.accent,
+                      color: 'white'
+                    }}
+                    title="Add new lesson"
+                  >
+                    +
+                  </button>
+                </div>
+                {quickTaskErrors.quickLessonUnder && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <FiX size={12} />
+                    {quickTaskErrors.quickLessonUnder}
+                  </p>
+                )}
+                
+                {/* Add New Lesson Section */}
+                {showAddLesson && (
+                  <div className="mt-3 p-3 rounded-lg border" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newLesson}
+                        onChange={(e) => setNewLesson(e.target.value)}
+                        placeholder="Enter new lesson name..."
+                        className="flex-1 px-3 py-2 rounded-lg border outline-none focus:border-blue-500"
+                        style={{ 
+                          backgroundColor: currentColors.surface, 
+                          borderColor: currentColors.border,
+                          color: currentColors.text
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleAddNewLesson();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddNewLesson}
+                        className="px-3 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
+                      >
+                        Add
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAddLesson(false);
+                          setNewLesson("");
+                        }}
+                        className="px-3 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    {newLesson.trim() && lessons.includes(newLesson.trim()) && (
+                      <p className="text-yellow-500 text-xs mt-2">
+                        This lesson already exists
+                      </p>
+                    )}
+                  </div>
+                )}
+                
+                {/* Show add lesson prompt when no lessons exist */}
+                {lessons.length === 0 && !showAddLesson && (
+                  <div className="mt-3 p-3 rounded-lg border border-dashed" style={{ backgroundColor: currentColors.background, borderColor: currentColors.accent }}>
+                    <p className="text-sm text-center" style={{ color: currentColors.textSecondary }}>
+                      No lessons available yet. 
+                      <button
+                        type="button"
+                        onClick={() => setShowAddLesson(true)}
+                        className="ml-2 px-2 py-1 rounded text-xs transition-colors hover:scale-105"
+                        style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                      >
+                        Add your first lesson
+                      </button>
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium mb-1" style={{ color: currentColors.text }}>
+                  Category: <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={quickTaskCategory}
+                  onChange={(e) => setQuickTaskCategory(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border focus:border-blue-500 outline-none"
+                  style={{ 
+                    backgroundColor: currentColors.background, 
+                    borderColor: currentColors.border,
+                    color: currentColors.text
+                  }}
+                >
+                  <option value="quiz">📝 Quiz</option>
+                  <option value="reflection-essay">📄 Reflection/Essay</option>
+                  <option value="group-activity">👥 Group Activity</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowQuickTaskModal(false);
+                  setQuickTaskTitle("");
+                  setQuickLessonUnder("");
+                  setQuickTaskCategory("quiz");
+                  setQuickTaskErrors({
+                    quickTaskTitle: "",
+                    quickLessonUnder: ""
+                  });
+                  setShowAddLesson(false);
+                  setNewLesson("");
+                }}
+                className="px-4 py-2 rounded-lg transition"
+                style={{ 
+                  backgroundColor: currentColors.textSecondary, 
+                  color: 'white'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.text}
+                onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.textSecondary}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleQuickTaskCreate}
+                className="px-4 py-2 rounded-lg transition"
+                style={{ 
+                  backgroundColor: currentColors.accent, 
+                  color: 'white'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}
+              >
+                Create Task
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import Sidebar from "../../component/sidebar";
 import { useSpaceTheme } from "../../../contexts/theme/spaceThemeContextProvider";
@@ -12,7 +12,12 @@ import {
   FiAlignLeft,
   FiArrowLeft,
   FiList,
+  FiUploadCloud,
+  FiBold,
+  FiItalic,
+  FiUnderline,
 } from "react-icons/fi";
+import mammoth from 'mammoth';
 
 const FormBuilderPage = () => {
   const navigate = useNavigate();
@@ -33,6 +38,8 @@ const FormBuilderPage = () => {
   const [questions, setQuestions] = useState([]);
   const [taskTitle, setTaskTitle] = useState("");
   const [instruction, setInstruction] = useState("");
+  const [taskCategory, setTaskCategory] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [questionQuantities, setQuestionQuantities] = useState(
     Object.fromEntries(questionTypes.map(type => [type.id, '']))
   );
@@ -43,6 +50,20 @@ const FormBuilderPage = () => {
     questionLabel: ''
   });
   
+  // Refs for file upload and instruction
+  const fileInputRef = useRef(null);
+  const instructionRef = useRef(null);
+  
+  // Filter question types based on task category
+  const getAvailableQuestionTypes = () => {
+    if (taskCategory === 'reflection-essay') {
+      // Only allow short answer (identification) for reflection/essay
+      return questionTypes.filter(type => type.id === 'identification');
+    }
+    // Show all question types for quiz
+    return questionTypes;
+  };
+  
   // Retrieve task data from localStorage on component mount
   useEffect(() => {
     const storedData = localStorage.getItem('taskFormData');
@@ -51,11 +72,108 @@ const FormBuilderPage = () => {
         const data = JSON.parse(storedData);
         setTaskTitle(data.taskTitle || "");
         setInstruction(data.instruction || "");
+        setTaskCategory(data.taskCategory || "");
       } catch (error) {
         console.error('Error parsing stored task data:', error);
       }
     }
   }, []);
+  
+  // File Upload Functions
+  const handleFileClick = () => {
+    console.log("handleFileClick called");
+    console.log("fileInputRef.current:", fileInputRef.current);
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    } else {
+      console.error("fileInputRef.current is null");
+    }
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      await extractTextFromFile(file);
+    }
+  };
+
+  const extractTextFromFile = async (file) => {
+    try {
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      let extractedText = '';
+
+      if (fileExtension === 'pdf') {
+        extractedText = await extractTextFromPDF(file);
+      } else if (['doc', 'docx'].includes(fileExtension)) {
+        extractedText = await extractTextFromDocx(file);
+      } else if (['ppt', 'pptx'].includes(fileExtension)) {
+        extractedText = await extractTextFromPptx(file);
+      } else if (['xls', 'xlsx'].includes(fileExtension)) {
+        extractedText = await extractTextFromExcel(file);
+      } else if (['txt', 'text'].includes(fileExtension)) {
+        extractedText = await extractTextFromText(file);
+      }
+
+      if (extractedText) {
+        setInstruction(extractedText);
+        if (instructionRef.current) {
+          instructionRef.current.innerHTML = extractedText;
+        }
+      }
+    } catch (error) {
+      console.error('Error extracting text from file:', error);
+    }
+  };
+
+  const extractTextFromPDF = async (file) => {
+    return `[PDF Document: ${file.name}]\n\nThis is where the extracted text from the PDF would appear. The PDF text extraction functionality needs to be implemented using a library like pdf.js or pdf-parse.\n\nDocument content would be extracted and displayed here automatically.`;
+  };
+
+  const extractTextFromDocx = async (file) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      const extractedText = result.value;
+      
+      if (extractedText && extractedText.trim().length > 0) {
+        const formattedText = extractedText
+          .replace(/\s+/g, ' ')
+          .substring(0, 3000)
+          .replace(/([.!?])\s+/g, '$1\n\n')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+        
+        return `[Word Document: ${file.name}]\n\n${formattedText}${extractedText.length > 3000 ? '\n\n...' : ''}`;
+      } else {
+        return `[Word Document: ${file.name}]\n\nNo text content found in this document. The document may be empty or contain only images.`;
+      }
+    } catch (error) {
+      console.error('Error extracting text from DOCX with mammoth:', error);
+      return `[Word Document: ${file.name}]\n\nUnable to extract text from this Word document. The file may be corrupted or in an unsupported format.`;
+    }
+  };
+
+  const extractTextFromPptx = async (file) => {
+    return `[PowerPoint Presentation: ${file.name}]\n\nThis is where the extracted text from the PowerPoint would appear. The PPTX text extraction functionality needs to be implemented using a library like pptx-parser.\n\nSlide content would be extracted and displayed here automatically.`;
+  };
+
+  const extractTextFromExcel = async (file) => {
+    return `[Excel Spreadsheet: ${file.name}]\n\nThis is where the extracted text from the Excel file would appear. The Excel text extraction functionality needs to be implemented using a library like xlsx or exceljs.\n\nCell content would be extracted and displayed here automatically.`;
+  };
+
+  const extractTextFromText = async (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsText(file);
+    });
+  };
+
+  const applyFormat = (command) => {
+    instructionRef.current?.focus();
+    document.execCommand(command, false, null);
+  };
   
   // Form Builder Functions
   const addMultipleQuestions = (type, quantity) => {
@@ -197,13 +315,81 @@ const FormBuilderPage = () => {
                 <label className="block font-semibold mb-2">
                   Instruction (optional)
                 </label>
-                <textarea
-                  value={instruction}
-                  onChange={(e) => setInstruction(e.target.value)}
-                  className="w-full rounded-lg px-4 py-2 outline-none border focus:border-blue-500 h-20 resize-none"
-                  style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
-                  placeholder="Enter instructions for this activity"
-                />
+                <div className="rounded-lg border focus-within:border-blue-500"
+                     style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+                  <div
+                    ref={instructionRef}
+                    contentEditable
+                    className="min-h-[140px] px-4 py-3 outline-none"
+                    suppressContentEditableWarning
+                    style={{ color: currentColors.text }}
+                    dangerouslySetInnerHTML={{ __html: instruction }}
+                  />
+                  <div className="border-t" style={{ borderColor: currentColors.border }} />
+                  <div className="flex gap-4 px-4 py-2 justify-center" style={{ color: currentColors.textSecondary }}>
+                    <button
+                      type="button"
+                      onClick={() => applyFormat("bold")}
+                      className="transition-colors"
+                      style={{ color: currentColors.textSecondary }}
+                      onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                      onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                    >
+                      <FiBold />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => applyFormat("italic")}
+                      className="transition-colors"
+                      style={{ color: currentColors.textSecondary }}
+                      onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                      onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                    >
+                      <FiItalic />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => applyFormat("underline")}
+                      className="transition-colors"
+                      style={{ color: currentColors.textSecondary }}
+                      onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                      onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                    >
+                      <FiUnderline />
+                    </button>
+
+                    {/* File Upload Button */}
+                    <div className="border-l" style={{ borderColor: currentColors.border }} />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log("Upload button clicked");
+                        handleFileClick();
+                      }}
+                      className="transition-colors flex items-center gap-1 cursor-pointer hover:bg-opacity-10 hover:bg-white rounded px-2 py-1"
+                      style={{ color: currentColors.textSecondary }}
+                      onMouseEnter={(e) => e.target.style.color = currentColors.text}
+                      onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                      title={selectedFile ? selectedFile.name : "Upload file (DOCS, PDF, PPT, EXCEL - up to 10MB)"}
+                    >
+                      <FiUploadCloud size={16} />
+                      <span className="text-xs truncate max-w-24">
+                        {selectedFile ? selectedFile.name : "Upload"}
+                      </span>
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".doc,.docx,.pdf,.ppt,.pptx,.xls,.xlsx"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -214,9 +400,14 @@ const FormBuilderPage = () => {
 
             {/* QUESTION TYPE SELECTION */}
             <div className="mb-6">
-              <h4 className="font-semibold mb-3">Add Question Type:</h4>
+              <h4 className="font-semibold mb-3">
+                Add Question Type: 
+                {taskCategory === 'reflection-essay' && (
+                  <span className="ml-2 text-sm text-gray-400">(Short Answer Only)</span>
+                )}
+              </h4>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {questionTypes.map((type) => {
+                {getAvailableQuestionTypes().map((type) => {
                   const Icon = type.icon;
                   const questionsOfType = questions.filter(q => q.type === type.id);
                   return (
