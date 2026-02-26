@@ -44,6 +44,7 @@ const ProfCreateClassroomSpace = () => {
   const [timeSchedule, setTimeSchedule] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [wordCount, setWordCount] = useState(0);
+  const [sectionContent, setSectionContent] = useState("");
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [startTime, setStartTime] = useState({
     hour: 8,
@@ -117,6 +118,11 @@ const ProfCreateClassroomSpace = () => {
     setSelectedDay((prev) => (prev === day ? "" : day));
   };
 
+  const handleSectionContentChange = (e) => {
+    const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
+    setSectionContent(value);
+  };
+
   const formatTime = (time) => {
     const { hour, minute, period } = time;
     const displayHour = hour === 12 ? 12 : hour === 0 ? 12 : hour;
@@ -172,11 +178,12 @@ const ProfCreateClassroomSpace = () => {
         const spaceData = {
           space_name: spaceName,
           short_description: shortDescription,
-          space_day: selectedDay, // Single day instead of array
+          section_content: sectionContent,
+          space_day: selectedDay,
           space_time_start: timeStart24,
           space_time_end: timeEnd24,
-          space_yr_lvl: parseInt(yearLevel) || 1, // Convert to number, default to 1
-          space_settings: spaceSettings.current, // This contains space_cover and max_member
+          space_yr_lvl: parseInt(yearLevel) || 1,
+          space_settings: spaceSettings.current,
         };
 
         // Call the API
@@ -186,12 +193,12 @@ const ProfCreateClassroomSpace = () => {
           const space_uuid = result?.space_uuid;
           console.log(space_uuid);
           toast.success(`Course Space "${spaceName}" created successfully!`);
-          // alert(`Space "${spaceName}" created successfully!`);
 
           // Reset form
           setSpaceName("");
           setShortDescription("");
           setWordCount(0);
+          setSectionContent("");
           setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
           setYearLevel("");
           setSelectedDay("");
@@ -220,9 +227,9 @@ const ProfCreateClassroomSpace = () => {
 
     const url = URL.createObjectURL(file);
     setUploadedImage(url);
-    setOriginalImage(url); // Store original image
+    setOriginalImage(url);
     setIsCropping(true);
-    setIsCoverModalOpen(false); // Close the modal after file selection
+    setIsCoverModalOpen(false);
   };
 
   const onCropComplete = useCallback((_, croppedPixels) => {
@@ -230,7 +237,6 @@ const ProfCreateClassroomSpace = () => {
   }, []);
 
   const createCroppedImage = async (imageSrc, croppedAreaPixels) => {
-    // Always use the original image for cropping
     const image = new Image();
     image.src = originalImage || imageSrc;
 
@@ -270,7 +276,6 @@ const ProfCreateClassroomSpace = () => {
       );
       setCoverImage(croppedImageUrl);
       setIsCropping(false);
-      // Don't clear uploadedImage or originalImage to allow re-cropping
       setIsCoverModalOpen(false);
     }
   };
@@ -304,7 +309,7 @@ const ProfCreateClassroomSpace = () => {
 
       {/* ================= MAIN CONTENT ================= */}
       <div className="flex-1 flex flex-col">
-        {/* 📹 MOBILE + TABLET STICKY HEADER */}
+        {/* MOBILE + TABLET STICKY HEADER */}
         <div
           className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
@@ -325,7 +330,7 @@ const ProfCreateClassroomSpace = () => {
           <h1 className="text-xl font-bold">Create Classroom Space</h1>
         </div>
 
-        {/* 📹 Spacer for fixed header */}
+        {/* Spacer for fixed header */}
         <div className="lg:hidden h-16" />
 
         {/* ================= PAGE CONTENT ================= */}
@@ -338,25 +343,21 @@ const ProfCreateClassroomSpace = () => {
             <div className="rounded-xl p-4 lg:p-6 w-full mx-auto" style={{
               backgroundColor: currentColors.surface
             }}>
-              {/* 🔵 TWITTER-STYLE CROP MODAL */}
+
+              {/* 🔵 CROP MODAL */}
               {isCropping && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
                   <div className="rounded-xl p-4 w-full max-w-4xl relative" style={{
                     backgroundColor: currentColors.surface
                   }}>
-                    {/* Close btn */}
                     <button
                       className="absolute top-3 right-3 p-1 rounded-full"
                       style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-                      onClick={() => {
-                        setIsCropping(false);
-                        // Don't clear the original image when closing cropper
-                      }}
+                      onClick={() => setIsCropping(false)}
                     >
                       <X size={20} style={{ color: 'white' }} />
                     </button>
 
-                    {/* Cropper area */}
                     <div className="relative w-full h-[300px] sm:h-[350px] md:h-[420px] rounded-lg overflow-hidden bg-black">
                       <Cropper
                         image={uploadedImage}
@@ -370,7 +371,6 @@ const ProfCreateClassroomSpace = () => {
                       />
                     </div>
 
-                    {/* Zoom slider */}
                     <div className="flex items-center justify-center mt-4">
                       <input
                         type="range"
@@ -383,28 +383,17 @@ const ProfCreateClassroomSpace = () => {
                       />
                     </div>
 
-                    {/* Buttons */}
                     <div className="flex justify-end mt-5 gap-2">
                       <button
                         className="px-4 py-2 text-sm rounded-lg transition-colors"
-                        style={{
-                          backgroundColor: isDarkMode ? '#444' : '#6b7280',
-                          color: 'white'
-                        }}
-                        onClick={() => {
-                          setIsCropping(false);
-                          // Don't clear the original image when canceling
-                        }}
+                        style={{ backgroundColor: isDarkMode ? '#444' : '#6b7280', color: 'white' }}
+                        onClick={() => setIsCropping(false)}
                       >
                         Cancel
                       </button>
-
                       <button
                         className="px-4 py-2 text-sm rounded-lg transition-colors"
-                        style={{
-                          backgroundColor: '#007AFF',
-                          color: 'white'
-                        }}
+                        style={{ backgroundColor: '#007AFF', color: 'white' }}
                         onClick={handleCropSave}
                       >
                         Apply
@@ -414,53 +403,37 @@ const ProfCreateClassroomSpace = () => {
                 </div>
               )}
 
-              {/* Normal Cover Image */}
+              {/* Cover Image */}
               <div className="relative">
                 <img
                   src={coverImage}
                   alt="Cover"
-                  className="w-full h-32 sm:h-40 object-cover rounded-lg"
-                  style={{
-                    background: coverImage.includes("gradient")
-                      ? coverImage
-                      : "",
-                  }}
+                  className="w-full h-32 sm:h-44 object-cover rounded-lg"
+                  style={{ background: coverImage.includes("gradient") ? coverImage : "" }}
                 />
-
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
                   <button
                     className="px-2 py-1 rounded text-xs"
-                    style={{
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      color: 'white'
-                    }}
+                    style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }}
                     onClick={() => setIsCoverModalOpen(true)}
                   >
                     Change Cover
                   </button>
-
                   {!coverImage.includes("gradient") && originalImage && (
                     <button
                       className="px-2 py-1 rounded text-xs"
-                      style={{
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        color: 'white'
-                      }}
+                      style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }}
                       onClick={() => {
-                        setUploadedImage(originalImage); // Use original image for cropping
+                        setUploadedImage(originalImage);
                         setIsCropping(true);
                       }}
                     >
                       Crop
                     </button>
                   )}
-
                   <button
                     className="px-2 py-1 rounded text-xs"
-                    style={{
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      color: 'white'
-                    }}
+                    style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }}
                     onClick={() => setCoverImage("")}
                   >
                     Delete Cover
@@ -474,18 +447,10 @@ const ProfCreateClassroomSpace = () => {
                   <div className="rounded-lg p-4 sm:p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto" style={{
                     backgroundColor: currentColors.surface
                   }}>
-                    <button
-                      className="absolute top-2 right-2"
-                      onClick={() => setIsCoverModalOpen(false)}
-                    >
+                    <button className="absolute top-2 right-2" onClick={() => setIsCoverModalOpen(false)}>
                       <X size={20} />
                     </button>
-
-                    <h3 className="text-lg font-semibold mb-4">
-                      Edit Cover Photo
-                    </h3>
-
-                    {/* Color Gradient */}
+                    <h3 className="text-lg font-semibold mb-4">Edit Cover Photo</h3>
                     <p className="text-sm mb-2">Color & Gradient</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                       {colorOptions.map((color, i) => (
@@ -493,15 +458,10 @@ const ProfCreateClassroomSpace = () => {
                           key={i}
                           className="h-12 rounded cursor-pointer"
                           style={{ background: color }}
-                          onClick={() => {
-                            setCoverImage(color);
-                            setIsCoverModalOpen(false);
-                          }}
-                        ></div>
+                          onClick={() => { setCoverImage(color); setIsCoverModalOpen(false); }}
+                        />
                       ))}
                     </div>
-
-                    {/* Gallery */}
                     <p className="text-sm mb-2">Gallery</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                       {galleryImages.map((img, i) => (
@@ -509,19 +469,11 @@ const ProfCreateClassroomSpace = () => {
                           key={i}
                           src={img}
                           className="h-16 w-full object-cover rounded cursor-pointer"
-                          onClick={() => {
-                            setCoverImage(img);
-                            setOriginalImage(img); // Set original image for gallery images
-                            setIsCoverModalOpen(false);
-                          }}
+                          onClick={() => { setCoverImage(img); setOriginalImage(img); setIsCoverModalOpen(false); }}
                         />
                       ))}
                     </div>
-
-                    {/* Upload */}
-                    <label className="block text-sm mb-1">
-                      Upload from computer (max 5MB)
-                    </label>
+                    <label className="block text-sm mb-1">Upload from computer (max 5MB)</label>
                     <input
                       type="file"
                       accept="image/*"
@@ -537,10 +489,16 @@ const ProfCreateClassroomSpace = () => {
                 </div>
               )}
 
-              {/* Space Name and Year Level Row */}
-              <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm mb-3">Space Name:</label>
+              {/* ─────────────────────────────────────────────────
+                  ROW 1: Space Name | Year Level | Section
+                  Mobile: stacked full-width
+                  Tablet (sm): Space Name full-row, then Year + Section side-by-side
+                  Desktop (lg): all three in one row
+              ───────────────────────────────────────────────── */}
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_180px_100px] gap-4">
+                {/* Space Name — takes full width on mobile, full row on sm, flex-1 on lg */}
+                <div className="sm:col-span-2 lg:col-span-1">
+                  <label className="block text-sm font-medium mb-2">Space Name</label>
                   <InputField
                     placeholder="Enter space name"
                     value={spaceName}
@@ -548,8 +506,10 @@ const ProfCreateClassroomSpace = () => {
                     style={{ width: "100%", backgroundColor: "#ffffff" }}
                   />
                 </div>
-                <div className="sm:w-1/3">
-                  <label className="block text-sm mb-3">Year Level:</label>
+
+                {/* Year Level */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Year Level</label>
                   <select
                     value={yearLevel}
                     onChange={(e) => setYearLevel(e.target.value)}
@@ -558,7 +518,6 @@ const ProfCreateClassroomSpace = () => {
                       backgroundColor: isDarkMode ? '#374151' : '#ffffff',
                       borderColor: currentColors.border,
                       color: currentColors.text,
-                      focusRingColor: '#007AFF'
                     }}
                   >
                     <option value="">Select year level</option>
@@ -568,52 +527,39 @@ const ProfCreateClassroomSpace = () => {
                     <option value="4th Year">4th Year</option>
                   </select>
                 </div>
-              </div>
 
-              {/* Short Description */}
-              <div className="mt-6">
-                <label className="block text-sm mb-3">Short Description:</label>
-                <InputField
-                  placeholder="Enter a brief description for this classroom space (max 100 words)"
-                  value={shortDescription}
-                  onChange={handleShortDescriptionChange}
-                  style={{ width: "100%", backgroundColor: "#ffffff" }}
-                />
-                <div className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
-                  {wordCount}/100 words
+                {/* Section */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Section</label>
+                  <InputField
+                    placeholder="e.g. A"
+                    value={sectionContent}
+                    onChange={handleSectionContentChange}
+                    maxLength={2}
+                    style={{ width: "100%", backgroundColor: "#ffffff", textTransform: "uppercase" }}
+                  />
                 </div>
               </div>
 
-              {/* Schedule Days and Time Schedule Row */}
-              <div className="mt-8 flex flex-col lg:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm mb-3">Schedule Days:</label>
+              {/* ─────────────────────────────────────────────────
+                  ROW 2: Schedule Days | Time Schedule
+                  Mobile: stacked
+                  Tablet+: side by side
+              ───────────────────────────────────────────────── */}
+              <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {/* Schedule Days */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Schedule Day</label>
                   <div className="flex flex-wrap gap-2">
                     {daysOfWeek.map((day) => (
                       <button
                         key={day.value}
                         onClick={() => handleDayToggle(day.value)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 ${
-                          selectedDay === day.value
-                            ? "text-white shadow-lg"
-                            : ""
-                        }`}
+                        className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105"
                         style={{
                           backgroundColor: selectedDay === day.value ? '#007AFF' : (isDarkMode ? '#3E3E3E' : '#e5e7eb'),
                           color: selectedDay === day.value ? 'white' : (isDarkMode ? '#d1d5db' : '#374151'),
                           boxShadow: selectedDay === day.value ? '0 4px 12px rgba(0, 122, 255, 0.3)' : 'none'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!selectedDay === day.value) {
-                            e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#d1d5db';
-                            e.target.style.transform = 'scale(1.05)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!selectedDay === day.value) {
-                            e.target.style.backgroundColor = isDarkMode ? '#3E3E3E' : '#e5e7eb';
-                            e.target.style.transform = 'scale(1)';
-                          }
                         }}
                       >
                         {day.label}
@@ -626,102 +572,81 @@ const ProfCreateClassroomSpace = () => {
                     </p>
                   )}
                 </div>
-                <div className="lg:w-1/2">
-                  <label className="block text-sm mb-3">Time Schedule:</label>
+
+                {/* Time Schedule */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Time Schedule</label>
                   <div
-                    className="p-3 rounded-lg border cursor-pointer transition-all duration-200 transform hover:scale-[1.02] hover:shadow-md"
+                    className="p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.01]"
                     style={{
                       backgroundColor: isDarkMode ? '#374151' : '#ffffff',
                       borderColor: currentColors.border,
                       color: currentColors.text
                     }}
                     onClick={() => setShowTimePicker(!showTimePicker)}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#f9fafb';
-                      e.target.style.borderColor = isDarkMode ? '#6B7280' : '#d1d5db';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = isDarkMode ? '#374151' : '#ffffff';
-                      e.target.style.borderColor = currentColors.border;
-                    }}
                   >
                     <div className="flex items-center justify-between">
                       <span style={{ color: isDarkMode ? '#d1d5db' : '#4b5563' }}>
                         {timeSchedule || "Click to set time"}
                       </span>
-                      <svg
-                        className="w-5 h-5"
-                        style={{ color: isDarkMode ? '#9ca3af' : '#6b7280' }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
+                      <svg className="w-5 h-5 flex-shrink-0" style={{ color: isDarkMode ? '#9ca3af' : '#6b7280' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                   </div>
                 </div>
               </div>
 
+              {/* ─────────────────────────────────────────────────
+                  ROW 3: Short Description — full width at bottom
+              ───────────────────────────────────────────────── */}
+              <div className="mt-5">
+                <label className="block text-sm font-medium mb-2">Short Description</label>
+                <InputField
+                  placeholder="Enter a brief description for this classroom space"
+                  value={shortDescription}
+                  onChange={handleShortDescriptionChange}
+                  style={{ width: "100%", backgroundColor: "#ffffff" }}
+                />
+                <div className="text-xs mt-1.5 flex justify-between items-center" style={{ color: currentColors.textSecondary }}>
+                  <span>Describe what this space is about</span>
+                  <span
+                    style={{
+                      color: wordCount >= 90 ? '#f59e0b' : wordCount >= 100 ? '#ef4444' : currentColors.textSecondary
+                    }}
+                  >
+                    {wordCount}/100 words
+                  </span>
+                </div>
+              </div>
+
               {/* Time Picker Modal */}
               {showTimePicker && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                  <div className="rounded-xl p-6 w-full max-w-sm" style={{
-                    backgroundColor: currentColors.surface
-                  }}>
+                  <div className="rounded-xl p-6 w-full max-w-sm" style={{ backgroundColor: currentColors.surface }}>
                     <h3 className="text-lg font-semibold mb-4" style={{ color: currentColors.text }}>
                       Set Time Schedule
                     </h3>
-
                     <div className="space-y-4">
                       {/* Start Time */}
                       <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: currentColors.textSecondary }}>
-                          Start Time
-                        </label>
+                        <label className="block text-sm font-medium mb-2" style={{ color: currentColors.textSecondary }}>Start Time</label>
                         <div className="grid grid-cols-3 gap-1">
                           <select
                             value={startTime.hour}
-                            onChange={(e) =>
-                              setStartTime({
-                                ...startTime,
-                                hour: parseInt(e.target.value),
-                              })
-                            }
+                            onChange={(e) => setStartTime({ ...startTime, hour: parseInt(e.target.value) })}
                             className="rounded-lg px-3 py-2"
-                            style={{
-                              backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-                              borderColor: currentColors.border,
-                              color: currentColors.text
-                            }}
+                            style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', borderColor: currentColors.border, color: currentColors.text }}
                           >
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(
-                              (h) => (
-                                <option key={h} value={h}>
-                                  {h === 12 ? 12 : h}
-                                </option>
-                              ),
-                            )}
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                              <option key={h} value={h}>{h === 12 ? 12 : h}</option>
+                            ))}
                           </select>
                           <select
                             value={startTime.minute}
-                            onChange={(e) =>
-                              setStartTime({
-                                ...startTime,
-                                minute: parseInt(e.target.value),
-                              })
-                            }
+                            onChange={(e) => setStartTime({ ...startTime, minute: parseInt(e.target.value) })}
                             className="rounded-lg px-3 py-2"
-                            style={{
-                              backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-                              borderColor: currentColors.border,
-                              color: currentColors.text
-                            }}
+                            style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', borderColor: currentColors.border, color: currentColors.text }}
                           >
                             <option value={0}>00</option>
                             <option value={15}>15</option>
@@ -730,68 +655,34 @@ const ProfCreateClassroomSpace = () => {
                           </select>
                           <select
                             value={startTime.period}
-                            onChange={(e) =>
-                              setStartTime({
-                                ...startTime,
-                                period: e.target.value,
-                              })
-                            }
+                            onChange={(e) => setStartTime({ ...startTime, period: e.target.value })}
                             className="rounded-lg px-3 py-2"
-                            style={{
-                              backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-                              borderColor: currentColors.border,
-                              color: currentColors.text
-                            }}
+                            style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', borderColor: currentColors.border, color: currentColors.text }}
                           >
                             <option value="AM">AM</option>
                             <option value="PM">PM</option>
                           </select>
                         </div>
                       </div>
-
                       {/* End Time */}
                       <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: currentColors.textSecondary }}>
-                          End Time
-                        </label>
+                        <label className="block text-sm font-medium mb-2" style={{ color: currentColors.textSecondary }}>End Time</label>
                         <div className="grid grid-cols-3 gap-1">
                           <select
                             value={endTime.hour}
-                            onChange={(e) =>
-                              setEndTime({
-                                ...endTime,
-                                hour: parseInt(e.target.value),
-                              })
-                            }
+                            onChange={(e) => setEndTime({ ...endTime, hour: parseInt(e.target.value) })}
                             className="rounded-lg px-3 py-2"
-                            style={{
-                              backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-                              borderColor: currentColors.border,
-                              color: currentColors.text
-                            }}
+                            style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', borderColor: currentColors.border, color: currentColors.text }}
                           >
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(
-                              (h) => (
-                                <option key={h} value={h}>
-                                  {h === 12 ? 12 : h}
-                                </option>
-                              ),
-                            )}
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                              <option key={h} value={h}>{h === 12 ? 12 : h}</option>
+                            ))}
                           </select>
                           <select
                             value={endTime.minute}
-                            onChange={(e) =>
-                              setEndTime({
-                                ...endTime,
-                                minute: parseInt(e.target.value),
-                              })
-                            }
+                            onChange={(e) => setEndTime({ ...endTime, minute: parseInt(e.target.value) })}
                             className="rounded-lg px-3 py-2"
-                            style={{
-                              backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-                              borderColor: currentColors.border,
-                              color: currentColors.text
-                            }}
+                            style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', borderColor: currentColors.border, color: currentColors.text }}
                           >
                             <option value={0}>00</option>
                             <option value={15}>15</option>
@@ -800,15 +691,9 @@ const ProfCreateClassroomSpace = () => {
                           </select>
                           <select
                             value={endTime.period}
-                            onChange={(e) =>
-                              setEndTime({ ...endTime, period: e.target.value })
-                            }
+                            onChange={(e) => setEndTime({ ...endTime, period: e.target.value })}
                             className="rounded-lg px-3 py-2"
-                            style={{
-                              backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-                              borderColor: currentColors.border,
-                              color: currentColors.text
-                            }}
+                            style={{ backgroundColor: isDarkMode ? '#374151' : '#f3f4f6', borderColor: currentColors.border, color: currentColors.text }}
                           >
                             <option value="AM">AM</option>
                             <option value="PM">PM</option>
@@ -816,16 +701,11 @@ const ProfCreateClassroomSpace = () => {
                         </div>
                       </div>
                     </div>
-
-                    {/* Action Buttons */}
                     <div className="flex justify-end gap-3 mt-6">
                       <button
                         onClick={() => setShowTimePicker(false)}
                         className="px-4 py-2 rounded-lg transition-colors"
-                        style={{
-                          backgroundColor: isDarkMode ? '#6b7280' : '#e5e7eb',
-                          color: currentColors.text
-                        }}
+                        style={{ backgroundColor: isDarkMode ? '#6b7280' : '#e5e7eb', color: currentColors.text }}
                       >
                         Cancel
                       </button>
@@ -836,10 +716,7 @@ const ProfCreateClassroomSpace = () => {
                           setShowTimePicker(false);
                         }}
                         className="px-4 py-2 rounded-lg transition-colors"
-                        style={{
-                          backgroundColor: '#007AFF',
-                          color: 'white'
-                        }}
+                        style={{ backgroundColor: '#007AFF', color: 'white' }}
                       >
                         Set Time
                       </button>
@@ -848,30 +725,24 @@ const ProfCreateClassroomSpace = () => {
                 </div>
               )}
 
-              {/* Buttons */}
-              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-10">
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
                 <button
                   className="px-6 py-2 rounded-lg text-xs w-full sm:w-auto transition-colors"
-                  style={{
-                    backgroundColor: isDarkMode ? '#3E3E3E' : '#e5e7eb',
-                    color: currentColors.text
-                  }}
+                  style={{ backgroundColor: isDarkMode ? '#3E3E3E' : '#e5e7eb', color: currentColors.text }}
                   onClick={() => navigator(-1)}
                 >
                   Cancel
                 </button>
-
                 <Button
                   onClick={handleCreateCourseSpace}
                   className="text-xs w-full sm:w-auto"
-                  style={{
-                    backgroundColor: '#007AFF',
-                    color: 'white'
-                  }}
+                  style={{ backgroundColor: '#007AFF', color: 'white' }}
                 >
                   Create Space
                 </Button>
               </div>
+
             </div>
           </div>
         </div>

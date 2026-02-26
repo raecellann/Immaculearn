@@ -22,6 +22,7 @@ const CreateSpaceAdmin = () => {
   const [people, setPeople] = useState(Array(5).fill(""));
   const [wordCount, setWordCount] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
 
   // Cover image state
@@ -52,6 +53,17 @@ const CreateSpaceAdmin = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const memberOptions = [2, 3, 4, 5, 6, 7, 8, 9];
@@ -257,30 +269,19 @@ const CreateSpaceAdmin = () => {
           <div className="w-full max-w-4xl">
             <h1 className="hidden lg:block text-4xl font-bold text-center mb-6 lg:mb-10">Create New Space, Here!</h1>
 
-            <div className="bg-[#2A2A2A] rounded-xl p-4 lg:p-6 w-full mx-auto" style={{
-              backgroundColor: currentColors.surface
-            }}>
+            <div className="rounded-xl p-4 lg:p-6 w-full mx-auto" style={{ backgroundColor: currentColors.surface }}>
 
-              {/* TWITTER-STYLE CROP MODAL */}
+              {/* CROP MODAL */}
               {isCropping && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-                  <div className="rounded-xl p-4 w-full max-w-4xl relative" style={{
-                    backgroundColor: currentColors.surface
-                  }}>
-
-                    {/* Close btn */}
+                  <div className="rounded-xl p-4 w-full max-w-4xl relative" style={{ backgroundColor: currentColors.surface }}>
                     <button
                       className="absolute top-3 right-3 p-1 rounded-full"
                       style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-                      onClick={() => {
-                        setIsCropping(false);
-                        // Don't clear the original image when closing cropper
-                      }}
+                      onClick={() => setIsCropping(false)}
                     >
                       <X size={20} style={{ color: 'white' }} />
                     </button>
-
-                    {/* Cropper area */}
                     <div className="relative w-full h-[300px] sm:h-[350px] md:h-[420px] rounded-lg overflow-hidden bg-black">
                       <Cropper
                         image={uploadedImage}
@@ -293,167 +294,67 @@ const CreateSpaceAdmin = () => {
                         showGrid={false}
                       />
                     </div>
-
-                    {/* Zoom slider */}
                     <div className="flex items-center justify-center mt-4">
-                      <input
-                        type="range"
-                        min={1}
-                        max={3}
-                        step={0.01}
-                        value={zoom}
-                        onChange={(e) => setZoom(e.target.value)}
-                        className="w-1/2 sm:w-2/3"
-                      />
+                      <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={(e) => setZoom(e.target.value)} className="w-1/2 sm:w-2/3" />
                     </div>
-
-                    {/* Buttons */}
                     <div className="flex justify-end mt-5 gap-2">
-                      <button
-                        className="px-4 py-2 text-sm rounded-lg transition-colors"
-                        style={{
-                          backgroundColor: isDarkMode ? '#444' : '#6b7280',
-                          color: 'white'
-                        }}
-                        onClick={() => {
-                          setIsCropping(false);
-                          // Don't clear the original image when canceling
-                        }}
-                      >
-                        Cancel
-                      </button>
-
-                      <button
-                        className="px-4 py-2 text-sm rounded-lg transition-colors"
-                        style={{
-                          backgroundColor: '#007AFF',
-                          color: 'white'
-                        }}
-                        onClick={handleCropSave}
-                      >
-                        Apply
-                      </button>
+                      <button className="px-4 py-2 text-sm rounded-lg" style={{ backgroundColor: isDarkMode ? '#444' : '#6b7280', color: 'white' }} onClick={() => setIsCropping(false)}>Cancel</button>
+                      <button className="px-4 py-2 text-sm rounded-lg" style={{ backgroundColor: '#007AFF', color: 'white' }} onClick={handleCropSave}>Apply</button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Normal Cover Image */}
+              {/* Cover Image */}
               <div className="relative">
                 <img
                   src={coverImage}
                   alt="Cover"
-                  className="w-full h-32 sm:h-40 object-cover rounded-lg"
+                  className="w-full h-32 sm:h-44 object-cover rounded-lg"
                   style={{ background: coverImage.includes("gradient") ? coverImage : "" }}
                 />
-
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
-                  <button
-                    className="px-2 py-1 rounded text-xs"
-                    style={{
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      color: 'white'
-                    }}
-                    onClick={() => setIsCoverModalOpen(true)}
-                  >
-                    Change Cover
-                  </button>
-
-                  {(!coverImage.includes("gradient") && originalImage) && (
-                    <button
-                      className="px-2 py-1 rounded text-xs"
-                      style={{
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        color: 'white'
-                      }}
-                      onClick={() => {
-                        setUploadedImage(originalImage); // Use original image for cropping
-                        setIsCropping(true);
-                      }}
-                    >
-                      Crop
-                    </button>
+                  <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => setIsCoverModalOpen(true)}>Change Cover</button>
+                  {!coverImage.includes("gradient") && originalImage && (
+                    <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => { setUploadedImage(originalImage); setIsCropping(true); }}>Crop</button>
                   )}
-
-                  <button
-                    className="px-2 py-1 rounded text-xs"
-                    style={{
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      color: 'white'
-                    }}
-                    onClick={() => setCoverImage("")}
-                  >
-                    Delete Cover
-                  </button>
+                  <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => setCoverImage("")}>Delete Cover</button>
                 </div>
               </div>
 
               {/* Cover Modal */}
               {isCoverModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4">
-                  <div className="rounded-lg p-4 sm:p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto" style={{
-                    backgroundColor: currentColors.surface
-                  }}>
-                    <button className="absolute top-2 right-2" onClick={() => setIsCoverModalOpen(false)}>
-                      <X size={20} />
-                    </button>
-
+                  <div className="rounded-lg p-4 sm:p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto" style={{ backgroundColor: currentColors.surface }}>
+                    <button className="absolute top-2 right-2" onClick={() => setIsCoverModalOpen(false)}><X size={20} /></button>
                     <h3 className="text-lg font-semibold mb-4">Edit Cover Photo</h3>
-
-                    {/* Color Gradient */}
                     <p className="text-sm mb-2">Color & Gradient</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                       {colorOptions.map((color, i) => (
-                        <div
-                          key={i}
-                          className="h-12 rounded cursor-pointer"
-                          style={{ background: color }}
-                          onClick={() => {
-                            setCoverImage(color);
-                            setIsCoverModalOpen(false);
-                          }}
-                        ></div>
+                        <div key={i} className="h-12 rounded cursor-pointer" style={{ background: color }} onClick={() => { setCoverImage(color); setIsCoverModalOpen(false); }} />
                       ))}
                     </div>
-
-                    {/* Gallery */}
                     <p className="text-sm mb-2">Gallery</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                       {galleryImages.map((img, i) => (
-                        <img
-                          key={i}
-                          src={img}
-                          className="h-16 w-full object-cover rounded cursor-pointer"
-                          onClick={() => {
-                            setCoverImage(img);
-                            setOriginalImage(img); // Set original image for gallery images
-                            setIsCoverModalOpen(false);
-                          }}
-                        />
+                        <img key={i} src={img} className="h-16 w-full object-cover rounded cursor-pointer" onClick={() => { setCoverImage(img); setOriginalImage(img); setIsCoverModalOpen(false); }} />
                       ))}
                     </div>
-
-                    {/* Upload */}
                     <label className="block text-sm mb-1">Upload from computer (max 5MB)</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleUpload}
-                      className="w-full text-sm p-2 rounded"
-                      style={{
-                        backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc',
-                        color: currentColors.text,
-                        borderColor: currentColors.border
-                      }}
-                    />
+                    <input type="file" accept="image/*" onChange={handleUpload} className="w-full text-sm p-2 rounded" style={{ backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc', color: currentColors.text, borderColor: currentColors.border }} />
                   </div>
                 </div>
               )}
 
-              {/* Space Name + Members */}
-              <div className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <div className="col-span-1 lg:col-span-3">
-                  <label className="block text-sm mb-1">Space Name:</label>
+              {/* ─────────────────────────────────────────────────
+                  ROW 1: Space Name | Max Members
+                  Mobile: stacked
+                  Tablet+: Space Name takes 3/4, Members 1/4
+              ───────────────────────────────────────────────── */}
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-[1fr_160px] gap-4 items-end">
+                {/* Space Name */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Space Name</label>
                   <InputField
                     placeholder="Enter space name"
                     value={spaceName}
@@ -462,78 +363,108 @@ const CreateSpaceAdmin = () => {
                   />
                 </div>
 
-                <div className="col-span-1">
-                  <label className="block text-sm mb-1">Maximum No. of Members:</label>
-                  <div
-                    className="rounded-lg px-4 py-2 flex justify-between items-center cursor-pointer"
+                {/* Max Members — custom dropdown */}
+                <div ref={dropdownRef} className="relative">
+                  <label className="block text-sm font-medium mb-2">Max Members</label>
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border transition-colors"
                     style={{
-                      backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc',
+                      backgroundColor: isDarkMode ? '#374151' : '#ffffff',
+                      borderColor: isDropdownOpen ? '#007AFF' : currentColors.border,
                       color: currentColors.text,
-                      borderColor: currentColors.border
+                      outline: 'none',
                     }}
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    onClick={() => setIsDropdownOpen((prev) => !prev)}
                   >
-                    <span>({numMembers})</span>
-                    <ChevronDown size={18} />
-                  </div>
+                    <span className="flex items-center gap-2">
+                      {/* people icon */}
+                      <svg className="w-4 h-4 flex-shrink-0" style={{ color: isDarkMode ? '#9ca3af' : '#6b7280' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-5-4M9 20H4v-2a4 4 0 015-4m6-4a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                      <span className="font-medium">{numMembers} members</span>
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className="transition-transform duration-200"
+                      style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', color: isDarkMode ? '#9ca3af' : '#6b7280' }}
+                    />
+                  </button>
 
+                  {/* Dropdown list */}
                   {isDropdownOpen && (
-                    <div className="absolute rounded-lg max-h-40 overflow-auto z-10" style={{
-                      backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc',
-                      color: currentColors.text,
-                      borderColor: currentColors.border
-                    }}>
+                    <div
+                      className="absolute left-0 right-0 top-full mt-1 rounded-lg overflow-hidden z-20 shadow-lg"
+                      style={{ backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', border: `1px solid ${currentColors.border}` }}
+                    >
                       {memberOptions.map((option) => (
-                        <div
+                        <button
                           key={option}
-                          className="px-4 py-2 cursor-pointer transition-colors"
+                          type="button"
+                          className="w-full flex items-center justify-between px-3 py-2 text-sm transition-colors text-left"
                           style={{
-                            backgroundColor: isDarkMode ? '#374151' : '#e5e7eb',
-                            color: currentColors.text
+                            backgroundColor: numMembers === option
+                              ? (isDarkMode ? '#1d4ed8' : '#eff6ff')
+                              : 'transparent',
+                            color: numMembers === option
+                              ? (isDarkMode ? '#bfdbfe' : '#1d4ed8')
+                              : currentColors.text,
                           }}
-                          onClick={() => setNumMembers(option)}
+                          onMouseEnter={(e) => {
+                            if (numMembers !== option) e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#f3f4f6';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (numMembers !== option) e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                          onClick={() => { setNumMembers(option); setIsDropdownOpen(false); }}
                         >
-                          {option}
-                        </div>
+                          <span>{option} members</span>
+                          {numMembers === option && (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </button>
                       ))}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Short Description */}
-              <div className="mt-6">
-                <label className="text-sm">Short Description:</label>
-                <div className="mt-2">
-                  <InputField
-                    placeholder="Enter a brief description for this space (max 100 words)"
-                    value={people[0]}
-                    onChange={handleShortDescriptionChange}
-                    style={{ backgroundColor: "#ffffff", width: "100%" }}
-                  />
-                  <div className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+              {/* ─────────────────────────────────────────────────
+                  ROW 2: Short Description — full width at bottom
+              ───────────────────────────────────────────────── */}
+              <div className="mt-5">
+                <label className="block text-sm font-medium mb-2">Short Description</label>
+                <InputField
+                  placeholder="Enter a brief description for this space"
+                  value={people[0]}
+                  onChange={handleShortDescriptionChange}
+                  style={{ width: "100%", backgroundColor: "#ffffff" }}
+                />
+                <div className="flex items-center justify-between mt-1.5">
+                  <span className="text-xs" style={{ color: currentColors.textSecondary }}>Describe what this space is about</span>
+                  <span
+                    className="text-xs font-medium"
+                    style={{
+                      color: wordCount >= 100 ? '#ef4444' : wordCount >= 90 ? '#f59e0b' : currentColors.textSecondary
+                    }}
+                  >
                     {wordCount}/100 words
-                  </div>
+                  </span>
                 </div>
               </div>
 
-              {/* Buttons */}
+              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
                 <button
                   className="px-6 py-2 rounded-lg text-xs w-full sm:w-auto transition-colors"
-                  style={{
-                    backgroundColor: isDarkMode ? '#3E3E3E' : '#e5e7eb',
-                    color: currentColors.text
-                  }}
+                  style={{ backgroundColor: isDarkMode ? '#3E3E3E' : '#e5e7eb', color: currentColors.text }}
                   onClick={() => navigate(-1)}
                 >
                   Cancel
                 </button>
-
-                <Button onClick={handleCreateSpace} className="text-xs w-full sm:w-auto" style={{
-                  backgroundColor: '#007AFF',
-                  color: 'white'
-                }}>
+                <Button onClick={handleCreateSpace} className="text-xs w-full sm:w-auto" style={{ backgroundColor: '#007AFF', color: 'white' }}>
                   Create Space
                 </Button>
               </div>
