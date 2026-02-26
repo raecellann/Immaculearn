@@ -3,7 +3,7 @@ import Cropper from "react-easy-crop";
 import Sidebar from "../../component/profsidebar";
 import InputField from "../../component/InputField";
 import Button from "../../component/Button";
-import { X } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import Logout from "../../component/logout";
 import { useNavigate } from "react-router";
 import { useSpace } from "../../../contexts/space/useSpace";
@@ -18,6 +18,10 @@ const ProfCreateSpace = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [spaceName, setSpaceName] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
+  const [wordCount, setWordCount] = useState(0);
+  const [numMembers, setNumMembers] = useState(5);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const spaceSettings = useRef({space_cover: null, max_member: 50});
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
 
@@ -51,6 +55,8 @@ const ProfCreateSpace = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const memberOptions = [2, 3, 4, 5, 6, 7, 8, 9];
+
   const colorOptions = [
     "linear-gradient(45deg, #FFC107, #FF5722)",
     "linear-gradient(45deg, #3F51B5, #2196F3)",
@@ -71,12 +77,26 @@ const ProfCreateSpace = () => {
     "/src/assets/HomePage/spaces-cover/space-board.jpg",
   ];
 
+  // Word count handler
+  const handleShortDescriptionChange = (e) => {
+    const text = e.target.value;
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    const count = words.length;
+    
+    if (count <= 100) {
+      setShortDescription(text);
+      setWordCount(count);
+    }
+  };
+
   const handleCreateSpace = async () => {
     if (spaceName.trim()) {
       try {
         // Prepare data for API
         const spaceData = {
           space_name: spaceName,
+          short_description: shortDescription,
+          max_members: numMembers,
           space_settings: spaceSettings.current,
           cover_image: coverImage,
         };
@@ -91,6 +111,9 @@ const ProfCreateSpace = () => {
           
           // Reset form
           setSpaceName("");
+          setShortDescription("");
+          setWordCount(0);
+          setNumMembers(5);
           setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
           navigator(`/prof/space/${space_uuid}/${spaceName}`)
         } else {
@@ -217,26 +240,27 @@ const ProfCreateSpace = () => {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">Create Space</h1>
+          <h1 className="text-xl font-bold">Create New Space</h1>
         </div>
 
         {/* 🔹 Spacer for fixed header */}
         <div className="lg:hidden h-16" />
 
       {/* ================= PAGE CONTENT ================= */}
-      <div className="flex-1 p-4 lg:p-10 overflow-y-auto">
-        <h1 className="hidden lg:block text-4xl font-bold text-center mb-6 lg:mb-10">Create New Space, Here!</h1>
+      <div className="flex-1 p-4 lg:p-10 overflow-y-auto flex items-center justify-center">
+        <div className="w-full max-w-4xl">
+          <h1 className="hidden lg:block text-4xl font-bold text-center mb-6 lg:mb-10">Create New Space, Here!</h1>
 
-        <div className="rounded-xl p-4 lg:p-6 w-full mx-auto max-w-4xl" style={{
-          backgroundColor: currentColors.surface
-        }}>
+          <div className="rounded-xl p-4 lg:p-6 w-full mx-auto" style={{
+            backgroundColor: currentColors.surface
+          }}>
 
-          {/* 🔵 TWITTER-STYLE CROP MODAL */}
-          {isCropping && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-              <div className="rounded-xl p-4 w-full max-w-4xl relative" style={{
-                backgroundColor: currentColors.surface
-              }}>
+            {/* 🔵 TWITTER-STYLE CROP MODAL */}
+            {isCropping && (
+              <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                <div className="rounded-xl p-4 w-full max-w-4xl relative" style={{
+                  backgroundColor: currentColors.surface
+                }}>
 
                 {/* Close btn */}
                 <button
@@ -420,15 +444,69 @@ const ProfCreateSpace = () => {
             </div>
           )}
 
-          {/* Space Name */}
+          {/* Space Name + Members */}
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="col-span-1 lg:col-span-3">
+              <label className="block text-sm mb-1">Space Name:</label>
+              <InputField
+                placeholder="Enter space name"
+                value={spaceName}
+                onChange={(e) => setSpaceName(e.target.value)}
+                style={{ width: "100%", backgroundColor: "#ffffff" }}
+              />
+            </div>
+
+            <div className="col-span-1">
+              <label className="block text-sm mb-1">Maximum No. of Members:</label>
+              <div
+                className="rounded-lg px-4 py-2 flex justify-between items-center cursor-pointer"
+                style={{
+                  backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc',
+                  color: currentColors.text,
+                  borderColor: currentColors.border
+                }}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                <span>({numMembers})</span>
+                <ChevronDown size={18} />
+              </div>
+
+              {isDropdownOpen && (
+                <div className="absolute rounded-lg max-h-40 overflow-auto z-10" style={{
+                  backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc',
+                  color: currentColors.text,
+                  borderColor: currentColors.border
+                }}>
+                  {memberOptions.map((option) => (
+                    <div
+                      key={option}
+                      className="px-4 py-2 cursor-pointer transition-colors"
+                      style={{
+                        backgroundColor: isDarkMode ? '#374151' : '#e5e7eb',
+                        color: currentColors.text
+                      }}
+                      onClick={() => setNumMembers(option)}
+                    >
+                      {option}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Short Description */}
           <div className="mt-6">
-            <label className="block text-sm mb-1">Space Name:</label>
+            <label className="block text-sm mb-1">Short Description:</label>
             <InputField
-              placeholder="Enter space name"
-              value={spaceName}
-              onChange={(e) => setSpaceName(e.target.value)}
+              placeholder="Enter a brief description for this space (max 100 words)"
+              value={shortDescription}
+              onChange={handleShortDescriptionChange}
               style={{ width: "100%", backgroundColor: "#ffffff" }}
             />
+            <div className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+              {wordCount}/100 words
+            </div>
           </div>
 
           {/* Buttons */}
@@ -452,6 +530,7 @@ const ProfCreateSpace = () => {
             </Button>
           </div>
 
+        </div>
         </div>
       </div>
     </div>

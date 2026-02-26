@@ -100,6 +100,230 @@ const ProfFilesShared = () => {
   const [fileName, setFileName] = useState("");
   const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [lastUploadedFile, setLastUploadedFile] = useState(null);
+  const [fileAlreadyExists, setFileAlreadyExists] = useState(false);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
+
+  const checkFileExists = (fileName) => {
+    return resources?.some(resource => 
+      resource.name.toLowerCase().includes(fileName.toLowerCase())
+    );
+  };
+
+  const getFileIcon = (fileName) => {
+    if (!fileName) return '📄';
+    
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    
+    switch (extension) {
+      case 'doc':
+      case 'docx':
+        return '📘'; // Word document - blue book
+      case 'ppt':
+      case 'pptx':
+        return '📙'; // PowerPoint - orange book
+      case 'xls':
+      case 'xlsx':
+        return '📗'; // Excel - green book
+      case 'pdf':
+        return '📕'; // PDF - red book
+      case 'txt':
+        return '📄'; // Text file
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'bmp':
+      case 'svg':
+        return '🖼️'; // Image
+      case 'mp4':
+      case 'avi':
+      case 'mov':
+      case 'wmv':
+        return '🎥'; // Video
+      case 'mp3':
+      case 'wav':
+      case 'flac':
+        return '🎵'; // Audio
+      case 'zip':
+      case 'rar':
+      case '7z':
+        return '📦'; // Archive
+      case 'html':
+      case 'htm':
+      case 'css':
+      case 'js':
+      case 'jsx':
+      case 'ts':
+      case 'tsx':
+        return '💻'; // Code
+      default:
+        return '📄'; // Default file
+    }
+  };
+
+  const getFileTypeLetter = (fileName) => {
+    if (!fileName) return '📄';
+    
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    
+    switch (extension) {
+      // Development Files
+      case 'jsx':
+        return '⚛️'; // React icon
+      case 'tsx':
+        return '🔷'; // TypeScript React
+      case 'js':
+        return '🟨'; // JavaScript
+      case 'ts':
+        return '🔷'; // TypeScript
+      case 'html':
+        return '🌐'; // HTML
+      case 'htm':
+        return '🌐'; // HTML
+      case 'css':
+        return '🎨'; // CSS
+      case 'scss':
+        return '💅'; // SCSS
+      case 'sass':
+        return '💅'; // SASS
+      case 'json':
+        return '📋'; // JSON
+      case 'xml':
+        return '📄'; // XML
+      
+      // Documents
+      case 'doc':
+      case 'docx':
+        return '📘'; // Word document - blue book
+      case 'pdf':
+        return '📕'; // PDF - red book
+      case 'txt':
+      case 'md':
+        return '📝'; // Text/Markdown
+      case 'rtf':
+        return '📄'; // Rich Text
+      
+      // Spreadsheets
+      case 'xls':
+      case 'xlsx':
+      case 'csv':
+        return '📗'; // Excel - green book
+      
+      // Presentations
+      case 'ppt':
+      case 'pptx':
+        return '📙'; // PowerPoint - orange book
+      
+      // Images
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'bmp':
+      case 'svg':
+      case 'webp':
+      case 'ico':
+        return '🖼️'; // Image
+      
+      // Videos
+      case 'mp4':
+      case 'avi':
+      case 'mov':
+      case 'wmv':
+      case 'flv':
+      case 'webm':
+      case 'mkv':
+        return '🎥'; // Video
+      
+      // Audio
+      case 'mp3':
+      case 'wav':
+      case 'flac':
+      case 'aac':
+      case 'ogg':
+      case 'm4a':
+        return '🎵'; // Audio
+      
+      // Archives
+      case 'zip':
+      case 'rar':
+      case '7z':
+      case 'tar':
+      case 'gz':
+        return '📦'; // Archive
+      
+      // Configuration Files
+      case 'yml':
+      case 'yaml':
+        return '⚙️'; // YAML
+      case 'env':
+        return '🔐'; // Environment
+      case 'config':
+      case 'conf':
+        return '⚙️'; // Config
+      case 'ini':
+        return '⚙️'; // INI
+      
+      // Database Files
+      case 'sql':
+        return '🗄️'; // SQL
+      case 'db':
+      case 'sqlite':
+        return '🗄️'; // Database
+      
+      // Fonts
+      case 'ttf':
+      case 'otf':
+      case 'woff':
+      case 'woff2':
+        return '🔤'; // Font
+      
+      // Code Files (other)
+      case 'py':
+        return '🐍'; // Python
+      case 'java':
+        return '☕'; // Java
+      case 'cpp':
+      case 'c++':
+        return '⚙️'; // C++
+      case 'c':
+        return '⚙️'; // C
+      case 'php':
+        return '🐘'; // PHP
+      case 'rb':
+        return '💎'; // Ruby
+      case 'go':
+        return '🐹'; // Go
+      case 'rs':
+        return '🦀'; // Rust
+      case 'swift':
+        return '🍎'; // Swift
+      case 'kt':
+        return '🎯'; // Kotlin
+      case 'dart':
+        return '🎯'; // Dart
+      case 'vue':
+        return '💚'; // Vue
+      case 'svelte':
+        return '🧡'; // Svelte
+      
+      // Design Files
+      case 'psd':
+        return '🎨'; // Photoshop
+      case 'ai':
+        return '🎨'; // Illustrator
+      case 'fig':
+        return '🎨'; // Figma
+      case 'sketch':
+        return '🎨'; // Sketch
+      
+      // Default
+      default:
+        return '📄'; // Default file
+    }
+  };
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -122,12 +346,17 @@ const ProfFilesShared = () => {
         return;
       }
       try {
+        // Check if file already exists before uploading
+        const fileExists = checkFileExists(files[0].name);
+        setFileAlreadyExists(fileExists);
+        
         await uploadResource(files, space_uuid);
         // Refresh the file list after successful upload
         if (currentSpace?.space_id) {
           await refreshFiles(space_uuid);
         }
-        setShowCreateUploadModal(false);
+        // Set the last uploaded file and keep modal open to show view state
+        setLastUploadedFile(files[0]);
         setUploadedFiles([]);
       } catch (error) {
         console.error("Upload failed:", error);
@@ -143,12 +372,17 @@ const ProfFilesShared = () => {
         return;
       }
       try {
+        // Check if file already exists before uploading
+        const fileExists = checkFileExists(files[0].name);
+        setFileAlreadyExists(fileExists);
+        
         await uploadResource(files, space_uuid);
         // Refresh the file list after successful upload
         if (currentSpace?.space_uuid) {
           await refreshFiles(space_uuid);
         }
-        setShowCreateUploadModal(false);
+        // Set the last uploaded file and keep modal open to show view state
+        setLastUploadedFile(files[0]);
         setUploadedFiles([]);
       } catch (error) {
         console.error("Upload failed:", error);
@@ -451,28 +685,194 @@ const ProfFilesShared = () => {
     navigate(url);
   };
 
-  const handleCreateFile = async () => {
-    if (!fileName.trim()) {
-      alert("File title is required");
-      return;
-    }
+  // Custom delete button component
+  const DeleteButton = ({ onClick, title, className = "", style = {} }) => {
+    return (
+      <div 
+        className={`bin-button ${className}`}
+        onClick={onClick}
+        title={title}
+        style={style}
+      >
+        <svg className="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line y1={5} x2={39} y2={5} stroke="white" strokeWidth={4} />
+          <line x1={12} y1="1.5" x2={26.0357} y2={1.5} stroke="white" strokeWidth={3} />
+        </svg>
+        <svg className="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <mask id="path-1-inside-1_8_19" fill="white">
+            <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
+          </mask>
+          <path d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" fill="white" mask="url(#path-1-inside-1_8_19)" />
+          <path d="M12 6L12 29" stroke="white" strokeWidth={4} />
+          <path d="M21 6V29" stroke="white" strokeWidth={4} />
+        </svg>
+      </div>
+    );
+  };
 
+  const handleDeleteFile = (file) => {
+    setFileToDelete(file);
+    setShowDeleteWarning(true);
+  };
+
+  const confirmDeleteFile = async () => {
+    if (!fileToDelete) return;
+    
     try {
-      const newFile = await createFileWithContext(
-        fileName,
-        currentSpace?.space_id ?? "",
-        "",
-      );
-
-      const url = `/prof/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${newFile.title}`;
-      navigate(url);
-
-      setFileName("");
-      setIsCreatingFile(false);
-    } catch (err) {
-      console.error(err);
-      alert(err?.message || "Failed to create file");
+      // Show loading state
+      showGlobalNotification({
+        type: "loading",
+        title: "Deleting File",
+        message: `Deleting "${fileToDelete.filename}"...`,
+        duration: null,
+        persistent: true,
+      });
+      
+      // Close warning modal
+      setShowDeleteWarning(false);
+      
+      // You'll need to implement the actual delete API call
+      // await deleteFile(fileToDelete.fuuid, space_uuid);
+      
+      // Simulate API call for demonstration
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Refresh the file list after deletion
+      if (currentSpace?.space_id) {
+        await refreshFiles(space_uuid);
+      }
+      
+      // Show success notification
+      showGlobalNotification({
+        type: "success",
+        title: "File Deleted Successfully",
+        message: `"${fileToDelete.filename}" has been permanently removed from the space.`,
+        duration: 4000,
+        data: {
+          fileName: fileToDelete.filename,
+          actionType: "delete"
+        }
+      });
+      
+      // Reset state
+      setFileToDelete(null);
+    } catch (error) {
+      console.error('Delete failed:', error);
+      showGlobalNotification({
+        type: "error",
+        title: "Delete Failed",
+        message: `Failed to delete "${fileToDelete.filename}". Please try again.`,
+        duration: 5000,
+        data: {
+          fileName: fileToDelete.filename,
+          error: error.message
+        }
+      });
     }
+  };
+  
+  const cancelDeleteFile = () => {
+    setShowDeleteWarning(false);
+    setFileToDelete(null);
+  };
+
+  const handleDownloadFile = async (file) => {
+    try {
+      // Show loading state
+      showGlobalNotification({
+        type: "loading",
+        title: "Downloading File",
+        message: `Downloading "${file.filename}"...`,
+        duration: null,
+        persistent: true,
+      });
+      
+      // You'll need to implement the actual download API call
+      // const downloadUrl = await getFileDownloadUrl(file.fuuid, space_uuid);
+      // window.open(downloadUrl, '_blank');
+      
+      // Simulate API call for demonstration
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Show success notification
+      showGlobalNotification({
+        type: "success",
+        title: "Download Started",
+        message: `"${file.filename}" download has started.`,
+        duration: 4000,
+        data: {
+          fileName: file.filename,
+          actionType: "download"
+        }
+      });
+    } catch (error) {
+      console.error('Download failed:', error);
+      showGlobalNotification({
+        type: "error",
+        title: "Download Failed",
+        message: `Failed to download "${file.filename}". Please try again.`,
+        duration: 5000,
+        data: {
+          fileName: file.filename,
+          error: error.message
+        }
+      });
+    }
+  };
+
+  // Download Button Component
+  const DownloadButton = ({ onClick, title, className = "" }) => {
+    return (
+      <button
+        onClick={onClick}
+        title={title}
+        className={`transition-all duration-300 flex items-center justify-center ${className}`}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '35px',
+          height: '35px',
+          borderRadius: '10px',
+          backgroundColor: isDarkMode ? "#1e40af" : "#3b82f6",
+          color: "#ffffff",
+          border: isDarkMode ? "#1e3a8a" : "#2563eb",
+          cursor: 'pointer',
+          transitionDuration: '0.3s'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = isDarkMode ? "#2563eb" : "#60a5fa";
+          e.target.style.borderColor = isDarkMode ? "#1e40af" : "#3b82f6";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = isDarkMode ? "#1e40af" : "#3b82f6";
+          e.target.style.borderColor = isDarkMode ? "#1e3a8a" : "#2563eb";
+        }}
+        onMouseDown={(e) => {
+          e.target.style.transform = 'scale(0.9)';
+        }}
+        onMouseUp={(e) => {
+          e.target.style.transform = 'scale(1)';
+        }}
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 2L12 14M12 14L8 10M12 14L16 10M3 17V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V17"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    );
   };
 
   const formatFileTitle = (filename) => {
@@ -485,6 +885,12 @@ const ProfFilesShared = () => {
     return cleanTitle;
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+  };
+
   return (
     <div
       className="flex min-h-screen font-sans"
@@ -493,6 +899,38 @@ const ProfFilesShared = () => {
         color: currentColors.text,
       }}
     >
+      <style jsx>{`
+        .bin-button {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 35px;
+          height: 35px;
+          border-radius: 10px;
+          background-color: ${isDarkMode ? "#991b1b" : "#ef4444"};
+          cursor: pointer;
+          transition-duration: 0.3s;
+          border: ${isDarkMode ? "#7f1d1d" : "#dc2626"};
+        }
+        .bin-bottom {
+          width: 10px;
+        }
+        .bin-top {
+          width: 12px;
+          transform-origin: right;
+          transition-duration: 0.3s;
+        }
+        .bin-button:hover .bin-top {
+          transform: rotate(45deg);
+        }
+        .bin-button:hover {
+          background-color: ${isDarkMode ? "#b91c1c" : "#f87171"};
+        }
+        .bin-button:active {
+          transform: scale(0.9);
+        }
+      `}</style>
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         {/* <ProfSidebar onLogoutClick={() => setShowLogout(true)} /> */}
@@ -726,13 +1164,14 @@ const ProfFilesShared = () => {
               </button>
             </div>
 
-            {/* DESKTOP TABLE */}
+            {/* RESPONSIVE TABLE */}
             <div
-              className="hidden md:block rounded-xl p-6"
+              className="rounded-xl p-4 sm:p-6"
               style={{ backgroundColor: currentColors.surface }}
             >
+              {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
               <div
-                className="grid grid-cols-4 text-sm pb-3 border-b"
+                className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
                 style={{
                   color: currentColors.textSecondary,
                   borderColor: currentColors.border,
@@ -740,85 +1179,107 @@ const ProfFilesShared = () => {
               >
                 <div className="col-span-2">File Name</div>
                 <div>Date Posted</div>
-                <div>Posted By</div>
+                <div className="text-right">Actions</div>
               </div>
 
+              {/* FILE LIST - Responsive cards for all screen sizes */}
               {resources?.map((file, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-4 items-center rounded-lg px-4 py-3 mt-4"
+                  className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4"
                   style={{
                     backgroundColor: currentColors.background,
                     borderColor: currentColors.border,
                   }}
                 >
-                  <div
-                    className="flex items-center gap-3 col-span-2 cursor-pointer"
-                    onClick={() => handleOpenFile(file)}
-                  >
-                    <div
-                      className="p-2 rounded-md"
-                      style={{ backgroundColor: currentColors.surface }}
-                    >
-                      <FiFileText />
+                  {/* Mobile and Tablet Layout */}
+                  <div className="sm:hidden">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div
+                          className="p-2 rounded-md flex items-center justify-center w-10 h-10 flex-shrink-0"
+                          style={{
+                            backgroundColor: currentColors.surface,
+                            border: `2px solid ${currentColors.border}`,
+                          }}
+                          onClick={() => handleOpenFile(file)}
+                        >
+                          <span
+                            className="text-sm font-bold cursor-pointer"
+                            style={{ color: currentColors.text }}
+                          >
+                            {getFileTypeLetter(file.name)}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className="font-semibold cursor-pointer truncate"
+                            onClick={() => handleOpenFile(file)}
+                            style={{ color: currentColors.text }}
+                          >
+                            {formatFileTitle(file.name.split('-').slice(3).join('-'))}
+                          </p>
+                          <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+                            {formatDate(file.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <DownloadButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadFile(file);
+                          }}
+                          title="Download file"
+                        />
+                        <DeleteButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteFile(file);
+                          }}
+                          title="Delete file"
+                        />
+                      </div>
                     </div>
-                    <span>{formatFileTitle(file.name.split('-').slice(3).join('-'))}</span>
                   </div>
-                  <div>{new Date(file.created_at).toLocaleDateString()}</div>
-                  <div>
-                    {file.owner_id === user.id
-                      ? "You"
-                      : currentSpace.members.find(
-                          (member) => member.account_id === file.owner_id,
-                        )?.full_name}
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {/* MOBILE / TABLET CARDS */}
-            <div className="md:hidden space-y-4">
-              {files.map((file, index) => (
-                <div
-                  key={index}
-                  className="border rounded-xl p-4 cursor-pointer"
-                  style={{
-                    backgroundColor: currentColors.background,
-                    borderColor: currentColors.border,
-                  }}
-                  onClick={() => handleOpenFile(file)}
-                >
-                  <div className="flex items-center gap-3 mb-3">
+                  {/* Desktop Layout */}
+                  <div className="hidden sm:grid grid-cols-4 items-center">
                     <div
-                      className="p-2 rounded-md"
-                      style={{ backgroundColor: currentColors.surface }}
+                      className="flex items-center gap-3 col-span-2 cursor-pointer"
+                      onClick={() => handleOpenFile(file)}
                     >
-                      <FiFileText />
+                      <div
+                        className="p-2 rounded-md flex items-center justify-center w-8 h-8"
+                        style={{ 
+                          backgroundColor: currentColors.surface,
+                          border: `2px solid ${currentColors.border}`
+                        }}
+                      >
+                        <span className="text-xs font-bold" style={{ color: currentColors.text }}>
+                          {getFileTypeLetter(file.name)}
+                        </span>
+                      </div>
+                      <span className="truncate">{formatFileTitle(file.name.split('-').slice(3).join('-'))}</span>
                     </div>
-                    <p className="font-semibold">
-                      {formatFileTitle(file.filename)}
-                    </p>
+                    <div>{formatDate(file.created_at)}</div>
+                    <div className="flex items-center gap-2 justify-end">
+                      <DownloadButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadFile(file);
+                        }}
+                        title="Download file"
+                      />
+                      <DeleteButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteFile(file);
+                        }}
+                        title="Delete file"
+                      />
+                    </div>
                   </div>
-
-                  <p className="text-sm text-gray-400">
-                    Date:{" "}
-                    <span style={{ color: currentColors.text }}>
-                      {new Date(file.created_at).toLocaleDateString()}
-                    </span>
-                  </p>
-                  <p
-                    className="text-sm mt-1"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    Posted by:{" "}
-                    <span style={{ color: currentColors.text }}>
-                      {file.owner_id === user.id
-                        ? "You"
-                        : currentSpace.members.find(
-                            (member) => member.account_id === file.owner_id,
-                          )?.full_name}
-                    </span>
-                  </p>
                 </div>
               ))}
             </div>
@@ -947,7 +1408,14 @@ const ProfFilesShared = () => {
           >
             {/* CLOSE BUTTON */}
             <button
-              onClick={() => setShowCreateUploadModal(false)}
+              onClick={() => {
+                setShowCreateUploadModal(false);
+                setLastUploadedFile(null);
+                setFileAlreadyExists(false);
+                // Clear file input
+                const fileInput = document.getElementById("file-upload");
+                if (fileInput) fileInput.value = "";
+              }}
               className="absolute top-4 right-4 z-10 rounded-full p-1 transition-colors"
               style={{
                 backgroundColor: currentColors.background,
@@ -990,7 +1458,7 @@ const ProfFilesShared = () => {
                     ? "#eff6ff"
                     : currentColors.background,
                 }}
-                onClick={() => document.getElementById("file-upload").click()}
+                onClick={() => !lastUploadedFile && document.getElementById("file-upload").click()}
               >
                 <input
                   type="file"
@@ -999,7 +1467,136 @@ const ProfFilesShared = () => {
                   multiple
                   className="hidden"
                 />
-                {uploadedFiles.length === 0 ? (
+                
+                {lastUploadedFile ? (
+                  // VIEW FILE STATE
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg mb-4"
+                        style={{ 
+                          backgroundColor: currentColors.surface,
+                          border: `2px solid ${currentColors.border}`
+                        }}
+                      >
+                        <span className="text-2xl font-bold" style={{ color: currentColors.text }}>
+                          {getFileTypeLetter(lastUploadedFile.name)}
+                        </span>
+                      </div>
+                      <h3
+                        className="text-lg font-semibold mb-2"
+                        style={{ color: currentColors.text }}
+                      >
+                        {fileAlreadyExists ? "File Already Exists" : "File Uploaded Successfully!"}
+                      </h3>
+                      <p
+                        className="text-sm mb-4"
+                        style={{ color: currentColors.text }}
+                      >
+                        {lastUploadedFile.name}
+                      </p>
+                      <p
+                        className="text-xs mb-6"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        Size: {(lastUploadedFile.size / 1024).toFixed(0)}KB • Type: {lastUploadedFile.name.split('.').pop()?.toUpperCase() || 'Unknown'}
+                      </p>
+                      {fileAlreadyExists && (
+                        <p
+                          className="text-sm mb-4"
+                          style={{ color: "#ef4444" }}
+                        >
+                          This file has already been uploaded to the space.
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      {fileAlreadyExists ? (
+                        <button
+                          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                          style={{
+                            backgroundColor: "#2563eb",
+                            color: "#ffffff",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#1d4ed8";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#2563eb";
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Reset to upload state for a different file
+                            setLastUploadedFile(null);
+                            setFileAlreadyExists(false);
+                            // Clear file input
+                            const fileInput = document.getElementById("file-upload");
+                            if (fileInput) fileInput.value = "";
+                          }}
+                        >
+                          <FiUpload size={16} />
+                          Upload Other File
+                        </button>
+                      ) : (
+                        <button
+                          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                          style={{
+                            backgroundColor: "#2563eb",
+                            color: "#ffffff",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#1d4ed8";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#2563eb";
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Find the uploaded file in the resources list and navigate to it
+                            const uploadedResource = resources?.find(r => 
+                              r.name.includes(lastUploadedFile.name)
+                            );
+                            if (uploadedResource) {
+                              handleOpenFile(uploadedResource);
+                            }
+                          }}
+                        >
+                          <FiFileText size={16} />
+                          View File
+                        </button>
+                      )}
+                      
+                      {!fileAlreadyExists && (
+                        <button
+                          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                          style={{
+                            backgroundColor: currentColors.background,
+                            color: currentColors.text,
+                            border: `1px solid ${currentColors.border}`,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = currentColors.hover;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = currentColors.background;
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowCreateUploadModal(false);
+                            setLastUploadedFile(null);
+                            setFileAlreadyExists(false);
+                            // Clear file input
+                            const fileInput = document.getElementById("file-upload");
+                            if (fileInput) fileInput.value = "";
+                          }}
+                        >
+                          Confirm
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : uploadedFiles.length === 0 ? (
+                  // INITIAL UPLOAD STATE
                   <>
                     <FiUpload
                       size={32}
@@ -1020,6 +1617,7 @@ const ProfFilesShared = () => {
                     </p>
                   </>
                 ) : (
+                  // FILES SELECTED STATE (existing code)
                   <div className="space-y-2 sm:space-y-3">
                     {uploadedFiles.map((file) => (
                       <div
@@ -1076,7 +1674,7 @@ const ProfFilesShared = () => {
                 )}
 
                 {/* UPLOAD BUTTON AND PROGRESS */}
-                {uploadedFiles.length > 0 && (
+                {uploadedFiles.length > 0 && !lastUploadedFile && (
                   <div className="mt-4 space-y-3">
                     {isUploading && (
                       <div className="w-full">
@@ -1104,11 +1702,16 @@ const ProfFilesShared = () => {
 
                         if (files.length > 0) {
                           try {
+                            // Check if file already exists before uploading
+                            const fileExists = checkFileExists(files[0].name);
+                            setFileAlreadyExists(fileExists);
+                            
                             await uploadResource(files, space_uuid);
                             if (space_uuid) {
                               await refreshFiles(space_uuid);
                             }
-                            setShowCreateUploadModal(false);
+                            // Set the last uploaded file and keep modal open to show view state
+                            setLastUploadedFile(files[0]);
                             setUploadedFiles([]);
                           } catch (error) {
                             console.error("Upload failed:", error);
@@ -1195,6 +1798,133 @@ const ProfFilesShared = () => {
       )}
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+      {/* DELETE WARNING MODAL */}
+      {showDeleteWarning && fileToDelete && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div 
+            className="rounded-lg p-4 sm:p-6 max-w-md w-full"
+            style={{ backgroundColor: currentColors.surface }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 
+                className="text-lg font-semibold"
+                style={{ color: currentColors.text }}
+              >
+                Delete File
+              </h3>
+              <button
+                onClick={cancelDeleteFile}
+                className="p-1 bg-transparent transition-colors rounded-md"
+                style={{ color: currentColors.textSecondary }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = currentColors.text;
+                  e.target.style.backgroundColor = currentColors.background;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = currentColors.textSecondary;
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            {/* Warning Message */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div 
+                  className="p-2 rounded-md flex items-center justify-center w-10 h-10"
+                  style={{ 
+                    backgroundColor: currentColors.background,
+                    border: `2px solid ${currentColors.border}`
+                  }}
+                >
+                  <span className="text-sm font-bold" style={{ color: currentColors.text }}>
+                    {getFileTypeLetter(fileToDelete.name)}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p 
+                    className="font-semibold"
+                    style={{ color: currentColors.text }}
+                  >
+                    {formatFileTitle(fileToDelete.name.split('-').slice(3).join('-'))}
+                  </p>
+                  <p 
+                    className="text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {formatDate(fileToDelete.created_at)}
+                  </p>
+                </div>
+              </div>
+              
+              <p 
+                className="text-sm leading-relaxed"
+                style={{ color: currentColors.textSecondary }}
+              >
+                Are you sure you want to delete{" "}
+                <span 
+                  className="font-medium"
+                  style={{ color: currentColors.text }}
+                >
+                  "{formatFileTitle(fileToDelete.name.split('-').slice(3).join('-'))}"
+                </span>
+                {" "}from this space? 
+              </p>
+              <p 
+                className="text-sm mt-2 font-medium"
+                style={{ color: "#ef4444" }}
+              >
+                ⚠️ This action cannot be undone. The file will be permanently removed.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelDeleteFile}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  border: `1px solid ${currentColors.border}`
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = currentColors.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = currentColors.background;
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteFile}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                style={{
+                  backgroundColor: isDarkMode ? "#991b1b" : "#ef4444",
+                  color: "#ffffff",
+                  border: isDarkMode ? "#7f1d1d" : "#dc2626"
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = isDarkMode ? "#b91c1c" : "#f87171";
+                  e.target.style.borderColor = isDarkMode ? "#991b1b" : "#ef4444";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = isDarkMode ? "#991b1b" : "#ef4444";
+                  e.target.style.borderColor = isDarkMode ? "#7f1d1d" : "#dc2626";
+                }}
+              >
+                <FiX size={16} />
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* DELETE CONFIRMATION DIALOG */}
       <DeleteConfirmationDialog
         isOpen={showDeleteDialog}

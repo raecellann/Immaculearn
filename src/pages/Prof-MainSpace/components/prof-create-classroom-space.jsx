@@ -40,8 +40,10 @@ const ProfCreateClassroomSpace = () => {
 
   // New state for year level, schedule, and time
   const [yearLevel, setYearLevel] = useState("");
-  const [selectedDays, setSelectedDays] = useState("");
+  const [selectedDay, setSelectedDay] = useState("");
   const [timeSchedule, setTimeSchedule] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
+  const [wordCount, setWordCount] = useState(0);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [startTime, setStartTime] = useState({
     hour: 8,
@@ -99,10 +101,20 @@ const ProfCreateClassroomSpace = () => {
     { label: "SUN", value: "Sunday" },
   ];
 
+  // Word count handler
+  const handleShortDescriptionChange = (e) => {
+    const text = e.target.value;
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    const count = words.length;
+    
+    if (count <= 100) {
+      setShortDescription(text);
+      setWordCount(count);
+    }
+  };
+
   const handleDayToggle = (day) => {
-    setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
-    );
+    setSelectedDay((prev) => (prev === day ? "" : day));
   };
 
   const formatTime = (time) => {
@@ -159,7 +171,8 @@ const ProfCreateClassroomSpace = () => {
         // Prepare data for API - align with required body structure
         const spaceData = {
           space_name: spaceName,
-          space_day: selectedDays.join(", "), // Convert array to string
+          short_description: shortDescription,
+          space_day: selectedDay, // Single day instead of array
           space_time_start: timeStart24,
           space_time_end: timeEnd24,
           space_yr_lvl: parseInt(yearLevel) || 1, // Convert to number, default to 1
@@ -177,9 +190,11 @@ const ProfCreateClassroomSpace = () => {
 
           // Reset form
           setSpaceName("");
+          setShortDescription("");
+          setWordCount(0);
           setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
           setYearLevel("");
-          setSelectedDays([]);
+          setSelectedDay("");
           setTimeSchedule("");
           navigator(`/prof/space/${space_uuid}/${spaceName}`);
         } else {
@@ -555,6 +570,20 @@ const ProfCreateClassroomSpace = () => {
                 </div>
               </div>
 
+              {/* Short Description */}
+              <div className="mt-6">
+                <label className="block text-sm mb-3">Short Description:</label>
+                <InputField
+                  placeholder="Enter a brief description for this classroom space (max 100 words)"
+                  value={shortDescription}
+                  onChange={handleShortDescriptionChange}
+                  style={{ width: "100%", backgroundColor: "#ffffff" }}
+                />
+                <div className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+                  {wordCount}/100 words
+                </div>
+              </div>
+
               {/* Schedule Days and Time Schedule Row */}
               <div className="mt-8 flex flex-col lg:flex-row gap-4">
                 <div className="flex-1">
@@ -564,36 +593,57 @@ const ProfCreateClassroomSpace = () => {
                       <button
                         key={day.value}
                         onClick={() => handleDayToggle(day.value)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          selectedDays.includes(day.value)
-                            ? "text-white"
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 ${
+                          selectedDay === day.value
+                            ? "text-white shadow-lg"
                             : ""
                         }`}
                         style={{
-                          backgroundColor: selectedDays.includes(day.value) ? '#007AFF' : (isDarkMode ? '#3E3E3E' : '#e5e7eb'),
-                          color: selectedDays.includes(day.value) ? 'white' : (isDarkMode ? '#d1d5db' : '#374151')
+                          backgroundColor: selectedDay === day.value ? '#007AFF' : (isDarkMode ? '#3E3E3E' : '#e5e7eb'),
+                          color: selectedDay === day.value ? 'white' : (isDarkMode ? '#d1d5db' : '#374151'),
+                          boxShadow: selectedDay === day.value ? '0 4px 12px rgba(0, 122, 255, 0.3)' : 'none'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!selectedDay === day.value) {
+                            e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#d1d5db';
+                            e.target.style.transform = 'scale(1.05)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!selectedDay === day.value) {
+                            e.target.style.backgroundColor = isDarkMode ? '#3E3E3E' : '#e5e7eb';
+                            e.target.style.transform = 'scale(1)';
+                          }
                         }}
                       >
                         {day.label}
                       </button>
                     ))}
                   </div>
-                  {selectedDays.length > 0 && (
+                  {selectedDay && (
                     <p className="text-xs mt-2" style={{ color: currentColors.textSecondary }}>
-                      Selected: {selectedDays.join(", ")}
+                      Selected: {selectedDay}
                     </p>
                   )}
                 </div>
                 <div className="lg:w-1/2">
                   <label className="block text-sm mb-3">Time Schedule:</label>
                   <div
-                    className="p-3 rounded-lg border cursor-pointer transition-colors"
+                    className="p-3 rounded-lg border cursor-pointer transition-all duration-200 transform hover:scale-[1.02] hover:shadow-md"
                     style={{
                       backgroundColor: isDarkMode ? '#374151' : '#ffffff',
                       borderColor: currentColors.border,
                       color: currentColors.text
                     }}
                     onClick={() => setShowTimePicker(!showTimePicker)}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#f9fafb';
+                      e.target.style.borderColor = isDarkMode ? '#6B7280' : '#d1d5db';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = isDarkMode ? '#374151' : '#ffffff';
+                      e.target.style.borderColor = currentColors.border;
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <span style={{ color: isDarkMode ? '#d1d5db' : '#4b5563' }}>

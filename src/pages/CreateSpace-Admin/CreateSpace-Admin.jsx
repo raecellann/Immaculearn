@@ -8,15 +8,19 @@ import { ChevronDown, X } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useSpace } from "../../contexts/space/useSpace";
 import { toast } from "react-toastify";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const CreateSpaceAdmin = () => {
   const { createSpace } = useSpace();
   const navigate = useNavigate();
+  const { isDarkMode, colors } = useSpaceTheme();
+  const currentColors = isDarkMode ? colors.dark : colors.light;
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [spaceName, setSpaceName] = useState("");
   const [numMembers, setNumMembers] = useState(5);
   const [people, setPeople] = useState(Array(5).fill(""));
+  const [wordCount, setWordCount] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
 
@@ -76,6 +80,18 @@ const CreateSpaceAdmin = () => {
     setPeople(Array(numMembers).fill(""));
   }, [numMembers]);
 
+  // Word count handler
+  const handleShortDescriptionChange = (e) => {
+    const text = e.target.value;
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    const count = words.length;
+    
+    if (count <= 100) {
+      setPeople([text, ...people.slice(1)]);
+      setWordCount(count);
+    }
+  };
+
   const handleCreateSpace = async () => {
     if (spaceName.trim()) {
       try {
@@ -83,7 +99,7 @@ const CreateSpaceAdmin = () => {
         const spaceData = {
           space_name: spaceName,
           max_members: numMembers,
-          invited_emails: people.filter(email => email.trim() !== ""),
+          short_description: people[0] || "",
           cover_image: coverImage
         };
 
@@ -97,8 +113,9 @@ const CreateSpaceAdmin = () => {
           
           // Reset form
           setSpaceName("");
-          setNumMembers(5);
           setPeople(Array(5).fill(""));
+          setWordCount(0);
+          setNumMembers(5);
           setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
           navigate(`/space/${space_uuid}/${spaceName}`)
         } else {
@@ -109,7 +126,11 @@ const CreateSpaceAdmin = () => {
         alert("An error occurred while creating the space.");
       }
     } else {
-      alert("Please enter a space name.");
+      if (!spaceName.trim()) {
+        alert("Please enter a space name.");
+      } else if (wordCount > 100) {
+        alert("Short description exceeds 100 words.");
+      }
     }
   };
 
@@ -177,7 +198,7 @@ const CreateSpaceAdmin = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#1A1E24] text-white font-inter">
+    <div className="flex min-h-screen font-inter" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
 
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
@@ -194,8 +215,12 @@ const CreateSpaceAdmin = () => {
 
       {/* ================= MOBILE + TABLET SIDEBAR ================= */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{
+          backgroundColor: currentColors.surface,
+          color: currentColors.text
+        }}
       >
         <Sidebar />
       </div>
@@ -205,13 +230,19 @@ const CreateSpaceAdmin = () => {
 
         {/* MOBILE + TABLET STICKY HEADER */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+          className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
+          style={{
+            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
+            borderColor: isDarkMode ? "#374151" : currentColors.border,
+            color: isDarkMode ? "white" : currentColors.text
+          }}
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            className="bg-transparent border-none text-2xl p-0 focus:outline-none"
+            style={{ color: isDarkMode ? "white" : currentColors.text }}
           >
             ☰
           </button>
@@ -226,22 +257,27 @@ const CreateSpaceAdmin = () => {
           <div className="w-full max-w-4xl">
             <h1 className="hidden lg:block text-4xl font-bold text-center mb-6 lg:mb-10">Create New Space, Here!</h1>
 
-            <div className="bg-[#2A2A2A] rounded-xl p-4 lg:p-6 w-full mx-auto">
+            <div className="bg-[#2A2A2A] rounded-xl p-4 lg:p-6 w-full mx-auto" style={{
+              backgroundColor: currentColors.surface
+            }}>
 
               {/* TWITTER-STYLE CROP MODAL */}
               {isCropping && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-                  <div className="bg-[#1E1E1E] rounded-xl p-4 w-full max-w-4xl relative">
+                  <div className="rounded-xl p-4 w-full max-w-4xl relative" style={{
+                    backgroundColor: currentColors.surface
+                  }}>
 
                     {/* Close btn */}
                     <button
-                      className="absolute top-3 right-3 bg-black/60 p-1 rounded-full"
+                      className="absolute top-3 right-3 p-1 rounded-full"
+                      style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
                       onClick={() => {
                         setIsCropping(false);
                         // Don't clear the original image when closing cropper
                       }}
                     >
-                      <X size={20} className="text-white" />
+                      <X size={20} style={{ color: 'white' }} />
                     </button>
 
                     {/* Cropper area */}
@@ -274,7 +310,11 @@ const CreateSpaceAdmin = () => {
                     {/* Buttons */}
                     <div className="flex justify-end mt-5 gap-2">
                       <button
-                        className="bg-[#3E3E3E] px-6 py-2 rounded-lg hover:bg-[#4A4A4A] text-xs w-full sm:w-auto"
+                        className="px-4 py-2 text-sm rounded-lg transition-colors"
+                        style={{
+                          backgroundColor: isDarkMode ? '#444' : '#6b7280',
+                          color: 'white'
+                        }}
                         onClick={() => {
                           setIsCropping(false);
                           // Don't clear the original image when canceling
@@ -284,7 +324,11 @@ const CreateSpaceAdmin = () => {
                       </button>
 
                       <button
-                        className="bg-[#007AFF] hover:bg-[#2563eb] text-xs w-full sm:w-auto"
+                        className="px-4 py-2 text-sm rounded-lg transition-colors"
+                        style={{
+                          backgroundColor: '#007AFF',
+                          color: 'white'
+                        }}
                         onClick={handleCropSave}
                       >
                         Apply
@@ -305,7 +349,11 @@ const CreateSpaceAdmin = () => {
 
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
                   <button
-                    className="text-white bg-black/50 px-2 py-1 rounded text-xs"
+                    className="px-2 py-1 rounded text-xs"
+                    style={{
+                      backgroundColor: 'rgba(0,0,0,0.5)',
+                      color: 'white'
+                    }}
                     onClick={() => setIsCoverModalOpen(true)}
                   >
                     Change Cover
@@ -313,7 +361,11 @@ const CreateSpaceAdmin = () => {
 
                   {(!coverImage.includes("gradient") && originalImage) && (
                     <button
-                      className="text-white bg-black/50 px-2 py-1 rounded text-xs"
+                      className="px-2 py-1 rounded text-xs"
+                      style={{
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        color: 'white'
+                      }}
                       onClick={() => {
                         setUploadedImage(originalImage); // Use original image for cropping
                         setIsCropping(true);
@@ -324,7 +376,11 @@ const CreateSpaceAdmin = () => {
                   )}
 
                   <button
-                    className="text-white bg-black/50 px-2 py-1 rounded text-xs"
+                    className="px-2 py-1 rounded text-xs"
+                    style={{
+                      backgroundColor: 'rgba(0,0,0,0.5)',
+                      color: 'white'
+                    }}
                     onClick={() => setCoverImage("")}
                   >
                     Delete Cover
@@ -335,7 +391,9 @@ const CreateSpaceAdmin = () => {
               {/* Cover Modal */}
               {isCoverModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4">
-                  <div className="bg-[#2A2A2A] rounded-lg p-4 sm:p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+                  <div className="rounded-lg p-4 sm:p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto" style={{
+                    backgroundColor: currentColors.surface
+                  }}>
                     <button className="absolute top-2 right-2" onClick={() => setIsCoverModalOpen(false)}>
                       <X size={20} />
                     </button>
@@ -381,7 +439,12 @@ const CreateSpaceAdmin = () => {
                       type="file"
                       accept="image/*"
                       onChange={handleUpload}
-                      className="w-full bg-[#1E1E1E] text-sm p-2 rounded"
+                      className="w-full text-sm p-2 rounded"
+                      style={{
+                        backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc',
+                        color: currentColors.text,
+                        borderColor: currentColors.border
+                      }}
                     />
                   </div>
                 </div>
@@ -402,7 +465,12 @@ const CreateSpaceAdmin = () => {
                 <div className="col-span-1">
                   <label className="block text-sm mb-1">Maximum No. of Members:</label>
                   <div
-                    className="bg-[#1E1E1E] rounded-lg px-4 py-2 flex justify-between items-center cursor-pointer"
+                    className="rounded-lg px-4 py-2 flex justify-between items-center cursor-pointer"
+                    style={{
+                      backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc',
+                      color: currentColors.text,
+                      borderColor: currentColors.border
+                    }}
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   >
                     <span>({numMembers})</span>
@@ -410,11 +478,19 @@ const CreateSpaceAdmin = () => {
                   </div>
 
                   {isDropdownOpen && (
-                    <div className="absolute bg-[#1E1E1E] mt-1 rounded-lg max-h-40 overflow-auto z-10">
+                    <div className="absolute rounded-lg max-h-40 overflow-auto z-10" style={{
+                      backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc',
+                      color: currentColors.text,
+                      borderColor: currentColors.border
+                    }}>
                       {memberOptions.map((option) => (
                         <div
                           key={option}
-                          className="px-4 py-2 hover:bg-[#3E3E3E] cursor-pointer"
+                          className="px-4 py-2 cursor-pointer transition-colors"
+                          style={{
+                            backgroundColor: isDarkMode ? '#374151' : '#e5e7eb',
+                            color: currentColors.text
+                          }}
                           onClick={() => setNumMembers(option)}
                         >
                           {option}
@@ -425,38 +501,39 @@ const CreateSpaceAdmin = () => {
                 </div>
               </div>
 
-              {/* Add People */}
+              {/* Short Description */}
               <div className="mt-6">
-                <label className="text-sm">Add People:</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                  {people.map((person, index) => (
-                    <InputField
-                      key={index}
-                      placeholder="Name or Email"
-                      value={person}
-                      onChange={(e) =>
-                        setPeople([
-                          ...people.slice(0, index),
-                          e.target.value,
-                          ...people.slice(index + 1),
-                        ])
-                      }
-                      style={{ backgroundColor: "#ffffff" }}
-                    />
-                  ))}
+                <label className="text-sm">Short Description:</label>
+                <div className="mt-2">
+                  <InputField
+                    placeholder="Enter a brief description for this space (max 100 words)"
+                    value={people[0]}
+                    onChange={handleShortDescriptionChange}
+                    style={{ backgroundColor: "#ffffff", width: "100%" }}
+                  />
+                  <div className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+                    {wordCount}/100 words
+                  </div>
                 </div>
               </div>
 
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
                 <button
-                  className="bg-[#3E3E3E] px-6 py-2 rounded-lg hover:bg-[#4A4A4A] text-xs w-full sm:w-auto"
+                  className="px-6 py-2 rounded-lg text-xs w-full sm:w-auto transition-colors"
+                  style={{
+                    backgroundColor: isDarkMode ? '#3E3E3E' : '#e5e7eb',
+                    color: currentColors.text
+                  }}
                   onClick={() => navigate(-1)}
                 >
                   Cancel
                 </button>
 
-                <Button onClick={handleCreateSpace} className="bg-[#007AFF] hover:bg-[#2563eb] text-xs w-full sm:w-auto">
+                <Button onClick={handleCreateSpace} className="text-xs w-full sm:w-auto" style={{
+                  backgroundColor: '#007AFF',
+                  color: 'white'
+                }}>
                   Create Space
                 </Button>
               </div>
