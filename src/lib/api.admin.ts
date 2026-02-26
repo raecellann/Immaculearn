@@ -5,16 +5,16 @@ export const adminApi = axios.create({
   baseURL: "http://localhost:3000/v1",
   withCredentials: true,
   headers: {
-    Authorization: `Bearer ${config.APIKEY}`, // remove if using only httpOnly cookies
+    Authorization: `Bearer ${config.APIKEY}`,
     "Cache-Control": "no-cache",
   },
 });
 
 // 🔐 Refresh state management
 let isRefreshing = false;
-let refreshSubscribers = [];
+let refreshSubscribers: any[] = [];
 
-const subscribeTokenRefresh = (callback) => {
+const subscribeTokenRefresh = (callback: any) => {
   refreshSubscribers.push(callback);
 };
 

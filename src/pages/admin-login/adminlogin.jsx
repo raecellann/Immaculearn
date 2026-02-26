@@ -8,7 +8,7 @@ import { useAdmin } from "../../contexts/admin/useAdmin";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 
 const AdminLogin = () => {
-  const { isAuthenticated, admin, isLoading } = useAdmin();
+  const { isAuthenticated, admin, isLoading, login } = useAdmin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ const AdminLogin = () => {
     return emailRegex.test(email);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validate email
@@ -37,47 +37,23 @@ const AdminLogin = () => {
       return;
     }
     
-    // Add admin-specific login logic here
-    alert(`Logging in as Admin`);
+    // Call login function from context
+    const success = await login(email, password);
+    
+    if (success) {
+      toast.success("Login successful");
+      navigate('/admin/dashboard');
+    } else {
+      toast.error("Invalid email or password");
+      setError("Invalid credentials");
+    }
   };
 
-  const handleGmailLogin = async () => {
-    const popup = window.open(
-      `http://localhost:3000/v1/account/oauth/google/redirect`,
-      "oauthPopup",
-      `width=500,height=600,top=${(screen.height-600)/2},left=${(screen.width-500)/2},resizable=yes,scrollbars=yes`
-    );
-
-    const messageHandler = (event) => {
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data.type === 'OAUTH_SUCCESS') {
-        const { role, needsOnboarding, token } = event.data;
-        if (role !== 'admin') {
-          toast.error('Only admins can log in here.');
-          return;
-        }
-
-        navigate(`/admin-dashboard`);
-      } else if (event.data.type === 'OAUTH_ERROR') {
-        console.error('OAuth error:', event.data.error);
-        toast.error('Failed to sign in with Google. Please try again.');
-      }
-    };
-
-    window.addEventListener('message', messageHandler);
-
-    const checkPopup = setInterval(() => {
-      if (!popup || popup.closed) {
-        clearInterval(checkPopup);
-        window.removeEventListener('message', messageHandler);
-      }
-    }, 1000);
-  };
-
+  
   useEffect(() => {
-    if (!isAuthenticated || admin?.role !== 'admin') return;
-    navigate('/admin-dashboard');
+    if (isAuthenticated && admin?.role === 'admin') {
+      navigate('/admin/dashboard');
+    }
   }, [isAuthenticated, admin, navigate]);
 
   if (isLoading) {
@@ -172,44 +148,8 @@ const AdminLogin = () => {
           </Button>
         </form>
 
-        <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 border-t border-gray-300"></div>
-          <span className="text-gray-500 text-sm">Or</span>
-          <div className="flex-1 border-t border-gray-300"></div>
-        </div>
 
-        <button
-          onClick={handleGmailLogin}
-          style={{
-            width: "80%",
-            padding: "12px 24px",
-            fontSize: "16px",
-            fontWeight: "600",
-            borderRadius: "8px",
-            border: "2px solid #e5e7eb",
-            backgroundColor: "#ffffff",
-            color: "#374151",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "12px",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            margin: "0 auto",
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = "#f3f4f6";
-            e.currentTarget.style.borderColor = "#d1d5db";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = "#ffffff";
-            e.currentTarget.style.borderColor = "#e5e7eb";
-          }}
-        >
-          <Mail size={20} style={{ color: "#ef4444" }} />
-          Continue with Gmail
-        </button>
-
+      
         <p className="text-center text-gray-600 text-sm mt-4">
           Contact your system administrator for access.
         </p>

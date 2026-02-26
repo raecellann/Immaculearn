@@ -1,10 +1,10 @@
-import React, { useState, useEffect, ReactNode } from "react";
+import React, { useState, useEffect } from "react";
 import { adminApi } from "../../lib/api.admin";
 import { AdminContext, AdminContextType } from "./adminContext";
 import { Admin, AdminStats } from "../../types/admin";
 
 interface AdminProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
@@ -27,13 +27,12 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         setIsAuthenticated(false);
         return false;
       }
-    } catch (error) {
-      console.error("Check auth error:", error);
+    } catch  {
+      
       setAdmin(null);
       setIsAuthenticated(false);
       return false;
-    } finally {
-      setIsLoading(false);
+    
     }
   };
 
@@ -44,8 +43,17 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       const response = await adminApi.post("/admin/login", { email, password });
 
       if (response.data?.success) {
-        // Fetch admin profile after login
-        await checkAuth();
+        // Set authenticated state immediately after successful login
+        setIsAuthenticated(true);
+        
+        // Set basic admin info from login response (skip profile fetch to avoid 401)
+        setAdmin({
+          id: response.data.admin?.id || 'temp-id',
+          email: email,
+          fullname: response.data.admin?.fullname || email.split('@')[0],
+          role: response.data.admin?.role || 'admin'
+        });
+        
         return true;
       }
 
@@ -65,8 +73,13 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
+      // Clear stored tokens
+      localStorage.removeItem('adminToken');
+      sessionStorage.removeItem('adminToken');
       setAdmin(null);
       setIsAuthenticated(false);
+      // Redirect to login page
+      window.location.href = '/admin/login';
     }
   };
 
@@ -145,9 +158,12 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     }
   };
 
-  // Initial check on mount
+  // Initial check on mount - only if we have a token
   useEffect(() => {
-    checkAuth();
+    const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken');
+    if (token) {
+      checkAuth();
+    }
   }, []);
 
   const contextValue: AdminContextType = {

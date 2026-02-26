@@ -13,10 +13,10 @@ import { Link, useLocation } from "react-router";
 import Logout from "./logout";
 import logo from "../../assets/HomePage/logo.png";
 import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
-import { useUser } from "../../contexts/user/useUser";
+import { useAdmin } from "../../contexts/admin/useAdmin";
 
 const AdminSidebar = ({ isMinimized = false, onToggleMinimize }) => {
-  const { user, logout } = useUser();
+  const { admin, logout } = useAdmin();
   const [showLogout, setShowLogout] = useState(false);
   const location = useLocation();
 
@@ -138,17 +138,17 @@ const AdminSidebar = ({ isMinimized = false, onToggleMinimize }) => {
       <div className={`px-6 py-2 pt-3 border-t border-blue-500 ${localMinimized ? "lg:text-center" : ""}`}>
         <div className={`flex items-center gap-3 ${localMinimized ? "lg:flex-col" : ""}`}>
           <img
-            src={user ? user.profile_pic : frierenAvatar}
+            src={frierenAvatar}
             alt="Profile"
             className="w-8 h-8 rounded-full"
           />
-          {/* Text Container */}
+          
           <div className={`flex flex-col ${localMinimized ? "hidden lg:hidden" : ""}`}>
             <span className="text-sm font-medium">
-              {user?.name || "Admin"}
+              {admin?.fullname || "Admin"}
             </span>
             <span className="text-xs text-gray-400">
-              {user?.role || "Admin"}
+              {admin?.role || "Admin"}
             </span>
           </div>
         </div>
@@ -157,7 +157,7 @@ const AdminSidebar = ({ isMinimized = false, onToggleMinimize }) => {
       {showLogout && (
         <Logout
           onClose={() => setShowLogout(false)}
-          onLogOut={() => logout(user?.id)}
+          onLogOut={() => logout()}
         />
       )}
     </div>
