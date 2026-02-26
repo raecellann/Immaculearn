@@ -80,6 +80,7 @@ const UserPage = () => {
   const { user, isLoading: userLoading } = useUser();
   const { addNotification, showGlobalNotification } = useNotification();
   const {
+    setCurrentSpace,
     userSpaces,
     courseSpaces,
     friendSpaces,
@@ -101,6 +102,10 @@ const UserPage = () => {
   const currentSpace = allSpaces.find(
     (space) => space.space_uuid === space_uuid,
   );
+
+  if (currentSpace) {
+    setCurrentSpace(currentSpace);
+  }
 
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
@@ -875,7 +880,13 @@ const UserPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
+    <div
+      className="flex min-h-screen font-sans"
+      style={{
+        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -1172,8 +1183,8 @@ const UserPage = () => {
                 className={`sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
                 style={{
                   backgroundColor: currentColors.surface,
-                  borderColor: currentColors.border
-                  }}
+                  borderColor: currentColors.border,
+                }}
               >
                 <h2 className="font-bold mb-4">Reminders</h2>
                 <div className="text-center py-6">
@@ -1201,24 +1212,28 @@ const UserPage = () => {
                 </div>
 
                 {/* CHAT */}
-                        <button
-                          onClick={handleEnterChat}
-                          className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
-                          style={{
-                            backgroundColor: isDarkMode ? '#000000' : 'transparent',
-                            borderColor: currentColors.border,
-                            color: currentColors.text
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = isDarkMode ? '#1f2937' : currentColors.hover;
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = isDarkMode ? '#000000' : 'transparent';
-                          }}
-                        >
-                          <FiMessageCircle />
-                          Enter Chat
-                        </button>
+                <button
+                  onClick={handleEnterChat}
+                  className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
+                  style={{
+                    backgroundColor: isDarkMode ? "#000000" : "transparent",
+                    borderColor: currentColors.border,
+                    color: currentColors.text,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = isDarkMode
+                      ? "#1f2937"
+                      : currentColors.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = isDarkMode
+                      ? "#000000"
+                      : "transparent";
+                  }}
+                >
+                  <FiMessageCircle />
+                  Enter Chat
+                </button>
               </div>
             </div>
 
@@ -1340,7 +1355,7 @@ const UserPage = () => {
                 className={`bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${!isOwnerSpace && "h-full"} `}
                 style={{
                   backgroundColor: currentColors.surface,
-                  borderColor: currentColors.border
+                  borderColor: currentColors.border,
                 }}
               >
                 <h2 className="font-bold mb-4">Announcement Feed</h2>

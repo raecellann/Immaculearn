@@ -5,10 +5,15 @@ import React, {
   useCallback,
   ReactNode,
 } from "react";
+import { useParams } from "react-router";
 import { toast } from "react-toastify";
 import FileService from "../../services/fileService";
 import { FileContextType } from "./fileContext";
 import { FileData } from "../../types/file";
+
+import { useUser } from "../user/useUser";
+import { useSpace } from "../space/useSpace";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 const FileContext = createContext<FileContextType | undefined>(undefined);
 
@@ -17,11 +22,18 @@ interface FileProviderProps {
 }
 
 export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
+  const { isAuthenticated } = useUser();
+  const { currentSpace } = useSpace();
+  const { space_uuid: urlSpaceUuid } = useParams();
   const [files, setFiles] = useState<FileData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const queryClient = useQueryClient();
+
+  // Use space_uuid from URL params first, then fallback to currentSpace
+  const spaceUuid = urlSpaceUuid || currentSpace?.space_uuid;
 
   const fileService = new FileService();
 
@@ -44,6 +56,39 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
       setLoading(false);
     }
   }, []);
+
+  const { data: resources = [], isLoading: resourcesLoading, error: resourcesError } = useQuery({
+    queryKey: ["get-list-resources-by-space-uuid", spaceUuid],
+    queryFn: async () => {
+      console.log("Query executing for space_uuid:", spaceUuid);
+      return await fileService.getListResourceBySpaceUUID(
+        spaceUuid,
+      );
+    },
+    enabled: isAuthenticated && !!spaceUuid,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: 2,
+    retryDelay: 1000,
+  });
+
+  // Log resources error if it exists
+  if (resourcesError) {
+    console.error("Resources query error:", resourcesError);
+    setError(resourcesError instanceof Error ? resourcesError.message : "Failed to fetch resources");
+  }
+
+  console.log("Query state:", {
+    isAuthenticated,
+    urlSpaceUuid,
+    currentSpaceUuid: currentSpace?.space_uuid,
+    spaceUuid,
+    enabled: isAuthenticated && !!spaceUuid,
+    resourcesLoading,
+    resourcesCount: resources.length,
+    hasError: !!resourcesError
+  });
 
   const uploadResource = useCallback(
     async (
@@ -88,6 +133,11 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
         // Add new files to the existing files array
         setFiles((prev) => [...results, ...prev]);
 
+        // Refresh resources after successful upload
+        await queryClient.invalidateQueries({
+          queryKey: ["get-list-resources-by-space-uuid", space_uuid],
+        });
+
         // Reset progress after a short delay
         setTimeout(() => setUploadProgress(0), 1000);
 
@@ -101,7 +151,7 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
         setIsUploading(false);
       }
     },
-    [],
+    [queryClient],
   );
 
   const createFile = useCallback(
@@ -175,7 +225,22 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const refreshResources = useCallback(async (space_uuid: string) => {
+    setError(null);
+    try {
+      await queryClient.invalidateQueries({
+        queryKey: ["get-list-resources-by-space-uuid", space_uuid],
+      });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to refresh resources";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    }
+  }, [queryClient]);
+
   const value: FileContextType = {
+    resources,
     files,
     loading,
     error,
@@ -186,6 +251,7 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
     updateFile,
     deleteFile,
     refreshFiles,
+    refreshResources,
     clearError,
   };
 

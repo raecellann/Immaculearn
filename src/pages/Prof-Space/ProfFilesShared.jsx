@@ -65,7 +65,9 @@ const ProfFilesShared = () => {
   // Space name
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
   const { list, create } = useFileManager(currentSpace?.space_id || null);
+
   const {
+    resources,
     files: contextFiles,
     uploadResource,
     isUploading,
@@ -75,6 +77,9 @@ const ProfFilesShared = () => {
   } = useFile();
 
   const files = list?.data || contextFiles;
+
+  console.log(resources);
+  console.log(space_uuid);
 
   /* ================= HEADER + SIDEBAR ================= */
 
@@ -738,7 +743,7 @@ const ProfFilesShared = () => {
                 <div>Posted By</div>
               </div>
 
-              {files.map((file, index) => (
+              {resources?.map((file, index) => (
                 <div
                   key={index}
                   className="grid grid-cols-4 items-center rounded-lg px-4 py-3 mt-4"
@@ -757,7 +762,7 @@ const ProfFilesShared = () => {
                     >
                       <FiFileText />
                     </div>
-                    <span>{formatFileTitle(file.filename)}</span>
+                    <span>{formatFileTitle(file.name.split('-').slice(3).join('-'))}</span>
                   </div>
                   <div>{new Date(file.created_at).toLocaleDateString()}</div>
                   <div>

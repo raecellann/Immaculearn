@@ -32,17 +32,41 @@ class FileService {
   }
 
   async getListResourceBySpaceUUID(
-    space_uuid: string,
+    space_uuid: string | undefined,
   ): Promise<ResourceFile[]> {
-    const res = await api.get<ApiResponse<ResourceFile[]>>(
-      `/files/resources/${space_uuid}`,
-    );
-
-    if (!res.data.success) {
-      throw new Error(res.data.message || "Get Resources failed");
+    console.log("Fetching resources for space_uuid:", space_uuid);
+    
+    if (!space_uuid) {
+      console.error("No space_uuid provided");
+      throw new Error("space_uuid is required");
     }
 
-    return res.data.data;
+    try {
+      const res = await api.get<ApiResponse<ResourceFile[]>>(
+        `/files/resources/${space_uuid}`,
+      );
+
+      console.log("API response:", res);
+
+      if (!res.data) {
+        console.error("No data in response");
+        throw new Error("No data received from server");
+      }
+
+      if (!res.data.success) {
+        console.error("API returned error:", res.data.message);
+        throw new Error(res.data.message || "Get Resources failed");
+      }
+
+      console.log("Successfully fetched resources:", res.data.data);
+      return res.data.data;
+    } catch (error) {
+      console.error("Error in getListResourceBySpaceUUID:", error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Unknown error occurred while fetching resources");
+    }
   }
   async create(
     title: string,
