@@ -15,6 +15,10 @@ import {
   AlertCircle,
   Menu,
   Lock,
+  CheckCircle,
+  Play,
+  StopCircle,
+  Info, // Add this missing import
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import AdminSidebar from "../component/adminsidebar";
@@ -23,177 +27,199 @@ const AdminAcademicTerm = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [showLogout, setShowLogout] = useState(false);
-  const [selectedTerm, setSelectedTerm] = useState("1st Sem");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState(null);
-  const [showManagePeriodModal, setShowManagePeriodModal] = useState(false);
+  const [selectedTerm, setSelectedTerm] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [managePeriodData, setManagePeriodData] = useState({
-    gradingDueDate: "",
-    submissionDeadline: "",
-    extensionDeadline: "",
-    remarks: ""
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Form state for creating/editing academic term
+  const [formData, setFormData] = useState({
+    semester: "1st Semester",
+    period: "PRELIM",
+    startYear: new Date().getFullYear(),
+    status: "active", // Default to active since no upcoming option
   });
 
   const lastScrollY = useRef(0);
   const [showHeader, setShowHeader] = useState(true);
 
-  // Mock data for academic terms and periods
+  // Mock data for academic terms
   const [academicTerms, setAcademicTerms] = useState([
     {
-      id: "1st-sem",
-      name: "1st Sem",
+      id: "1st-semester-2024-prelim",
+      name: "1st Semester",
+      period: "PRELIM",
       schoolYear: "2024-2025",
       status: "active",
-      periods: [
-        {
-          id: "prelim",
-          name: "Prelim",
-          startDate: "2024-08-01",
-          endDate: "2024-09-15",
-          status: "completed",
-          totalStudents: 1250,
-          activeCourses: 45
-        },
-        {
-          id: "midterm",
-          name: "Midterm",
-          startDate: "2024-09-16",
-          endDate: "2024-10-31",
-          status: "active",
-          totalStudents: 1250,
-          activeCourses: 45
-        },
-        {
-          id: "prefinals",
-          name: "Prefinals",
-          startDate: "2024-11-01",
-          endDate: "2024-12-15",
-          status: "upcoming",
-          totalStudents: 1250,
-          activeCourses: 45
-        },
-        {
-          id: "finals",
-          name: "Finals",
-          startDate: "2024-12-16",
-          endDate: "2025-01-31",
-          status: "upcoming",
-          totalStudents: 1250,
-          activeCourses: 45
-        }
-      ]
+      createdAt: "2024-01-15T08:00:00Z",
     },
     {
-      id: "2nd-sem",
-      name: "2nd Sem",
+      id: "1st-semester-2024-midterm",
+      name: "1st Semester",
+      period: "MIDTERM",
       schoolYear: "2024-2025",
-      status: "upcoming",
-      periods: [
-        {
-          id: "prelim",
-          name: "Prelim",
-          startDate: "2025-02-01",
-          endDate: "2025-03-15",
-          status: "upcoming",
-          totalStudents: 1180,
-          activeCourses: 42
-        },
-        {
-          id: "midterm",
-          name: "Midterm",
-          startDate: "2025-03-16",
-          endDate: "2025-04-30",
-          status: "upcoming",
-          totalStudents: 1180,
-          activeCourses: 42
-        },
-        {
-          id: "prefinals",
-          name: "Prefinals",
-          startDate: "2025-05-01",
-          endDate: "2025-06-15",
-          status: "upcoming",
-          totalStudents: 1180,
-          activeCourses: 42
-        },
-        {
-          id: "finals",
-          name: "Finals",
-          startDate: "2025-06-16",
-          endDate: "2025-07-31",
-          status: "upcoming",
-          totalStudents: 1180,
-          activeCourses: 42
-        }
-      ]
-    }
+      status: "completed",
+      createdAt: "2024-01-15T08:00:00Z",
+    },
   ]);
 
-  // Check if 1st semester is completed
-  const isFirstSemCompleted = academicTerms.find(term => term.id === "1st-sem")?.status === "completed";
+  // Check if there's an active term
+  const hasActiveTerm = academicTerms.some((term) => term.status === "active");
 
-  // Check if a period is unlocked (previous period is completed)
-  const isPeriodUnlocked = (periods, currentPeriodId) => {
-    const periodOrder = ['prelim', 'midterm', 'prefinals', 'finals'];
-    const currentIndex = periodOrder.indexOf(currentPeriodId);
-    
-    if (currentIndex === 0) return true; // First period is always unlocked
-    
-    const previousPeriodId = periodOrder[currentIndex - 1];
-    const previousPeriod = periods.find(p => p.id === previousPeriodId);
-    
-    return previousPeriod?.status === "completed";
+  const handleCreateAcademicTerm = () => {
+    // Check if there's an active term
+    if (hasActiveTerm) {
+      setErrorMessage(
+        "Cannot create new academic term while there is an active term. Please complete the active term first.",
+      );
+      return;
+    }
+
+    const academicYear = `${formData.startYear}-${formData.startYear + 1}`;
+
+    // Create new academic term (always active by default when creating)
+    const newTerm = {
+      id: `${formData.semester.toLowerCase().replace(" ", "-")}-${formData.startYear}-${formData.period.toLowerCase()}-${Date.now()}`,
+      name: formData.semester,
+      period: formData.period,
+      schoolYear: academicYear,
+      status: "active", // Always active when created
+      createdAt: new Date().toISOString(),
+    };
+
+    setAcademicTerms([...academicTerms, newTerm]);
+    resetForm();
+    setShowCreateModal(false);
+    setErrorMessage("");
   };
 
-  const currentTerm = academicTerms.find(term => term.id === selectedTerm.replace(" ", "-").toLowerCase());
+  const handleEditTerm = () => {
+    if (!selectedTerm) return;
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "active":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "completed":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      case "upcoming":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+    // Check if trying to activate while another term is active
+    if (
+      formData.status === "active" &&
+      hasActiveTerm &&
+      selectedTerm.status !== "active"
+    ) {
+      setErrorMessage(
+        "Cannot activate this term while another term is active. Please complete the active term first.",
+      );
+      return;
+    }
+
+    const academicYear = `${formData.startYear}-${formData.startYear + 1}`;
+
+    const updatedTerms = academicTerms.map((term) =>
+      term.id === selectedTerm.id
+        ? {
+            ...term,
+            name: formData.semester,
+            period: formData.period,
+            schoolYear: academicYear,
+            status: formData.status,
+          }
+        : term,
+    );
+
+    setAcademicTerms(updatedTerms);
+    resetForm();
+    setShowEditModal(false);
+    setSelectedTerm(null);
+    setErrorMessage("");
+  };
+
+  const handleDeleteTerm = (termId) => {
+    const termToDelete = academicTerms.find((t) => t.id === termId);
+
+    // Prevent deletion of active term
+    if (termToDelete?.status === "active") {
+      setErrorMessage(
+        "Cannot delete an active academic term. Please complete it first.",
+      );
+      return;
+    }
+
+    if (window.confirm("Are you sure you want to delete this academic term?")) {
+      setAcademicTerms(academicTerms.filter((term) => term.id !== termId));
     }
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const handleStatusChange = (termId, newStatus) => {
+    const term = academicTerms.find((t) => t.id === termId);
+
+    // If trying to activate, check if another term is active
+    if (newStatus === "active" && hasActiveTerm && term.status !== "active") {
+      setErrorMessage(
+        "Cannot activate this term while another term is active. Please complete the active term first.",
+      );
+      return;
+    }
+
+    const updatedTerms = academicTerms.map((term) =>
+      term.id === termId ? { ...term, status: newStatus } : term,
+    );
+    setAcademicTerms(updatedTerms);
+    setErrorMessage("");
   };
 
-  const handleManagePeriod = (period) => {
-    setSelectedPeriod(period);
-    setManagePeriodData({
-      gradingDueDate: period.gradingDueDate || "",
-      submissionDeadline: period.submissionDeadline || "",
-      extensionDeadline: period.extensionDeadline || "",
-      remarks: period.remarks || ""
+  const openEditModal = (term) => {
+    setSelectedTerm(term);
+    setFormData({
+      semester: term.name,
+      period: term.period,
+      startYear: parseInt(term.schoolYear.split("-")[0]),
+      status: term.status,
     });
-    setShowManagePeriodModal(true);
+    setShowEditModal(true);
   };
 
-  const handleSavePeriodSettings = () => {
-    // Here you would save the period settings to your backend
-    console.log("Saving period settings:", managePeriodData);
-    setShowManagePeriodModal(false);
+  const resetForm = () => {
+    setFormData({
+      semester: "1st Semester",
+      period: "PRELIM",
+      startYear: new Date().getFullYear(),
+      status: "active",
+    });
+    setErrorMessage("");
+  };
+
+  const handleYearChange = (year) => {
+    setFormData({ ...formData, startYear: parseInt(year) });
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "active":
+        return (
+          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs flex items-center gap-1">
+            <Play className="w-3 h-3" /> Active
+          </span>
+        );
+      case "completed":
+        return (
+          <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs flex items-center gap-1">
+            <CheckCircle className="w-3 h-3" /> Completed
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2 py-1 bg-gray-500/20 text-gray-400 rounded-full text-xs flex items-center gap-1">
+            <Clock className="w-3 h-3" /> Unknown
+          </span>
+        );
+    }
   };
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
         setShowHeader(false);
       } else {
         setShowHeader(true);
       }
-
       lastScrollY.current = currentScrollY;
     };
 
@@ -203,12 +229,11 @@ const AdminAcademicTerm = () => {
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
-      {/* DESKTOP SIDEBAR */}
+      {/* Sidebar components */}
       <div className="hidden lg:block">
         <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* MOBILE OVERLAY */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -216,7 +241,6 @@ const AdminAcademicTerm = () => {
         />
       )}
 
-      {/* MOBILE SIDEBAR */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
@@ -226,7 +250,6 @@ const AdminAcademicTerm = () => {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
-
         {/* MOBILE HEADER */}
         <div
           className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
@@ -247,300 +270,430 @@ const AdminAcademicTerm = () => {
 
         {/* CONTENT */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-
-          {/* DESKTOP TITLE */}
-          <h1 className="hidden lg:block text-2xl font-bold mb-6">
-            Academic Term Management
-          </h1>
-
-          {/* Term Selection */}
-          <div className="flex gap-4 mb-6">
-            {academicTerms.filter(term => term.id === "1st-sem" || term.id === "2nd-sem").map((term) => {
-              const isSecondSem = term.id === "2nd-sem";
-              const isDisabled = isSecondSem && !isFirstSemCompleted;
-              
-              return (
-                <button
-                  key={term.id}
-                  onClick={() => !isDisabled && setSelectedTerm(term.name)}
-                  disabled={isDisabled}
-                  className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                    selectedTerm === term.name
-                      ? "bg-[#007AFF] text-white"
-                      : isDisabled
-                      ? "bg-[#1E242E] text-gray-500 cursor-not-allowed opacity-50"
-                      : "bg-[#1E242E] text-gray-300 hover:bg-[#2A2F3A]"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{term.name}</span>
-                    <span className="text-xs opacity-75">({term.schoolYear})</span>
-                    {isDisabled && (
-                      <Lock className="w-4 h-4 text-yellow-400 ml-1" />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Period Cards */}
-          {currentTerm && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {currentTerm.periods.map((period) => {
-                const isUnlocked = isPeriodUnlocked(currentTerm.periods, period.id);
-                const isCompleted = period.status === "completed";
-                const isLocked = !isUnlocked || isCompleted;
-                
-                return (
-                  <div
-                    key={period.id}
-                    className={`bg-[#1E242E] rounded-xl border transition-all group ${
-                      isLocked 
-                        ? "border-[#3B4457] opacity-60" 
-                        : "border-[#3B4457] hover:border-[#4A5568]"
-                    }`}
-                  >
-                    <div className="p-6">
-                      {/* Header */}
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-white">{period.name}</h3>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(period.status)}`}>
-                            {period.status}
-                          </span>
-                          {isLocked && (
-                            <span className="text-xs text-yellow-400 font-medium">
-                              {isCompleted ? "Closed" : "Locked"}
-                            </span>
-                          )}
-                          <div className={`opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 ${
-                            isLocked ? "pointer-events-none" : ""
-                          }`}>
-                            <button
-                              onClick={() => {
-                                setSelectedPeriod(period);
-                                setShowEditModal(true);
-                              }}
-                              disabled={isLocked}
-                              className={`p-1 rounded ${
-                                isLocked 
-                                  ? "cursor-not-allowed" 
-                                  : "hover:bg-[#2A2F3A]"
-                              }`}
-                            >
-                              <Edit className={`w-4 h-4 ${isLocked ? "text-gray-600" : "text-gray-400"}`} />
-                            </button>
-                            <button 
-                              disabled={isLocked}
-                              className={`p-1 rounded ${
-                                isLocked 
-                                  ? "cursor-not-allowed" 
-                                  : "hover:bg-[#2A2F3A]"
-                              }`}
-                            >
-                              <Trash2 className={`w-4 h-4 ${isLocked ? "text-gray-600" : "text-red-400"}`} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Date Range */}
-                      <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
-                        <Clock className="w-4 h-4" />
-                        <span>{formatDate(period.startDate)} - {formatDate(period.endDate)}</span>
-                      </div>
-
-                      {/* Stats */}
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Users className="w-4 h-4 text-blue-400" />
-                            <span className="text-gray-300">Students</span>
-                          </div>
-                          <span className="font-medium">{period.totalStudents.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm">
-                            <BookOpen className="w-4 h-4 text-green-400" />
-                            <span className="text-gray-300">Active Courses</span>
-                          </div>
-                          <span className="font-medium">{period.activeCourses}</span>
-                        </div>
-                      </div>
-
-                      {/* Action Button */}
-                      <div className="mt-4 pt-4 border-t border-[#3B4457]">
-                        <Button
-                          className={`w-full py-2 text-sm ${
-                            isLocked
-                              ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                              : "bg-[#007AFF] hover:bg-blue-700 text-white"
-                          }`}
-                          onClick={() => !isLocked && handleManagePeriod(period)}
-                          disabled={isLocked}
-                        >
-                          {isCompleted ? "View Period" : isLocked ? "Locked" : "Manage Period"}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Error Message Display */}
+          {errorMessage && (
+            <div className="mb-4 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-400">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm">{errorMessage}</p>
+              <button
+                onClick={() => setErrorMessage("")}
+                className="ml-auto text-red-400 hover:text-red-300"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           )}
 
-          {/* Empty State */}
-          {!currentTerm && (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-              <Calendar className="w-16 h-16 mb-4 opacity-50" />
-              <p className="text-lg font-medium">No academic term selected</p>
-              <p className="text-sm mt-2">Select a term to view grading periods</p>
-              <button
-                onClick={() => console.log("Add new term button clicked")}
-                className="px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 transition-colors mt-4"
-              >
-                Add New Term
-              </button>
+          {/* Active Term Warning */}
+          {hasActiveTerm && (
+            <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/50 rounded-lg flex items-center gap-3 text-yellow-400">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm">
+                There is an active academic term. You cannot create new terms
+                until the active term is marked as completed.
+              </p>
+            </div>
+          )}
+
+          {/* DESKTOP TITLE AND CREATE BUTTON */}
+          <div className="hidden lg:flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Academic Terms</h1>
+            <button
+              onClick={() => {
+                resetForm();
+                setShowCreateModal(true);
+              }}
+              disabled={hasActiveTerm}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                hasActiveTerm
+                  ? "bg-gray-600 cursor-not-allowed opacity-50"
+                  : "bg-[#007AFF] hover:bg-blue-600"
+              } text-white`}
+            >
+              <Plus className="w-4 h-4" />
+              Create Academic Term
+            </button>
+          </div>
+
+          {/* MOBILE CREATE BUTTON */}
+          <div className="lg:hidden mb-4">
+            <button
+              onClick={() => {
+                resetForm();
+                setShowCreateModal(true);
+              }}
+              disabled={hasActiveTerm}
+              className={`w-full px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                hasActiveTerm
+                  ? "bg-gray-600 cursor-not-allowed opacity-50"
+                  : "bg-[#007AFF] hover:bg-blue-600"
+              } text-white`}
+            >
+              <Plus className="w-5 h-5" />
+              Create Academic Term
+            </button>
+          </div>
+
+          {/* ACADEMIC TERMS LIST */}
+          {academicTerms.length === 0 ? (
+            /* No Academic Terms State */
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-[#1E242E] rounded-xl border border-[#3B4457] p-8 text-center">
+                <div className="w-16 h-16 bg-[#2A2F3A] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  No Academic Terms Yet
+                </h3>
+                <p className="text-gray-400 mb-6">
+                  Get started by creating your first academic term. You can set
+                  up semesters, periods, and academic years.
+                </p>
+                <button
+                  onClick={() => {
+                    resetForm();
+                    setShowCreateModal(true);
+                  }}
+                  disabled={hasActiveTerm}
+                  className={`px-6 py-3 rounded-lg transition-colors inline-flex items-center gap-2 ${
+                    hasActiveTerm
+                      ? "bg-gray-600 cursor-not-allowed opacity-50"
+                      : "bg-[#007AFF] hover:bg-blue-600"
+                  } text-white`}
+                >
+                  <Plus className="w-5 h-5" />
+                  Create Your First Academic Term
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Academic Terms Table */
+            <div className="bg-[#1E242E] rounded-xl border border-[#3B4457] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-[#3B4457] bg-[#161A20]">
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                        Semester
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                        Period
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                        Academic Year
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                        Created
+                      </th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-300">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {academicTerms.map((term) => (
+                      <tr
+                        key={term.id}
+                        className="border-b border-[#3B4457] hover:bg-[#2A2F3A] transition-colors"
+                      >
+                        <td className="px-6 py-4 text-sm">{term.name}</td>
+                        <td className="px-6 py-4 text-sm">{term.period}</td>
+                        <td className="px-6 py-4 text-sm">{term.schoolYear}</td>
+                        <td className="px-6 py-4 text-sm">
+                          {getStatusBadge(term.status)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-400">
+                          {new Date(term.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {/* Status Dropdown - Only Active and Completed */}
+                            <select
+                              value={term.status}
+                              onChange={(e) =>
+                                handleStatusChange(term.id, e.target.value)
+                              }
+                              className="bg-[#161A20] border border-[#3B4457] rounded-lg text-xs px-2 py-1 text-white focus:border-[#007AFF] focus:outline-none"
+                            >
+                              <option value="active">Active</option>
+                              <option value="completed">Completed</option>
+                            </select>
+
+                            {/* Edit Button */}
+                            <button
+                              onClick={() => openEditModal(term)}
+                              className="text-blue-400 hover:text-blue-300 transition-colors"
+                              title="Edit"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+
+                            {/* Delete Button */}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Create Academic Term Modal */}
+          {showCreateModal && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+              <div className="bg-[#1E242E] rounded-xl border border-[#3B4457] w-full max-w-md">
+                <div className="flex justify-between items-center p-6 border-b border-[#3B4457]">
+                  <h2 className="text-xl font-bold text-white">
+                    Create Academic Term
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      resetForm();
+                    }}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="p-6">
+                  {/* Semester Dropdown */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Semester
+                    </label>
+                    <select
+                      value={formData.semester}
+                      onChange={(e) =>
+                        setFormData({ ...formData, semester: e.target.value })
+                      }
+                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                    >
+                      <option value="1st Semester">1st Semester</option>
+                      <option value="2nd Semester">2nd Semester</option>
+                    </select>
+                  </div>
+
+                  {/* Period Dropdown */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Period
+                    </label>
+                    <select
+                      value={formData.period}
+                      onChange={(e) =>
+                        setFormData({ ...formData, period: e.target.value })
+                      }
+                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                    >
+                      <option value="PRELIM">PRELIM</option>
+                      <option value="MIDTERM">MIDTERM</option>
+                      <option value="PREFINALS">PREFINALS</option>
+                      <option value="FINALS">FINALS</option>
+                    </select>
+                  </div>
+
+                  {/* Academic Year Start */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Academic Year Start
+                    </label>
+                    <select
+                      value={formData.startYear}
+                      onChange={(e) => handleYearChange(e.target.value)}
+                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                    >
+                      {Array.from(
+                        { length: 10 },
+                        (_, i) => new Date().getFullYear() - 2 + i,
+                      ).map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Academic Year:{" "}
+                      <span className="text-white">
+                        {formData.startYear}-{formData.startYear + 1}
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* Note about status */}
+                  <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/50 rounded-lg">
+                    <p className="text-xs text-blue-400">
+                      <Info className="w-3 h-3 inline mr-1" />
+                      New terms are automatically set to Active status.
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setShowCreateModal(false);
+                        resetForm();
+                      }}
+                      className="flex-1 px-4 py-2 bg-[#2A2F3A] text-gray-300 rounded-lg hover:bg-[#3B4457] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleCreateAcademicTerm}
+                      className="flex-1 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Create
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Edit Academic Term Modal */}
+          {showEditModal && selectedTerm && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+              <div className="bg-[#1E242E] rounded-xl border border-[#3B4457] w-full max-w-md">
+                <div className="flex justify-between items-center p-6 border-b border-[#3B4457]">
+                  <h2 className="text-xl font-bold text-white">
+                    Edit Academic Term
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedTerm(null);
+                      resetForm();
+                    }}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="p-6">
+                  {/* Semester Dropdown */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Semester
+                    </label>
+                    <select
+                      value={formData.semester}
+                      onChange={(e) =>
+                        setFormData({ ...formData, semester: e.target.value })
+                      }
+                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                    >
+                      <option value="1st Semester">1st Semester</option>
+                      <option value="2nd Semester">2nd Semester</option>
+                    </select>
+                  </div>
+
+                  {/* Period Dropdown */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Period
+                    </label>
+                    <select
+                      value={formData.period}
+                      onChange={(e) =>
+                        setFormData({ ...formData, period: e.target.value })
+                      }
+                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                    >
+                      <option value="PRELIM">PRELIM</option>
+                      <option value="MIDTERM">MIDTERM</option>
+                      <option value="PREFINALS">PREFINALS</option>
+                      <option value="FINALS">FINALS</option>
+                    </select>
+                  </div>
+
+                  {/* Academic Year Start */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Academic Year Start
+                    </label>
+                    <select
+                      value={formData.startYear}
+                      onChange={(e) => handleYearChange(e.target.value)}
+                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                    >
+                      {Array.from(
+                        { length: 10 },
+                        (_, i) => new Date().getFullYear() - 2 + i,
+                      ).map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Academic Year:{" "}
+                      <span className="text-white">
+                        {formData.startYear}-{formData.startYear + 1}
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* Status Dropdown - Only Active and Completed */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) =>
+                        setFormData({ ...formData, status: e.target.value })
+                      }
+                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                    >
+                      <option value="active">Active</option>
+                      <option value="completed">Completed</option>
+                    </select>
+                    {formData.status === "active" &&
+                      hasActiveTerm &&
+                      selectedTerm.status !== "active" && (
+                        <p className="text-xs text-red-400 mt-1">
+                          Warning: Another term is currently active. Activating
+                          this will deactivate the other term.
+                        </p>
+                      )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setShowEditModal(false);
+                        setSelectedTerm(null);
+                        resetForm();
+                      }}
+                      className="flex-1 px-4 py-2 bg-[#2A2F3A] text-gray-300 rounded-lg hover:bg-[#3B4457] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleEditTerm}
+                      className="flex-1 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Save className="w-4 h-4" />
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
-
-      {/* Manage Period Modal */}
-      {showManagePeriodModal && selectedPeriod && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#1E222A] rounded-xl border border-[#3B4457] w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="p-6 border-b border-[#3B4457]">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-white">Manage Period Settings</h2>
-                  <p className="text-gray-400 text-sm mt-1">
-                    {selectedTerm?.name} - {selectedPeriod.name}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowManagePeriodModal(false)}
-                  className="p-2 hover:bg-[#2A2F3A] rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 space-y-6">
-              {/* Period Info */}
-              <div className="bg-[#161A20] rounded-lg p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <Calendar className="w-5 h-5 text-blue-400" />
-                  <span className="font-medium text-white">Period Duration</span>
-                </div>
-                <div className="text-sm text-gray-300">
-                  {formatDate(selectedPeriod.startDate)} - {formatDate(selectedPeriod.endDate)}
-                </div>
-              </div>
-
-              {/* Grading Due Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Grading Due Date
-                </label>
-                <input
-                  type="datetime-local"
-                  value={managePeriodData.gradingDueDate}
-                  onChange={(e) => setManagePeriodData({...managePeriodData, gradingDueDate: e.target.value})}
-                  className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Deadline for faculty to submit grades
-                </p>
-              </div>
-
-              {/* Submission Deadline */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Student Submission Deadline
-                </label>
-                <input
-                  type="datetime-local"
-                  value={managePeriodData.submissionDeadline}
-                  onChange={(e) => setManagePeriodData({...managePeriodData, submissionDeadline: e.target.value})}
-                  className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Final deadline for student submissions
-                </p>
-              </div>
-
-              {/* Extension Deadline */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Extension Deadline (Optional)
-                </label>
-                <input
-                  type="datetime-local"
-                  value={managePeriodData.extensionDeadline}
-                  onChange={(e) => setManagePeriodData({...managePeriodData, extensionDeadline: e.target.value})}
-                  className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Extended deadline for late submissions with penalties
-                </p>
-              </div>
-
-              {/* Remarks */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Remarks / Instructions
-                </label>
-                <textarea
-                  value={managePeriodData.remarks}
-                  onChange={(e) => setManagePeriodData({...managePeriodData, remarks: e.target.value})}
-                  rows={3}
-                  className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none resize-none"
-                  placeholder="Enter any special instructions or remarks for this period..."
-                />
-              </div>
-
-              {/* Warning Notice */}
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-yellow-400 font-medium">Important Notice</p>
-                    <p className="text-xs text-yellow-300/80 mt-1">
-                      Once grades are finalized and submitted, they cannot be modified. Please ensure all data is accurate before finalizing.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-6 border-t border-[#3B4457]">
-              <div className="flex items-center justify-end gap-3">
-                <button
-                  onClick={() => setShowManagePeriodModal(false)}
-                  className="px-4 py-2 bg-[#2A2F3A] text-gray-300 rounded-lg hover:bg-[#3B4457] transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSavePeriodSettings}
-                  className="px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Save Settings
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
