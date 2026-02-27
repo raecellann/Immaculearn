@@ -57,8 +57,8 @@ const FormBuilderPage = () => {
   // Filter question types based on task category
   const getAvailableQuestionTypes = () => {
     if (taskCategory === 'reflection-essay') {
-      // Only allow short answer (identification) for reflection/essay
-      return questionTypes.filter(type => type.id === 'identification');
+      // Only allow reflection essay questions for reflection/essay
+      return questionTypes.filter(type => type.id === 'reflection_essay');
     }
     // Show all question types for quiz
     return questionTypes;
@@ -403,7 +403,7 @@ const FormBuilderPage = () => {
               <h4 className="font-semibold mb-3">
                 Add Question Type: 
                 {taskCategory === 'reflection-essay' && (
-                  <span className="ml-2 text-sm text-gray-400">(Short Answer Only)</span>
+                  <span className="ml-2 text-sm text-gray-400">(Reflection/Essay Only)</span>
                 )}
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">

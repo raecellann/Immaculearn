@@ -108,7 +108,7 @@ const CreateActivityPage = () => {
             <h1 className="text-2xl font-bold" style={{ color: currentColors.accent }}>
               {displayName}
             </h1>
-            <p className="text-sm opacity-75">Create New Activity</p>
+            <p className="text-xs opacity-60">Space</p>
           </div>
         </div>
         

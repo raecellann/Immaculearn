@@ -9,6 +9,9 @@ import {
   FiSave,
   FiClock,
   FiTarget,
+  FiCalendar,
+  FiAlertTriangle,
+  FiEdit3,
 } from "react-icons/fi";
 
 const CreateActivityForm = ({ spaceName }) => {
@@ -20,7 +23,7 @@ const CreateActivityForm = ({ spaceName }) => {
   // State management
   const [taskTitle, setTaskTitle] = useState("");
   const [score, setScore] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [activityEndDate, setActivityEndDate] = useState("");
   const [activityEndTime, setActivityEndTime] = useState("");
   const [lessonUnder, setLessonUnder] = useState("");
   const [taskCategory, setTaskCategory] = useState("quiz");
@@ -31,6 +34,7 @@ const CreateActivityForm = ({ spaceName }) => {
     taskTitle: "",
     lessonUnder: "",
     taskCategory: "",
+    activityEndDate: "",
     activityEndTime: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,12 +45,8 @@ const CreateActivityForm = ({ spaceName }) => {
   // Memoized task categories to prevent re-renders
   const taskCategories = useMemo(() => [
     { value: "quiz", label: "Quiz", emoji: "📝" },
-    { value: "essay", label: "Essay", emoji: "📄" },
-    { value: "presentation", label: "Presentation", emoji: "🎤" },
-    { value: "project", label: "Project", emoji: "🚀" },
-    { value: "creative", label: "Creative Work", emoji: "🎨" },
-    { value: "group-activity", label: "Group Activity", emoji: "👥" },
     { value: "reflection-essay", label: "Reflection Essay", emoji: "🤔" },
+    { value: "group-activity", label: "Group Activity", emoji: "👥" }
   ], []);
 
   // Memoized criteria templates
@@ -91,8 +91,18 @@ const CreateActivityForm = ({ spaceName }) => {
         setLessonUnder(taskFormData.lessonUnder || "");
         setTaskCategory(taskFormData.taskCategory || "quiz");
         setScore(taskFormData.score || "");
-        setDueDate(taskFormData.dueDate || "");
-        setActivityEndTime(taskFormData.activityEndTime || "");
+        
+        // Handle legacy datetime-local format and new separate format
+        if (taskFormData.activityEndDate && taskFormData.activityEndTime) {
+          setActivityEndDate(taskFormData.activityEndDate);
+          setActivityEndTime(taskFormData.activityEndTime);
+        } else if (taskFormData.activityEndTime) {
+          // Legacy format - split datetime-local into date and time
+          const dateTime = new Date(taskFormData.activityEndTime);
+          setActivityEndDate(dateTime.toISOString().split('T')[0]);
+          setActivityEndTime(dateTime.toTimeString().slice(0, 5));
+        }
+        
         setCriteria(taskFormData.criteria || [{ id: 1, name: "", description: "", points: "" }]);
       } catch (error) {
         console.error('Error loading task data from localStorage:', error);
@@ -154,6 +164,7 @@ const CreateActivityForm = ({ spaceName }) => {
       taskTitle: "",
       lessonUnder: "",
       taskCategory: "",
+      activityEndDate: "",
       activityEndTime: ""
     };
     
@@ -177,16 +188,23 @@ const CreateActivityForm = ({ spaceName }) => {
       hasErrors = true;
     }
 
+    // Validate date and time separately
+    if (!activityEndDate) {
+      newErrors.activityEndDate = "Activity end date is required";
+      hasErrors = true;
+    }
+
     if (!activityEndTime) {
       newErrors.activityEndTime = "Activity end time is required";
       hasErrors = true;
-    } else {
-      const endTime = new Date(activityEndTime);
+    } else if (activityEndDate) {
+      // Combine date and time for validation
+      const endDateTime = new Date(`${activityEndDate}T${activityEndTime}`);
       const now = new Date();
-      if (endTime <= now) {
+      if (endDateTime <= now) {
         newErrors.activityEndTime = "Activity end time must be at least 5 minutes in the future";
         hasErrors = true;
-      } else if ((endTime - now) < 5 * 60 * 1000) {
+      } else if ((endDateTime - now) < 5 * 60 * 1000) {
         newErrors.activityEndTime = "Activity end time must be at least 5 minutes in the future";
         hasErrors = true;
       }
@@ -204,7 +222,7 @@ const CreateActivityForm = ({ spaceName }) => {
       activityEndTime: ""
     });
     return true;
-  }, [taskTitle, lessonUnder, taskCategory, activityEndTime]);
+  }, [taskTitle, lessonUnder, taskCategory, activityEndDate, activityEndTime]);
 
   // Enhanced form submission with loading states
   const handleCreateTask = useCallback(async () => {
@@ -216,17 +234,18 @@ const CreateActivityForm = ({ spaceName }) => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const taskFormData = {
+      const taskData = {
         taskTitle,
         lessonUnder,
         taskCategory,
         score,
-        dueDate,
+        activityEndDate,
         activityEndTime,
+        activityEndDateTime: `${activityEndDate}T${activityEndTime}`, // Combined for compatibility
         criteria
       };
       
-      localStorage.setItem("taskFormData", JSON.stringify(taskFormData));
+      localStorage.setItem("taskFormData", JSON.stringify(taskData));
 
       // Navigate based on category
       switch (taskCategory) {
@@ -249,7 +268,7 @@ const CreateActivityForm = ({ spaceName }) => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [validateForm, taskTitle, lessonUnder, taskCategory, score, dueDate, activityEndTime, criteria, navigate, space_uuid, space_name]);
+  }, [validateForm, taskTitle, lessonUnder, taskCategory, score, activityEndDate, activityEndTime, criteria, navigate, space_uuid, space_name]);
 
   // Enhanced draft saving
   const handleSaveDraft = useCallback(async () => {
@@ -261,8 +280,9 @@ const CreateActivityForm = ({ spaceName }) => {
         lessonUnder,
         taskCategory,
         score,
-        dueDate,
+        activityEndDate,
         activityEndTime,
+        activityEndDateTime: `${activityEndDate}T${activityEndTime}`, // Combined for compatibility
         criteria,
         isDraft: true,
         savedAt: new Date().toISOString()
@@ -277,7 +297,7 @@ const CreateActivityForm = ({ spaceName }) => {
     } finally {
       setIsDraftSaving(false);
     }
-  }, [taskTitle, lessonUnder, taskCategory, score, dueDate, activityEndTime, criteria]);
+  }, [taskTitle, lessonUnder, taskCategory, score, activityEndDate, activityEndTime, criteria]);
 
   const handleOpenFormBuilder = useCallback(() => {
     if (!validateForm()) return;
@@ -287,13 +307,14 @@ const CreateActivityForm = ({ spaceName }) => {
       lessonUnder,
       taskCategory,
       score,
-      dueDate,
+      activityEndDate,
       activityEndTime,
+      activityEndDateTime: `${activityEndDate}T${activityEndTime}`, // Combined for compatibility
       criteria
     };
     localStorage.setItem("taskFormData", JSON.stringify(taskFormData));
     navigate(`/space/${space_uuid}/${space_name}/form-builder`);
-  }, [validateForm, taskTitle, lessonUnder, taskCategory, score, dueDate, activityEndTime, criteria, navigate, space_uuid, space_name]);
+  }, [validateForm, taskTitle, lessonUnder, taskCategory, score, activityEndDate, activityEndTime, criteria, navigate, space_uuid, space_name]);
 
   const confirmDeleteRoom = useCallback(() => {
     setCriteria([{ id: 1, name: "", description: "", points: "" }]);
@@ -301,20 +322,6 @@ const CreateActivityForm = ({ spaceName }) => {
 
   return (
     <div className="font-sans">
-      {/* Form Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center"
-               style={{ backgroundColor: currentColors.accent }}>
-            <FiTarget className="text-white" size={20} />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">Activity Details</h2>
-            <p className="text-sm opacity-75">Configure your activity settings</p>
-          </div>
-        </div>
-      </div>
-
       {/* Form Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* LEFT COLUMN */}
@@ -433,86 +440,127 @@ const CreateActivityForm = ({ spaceName }) => {
             />
           </div>
 
-          {/* Due Date Field */}
-          <div>
-            <label className="block font-semibold mb-2">
-              Due Date: <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full rounded-lg px-4 py-3 outline-none border focus:border-blue-500"
-              style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
-              min={new Date().toISOString().split("T")[0]}
-              disabled={isSubmitting}
-            />
-          </div>
-
           {/* Activity End Time Field */}
           <div>
             <label className="block font-semibold mb-2">
               <FiClock className="inline mr-2" size={16} />
-              Activity End Time: <span className="text-red-500">*</span>
+              Activity End Date & Time: <span className="text-red-500">*</span>
             </label>
-            <input
-              type="datetime-local"
-              value={activityEndTime}
-              onChange={(e) => {
-                setActivityEndTime(e.target.value);
-                clearError('activityEndTime');
-              }}
-              className={`w-full rounded-lg px-4 py-3 outline-none border transition-colors ${
-                errors.activityEndTime ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'
-              }`}
-              style={{ 
-                backgroundColor: currentColors.surface, 
-                borderColor: errors.activityEndTime ? '#ef4444' : currentColors.border 
-              }}
-              min={new Date().toISOString().slice(0, 16)}
-              disabled={isSubmitting}
-            />
-            {errors.activityEndTime && (
-              <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                <FiX size={12} />
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <FiCalendar size={14} style={{ color: currentColors.textSecondary }} />
+                  <span className="text-xs" style={{ color: currentColors.textSecondary }}>Date</span>
+                </div>
+                <input
+                  type="date"
+                  value={activityEndDate}
+                  onChange={(e) => {
+                    setActivityEndDate(e.target.value);
+                    clearError('activityEndDate');
+                  }}
+                  className={`w-full rounded-lg px-3 py-2 outline-none border transition-colors ${
+                    errors.activityEndDate ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'
+                  }`}
+                  style={{ 
+                    backgroundColor: currentColors.surface, 
+                    borderColor: errors.activityEndDate ? '#ef4444' : currentColors.border 
+                  }}
+                  min={new Date().toISOString().split('T')[0]}
+                  disabled={isSubmitting}
+                />
+                {errors.activityEndDate && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <FiX size={12} />
+                    {errors.activityEndDate}
+                  </p>
+                )}
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <FiClock size={14} style={{ color: currentColors.textSecondary }} />
+                  <span className="text-xs" style={{ color: currentColors.textSecondary }}>Time</span>
+                </div>
+                <input
+                  type="time"
+                  value={activityEndTime}
+                  onChange={(e) => {
+                    setActivityEndTime(e.target.value);
+                    clearError('activityEndTime');
+                  }}
+                  className={`w-full rounded-lg px-3 py-2 outline-none border transition-colors ${
+                    errors.activityEndTime ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'
+                  }`}
+                  style={{ 
+                    backgroundColor: currentColors.surface, 
+                    borderColor: errors.activityEndTime ? '#ef4444' : currentColors.border 
+                  }}
+                  disabled={isSubmitting}
+                />
+                {errors.activityEndTime && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <FiX size={12} />
+                    {errors.activityEndTime}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            {/* Combined validation message */}
+            {errors.activityEndTime && errors.activityEndTime.includes("future") && (
+              <p className="text-amber-500 text-xs mt-2 flex items-center gap-1">
+                <FiAlertTriangle size={12} />
                 {errors.activityEndTime}
               </p>
             )}
+            
             <p className="text-xs opacity-60 mt-2 flex items-center gap-1">
               <FiClock size={12} />
               When this time is reached, the activity will automatically close
             </p>
           </div>
-        </div>
-      </div>
 
-      {/* Criteria Section - Hidden for quizzes */}
-      {taskCategory !== 'quiz' && (
-        <div className="mt-8">
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-              <label className="font-semibold text-lg">Scoring Criteria:</label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowTemplates(!showTemplates)}
-                  className="px-4 py-2 text-sm rounded-lg transition-all hover:scale-105"
-                  style={{ backgroundColor: currentColors.accent, color: 'white' }}
-                  disabled={isSubmitting}
-                >
-                  Use Template
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCriteriaSection(!showCriteriaSection)}
-                  className="px-4 py-2 text-sm rounded-lg transition-all hover:scale-105"
-                  style={{ backgroundColor: currentColors.accent, color: 'white' }}
-                  disabled={isSubmitting}
-                >
-                  {showCriteriaSection ? "Hide" : "Manual"} Criteria
-                </button>
+          {/* Criteria Section - Hidden for quizzes */}
+          {taskCategory !== 'quiz' && (
+            <div className="mt-6">
+              {/* Section Header with Buttons */}
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h3 className="text-lg font-bold mb-1" style={{ color: currentColors.text }}>
+                    📊 Scoring Criteria
+                  </h3>
+                  <p className="text-xs opacity-70" style={{ color: currentColors.textSecondary }}>
+                    Define how this activity will be graded.
+                  </p>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowTemplates(!showTemplates)}
+                    className="px-3 py-2 text-xs rounded-lg transition-all hover:scale-105 flex items-center gap-1"
+                    style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                    disabled={isSubmitting}
+                  >
+                    <FiTarget size={12} />
+                    Use Template
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCriteriaSection(!showCriteriaSection)}
+                    className="px-3 py-2 text-xs rounded-lg transition-all hover:scale-105 flex items-center gap-1"
+                    style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                    disabled={isSubmitting}
+                  >
+                    <FiEdit3 size={12} />
+                    {showCriteriaSection ? "Hide" : "Manual"} Criteria
+                  </button>
+                </div>
               </div>
-            </div>
+
+              <div className="flex flex-col gap-4">
 
             {/* Template Selection */}
             {showTemplates && (
@@ -640,7 +688,9 @@ const CreateActivityForm = ({ spaceName }) => {
             )}
           </div>
         </div>
-      )}
+          )}
+        </div>
+      </div>
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-4 mt-8">

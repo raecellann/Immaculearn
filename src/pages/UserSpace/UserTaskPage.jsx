@@ -830,8 +830,9 @@ const AdminTaskPage = () => {
                 >
                   Stream
                 </button>
-                <button className="font-semibold border-b-2 border-white pb-2">
+                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
                   Tasks
+
                 </button>
                 <button
                   onClick={() =>
@@ -897,6 +898,7 @@ const AdminTaskPage = () => {
                         </button>
                       ))}
                     </div>
+                    
                     <div className="flex items-center gap-2">
                       <span className="text-xs" style={{ color: currentColors.textSecondary, fontSize: '0.6rem' }}>
                         {filterTasksByExam(uploadedTask).length} of {uploadedTask.length}
