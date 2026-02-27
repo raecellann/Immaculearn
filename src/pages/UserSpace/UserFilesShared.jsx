@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate, useParams } from "react-router"; // Add useParams
+import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
 import AddMember from "../component/AddMember";
 import { FiCopy, FiFileText, FiMenu, FiX, FiUpload } from "react-icons/fi";
@@ -40,8 +40,18 @@ const UserFilesShared = () => {
   const [showFileOptions, setShowFileOptions] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
+  // Prof-style upload states
+  const [lastUploadedFile, setLastUploadedFile] = useState(null);
+  const [fileAlreadyExists, setFileAlreadyExists] = useState(false);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
+
+  // Lesson name states (from ProfFilesShared)
+  const [lessonName, setLessonName] = useState("");
+  const [lessonNameError, setLessonNameError] = useState("");
+
   const navigate = useNavigate();
-  const { space_uuid, space_name } = useParams(); // Get params from URL
+  const { space_uuid, space_name } = useParams();
 
   const { user, isLoading } = useUser();
   const {
@@ -63,13 +73,75 @@ const UserFilesShared = () => {
     (space) => space.space_uuid === space_uuid,
   );
 
-  // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
-
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
-
   const isFriendSpace = !isOwnerSpace;
 
+  /* ================= FILE TYPE HELPERS ================= */
+  const getFileExtension = (fileName) => {
+    if (!fileName) return "";
+    return fileName.split(".").pop()?.toLowerCase() || "";
+  };
+
+  const getFileTypeLetter = (fileName) => {
+    if (!fileName) return "📄";
+    const extension = fileName.split(".").pop()?.toLowerCase();
+    switch (extension) {
+      case "jsx": return "⚛️";
+      case "tsx": return "🔷";
+      case "js": return "🟨";
+      case "ts": return "🔷";
+      case "html": case "htm": return "🌐";
+      case "css": return "🎨";
+      case "scss": case "sass": return "💅";
+      case "json": return "📋";
+      case "xml": return "📄";
+      case "doc": case "docx": return "📘";
+      case "pdf": return "📕";
+      case "txt": case "md": return "📝";
+      case "rtf": return "📄";
+      case "xls": case "xlsx": case "csv": return "📗";
+      case "ppt": case "pptx": return "📙";
+      case "jpg": case "jpeg": case "png": case "gif":
+      case "bmp": case "svg": case "webp": case "ico": return "🖼️";
+      case "mp4": case "avi": case "mov": case "wmv":
+      case "flv": case "webm": case "mkv": return "🎥";
+      case "mp3": case "wav": case "flac": case "aac":
+      case "ogg": case "m4a": return "🎵";
+      case "zip": case "rar": case "7z": case "tar": case "gz": return "📦";
+      case "yml": case "yaml": case "config": case "conf": case "ini": return "⚙️";
+      case "env": return "🔐";
+      case "sql": case "db": case "sqlite": return "🗄️";
+      case "ttf": case "otf": case "woff": case "woff2": return "🔤";
+      case "py": return "🐍";
+      case "java": return "☕";
+      case "cpp": case "c++": case "c": return "⚙️";
+      case "php": return "🐘";
+      case "rb": return "💎";
+      case "go": return "🐹";
+      case "rs": return "🦀";
+      case "swift": return "🍎";
+      case "kt": case "dart": return "🎯";
+      case "vue": return "💚";
+      case "svelte": return "🧡";
+      case "psd": case "ai": case "fig": case "sketch": return "🎨";
+      default: return "📄";
+    }
+  };
+
+  const checkFileExists = (fileName) => {
+    return files?.some((resource) =>
+      resource.filename?.toLowerCase().includes(fileName.toLowerCase())
+    );
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return date.toLocaleDateString("en-US", options);
+  };
+
+  /* ================= DRAG & DROP ================= */
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -85,46 +157,81 @@ const UserFilesShared = () => {
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const newFile = {
-        id: Date.now(),
-        name: e.dataTransfer.files[0].name,
-        size: e.dataTransfer.files[0].size,
-      };
-      setUploadedFiles((prev) => [...prev, newFile]);
+      const droppedFile = e.dataTransfer.files[0];
+      const fileExists = checkFileExists(droppedFile.name);
+      setFileAlreadyExists(fileExists);
+      setLastUploadedFile(droppedFile);
+      setUploadedFiles([]);
     }
   };
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      const newFile = {
-        id: Date.now(),
-        name: e.target.files[0].name,
-        size: e.target.files[0].size,
-      };
-      setUploadedFiles((prev) => [...prev, newFile]);
+      const selectedFileObj = e.target.files[0];
+      const fileExists = checkFileExists(selectedFileObj.name);
+      setFileAlreadyExists(fileExists);
+      setLastUploadedFile(selectedFileObj);
+      setUploadedFiles([]);
     }
   };
 
+  /* ================= RESET MODAL ================= */
+  const resetUploadModal = () => {
+    setShowCreateUploadModal(false);
+    setLastUploadedFile(null);
+    setFileAlreadyExists(false);
+    setUploadedFiles([]);
+    setLessonName("");
+    setLessonNameError("");
+    const fileInput = document.getElementById("file-upload");
+    if (fileInput) fileInput.value = "";
+  };
+
+  /* ================= FILE ACTIONS ================= */
   const handleFileClick = (file) => {
-    console.log(file);
     setSelectedFile(file);
     setShowFileOptions(true);
   };
 
   const handleOpenFile = (file) => {
-  const url = `/space/${space_uuid}/${space_name}/files/${file.file_uuid}/${file.filename}`;
-  navigate(url);
-  setShowFileOptions(false);
-};
+    const url = `/space/${space_uuid}/${space_name}/files/${file.file_uuid}/${file.filename}`;
+    navigate(url);
+    setShowFileOptions(false);
+  };
 
   const handleDeleteFile = (file) => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete "${file.filename}"? This action cannot be undone.`,
-    );
-    if (confirmDelete) {
-      // Add delete logic here
-      alert(`File "${file.filename}" deleted successfully!`);
-      setShowFileOptions(false);
+    setFileToDelete(file);
+    setShowDeleteWarning(true);
+    setShowFileOptions(false);
+  };
+
+  const confirmDeleteFile = async () => {
+    if (!fileToDelete) return;
+    try {
+      // Add your actual delete API call here
+      // await deleteFile(fileToDelete.file_uuid, space_uuid);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      toast.success(`"${fileToDelete.filename}" deleted successfully!`);
+      setShowDeleteWarning(false);
+      setFileToDelete(null);
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast.error(`Failed to delete "${fileToDelete.filename}". Please try again.`);
+    }
+  };
+
+  const cancelDeleteFile = () => {
+    setShowDeleteWarning(false);
+    setFileToDelete(null);
+  };
+
+  const handleDownloadFile = async (file) => {
+    try {
+      toast.info(`Downloading "${file.filename}"...`);
+      // Add your actual download logic here
+    } catch (error) {
+      console.error("Download failed:", error);
+      toast.error(`Failed to download "${file.filename}".`);
     }
   };
 
@@ -133,7 +240,6 @@ const UserFilesShared = () => {
       toast.error("File title is required");
       return;
     }
-
     create.mutate(
       {
         title: fileName,
@@ -147,10 +253,8 @@ const UserFilesShared = () => {
             duration: 3000,
             position: "top-center",
           });
-
           const url = `/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${newFile.title}`;
           navigate(url);
-
           setFileName("");
           setIsCreatingFile(false);
           setShowCreateUploadModal(false);
@@ -163,6 +267,59 @@ const UserFilesShared = () => {
     );
   };
 
+  /* ================= CUSTOM BUTTON COMPONENTS ================= */
+  const DeleteButton = ({ onClick, title, className = "", style = {} }) => (
+    <div
+      className={`bin-button ${className}`}
+      onClick={onClick}
+      title={title}
+      style={style}
+    >
+      <svg className="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <line y1={5} x2={39} y2={5} stroke="white" strokeWidth={4} />
+        <line x1={12} y1="1.5" x2={26.0357} y2={1.5} stroke="white" strokeWidth={3} />
+      </svg>
+      <svg className="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <mask id="path-1-inside-1_8_19" fill="white">
+          <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
+        </mask>
+        <path d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" fill="white" mask="url(#path-1-inside-1_8_19)" />
+        <path d="M12 6L12 29" stroke="white" strokeWidth={4} />
+        <path d="M21 6V29" stroke="white" strokeWidth={4} />
+      </svg>
+    </div>
+  );
+
+  const DownloadButton = ({ onClick, title, className = "" }) => (
+    <button
+      onClick={onClick}
+      title={title}
+      className={`transition-all duration-300 flex items-center justify-center ${className}`}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "35px",
+        height: "35px",
+        borderRadius: "10px",
+        backgroundColor: isDarkMode ? "#1e40af" : "#3b82f6",
+        color: "#ffffff",
+        border: "none",
+        cursor: "pointer",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? "#2563eb" : "#60a5fa"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? "#1e40af" : "#3b82f6"; }}
+      onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.9)"; }}
+      onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L12 14M12 14L8 10M12 14L16 10M3 17V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+
+  /* ================= SCROLL HANDLER ================= */
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -173,38 +330,26 @@ const UserFilesShared = () => {
       }
       lastScrollY.current = currentScrollY;
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const { list, create } = useFileManager(currentSpace?.space_id || null);
-
   const files = list?.data || [];
 
-  const handleInviteMember = () => {
-    setShowInvitePopup(true);
-  };
+  const handleInviteMember = () => setShowInvitePopup(true);
 
-  // Delete room
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
-
-    // Show delete confirmation dialog
     setDialogMessage(currentSpace.space_name);
     setShowDeleteDialog(true);
   };
 
   const handleConfirmDelete = async () => {
-    // Prevent multiple executions
     if (!currentSpace || !showDeleteDialog) return;
-
     setShowDeleteDialog(false);
-
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-
-      // Navigate immediately after successful deletion
       navigate("/space");
     } catch (error) {
       console.error("Failed to delete space:", error);
@@ -212,28 +357,18 @@ const UserFilesShared = () => {
     }
   };
 
-  const handleCancelDelete = () => {
-    setShowDeleteDialog(false);
-  };
+  const handleCancelDelete = () => setShowDeleteDialog(false);
 
-  // Handle join requests
   const handleAcceptJoinRequest = async (userId) => {
-    try {
-      await acceptJoinRequest(userId, space_uuid);
-    } catch (error) {
-      console.error("Failed to accept join request:", error);
-    }
+    try { await acceptJoinRequest(userId, space_uuid); }
+    catch (error) { console.error("Failed to accept join request:", error); }
   };
 
   const handleDeclineJoinRequest = async (userId) => {
-    try {
-      await declineJoinRequest(userId, space_uuid);
-    } catch (error) {
-      console.error("Failed to decline join request:", error);
-    }
+    try { await declineJoinRequest(userId, space_uuid); }
+    catch (error) { console.error("Failed to decline join request:", error); }
   };
 
-  // Send invite
   const sendInvite = () => {
     if (inviteEmail.trim()) {
       alert(`Invitation sent to ${inviteEmail}`);
@@ -242,33 +377,50 @@ const UserFilesShared = () => {
     }
   };
 
-  // Copy link
   const handleCopyLink = (space_link) => {
-    navigator.clipboard
-      .writeText(space_link)
-      .then(() => {
-        setCopyFeedback("Copied!");
-        setTimeout(() => setCopyFeedback(""), 2000);
-      })
-      .catch((err) => {
-        console.error("Failed to copy: ", err);
-        setCopyFeedback("Error!");
-        setTimeout(() => setCopyFeedback(""), 2000);
-      });
+    navigator.clipboard.writeText(space_link)
+      .then(() => { setCopyFeedback("Copied!"); setTimeout(() => setCopyFeedback(""), 2000); })
+      .catch((err) => { console.error("Failed to copy: ", err); setCopyFeedback("Error!"); setTimeout(() => setCopyFeedback(""), 2000); });
   };
 
   const formatFileTitle = (filename) => {
     if (!filename) return "";
-
     const decodedFileName = decodeURIComponent(filename);
     const nameWithoutExtension = decodedFileName.split(".")[0];
     const cleanTitle = nameWithoutExtension.split("_")[0];
-
     return cleanTitle;
   };
 
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
+    <div
+      className="flex min-h-screen font-sans"
+      style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}
+    >
+      <style>{`
+        .bin-button {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 35px;
+          height: 35px;
+          border-radius: 10px;
+          background-color: ${isDarkMode ? "#991b1b" : "#ef4444"};
+          cursor: pointer;
+          transition-duration: 0.3s;
+          border: none;
+        }
+        .bin-bottom { width: 10px; }
+        .bin-top {
+          width: 12px;
+          transform-origin: right;
+          transition-duration: 0.3s;
+        }
+        .bin-button:hover .bin-top { transform: rotate(45deg); }
+        .bin-button:hover { background-color: ${isDarkMode ? "#b91c1c" : "#f87171"}; }
+        .bin-button:active { transform: scale(0.9); }
+      `}</style>
+
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -295,10 +447,8 @@ const UserFilesShared = () => {
       <div className="flex-1 flex flex-col w-full">
         {/* ================= HEADER ================= */}
         <div
-          className={`lg:hidden p-4 border-b
-          flex items-center gap-4 fixed top-0 left-0 right-0 z-30
-          transition-transform duration-300
-          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30
+          transition-transform duration-300 ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
           style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
         >
           <button
@@ -311,7 +461,6 @@ const UserFilesShared = () => {
           <h1 className="text-xl font-bold">{spaceName}</h1>
         </div>
 
-        {/* HEADER SPACER */}
         <div className="lg:hidden h-16" />
 
         {/* ================= COVER ================= */}
@@ -329,13 +478,8 @@ const UserFilesShared = () => {
               </span>
               {isOwnerSpace && (
                 <>
-                  <div onClick={handleInviteMember}>
-                    <Button text="Add Member" />
-                  </div>
-                  <div
-                    onClick={() => setShowPendingInvitations(true)}
-                    className="relative"
-                  >
+                  <div onClick={handleInviteMember}><Button text="Add Member" /></div>
+                  <div onClick={() => setShowPendingInvitations(true)} className="relative">
                     <Button text="Pending Invites" />
                     {joinRequestsData.length > 0 && (
                       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -343,9 +487,7 @@ const UserFilesShared = () => {
                       </span>
                     )}
                   </div>
-                  <div onClick={handleDeleteRoom}>
-                    <Button text="Delete Room" />
-                  </div>
+                  <div onClick={handleDeleteRoom}><Button text="Delete Room" /></div>
                 </>
               )}
               {isFriendSpace && (
@@ -371,28 +513,12 @@ const UserFilesShared = () => {
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex justify-center space-x-12">
-                <button
-                  onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}
-                >
-                  Stream
-                </button>
-                <button
-                  onClick={() =>
-                    navigate(`/space/${space_uuid}/${space_name}/tasks`)
-                  }
-                >
-                  Tasks
-                </button>
+                <button onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}>Stream</button>
+                <button onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}>Tasks</button>
                 <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
                   Files
                 </button>
-                <button
-                  onClick={() =>
-                    navigate(`/space/${space_uuid}/${space_name}/people`)
-                  }
-                >
-                  People
-                </button>
+                <button onClick={() => navigate(`/space/${space_uuid}/${space_name}/people`)}>People</button>
               </div>
             </div>
           </div>
@@ -401,11 +527,7 @@ const UserFilesShared = () => {
           {isOwnerSpace && (
             <div className="md:hidden flex justify-end gap-2 mb-6">
               <Button onClick={handleInviteMember} text="Add Member" />
-              <Button
-                onClick={() => setShowPendingInvitations(true)}
-                text="Pending Invites"
-                className="relative"
-              >
+              <Button onClick={() => setShowPendingInvitations(true)} text="Pending Invites" className="relative">
                 {joinRequestsData.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {joinRequestsData.length}
@@ -416,65 +538,20 @@ const UserFilesShared = () => {
             </div>
           )}
 
-          {/* Action Ribbon */}
-          {activeFile && (
-            <div className="sticky top-0 z-20 mb-6 bg-[#1E222A] border border-gray-700 rounded-xl p-4 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <FiFileText />
-                <span
-                  key={activeFile.file_id}
-                  className="font-semibold truncate max-w-[220px]"
-                >
-                  {activeFile.filename}
-                </span>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    window.open(
-                      `/space/${space_uuid}/${space_name}/files/${activeFile.file_uuid}/${activeFile.filename}`,
-                      "_blank",
-                      "noopener,noreferrer",
-                    )
-                  }
-                  className="px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 text-sm"
-                >
-                  Open
-                </button>
-
-                <button
-                  onClick={() => setShareModalOpen(true)}
-                  className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm"
-                >
-                  Share
-                </button>
-
-                <button className="px-4 py-1 rounded bg-gray-700 hover:bg-gray-600 text-sm">
-                  Upload Version
-                </button>
-
-                <button
-                  onClick={() => setActiveFile(null)}
-                  className="px-4 py-1 rounded bg-red-600 hover:bg-red-700 text-sm"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* ================= FILES ================= */}
           <div className="max-w-5xl mx-auto">
-            {/* BUTTON */}
+            {/* UPLOAD RESOURCES BUTTON */}
             {isOwnerSpace && (
               <div className="flex justify-end mb-4">
                 <button
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#2563eb"; }}
                   onClick={() => setShowCreateUploadModal(true)}
                 >
-                  <FiFileText size={16} />
-                  Create or Upload File
+                  <FiUpload size={16} />
+                  Upload Resources
                 </button>
               </div>
             )}
@@ -482,64 +559,51 @@ const UserFilesShared = () => {
             {/* RESPONSIVE TABLE */}
             <div
               className="rounded-xl p-4 sm:p-6 border"
-              style={{ 
+              style={{
                 backgroundColor: currentColors.surface,
-                borderColor: isDarkMode ? currentColors.border : '#000000'
+                borderColor: isDarkMode ? currentColors.border : "#000000",
               }}
             >
-              {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
+              {/* TABLE HEADER */}
               <div
                 className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
-                style={{
-                  color: currentColors.textSecondary,
-                  borderColor: currentColors.border,
-                }}
+                style={{ color: currentColors.textSecondary, borderColor: currentColors.border }}
               >
                 <div className="col-span-2">File Name</div>
                 <div>Date Posted</div>
                 <div>Posted By</div>
               </div>
 
-              {/* FILE LIST - Responsive cards for all screen sizes */}
+              {/* FILE LIST */}
               {files.map((file, index) => (
                 <div
                   key={index}
                   className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4 cursor-pointer"
-                  style={{
-                    backgroundColor: currentColors.background,
-                    borderColor: currentColors.border,
-                  }}
+                  style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}
                   onClick={() => handleFileClick(file)}
                 >
-                  {/* Mobile and Tablet Layout */}
+                  {/* Mobile Layout */}
                   <div className="sm:hidden">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-start gap-3 flex-1">
                         <div
                           className="p-2 rounded-md flex items-center justify-center w-10 h-10 flex-shrink-0"
-                          style={{
-                            backgroundColor: currentColors.surface,
-                            border: `2px solid ${currentColors.border}`,
-                          }}
+                          style={{ backgroundColor: currentColors.surface, border: `2px solid ${currentColors.border}` }}
                         >
                           <FiFileText style={{ color: currentColors.text }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p
-                            className="font-semibold truncate"
-                            style={{ color: currentColors.text }}
-                          >
+                          <p className="font-semibold truncate" style={{ color: currentColors.text }}>
                             {formatFileTitle(file.filename)}
                           </p>
                           <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
                             {new Date(file.created_at).toLocaleDateString()}
                           </p>
                           <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
-                            Posted by: {file.owner_id === user.id
+                            Posted by:{" "}
+                            {file.owner_id === user.id
                               ? "You"
-                              : currentSpace.members.find(
-                                  (member) => member.account_id === file.owner_id,
-                                )?.full_name}
+                              : currentSpace?.members?.find((m) => m.account_id === file.owner_id)?.full_name}
                           </p>
                         </div>
                       </div>
@@ -551,10 +615,7 @@ const UserFilesShared = () => {
                     <div className="flex items-center gap-3 col-span-2">
                       <div
                         className="p-2 rounded-md flex items-center justify-center w-8 h-8"
-                        style={{ 
-                          backgroundColor: currentColors.surface,
-                          border: `2px solid ${currentColors.border}`
-                        }}
+                        style={{ backgroundColor: currentColors.surface, border: `2px solid ${currentColors.border}` }}
                       >
                         <FiFileText style={{ color: currentColors.text }} />
                       </div>
@@ -568,48 +629,103 @@ const UserFilesShared = () => {
                     <div style={{ color: currentColors.text }}>
                       {file.owner_id === user.id
                         ? "You"
-                        : currentSpace.members.find(
-                            (member) => member.account_id === file.owner_id,
-                          )?.full_name}
+                        : currentSpace?.members?.find((m) => m.account_id === file.owner_id)?.full_name}
                     </div>
                   </div>
                 </div>
               ))}
+
+              {files.length === 0 && (
+                <div className="text-center py-12" style={{ color: currentColors.textSecondary }}>
+                  <FiFileText size={40} className="mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No files uploaded yet.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* CREATE/UPLOAD POPUP MODAL */}
+      {/* ================= CREATE/UPLOAD MODAL (Prof style) ================= */}
       {showCreateUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto relative">
+          <div
+            className="rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative sm:max-w-lg md:max-w-2xl lg:max-w-3xl"
+            style={{ backgroundColor: currentColors.surface }}
+          >
             {/* CLOSE BUTTON */}
             <button
-              onClick={() => setShowCreateUploadModal(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10 bg-white rounded-full p-1"
+              onClick={resetUploadModal}
+              className="absolute top-4 right-4 z-10 rounded-full p-1 transition-colors"
+              style={{ backgroundColor: currentColors.background, color: currentColors.textSecondary }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = currentColors.hover; e.currentTarget.style.color = currentColors.text; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = currentColors.background; e.currentTarget.style.color = currentColors.textSecondary; }}
             >
               <FiX size={24} />
             </button>
 
             {/* CONTENT */}
-            <div className="p-8 pt-12">
-              {/* TITLE */}
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Create file or Upload files here.
-              </h2>
+            <div className="p-4 sm:p-6 lg:p-8 pt-8 sm:pt-10 lg:pt-12">
+              {/* MODAL TITLE */}
+              <div className="mb-6">
+                <h2
+                  className="text-xl font-semibold"
+                  style={{ color: currentColors.text }}
+                >
+                  Upload Lesson
+                </h2>
+              </div>
 
-              {/* UPLOAD SECTION */}
+              {/* LESSON NAME INPUT */}
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  style={{ color: currentColors.text }}
+                >
+                  Lesson Name <span style={{ color: "#ef4444" }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={lessonName}
+                  onChange={(e) => {
+                    setLessonName(e.target.value);
+                    if (lessonNameError) setLessonNameError("");
+                  }}
+                  placeholder="Enter lesson name"
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none border transition-colors"
+                  style={{
+                    backgroundColor: currentColors.background,
+                    color: currentColors.text,
+                    borderColor: lessonNameError ? "#ef4444" : currentColors.border,
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = lessonNameError ? "#ef4444" : "#3b82f6";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = lessonNameError ? "#ef4444" : currentColors.border;
+                  }}
+                />
+                {lessonNameError && (
+                  <p className="text-xs mt-1" style={{ color: "#ef4444" }}>
+                    {lessonNameError}
+                  </p>
+                )}
+              </div>
+
+              {/* DRAG & DROP ZONE */}
               <div
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-8 text-center mb-4 cursor-pointer transition relative ${
-                  dragActive
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-300 bg-gray-50"
+                className={`border-2 border-dashed rounded-lg p-4 sm:p-6 lg:p-8 text-center mb-4 cursor-pointer transition relative ${
+                  dragActive ? "border-blue-500 bg-blue-50" : ""
                 }`}
+                style={{
+                  borderColor: dragActive ? "#3b82f6" : currentColors.border,
+                  backgroundColor: dragActive ? "#eff6ff" : currentColors.background,
+                }}
+                onClick={() => !lastUploadedFile && document.getElementById("file-upload").click()}
               >
                 <input
                   type="file"
@@ -619,70 +735,116 @@ const UserFilesShared = () => {
                   className="hidden"
                 />
 
-                <FiUpload size={40} className="mx-auto mb-3 text-gray-400" />
-
-                <p className="text-gray-900 font-medium text-sm">
-                  Choose a file or drag & drop it here.
-                </p>
-                <p className="text-gray-500 text-xs mt-1">
-                  DOCS, PDF, PPT AND EXCEL, UP TO 50 MB
-                </p>
-              </div>
-
-              {/* BROWSE BUTTON */}
-              <button
-                onClick={() => document.getElementById("file-upload").click()}
-                className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition mb-4 bg-white"
-              >
-                Browse Files
-              </button>
-
-              {/* DIVIDER */}
-              <div className="flex items-center my-4">
-                <div className="flex-1 border-t border-gray-300"></div>
-                <span className="px-3 text-gray-500 text-sm">Or</span>
-                <div className="flex-1 border-t border-gray-300"></div>
-              </div>
-
-              {/* CREATE FILE BUTTON */}
-              <button
-                // Kapag clinick ito lalabas yung set filename sa ibaba
-                onClick={() => setIsCreatingFile(true)}
-                className="w-full border-2 border-gray-900 text-gray-900 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center space-x-2 bg-white mb-6"
-              >
-                <FiFileText size={20} />
-                <span>Create File</span>
-              </button>
-
-              {/* UPLOADED FILES LIST */}
-              {uploadedFiles.length > 0 && (
-                <div className="pt-4 border-t border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                    Uploaded Files ({uploadedFiles.length})
-                  </h3>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                {lastUploadedFile ? (
+                  // SUCCESS / FILE ALREADY EXISTS STATE
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div
+                        className="inline-flex items-center justify-center w-16 h-16 rounded-lg mb-4"
+                        style={{
+                          backgroundColor: currentColors.surface,
+                          border: `2px solid ${currentColors.border}`,
+                        }}
+                      >
+                        <span className="text-2xl font-bold" style={{ color: currentColors.text }}>
+                          {getFileTypeLetter(lastUploadedFile.name)}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2" style={{ color: currentColors.text }}>
+                        {fileAlreadyExists ? "File Already Exists" : "File Uploaded Successfully!"}
+                      </h3>
+                      <p className="text-sm mb-4" style={{ color: currentColors.text }}>
+                        {lastUploadedFile.name}
+                      </p>
+                      <p className="text-xs mb-6" style={{ color: currentColors.textSecondary }}>
+                        Size: {(lastUploadedFile.size / 1024).toFixed(0)}KB • Type:{" "}
+                        {lastUploadedFile.name.split(".").pop()?.toUpperCase() || "Unknown"}
+                      </p>
+                      {fileAlreadyExists && (
+                        <p className="text-sm mb-4" style={{ color: "#ef4444" }}>
+                          This file has already been uploaded to the space.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : uploadedFiles.length === 0 ? (
+                  // INITIAL UPLOAD STATE
+                  <>
+                    <FiUpload
+                      size={32}
+                      className="mx-auto mb-3 sm:mb-4"
+                      style={{ color: currentColors.textSecondary }}
+                    />
+                    <p className="font-medium text-sm sm:text-base" style={{ color: currentColors.text }}>
+                      Choose a file or drag & drop it here.
+                    </p>
+                    <p className="text-xs sm:text-sm mt-1" style={{ color: currentColors.textSecondary }}>
+                      DOCS, PDF, PPT AND EXCEL, UP TO 50 MB
+                    </p>
+                  </>
+                ) : (
+                  // FILES SELECTED STATE
+                  <div className="space-y-2 sm:space-y-3">
                     {uploadedFiles.map((file) => (
                       <div
                         key={file.id}
-                        className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                        className="p-3 sm:p-4 rounded-lg border"
+                        style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
                       >
-                        {/* FILE HEADER */}
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-start space-x-3 flex-1">
-                            <span className="text-2xl">📄</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-gray-900 truncate">
-                                {file.name.toUpperCase()}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {(file.size / 1024).toFixed(0)}KB
-                              </p>
-                            </div>
+                        <div className="flex items-start space-x-2 sm:space-x-3 flex-1">
+                          <span className="text-xl sm:text-2xl">{getFileTypeLetter(file.name)}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs sm:text-sm font-semibold truncate" style={{ color: currentColors.text }}>
+                              {file.name.toUpperCase()}
+                            </p>
+                            <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+                              {(file.size / 1024).toFixed(0)}KB
+                            </p>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
+
+              {/* BOTTOM-RIGHT ACTIONS — shown after file is uploaded */}
+              {lastUploadedFile && (
+                <div className="flex justify-end gap-3 mt-4">
+                  <button
+                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      color: currentColors.text,
+                      border: `1px solid ${currentColors.border}`,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = currentColors.hover; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = currentColors.background; }}
+                    onClick={() => {
+                      setLastUploadedFile(null);
+                      setFileAlreadyExists(false);
+                      const fileInput = document.getElementById("file-upload");
+                      if (fileInput) fileInput.value = "";
+                    }}
+                  >
+                    <FiUpload size={14} />
+                    Reupload File
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#2563eb"; }}
+                    onClick={() => {
+                      if (!lessonName.trim()) {
+                        setLessonNameError("Lesson name is required");
+                        return;
+                      }
+                      resetUploadModal();
+                    }}
+                  >
+                    Confirm
+                  </button>
                 </div>
               )}
             </div>
@@ -690,83 +852,18 @@ const UserFilesShared = () => {
         </div>
       )}
 
-      {/* FILE OPTIONS MODAL */}
-      {showFileOptions && selectedFile && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md shadow-xl">
-            {/* Header */}
-            <div className="p-6 border-b border-gray-700">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">
-                  File Options
-                </h2>
-                <button
-                  onClick={() => setShowFileOptions(false)}
-                  className="text-gray-400 hover:text-white p-1"
-                >
-                  <FiX size={20} />
-                </button>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              <p className="text-white mb-4">
-                What would you like to do with "
-                <span className="font-semibold">
-                  {formatFileTitle(selectedFile.filename)}
-                </span>
-                "?
-              </p>
-
-              <div className="flex justify-end gap-3">
-                <button
-                  className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
-                  onClick={() => setShowFileOptions(false)}
-                >
-                  Cancel
-                </button>
-                {selectedFile?.owner_id === user?.id && (
-                  <button
-                    onClick={() => handleDeleteFile(selectedFile)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
-                  >
-                    Delete
-                  </button>
-                )}
-                <button
-                  onClick={() => handleOpenFile(selectedFile)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
-                >
-                  Open
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* FILE TITLE MODAL */}
+      {/* ================= FILE TITLE MODAL ================= */}
       {isCreatingFile && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-md shadow-xl">
-            {/* Header */}
             <div className="p-6 border-b border-gray-700">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-white">File Title</h2>
-                <button
-                  onClick={() => {
-                    setFileName("");
-                    setIsCreatingFile(false);
-                  }}
-                  className="text-gray-400 hover:text-white p-1"
-                >
+                <button onClick={() => { setFileName(""); setIsCreatingFile(false); }} className="text-gray-400 hover:text-white p-1">
                   <FiX size={20} />
                 </button>
               </div>
             </div>
-
-            {/* Content */}
             <div className="p-6">
               <label className="font-semibold text-white mb-3 block">
                 File Title <span className="text-red-500">*</span>
@@ -779,14 +876,10 @@ const UserFilesShared = () => {
                 placeholder="Enter file title"
                 autoFocus
               />
-
               <div className="flex justify-end gap-3">
                 <button
                   className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
-                  onClick={() => {
-                    setFileName("");
-                    setIsCreatingFile(false);
-                  }}
+                  onClick={() => { setFileName(""); setIsCreatingFile(false); }}
                 >
                   Cancel
                 </button>
@@ -802,69 +895,119 @@ const UserFilesShared = () => {
         </div>
       )}
 
-      {/* PENDING INVITATIONS POPUP */}
-      {showPendingInvitations && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Pending Invitations</h2>
+      {/* ================= DELETE WARNING MODAL ================= */}
+      {showDeleteWarning && fileToDelete && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="rounded-lg p-4 sm:p-6 max-w-md w-full" style={{ backgroundColor: currentColors.surface }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold" style={{ color: currentColors.text }}>
+                Delete File
+              </h3>
               <button
-                onClick={() => setShowPendingInvitations(false)}
-                className="text-gray-400 hover:text-white p-1 bg-transparent"
+                onClick={cancelDeleteFile}
+                className="p-1 bg-transparent transition-colors rounded-md"
+                style={{ color: currentColors.textSecondary }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = currentColors.text; e.currentTarget.style.backgroundColor = currentColors.background; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = currentColors.textSecondary; e.currentTarget.style.backgroundColor = "transparent"; }}
               >
-                <FiX size={24} />
+                <FiX size={20} />
               </button>
             </div>
 
-            {/* Invitations List */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="p-2 rounded-md flex items-center justify-center w-10 h-10"
+                  style={{ backgroundColor: currentColors.background, border: `2px solid ${currentColors.border}` }}
+                >
+                  <span className="text-sm font-bold" style={{ color: currentColors.text }}>
+                    {getFileTypeLetter(fileToDelete.filename)}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold" style={{ color: currentColors.text }}>
+                    {formatFileTitle(fileToDelete.filename)}
+                  </p>
+                  <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                    {formatDate(fileToDelete.created_at)}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm leading-relaxed" style={{ color: currentColors.textSecondary }}>
+                Are you sure you want to delete{" "}
+                <span className="font-medium" style={{ color: currentColors.text }}>
+                  "{formatFileTitle(fileToDelete.filename)}"
+                </span>{" "}
+                from this space?
+              </p>
+              <p className="text-sm mt-2 font-medium" style={{ color: "#ef4444" }}>
+                ⚠️ This action cannot be undone. The file will be permanently removed.
+              </p>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelDeleteFile}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ backgroundColor: currentColors.background, color: currentColors.text, border: `1px solid ${currentColors.border}` }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = currentColors.hover; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = currentColors.background; }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteFile}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                style={{ backgroundColor: isDarkMode ? "#991b1b" : "#ef4444", color: "#ffffff" }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? "#b91c1c" : "#f87171"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? "#991b1b" : "#ef4444"; }}
+              >
+                <FiX size={16} />
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= PENDING INVITATIONS ================= */}
+      {showPendingInvitations && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Pending Invitations</h2>
+              <button onClick={() => setShowPendingInvitations(false)} className="text-gray-400 hover:text-white p-1 bg-transparent">
+                <FiX size={24} />
+              </button>
+            </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {joinRequestsData.length === 0 ? (
-                <p className="text-gray-400 text-center py-4">
-                  No pending invitations
-                </p>
+                <p className="text-gray-400 text-center py-4">No pending invitations</p>
               ) : (
                 joinRequestsData.map((invitation) => (
-                  <div
-                    key={invitation.account_id}
-                    className="bg-[#2A2F3A] rounded-lg p-4"
-                  >
+                  <div key={invitation.account_id} className="bg-[#2A2F3A] rounded-lg p-4">
                     <div className="flex items-start gap-3">
-                      <img
-                        src={invitation.profile_pic}
-                        alt={invitation.fullname}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
+                      <img src={invitation.profile_pic} alt={invitation.fullname} className="w-12 h-12 rounded-full object-cover" />
                       <div className="flex-1">
                         <h3 className="font-medium">{invitation.fullname}</h3>
-                        <p className="text-sm text-gray-400">
-                          {invitation.email}
-                        </p>
-                        <p className="text-sm mt-1">
-                          {invitation.message || "Hello world"}
-                        </p>
+                        <p className="text-sm text-gray-400">{invitation.email}</p>
+                        <p className="text-sm mt-1">{invitation.message || "Hello world"}</p>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-gray-500">
-                            {invitation.added_at}
-                          </span>
+                          <span className="text-xs text-gray-500">{invitation.added_at}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-3">
                       <button
                         disabled={spaceLoading}
-                        onClick={() =>
-                          handleDeclineJoinRequest(invitation.account_id)
-                        }
+                        onClick={() => handleDeclineJoinRequest(invitation.account_id)}
                         className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition"
                       >
                         Decline
                       </button>
                       <button
                         disabled={spaceLoading}
-                        onClick={() =>
-                          handleAcceptJoinRequest(invitation.account_id)
-                        }
+                        onClick={() => handleAcceptJoinRequest(invitation.account_id)}
                         className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition"
                       >
                         Accept

@@ -104,6 +104,8 @@ const ProfFilesShared = () => {
   const [fileAlreadyExists, setFileAlreadyExists] = useState(false);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
+  const [lessonName, setLessonName] = useState("");
+  const [lessonNameError, setLessonNameError] = useState("");
 
   const checkFileExists = (fileName) => {
     return resources?.some(resource => 
@@ -1298,6 +1300,13 @@ const ProfFilesShared = () => {
                   </div>
                 </div>
               ))}
+
+              {(!resources || resources.length === 0) && (
+                <div className="text-center py-12" style={{ color: currentColors.textSecondary }}>
+                  <FiFileText size={40} className="mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">No files uploaded yet.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1451,13 +1460,53 @@ const ProfFilesShared = () => {
 
             {/* CONTENT */}
             <div className="p-4 sm:p-6 lg:p-8 pt-8 sm:pt-10 lg:pt-12">
-              {/* TITLE */}
-              <h2
-                className="text-xl font-semibold mb-6"
-                style={{ color: currentColors.text }}
-              >
-                Create file or Upload files here.
-              </h2>
+              {/* MODAL TITLE */}
+              <div className="mb-6">
+                <h2 
+                  className="text-xl font-semibold"
+                  style={{ color: currentColors.text }}
+                >
+                  Upload Lesson
+                </h2>
+              </div>
+              
+              {/* LESSON NAME INPUT */}
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  style={{ color: currentColors.text }}
+                >
+                  Lesson Name <span style={{ color: "#ef4444" }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={lessonName}
+                  onChange={(e) => {
+                    setLessonName(e.target.value);
+                    if (lessonNameError) setLessonNameError("");
+                  }}
+                  placeholder="Enter lesson name"
+                  className={`w-full rounded-lg px-3 py-2 text-sm outline-none border transition-colors ${
+                    lessonNameError ? "border-red-500" : ""
+                  }`}
+                  style={{
+                    backgroundColor: currentColors.background,
+                    color: currentColors.text,
+                    borderColor: lessonNameError ? "#ef4444" : currentColors.border,
+                  }}
+                  onFocus={(e) => { 
+                    e.target.style.borderColor = lessonNameError ? "#ef4444" : "#3b82f6"; 
+                  }}
+                  onBlur={(e) => { 
+                    e.target.style.borderColor = lessonNameError ? "#ef4444" : currentColors.border; 
+                  }}
+                />
+                {lessonNameError && (
+                  <p className="text-xs mt-1" style={{ color: "#ef4444" }}>
+                    {lessonNameError}
+                  </p>
+                )}
+              </div>
 
               {/* UPLOAD SECTION */}
               <div
@@ -1553,62 +1602,7 @@ const ProfFilesShared = () => {
                           <FiUpload size={16} />
                           Upload Other File
                         </button>
-                      ) : (
-                        <button
-                          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                          style={{
-                            backgroundColor: "#2563eb",
-                            color: "#ffffff",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = "#1d4ed8";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = "#2563eb";
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Find the uploaded file in the resources list and navigate to it
-                            const uploadedResource = resources?.find(r => 
-                              r.name.includes(lastUploadedFile.name)
-                            );
-                            if (uploadedResource) {
-                              handleOpenFile(uploadedResource);
-                            }
-                          }}
-                        >
-                          <FiFileText size={16} />
-                          View File
-                        </button>
-                      )}
-                      
-                      {!fileAlreadyExists && (
-                        <button
-                          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                          style={{
-                            backgroundColor: currentColors.background,
-                            color: currentColors.text,
-                            border: `1px solid ${currentColors.border}`,
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = currentColors.hover;
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = currentColors.background;
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowCreateUploadModal(false);
-                            setLastUploadedFile(null);
-                            setFileAlreadyExists(false);
-                            // Clear file input
-                            const fileInput = document.getElementById("file-upload");
-                            if (fileInput) fileInput.value = "";
-                          }}
-                        >
-                          Confirm
-                        </button>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 ) : uploadedFiles.length === 0 ? (
@@ -1717,11 +1711,21 @@ const ProfFilesShared = () => {
                         const files = Array.from(fileInput.files || []);
 
                         if (files.length > 0) {
+                          // Check if file already exists before uploading
+                          const fileExists = checkFileExists(files[0].name);
+                          setFileAlreadyExists(fileExists);
+                          
+                          // Validate lesson name
+                          if (!lessonName.trim()) {
+                            setLessonNameError(
+                              fileExists 
+                                ? "Lesson name is required when uploading a duplicate file"
+                                : "Lesson name is required"
+                            );
+                            return;
+                          }
+                          
                           try {
-                            // Check if file already exists before uploading
-                            const fileExists = checkFileExists(files[0].name);
-                            setFileAlreadyExists(fileExists);
-                            
                             await uploadResource(files, space_uuid);
                             if (space_uuid) {
                               await refreshFiles(space_uuid);
@@ -1729,6 +1733,7 @@ const ProfFilesShared = () => {
                             // Set the last uploaded file and keep modal open to show view state
                             setLastUploadedFile(files[0]);
                             setUploadedFiles([]);
+                            setLessonNameError("");
                           } catch (error) {
                             console.error("Upload failed:", error);
                           }
@@ -1761,6 +1766,69 @@ const ProfFilesShared = () => {
                   </div>
                 )}
               </div>
+
+              {/* BOTTOM-RIGHT ACTIONS - shown after file is uploaded */}
+              {lastUploadedFile && (
+                <div className="flex justify-end gap-3 mt-4">
+                  <button
+                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      color: currentColors.text,
+                      border: `1px solid ${currentColors.border}`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = currentColors.hover;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = currentColors.background;
+                    }}
+                    onClick={() => {
+                      setLastUploadedFile(null);
+                      setFileAlreadyExists(false);
+                      const fileInput = document.getElementById("file-upload");
+                      if (fileInput) fileInput.value = "";
+                    }}
+                  >
+                    <FiUpload size={14} />
+                    Reupload File
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    style={{
+                      backgroundColor: "#2563eb",
+                      color: "#ffffff",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#1d4ed8";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "#2563eb";
+                    }}
+                    onClick={() => {
+                      // Validate lesson name before confirming
+                      if (!lessonName.trim()) {
+                        setLessonNameError(
+                          fileAlreadyExists 
+                            ? "Lesson name is required when uploading a duplicate file"
+                            : "Lesson name is required"
+                        );
+                        return;
+                      }
+                      
+                      setShowCreateUploadModal(false);
+                      setLastUploadedFile(null);
+                      setFileAlreadyExists(false);
+                      setLessonName("");
+                      setLessonNameError("");
+                      const fileInput = document.getElementById("file-upload");
+                      if (fileInput) fileInput.value = "";
+                    }}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
