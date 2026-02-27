@@ -111,6 +111,11 @@ const ProfFilesShared = () => {
     );
   };
 
+  const getFileExtension = (fileName) => {
+    if (!fileName) return '';
+    return fileName.split('.').pop()?.toLowerCase() || '';
+  };
+
   const getFileIcon = (fileName) => {
     if (!fileName) return '📄';
     
@@ -493,7 +498,7 @@ const ProfFilesShared = () => {
               onClick: () => {
                 // Navigate to the uploaded file
                 navigate(
-                  `/prof/space/${space_uuid}/${space_name}/files/${uploadResult.file_id}/${file.name}`,
+                  `/prof/space/${space_uuid}/${space_name}/files/${file.name}/${uploadResult.file_id}`,
                 );
                 hideGlobalNotification();
               },
@@ -681,7 +686,7 @@ const ProfFilesShared = () => {
   };
 
   const handleOpenFile = (file) => {
-    const url = `/prof/space/${space_uuid}/${space_name}/files/${file.fuuid}/${file.filename}`;
+    const url = `/prof/space/${space_uuid}/${space_name}/files/${file.name}/${file.id || file.uuid || 'unknown'}`;
     navigate(url);
   };
 
@@ -782,26 +787,29 @@ const ProfFilesShared = () => {
       showGlobalNotification({
         type: "loading",
         title: "Downloading File",
-        message: `Downloading "${file.filename}"...`,
+        message: `Downloading "${file.name}"...`,
         duration: null,
         persistent: true,
       });
       
       // You'll need to implement the actual download API call
-      // const downloadUrl = await getFileDownloadUrl(file.fuuid, space_uuid);
-      // window.open(downloadUrl, '_blank');
-      
-      // Simulate API call for demonstration
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // For now, create a download link
+      const downloadUrl = `data:text/plain;charset=utf-8,${encodeURIComponent('Sample file content for ' + file.name)}`;
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
       // Show success notification
       showGlobalNotification({
         type: "success",
         title: "Download Started",
-        message: `"${file.filename}" download has started.`,
+        message: `"${file.name}" download has started.`,
         duration: 4000,
         data: {
-          fileName: file.filename,
+          fileName: file.name,
           actionType: "download"
         }
       });
@@ -810,10 +818,10 @@ const ProfFilesShared = () => {
       showGlobalNotification({
         type: "error",
         title: "Download Failed",
-        message: `Failed to download "${file.filename}". Please try again.`,
+        message: `Failed to download "${file.name}". Please try again.`,
         duration: 5000,
         data: {
-          fileName: file.filename,
+          fileName: file.name,
           error: error.message
         }
       });
@@ -899,7 +907,7 @@ const ProfFilesShared = () => {
         color: currentColors.text,
       }}
     >
-      <style jsx>{`
+      <style>{`
         .bin-button {
           display: flex;
           flex-direction: column;
@@ -1171,15 +1179,17 @@ const ProfFilesShared = () => {
             >
               {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
               <div
-                className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
+                className="hidden sm:grid grid-cols-7 text-sm pb-3 border-b mb-4"
                 style={{
                   color: currentColors.textSecondary,
                   borderColor: currentColors.border,
                 }}
               >
                 <div className="col-span-2">File Name</div>
-                <div>Date Posted</div>
-                <div className="text-right">Actions</div>
+                <div className="col-span-1">Type</div>
+                <div className="col-span-2">Date Posted</div>
+                <div className="col-span-1">Size</div>
+                <div className="col-span-1">Actions</div>
               </div>
 
               {/* FILE LIST - Responsive cards for all screen sizes */}
@@ -1219,6 +1229,7 @@ const ProfFilesShared = () => {
                           >
                             {formatFileTitle(file.name.split('-').slice(3).join('-'))}
                           </p>
+                          
                           <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
                             {formatDate(file.created_at)}
                           </p>
@@ -1244,7 +1255,7 @@ const ProfFilesShared = () => {
                   </div>
 
                   {/* Desktop Layout */}
-                  <div className="hidden sm:grid grid-cols-4 items-center">
+                  <div className="hidden sm:grid grid-cols-7 items-center">
                     <div
                       className="flex items-center gap-3 col-span-2 cursor-pointer"
                       onClick={() => handleOpenFile(file)}
@@ -1262,8 +1273,10 @@ const ProfFilesShared = () => {
                       </div>
                       <span className="truncate">{formatFileTitle(file.name.split('-').slice(3).join('-'))}</span>
                     </div>
-                    <div>{formatDate(file.created_at)}</div>
-                    <div className="flex items-center gap-2 justify-end">
+                    <div className="col-span-1">{getFileExtension(file.name)}</div>
+                    <div className="col-span-2">{formatDate(file.created_at)}</div>
+                    <div className="col-span-1">{file.size}</div>
+                    <div className="col-span-1 flex items-center gap-2 justify-end">
                       <DownloadButton
                         onClick={(e) => {
                           e.stopPropagation();

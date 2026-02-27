@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import Sidebar from "../../component/sidebar";
+import ProfSidebar from "../../component/profsidebar";
 import { useNavigate, useParams } from "react-router";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
+import { useFileManager } from "../../../hooks/useFileManager";
 
 const ViewFilePage = () => {
+  console.log("ViewFilePage rendering...");
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -31,19 +33,26 @@ const ViewFilePage = () => {
   /* ================= GET ROUTE PARAMS ================= */
 
   const { file_uuid, file_name } = useParams();
+  console.log("Route params:", { file_uuid, file_name });
 
   const decodedFileName = decodeURIComponent(file_name || "");
 
-// Remove extension
-    const nameWithoutExtension = decodedFileName.split(".")[0];
+  const formatFileTitle = (file_name) => {
+    if (!file_name) return "";
 
-    // Get only text before first underscore
-    const cleanTitle = nameWithoutExtension.split("_")[0];
+    const decodedFileName = decodeURIComponent(file_name);
+    const nameWithoutExtension = decodedFileName.split(".")[0];
+    
+    // Remove timestamp prefix (like "1-1-1772112187584-") and get the clean title
+    const cleanTitle = nameWithoutExtension.replace(/^\d+-\d+-\d+-/, '');
+    
+    return cleanTitle || nameWithoutExtension;
+  };
 
 
   /* ================= STATES ================= */
 
-  const [title, setTitle] = useState(cleanTitle || "Untitled File");
+  const [title, setTitle] = useState(formatFileTitle(file_name) || "Untitled File");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   const [content, setContent] = useState(`File UUID: ${file_uuid}
@@ -60,7 +69,7 @@ You can now fetch real file data using file_uuid.`);
 
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <ProfSidebar />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -77,7 +86,7 @@ You can now fetch real file data using file_uuid.`);
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{ backgroundColor: currentColors.surface }}
       >
-        <Sidebar />
+        <ProfSidebar />
       </div>
 
       {/* MAIN */}
@@ -124,9 +133,9 @@ You can now fetch real file data using file_uuid.`);
             </button>
           </div>
 
-          <div className="w-full bg-[#1E222A] border border-gray-700 rounded-lg p-6" style={{
+          <div className="w-full rounded-lg p-6" style={{
             backgroundColor: currentColors.surface,
-            borderColor: currentColors.border
+            border: `1px solid ${currentColors.border}`
           }}>
 
             {/* HEADER SECTION */}
@@ -137,7 +146,7 @@ You can now fetch real file data using file_uuid.`);
                 {isEditingTitle ? (
                   <div className="flex flex-col gap-2 w-full lg:w-auto">
                     <input
-                      value={title}
+                      value={formatFileTitle(file_name)}
                       onChange={(e) => setTitle(e.target.value)}
                       className="px-3 py-2 rounded w-full"
                       style={{
@@ -184,11 +193,6 @@ You can now fetch real file data using file_uuid.`);
                 )}
               </div>
 
-              {/* META INFO */}
-              <div className="text-sm space-y-1" style={{ color: currentColors.textSecondary }}>
-                <p><span className="font-medium" style={{ color: currentColors.text }}>File UUID:</span> {file_uuid}</p>
-                <p><span className="font-medium" style={{ color: currentColors.text }}>File Name:</span> {decodedFileName}</p>
-              </div>
 
             </div>
 
@@ -199,7 +203,8 @@ You can now fetch real file data using file_uuid.`);
                 {!isEditingContent && (
                   <button
                     onClick={() => setIsEditingContent(true)}
-                    className="text-blue-400 text-sm hover:underline"
+                    className="text-sm hover:underline transition-colors"
+                    style={{ color: currentColors.primary }}
                   >
                     ✏ Edit
                   </button>
@@ -211,26 +216,44 @@ You can now fetch real file data using file_uuid.`);
                   <textarea
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    className="w-full h-60 bg-[#2A2F38] border border-gray-600 p-3 rounded text-white"
+                    className="w-full h-60 p-3 rounded font-mono text-sm"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      border: `1px solid ${currentColors.border}`,
+                      color: currentColors.text
+                    }}
                     autoFocus
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={() => setIsEditingContent(false)}
-                      className="text-sm border border-gray-600 px-3 py-1 rounded"
+                      className="text-sm px-3 py-1 rounded transition-colors"
+                      style={{
+                        border: `1px solid ${currentColors.border}`,
+                        color: currentColors.textSecondary
+                      }}
                     >
                       Cancel
                     </button>
                     <button
                       onClick={() => setIsEditingContent(false)}
-                      className="text-sm border border-blue-500 text-blue-400 px-3 py-1 rounded"
+                      className="text-sm px-3 py-1 rounded transition-colors"
+                      style={{
+                        backgroundColor: currentColors.primary,
+                        color: currentColors.text
+                      }}
                     >
                       Save
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="whitespace-pre-line text-gray-300">
+                <div className="whitespace-pre-line p-4 rounded font-mono text-sm" style={{
+                    backgroundColor: currentColors.background,
+                    border: `1px solid ${currentColors.border}`,
+                    color: currentColors.text,
+                    minHeight: "200px"
+                  }}>
                   {content}
                 </div>
               )}

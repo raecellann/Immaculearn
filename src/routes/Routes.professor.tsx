@@ -125,18 +125,6 @@ export const ProfRoutes = () => {
       />
 
       <Route 
-        
-
-        path="/files/:space_name/:space_uuid/:file_name/:file_uuid"
-        element={
-          <ProtectedRoute>
-            <ViewFilePage />
-          </ProtectedRoute>
-        } 
-      />
-      
-      <Route 
-
         path="files/:space_name/:space_uuid"
         element={
           <ProtectedRoute>
@@ -253,11 +241,15 @@ export const ProfRoutes = () => {
           </SpaceProvider>
         }
       />
+      
+
       <Route
-        path="/space/:space_uuid/:space_name/files/:file_uuid/:file_name"
+        path="/space/:space_uuid/:space_name/files/:file_name/:file_uuid"
         element={
           <SpaceProvider>
-              <CreateDocumentPage />
+            <FileProvider>
+              <ViewFilePage />
+            </FileProvider>
           </SpaceProvider>
         }
       />

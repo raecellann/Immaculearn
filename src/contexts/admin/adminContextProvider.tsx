@@ -48,10 +48,10 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         
         // Set basic admin info from login response (skip profile fetch to avoid 401)
         setAdmin({
-          id: response.data.admin?.id || 'temp-id',
+          id: response.data.admin?.id,
           email: email,
           fullname: response.data.admin?.fullname || email.split('@')[0],
-          role: response.data.admin?.role || 'admin'
+          role: response.data.admin?.role
         });
         
         return true;
@@ -68,20 +68,16 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Logout function
   const logout = async (): Promise<void> => {
-    try {
-      await adminApi.post("/admin/logout");
-    } catch (err) {
-      console.error("Logout error:", err);
-    } finally {
-      // Clear stored tokens
-      localStorage.removeItem('adminToken');
-      sessionStorage.removeItem('adminToken');
-      setAdmin(null);
-      setIsAuthenticated(false);
-      // Redirect to login page
-      window.location.href = '/admin/login';
-    }
-  };
+      try {
+        await adminApi.post("/auth/logout"); // API should clear refresh token cookie
+        await checkAuth();
+      } catch (err) {
+        console.error("Logout error:", err);
+      } finally {
+        setAdmin(null);
+        setIsAuthenticated(false);
+      }
+    };
 
   // Refresh admin data
   const refreshAdmin = async (): Promise<void> => {
