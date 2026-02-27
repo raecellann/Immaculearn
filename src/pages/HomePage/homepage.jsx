@@ -295,7 +295,7 @@ const HomePage1 = () => {
 
             {/* Welcome Card */}
             <div
-              className="rounded-xl p-6 mb-10 flex items-center justify-between"
+              className="rounded-xl p-6 mb-10 relative"
               style={{
                 backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : "white",
                 border: isDarkMode ? "none" : "1px solid black",
@@ -349,12 +349,12 @@ const HomePage1 = () => {
                     </Button>
                   </div>
                 </div>
-                <img
-                  src="src/assets/HomePage/book-pen.svg"
-                  alt="Book & Pen"
-                  className="w-32 h-32 object-contain hidden sm:block self-center"
-                />
               </div>
+              <img
+                src="src/assets/HomePage/book-pen.svg"
+                alt="Book & Pen"
+                className="absolute top-6 right-6 w-24 h-24 object-contain hidden sm:block"
+              />
             </div>
 
             <div className="xl:hidden mb-8">
