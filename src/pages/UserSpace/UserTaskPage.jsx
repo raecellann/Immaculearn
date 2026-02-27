@@ -765,14 +765,16 @@ const AdminTaskPage = () => {
       <div className="flex-1 flex flex-col w-full">
         {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457]
+          className={`lg:hidden p-4 border-b
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0"
+            className="bg-transparent border-none text-2xl p-0"
+            style={{ color: currentColors.text }}
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
