@@ -969,7 +969,7 @@ const ProfFilesShared = () => {
 
       <div
         className="flex-1 flex flex-col w-full"
-        style={{ backgroundColor: currentColors.surface }}
+        style={{ backgroundColor: currentColors.background }}
       >
         {/* ================= HEADER ================= */}
         <div
@@ -1174,8 +1174,11 @@ const ProfFilesShared = () => {
 
             {/* RESPONSIVE TABLE */}
             <div
-              className="rounded-xl p-4 sm:p-6"
-              style={{ backgroundColor: currentColors.surface }}
+              className="rounded-xl p-4 sm:p-6 border"
+              style={{ 
+                backgroundColor: currentColors.surface,
+                borderColor: isDarkMode ? currentColors.border : '#000000'
+              }}
             >
               {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
               <div

@@ -767,7 +767,7 @@ const ProfTaskPage = () => {
       </div>
 
       {/* ================= MAIN ================= */}
-      <div className="flex-1 flex flex-col w-full" style={{ backgroundColor: currentColors.surface }}>
+      <div className="flex-1 flex flex-col w-full" style={{ backgroundColor: currentColors.background }}>
         {/* ================= HEADER ================= */}
         <div
           className={`lg:hidden p-4 border-b
@@ -852,7 +852,7 @@ const ProfTaskPage = () => {
                 <button onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}`)}>
                   Stream
                 </button>
-                <button className="font-semibold border-b-2 border-white pb-2">
+                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
                   Tasks
                 </button>
                 <button
@@ -906,138 +906,191 @@ const ProfTaskPage = () => {
               <div className="mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>
               </div>
-              {/* DESKTOP TABLE */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                  <tr className="border-b border-gray-600 text-gray-400 text-left">
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Task Name</th>
-                    <th className="py-3 px-4">Deadline</th>
-                    <th className="py-3 px-4">Details</th>
-                  </tr>
-                </thead>
-                  <tbody>
-                    {uploadedTask?.map((task, index) => (
-                      <tr
-                        key={index}
-                        className="border-b border-gray-700 hover:bg-[#1E222A]"
-                      >
-                        <td className="py-3 px-4">
-                          <div className="relative inline-block">
-                            <button
-                              onClick={() =>
-                                setOpenIndex(openIndex === index ? null : index)
-                              }
-                              className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.task_status]}`}
-                            >
-                              {task.task_status} ▼
-                            </button>
-                            {openIndex === index && (
-                              <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50 shadow-lg">
-                                <div className="flex flex-col gap-2">
-                                  {Object.keys(statusStyles).map((st) => (
-                                    <button
-                                      key={st}
-                                      onClick={() =>
-                                        handleStatusChange(index, st)
-                                      }
-                                      className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90 whitespace-nowrap`}
-                                    >
-                                      {st}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">{getCategoryDisplay(task.task_category)}</span>
-                            <span className="text-sm font-semibold">{task.task_title}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
+              {/* RESPONSIVE TABLE */}
+              <div
+                className="rounded-xl p-4 sm:p-6 border"
+                style={{ 
+                  backgroundColor: currentColors.surface,
+                  borderColor: isDarkMode ? currentColors.border : '#000000'
+                }}
+              >
+                {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
+                <div
+                  className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
+                  style={{
+                    color: currentColors.textSecondary,
+                    borderColor: currentColors.border,
+                  }}
+                >
+                  <div className="col-span-1">Status</div>
+                  <div className="col-span-1">Task Name</div>
+                  <div className="col-span-1">Deadline</div>
+                  <div className="col-span-1">Details</div>
+                </div>
+
+                {/* TASK LIST - Responsive cards for all screen sizes */}
+                {uploadedTask?.map((task, index) => (
+                  <div
+                    key={index}
+                    className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      borderColor: currentColors.border,
+                    }}
+                  >
+                    {/* Mobile and Tablet Layout */}
+                    <div className="sm:hidden">
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center gap-2 flex-1">
+                          <span className="text-lg" style={{ color: currentColors.text }}>
+                            {getCategoryDisplay(task.task_category)}
+                          </span>
+                          <span className="text-sm font-semibold" style={{ color: currentColors.text }}>
+                            {task.task_title}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() =>
+                            setOpenIndex(openIndex === index ? null : index)
+                          }
+                          className={`px-3 py-1 rounded-full text-xs`}
+                          style={{
+                            backgroundColor: currentColors.text,
+                            color: 'white'
+                          }}
+                        >
+                          {task.task_status}
+                        </button>
+                      </div>
+                      <p className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
+                        Deadline: {" "}
+                        <span style={{ color: currentColors.text }}>
                           {new Date(task.task_due).toLocaleDateString("en-US", {
                             year: "numeric",
                             month: "long",
                             day: "2-digit",
                           })}
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <a
-                            href="/prof-task-view"
-                            className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
-                          >
-                            View Details
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* MOBILE / TABLET CARDS */}
-              <div className="md:hidden space-y-4">
-                {uploadedTask?.map((task, index) => (
-                  <div
-                    key={index}
-                    className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
-                  >
-                    <div className="flex justify-between items-center mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{getCategoryDisplay(task.task_category)}</span>
-                        <span className="text-sm font-semibold">{task.task_title}</span>
-                      </div>
-                      <button
-                        onClick={() =>
-                          setOpenIndex(openIndex === index ? null : index)
-                        }
-                        className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.status]}`}
+                        </span>
+                      </p>
+                      {openIndex === index && (
+                        <div className="mb-3 pt-3 border-t" style={{ borderColor: currentColors.border }}>
+                          <div className="flex flex-col gap-2">
+                            {Object.keys(statusStyles).map((st) => (
+                              <button
+                                key={st}
+                                onClick={() => {
+                                  handleStatusChange(index, st);
+                                  setOpenIndex(null);
+                                }}
+                                className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium`}
+                                style={{
+                                  backgroundColor: currentColors.text,
+                                  color: 'white'
+                                }}
+                              >
+                                Mark as {st}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <a
+                        href="/prof-task-view"
+                        className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: currentColors.accent,
+                          color: 'white'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#1d4ed8';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = currentColors.accent;
+                        }}
                       >
-                        {task.status}
-                      </button>
+                        View Details
+                      </a>
                     </div>
-                    <p className="text-xs text-gray-400">
-                      Deadline:{" "}
-                      <span className="text-white">
+
+                    {/* Desktop Layout */}
+                    <div className="hidden sm:grid grid-cols-4 items-center">
+                      <div className="col-span-1">
+                        <div className="relative inline-block">
+                          <button
+                            onClick={() =>
+                              setOpenIndex(openIndex === index ? null : index)
+                            }
+                            className={`px-4 py-1 rounded-full text-sm`}
+                            style={{
+                              backgroundColor: currentColors.text,
+                              color: 'white'
+                            }}
+                          >
+                            {task.task_status} ▼
+                          </button>
+                          {openIndex === index && (
+                            <div 
+                              className="absolute left-0 mt-2 w-44 rounded-lg p-3 z-50 shadow-lg"
+                              style={{
+                                backgroundColor: currentColors.surface,
+                                borderColor: currentColors.border,
+                                border: '1px solid'
+                              }}
+                            >
+                              <div className="flex flex-col gap-2">
+                                {Object.keys(statusStyles).map((st) => (
+                                  <button
+                                    key={st}
+                                    onClick={() => handleStatusChange(index, st)}
+                                    className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 whitespace-nowrap`}
+                                    style={{
+                                      backgroundColor: currentColors.text,
+                                      color: 'white'
+                                    }}
+                                  >
+                                    {st}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="col-span-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg" style={{ color: currentColors.text }}>
+                            {getCategoryDisplay(task.task_category)}
+                          </span>
+                          <span className="text-sm font-semibold" style={{ color: currentColors.text }}>
+                            {task.task_title}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="col-span-1" style={{ color: currentColors.text }}>
                         {new Date(task.task_due).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "long",
                           day: "2-digit",
                         })}
-                      </span>
-                    </p>
-
-                    {openIndex === index && (
-                      <div className="mt-3 pt-3 border-t border-gray-700">
-                        <div className="flex flex-col gap-2">
-                          {Object.keys(statusStyles).map((st) => (
-                            <button
-                              key={st}
-                              onClick={() => {
-                                handleStatusChange(index, st);
-                                setOpenIndex(null);
-                              }}
-                              className={`w-full text-center px-4 py-2 rounded-full ${statusStyles[st]} text-sm font-medium`}
-                            >
-                              Mark as {st}
-                            </button>
-                          ))}
-                        </div>
                       </div>
-                    )}
-
-                    <div className="mt-3 pt-3 border-t border-gray-700">
-                      <a
-                        href="/prof-task-view"
-                        className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
-                      >
-                        View Details
-                      </a>
+                      <div className="col-span-1">
+                        <a
+                          href="/prof-task-view"
+                          className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                          style={{
+                            backgroundColor: currentColors.accent,
+                            color: 'white'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#1d4ed8';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = currentColors.accent;
+                          }}
+                        >
+                          View Details
+                        </a>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1046,79 +1099,121 @@ const ProfTaskPage = () => {
             {/* DRAFT ACTIVITIES TABLE */}
             <div className="max-w-5xl mx-auto w-full mt-12">
               <h2 className="text-xl font-semibold mb-6">Draft Activities 📝</h2>
+              {/* RESPONSIVE DRAFT TABLE */}
+              <div
+                className="rounded-xl p-4 sm:p-6 border"
+                style={{ 
+                  backgroundColor: currentColors.surface,
+                  borderColor: isDarkMode ? currentColors.border : '#000000'
+                }}
+              >
+                {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
+                <div
+                  className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
+                  style={{
+                    color: currentColors.textSecondary,
+                    borderColor: currentColors.border,
+                  }}
+                >
+                  <div className="col-span-1">Status</div>
+                  <div className="col-span-1">Task Name</div>
+                  <div className="col-span-1">Deadline</div>
+                  <div className="col-span-1">Details</div>
+                </div>
 
-              {/* DESKTOP TABLE - HIDDEN ON MOBILE */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-600 text-gray-400 text-left">
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Task Name</th>
-                      <th className="py-3 px-4">Deadline</th>
-                      <th className="py-3 px-4">Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {draftedTask?.map((draft, index) => (
-                      <tr
-                        key={index}
-                        className="border-b border-gray-700 hover:bg-[#1E222A]"
-                      >
-                        <td className="py-3 px-4">
-                          <span className="px-6 py-1 rounded-full bg-black text-sm font-bold border-2 border-gray-500 text-gray-400 inline-block min-w-[120px] text-center">
-                            Draft
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          {draft.task_title}
-                        </td>
-                        <td className="py-3 px-4">
-                          {new Date(draft.task_due).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "2-digit",
-                          })}
-                        </td>
-                        <td className="py-3 px-4">
-                          <a
-                            href="/prof-task-view"
-                            className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
-                          >
-                            View Details
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* MOBILE CARDS - SHOWN ON MOBILE */}
-              <div className="md:hidden space-y-4">
+                {/* DRAFT LIST - Responsive cards for all screen sizes */}
                 {draftedTask?.map((draft, index) => (
                   <div
                     key={index}
-                    className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                    className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      borderColor: currentColors.border,
+                    }}
                   >
-                    <div className="flex justify-between items-center mb-3">
-                      <p className="text-sm font-semibold">{draft.task_title}</p>
-                      <span className="px-3 py-1 rounded-full bg-black text-xs border-2 border-gray-500 text-gray-400 font-bold">
-                        Draft
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-gray-400">
-                      Deadline:{" "}
-                      <span className="text-white">{draft.task_due}</span>
-                    </p>
-
-                    <div className="mt-3 pt-3 border-t border-gray-700">
+                    {/* Mobile and Tablet Layout */}
+                    <div className="sm:hidden">
+                      <div className="flex justify-between items-center mb-3">
+                        <p className="text-sm font-semibold" style={{ color: currentColors.text }}>
+                          {draft.task_title}
+                        </p>
+                        <span 
+                          className="px-3 py-1 rounded-full text-xs font-bold"
+                          style={{
+                            backgroundColor: currentColors.text,
+                            color: currentColors.textSecondary,
+                            border: `2px solid ${currentColors.border}`
+                          }}
+                        >
+                          Draft
+                        </span>
+                      </div>
+                      <p className="text-xs mb-3" style={{ color: currentColors.textSecondary }}>
+                        Deadline: {" "}
+                        <span style={{ color: currentColors.text }}>
+                          {new Date(draft.task_due).toLocaleDateString("en-US")}
+                        </span>
+                      </p>
                       <a
                         href="/prof-task-view"
-                        className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                        className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: currentColors.accent,
+                          color: 'white'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#1d4ed8';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = currentColors.accent;
+                        }}
                       >
                         View Details
                       </a>
+                    </div>
+
+                    {/* Desktop Layout */}
+                    <div className="hidden sm:grid grid-cols-4 items-center">
+                      <div className="col-span-1">
+                        <span 
+                          className="px-6 py-1 rounded-full text-sm font-bold inline-block min-w-[120px] text-center"
+                          style={{
+                            backgroundColor: currentColors.text,
+                            color: currentColors.textSecondary,
+                            border: `2px solid ${currentColors.border}`
+                          }}
+                        >
+                          Draft
+                        </span>
+                      </div>
+                      <div className="col-span-1" style={{ color: currentColors.text }}>
+                        {draft.task_title}
+                      </div>
+                      <div className="col-span-1" style={{ color: currentColors.text }}>
+                        {new Date(draft.task_due).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "2-digit",
+                        })}
+                      </div>
+                      <div className="col-span-1">
+                        <a
+                          href="/prof-task-view"
+                          className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                          style={{
+                            backgroundColor: currentColors.accent,
+                            color: 'white'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#1d4ed8';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = currentColors.accent;
+                          }}
+                        >
+                          View Details
+                        </a>
+                      </div>
                     </div>
                   </div>
                 ))}

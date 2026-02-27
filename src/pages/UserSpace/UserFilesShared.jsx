@@ -479,72 +479,100 @@ const UserFilesShared = () => {
               </div>
             )}
 
-            {/* DESKTOP TABLE */}
-            <div className="hidden md:block bg-[#0F1115] rounded-xl p-6">
-              <div className="grid grid-cols-4 text-sm text-gray-400 pb-3 border-b border-gray-700">
+            {/* RESPONSIVE TABLE */}
+            <div
+              className="rounded-xl p-4 sm:p-6 border"
+              style={{ 
+                backgroundColor: currentColors.surface,
+                borderColor: isDarkMode ? currentColors.border : '#000000'
+              }}
+            >
+              {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
+              <div
+                className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
+                style={{
+                  color: currentColors.textSecondary,
+                  borderColor: currentColors.border,
+                }}
+              >
                 <div className="col-span-2">File Name</div>
                 <div>Date Posted</div>
                 <div>Posted By</div>
               </div>
 
+              {/* FILE LIST - Responsive cards for all screen sizes */}
               {files.map((file, index) => (
                 <div
                   key={index}
-                  onClick={() => handleFileClick(file)}
-                  className="grid grid-cols-4 items-center bg-[#161A20] rounded-lg px-4 py-3 mt-4"
-                >
-                  <div className="flex items-center gap-3 col-span-2 cursor-pointer">
-                    <div className="bg-[#23272F] p-2 rounded-md">
-                      <FiFileText />
-                    </div>
-                    <span>{formatFileTitle(file.filename)}</span>
-                  </div>
-
-                  <div>{new Date(file.created_at).toLocaleDateString()}</div>
-                  <div>
-                    {file.owner_id === user.id
-                      ? "You"
-                      : currentSpace.members.find(
-                          (member) => member.account_id === file.owner_id,
-                        )?.full_name}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* MOBILE / TABLET CARDS */}
-            <div className="md:hidden space-y-4">
-              {files.map((file, index) => (
-                <div
-                  key={index}
-                  className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4 cursor-pointer"
+                  className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4 cursor-pointer"
+                  style={{
+                    backgroundColor: currentColors.background,
+                    borderColor: currentColors.border,
+                  }}
                   onClick={() => handleFileClick(file)}
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="bg-[#23272F] p-2 rounded-md">
-                      <FiFileText />
+                  {/* Mobile and Tablet Layout */}
+                  <div className="sm:hidden">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div
+                          className="p-2 rounded-md flex items-center justify-center w-10 h-10 flex-shrink-0"
+                          style={{
+                            backgroundColor: currentColors.surface,
+                            border: `2px solid ${currentColors.border}`,
+                          }}
+                        >
+                          <FiFileText style={{ color: currentColors.text }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className="font-semibold truncate"
+                            style={{ color: currentColors.text }}
+                          >
+                            {formatFileTitle(file.filename)}
+                          </p>
+                          <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+                            {new Date(file.created_at).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+                            Posted by: {file.owner_id === user.id
+                              ? "You"
+                              : currentSpace.members.find(
+                                  (member) => member.account_id === file.owner_id,
+                                )?.full_name}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <p className="font-semibold">
-                      {formatFileTitle(file.filename)}
-                    </p>
                   </div>
 
-                  <p className="text-sm text-gray-400">
-                    Date:{" "}
-                    <span className="text-white">
+                  {/* Desktop Layout */}
+                  <div className="hidden sm:grid grid-cols-4 items-center">
+                    <div className="flex items-center gap-3 col-span-2">
+                      <div
+                        className="p-2 rounded-md flex items-center justify-center w-8 h-8"
+                        style={{ 
+                          backgroundColor: currentColors.surface,
+                          border: `2px solid ${currentColors.border}`
+                        }}
+                      >
+                        <FiFileText style={{ color: currentColors.text }} />
+                      </div>
+                      <span className="truncate" style={{ color: currentColors.text }}>
+                        {formatFileTitle(file.filename)}
+                      </span>
+                    </div>
+                    <div style={{ color: currentColors.text }}>
                       {new Date(file.created_at).toLocaleDateString()}
-                    </span>
-                  </p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Posted by:{" "}
-                    <span className="text-white">
+                    </div>
+                    <div style={{ color: currentColors.text }}>
                       {file.owner_id === user.id
                         ? "You"
                         : currentSpace.members.find(
                             (member) => member.account_id === file.owner_id,
                           )?.full_name}
-                    </span>
-                  </p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
