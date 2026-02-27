@@ -159,7 +159,14 @@ const UserPeoplePage = () => {
 
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition"
+              className="flex items-center gap-2 transition"
+              style={{ color: currentColors.textSecondary }}
+              onMouseEnter={(e) => {
+                e.target.style.color = currentColors.text;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.color = currentColors.textSecondary;
+              }}
             >
               <FiChevronLeft />
               Back

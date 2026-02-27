@@ -383,7 +383,7 @@ const UserFilesShared = () => {
                 >
                   Tasks
                 </button>
-                <button className="font-semibold border-b-2 border-white pb-2">
+                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
                   Files
                 </button>
                 <button

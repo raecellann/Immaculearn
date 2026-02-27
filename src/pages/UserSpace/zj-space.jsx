@@ -989,7 +989,7 @@ const UserPage = () => {
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex justify-center space-x-12">
-                <button className="font-semibold border-b-2 border-white pb-2">
+                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
                   Stream
                 </button>
                 <button
@@ -1078,6 +1078,9 @@ const UserPage = () => {
                     ${isFocused ? "border-black" : "border-transparent"}
                     hover:border-black
                   `}
+                    style={{
+                      borderColor: isFocused ? (isDarkMode ? currentColors.text : "black") : (isDarkMode ? "transparent" : "transparent")
+                    }}
                     onClick={() => editorRef.current?.focus()}
                   >
                     <div className="relative p-6">
@@ -1250,6 +1253,9 @@ const UserPage = () => {
                     ${isFocused ? "border-black" : "border-black"}
                     hover:border-black
                   `}
+                    style={{
+                      borderColor: isDarkMode ? currentColors.text : "black"
+                    }}
                     onClick={() => editorRef.current?.focus()}
                   >
                     <div className="relative p-6">
