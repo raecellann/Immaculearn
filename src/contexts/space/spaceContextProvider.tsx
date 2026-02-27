@@ -1,4 +1,5 @@
 import React, { ReactNode, useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { SpaceContext, SpaceContextType } from "./spaceContext";
 import { spaceService } from "../../services/spaceService";
 import {
@@ -20,54 +21,13 @@ export interface SpaceProviderProps {
   children: ReactNode;
 }
 
+import { toast } from "react-toastify";
+
 export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated, user } = useUser();
   const queryClient = useQueryClient();
   const [currentSpace, setCurrentSpace] = useState<Space | null>(null);
-
-  // WebSocket connection for real-time updates
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const socket = io("http://localhost:3000", {
-      transports: ["websocket"],
-    });
-
-    socket.on("space_invitation_updated", () => {
-      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
-    });
-
-    socket.on("join_space_by_link", () => {
-      queryClient.invalidateQueries({ queryKey: ["joinRequestsByLink"] });
-    });
-
-    socket.on("add-by-owner", () => {
-      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
-    });
-
-    socket.on("decline_space_invitation", () => {
-      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
-    });
-
-    socket.on("accept_space_invitation", () => {
-      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
-      queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
-      queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
-      queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
-    });
-
-    socket.on("connect", () => {
-      console.log("Connected to WebSocket for space updates");
-    });
-
-    socket.on("disconnect", () => {
-      console.log("Disconnected from WebSocket");
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [isAuthenticated, queryClient]);
+  const navigator = useNavigate();
 
   // ----------------------------
   // API FUNCTIONS
@@ -248,10 +208,6 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   ): Promise<ApiResponse> => {
     // const spaceuuid = inviteCode.split("=").pop() || "";
     const result = await spaceService.inviteUser(space_uuid, email);
-    queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
-    // queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
-    // queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
-    // queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     return result;
   };
 
@@ -260,9 +216,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     queryClient.invalidateQueries({
       queryKey: ["joinRequestsByLink"],
     });
-    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
-    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
-    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    // queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    // queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    // queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
   };
 
   const declineJoinRequest = async (userId: number, spaceId: string) => {
@@ -286,13 +242,20 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   const deleteSpace = async (spaceId: string) => {
     await spaceService.deleteSpace(spaceId);
     queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
   };
 
   const removeUserFromSpace = async (spaceId: string, userId: number) => {
     await spaceService.removeUserFromSpace(spaceId, userId);
-    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
-    if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
+    if (userSpaces?.some((s) => s.space_id === spaceId)) {
+      queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    } else if (friendSpaces?.some((s) => s.space_id === spaceId)) {
+      queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    } else if (courseSpaces?.some((s) => s.space_id === spaceId)) {
+      queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    }
   };
 
   // Invitation functions
@@ -351,11 +314,19 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   const acceptSpaceInvitation = async (spaceUuid: string) => {
     const result = await spaceService.acceptSpaceInvitation(spaceUuid);
 
-    queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
-    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
-    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
-    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    const invalidateIfExists = (
+      spaces: Space[] | CourseSPace[],
+      key: string,
+    ) => {
+      if (spaces?.some((s) => Number(s.space_id) === Number(spaceUuid))) {
+        queryClient.invalidateQueries({ queryKey: [key] });
+      }
+    };
+    invalidateIfExists(userSpaces, "userSpaces");
+    invalidateIfExists(friendSpaces, "friendSpaces");
+    invalidateIfExists(courseSpaces, "courseSpaces");
 
+    queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
     return result;
   };
 
@@ -428,6 +399,99 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       queryClient.invalidateQueries({ queryKey: ["draftedTasks"] });
     },
   });
+
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const socket = io("http://localhost:3000", {
+      transports: ["websocket"],
+    });
+
+    socket.on("join_space_by_link", () => {
+      queryClient.invalidateQueries({ queryKey: ["joinRequestsByLink"] });
+    });
+
+    socket.on("add-by-owner", ({ space_id, email }) => {
+      if (user?.email === email) {
+        queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+      }
+    });
+
+    socket.on("decline_space_invitation", () => {
+      queryClient.invalidateQueries({ queryKey: ["pendingSpaceInvitation"] });
+    });
+
+    socket.on("accept_space_invitation", ({ space_id, owner_id }) => {
+      console.log("SPACE & OWNER ID", user?.id, owner_id);
+      if (Number(owner_id) === Number(user?.id)) {
+        const spaceIdNum = Number(space_id);
+
+        const invalidateIfExists = (
+          spaces: Space[] | CourseSPace[],
+          key: string,
+        ) => {
+          if (spaces?.some((s) => Number(s.space_id) === Number(spaceIdNum))) {
+            queryClient.invalidateQueries({ queryKey: [key] });
+          }
+        };
+
+        invalidateIfExists(userSpaces, "userSpaces");
+        invalidateIfExists(friendSpaces, "friendSpaces");
+        invalidateIfExists(courseSpaces, "courseSpaces");
+        // queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+        // queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+        // queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+      }
+    });
+
+    socket.on("remove_user_from_space", ({ spaceId, user_id }) => {
+      if (Number(user_id) === Number(user?.id)) {
+        const spaceIdNum = Number(spaceId);
+
+        const invalidateIfExists = (
+          spaces: Space[] | CourseSPace[],
+          key: string,
+        ) => {
+          if (spaces?.some((s) => Number(s.space_id) === Number(spaceIdNum))) {
+            queryClient.invalidateQueries({ queryKey: [key] });
+            toast.info(
+              `You've been remove from the Space ${spaces?.find((s) => Number(s.space_id) === Number(spaceIdNum))?.space_name}`,
+            );
+            if (currentSpace) {
+              navigator(user?.role === "professor" ? "/prof/spaces" : "/space");
+            }
+          }
+        };
+
+        invalidateIfExists(userSpaces, "userSpaces");
+        invalidateIfExists(friendSpaces, "friendSpaces");
+        invalidateIfExists(courseSpaces, "courseSpaces");
+        // queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+        // queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+        // queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+      }
+    });
+
+    socket.on("connect", () => {
+      console.log("Connected to WebSocket for space updates");
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected from WebSocket");
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [
+    isAuthenticated,
+    queryClient,
+    userSpaces,
+    courseSpaces,
+    friendSpaces,
+    currentSpace,
+  ]);
 
   // ----------------------------
   // CONTEXT VALUE

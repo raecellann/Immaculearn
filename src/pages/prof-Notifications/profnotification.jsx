@@ -576,7 +576,7 @@ const ProfNotificationPage = () => {
                 className="text-lg font-semibold"
                 style={{ color: isDarkMode ? "white" : "black" }}
               >
-                Pending Invitations
+                Pending Join Request
               </h2>
               <button
                 onClick={() => setShowPendingInvitations(false)}
@@ -590,15 +590,15 @@ const ProfNotificationPage = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {allJoinRequests.length === 0 ? (
+              {joinRequestsByLink.length === 0 ? (
                 <p
                   className="text-center py-4"
                   style={{ color: currentColors.textSecondary }}
                 >
-                  No pending invitations
+                  No pending Join Request
                 </p>
               ) : (
-                allJoinRequests.map((invite) => (
+                joinRequestsByLink?.map((invite) => (
                   <div
                     key={`${invite.space_uuid}-${invite.account_id}`}
                     className="rounded-lg p-4 border"
@@ -651,7 +651,7 @@ const ProfNotificationPage = () => {
                     <div className="flex justify-end gap-3 mt-3">
                       <button
                         onClick={() =>
-                          handleDecline(invite.account_id, invite.space_uuid)
+                          handleDecline(invite.account_id, invite.c_space_uuid)
                         }
                         className="px-3 py-1.5 text-sm rounded-md"
                         style={{
@@ -663,7 +663,7 @@ const ProfNotificationPage = () => {
                       </button>
                       <button
                         onClick={() =>
-                          handleAccept(invite.account_id, invite.space_uuid)
+                          handleAccept(invite.account_id, invite.c_space_uuid)
                         }
                         className="px-3 py-1.5 text-sm rounded-md text-white"
                         style={{
