@@ -108,227 +108,227 @@ const ProfFilesShared = () => {
   const [lessonNameError, setLessonNameError] = useState("");
 
   const checkFileExists = (fileName) => {
-    return resources?.some(resource => 
-      resource.name.toLowerCase().includes(fileName.toLowerCase())
+    return resources?.some((resource) =>
+      resource.name.toLowerCase().includes(fileName.toLowerCase()),
     );
   };
 
   const getFileExtension = (fileName) => {
-    if (!fileName) return '';
-    return fileName.split('.').pop()?.toLowerCase() || '';
+    if (!fileName) return "";
+    return fileName.split(".").pop()?.toLowerCase() || "";
   };
 
   const getFileIcon = (fileName) => {
-    if (!fileName) return '📄';
-    
-    const extension = fileName.split('.').pop()?.toLowerCase();
-    
+    if (!fileName) return "📄";
+
+    const extension = fileName.split(".").pop()?.toLowerCase();
+
     switch (extension) {
-      case 'doc':
-      case 'docx':
-        return '📘'; // Word document - blue book
-      case 'ppt':
-      case 'pptx':
-        return '📙'; // PowerPoint - orange book
-      case 'xls':
-      case 'xlsx':
-        return '📗'; // Excel - green book
-      case 'pdf':
-        return '📕'; // PDF - red book
-      case 'txt':
-        return '📄'; // Text file
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-      case 'bmp':
-      case 'svg':
-        return '🖼️'; // Image
-      case 'mp4':
-      case 'avi':
-      case 'mov':
-      case 'wmv':
-        return '🎥'; // Video
-      case 'mp3':
-      case 'wav':
-      case 'flac':
-        return '🎵'; // Audio
-      case 'zip':
-      case 'rar':
-      case '7z':
-        return '📦'; // Archive
-      case 'html':
-      case 'htm':
-      case 'css':
-      case 'js':
-      case 'jsx':
-      case 'ts':
-      case 'tsx':
-        return '💻'; // Code
+      case "doc":
+      case "docx":
+        return "📘"; // Word document - blue book
+      case "ppt":
+      case "pptx":
+        return "📙"; // PowerPoint - orange book
+      case "xls":
+      case "xlsx":
+        return "📗"; // Excel - green book
+      case "pdf":
+        return "📕"; // PDF - red book
+      case "txt":
+        return "📄"; // Text file
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+      case "bmp":
+      case "svg":
+        return "🖼️"; // Image
+      case "mp4":
+      case "avi":
+      case "mov":
+      case "wmv":
+        return "🎥"; // Video
+      case "mp3":
+      case "wav":
+      case "flac":
+        return "🎵"; // Audio
+      case "zip":
+      case "rar":
+      case "7z":
+        return "📦"; // Archive
+      case "html":
+      case "htm":
+      case "css":
+      case "js":
+      case "jsx":
+      case "ts":
+      case "tsx":
+        return "💻"; // Code
       default:
-        return '📄'; // Default file
+        return "📄"; // Default file
     }
   };
 
   const getFileTypeLetter = (fileName) => {
-    if (!fileName) return '📄';
-    
-    const extension = fileName.split('.').pop()?.toLowerCase();
-    
+    if (!fileName) return "📄";
+
+    const extension = fileName.split(".").pop()?.toLowerCase();
+
     switch (extension) {
       // Development Files
-      case 'jsx':
-        return '⚛️'; // React icon
-      case 'tsx':
-        return '🔷'; // TypeScript React
-      case 'js':
-        return '🟨'; // JavaScript
-      case 'ts':
-        return '🔷'; // TypeScript
-      case 'html':
-        return '🌐'; // HTML
-      case 'htm':
-        return '🌐'; // HTML
-      case 'css':
-        return '🎨'; // CSS
-      case 'scss':
-        return '💅'; // SCSS
-      case 'sass':
-        return '💅'; // SASS
-      case 'json':
-        return '📋'; // JSON
-      case 'xml':
-        return '📄'; // XML
-      
+      case "jsx":
+        return "⚛️"; // React icon
+      case "tsx":
+        return "🔷"; // TypeScript React
+      case "js":
+        return "🟨"; // JavaScript
+      case "ts":
+        return "🔷"; // TypeScript
+      case "html":
+        return "🌐"; // HTML
+      case "htm":
+        return "🌐"; // HTML
+      case "css":
+        return "🎨"; // CSS
+      case "scss":
+        return "💅"; // SCSS
+      case "sass":
+        return "💅"; // SASS
+      case "json":
+        return "📋"; // JSON
+      case "xml":
+        return "📄"; // XML
+
       // Documents
-      case 'doc':
-      case 'docx':
-        return '📘'; // Word document - blue book
-      case 'pdf':
-        return '📕'; // PDF - red book
-      case 'txt':
-      case 'md':
-        return '📝'; // Text/Markdown
-      case 'rtf':
-        return '📄'; // Rich Text
-      
+      case "doc":
+      case "docx":
+        return "📘"; // Word document - blue book
+      case "pdf":
+        return "📕"; // PDF - red book
+      case "txt":
+      case "md":
+        return "📝"; // Text/Markdown
+      case "rtf":
+        return "📄"; // Rich Text
+
       // Spreadsheets
-      case 'xls':
-      case 'xlsx':
-      case 'csv':
-        return '📗'; // Excel - green book
-      
+      case "xls":
+      case "xlsx":
+      case "csv":
+        return "📗"; // Excel - green book
+
       // Presentations
-      case 'ppt':
-      case 'pptx':
-        return '📙'; // PowerPoint - orange book
-      
+      case "ppt":
+      case "pptx":
+        return "📙"; // PowerPoint - orange book
+
       // Images
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-      case 'bmp':
-      case 'svg':
-      case 'webp':
-      case 'ico':
-        return '🖼️'; // Image
-      
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+      case "bmp":
+      case "svg":
+      case "webp":
+      case "ico":
+        return "🖼️"; // Image
+
       // Videos
-      case 'mp4':
-      case 'avi':
-      case 'mov':
-      case 'wmv':
-      case 'flv':
-      case 'webm':
-      case 'mkv':
-        return '🎥'; // Video
-      
+      case "mp4":
+      case "avi":
+      case "mov":
+      case "wmv":
+      case "flv":
+      case "webm":
+      case "mkv":
+        return "🎥"; // Video
+
       // Audio
-      case 'mp3':
-      case 'wav':
-      case 'flac':
-      case 'aac':
-      case 'ogg':
-      case 'm4a':
-        return '🎵'; // Audio
-      
+      case "mp3":
+      case "wav":
+      case "flac":
+      case "aac":
+      case "ogg":
+      case "m4a":
+        return "🎵"; // Audio
+
       // Archives
-      case 'zip':
-      case 'rar':
-      case '7z':
-      case 'tar':
-      case 'gz':
-        return '📦'; // Archive
-      
+      case "zip":
+      case "rar":
+      case "7z":
+      case "tar":
+      case "gz":
+        return "📦"; // Archive
+
       // Configuration Files
-      case 'yml':
-      case 'yaml':
-        return '⚙️'; // YAML
-      case 'env':
-        return '🔐'; // Environment
-      case 'config':
-      case 'conf':
-        return '⚙️'; // Config
-      case 'ini':
-        return '⚙️'; // INI
-      
+      case "yml":
+      case "yaml":
+        return "⚙️"; // YAML
+      case "env":
+        return "🔐"; // Environment
+      case "config":
+      case "conf":
+        return "⚙️"; // Config
+      case "ini":
+        return "⚙️"; // INI
+
       // Database Files
-      case 'sql':
-        return '🗄️'; // SQL
-      case 'db':
-      case 'sqlite':
-        return '🗄️'; // Database
-      
+      case "sql":
+        return "🗄️"; // SQL
+      case "db":
+      case "sqlite":
+        return "🗄️"; // Database
+
       // Fonts
-      case 'ttf':
-      case 'otf':
-      case 'woff':
-      case 'woff2':
-        return '🔤'; // Font
-      
+      case "ttf":
+      case "otf":
+      case "woff":
+      case "woff2":
+        return "🔤"; // Font
+
       // Code Files (other)
-      case 'py':
-        return '🐍'; // Python
-      case 'java':
-        return '☕'; // Java
-      case 'cpp':
-      case 'c++':
-        return '⚙️'; // C++
-      case 'c':
-        return '⚙️'; // C
-      case 'php':
-        return '🐘'; // PHP
-      case 'rb':
-        return '💎'; // Ruby
-      case 'go':
-        return '🐹'; // Go
-      case 'rs':
-        return '🦀'; // Rust
-      case 'swift':
-        return '🍎'; // Swift
-      case 'kt':
-        return '🎯'; // Kotlin
-      case 'dart':
-        return '🎯'; // Dart
-      case 'vue':
-        return '💚'; // Vue
-      case 'svelte':
-        return '🧡'; // Svelte
-      
+      case "py":
+        return "🐍"; // Python
+      case "java":
+        return "☕"; // Java
+      case "cpp":
+      case "c++":
+        return "⚙️"; // C++
+      case "c":
+        return "⚙️"; // C
+      case "php":
+        return "🐘"; // PHP
+      case "rb":
+        return "💎"; // Ruby
+      case "go":
+        return "🐹"; // Go
+      case "rs":
+        return "🦀"; // Rust
+      case "swift":
+        return "🍎"; // Swift
+      case "kt":
+        return "🎯"; // Kotlin
+      case "dart":
+        return "🎯"; // Dart
+      case "vue":
+        return "💚"; // Vue
+      case "svelte":
+        return "🧡"; // Svelte
+
       // Design Files
-      case 'psd':
-        return '🎨'; // Photoshop
-      case 'ai':
-        return '🎨'; // Illustrator
-      case 'fig':
-        return '🎨'; // Figma
-      case 'sketch':
-        return '🎨'; // Sketch
-      
+      case "psd":
+        return "🎨"; // Photoshop
+      case "ai":
+        return "🎨"; // Illustrator
+      case "fig":
+        return "🎨"; // Figma
+      case "sketch":
+        return "🎨"; // Sketch
+
       // Default
       default:
-        return '📄'; // Default file
+        return "📄"; // Default file
     }
   };
 
@@ -356,7 +356,7 @@ const ProfFilesShared = () => {
         // Check if file already exists before uploading
         const fileExists = checkFileExists(files[0].name);
         setFileAlreadyExists(fileExists);
-        
+
         await uploadResource(files, space_uuid);
         // Refresh the file list after successful upload
         if (currentSpace?.space_id) {
@@ -382,7 +382,7 @@ const ProfFilesShared = () => {
         // Check if file already exists before uploading
         const fileExists = checkFileExists(files[0].name);
         setFileAlreadyExists(fileExists);
-        
+
         await uploadResource(files, space_uuid);
         // Refresh the file list after successful upload
         if (currentSpace?.space_uuid) {
@@ -688,28 +688,49 @@ const ProfFilesShared = () => {
   };
 
   const handleOpenFile = (file) => {
-    const url = `/prof/space/${space_uuid}/${space_name}/files/${file.name}/${file.id || file.uuid || 'unknown'}`;
+    const url = `/prof/space/${space_uuid}/${space_name}/files/${file.name}/${file.id || file.uuid || "unknown"}`;
     navigate(url);
   };
 
   // Custom delete button component
   const DeleteButton = ({ onClick, title, className = "", style = {} }) => {
     return (
-      <div 
+      <div
         className={`bin-button ${className}`}
         onClick={onClick}
         title={title}
         style={style}
       >
-        <svg className="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          className="bin-top"
+          viewBox="0 0 39 7"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <line y1={5} x2={39} y2={5} stroke="white" strokeWidth={4} />
-          <line x1={12} y1="1.5" x2={26.0357} y2={1.5} stroke="white" strokeWidth={3} />
+          <line
+            x1={12}
+            y1="1.5"
+            x2={26.0357}
+            y2={1.5}
+            stroke="white"
+            strokeWidth={3}
+          />
         </svg>
-        <svg className="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          className="bin-bottom"
+          viewBox="0 0 33 39"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <mask id="path-1-inside-1_8_19" fill="white">
             <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
           </mask>
-          <path d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" fill="white" mask="url(#path-1-inside-1_8_19)" />
+          <path
+            d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+            fill="white"
+            mask="url(#path-1-inside-1_8_19)"
+          />
           <path d="M12 6L12 29" stroke="white" strokeWidth={4} />
           <path d="M21 6V29" stroke="white" strokeWidth={4} />
         </svg>
@@ -724,7 +745,7 @@ const ProfFilesShared = () => {
 
   const confirmDeleteFile = async () => {
     if (!fileToDelete) return;
-    
+
     try {
       // Show loading state
       showGlobalNotification({
@@ -734,21 +755,21 @@ const ProfFilesShared = () => {
         duration: null,
         persistent: true,
       });
-      
+
       // Close warning modal
       setShowDeleteWarning(false);
-      
+
       // You'll need to implement the actual delete API call
       // await deleteFile(fileToDelete.fuuid, space_uuid);
-      
+
       // Simulate API call for demonstration
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       // Refresh the file list after deletion
       if (currentSpace?.space_id) {
         await refreshFiles(space_uuid);
       }
-      
+
       // Show success notification
       showGlobalNotification({
         type: "success",
@@ -757,14 +778,14 @@ const ProfFilesShared = () => {
         duration: 4000,
         data: {
           fileName: fileToDelete.filename,
-          actionType: "delete"
-        }
+          actionType: "delete",
+        },
       });
-      
+
       // Reset state
       setFileToDelete(null);
     } catch (error) {
-      console.error('Delete failed:', error);
+      console.error("Delete failed:", error);
       showGlobalNotification({
         type: "error",
         title: "Delete Failed",
@@ -772,12 +793,12 @@ const ProfFilesShared = () => {
         duration: 5000,
         data: {
           fileName: fileToDelete.filename,
-          error: error.message
-        }
+          error: error.message,
+        },
       });
     }
   };
-  
+
   const cancelDeleteFile = () => {
     setShowDeleteWarning(false);
     setFileToDelete(null);
@@ -793,17 +814,17 @@ const ProfFilesShared = () => {
         duration: null,
         persistent: true,
       });
-      
+
       // You'll need to implement the actual download API call
       // For now, create a download link
-      const downloadUrl = `data:text/plain;charset=utf-8,${encodeURIComponent('Sample file content for ' + file.name)}`;
-      const link = document.createElement('a');
+      const downloadUrl = file.url;
+      const link = document.createElement("a");
       link.href = downloadUrl;
       link.download = file.name;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Show success notification
       showGlobalNotification({
         type: "success",
@@ -812,11 +833,11 @@ const ProfFilesShared = () => {
         duration: 4000,
         data: {
           fileName: file.name,
-          actionType: "download"
-        }
+          actionType: "download",
+        },
       });
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error("Download failed:", error);
       showGlobalNotification({
         type: "error",
         title: "Download Failed",
@@ -824,8 +845,8 @@ const ProfFilesShared = () => {
         duration: 5000,
         data: {
           fileName: file.name,
-          error: error.message
-        }
+          error: error.message,
+        },
       });
     }
   };
@@ -838,18 +859,18 @@ const ProfFilesShared = () => {
         title={title}
         className={`transition-all duration-300 flex items-center justify-center ${className}`}
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '35px',
-          height: '35px',
-          borderRadius: '10px',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "35px",
+          height: "35px",
+          borderRadius: "10px",
           backgroundColor: isDarkMode ? "#1e40af" : "#3b82f6",
           color: "#ffffff",
           border: isDarkMode ? "#1e3a8a" : "#2563eb",
-          cursor: 'pointer',
-          transitionDuration: '0.3s'
+          cursor: "pointer",
+          transitionDuration: "0.3s",
         }}
         onMouseEnter={(e) => {
           e.target.style.backgroundColor = isDarkMode ? "#2563eb" : "#60a5fa";
@@ -860,10 +881,10 @@ const ProfFilesShared = () => {
           e.target.style.borderColor = isDarkMode ? "#1e3a8a" : "#2563eb";
         }}
         onMouseDown={(e) => {
-          e.target.style.transform = 'scale(0.9)';
+          e.target.style.transform = "scale(0.9)";
         }}
         onMouseUp={(e) => {
-          e.target.style.transform = 'scale(1)';
+          e.target.style.transform = "scale(1)";
         }}
       >
         <svg
@@ -897,8 +918,8 @@ const ProfFilesShared = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return date.toLocaleDateString("en-US", options);
   };
 
   return (
@@ -1177,9 +1198,9 @@ const ProfFilesShared = () => {
             {/* RESPONSIVE TABLE */}
             <div
               className="rounded-xl p-4 sm:p-6 border"
-              style={{ 
+              style={{
                 backgroundColor: currentColors.surface,
-                borderColor: isDarkMode ? currentColors.border : '#000000'
+                borderColor: isDarkMode ? currentColors.border : "#000000",
               }}
             >
               {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
@@ -1232,10 +1253,15 @@ const ProfFilesShared = () => {
                             onClick={() => handleOpenFile(file)}
                             style={{ color: currentColors.text }}
                           >
-                            {formatFileTitle(file.name.split('-').slice(3).join('-'))}
+                            {formatFileTitle(
+                              file.name.split("-").slice(3).join("-"),
+                            )}
                           </p>
-                          
-                          <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+
+                          <p
+                            className="text-xs mt-1"
+                            style={{ color: currentColors.textSecondary }}
+                          >
                             {formatDate(file.created_at)}
                           </p>
                         </div>
@@ -1267,19 +1293,30 @@ const ProfFilesShared = () => {
                     >
                       <div
                         className="p-2 rounded-md flex items-center justify-center w-8 h-8"
-                        style={{ 
+                        style={{
                           backgroundColor: currentColors.surface,
-                          border: `2px solid ${currentColors.border}`
+                          border: `2px solid ${currentColors.border}`,
                         }}
                       >
-                        <span className="text-xs font-bold" style={{ color: currentColors.text }}>
+                        <span
+                          className="text-xs font-bold"
+                          style={{ color: currentColors.text }}
+                        >
                           {getFileTypeLetter(file.name)}
                         </span>
                       </div>
-                      <span className="truncate">{formatFileTitle(file.name.split('-').slice(3).join('-'))}</span>
+                      <span className="truncate">
+                        {formatFileTitle(
+                          file.name.split("-").slice(3).join("-"),
+                        )}
+                      </span>
                     </div>
-                    <div className="col-span-1">{getFileExtension(file.name)}</div>
-                    <div className="col-span-2">{formatDate(file.created_at)}</div>
+                    <div className="col-span-1">
+                      {getFileExtension(file.name)}
+                    </div>
+                    <div className="col-span-2">
+                      {formatDate(file.created_at)}
+                    </div>
                     <div className="col-span-1">{file.size}</div>
                     <div className="col-span-1 flex items-center gap-2 justify-end">
                       <DownloadButton
@@ -1302,7 +1339,10 @@ const ProfFilesShared = () => {
               ))}
 
               {(!resources || resources.length === 0) && (
-                <div className="text-center py-12" style={{ color: currentColors.textSecondary }}>
+                <div
+                  className="text-center py-12"
+                  style={{ color: currentColors.textSecondary }}
+                >
                   <FiFileText size={40} className="mx-auto mb-3 opacity-40" />
                   <p className="text-sm">No files uploaded yet.</p>
                 </div>
@@ -1462,14 +1502,14 @@ const ProfFilesShared = () => {
             <div className="p-4 sm:p-6 lg:p-8 pt-8 sm:pt-10 lg:pt-12">
               {/* MODAL TITLE */}
               <div className="mb-6">
-                <h2 
+                <h2
                   className="text-xl font-semibold"
                   style={{ color: currentColors.text }}
                 >
                   Upload Lesson
                 </h2>
               </div>
-              
+
               {/* LESSON NAME INPUT */}
               <div className="mb-4">
                 <label
@@ -1492,13 +1532,19 @@ const ProfFilesShared = () => {
                   style={{
                     backgroundColor: currentColors.background,
                     color: currentColors.text,
-                    borderColor: lessonNameError ? "#ef4444" : currentColors.border,
+                    borderColor: lessonNameError
+                      ? "#ef4444"
+                      : currentColors.border,
                   }}
-                  onFocus={(e) => { 
-                    e.target.style.borderColor = lessonNameError ? "#ef4444" : "#3b82f6"; 
+                  onFocus={(e) => {
+                    e.target.style.borderColor = lessonNameError
+                      ? "#ef4444"
+                      : "#3b82f6";
                   }}
-                  onBlur={(e) => { 
-                    e.target.style.borderColor = lessonNameError ? "#ef4444" : currentColors.border; 
+                  onBlur={(e) => {
+                    e.target.style.borderColor = lessonNameError
+                      ? "#ef4444"
+                      : currentColors.border;
                   }}
                 />
                 {lessonNameError && (
@@ -1523,7 +1569,10 @@ const ProfFilesShared = () => {
                     ? "#eff6ff"
                     : currentColors.background,
                 }}
-                onClick={() => !lastUploadedFile && document.getElementById("file-upload").click()}
+                onClick={() =>
+                  !lastUploadedFile &&
+                  document.getElementById("file-upload").click()
+                }
               >
                 <input
                   type="file"
@@ -1532,18 +1581,22 @@ const ProfFilesShared = () => {
                   multiple
                   className="hidden"
                 />
-                
+
                 {lastUploadedFile ? (
                   // VIEW FILE STATE
                   <div className="space-y-4">
                     <div className="text-center">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg mb-4"
-                        style={{ 
+                      <div
+                        className="inline-flex items-center justify-center w-16 h-16 rounded-lg mb-4"
+                        style={{
                           backgroundColor: currentColors.surface,
-                          border: `2px solid ${currentColors.border}`
+                          border: `2px solid ${currentColors.border}`,
                         }}
                       >
-                        <span className="text-2xl font-bold" style={{ color: currentColors.text }}>
+                        <span
+                          className="text-2xl font-bold"
+                          style={{ color: currentColors.text }}
+                        >
                           {getFileTypeLetter(lastUploadedFile.name)}
                         </span>
                       </div>
@@ -1551,7 +1604,9 @@ const ProfFilesShared = () => {
                         className="text-lg font-semibold mb-2"
                         style={{ color: currentColors.text }}
                       >
-                        {fileAlreadyExists ? "File Already Exists" : "File Uploaded Successfully!"}
+                        {fileAlreadyExists
+                          ? "File Already Exists"
+                          : "File Uploaded Successfully!"}
                       </h3>
                       <p
                         className="text-sm mb-4"
@@ -1563,7 +1618,12 @@ const ProfFilesShared = () => {
                         className="text-xs mb-6"
                         style={{ color: currentColors.textSecondary }}
                       >
-                        Size: {(lastUploadedFile.size / 1024).toFixed(0)}KB • Type: {lastUploadedFile.name.split('.').pop()?.toUpperCase() || 'Unknown'}
+                        Size: {(lastUploadedFile.size / 1024).toFixed(0)}KB •
+                        Type:{" "}
+                        {lastUploadedFile.name
+                          .split(".")
+                          .pop()
+                          ?.toUpperCase() || "Unknown"}
                       </p>
                       {fileAlreadyExists && (
                         <p
@@ -1574,7 +1634,7 @@ const ProfFilesShared = () => {
                         </p>
                       )}
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                       {fileAlreadyExists ? (
                         <button
@@ -1595,7 +1655,8 @@ const ProfFilesShared = () => {
                             setLastUploadedFile(null);
                             setFileAlreadyExists(false);
                             // Clear file input
-                            const fileInput = document.getElementById("file-upload");
+                            const fileInput =
+                              document.getElementById("file-upload");
                             if (fileInput) fileInput.value = "";
                           }}
                         >
@@ -1714,17 +1775,17 @@ const ProfFilesShared = () => {
                           // Check if file already exists before uploading
                           const fileExists = checkFileExists(files[0].name);
                           setFileAlreadyExists(fileExists);
-                          
+
                           // Validate lesson name
                           if (!lessonName.trim()) {
                             setLessonNameError(
-                              fileExists 
+                              fileExists
                                 ? "Lesson name is required when uploading a duplicate file"
-                                : "Lesson name is required"
+                                : "Lesson name is required",
                             );
                             return;
                           }
-                          
+
                           try {
                             await uploadResource(files, space_uuid);
                             if (space_uuid) {
@@ -1778,10 +1839,12 @@ const ProfFilesShared = () => {
                       border: `1px solid ${currentColors.border}`,
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = currentColors.hover;
+                      e.currentTarget.style.backgroundColor =
+                        currentColors.hover;
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = currentColors.background;
+                      e.currentTarget.style.backgroundColor =
+                        currentColors.background;
                     }}
                     onClick={() => {
                       setLastUploadedFile(null);
@@ -1809,13 +1872,13 @@ const ProfFilesShared = () => {
                       // Validate lesson name before confirming
                       if (!lessonName.trim()) {
                         setLessonNameError(
-                          fileAlreadyExists 
+                          fileAlreadyExists
                             ? "Lesson name is required when uploading a duplicate file"
-                            : "Lesson name is required"
+                            : "Lesson name is required",
                         );
                         return;
                       }
-                      
+
                       setShowCreateUploadModal(false);
                       setLastUploadedFile(null);
                       setFileAlreadyExists(false);
@@ -1885,13 +1948,13 @@ const ProfFilesShared = () => {
       {/* DELETE WARNING MODAL */}
       {showDeleteWarning && fileToDelete && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div 
+          <div
             className="rounded-lg p-4 sm:p-6 max-w-md w-full"
             style={{ backgroundColor: currentColors.surface }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-              <h3 
+              <h3
                 className="text-lg font-semibold"
                 style={{ color: currentColors.text }}
               >
@@ -1907,7 +1970,7 @@ const ProfFilesShared = () => {
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.color = currentColors.textSecondary;
-                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.backgroundColor = "transparent";
                 }}
               >
                 <FiX size={20} />
@@ -1917,25 +1980,30 @@ const ProfFilesShared = () => {
             {/* Warning Message */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
-                <div 
+                <div
                   className="p-2 rounded-md flex items-center justify-center w-10 h-10"
-                  style={{ 
+                  style={{
                     backgroundColor: currentColors.background,
-                    border: `2px solid ${currentColors.border}`
+                    border: `2px solid ${currentColors.border}`,
                   }}
                 >
-                  <span className="text-sm font-bold" style={{ color: currentColors.text }}>
+                  <span
+                    className="text-sm font-bold"
+                    style={{ color: currentColors.text }}
+                  >
                     {getFileTypeLetter(fileToDelete.name)}
                   </span>
                 </div>
                 <div className="flex-1">
-                  <p 
+                  <p
                     className="font-semibold"
                     style={{ color: currentColors.text }}
                   >
-                    {formatFileTitle(fileToDelete.name.split('-').slice(3).join('-'))}
+                    {formatFileTitle(
+                      fileToDelete.name.split("-").slice(3).join("-"),
+                    )}
                   </p>
-                  <p 
+                  <p
                     className="text-sm"
                     style={{ color: currentColors.textSecondary }}
                   >
@@ -1943,25 +2011,30 @@ const ProfFilesShared = () => {
                   </p>
                 </div>
               </div>
-              
-              <p 
+
+              <p
                 className="text-sm leading-relaxed"
                 style={{ color: currentColors.textSecondary }}
               >
                 Are you sure you want to delete{" "}
-                <span 
+                <span
                   className="font-medium"
                   style={{ color: currentColors.text }}
                 >
-                  "{formatFileTitle(fileToDelete.name.split('-').slice(3).join('-'))}"
-                </span>
-                {" "}from this space? 
+                  "
+                  {formatFileTitle(
+                    fileToDelete.name.split("-").slice(3).join("-"),
+                  )}
+                  "
+                </span>{" "}
+                from this space?
               </p>
-              <p 
+              <p
                 className="text-sm mt-2 font-medium"
                 style={{ color: "#ef4444" }}
               >
-                ⚠️ This action cannot be undone. The file will be permanently removed.
+                ⚠️ This action cannot be undone. The file will be permanently
+                removed.
               </p>
             </div>
 
@@ -1973,7 +2046,7 @@ const ProfFilesShared = () => {
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  border: `1px solid ${currentColors.border}`
+                  border: `1px solid ${currentColors.border}`,
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = currentColors.hover;
@@ -1990,15 +2063,23 @@ const ProfFilesShared = () => {
                 style={{
                   backgroundColor: isDarkMode ? "#991b1b" : "#ef4444",
                   color: "#ffffff",
-                  border: isDarkMode ? "#7f1d1d" : "#dc2626"
+                  border: isDarkMode ? "#7f1d1d" : "#dc2626",
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = isDarkMode ? "#b91c1c" : "#f87171";
-                  e.target.style.borderColor = isDarkMode ? "#991b1b" : "#ef4444";
+                  e.target.style.backgroundColor = isDarkMode
+                    ? "#b91c1c"
+                    : "#f87171";
+                  e.target.style.borderColor = isDarkMode
+                    ? "#991b1b"
+                    : "#ef4444";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = isDarkMode ? "#991b1b" : "#ef4444";
-                  e.target.style.borderColor = isDarkMode ? "#7f1d1d" : "#dc2626";
+                  e.target.style.backgroundColor = isDarkMode
+                    ? "#991b1b"
+                    : "#ef4444";
+                  e.target.style.borderColor = isDarkMode
+                    ? "#7f1d1d"
+                    : "#dc2626";
                 }}
               >
                 <FiX size={16} />
