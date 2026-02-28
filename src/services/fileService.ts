@@ -14,21 +14,36 @@ class FileService {
     formData.append("file", file); // MUST match upload.single("file")
     formData.append("space_uuid", space_uuid); // MUST match upload.single("file")
 
-    const res = await api.post<ApiResponse<FileData>>(
-      "/files/resources/",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
-    );
+    // const res = await api.post<ApiResponse<FileData>>(
+    //   "/files/resources/",
+    //   formData,
+    //   {
+    //     headers: {
+    //       "Content-Type": "multipart/form-data",
+    //     },
+    //   },
+    // );
 
-    if (!res.data.success) {
-      throw new Error(res.data.message || "Upload failed");
-    }
+    // if (!res.data.success) {
+    //   throw new Error(res.data.message || "Upload failed");
+    // }
 
-    return res.data.data;
+    // return res.data.data;
+    return {
+      file_id: "mock-file-123",
+      fuuid: "mock-fuuid-456",
+      space_id: space_uuid,
+      owner_id: "mock-owner-789",
+      filename: file.name,
+      content: "",
+      path: null,
+      cld_url: null,
+      public_id: null,
+      mimetype: file.type,
+      size: file.size,
+      status: "local" as const,
+      created_at: new Date().toISOString()
+    };
   }
 
   async getListResourceBySpaceUUID(
