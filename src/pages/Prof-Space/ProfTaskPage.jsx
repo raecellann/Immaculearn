@@ -21,6 +21,10 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import QuizBuilder from "./taskComponents/QuizBuilder";
+import IndividualActivityBuilder from "./taskComponents/IndividualActivityBuilder";
+import GroupActivityBuilder from "./taskComponents/GroupActivityBuilder";
+import ExamBuilder from "./taskComponents/ExamBuilder";
 
 const ProfTaskPage = () => {
   // ================= TASK FORM STATE =================
@@ -33,9 +37,10 @@ const ProfTaskPage = () => {
   
   // Task categories with emojis
   const taskCategories = [
-    { value: "quiz", label: "Quiz", emoji: "�" },
+    { value: "quiz", label: "Quiz", emoji: "📝" },
     { value: "group-activity", label: "Group Activity", emoji: "👥" },
-    { value: "individual-activity", label: "Individual Activity", emoji: "📝" }
+    { value: "individual-activity", label: "Individual Activity", emoji: "📄" },
+    { value: "exam", label: "Exam", emoji: "�" }
   ];
 
   // Get category emoji and label
@@ -132,6 +137,8 @@ const ProfTaskPage = () => {
 
   /* ================= CREATE TASK MODE ================= */
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [showTaskTypeSelection, setShowTaskTypeSelection] = useState(false);
+  const [selectedTaskType, setSelectedTaskType] = useState(null);
   const [showManualGroups, setShowManualGroups] = useState(false);
   const [showGenerateGroups, setShowGenerateGroups] = useState(false);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
@@ -354,47 +361,69 @@ const ProfTaskPage = () => {
     }
   }, [isCreatingTask]);
 
+  const applyFormat = (format) => {
+    document.execCommand(format, false, null);
+    instructionRef.current?.focus();
+  };
+
   // ================= UPLOAD HANDLER =================
-  const handleUpload = async (status_type) => {
-    if (!taskTitle.trim()) {
-      alert("Task title is required");
-      return;
-    }
+  const handleUpload = async (status_type, taskData = null) => {
+    let payload;
 
-    if (!dueDate) {
-      alert("Due date is required");
-      return;
-    }
+    if (taskData) {
+      // Data comes from specialized builders
+      payload = {
+        title: taskData.title,
+        instruction: taskData.instruction || "No instruction provided",
+        scoring: taskData.score,
+        status: status_type,
+        due_date: taskData.dueDate,
+        category: taskData.category,
+        // Include builder-specific data
+        ...taskData
+      };
+    } else {
+      // Legacy form validation (for backward compatibility)
+      if (!taskTitle.trim()) {
+        alert("Task title is required");
+        return;
+      }
 
-    if (!score) {
-      alert("Score is required");
-      return;
-    }
+      if (!dueDate) {
+        alert("Due date is required");
+        return;
+      }
 
-    const payload = {
-      title: taskTitle,
-      instruction: instruction || "No instruction provided",
-      scoring: Number(score),
-      status: status_type,
-      due_date: dueDate,
-      category: taskCategory,
-    };
+      if (!score) {
+        alert("Score is required");
+        return;
+      }
 
-    // Add groups data if configured
-    if (groupsConfigured && groups.length > 0) {
-      // Filter out empty groups and transform to backend format
-      const validGroups = groups.filter(group => 
-        group.leader?.trim() || group.members?.some(m => m?.trim())
-      );
+      payload = {
+        title: taskTitle,
+        instruction: instruction || "No instruction provided",
+        scoring: Number(score),
+        status: status_type,
+        due_date: dueDate,
+        category: taskCategory,
+      };
 
-      if (validGroups.length > 0) {
-        payload.groupsData = validGroups.map((group, index) => ({
-          group_name: `Group_${index + 1}`,
-          leader_id: group.leader?.trim() || null,
-          members: group.members
-            .filter(member => member?.trim())
-            .map(member => member.trim())
-        }));
+      // Add groups data if configured
+      if (groupsConfigured && groups.length > 0) {
+        // Filter out empty groups and transform to backend format
+        const validGroups = groups.filter(group => 
+          group.leader?.trim() || group.members?.some(m => m?.trim())
+        );
+
+        if (validGroups.length > 0) {
+          payload.groupsData = validGroups.map((group, index) => ({
+            group_name: `Group_${index + 1}`,
+            leader_id: group.leader?.trim() || null,
+            members: group.members
+              .filter(member => member?.trim())
+              .map(member => member.trim())
+          }));
+        }
       }
     }
 
@@ -418,6 +447,8 @@ const ProfTaskPage = () => {
       // Reset form and close
       resetTaskForm();
       setIsCreatingTask(false);
+      setSelectedTaskType(null);
+      setShowTaskTypeSelection(false);
     } catch (error) {
       console.error("Failed to save task:", error);
       alert("Failed to save task. Please try again.");
@@ -430,7 +461,9 @@ const ProfTaskPage = () => {
     setScore("");
     setDueDate("");
     setSelectedFile(null);
-    setTaskCategory("individual-act");
+    setTaskCategory("individual-activity");
+    setSelectedTaskType(null);
+    setShowTaskTypeSelection(false);
     setGroups([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
     setNumberOfGroups(1);
     setGroupsConfigured(false);
@@ -893,12 +926,12 @@ const ProfTaskPage = () => {
             </div>
           )}
 
-          {!isCreatingTask ? (
+          {!isCreatingTask && !showTaskTypeSelection ? (
             /* ================= TASKS LIST VIEW ================= */
             <div className="max-w-5xl mx-auto">
               <button
                 className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
-                onClick={() => setIsCreatingTask(true)}
+                onClick={() => setShowTaskTypeSelection(true)}
               >
                 <FiFileText size={16} />
                 Create Task
@@ -1220,384 +1253,151 @@ const ProfTaskPage = () => {
               </div>
             </div>
             </div>
-          ) : (
-            /* ================= CREATE TASK FORM ================= */
-            <div className="max-w-5xl mx-auto" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
-              {/* BACK BUTTON */}
-              <div className="flex justify-end mb-6">
-                <button
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow transition-colors"
-                  style={{
-                    backgroundColor: currentColors.surface,
-                    color: currentColors.text,
-                    border: `1px solid ${currentColors.border}`
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = currentColors.hover;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = currentColors.surface;
-                  }}
-                  onClick={() => setIsCreatingTask(false)}
-                >
-                  <FiArrowLeft size={16} />
-                  <span className="hidden sm:inline">Back to Tasks</span>
-                  <span className="sm:hidden">Back</span>
-                </button>
-              </div>
+          ) : showTaskTypeSelection ? (
+            /* ================= TASK TYPE SELECTION ================= */
+            <div className="max-w-5xl mx-auto">
+              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-white">Select Task Type</h2>
+                    <button
+                      onClick={() => setShowTaskTypeSelection(false)}
+                      className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
+                    >
+                      ×
+                    </button>
+                  </div>
 
-              {/* FORM CARD */}
-              <div className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
-                <div className="flex flex-col lg:flex-row gap-6">
-                  {/* LEFT SECTION */}
-                  <div className="flex-1 flex flex-col gap-4">
-                    <label className="font-semibold text-lg" style={{ color: currentColors.text }}>
-                      Title: <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={taskTitle}
-                      onChange={(e) => setTaskTitle(e.target.value)}
-                      className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
-                      style={{
-                        backgroundColor: currentColors.background,
-                        color: currentColors.text,
-                        borderColor: currentColors.border
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = currentColors.accent;
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = currentColors.border;
-                      }}
-                      placeholder="Enter task title"
-                    />
-
-                    <label className="font-semibold">
-                      Category: <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={taskCategory}
-                      onChange={(e) => setTaskCategory(e.target.value)}
-                      className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
-                      style={{
-                        backgroundColor: currentColors.background,
-                        color: currentColors.text,
-                        borderColor: currentColors.border
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = currentColors.accent;
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = currentColors.border;
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Quiz Card */}
+                    <div
+                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                      onClick={() => {
+                        setSelectedTaskType('quiz');
+                        setTaskCategory('quiz');
+                        setShowTaskTypeSelection(false);
+                        setIsCreatingTask(true);
                       }}
                     >
-                      {taskCategories.map((category) => (
-                        <option key={category.value} value={category.value}>
-                          {category.emoji} {category.label}
-                        </option>
-                      ))}
-                    </select>
-
-                    {/* INSTRUCTION */}
-                    <label className="font-semibold" style={{ color: currentColors.text }}>
-                      Instruction (optional)
-                    </label>
-
-                    <div className="rounded-lg border transition-colors" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
-                      {/* Editable Instruction Area */}
-                      <div
-                        ref={instructionRef}
-                        contentEditable
-                        className="min-h-[140px] px-4 py-3 outline-none"
-                        style={{
-                          backgroundColor: currentColors.background,
-                          color: currentColors.text
-                        }}
-                        suppressContentEditableWarning
-                      />
-
-                      {/* Divider */}
-                      <div className="border-t" style={{ borderColor: currentColors.border }} />
-
-                      {/* Formatting Toolbar (BOTTOM) */}
-                      <div className="flex gap-4 px-4 py-2" style={{ color: currentColors.textSecondary }}>
-                        <button
-                          type="button"
-                          onClick={() => applyFormat("bold")}
-                          className="hover:text-white"
-                        >
-                          <FiBold />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => applyFormat("italic")}
-                          className="hover:text-white"
-                        >
-                          <FiItalic />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => applyFormat("underline")}
-                          className="hover:text-white"
-                        >
-                          <FiUnderline />
-                        </button>
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">📝</div>
+                        <h3 className="text-lg font-semibold text-white mb-2">Quiz</h3>
+                        <p className="text-gray-400 text-sm">Create a quiz with multiple choice, true/false, Identification, Enumeration, or short answer questions</p>
                       </div>
                     </div>
 
-                    {/* FILE UPLOAD */}
-                    <div className="mt-6">
-                      <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
-                        Choose a file or drag & drop it here.
-                      </label>
+                    {/* Individual Activity Card */}
+                    <div
+                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                      onClick={() => {
+                        setSelectedTaskType('individual-activity');
+                        setTaskCategory('individual-activity');
+                        setShowTaskTypeSelection(false);
+                        setIsCreatingTask(true);
+                      }}
+                    >
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">📄</div>
+                        <h3 className="text-lg font-semibold text-white mb-2">Individual Activity</h3>
+                        <p className="text-gray-400 text-sm">Assign individual tasks, homework, or activities for each student</p>
+                      </div>
+                    </div>
 
-                      <div
-                        onClick={handleFileClick}
-                        className="border border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition-colors"
-                        style={{
-                          borderColor: currentColors.border,
-                          backgroundColor: currentColors.background
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.borderColor = currentColors.accent;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.borderColor = currentColors.border;
-                        }}
-                      >
-                        <FiUploadCloud
-                          size={36}
-                          className="mb-3" style={{ color: currentColors.textSecondary }}
-                        />
+                    {/* Group Activity Card */}
+                    <div
+                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                      onClick={() => {
+                        setSelectedTaskType('group-activity');
+                        setTaskCategory('group-activity');
+                        setShowTaskTypeSelection(false);
+                        setIsCreatingTask(true);
+                      }}
+                    >
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">👥</div>
+                        <h3 className="text-lg font-semibold text-white mb-2">Group Activity</h3>
+                        <p className="text-gray-400 text-sm">Create collaborative tasks for student groups to work together</p>
+                      </div>
+                    </div>
 
-                        <p className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
-                          Choose a file or drag & drop it here.
-                        </p>
-
-                        <p className="text-xs mb-4" style={{ color: currentColors.textSecondary }}>
-                          DOCS, PDF, PPT AND EXCEL, UP TO 10 MB
-                        </p>
-
-                        <button
-                          type="button"
-                          className="px-4 py-1.5 border rounded-md text-sm transition-colors"
-                          style={{
-                            borderColor: currentColors.border,
-                            backgroundColor: currentColors.background,
-                            color: currentColors.text
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = currentColors.hover;
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = currentColors.background;
-                          }}
-                        >
-                          Browse Files
-                        </button>
-
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          onChange={handleFileChange}
-                          className="hidden"
-                        />
+                    {/* Exam Card */}
+                    <div
+                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                      onClick={() => {
+                        setSelectedTaskType('exam');
+                        setTaskCategory('exam');
+                        setShowTaskTypeSelection(false);
+                        setIsCreatingTask(true);
+                      }}
+                    >
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">📋</div>
+                        <h3 className="text-lg font-semibold text-white mb-2">Exam</h3>
+                        <p className="text-gray-400 text-sm">Schedule formal examinations with time limits and grading criteria</p>
                       </div>
                     </div>
                   </div>
-
-                  {/* RIGHT SECTION */}
-                  <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
-                    <label className="font-semibold" style={{ color: currentColors.text }}>Score: <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      value={score}
-                      onChange={(e) => setScore(e.target.value)}
-                      className="rounded-lg px-4 py-2 outline-none border transition-colors"
-                      style={{
-                        backgroundColor: currentColors.background,
-                        color: currentColors.text,
-                        borderColor: currentColors.border
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = currentColors.accent;
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = currentColors.border;
-                      }}
-                      placeholder="Enter score (e.g., 100)"
-                      min="0"
-                    />
-
-                    <label className="font-semibold" style={{ color: currentColors.text }}>Due Date: <span className="text-red-500">*</span></label>
-                    <input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="rounded-lg px-4 py-2 outline-none border transition-colors"
-                      style={{
-                        backgroundColor: currentColors.background,
-                        color: currentColors.text,
-                        borderColor: currentColors.border
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = currentColors.accent;
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = currentColors.border;
-                      }}
-                      min={new Date().toISOString().split('T')[0]}
-                    />
-
-                    {groupsConfigured ? (
-                      // View Groups section when groups are configured
-                      <div className="flex flex-col gap-3">
-                        <div className="flex justify-between items-center">
-                          <label className="font-semibold" style={{ color: currentColors.text }}>View Groups:</label>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              className="px-3 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                              onClick={() => setShowResetConfirmation(true)}
-                            >
-                              Reset
-                            </button>
-                            <button
-                              type="button"
-                              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-                              onClick={handleManualGroups}
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </div>
-                        <div className="bg-[#23272F] rounded-lg p-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {groups.filter(group => group.leader.trim() || group.members.filter(m => m.trim()).length > 0).map((group) => (
-                              <div key={group.id} className="bg-[#161A20] rounded-lg p-3">
-                                <div className="font-semibold text-blue-400 mb-2">Group {group.id}</div>
-                                <div className="space-y-1">
-                                  <div>
-                                    <span className="text-xs font-medium text-yellow-400">Leader:</span>
-                                    <div className="text-white text-sm mt-1">
-                                      {group.leader.trim() ? group.leader : 'No leader'}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-medium text-green-400">Members:</span>
-                                    <div className="text-white text-sm mt-1">
-                                      {group.members.filter(m => m.trim()).length > 0 ? (
-                                        group.members.filter(m => m.trim()).map((member, index) => (
-                                          <div key={index}>{member}</div>
-                                        ))
-                                      ) : (
-                                        'No members'
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      // Assign Groups section when groups are not configured
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-3">
-                          <label className="font-semibold" style={{ color: currentColors.text }}>Assign Groups:</label>
-                          <div className="flex items-center rounded-lg border transition-colors" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
-                            <button
-                              type="button"
-                              className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
-                              onClick={() => {
-                                const input = document.getElementById('groups-input');
-                                if (input.value > 1) input.value = parseInt(input.value) - 1;
-                              }}
-                            >
-                              -
-                            </button>
-                            <input
-                              id="groups-input"
-                              type="number"
-                              className="bg-transparent w-12 text-center outline-none text-sm"
-                              style={{
-                                color: currentColors.text
-                              }}
-                              defaultValue={1}
-                              min="1"
-                            />
-                            <button
-                              type="button"
-                              className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
-                              onClick={() => {
-                                const input = document.getElementById('groups-input');
-                                input.value = parseInt(input.value) + 1;
-                              }}
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            className="px-4 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-500 transition"
-                            onClick={handleManualGroups}
-                          >
-                            Manual
-                          </button>
-                          <button
-                            type="button"
-                            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-                            onClick={handleGenerateGroups}
-                          >
-                            Generate
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ACTION BUTTONS */}
-                <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
-                  <button
-                    className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-                    style={{
-                      backgroundColor: '#2563eb',
-                      color: '#ffffff'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = '#1d4ed8';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = '#2563eb';
-                    }}
-                    onClick={() => handleUpload("uploaded")}
-                  >
-                    {uploadTaskMutation.isLoading ? "Publishing..." : "Publish Task"}
-                  </button>
-                  <button
-                    className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-                    style={{
-                      backgroundColor: currentColors.surface,
-                      color: currentColors.text,
-                      border: `1px solid ${currentColors.border}`
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = currentColors.hover;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = currentColors.surface;
-                    }}
-                    onClick={() => handleUpload("draft")}
-                  >
-                    {draftTaskMutation.isLoading ? "Saving..." : "Save as Draft"}
-                  </button>
                 </div>
               </div>
+            </div>
+          ) : (
+            /* ================= TASK BUILDERS ================= */
+            <div>
+              {selectedTaskType === 'quiz' && (
+                <QuizBuilder
+                  currentColors={currentColors}
+                  onBack={() => {
+                    setIsCreatingTask(false);
+                    setSelectedTaskType(null);
+                    setShowTaskTypeSelection(false);
+                  }}
+                  onSave={(taskData) => handleUpload('draft', taskData)}
+                  onPublish={(taskData) => handleUpload('uploaded', taskData)}
+                  isLoading={draftTaskMutation.isLoading || uploadTaskMutation.isLoading}
+                />
+              )}
+              
+              {selectedTaskType === 'individual-activity' && (
+                <IndividualActivityBuilder
+                  currentColors={currentColors}
+                  onBack={() => {
+                    setIsCreatingTask(false);
+                    setSelectedTaskType(null);
+                    setShowTaskTypeSelection(false);
+                  }}
+                  onSave={(taskData) => handleUpload('draft', taskData)}
+                  onPublish={(taskData) => handleUpload('uploaded', taskData)}
+                  isLoading={draftTaskMutation.isLoading || uploadTaskMutation.isLoading}
+                />
+              )}
+              
+              {selectedTaskType === 'group-activity' && (
+                <GroupActivityBuilder
+                  currentColors={currentColors}
+                  onBack={() => {
+                    setIsCreatingTask(false);
+                    setSelectedTaskType(null);
+                    setShowTaskTypeSelection(false);
+                  }}
+                  onSave={(taskData) => handleUpload('draft', taskData)}
+                  onPublish={(taskData) => handleUpload('uploaded', taskData)}
+                  isLoading={draftTaskMutation.isLoading || uploadTaskMutation.isLoading}
+                />
+              )}
+              
+              {selectedTaskType === 'exam' && (
+                <ExamBuilder
+                  currentColors={currentColors}
+                  onBack={() => {
+                    setIsCreatingTask(false);
+                    setSelectedTaskType(null);
+                    setShowTaskTypeSelection(false);
+                  }}
+                  onSave={(taskData) => handleUpload('draft', taskData)}
+                  onPublish={(taskData) => handleUpload('uploaded', taskData)}
+                  isLoading={draftTaskMutation.isLoading || uploadTaskMutation.isLoading}
+                />
+              )}
             </div>
           )}
         </div>

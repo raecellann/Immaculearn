@@ -1,0 +1,521 @@
+import React, { useState } from 'react';
+import { FiArrowLeft, FiPlus, FiTrash2, FiBold, FiItalic, FiUnderline } from 'react-icons/fi';
+
+const QuizBuilder = ({ 
+  currentColors, 
+  onBack, 
+  onSave, 
+  onPublish,
+  isLoading = false 
+}) => {
+  const [quizTitle, setQuizTitle] = useState('');
+  const [instruction, setInstruction] = useState('');
+  const [score, setScore] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [timeLimit, setTimeLimit] = useState('');
+  const [attempts, setAttempts] = useState('1');
+  const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
+  const [questions, setQuestions] = useState([
+    {
+      id: 1,
+      type: 'multiple-choice',
+      question: '',
+      options: ['', '', '', ''],
+      correctAnswer: 0,
+      points: 1
+    }
+  ]);
+
+  const questionTypes = [
+    { value: 'multiple-choice', label: 'Multiple Choice' },
+    { value: 'true-false', label: 'True/False' },
+    { value: 'identification', label: 'Identification' },
+    { value: 'enumeration', label: 'Enumeration' },
+    { value: 'short-answer', label: 'Short Answer' }
+  ];
+
+  const addQuestion = () => {
+    const newQuestion = {
+      id: questions.length + 1,
+      type: 'multiple-choice',
+      question: '',
+      options: ['', '', '', ''],
+      correctAnswer: 0,
+      points: 1
+    };
+    setQuestions([...questions, newQuestion]);
+  };
+
+  const removeQuestion = (id) => {
+    if (questions.length > 1) {
+      setQuestions(questions.filter(q => q.id !== id));
+    }
+  };
+
+  const updateQuestion = (id, field, value) => {
+    setQuestions(questions.map(q => 
+      q.id === id ? { ...q, [field]: value } : q
+    ));
+  };
+
+  const updateOption = (questionId, optionIndex, value) => {
+    setQuestions(questions.map(q => {
+      if (q.id === questionId) {
+        const newOptions = [...q.options];
+        newOptions[optionIndex] = value;
+        return { ...q, options: newOptions };
+      }
+      return q;
+    }));
+  };
+
+  const renderQuestionInput = (question) => {
+    switch (question.type) {
+      case 'multiple-choice':
+        return (
+          <div className="space-y-3">
+            {question.options.map((option, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name={`correct-${question.id}`}
+                  checked={question.correctAnswer === index}
+                  onChange={() => updateQuestion(question.id, 'correctAnswer', index)}
+                  className="w-4 h-4"
+                />
+                <input
+                  type="text"
+                  value={option}
+                  onChange={(e) => updateOption(question.id, index, e.target.value)}
+                  placeholder={`Option ${index + 1}`}
+                  className="flex-1 rounded-lg px-3 py-2 outline-none border text-sm"
+                  style={{
+                    backgroundColor: currentColors.background,
+                    color: currentColors.text,
+                    borderColor: currentColors.border
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newOptions = question.options.filter((_, i) => i !== index);
+                    updateQuestion(question.id, 'options', newOptions);
+                  }}
+                  className="text-red-500 hover:text-red-400"
+                >
+                  <FiTrash2 size={16} />
+                </button>
+              </div>
+            ))}
+            {question.options.length < 6 && (
+              <button
+                type="button"
+                onClick={() => updateQuestion(question.id, 'options', [...question.options, ''])}
+                className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+              >
+                <FiPlus size={16} /> Add Option
+              </button>
+            )}
+          </div>
+        );
+
+      case 'true-false':
+        return (
+          <div className="space-y-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name={`correct-${question.id}`}
+                checked={question.correctAnswer === 'true'}
+                onChange={() => updateQuestion(question.id, 'correctAnswer', 'true')}
+                className="w-4 h-4"
+              />
+              <span style={{ color: currentColors.text }}>True</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name={`correct-${question.id}`}
+                checked={question.correctAnswer === 'false'}
+                onChange={() => updateQuestion(question.id, 'correctAnswer', 'false')}
+                className="w-4 h-4"
+              />
+              <span style={{ color: currentColors.text }}>False</span>
+            </label>
+          </div>
+        );
+
+      case 'identification':
+        return (
+          <input
+            type="text"
+            value={question.correctAnswer || ''}
+            onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
+            placeholder="Correct answer"
+            className="w-full rounded-lg px-3 py-2 outline-none border text-sm"
+            style={{
+              backgroundColor: currentColors.background,
+              color: currentColors.text,
+              borderColor: currentColors.border
+            }}
+          />
+        );
+
+      case 'enumeration':
+        return (
+          <div className="space-y-2">
+            <div className="text-sm" style={{ color: currentColors.textSecondary }}>
+              Correct answers (comma-separated):
+            </div>
+            <textarea
+              value={Array.isArray(question.correctAnswer) ? question.correctAnswer.join(', ') : question.correctAnswer || ''}
+              onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value.split(',').map(a => a.trim()))}
+              placeholder="Answer 1, Answer 2, Answer 3..."
+              className="w-full rounded-lg px-3 py-2 outline-none border text-sm h-20"
+              style={{
+                backgroundColor: currentColors.background,
+                color: currentColors.text,
+                borderColor: currentColors.border
+              }}
+            />
+          </div>
+        );
+
+      case 'short-answer':
+        return (
+          <div className="space-y-2">
+            <div className="text-sm" style={{ color: currentColors.textSecondary }}>
+              Sample correct answer (for grading reference):
+            </div>
+            <textarea
+              value={question.correctAnswer || ''}
+              onChange={(e) => updateQuestion(question.id, 'correctAnswer', e.target.value)}
+              placeholder="Enter sample answer or key points..."
+              className="w-full rounded-lg px-3 py-2 outline-none border text-sm h-20"
+              style={{
+                backgroundColor: currentColors.background,
+                color: currentColors.text,
+                borderColor: currentColors.border
+              }}
+            />
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const handleSave = (status) => {
+    const quizData = {
+      title: quizTitle,
+      instruction,
+      score: Number(score),
+      dueDate,
+      timeLimit,
+      attempts: Number(attempts),
+      showCorrectAnswers,
+      questions,
+      category: 'quiz'
+    };
+
+    if (status === 'published') {
+      onPublish(quizData);
+    } else {
+      onSave(quizData);
+    }
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      {/* BACK BUTTON */}
+      <div className="flex justify-end mb-6">
+        <button
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow transition-colors"
+          style={{
+            backgroundColor: currentColors.surface,
+            color: currentColors.text,
+            border: `1px solid ${currentColors.border}`
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = currentColors.hover;
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = currentColors.surface;
+          }}
+          onClick={onBack}
+        >
+          <FiArrowLeft size={16} />
+          <span className="hidden sm:inline">Back to Task Types</span>
+          <span className="sm:hidden">Back</span>
+        </button>
+      </div>
+
+      {/* QUIZ FORM */}
+      <div className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="text-3xl">📝</div>
+          <h1 className="text-2xl font-bold" style={{ color: currentColors.text }}>Quiz Builder</h1>
+        </div>
+
+        {/* BASIC INFO */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="space-y-4">
+            <div>
+              <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
+                Quiz Title: <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={quizTitle}
+                onChange={(e) => setQuizTitle(e.target.value)}
+                className="w-full rounded-lg px-4 py-2 outline-none border"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: currentColors.border
+                }}
+                placeholder="Enter quiz title"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
+                Total Score: <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                value={score}
+                onChange={(e) => setScore(e.target.value)}
+                className="w-full rounded-lg px-4 py-2 outline-none border"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: currentColors.border
+                }}
+                placeholder="Enter total score"
+                min="1"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
+                Due Date: <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full rounded-lg px-4 py-2 outline-none border"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: currentColors.border
+                }}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
+                Time Limit (minutes):
+              </label>
+              <input
+                type="number"
+                value={timeLimit}
+                onChange={(e) => setTimeLimit(e.target.value)}
+                className="w-full rounded-lg px-4 py-2 outline-none border"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: currentColors.border
+                }}
+                placeholder="Optional"
+                min="1"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* QUIZ SETTINGS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-4 rounded-lg" style={{ backgroundColor: currentColors.background }}>
+          <div>
+            <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
+              Attempts Allowed:
+            </label>
+            <select
+              value={attempts}
+              onChange={(e) => setAttempts(e.target.value)}
+              className="w-full rounded-lg px-3 py-2 outline-none border text-sm"
+              style={{
+                backgroundColor: currentColors.surface,
+                color: currentColors.text,
+                borderColor: currentColors.border
+              }}
+            >
+              <option value="1">1 attempt</option>
+              <option value="2">2 attempts</option>
+              <option value="3">3 attempts</option>
+              <option value="unlimited">Unlimited</option>
+            </select>
+          </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="show-answers"
+              checked={showCorrectAnswers}
+              onChange={(e) => setShowCorrectAnswers(e.target.checked)}
+              className="w-4 h-4 mr-2"
+            />
+            <label htmlFor="show-answers" className="text-sm" style={{ color: currentColors.text }}>
+              Show correct answers after submission
+            </label>
+          </div>
+        </div>
+
+        {/* INSTRUCTION */}
+        <div className="mb-8">
+          <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
+            Instructions (optional):
+          </label>
+          <textarea
+            value={instruction}
+            onChange={(e) => setInstruction(e.target.value)}
+            placeholder="Add instructions for students..."
+            className="w-full rounded-lg px-4 py-3 outline-none border h-24"
+            style={{
+              backgroundColor: currentColors.background,
+              color: currentColors.text,
+              borderColor: currentColors.border
+            }}
+          />
+        </div>
+
+        {/* QUESTIONS */}
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold" style={{ color: currentColors.text }}>Questions</h2>
+            <button
+              type="button"
+              onClick={addQuestion}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            >
+              <FiPlus size={16} /> Add Question
+            </button>
+          </div>
+
+          {questions.map((question, index) => (
+            <div key={question.id} className="border rounded-lg p-6" style={{ borderColor: currentColors.border, backgroundColor: currentColors.background }}>
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-4">
+                  <span className="font-semibold" style={{ color: currentColors.text }}>Question {index + 1}</span>
+                  <select
+                    value={question.type}
+                    onChange={(e) => updateQuestion(question.id, 'type', e.target.value)}
+                    className="rounded-lg px-3 py-1 outline-none border text-sm"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      color: currentColors.text,
+                      borderColor: currentColors.border
+                    }}
+                  >
+                    {questionTypes.map(type => (
+                      <option key={type.value} value={type.value}>{type.label}</option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm" style={{ color: currentColors.text }}>Points:</label>
+                    <input
+                      type="number"
+                      value={question.points}
+                      onChange={(e) => updateQuestion(question.id, 'points', Number(e.target.value))}
+                      className="w-16 rounded px-2 py-1 outline-none border text-sm text-center"
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        color: currentColors.text,
+                        borderColor: currentColors.border
+                      }}
+                      min="1"
+                    />
+                  </div>
+                </div>
+                {questions.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeQuestion(question.id)}
+                    className="text-red-500 hover:text-red-400"
+                  >
+                    <FiTrash2 size={18} />
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <textarea
+                  value={question.question}
+                  onChange={(e) => updateQuestion(question.id, 'question', e.target.value)}
+                  placeholder="Enter your question..."
+                  className="w-full rounded-lg px-4 py-3 outline-none border h-20"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    color: currentColors.text,
+                    borderColor: currentColors.border
+                  }}
+                />
+
+                <div>
+                  <label className="block font-medium mb-3 text-sm" style={{ color: currentColors.text }}>
+                    Correct Answer:
+                  </label>
+                  {renderQuestionInput(question)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ACTION BUTTONS */}
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
+          <button
+            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+            style={{
+              backgroundColor: currentColors.surface,
+              color: currentColors.text,
+              border: `1px solid ${currentColors.border}`
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = currentColors.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = currentColors.surface;
+            }}
+            onClick={() => handleSave('draft')}
+          >
+            {isLoading ? 'Saving...' : 'Save as Draft'}
+          </button>
+          <button
+            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+            style={{
+              backgroundColor: '#2563eb',
+              color: '#ffffff'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#1d4ed8';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#2563eb';
+            }}
+            onClick={() => handleSave('published')}
+          >
+            {isLoading ? 'Publishing...' : 'Publish Quiz'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default QuizBuilder;
