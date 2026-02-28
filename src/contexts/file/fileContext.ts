@@ -9,7 +9,7 @@ export interface FileContextType {
   resources: ResourceFile[];
   
   // Upload operations
-  uploadResource: (files: File | File[], space_uuid: string) => Promise<FileData | FileData[]>;
+  uploadResource: (files: File | File[], space_uuid: string, lesson_name: string) => Promise<FileData | FileData[]>;
   isUploading: boolean;
   uploadProgress: number;
   

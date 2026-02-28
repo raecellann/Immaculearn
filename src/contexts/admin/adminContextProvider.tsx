@@ -17,7 +17,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       const response = await adminApi.get("/admin/profile");
-      
+
       if (response.data?.success && response.data?.admin) {
         setAdmin(response.data.admin);
         setIsAuthenticated(true);
@@ -27,12 +27,10 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         setIsAuthenticated(false);
         return false;
       }
-    } catch  {
-      
+    } catch {
       setAdmin(null);
       setIsAuthenticated(false);
       return false;
-    
     }
   };
 
@@ -45,15 +43,15 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       if (response.data?.success) {
         // Set authenticated state immediately after successful login
         setIsAuthenticated(true);
-        
+
         // Set basic admin info from login response (skip profile fetch to avoid 401)
         setAdmin({
           id: response.data.admin?.id,
           email: email,
-          fullname: response.data.admin?.fullname || email.split('@')[0],
-          role: response.data.admin?.role
+          fullname: response.data.admin?.fullname || email.split("@")[0],
+          role: response.data.admin?.role,
         });
-        
+
         return true;
       }
 
@@ -68,16 +66,16 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Logout function
   const logout = async (): Promise<void> => {
-      try {
-        await adminApi.post("/auth/logout"); // API should clear refresh token cookie
-        await checkAuth();
-      } catch (err) {
-        console.error("Logout error:", err);
-      } finally {
-        setAdmin(null);
-        setIsAuthenticated(false);
-      }
-    };
+    try {
+      await adminApi.post("/auth/logout"); // API should clear refresh token cookie
+      await checkAuth();
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setAdmin(null);
+      setIsAuthenticated(false);
+    }
+  };
 
   // Refresh admin data
   const refreshAdmin = async (): Promise<void> => {
@@ -99,7 +97,11 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   };
 
   // Get admin statistics
-  const getAdminStats = async (): Promise<{ success: boolean; data?: AdminStats; message?: string }> => {
+  const getAdminStats = async (): Promise<{
+    success: boolean;
+    data?: AdminStats;
+    message?: string;
+  }> => {
     try {
       const response = await adminApi.get("/admin/stats");
       return response.data;
@@ -107,13 +109,17 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       console.error("Get admin stats error:", error);
       return {
         success: false,
-        message: "Failed to fetch admin statistics"
+        message: "Failed to fetch admin statistics",
       };
     }
   };
 
   // Get all admins
-  const getAllAdmins = async (): Promise<{ success: boolean; data?: Admin[]; message?: string }> => {
+  const getAllAdmins = async (): Promise<{
+    success: boolean;
+    data?: Admin[];
+    message?: string;
+  }> => {
     try {
       const response = await adminApi.get("/admin/all");
       return response.data;
@@ -121,13 +127,16 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       console.error("Get all admins error:", error);
       return {
         success: false,
-        message: "Failed to fetch admins"
+        message: "Failed to fetch admins",
       };
     }
   };
 
   // Update admin
-  const updateAdmin = async (adminId: string, payload: any): Promise<boolean> => {
+  const updateAdmin = async (
+    adminId: string,
+    payload: any,
+  ): Promise<boolean> => {
     try {
       setIsLoading(true);
       const response = await adminApi.put(`/admin/${adminId}`, payload);
@@ -156,7 +165,9 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Initial check on mount - only if we have a token
   useEffect(() => {
-    const token = localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken');
+    const token =
+      localStorage.getItem("adminToken") ||
+      sessionStorage.getItem("adminToken");
     if (token) {
       checkAuth();
     }

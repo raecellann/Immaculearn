@@ -107,6 +107,11 @@ const ProfFilesShared = () => {
   const [lessonName, setLessonName] = useState("");
   const [lessonNameError, setLessonNameError] = useState("");
 
+  // Upload confirmation states
+  const [showUploadConfirmation, setShowUploadConfirmation] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState([]);
+  const [pendingLessonName, setPendingLessonName] = useState("");
+
   const checkFileExists = (fileName) => {
     return resources?.some((resource) =>
       resource.name.toLowerCase().includes(fileName.toLowerCase()),
@@ -352,22 +357,17 @@ const ProfFilesShared = () => {
         alert("Maximum 5 files allowed");
         return;
       }
-      try {
-        // Check if file already exists before uploading
-        const fileExists = checkFileExists(files[0].name);
-        setFileAlreadyExists(fileExists);
 
-        await uploadResource(files, space_uuid);
-        // Refresh the file list after successful upload
-        if (currentSpace?.space_id) {
-          await refreshFiles(space_uuid);
-        }
-        // Set the last uploaded file and keep modal open to show view state
-        setLastUploadedFile(files[0]);
-        setUploadedFiles([]);
-      } catch (error) {
-        console.error("Upload failed:", error);
-      }
+      // Check if file already exists
+      const fileExists = checkFileExists(files[0].name);
+
+      // Set pending data for confirmation dialog
+      setPendingFiles(files);
+      setPendingLessonName(lessonName);
+      setFileAlreadyExists(fileExists);
+
+      // Show confirmation dialog
+      setShowUploadConfirmation(true);
     }
   };
 
@@ -378,33 +378,79 @@ const ProfFilesShared = () => {
         alert("Maximum 5 files allowed");
         return;
       }
-      try {
-        // Check if file already exists before uploading
-        const fileExists = checkFileExists(files[0].name);
-        setFileAlreadyExists(fileExists);
 
-        await uploadResource(files, space_uuid);
-        // Refresh the file list after successful upload
-        if (currentSpace?.space_uuid) {
-          await refreshFiles(space_uuid);
-        }
-        // Set the last uploaded file and keep modal open to show view state
-        setLastUploadedFile(files[0]);
-        setUploadedFiles([]);
-      } catch (error) {
-        console.error("Upload failed:", error);
-      }
+      // Check if file already exists
+      const fileExists = checkFileExists(files[0].name);
+
+      // Set pending data for confirmation dialog
+      setPendingFiles(files);
+      setPendingLessonName(lessonName);
+      setFileAlreadyExists(fileExists);
+
+      // Show confirmation dialog
+      setShowUploadConfirmation(true);
     }
+  };
+
+  const confirmUpload = async () => {
+    try {
+      // Validate lesson name if required
+      if (!pendingLessonName.trim()) {
+        setLessonNameError(
+          fileAlreadyExists
+            ? "Lesson name is required when uploading a duplicate file"
+            : "Lesson name is required",
+        );
+        setShowUploadConfirmation(false);
+        return;
+      }
+
+      // Close all popups immediately
+      setShowUploadConfirmation(false);
+      setShowCreateUploadModal(false);
+
+      // Update lesson name state
+      setLessonName(pendingLessonName);
+      setLessonNameError("");
+
+      // Start the upload with progress notification using the existing handleUploadFile function
+      await handleUploadFile(pendingFiles[0]);
+
+      // Reset pending states
+      setPendingFiles([]);
+      setPendingLessonName("");
+      setFileAlreadyExists(false);
+
+      // Clear file input
+      const fileInput = document.getElementById("file-upload");
+      if (fileInput) fileInput.value = "";
+    } catch (error) {
+      console.error("Upload failed:", error);
+      setShowUploadConfirmation(false);
+      setPendingFiles([]);
+      setPendingLessonName("");
+      setFileAlreadyExists(false);
+    }
+  };
+
+  const cancelUpload = () => {
+    // Reset all states and close confirmation dialog
+    setShowUploadConfirmation(false);
+    setPendingFiles([]);
+    setPendingLessonName("");
+    setFileAlreadyExists(false);
+
+    // Clear file input
+    const fileInput = document.getElementById("file-upload");
+    if (fileInput) fileInput.value = "";
   };
 
   const handleUploadFile = async (file, retryCount = 0) => {
     const maxRetries = 3;
     let notificationId = null;
+    let progressListener = null;
 
     try {
-      // Close the upload modal immediately when upload starts
-      setShowCreateUploadModal(false);
-
       // Show initial loading notification
       notificationId = showGlobalNotification({
         type: "loading",
@@ -422,101 +468,94 @@ const ProfFilesShared = () => {
         },
       });
 
-      // Simulate upload progress (replace with actual upload logic)
-      const simulateProgress = async () => {
-        const progressSteps = [10, 25, 50, 75, 90, 100];
+      // Set up progress listener using context's uploadProgress
+      const updateProgress = () => {
+        if (notificationId && uploadProgress > 0) {
+          updateNotificationData(notificationId, {
+            ...file,
+            progress: uploadProgress,
+            status: uploadProgress === 100 ? "processing" : "uploading",
+          });
 
-        for (const progress of progressSteps) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          // Update message based on progress
+          const message =
+            uploadProgress === 100
+              ? `Processing "${file.name}"...`
+              : `Uploading "${file.name}" - ${uploadProgress}%`;
 
-          if (notificationId) {
-            updateNotificationData(notificationId, {
-              ...file,
-              progress,
-              status: progress === 100 ? "processing" : "uploading",
-            });
+          // Update the notification message using the context function
+          updateNotificationMessage(notificationId, message);
+        }
 
-            // Update message based on progress
-            const message =
-              progress === 100
-                ? `Processing "${file.name}"...`
-                : `Uploading "${file.name}" - ${progress}%`;
-
-            // Update the notification message using the context function
-            updateNotificationMessage(notificationId, message);
-          }
+        // Continue listening until upload is complete
+        if (uploadProgress < 100 && isUploading) {
+          progressListener = setTimeout(updateProgress, 200);
         }
       };
 
-      // Start progress simulation
-      simulateProgress();
+      // Start progress monitoring
+      progressListener = setTimeout(updateProgress, 200);
 
-      // Actual file upload logic (replace with your API call)
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("space_id", currentSpace?.space_id);
-      formData.append("owner_id", user?.id);
+      // Actual file upload using file context with lesson name
+      const uploadResult = await uploadResource([file], space_uuid, lessonName);
 
-      // Simulate API call with potential failure (replace with actual API)
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      // Simulate random failure for demonstration (remove in production)
-      const shouldFail = Math.random() < 0.3; // 30% chance of failure for testing
-      if (shouldFail && retryCount < maxRetries) {
-        throw new Error(
-          `Upload interrupted (attempt ${retryCount + 1}/${maxRetries})`,
-        );
+      // Clear progress listener
+      if (progressListener) {
+        clearTimeout(progressListener);
       }
 
-      // For now, simulate success (replace with actual API response)
-      const uploadResult = { success: true, file_id: Date.now() };
+      // Refresh the file list after successful upload
+      if (currentSpace?.space_id) {
+        await refreshFiles(space_uuid);
+      }
 
-      if (uploadResult.success) {
-        // Update notification to success
-        if (notificationId) {
-          updateNotificationData(notificationId, {
-            ...file,
-            progress: 100,
-            status: "completed",
-            fileId: uploadResult.file_id,
-            completedTime: new Date().toISOString(),
-          });
-        }
-
-        // Show success notification
-        showGlobalNotification({
-          type: "success",
-          title: "Upload Complete",
-          message: `"${file.name}" has been successfully uploaded.`,
-          duration: 3000,
-          data: {
-            fileName: file.name,
-            fileId: uploadResult.file_id,
-          },
-          actions: [
-            {
-              label: "View File",
-              variant: "primary",
-              onClick: () => {
-                // Navigate to the uploaded file
-                navigate(
-                  `/prof/space/${space_uuid}/${space_name}/files/${file.name}/${uploadResult.file_id}`,
-                );
-                hideGlobalNotification();
-              },
-            },
-            {
-              label: "Close",
-              variant: "secondary",
-              onClick: () => hideGlobalNotification(),
-            },
-          ],
+      // Final progress update to success
+      if (notificationId) {
+        updateNotificationData(notificationId, {
+          ...file,
+          progress: 100,
+          status: "completed",
+          fileId: uploadResult[0]?.id || Date.now(),
+          completedTime: new Date().toISOString(),
         });
-      } else {
-        throw new Error(uploadResult.error || "Upload failed");
       }
+
+      // Show success notification
+      showGlobalNotification({
+        type: "success",
+        title: "Upload Complete",
+        message: `"${file.name}" has been successfully uploaded.`,
+        duration: 3000,
+        data: {
+          fileName: file.name,
+          fileId: uploadResult[0]?.id || Date.now(),
+        },
+        actions: [
+          {
+            label: "View File",
+            variant: "primary",
+            onClick: () => {
+              // Navigate to the uploaded file
+              navigate(
+                `/prof/space/${space_uuid}/${space_name}/files/${file.name}/${uploadResult[0]?.id || "unknown"}`,
+              );
+              hideGlobalNotification();
+            },
+          },
+          {
+            label: "Close",
+            variant: "secondary",
+            onClick: () => hideGlobalNotification(),
+          },
+        ],
+      });
     } catch (error) {
       console.error("Upload error:", error);
+
+      // Clear progress listener
+      if (progressListener) {
+        clearTimeout(progressListener);
+      }
 
       // Check if we should retry
       if (retryCount < maxRetries && error.message.includes("interrupted")) {
@@ -2084,6 +2123,179 @@ const ProfFilesShared = () => {
               >
                 <FiX size={16} />
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* UPLOAD CONFIRMATION DIALOG */}
+      {showUploadConfirmation && pendingFiles.length > 0 && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div
+            className="rounded-lg p-4 sm:p-6 max-w-md w-full"
+            style={{ backgroundColor: currentColors.surface }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3
+                className="text-lg font-semibold"
+                style={{ color: currentColors.text }}
+              >
+                {fileAlreadyExists ? "File Already Exists" : "Confirm Upload"}
+              </h3>
+              <button
+                onClick={cancelUpload}
+                className="p-1 bg-transparent transition-colors rounded-md"
+                style={{ color: currentColors.textSecondary }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = currentColors.text;
+                  e.target.style.backgroundColor = currentColors.background;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = currentColors.textSecondary;
+                  e.target.style.backgroundColor = "transparent";
+                }}
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            {/* File Preview */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="p-2 rounded-md flex items-center justify-center w-10 h-10"
+                  style={{
+                    backgroundColor: currentColors.background,
+                    border: `2px solid ${currentColors.border}`,
+                  }}
+                >
+                  <span
+                    className="text-sm font-bold"
+                    style={{ color: currentColors.text }}
+                  >
+                    {getFileTypeLetter(pendingFiles[0].name)}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p
+                    className="font-semibold truncate"
+                    style={{ color: currentColors.text }}
+                  >
+                    {pendingFiles[0].name}
+                  </p>
+                  <p
+                    className="text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    Size: {(pendingFiles[0].size / 1024).toFixed(0)}KB • Type:{" "}
+                    {pendingFiles[0].name.split(".").pop()?.toUpperCase() ||
+                      "Unknown"}
+                  </p>
+                </div>
+              </div>
+
+              {fileAlreadyExists && (
+                <div
+                  className="p-3 rounded-lg mb-4"
+                  style={{
+                    backgroundColor: "#fef2f2",
+                    border: "1px solid #fecaca",
+                  }}
+                >
+                  <p className="text-sm" style={{ color: "#dc2626" }}>
+                    ⚠️ This file has already been uploaded to the space.
+                    Uploading again will create a duplicate.
+                  </p>
+                </div>
+              )}
+
+              {/* Lesson Name Input */}
+              <div className="mb-4">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  style={{ color: currentColors.text }}
+                >
+                  Lesson Name <span style={{ color: "#ef4444" }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={pendingLessonName}
+                  onChange={(e) => setPendingLessonName(e.target.value)}
+                  placeholder="Enter lesson name"
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none border transition-colors"
+                  style={{
+                    backgroundColor: currentColors.background,
+                    color: currentColors.text,
+                    borderColor: currentColors.border,
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#3b82f6";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = currentColors.border;
+                  }}
+                />
+              </div>
+
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: currentColors.textSecondary }}
+              >
+                Are you sure you want to upload{" "}
+                <span
+                  className="font-medium"
+                  style={{ color: currentColors.text }}
+                >
+                  "{pendingFiles[0].name}"
+                </span>{" "}
+                to this space?
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelUpload}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  border: `1px solid ${currentColors.border}`,
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = currentColors.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = currentColors.background;
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmUpload}
+                disabled={!pendingLessonName.trim()}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                style={{
+                  backgroundColor: !pendingLessonName.trim()
+                    ? "#9ca3af"
+                    : "#2563eb",
+                  color: "#ffffff",
+                }}
+                onMouseEnter={(e) => {
+                  if (pendingLessonName.trim()) {
+                    e.target.style.backgroundColor = "#1d4ed8";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (pendingLessonName.trim()) {
+                    e.target.style.backgroundColor = "#2563eb";
+                  }
+                }}
+              >
+                <FiUpload size={16} />
+                {fileAlreadyExists ? "Upload Anyway" : "Confirm Upload"}
               </button>
             </div>
           </div>

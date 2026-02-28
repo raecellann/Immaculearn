@@ -18,54 +18,77 @@ import {
   CheckCircle,
   Play,
   StopCircle,
-  Info, // Add this missing import
+  Info,
+  Edit2Icon, // Add this missing import
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import AdminSidebar from "../component/adminsidebar";
+import { useAcademicMutations } from "../../hooks/useAcademicMutation";
+import { toast } from "react-toastify";
 
 const AdminAcademicTerm = () => {
   const { user } = useUser();
+  const { academicTerms, updateAcademic, createAcademic } =
+    useAcademicMutations();
+
   const navigate = useNavigate();
   const [showLogout, setShowLogout] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isShowEdit, setIsShowEdit] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTerm, setSelectedTerm] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [tempStatus, setTempStatus] = useState("");
+  const [editingTermId, setEditingTermId] = useState(null);
+
+  // const enterEditMode = (term) => {
+  //   setEditingTermId(term.id);
+  //   setTempStatus(term.status);
+  // };
+
+  // const handleSaveStatus = (termId) => {
+  //   handleStatusChange(termId, tempStatus);
+  //   setEditingTermId(null);
+  //   setTempStatus("");
+  // };
+
+  // const handleCancelEdit = () => {
+  //   setEditingTermId(null);
+  //   setTempStatus("");
+  // };
+
   // Form state for creating/editing academic term
-  const [formData, setFormData] = useState({
-    semester: "1st Semester",
-    period: "PRELIM",
-    startYear: new Date().getFullYear(),
-    status: "active", // Default to active since no upcoming option
-  });
+  const [formData, setFormData] = useState(null);
 
   const lastScrollY = useRef(0);
   const [showHeader, setShowHeader] = useState(true);
 
   // Mock data for academic terms
-  const [academicTerms, setAcademicTerms] = useState([
-    {
-      id: "1st-semester-2024-prelim",
-      name: "1st Semester",
-      period: "PRELIM",
-      schoolYear: "2024-2025",
-      status: "active",
-      createdAt: "2024-01-15T08:00:00Z",
-    },
-    {
-      id: "1st-semester-2024-midterm",
-      name: "1st Semester",
-      period: "MIDTERM",
-      schoolYear: "2024-2025",
-      status: "completed",
-      createdAt: "2024-01-15T08:00:00Z",
-    },
-  ]);
+  // const [academicTerms, setAcademicTerms] = useState([
+  //   {
+  //     id: "1st-semester-2024-prelim",
+  //     name: "1st Semester",
+  //     period: "PRELIM",
+  //     schoolYear: "2024-2025",
+  //     status: "active",
+  //     createdAt: "2024-01-15T08:00:00Z",
+  //   },
+  //   {
+  //     id: "1st-semester-2024-midterm",
+  //     name: "1st Semester",
+  //     period: "MIDTERM",
+  //     schoolYear: "2024-2025",
+  //     status: "completed",
+  //     createdAt: "2024-01-15T08:00:00Z",
+  //   },
+  // ]);
 
   // Check if there's an active term
-  const hasActiveTerm = academicTerms.some((term) => term.status === "active");
+  const hasActiveTerm = academicTerms.some(
+    (term) => term.academic_status === "active",
+  );
 
   const handleCreateAcademicTerm = () => {
     // Check if there's an active term
@@ -94,40 +117,40 @@ const AdminAcademicTerm = () => {
     setErrorMessage("");
   };
 
-  const handleEditTerm = () => {
+  const handleEditTerm = async () => {
     if (!selectedTerm) return;
 
-    // Check if trying to activate while another term is active
-    if (
-      formData.status === "active" &&
-      hasActiveTerm &&
-      selectedTerm.status !== "active"
-    ) {
-      setErrorMessage(
-        "Cannot activate this term while another term is active. Please complete the active term first.",
-      );
-      return;
+    try {
+      const academicYear = `${formData.academic_year}-${parseInt(formData.academic_year) + 1}`;
+
+      // Create payload WITHOUT academic_status
+      const payload = {
+        academic_id: selectedTerm.academic_id,
+        academic_period: formData.academic_period,
+        academic_semester: parseInt(formData.academic_semester),
+        academic_year: academicYear,
+        // academic_status is NOT included here
+      };
+
+      if (selectedTerm.academic_status !== "active") {
+        payload.academic_status = formData.academic_status;
+      }
+
+      const response = await updateAcademic.mutateAsync(payload);
+
+      if (response?.success) {
+        toast.success(response.message || "Academic term updated successfully");
+        resetForm();
+        setShowEditModal(false);
+        setSelectedTerm(null);
+        setErrorMessage("");
+      } else {
+        toast.error(response?.message || "Failed to update academic term");
+      }
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to update academic term.");
+      toast.error(err.message || "Failed to update academic term");
     }
-
-    const academicYear = `${formData.startYear}-${formData.startYear + 1}`;
-
-    const updatedTerms = academicTerms.map((term) =>
-      term.id === selectedTerm.id
-        ? {
-            ...term,
-            name: formData.semester,
-            period: formData.period,
-            schoolYear: academicYear,
-            status: formData.status,
-          }
-        : term,
-    );
-
-    setAcademicTerms(updatedTerms);
-    resetForm();
-    setShowEditModal(false);
-    setSelectedTerm(null);
-    setErrorMessage("");
   };
 
   const handleDeleteTerm = (termId) => {
@@ -166,11 +189,23 @@ const AdminAcademicTerm = () => {
 
   const openEditModal = (term) => {
     setSelectedTerm(term);
+
+    // Safely parse the start year from academic_year
+    let startYear = new Date().getFullYear(); // default value
+
+    if (term.academic_year && typeof term.academic_year === "string") {
+      const yearParts = term.academic_year.split("-");
+      if (yearParts.length > 0 && !isNaN(parseInt(yearParts[0]))) {
+        startYear = parseInt(yearParts[0]);
+      }
+    }
+
     setFormData({
-      semester: term.name,
-      period: term.period,
-      startYear: parseInt(term.schoolYear.split("-")[0]),
-      status: term.status,
+      academic_id: term.academic_id,
+      academic_period: term.academic_period,
+      academic_semester: term.academic_semester,
+      academic_year: startYear,
+      academic_status: term.academic_status,
     });
     setShowEditModal(true);
   };
@@ -186,7 +221,7 @@ const AdminAcademicTerm = () => {
   };
 
   const handleYearChange = (year) => {
-    setFormData({ ...formData, startYear: parseInt(year) });
+    setFormData({ ...formData, academic_year: parseInt(year) });
   };
 
   const getStatusBadge = (status) => {
@@ -396,43 +431,32 @@ const AdminAcademicTerm = () => {
                   <tbody>
                     {academicTerms.map((term) => (
                       <tr
-                        key={term.id}
+                        key={term.academic_id}
                         className="border-b border-[#3B4457] hover:bg-[#2A2F3A] transition-colors"
                       >
-                        <td className="px-6 py-4 text-sm">{term.name}</td>
-                        <td className="px-6 py-4 text-sm">{term.period}</td>
-                        <td className="px-6 py-4 text-sm">{term.schoolYear}</td>
                         <td className="px-6 py-4 text-sm">
-                          {getStatusBadge(term.status)}
+                          {term.academic_semester}
+                        </td>
+                        <td className="px-6 py-4 text-sm">
+                          {term.academic_period}
+                        </td>
+                        <td className="px-6 py-4 text-sm">
+                          {term.academic_year}
+                        </td>
+                        <td className="px-6 py-4 text-sm">
+                          {getStatusBadge(term.academic_status)}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-400">
-                          {new Date(term.createdAt).toLocaleDateString()}
+                          {new Date(term.created_at).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {/* Status Dropdown - Only Active and Completed */}
-                            <select
-                              value={term.status}
-                              onChange={(e) =>
-                                handleStatusChange(term.id, e.target.value)
-                              }
-                              className="bg-[#161A20] border border-[#3B4457] rounded-lg text-xs px-2 py-1 text-white focus:border-[#007AFF] focus:outline-none"
-                            >
-                              <option value="active">Active</option>
-                              <option value="completed">Completed</option>
-                            </select>
-
-                            {/* Edit Button */}
-                            <button
-                              onClick={() => openEditModal(term)}
-                              className="text-blue-400 hover:text-blue-300 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-
-                            {/* Delete Button */}
-                          </div>
+                          <button
+                            onClick={() => openEditModal(term)}
+                            className="text-blue-400 hover:text-blue-300 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -468,9 +492,12 @@ const AdminAcademicTerm = () => {
                       Semester
                     </label>
                     <select
-                      value={formData.semester}
+                      value={formData.academic_semester}
                       onChange={(e) =>
-                        setFormData({ ...formData, semester: e.target.value })
+                        setFormData({
+                          ...formData,
+                          academic_semester: e.target.value,
+                        })
                       }
                       className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
                     >
@@ -485,9 +512,12 @@ const AdminAcademicTerm = () => {
                       Period
                     </label>
                     <select
-                      value={formData.period}
+                      value={formData.academic_period}
                       onChange={(e) =>
-                        setFormData({ ...formData, period: e.target.value })
+                        setFormData({
+                          ...formData,
+                          academic_period: e.target.value,
+                        })
                       }
                       className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
                     >
@@ -504,7 +534,7 @@ const AdminAcademicTerm = () => {
                       Academic Year Start
                     </label>
                     <select
-                      value={formData.startYear}
+                      value={formData.academic_year}
                       onChange={(e) => handleYearChange(e.target.value)}
                       className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
                     >
@@ -520,7 +550,7 @@ const AdminAcademicTerm = () => {
                     <p className="text-xs text-gray-400 mt-2">
                       Academic Year:{" "}
                       <span className="text-white">
-                        {formData.startYear}-{formData.startYear + 1}
+                        {formData.academic_year}-{formData.academic_year + 1}
                       </span>
                     </p>
                   </div>
@@ -584,14 +614,17 @@ const AdminAcademicTerm = () => {
                       Semester
                     </label>
                     <select
-                      value={formData.semester}
+                      value={formData.academic_semester}
                       onChange={(e) =>
-                        setFormData({ ...formData, semester: e.target.value })
+                        setFormData({
+                          ...formData,
+                          academic_semester: e.target.value,
+                        })
                       }
                       className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
                     >
-                      <option value="1st Semester">1st Semester</option>
-                      <option value="2nd Semester">2nd Semester</option>
+                      <option value="1">1st Semester</option>
+                      <option value="2">2nd Semester</option>
                     </select>
                   </div>
 
@@ -601,9 +634,12 @@ const AdminAcademicTerm = () => {
                       Period
                     </label>
                     <select
-                      value={formData.period}
+                      value={formData.academic_period}
                       onChange={(e) =>
-                        setFormData({ ...formData, period: e.target.value })
+                        setFormData({
+                          ...formData,
+                          academic_period: e.target.value,
+                        })
                       }
                       className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
                     >
@@ -620,7 +656,7 @@ const AdminAcademicTerm = () => {
                       Academic Year Start
                     </label>
                     <select
-                      value={formData.startYear}
+                      value={formData.academic_year}
                       onChange={(e) => handleYearChange(e.target.value)}
                       className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
                     >
@@ -636,7 +672,7 @@ const AdminAcademicTerm = () => {
                     <p className="text-xs text-gray-400 mt-2">
                       Academic Year:{" "}
                       <span className="text-white">
-                        {formData.startYear}-{formData.startYear + 1}
+                        {formData.academic_year}-{formData.academic_year + 1}
                       </span>
                     </p>
                   </div>
@@ -647,18 +683,21 @@ const AdminAcademicTerm = () => {
                       Status
                     </label>
                     <select
-                      value={formData.status}
+                      value={formData.academic_status}
                       onChange={(e) =>
-                        setFormData({ ...formData, status: e.target.value })
+                        setFormData({
+                          ...formData,
+                          academic_status: e.target.value,
+                        })
                       }
                       className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
                     >
                       <option value="active">Active</option>
                       <option value="completed">Completed</option>
                     </select>
-                    {formData.status === "active" &&
+                    {formData.academic_status === "active" &&
                       hasActiveTerm &&
-                      selectedTerm.status !== "active" && (
+                      selectedTerm.academic_status !== "active" && (
                         <p className="text-xs text-red-400 mt-1">
                           Warning: Another term is currently active. Activating
                           this will deactivate the other term.

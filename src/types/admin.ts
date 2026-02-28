@@ -8,6 +8,13 @@ export interface Admin {
   updatedAt?: string;
 }
 
+export interface ApiResponse<T = any> {
+    success: boolean;
+    data?: T;
+    message?: string;
+}
+
+
 export interface AdminLoginRequest {
   email: string;
   password: string;
@@ -30,4 +37,13 @@ export interface AdminStats {
   totalSpaces: number;
   totalPosts: number;
   totalComments: number;
+}
+
+
+export interface AcademicData {
+  academic_id: number;
+  academic_period: string;
+  academic_semester: number;
+  academic_year: string;
+  academic_status: string;
 }

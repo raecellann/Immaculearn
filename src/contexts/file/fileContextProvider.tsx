@@ -57,13 +57,15 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const { data: resources = [], isLoading: resourcesLoading, error: resourcesError } = useQuery({
+  const {
+    data: resources = [],
+    isLoading: resourcesLoading,
+    error: resourcesError,
+  } = useQuery({
     queryKey: ["get-list-resources-by-space-uuid", spaceUuid],
     queryFn: async () => {
       console.log("Query executing for space_uuid:", spaceUuid);
-      return await fileService.getListResourceBySpaceUUID(
-        spaceUuid,
-      );
+      return await fileService.getListResourceBySpaceUUID(spaceUuid);
     },
     enabled: isAuthenticated && !!spaceUuid,
     staleTime: Infinity,
@@ -76,7 +78,11 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
   // Log resources error if it exists
   if (resourcesError) {
     console.error("Resources query error:", resourcesError);
-    setError(resourcesError instanceof Error ? resourcesError.message : "Failed to fetch resources");
+    setError(
+      resourcesError instanceof Error
+        ? resourcesError.message
+        : "Failed to fetch resources",
+    );
   }
 
   console.log("Query state:", {
@@ -87,13 +93,14 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
     enabled: isAuthenticated && !!spaceUuid,
     resourcesLoading,
     resourcesCount: resources.length,
-    hasError: !!resourcesError
+    hasError: !!resourcesError,
   });
 
   const uploadResource = useCallback(
     async (
       files: File | File[],
       space_uuid: string,
+      lesson_name: string,
     ): Promise<FileData | FileData[]> => {
       setIsUploading(true);
       setError(null);
@@ -118,6 +125,7 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
             const uploadedFile = await fileService.uploadResource(
               file,
               space_uuid,
+              lesson_name,
             );
             clearInterval(progressInterval);
             return uploadedFile;
@@ -225,19 +233,22 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const refreshResources = useCallback(async (space_uuid: string) => {
-    setError(null);
-    try {
-      await queryClient.invalidateQueries({
-        queryKey: ["get-list-resources-by-space-uuid", space_uuid],
-      });
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to refresh resources";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    }
-  }, [queryClient]);
+  const refreshResources = useCallback(
+    async (space_uuid: string) => {
+      setError(null);
+      try {
+        await queryClient.invalidateQueries({
+          queryKey: ["get-list-resources-by-space-uuid", space_uuid],
+        });
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to refresh resources";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
+    },
+    [queryClient],
+  );
 
   const value: FileContextType = {
     resources,
