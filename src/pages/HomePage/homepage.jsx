@@ -72,9 +72,7 @@ const HomePage1 = () => {
         .toString()
         .padStart(2, "0")}, ${now.getFullYear()} (${now.toLocaleString(
         "default",
-        {
-          weekday: "long",
-        },
+        { weekday: "long" },
       )})`,
     );
 
@@ -109,14 +107,12 @@ const HomePage1 = () => {
   // Handle delete space
   const handleDeleteSpace = async () => {
     try {
-      // Get the space UUID from showDeleteConfirm
       const spaceUuid = showDeleteConfirm;
       await deleteSpace(spaceUuid);
       setShowDeleteConfirm(null);
       setShowMenu(null);
     } catch (error) {
       console.error("Failed to delete space:", error);
-      // You could add a toast notification here if you have one
     }
   };
 
@@ -131,89 +127,22 @@ const HomePage1 = () => {
       !allSpaces.has(space.space_uuid) &&
       space.members?.some((member) => member.account_id === user?.id),
   );
-  // const sharedSpaces = friendSpaces.filter((s) => !allSpaces.has(s.space_uuid));
-
-  const courseSpaceData = [
-    {
-      title: "Thesis and Research",
-      members: "32 Students",
-      image: "src/assets/SpacesCover/thesis.jpg",
-      route: "/user-prof-space-thesis",
-    },
-    {
-      title: "Operating System",
-      members: "40 Students",
-      image: "src/assets/SpacesCover/os.jpg",
-      route: "/user-prof-space-os",
-    },
-    {
-      title: "CS-ELEC 2",
-      members: "28 Students",
-      image: "src/assets/SpacesCover/code.jpg",
-      route: "/user-prof-space-cselec2",
-    },
-    {
-      title: "Businteg",
-      members: "35 Students",
-      image: "src/assets/SpacesCover/businteg.jpg",
-      route: "/user-prof-space-businteg",
-    },
-    {
-      title: "Modtech",
-      members: "30 Students",
-      image: "src/assets/SpacesCover/modtech.jpg",
-      route: "/user-prof-space-modtech",
-    },
-    {
-      title: "Data Structure",
-      members: "41 Students",
-      image: "src/assets/SpacesCover/datastructure.jpg",
-      route: "/user-prof-space-datastructure",
-    },
-    {
-      title: "Physical Education 2",
-      members: "45 Students",
-      image: "src/assets/SpacesCover/pe.jpg",
-      route: "/user-prof-space-pe2",
-    },
-    {
-      title: "Understanding the Self",
-      members: "52 Students",
-      image: "src/assets/SpacesCover/uts.jpg",
-      route: "/user-prof-space-uts",
-    },
-    {
-      title: "MMW",
-      members: "28 Students",
-      image: "src/assets/SpacesCover/mmw.jpg",
-      route: "/user-prof-space-mmw",
-    },
-  ];
 
   const [cardsPerView, setCardsPerView] = useState(4);
 
   useEffect(() => {
     const handleResize = () => {
-      setCardsPerView(window.innerWidth >= 1024 ? 3 : 4); // 3 on laptop (lg+), 4 on tablet (md)
+      setCardsPerView(window.innerWidth >= 1024 ? 3 : 4);
     };
 
-    handleResize(); // Initial check
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const yourSlideCount = Math.max(
-    1,
-    Math.ceil(userSpaces.length / cardsPerView),
-  );
-  const friendSlideCount = Math.max(
-    1,
-    Math.ceil(sharedSpaces.length / cardsPerView),
-  );
-  const courseSlideCount = Math.max(
-    1,
-    Math.ceil(courseSpaceData.length / cardsPerView),
-  );
+  const yourSlideCount = Math.max(1, Math.ceil(userSpaces.length / cardsPerView));
+  const friendSlideCount = Math.max(1, Math.ceil(sharedSpaces.length / cardsPerView));
+  const courseSlideCount = Math.max(1, Math.ceil(courseSpaces.length / cardsPerView));
 
   return (
     <div
@@ -227,9 +156,6 @@ const HomePage1 = () => {
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
-      {/* {showLogout && (
-        
-      )} */}
 
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
@@ -245,7 +171,7 @@ const HomePage1 = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           backgroundColor: currentColors.surface,
-          color: currentColors.text
+          color: currentColors.text,
         }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -271,16 +197,22 @@ const HomePage1 = () => {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold" style={{ color: isDarkMode ? "white" : currentColors.text }}>Home</h1>
+          <h1
+            className="text-xl font-bold"
+            style={{ color: isDarkMode ? "white" : currentColors.text }}
+          >
+            Home
+          </h1>
         </div>
-        <div className="lg:hidden h-16" /> {/* spacer */}
+        <div className="lg:hidden h-16" />
+
         <div className="flex-1 flex flex-col xl:flex-row gap-6 p-4 md:p-6 lg:p-8">
           {/* CENTER COLUMN */}
           <div className="flex-1 min-w-0">
-            {/* Title and Date ABOVE the card */}
+            {/* Title and Date */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
               <h2
-                className="text-xl sm:text-2xl font-bold text-white font-grotesque"
+                className="text-xl sm:text-2xl font-bold font-grotesque"
                 style={{ color: isDarkMode ? "white" : "black" }}
               >
                 Get Productive Today!
@@ -311,21 +243,13 @@ const HomePage1 = () => {
                   </h1>
                   <p
                     className="mb-1"
-                    style={{
-                      color: isDarkMode
-                        ? currentColors.textSecondary
-                        : "#333333",
-                    }}
+                    style={{ color: isDarkMode ? currentColors.textSecondary : "#333333" }}
                   >
                     Meet your classmates and collaborate with them.
                   </p>
                   <p
                     className="mb-5"
-                    style={{
-                      color: isDarkMode
-                        ? currentColors.textSecondary
-                        : "#666666",
-                    }}
+                    style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
                   >
                     Join a space or create your own.
                   </p>
@@ -357,6 +281,7 @@ const HomePage1 = () => {
               />
             </div>
 
+            {/* Reminders (Mobile/Tablet only) */}
             <div className="xl:hidden mb-8">
               <h2
                 className="text-lg sm:text-xl font-semibold mb-3"
@@ -376,27 +301,14 @@ const HomePage1 = () => {
                     className="w-12 h-12 mx-auto mb-4"
                     style={{ color: currentColors.textSecondary }}
                   />
-                  <p
-                    className="text-sm"
-                    style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
-                    }}
-                  >
+                  <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : "black" }}>
                     No tasks created yet
                   </p>
-                  <p
-                    className="text-xs mt-2"
-                    style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
-                    }}
-                  >
+                  <p className="text-xs mt-2" style={{ color: isDarkMode ? currentColors.textSecondary : "black" }}>
                     Go to your calendar to create tasks and set reminders
                   </p>
                   <div className="mt-6">
-                    <Button2
-                      text="Go to Calendar"
-                      onClick={() => navigate("/calendar")}
-                    />
+                    <Button2 text="Go to Calendar" onClick={() => navigate("/calendar")} />
                   </div>
                 </div>
               </div>
@@ -405,15 +317,11 @@ const HomePage1 = () => {
             {/* Your Spaces */}
             <section className="mb-12">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl md:text-2xl font-semibold">
-                  Your Spaces
-                </h2>
+                <h2 className="text-xl md:text-2xl font-semibold">Your Spaces</h2>
                 <div className="flex items-center gap-3">
                   <button
                     disabled={slideIndexYourSpace === 0}
-                    onClick={() =>
-                      setSlideIndexYourSpace((p) => Math.max(0, p - 1))
-                    }
+                    onClick={() => setSlideIndexYourSpace((p) => Math.max(0, p - 1))}
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
                     style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
@@ -421,11 +329,7 @@ const HomePage1 = () => {
                   </button>
                   <button
                     disabled={slideIndexYourSpace >= yourSlideCount - 1}
-                    onClick={() =>
-                      setSlideIndexYourSpace((p) =>
-                        Math.min(yourSlideCount - 1, p + 1),
-                      )
-                    }
+                    onClick={() => setSlideIndexYourSpace((p) => Math.min(yourSlideCount - 1, p + 1))}
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
                     style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
@@ -455,89 +359,75 @@ const HomePage1 = () => {
                 <div className="relative overflow-hidden">
                   <div
                     className="flex transition-transform duration-500 ease-out"
-                    style={{
-                      transform: `translateX(-${slideIndexYourSpace * 100}%)`,
-                      backgroundColor: isDarkMode ? "" : "white",
-                    }}
+                    style={{ transform: `translateX(-${slideIndexYourSpace * 100}%)` }}
                   >
                     {Array.from({ length: yourSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
                         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full h-full"
                       >
-                        {userSpaces
-                          .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
-                          .map((space) => (
+                        {userSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
+                          <div
+                            key={space.space_uuid}
+                            className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative h-full"
+                            style={{
+                              backgroundColor: isDarkMode ? "rgb(27, 31, 38)" : "white",
+                              border: isDarkMode ? "none" : "1px solid black",
+                            }}
+                          >
                             <div
-                              key={space.space_uuid}
-                              className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
-                              style={{
-                                backgroundColor: isDarkMode ? "rgb(27, 31, 38)" : "white",
-                                border: isDarkMode ? "none" : "1px solid black",
-                              }}
+                              onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
+                              className="cursor-pointer"
                             >
-                              <div
-                                onClick={() =>
-                                  navigate(
-                                    `/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`,
-                                  )
-                                }
-                                className="cursor-pointer"
-                              >
-                                <SpaceCover
-                                  image={space.image}
-                                  name={space.space_name}
-                                  className="w-full flex-shrink-0 aspect-[3/2]"
-                                />
-                                <div className="p-4 flex flex-col justify-between flex-grow">
-                                  <h3 className="font-medium truncate">
-                                    {capitalizeWords(space.space_name)}'s Space
-                                  </h3>
-                                  <p className="text-gray-500 text-xs mt-1">
-                                    Last active • just now
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Three dots menu */}
-                              <div className="absolute top-2 right-2 menu-container">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowMenu(
-                                      showMenu === space.space_uuid
-                                        ? null
-                                        : space.space_uuid,
-                                    );
-                                  }}
-                                  className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  style={{ color: currentColors.text }}
-                                >
-                                  <MoreVertical className="w-4 h-4" />
-                                </button>
-
-                                {showMenu === space.space_uuid && (
-                                  <div
-                                    className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]"
-                                    style={{
-                                      backgroundColor: currentColors.surface,
-                                      border: `1px solid ${currentColors.border}`,
-                                    }}
-                                  >
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowDeleteConfirm(space.space_uuid);
-                                      }}
-                                      className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
-                                    >
-                                      Delete Space
-                                    </button>
-                                  </div>
-                                )}
+                              <SpaceCover
+                                image={space.image}
+                                name={space.space_name}
+                                className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
+                              />
+                              <div className="p-4 flex flex-col justify-between flex-grow">
+                                <h3 className="font-medium truncate">
+                                  {capitalizeWords(space.space_name)}'s Space
+                                </h3>
+                                <p className="text-gray-500 text-xs mt-1">
+                                  Last active • just now
+                                </p>
                               </div>
                             </div>
-                          ))}
+
+                            {/* Three dots menu */}
+                            <div className="absolute top-2 right-2 menu-container">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowMenu(showMenu === space.space_uuid ? null : space.space_uuid);
+                                }}
+                                className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+
+                              {showMenu === space.space_uuid && (
+                                <div
+                                  className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]"
+                                  style={{
+                                    backgroundColor: currentColors.surface,
+                                    border: `1px solid ${currentColors.border}`,
+                                  }}
+                                >
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowDeleteConfirm(space.space_uuid);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                                  >
+                                    Delete Space
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>
@@ -548,15 +438,11 @@ const HomePage1 = () => {
             {/* Course Spaces */}
             <section className="mb-12">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl md:text-2xl font-semibold">
-                  Course Spaces
-                </h2>
+                <h2 className="text-xl md:text-2xl font-semibold">Course Spaces</h2>
                 <div className="flex items-center gap-3">
                   <button
                     disabled={slideIndexCourseSpace === 0}
-                    onClick={() =>
-                      setSlideIndexCourseSpace((p) => Math.max(0, p - 1))
-                    }
+                    onClick={() => setSlideIndexCourseSpace((p) => Math.max(0, p - 1))}
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
                     style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
@@ -564,11 +450,7 @@ const HomePage1 = () => {
                   </button>
                   <button
                     disabled={slideIndexCourseSpace >= courseSlideCount - 1}
-                    onClick={() =>
-                      setSlideIndexCourseSpace((p) =>
-                        Math.min(courseSlideCount - 1, p + 1),
-                      )
-                    }
+                    onClick={() => setSlideIndexCourseSpace((p) => Math.min(courseSlideCount - 1, p + 1))}
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
                     style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
@@ -598,111 +480,86 @@ const HomePage1 = () => {
                 <div className="relative overflow-hidden">
                   <div
                     className="flex transition-transform duration-500 ease-out"
-                    style={{
-                      transform: `translateX(-${slideIndexCourseSpace * 100}%)`,
-                    }}
+                    style={{ transform: `translateX(-${slideIndexCourseSpace * 100}%)` }}
                   >
                     {Array.from({ length: courseSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
                         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full h-full"
                       >
-                        {courseSpaces
-                          ?.slice(idx * cardsPerView, (idx + 1) * cardsPerView)
-                          .map((course, i) => (
+                        {courseSpaces?.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((course, i) => (
+                          <div
+                            key={i}
+                            className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative h-full"
+                            style={{
+                              backgroundColor: isDarkMode ? "rgb(27, 31, 38)" : "white",
+                              border: isDarkMode ? "none" : "1px solid black",
+                            }}
+                          >
                             <div
-                              key={i}
-                              className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
-                              style={{
-                                backgroundColor: isDarkMode ? "rgb(27, 31, 38)" : "white",
-
-                                border: isDarkMode ? "none" : "1px solid black",
-                              }}
+                              onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
+                              className="cursor-pointer"
                             >
-                              <div
-                                onClick={() =>
-                                  navigate(
-                                    `/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`,
-                                  )
-                                }
-                                className="cursor-pointer"
-                              >
-                                <div className="relative">
-                                  <SpaceCover
-                                    image={course.image}
-                                    name={course.space_name}
-                                    className="w-full flex-shrink-0 aspect-[3/2]"
-                                  />
-                                </div>
-                                <div className="p-4">
-                                  <h3 className="font-medium truncate">
-                                    {capitalizeWords(course.space_name)}'s Space
-                                  </h3>
-                                  <p className="text-gray-400 text-xs mt-1">
-                                    {course.members
-                                      ?.filter((m) => m.role === "creator")
-                                      .map((m) => (
-                                        <span key={m.account_id}>
-                                          {m.account_id === user?.id
-                                            ? `You • ` +
-                                              (course.members?.length - 1) +
-                                              " Students"
-                                            : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])} • ` +
-                                              (course.members?.length - 1) +
-                                              " Students"}
-                                        </span>
-                                      ))}
-                                  </p>
-                                  <p className="text-gray-500 text-xs mt-1">
-                                    {course.space_day} (
-                                    {`${course.space_time_start} - ${course.space_time_end}`}
-                                    )
-                                  </p>
-                                  <p className="text-gray-500 text-xs mt-1">
-                                    Opened just now
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Three dots menu */}
-                              <div className="absolute top-2 right-2 menu-container">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowMenu(
-                                      showMenu === course.space_uuid
-                                        ? null
-                                        : course.space_uuid,
-                                    );
-                                  }}
-                                  className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  style={{ color: currentColors.text }}
-                                >
-                                  <MoreVertical className="w-4 h-4" />
-                                </button>
-
-                                {showMenu === course.space_uuid && (
-                                  <div
-                                    className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]"
-                                    style={{
-                                      backgroundColor: currentColors.surface,
-                                      border: `1px solid ${currentColors.border}`,
-                                    }}
-                                  >
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowLeaveConfirm(course.space_uuid);
-                                      }}
-                                      className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
-                                    >
-                                      Leave Space
-                                    </button>
-                                  </div>
-                                )}
+                              <SpaceCover
+                                image={course.image}
+                                name={course.space_name}
+                                className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
+                              />
+                              <div className="p-4">
+                                <h3 className="font-medium truncate">
+                                  {capitalizeWords(course.space_name)}'s Space
+                                </h3>
+                                <p className="text-gray-400 text-xs mt-1">
+                                  {course.members
+                                    ?.filter((m) => m.role === "creator")
+                                    .map((m) => (
+                                      <span key={m.account_id}>
+                                        {m.account_id === user?.id
+                                          ? `You • ` + (course.members?.length - 1) + " Students"
+                                          : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])} • ` + (course.members?.length - 1) + " Students"}
+                                      </span>
+                                    ))}
+                                </p>
+                                <p className="text-gray-500 text-xs mt-1">
+                                  {course.space_day} ({`${course.space_time_start} - ${course.space_time_end}`})
+                                </p>
                               </div>
                             </div>
-                          ))}
+
+                            {/* Three dots menu */}
+                            <div className="absolute top-2 right-2 menu-container">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowMenu(showMenu === course.space_uuid ? null : course.space_uuid);
+                                }}
+                                className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+
+                              {showMenu === course.space_uuid && (
+                                <div
+                                  className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]"
+                                  style={{
+                                    backgroundColor: currentColors.surface,
+                                    border: `1px solid ${currentColors.border}`,
+                                  }}
+                                >
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowLeaveConfirm(course.space_uuid);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                                  >
+                                    Leave Space
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>
@@ -713,15 +570,11 @@ const HomePage1 = () => {
             {/* Friends Spaces */}
             <section className="mb-12">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl md:text-2xl font-semibold">
-                  Friends Spaces
-                </h2>
+                <h2 className="text-xl md:text-2xl font-semibold">Friends Spaces</h2>
                 <div className="flex items-center gap-3">
                   <button
                     disabled={slideIndexFriendsSpace === 0}
-                    onClick={() =>
-                      setSlideIndexFriendsSpace((p) => Math.max(0, p - 1))
-                    }
+                    onClick={() => setSlideIndexFriendsSpace((p) => Math.max(0, p - 1))}
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
                     style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
@@ -729,11 +582,7 @@ const HomePage1 = () => {
                   </button>
                   <button
                     disabled={slideIndexFriendsSpace >= friendSlideCount - 1}
-                    onClick={() =>
-                      setSlideIndexFriendsSpace((p) =>
-                        Math.min(friendSlideCount - 1, p + 1),
-                      )
-                    }
+                    onClick={() => setSlideIndexFriendsSpace((p) => Math.min(friendSlideCount - 1, p + 1))}
                     className="text-gray-400 hover:text-white disabled:opacity-40 text-2xl px-2"
                     style={{ color: isDarkMode ? "#9ca3af" : "black" }}
                   >
@@ -763,91 +612,75 @@ const HomePage1 = () => {
                 <div className="relative overflow-hidden">
                   <div
                     className="flex transition-transform duration-500 ease-out"
-                    style={{
-                      transform: `translateX(-${slideIndexFriendsSpace * 100}%)`,
-                    }}
+                    style={{ transform: `translateX(-${slideIndexFriendsSpace * 100}%)` }}
                   >
                     {Array.from({ length: friendSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
                         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0 h-full"
                       >
-                        {sharedSpaces
-                          .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
-                          .map((space) => (
+                        {sharedSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
+                          <div
+                            key={space.space_uuid}
+                            className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative h-full"
+                            style={{
+                              backgroundColor: isDarkMode ? "rgb(27, 31, 38)" : "white",
+                              border: isDarkMode ? "none" : "1px solid black",
+                            }}
+                          >
                             <div
-                              key={space.space_uuid}
-                              className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform group relative h-full"
-                              style={{
-                                backgroundColor: isDarkMode ? "rgb(27, 31, 38)" : "white",
-                                border: isDarkMode ? "none" : "1px solid black",
-                              }}
+                              onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
+                              className="cursor-pointer"
                             >
-                              <div
-                                onClick={() =>
-                                  navigate(
-                                    `/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`,
-                                  )
-                                }
-                                className="cursor-pointer"
-                              >
-                                <SpaceCover
-                                  image={space.background_img || space.image}
-                                  name={space.space_name}
-                                  className="w-full flex-shrink-0 aspect-[3/2]"
-                                />
-                                <div className="p-4">
-                                  <h3 className="font-medium truncate">
-                                    {capitalizeWords(space.space_name)}'s Space
-                                  </h3>
-                                  <p className="text-gray-400 text-xs mt-1">
-                                    {space.members?.length || 0} Members
-                                  </p>
-                                  <p className="text-gray-500 text-xs mt-1">
-                                    Opened just now
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Three dots menu */}
-                              <div className="absolute top-2 right-2 menu-container">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowMenu(
-                                      showMenu === space.space_uuid
-                                        ? null
-                                        : space.space_uuid,
-                                    );
-                                  }}
-                                  className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  style={{ color: currentColors.text }}
-                                >
-                                  <MoreVertical className="w-4 h-4" />
-                                </button>
-
-                                {showMenu === space.space_uuid && (
-                                  <div
-                                    className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]"
-                                    style={{
-                                      backgroundColor: currentColors.surface,
-                                      border: `1px solid ${currentColors.border}`,
-                                    }}
-                                  >
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowLeaveConfirm(space.space_uuid);
-                                      }}
-                                      className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
-                                    >
-                                      Leave Space
-                                    </button>
-                                  </div>
-                                )}
+                              <SpaceCover
+                                image={space.background_img || space.image}
+                                name={space.space_name}
+                                className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
+                              />
+                              <div className="p-4">
+                                <h3 className="font-medium truncate">
+                                  {capitalizeWords(space.space_name)}'s Space
+                                </h3>
+                                <p className="text-gray-400 text-xs mt-1">
+                                  {space.members?.length || 0} Members
+                                </p>
                               </div>
                             </div>
-                          ))}
+
+                            {/* Three dots menu */}
+                            <div className="absolute top-2 right-2 menu-container">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowMenu(showMenu === space.space_uuid ? null : space.space_uuid);
+                                }}
+                                className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+
+                              {showMenu === space.space_uuid && (
+                                <div
+                                  className="absolute top-8 right-0 rounded-lg shadow-lg z-10 min-w-[120px]"
+                                  style={{
+                                    backgroundColor: currentColors.surface,
+                                    border: `1px solid ${currentColors.border}`,
+                                  }}
+                                >
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowLeaveConfirm(space.space_uuid);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                                  >
+                                    Leave Space
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>
@@ -860,9 +693,7 @@ const HomePage1 = () => {
           </div>
 
           {/* RIGHT SIDEBAR – visible on xl+ */}
-          {/* RIGHT CONTENT - Reminders (Desktop Only - Sticky Sidebar) */}
           <div className="hidden xl:block w-80 mr-6 flex-shrink-0 self-start sticky top-6 flex flex-col gap-6">
-            {/* Reminders Section */}
             <div
               className="rounded-xl p-6 flex-1"
               style={{
@@ -882,33 +713,21 @@ const HomePage1 = () => {
                     className="w-12 h-12 mx-auto mb-4"
                     style={{ color: currentColors.textSecondary }}
                   />
-                  <p
-                    className="text-sm"
-                    style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
-                    }}
-                  >
+                  <p className="text-sm" style={{ color: isDarkMode ? currentColors.textSecondary : "black" }}>
                     No tasks created yet
                   </p>
-                  <p
-                    className="text-xs mt-2"
-                    style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
-                    }}
-                  >
+                  <p className="text-xs mt-2" style={{ color: isDarkMode ? currentColors.textSecondary : "black" }}>
                     Go to your calendar to create tasks and set reminders
                   </p>
                   <div className="mt-6">
-                    <Button2
-                      text="Go to Calendar"
-                      onClick={() => navigate("/calendar")}
-                    />
+                    <Button2 text="Go to Calendar" onClick={() => navigate("/calendar")} />
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
         {/* Delete Confirmation Modal */}
         <DeleteConfirmationDialog
           isOpen={!!showDeleteConfirm}
@@ -919,6 +738,7 @@ const HomePage1 = () => {
             friendSpaces.find((s) => s.space_uuid === showDeleteConfirm)
           }
         />
+
         {/* Leave Confirmation Modal */}
         {showLeaveConfirm && (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
@@ -937,9 +757,7 @@ const HomePage1 = () => {
               </h3>
               <p
                 className="text-sm mb-6"
-                style={{
-                  color: isDarkMode ? currentColors.textSecondary : "black",
-                }}
+                style={{ color: isDarkMode ? currentColors.textSecondary : "black" }}
               >
                 Are you sure you want to leave this space? You'll need to be
                 re-invited to join again.
@@ -954,7 +772,6 @@ const HomePage1 = () => {
                 </button>
                 <button
                   onClick={() => {
-                    // TODO: implement actual leave logic
                     console.log("Leaving:", showLeaveConfirm);
                     setShowLeaveConfirm(null);
                     setShowMenu(null);
@@ -968,6 +785,7 @@ const HomePage1 = () => {
             </div>
           </div>
         )}
+
         {showLogout && <Logout onClose={() => setShowLogout(false)} />}
       </div>
     </div>

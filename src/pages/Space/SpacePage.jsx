@@ -45,27 +45,23 @@ const SpacePage = () => {
   // Handle delete space
   const handleDeleteSpace = async () => {
     try {
-      // Get the space UUID from showDeleteConfirm
       const spaceUuid = showDeleteConfirm;
       await deleteSpace(spaceUuid);
       setShowDeleteConfirm(null);
       setShowMenu(null);
     } catch (error) {
       console.error("Failed to delete space:", error);
-      // You could add a toast notification here if you have one
     }
   };
 
   const handleLeaveSpace = async () => {
     try {
-      // Get the space UUID from showDeleteConfirm
       const spaceUuid = showLeaveConfirm;
       await leaveSpace(spaceUuid);
       setShowLeaveConfirm(null);
       setShowMenu(null);
     } catch (error) {
       console.error("Failed to delete space:", error);
-      // You could add a toast notification here if you have one
     }
   };
 
@@ -98,7 +94,7 @@ const SpacePage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
 
-  // Join Space Functionality (from sample)
+  // Join Space Functionality
   const handleJoinRequestSubmit = async () => {
     if (!joinCode.trim()) {
       alert("Please enter a valid join code");
@@ -124,7 +120,7 @@ const SpacePage = () => {
     }
   };
 
-  // Filter shared spaces (same logic as sample)
+  // Filter shared spaces
   const allSpaces = new Set([
     ...(userSpaces || []).map((space) => space.space_uuid),
     ...(courseSpaces || []).map((space) => space.space_uuid),
@@ -135,9 +131,6 @@ const SpacePage = () => {
       !allSpaces.has(space.space_uuid) &&
       space.members?.some((member) => member.account_id === user?.id),
   );
-
-  // Course Spaces Data (from homepage logic)
-  // const courseSpaces = courseSpaces?.filter((s) => !allSpaces.has(s.space_uuid));
 
   return (
     <div
@@ -285,7 +278,7 @@ const SpacePage = () => {
             </div>
           </div>
 
-          {/* YOUR SPACES - Dynamic */}
+          {/* YOUR SPACES */}
           <div className="mb-12">
             <h2
               className="text-2xl font-bold mb-4"
@@ -299,7 +292,7 @@ const SpacePage = () => {
                 userSpaces.map((space, i) => (
                   <div
                     key={i}
-                    className="rounded-lg overflow-hidden hover:shadow-lg transition group cursor-pointer relative"
+                    className="group rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer relative"
                     style={{
                       backgroundColor: isDarkMode
                         ? "#1E242E"
@@ -328,7 +321,7 @@ const SpacePage = () => {
                         <SpaceCover
                           image={space.image}
                           name={space.space_name}
-                          className="w-full h-full"
+                          className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                         />
                       </div>
 
@@ -361,7 +354,7 @@ const SpacePage = () => {
                               : space.space_uuid,
                           );
                         }}
-                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -401,7 +394,7 @@ const SpacePage = () => {
             </div>
           </div>
 
-          {/* Course Spaces - Dynamic Data */}
+          {/* COURSE SPACES */}
           <div className="mb-12">
             <h2
               className="text-2xl font-bold mb-4"
@@ -415,10 +408,11 @@ const SpacePage = () => {
                 courseSpaces.map((course, i) => (
                   <div
                     key={i}
+                    className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
                     style={{
-                      backgroundColor: isDarkMode ? "#374151" : "#e5e7eb",
+                      backgroundColor: isDarkMode ? "#1E242E" : currentColors.surface,
+                      border: isDarkMode ? "1px solid #3B4457" : "1px solid black",
                     }}
-                    className="rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
                   >
                     <div
                       onClick={() =>
@@ -429,23 +423,29 @@ const SpacePage = () => {
                       className="cursor-pointer"
                     >
                       <div
-                        className="relative h-48"
+                        className="relative h-40 overflow-hidden"
                         style={{
-                          backgroundColor: isDarkMode ? "#374151" : "white",
+                          backgroundColor: isDarkMode ? "#374151" : "#e5e7eb",
                         }}
                       >
                         <SpaceCover
                           image={course.background_img || course.image}
                           name={course.space_name}
-                          className="w-full h-full"
+                          className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                         />
                       </div>
 
                       <div className="p-4">
-                        <h3 className="font-semibold text-sm mb-1 truncate">
+                        <h3
+                          className="font-semibold text-sm truncate"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
                           {capitalizeWords(course.space_name)}'s Space
                         </h3>
-                        <p className="text-gray-400 text-xs mb-1">
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: isDarkMode ? "#9ca3af" : "#666666" }}
+                        >
                           {course.members
                             ?.filter((m) => m.role === "creator")
                             .map((m) => (
@@ -465,15 +465,7 @@ const SpacePage = () => {
                           className="text-xs mt-1"
                           style={{ color: isDarkMode ? "#6b7280" : "#4b5563" }}
                         >
-                          {course.space_day} (
-                          {`${course.space_time_start} - ${course.space_time_end}`}
-                          )
-                        </p>
-                        <p
-                          className="text-xs mb-2"
-                          style={{ color: isDarkMode ? "#6b7280" : "#4b5563" }}
-                        >
-                          Opened just now
+                          {course.space_day} ({`${course.space_time_start} - ${course.space_time_end}`})
                         </p>
                       </div>
                     </div>
@@ -489,7 +481,7 @@ const SpacePage = () => {
                               : course.space_uuid,
                           );
                         }}
-                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -529,7 +521,7 @@ const SpacePage = () => {
             </div>
           </div>
 
-          {/* FRIENDS SPACES - Dynamic */}
+          {/* FRIENDS SPACES */}
           <div className="mb-12">
             <h2
               className="text-2xl font-bold mb-4"
@@ -543,7 +535,11 @@ const SpacePage = () => {
                 sharedSpaces.map((space, i) => (
                   <div
                     key={i}
-                    className="bg-[#1E242E] rounded-xl overflow-hidden hover:shadow-lg transition group cursor-pointer border border-[#3B4457] relative"
+                    className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
+                    style={{
+                      backgroundColor: isDarkMode ? "#1E242E" : currentColors.surface,
+                      border: isDarkMode ? "1px solid #3B4457" : "1px solid black",
+                    }}
                   >
                     <div
                       role="button"
@@ -556,7 +552,7 @@ const SpacePage = () => {
                       className="cursor-pointer"
                     >
                       <div
-                        className="relative h-40"
+                        className="relative h-40 overflow-hidden"
                         style={{
                           backgroundColor: isDarkMode ? "#374151" : "#e5e7eb",
                         }}
@@ -564,15 +560,21 @@ const SpacePage = () => {
                         <SpaceCover
                           image={space.image}
                           name={space.space_name}
-                          className="w-full h-full"
+                          className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                         />
                       </div>
 
                       <div className="p-4">
-                        <h3 className="font-semibold text-sm mb-1 truncate">
+                        <h3
+                          className="font-semibold text-sm truncate"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
                           {capitalizeWords(space.space_name) + "'s Space"}
                         </h3>
-                        <p className="text-gray-400 text-xs mb-1">
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: isDarkMode ? "#9ca3af" : "#666666" }}
+                        >
                           {space.members != null
                             ? `${space?.members?.length} Members`
                             : "No members"}
@@ -591,7 +593,7 @@ const SpacePage = () => {
                               : space.space_uuid,
                           );
                         }}
-                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -642,54 +644,6 @@ const SpacePage = () => {
             friendSpaces.find((s) => s.space_uuid === showDeleteConfirm)
           }
         />
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-            <div
-              className="rounded-xl p-6 max-w-sm w-full"
-              style={{
-                backgroundColor: currentColors.surface,
-                border: `1px solid ${currentColors.border}`,
-              }}
-            >
-              <h3
-                className="text-lg font-semibold mb-3"
-                style={{ color: isDarkMode ? "white" : "black" }}
-              >
-                Delete Space
-              </h3>
-              <p
-                className="text-sm mb-6"
-                style={{
-                  color: isDarkMode ? currentColors.textSecondary : "black",
-                }}
-              >
-                Are you sure you want to delete this space? This action cannot
-                be undone.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setShowDeleteConfirm(null)}
-                  className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    // TODO: implement actual delete logic
-                    console.log("Deleting:", showDeleteConfirm);
-                    setShowDeleteConfirm(null);
-                    setShowMenu(null);
-                  }}
-                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-sm"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Leave Confirmation Modal */}
         {showLeaveConfirm && (

@@ -33,14 +33,12 @@ const ProfHomePage = () => {
   // Handle delete space
   const handleDeleteSpace = async () => {
     try {
-      // Get the space UUID from showDeleteConfirm
       const spaceUuid = showDeleteConfirm;
       await deleteSpace(spaceUuid);
       setShowDeleteConfirm(null);
       setShowMenu(null);
     } catch (error) {
       console.error("Failed to delete space:", error);
-      // You could add a toast notification here if you have one
     }
   };
 
@@ -51,11 +49,6 @@ const ProfHomePage = () => {
     setShowMenu(null);
   };
 
-  // const [currentDate, setCurrentDate] = useState('');
-  // const [greeting, setGreeting] = useState('');
-  // const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  // const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  // const [today, setToday] = useState(new Date());
   const [slideIndexYourSpace, setSlideIndexYourSpace] = useState(0);
   const [slideIndexSpaces, setSlideIndexSpaces] = useState(0);
   const [showMenu, setShowMenu] = useState(null);
@@ -74,20 +67,15 @@ const ProfHomePage = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-        // scrolling down
         setShowHeader(false);
       } else {
-        // scrolling up
         setShowHeader(true);
       }
-
       lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -110,10 +98,10 @@ const ProfHomePage = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setCardsPerView(window.innerWidth >= 1024 ? 3 : 4); // 3 on laptop (lg+), 4 on tablet (md)
+      setCardsPerView(window.innerWidth >= 1024 ? 3 : 4);
     };
 
-    handleResize(); // Initial check
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -282,7 +270,7 @@ const ProfHomePage = () => {
                         {userSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
-                            className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group relative"
+                            className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
                             style={{ 
                               backgroundColor: currentColors.surface,
                               border: isDarkMode ? 'none' : '1px solid black'
@@ -295,7 +283,7 @@ const ProfHomePage = () => {
                               <SpaceCover
                                 image={space.image}
                                 name={space.space_name}
-                                className="w-full flex-shrink-0 aspect-[3/2]"
+                                className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
                               />
                               <div className="p-4 flex flex-col justify-between flex-grow">
                                 <h3 className="font-medium truncate">
@@ -350,7 +338,7 @@ const ProfHomePage = () => {
               )}
             </div>
 
-            {/* Spaces Section */}
+            {/* Course Spaces Section */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-3">
                 <h2 className="text-lg sm:text-xl font-semibold" style={{ color: isDarkMode ? currentColors.text : 'black' }}>Course Spaces</h2>
@@ -394,7 +382,7 @@ const ProfHomePage = () => {
                         {sharedSpaces.slice(idx * cardsPerView, (idx + 1) * cardsPerView).map((space) => (
                           <div
                             key={space.space_uuid}
-                            className="rounded-xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer group relative"
+                            className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
                             style={{ 
                               backgroundColor: currentColors.surface,
                               border: isDarkMode ? 'none' : '1px solid black'
@@ -407,16 +395,15 @@ const ProfHomePage = () => {
                               <SpaceCover
                                 image={space.background_img || space.image}
                                 name={space.space_name}
-                                className="w-full flex-shrink-0 aspect-[3/2]"
+                                className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
                               />
                               <div className="p-4 flex flex-col justify-between flex-grow">
                                 <h3 className="font-medium truncate">
                                   {capitalizeWords(space.space_name)}'s Space
                                 </h3>
                                 <p className="text-gray-400 text-xs mt-1">
-                                  {(space.members?.length -1) || 0} Students
+                                  {(space.members?.length - 1) || 0} Students
                                 </p>
-                                <p className="text-gray-500 text-xs mt-1">Opened just now</p>
                               </div>
                             </div>
                             {/* Three dots menu */}
@@ -522,7 +509,6 @@ const ProfHomePage = () => {
                   </button>
                   <button
                     onClick={() => {
-                      // Handle leave action here
                       console.log('Space left:', showLeaveConfirm);
                       setShowLeaveConfirm(null);
                       setShowMenu(null);

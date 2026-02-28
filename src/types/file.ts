@@ -19,6 +19,7 @@ export interface FileData {
     mimetype: string;
     size: number;
     status: "local" | "drafted" | "uploaded";
+    lesson_name?: string;
     created_at?: string;
 }
 

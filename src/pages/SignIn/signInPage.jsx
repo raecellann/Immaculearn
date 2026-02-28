@@ -1,39 +1,85 @@
 import React, { useEffect, useState } from "react";
 import InputField from "@/pages/component/InputField";
 import Button from "@/pages/component/Button";
-import { Mail } from "lucide-react";
+import { Mail, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { useUser } from "../../contexts/user/useUser";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 
+// ─── Validation helpers ────────────────────────────────────────────────────────
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const validateLoginForm = (email, password) => {
+  const errors = {};
+  if (!email.trim()) {
+    errors.email = "Email address is required";
+  } else if (!EMAIL_REGEX.test(email.trim())) {
+    errors.email = "Please enter a valid email address";
+  }
+  if (!password) {
+    errors.password = "Password is required";
+  }
+  return errors;
+};
+
+// ─── Inline field error component ─────────────────────────────────────────────
+const FieldError = ({ message }) =>
+  message ? (
+    <div className="flex items-center gap-1.5 mt-1">
+      <AlertCircle size={13} style={{ color: "#ef4444", flexShrink: 0 }} />
+      <p className="text-red-500 text-xs">{message}</p>
+    </div>
+  ) : null;
+
+// ─── Main component ────────────────────────────────────────────────────────────
 const LoginPage = () => {
   const { isAuthenticated, user, isLoading, checkAuth, login } = useUser();
-  const [email, setEmail] = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [emailError, setEmailError] = useState(false);
+  const [error, setError]       = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Field-level errors
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
+  // Track whether a field has been touched (blurred) for eager validation
+  const [touched, setTouched]         = useState({ email: false, password: false });
 
   const navigate = useNavigate();
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  // Validate a single field on-the-fly whenever value/touched changes
+  const getFieldError = (name, val) => {
+    if (name === "email") {
+      if (!val.trim()) return "Email address is required";
+      if (!EMAIL_REGEX.test(val.trim())) return "Please enter a valid email address";
+    }
+    if (name === "password") {
+      if (!val) return "Password is required";
+    }
+    return "";
   };
 
+  const handleBlur = (name) => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: getFieldError(name, name === "email" ? email : password),
+    }));
+  };
+
+  // ── Submit ──
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate email
-    if (!email) {
-      toast.error("Email is required");
-      setEmailError(true);
-      return;
-    }
-    
-    if (!validateEmail(email)) {
-      toast.error("Please enter a valid email address");
-      setEmailError(true);
+
+    // Mark all fields as touched
+    setTouched({ email: true, password: true });
+
+    const errors = validateLoginForm(email, password);
+    setFieldErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      // Show a toast for the first error
+      toast.error(Object.values(errors)[0]);
       return;
     }
 
@@ -54,28 +100,25 @@ const LoginPage = () => {
         navigate(`/admin-dashboard`);
       }
     } catch (err) {
-      toast.error("Login failed");
+      toast.error("Login failed. Please check your credentials and try again.");
     }
   };
 
+  // ── Gmail OAuth ──
   const handleGmailLogin = async () => {
     const popup = window.open(
-      // `https://immaculearn.up.railway.app/v1/account/oauth/google/redirect`,
       `http://localhost:3000/v1/account/oauth/google/redirect`,
       "oauthPopup",
       `width=500,height=600,top=${(screen.height - 600) / 2},left=${(screen.width - 500) / 2},resizable=yes,scrollbars=yes`,
     );
 
-    // Set up message listener for the popup
     const messageHandler = async (event) => {
-      // Verify the message is from our domain
       if (event.origin !== window.location.origin) return;
 
       if (event.data.type === "OAUTH_SUCCESS") {
         const { role, needsOnboarding, token } = event.data;
 
         if (needsOnboarding && token) {
-          // 🔐 store tempToken for onboarding
           sessionStorage.setItem("tempToken", token);
           navigate(`/onboarding?role=${role}`);
         } else {
@@ -96,10 +139,8 @@ const LoginPage = () => {
       }
     };
 
-    // Add event listener for messages
     window.addEventListener("message", messageHandler);
 
-    // Clean up the event listener when component unmounts or popup is closed
     const checkPopup = setInterval(() => {
       if (!popup || popup.closed) {
         clearInterval(checkPopup);
@@ -112,22 +153,19 @@ const LoginPage = () => {
     if (!isAuthenticated) return;
 
     const handleMessage = (event) => {
-      // if (event.origin !== "https://immaculearn-web.netlify.app") return;
       if (event.origin !== "https://localhost:5173") return;
 
       if (!event.data.success) {
         setError(event.data.error);
       }
       if (event.data.success) {
-        console.log(event.data);
         if (event.data.needsOnboarding) {
           navigate(`/onboarding?role=${event.data.role}`);
         } else {
-          // console.log(event.data.role)
           if (event.data.role === "student") {
-            navigate(`/home?role=${event.data.role}`); // or onboarding
+            navigate(`/home?role=${event.data.role}`);
           } else {
-            navigate(`/prof/home?role=${event.data.role}`); // or onboarding
+            navigate(`/prof/home?role=${event.data.role}`);
           }
         }
       }
@@ -139,17 +177,15 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (!error) return;
-
     if (error === "not_registered") {
-      toast.error("Google account is not register!");
+      toast.error("Google account is not registered!");
     } else if (error === "oauth_failed") {
       toast.error("Google login failed. Please try again.");
     }
-  }, [error]); // run only when `error` changes
+  }, [error]);
 
   useEffect(() => {
     if (!isAuthenticated || !user?.role) return;
-
     if (user.role === "student") {
       navigate(`/home?role=${user.role}`);
     } else if (user.role === "professor") {
@@ -202,39 +238,77 @@ const LoginPage = () => {
         </div>
 
         {/* Form */}
-        <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit} noValidate>
+          {/* Email field */}
           <div>
             <InputField
               type="email"
               placeholder="Enter your email address"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
-                // Clear error when user starts typing again
-                if (emailError) {
-                  setEmailError(false);
+                const val = e.target.value;
+                setEmail(val);
+                // Always clear error when field is emptied (user deleting); also re-validate if already touched
+                if (!val) {
+                  setFieldErrors((prev) => ({ ...prev, email: "" }));
+                } else if (touched.email) {
+                  setFieldErrors((prev) => ({
+                    ...prev,
+                    email: getFieldError("email", val),
+                  }));
                 }
               }}
-              style={{ 
+              onBlur={() => handleBlur("email")}
+              style={{
                 width: "100%",
-                borderColor: emailError ? "#ef4444" : "#000",
-                boxShadow: emailError 
-                  ? "2.5px 3px 0 #ef4444" 
-                  : "2.5px 3px 0 #000"
+                borderColor: fieldErrors.email ? "#ef4444" : "#000",
+                boxShadow: fieldErrors.email
+                  ? "2.5px 3px 0 #ef4444"
+                  : "2.5px 3px 0 #000",
               }}
             />
-            {emailError && (
-              <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>
-            )}
+            <FieldError message={fieldErrors.email} />
           </div>
 
-          <InputField
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%" }}
-          />
+          {/* Password field */}
+          <div>
+            <div className="relative">
+              <InputField
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPassword(val);
+                  // Always clear error when field is emptied (user deleting); also re-validate if already touched
+                  if (!val) {
+                    setFieldErrors((prev) => ({ ...prev, password: "" }));
+                  } else if (touched.password) {
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      password: getFieldError("password", val),
+                    }));
+                  }
+                }}
+                onBlur={() => handleBlur("password")}
+                style={{
+                  width: "100%",
+                  borderColor: fieldErrors.password ? "#ef4444" : "#000",
+                  boxShadow: fieldErrors.password
+                    ? "2.5px 3px 0 #ef4444"
+                    : "2.5px 3px 0 #000",
+                  paddingRight: "2.5rem",
+                }}
+              />
+              <div
+                className="absolute text-gray-500 top-1/2 right-3 -translate-y-1/2 cursor-pointer hover:text-gray-700 transition-colors"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+              </div>
+            </div>
+            <FieldError message={fieldErrors.password} />
+          </div>
 
           {/* Log in Button */}
           <Button
@@ -250,7 +324,7 @@ const LoginPage = () => {
               margin: "0 auto",
             }}
           >
-            Log in
+            {isLoading ? "Logging in…" : "Log in"}
           </Button>
         </form>
 
@@ -290,11 +364,7 @@ const LoginPage = () => {
             e.currentTarget.style.borderColor = "#e5e7eb";
           }}
         >
-          <Mail
-            size={20}
-            className="text-red-500"
-            style={{ color: "#ef4444" }}
-          />
+          <Mail size={20} style={{ color: "#ef4444" }} />
           Continue with Gmail
         </button>
 
