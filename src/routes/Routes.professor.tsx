@@ -75,93 +75,47 @@ export const ProfRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+
       <Route path="acc-settings" element={<ProfProfilePage />} />
       <Route path="files" element={<ProfFilePage />} />
 
-      
       <Route path="files-by-subject" element={<ProfFilesBySubject />} />
 
       {/* <Route path="files-by-subject" element={<ProfMain />} /> */}
 
-      <Route
-        path="chats"
-        element={
-            <ProfChatsPage />
-        }
-      />
+      <Route path="chats" element={<ProfChatsPage />} />
 
-      <Route
-        path="notification"
-        element={
-            <ProfNotificationPage />
-        }
-      />
-      
-      <Route
-        path="list-activity"
-        element={
-            <ProfListActivityPage />
-        }
-      />
+      <Route path="notification" element={<ProfNotificationPage />} />
+
+      <Route path="list-activity" element={<ProfListActivityPage />} />
       <Route
         path="list-activity/:space_uuid/:space_name"
-        element={
-            <ProfViewAllActivityPage />
-        }
+        element={<ProfViewAllActivityPage />}
       />
       <Route
         path="list-activity/:space_uuid/:space_name/:task_id/:task_name"
-        element={
-            <ProfViewActivityPage />
-        }
-      />
-      
-      <Route
-        path="notification"
-        element={
-            <ProfNotificationPage />
-        }
+        element={<ProfViewActivityPage />}
       />
 
-      <Route 
+      <Route path="notification" element={<ProfNotificationPage />} />
+
+      <Route
         path="files/:space_name/:space_uuid"
         element={
           <ProtectedRoute>
             <ProfViewFiles />
           </ProtectedRoute>
-        } 
-      />
-      
-      <Route
-        path="calendar"
-        element={
-            <ProfCalendarPage />
-        }
-      />
-      
-      <Route
-        path="grade-viewing"
-        element={
-            <ProfGradeRecordPage />
-        }
-      />
-      
-      <Route
-        path="archive"
-        element={
-            <ProfArchiveClass />
         }
       />
 
-      <Route
-        path="account"
-        element={
+      <Route path="calendar" element={<ProfCalendarPage />} />
 
-            <ProfProfilePage />
-        }
-      />
-      
+      <Route path="grade-viewing" element={<ProfGradeRecordPage />} />
+
+      <Route path="archive" element={<ProfArchiveClass />} />
+
+      <Route path="account" element={<ProfProfilePage />} />
+
       <Route
         path="settings"
         element={
@@ -170,14 +124,9 @@ export const ProfRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
-      <Route
-        path="prof-settings"
-        element={
-            <ProfSettingsPage />
-        }
-      />
-      
+
+      <Route path="prof-settings" element={<ProfSettingsPage />} />
+
       <Route
         path="/space-settings"
         element={
@@ -186,7 +135,7 @@ export const ProfRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/space-settings/:spaceUuid/:spaceName"
         element={
@@ -196,7 +145,6 @@ export const ProfRoutes = () => {
         }
       />
 
-
       <Route
         path="/space/create"
         element={
@@ -205,12 +153,12 @@ export const ProfRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/space/:space_uuid/:space_name"
         element={
           <SpaceProvider>
-              <ProfStreamPage />
+            <ProfStreamPage />
           </SpaceProvider>
         }
       />
@@ -218,18 +166,19 @@ export const ProfRoutes = () => {
         path="/space/:space_uuid/:space_name/tasks"
         element={
           <SpaceProvider>
+            <FileProvider>
               <ProfTaskPage />
+            </FileProvider>
           </SpaceProvider>
         }
       />
       <Route
-      
         path="/space/:space_uuid/:space_name/files"
         element={
           <SpaceProvider>
-              <FileProvider>
-                <ProfFilesShared />
-              </FileProvider>
+            <FileProvider>
+              <ProfFilesShared />
+            </FileProvider>
           </SpaceProvider>
         }
       />
@@ -237,11 +186,10 @@ export const ProfRoutes = () => {
         path="/space/:space_uuid/:space_name/people"
         element={
           <SpaceProvider>
-              <ProfPeoplePage />
+            <ProfPeoplePage />
           </SpaceProvider>
         }
       />
-      
 
       <Route
         path="/space/:space_uuid/:space_name/files/:file_name/:file_uuid"
@@ -253,8 +201,6 @@ export const ProfRoutes = () => {
           </SpaceProvider>
         }
       />
-
-      
     </Routes>
   );
 };

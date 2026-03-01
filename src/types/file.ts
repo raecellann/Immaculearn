@@ -54,13 +54,14 @@ export interface SupabaseFileMetadata {
 }
 
 export interface ResourceFile {
-  name: string;
-  id: string;
-  updated_at: string;
+  lesson_id: number;
+  lesson_name: string;
+  file_id: number;
+  file_name: string;
+  file_url: string;
+  file_size: number;
+  file_mimetype: string;
   created_at: string;
-  last_accessed_at: string;
-  metadata: SupabaseFileMetadata;
-  url: string;
 }
 
 export interface ListResourcesResponse {
@@ -68,3 +69,4 @@ export interface ListResourcesResponse {
   data: ResourceFile[];
   message: string;
 }
+

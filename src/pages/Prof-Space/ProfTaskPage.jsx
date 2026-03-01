@@ -25,6 +25,7 @@ import QuizBuilder from "./taskComponents/QuizBuilder";
 import IndividualActivityBuilder from "./taskComponents/IndividualActivityBuilder";
 import GroupActivityBuilder from "./taskComponents/GroupActivityBuilder";
 import ExamBuilder from "./taskComponents/ExamBuilder";
+import { QuizPreview, IndividualActivityPreview, GroupActivityPreview, ExamPreview, StudentQuizTaker } from "./taskPreviewComponents";
 
 const ProfTaskPage = () => {
   // ================= TASK FORM STATE =================
@@ -149,6 +150,12 @@ const ProfTaskPage = () => {
   const [groupsConfigured, setGroupsConfigured] = useState(false); // Track if groups are configured
   const [groupCreationMethod, setGroupCreationMethod] = useState(null); // Track how groups were created: 'manual' or 'generate'
   const [generatedGroupsPreview, setGeneratedGroupsPreview] = useState([]); // Store shuffled groups for preview
+  
+  // Preview state
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewTask, setPreviewTask] = useState(null);
+  const [showStudentQuiz, setShowStudentQuiz] = useState(false);
+  const [studentQuizTask, setStudentQuizTask] = useState(null);
   
   // Example available members in the professor's space
   const availableMembers = [
@@ -720,6 +727,370 @@ const ProfTaskPage = () => {
     Missing: "border-[#FF5252] text-[#FF5252]",
   };
 
+  // TaskSection component for reusable task sections
+  const TaskSection = ({ category, emoji, title, tasks }) => {
+    const categoryTasks = filterTasksByCategory(tasks, category);
+    
+    if (categoryTasks.length === 0) return null;
+
+    return (
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">{emoji}</span>
+          <h2 className="text-xl font-semibold">
+            {title} ({categoryTasks.length})
+          </h2>
+        </div>
+        
+        <div
+          className="rounded-xl p-4 sm:p-6 border"
+          style={{ 
+            backgroundColor: currentColors.surface,
+            borderColor: isDarkMode ? currentColors.border : '#000000'
+          }}
+        >
+          {/* TABLE HEADER */}
+          <div
+            className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
+            style={{
+              color: currentColors.textSecondary,
+              borderColor: currentColors.border,
+            }}
+          >
+            <div className="col-span-1">Status</div>
+            <div className="col-span-1">Task Name</div>
+            <div className="col-span-1">Deadline</div>
+            <div className="col-span-1">Details</div>
+          </div>
+
+          {/* TASK LIST */}
+          {categoryTasks.map((task, index) => {
+            const originalIndex = allTasks.findIndex(t => t.id === task.id);
+            return (
+              <div
+                key={task.id || index}
+                className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4"
+                style={{
+                  backgroundColor: currentColors.background,
+                  borderColor: currentColors.border,
+                }}
+              >
+                {/* Mobile and Tablet Layout */}
+                <div className="sm:hidden">
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center gap-2 flex-1">
+                      {task.isLocal && (
+                        <span className="text-xs bg-green-500 text-white px-2 py-1 rounded">Local</span>
+                      )}
+                      <span className="text-sm font-semibold" style={{ color: currentColors.text }}>
+                        {task.task_title}
+                      </span>
+                    </div>
+                    {!task.isLocal ? (
+                      <button
+                        onClick={() =>
+                          setOpenIndex(openIndex === originalIndex ? null : originalIndex)
+                        }
+                        className={`px-3 py-1 rounded-full text-xs`}
+                        style={{
+                          backgroundColor: currentColors.text,
+                          color: 'white'
+                        }}
+                      >
+                        {task.task_status}
+                      </button>
+                    ) : (
+                      <span className="px-3 py-1 rounded-full text-xs bg-blue-500 text-white">
+                        {task.task_status}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
+                    Deadline: {" "}
+                    <span style={{ color: currentColors.text }}>
+                      {new Date(task.task_due).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "2-digit",
+                      })}
+                    </span>
+                  </p>
+                  {!task.isLocal && openIndex === originalIndex && (
+                    <div className="mb-3 pt-3 border-t" style={{ borderColor: currentColors.border }}>
+                      <div className="flex flex-col gap-2">
+                        {Object.keys(statusStyles).map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => {
+                              handleStatusChange(originalIndex, st);
+                              setOpenIndex(null);
+                            }}
+                            className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium`}
+                            style={{
+                              backgroundColor: currentColors.text,
+                              color: 'white'
+                            }}
+                          >
+                            Mark as {st}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    {task.isLocal && task.task_category === 'quiz' && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleTakeQuiz(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: '#10B981',
+                          color: 'white'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#059669';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '#10B981';
+                        }}
+                      >
+                        Take Quiz
+                      </button>
+                    )}
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePreviewTask(task);
+                      }}
+                      className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        task.isLocal && task.task_category === 'quiz' ? 'flex-1' : 'block w-full'
+                      }`}
+                      style={{
+                        backgroundColor: task.isLocal ? '#2563eb' : currentColors.accent,
+                        color: 'white'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = task.isLocal ? '#1d4ed8' : '#1d4ed8';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = task.isLocal ? '#2563eb' : currentColors.accent;
+                      }}
+                    >
+                      {task.isLocal ? 'Preview' : 'View Details'}
+                    </a>
+                  </div>
+                </div>
+
+                {/* Desktop Layout */}
+                <div className="hidden sm:grid grid-cols-4 items-center">
+                  <div className="col-span-1">
+                    <div className="flex items-center gap-2">
+                      {task.isLocal && (
+                        <span className="text-xs bg-green-500 text-white px-2 py-1 rounded">Local</span>
+                      )}
+                      {!task.isLocal ? (
+                        <div className="relative inline-block">
+                          <button
+                            onClick={() =>
+                              setOpenIndex(openIndex === originalIndex ? null : originalIndex)
+                            }
+                            className={`px-4 py-1 rounded-full text-sm`}
+                            style={{
+                              backgroundColor: currentColors.text,
+                              color: 'white'
+                            }}
+                          >
+                            {task.task_status} ▼
+                          </button>
+                          {openIndex === originalIndex && (
+                            <div 
+                              className="absolute left-0 mt-2 w-44 rounded-lg p-3 z-50 shadow-lg"
+                              style={{
+                                backgroundColor: currentColors.surface,
+                                borderColor: currentColors.border,
+                                border: '1px solid'
+                              }}
+                            >
+                              <div className="flex flex-col gap-2">
+                                {Object.keys(statusStyles).map((st) => (
+                                  <button
+                                    key={st}
+                                    onClick={() => handleStatusChange(originalIndex, st)}
+                                    className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 whitespace-nowrap`}
+                                    style={{
+                                      backgroundColor: currentColors.text,
+                                      color: 'white'
+                                    }}
+                                  >
+                                    {st}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="px-4 py-1 rounded-full text-sm bg-blue-500 text-white">
+                          {task.task_status}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-span-1">
+                    <span className="text-sm font-semibold" style={{ color: currentColors.text }}>
+                      {task.task_title}
+                    </span>
+                  </div>
+                  <div className="col-span-1" style={{ color: currentColors.text }}>
+                    {new Date(task.task_due).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "2-digit",
+                    })}
+                  </div>
+                  <div className="col-span-1">
+                    <div className="flex gap-2">
+                      {task.isLocal && task.task_category === 'quiz' && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleTakeQuiz(task);
+                          }}
+                          className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                          style={{
+                            backgroundColor: '#10B981',
+                            color: 'white'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#059669';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#10B981';
+                          }}
+                        >
+                          Take Quiz
+                        </button>
+                      )}
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePreviewTask(task);
+                        }}
+                        className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          task.isLocal && task.task_category === 'quiz' ? 'flex-1' : 'block w-full'
+                        }`}
+                        style={{
+                          backgroundColor: task.isLocal ? '#2563eb' : currentColors.accent,
+                          color: 'white'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = task.isLocal ? '#1d4ed8' : '#1d4ed8';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = task.isLocal ? '#2563eb' : currentColors.accent;
+                        }}
+                      >
+                        {task.isLocal ? 'Preview' : 'View Details'}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+
+  // Handle preview for local tasks
+  const handlePreviewTask = (task) => {
+    setPreviewTask(task);
+    setShowPreview(true);
+  };
+
+  const handleClosePreview = () => {
+    setShowPreview(false);
+    setPreviewTask(null);
+  };
+
+  // Handle student quiz taking
+  const handleTakeQuiz = (task) => {
+    setStudentQuizTask(task);
+    setShowStudentQuiz(true);
+  };
+
+  const handleCloseStudentQuiz = () => {
+    setShowStudentQuiz(false);
+    setStudentQuizTask(null);
+  };
+
+  const handleQuizSubmit = (answers) => {
+    console.log('Quiz submitted with answers:', answers);
+    alert('Quiz submitted successfully!');
+    handleCloseStudentQuiz();
+  };
+
+  // Get preview component based on task category
+  const getPreviewComponent = (task) => {
+    const category = task.task_category || task.rawData?.task_type || 'quiz';
+    
+    switch (category) {
+      case 'quiz':
+        return <QuizPreview taskData={task.rawData || task} currentColors={currentColors} />;
+      case 'individual-activity':
+        return <IndividualActivityPreview taskData={task.rawData || task} currentColors={currentColors} />;
+      case 'group-activity':
+        return <GroupActivityPreview taskData={task.rawData || task} currentColors={currentColors} />;
+      case 'exam':
+        return <ExamPreview taskData={task.rawData || task} currentColors={currentColors} />;
+      default:
+        return <QuizPreview taskData={task.rawData || task} currentColors={currentColors} />;
+    }
+  };
+
+  // Load tasks from localStorage
+  const loadTasksFromLocalStorage = () => {
+    try {
+      const storedTasks = localStorage.getItem('quizTask');
+      if (storedTasks) {
+        const taskData = JSON.parse(storedTasks);
+        // Convert localStorage format to match API format
+        return [{
+          id: `local_${Date.now()}`, // Unique ID for localStorage tasks
+          task_title: `Quiz: ${taskData.task_type || 'Quiz'}`,
+          task_category: taskData.task_type || 'quiz',
+          task_status: 'In Progress',
+          task_due: taskData.task_due_date,
+          task_instruction: taskData.task_instructions,
+          task_score: taskData.total_score,
+          isLocal: true, // Flag to identify localStorage tasks
+          rawData: taskData // Store original data for detailed view
+        }];
+      }
+    } catch (error) {
+      console.error('Error loading tasks from localStorage:', error);
+    }
+    return [];
+  };
+
+  // Combine API tasks with localStorage tasks
+  const allTasks = [...(uploadedTask || []), ...loadTasksFromLocalStorage()];
+
+  // Filter tasks by category
+  const filterTasksByCategory = (tasks, category) => {
+    return tasks.filter(task => task.task_category === category);
+  };
+
+  // Get task counts by category
+  const getTaskCountByCategory = (category) => {
+    return filterTasksByCategory(allTasks, category).length;
+  };
 
   const [openIndex, setOpenIndex] = useState(null);
 
@@ -927,7 +1298,7 @@ const ProfTaskPage = () => {
           )}
 
           {!isCreatingTask && !showTaskTypeSelection ? (
-            /* ================= TASKS LIST VIEW ================= */
+            /* ================= TASKS LIST VIEW WITH SECTIONS ================= */
             <div className="max-w-5xl mx-auto">
               <button
                 className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
@@ -936,198 +1307,48 @@ const ProfTaskPage = () => {
                 <FiFileText size={16} />
                 Create Task
               </button>
+              
               <div className="mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>
               </div>
-              {/* RESPONSIVE TABLE */}
-              <div
-                className="rounded-xl p-4 sm:p-6 border"
-                style={{ 
-                  backgroundColor: currentColors.surface,
-                  borderColor: isDarkMode ? currentColors.border : '#000000'
-                }}
-              >
-                {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
-                <div
-                  className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
-                  style={{
-                    color: currentColors.textSecondary,
-                    borderColor: currentColors.border,
-                  }}
-                >
-                  <div className="col-span-1">Status</div>
-                  <div className="col-span-1">Task Name</div>
-                  <div className="col-span-1">Deadline</div>
-                  <div className="col-span-1">Details</div>
+
+              {/* TASK SECTIONS */}
+              <TaskSection 
+                category="quiz" 
+                emoji="📝" 
+                title="Quizzes" 
+                tasks={allTasks}
+              />
+              
+              <TaskSection 
+                category="individual-activity" 
+                emoji="📄" 
+                title="Individual Activities" 
+                tasks={allTasks}
+              />
+              
+              <TaskSection 
+                category="group-activity" 
+                emoji="👥" 
+                title="Group Activities" 
+                tasks={allTasks}
+              />
+              
+              <TaskSection 
+                category="exam" 
+                emoji="📋" 
+                title="Exams" 
+                tasks={allTasks}
+              />
+
+              {/* Show message if no tasks exist */}
+              {allTasks.length === 0 && (
+                <div className="text-center py-12" style={{ color: currentColors.textSecondary }}>
+                  <div className="text-4xl mb-4">📝</div>
+                  <p className="text-lg mb-2">No tasks assigned yet</p>
+                  <p className="text-sm">Create your first task to get started!</p>
                 </div>
-
-                {/* TASK LIST - Responsive cards for all screen sizes */}
-                {uploadedTask?.map((task, index) => (
-                  <div
-                    key={index}
-                    className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4"
-                    style={{
-                      backgroundColor: currentColors.background,
-                      borderColor: currentColors.border,
-                    }}
-                  >
-                    {/* Mobile and Tablet Layout */}
-                    <div className="sm:hidden">
-                      <div className="flex justify-between items-center mb-3">
-                        <div className="flex items-center gap-2 flex-1">
-                          <span className="text-lg" style={{ color: currentColors.text }}>
-                            {getCategoryDisplay(task.task_category)}
-                          </span>
-                          <span className="text-sm font-semibold" style={{ color: currentColors.text }}>
-                            {task.task_title}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() =>
-                            setOpenIndex(openIndex === index ? null : index)
-                          }
-                          className={`px-3 py-1 rounded-full text-xs`}
-                          style={{
-                            backgroundColor: currentColors.text,
-                            color: 'white'
-                          }}
-                        >
-                          {task.task_status}
-                        </button>
-                      </div>
-                      <p className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
-                        Deadline: {" "}
-                        <span style={{ color: currentColors.text }}>
-                          {new Date(task.task_due).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "2-digit",
-                          })}
-                        </span>
-                      </p>
-                      {openIndex === index && (
-                        <div className="mb-3 pt-3 border-t" style={{ borderColor: currentColors.border }}>
-                          <div className="flex flex-col gap-2">
-                            {Object.keys(statusStyles).map((st) => (
-                              <button
-                                key={st}
-                                onClick={() => {
-                                  handleStatusChange(index, st);
-                                  setOpenIndex(null);
-                                }}
-                                className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium`}
-                                style={{
-                                  backgroundColor: currentColors.text,
-                                  color: 'white'
-                                }}
-                              >
-                                Mark as {st}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      <a
-                        href="/prof-task-view"
-                        className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                        style={{
-                          backgroundColor: currentColors.accent,
-                          color: 'white'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#1d4ed8';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = currentColors.accent;
-                        }}
-                      >
-                        View Details
-                      </a>
-                    </div>
-
-                    {/* Desktop Layout */}
-                    <div className="hidden sm:grid grid-cols-4 items-center">
-                      <div className="col-span-1">
-                        <div className="relative inline-block">
-                          <button
-                            onClick={() =>
-                              setOpenIndex(openIndex === index ? null : index)
-                            }
-                            className={`px-4 py-1 rounded-full text-sm`}
-                            style={{
-                              backgroundColor: currentColors.text,
-                              color: 'white'
-                            }}
-                          >
-                            {task.task_status} ▼
-                          </button>
-                          {openIndex === index && (
-                            <div 
-                              className="absolute left-0 mt-2 w-44 rounded-lg p-3 z-50 shadow-lg"
-                              style={{
-                                backgroundColor: currentColors.surface,
-                                borderColor: currentColors.border,
-                                border: '1px solid'
-                              }}
-                            >
-                              <div className="flex flex-col gap-2">
-                                {Object.keys(statusStyles).map((st) => (
-                                  <button
-                                    key={st}
-                                    onClick={() => handleStatusChange(index, st)}
-                                    className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 whitespace-nowrap`}
-                                    style={{
-                                      backgroundColor: currentColors.text,
-                                      color: 'white'
-                                    }}
-                                  >
-                                    {st}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="col-span-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg" style={{ color: currentColors.text }}>
-                            {getCategoryDisplay(task.task_category)}
-                          </span>
-                          <span className="text-sm font-semibold" style={{ color: currentColors.text }}>
-                            {task.task_title}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="col-span-1" style={{ color: currentColors.text }}>
-                        {new Date(task.task_due).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "2-digit",
-                        })}
-                      </div>
-                      <div className="col-span-1">
-                        <a
-                          href="/prof-task-view"
-                          className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                          style={{
-                            backgroundColor: currentColors.accent,
-                            color: 'white'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#1d4ed8';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = currentColors.accent;
-                          }}
-                        >
-                          View Details
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              )}
 
             {/* DRAFT ACTIVITIES TABLE */}
             <div className="max-w-5xl mx-auto w-full mt-12">
@@ -1402,6 +1623,43 @@ const ProfTaskPage = () => {
           )}
         </div>
       </div>
+
+      {/* PREVIEW MODAL */}
+      {showPreview && previewTask && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            {/* Preview Header */}
+            <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10">
+              <h2 className="text-xl font-bold text-gray-800">
+                Task Preview - {previewTask.task_title}
+              </h2>
+              <button
+                onClick={handleClosePreview}
+                className="text-gray-500 hover:text-gray-700 text-2xl bg-transparent border-none outline-none hover:bg-transparent focus:outline-none focus:ring-0"
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Preview Content */}
+            <div className="p-4">
+              {getPreviewComponent(previewTask)}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STUDENT QUIZ TAKER MODAL */}
+      {showStudentQuiz && studentQuizTask && (
+        <div className="fixed inset-0 z-50">
+          <StudentQuizTaker
+            quizData={studentQuizTask.rawData || studentQuizTask}
+            currentColors={currentColors}
+            onSubmit={handleQuizSubmit}
+            onExit={handleCloseStudentQuiz}
+          />
+        </div>
+      )}
 
       {/* ADD MEMBER POPUP */}
       <AddMember
