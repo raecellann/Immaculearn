@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import ProfSidebar from "../../component/profsidebar";
 import { useNavigate, useParams } from "react-router";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
-import { useFileManager } from "../../../hooks/useFileManager";
+import { useFile } from "../../../contexts/file/fileContextProvider";
+
+
 
 const ViewFilePage = () => {
   console.log("ViewFilePage rendering...");
@@ -34,8 +36,15 @@ const ViewFilePage = () => {
 
   const { file_uuid, file_name } = useParams();
   console.log("Route params:", { file_uuid, file_name });
+  
+  const { resources } = useFile();
 
   const decodedFileName = decodeURIComponent(file_name || "");
+
+  // Find the file from resources using useMemo to prevent recalculations
+  const file = React.useMemo(() => {
+    return resources?.find(resource => resource.file_id === parseInt(file_uuid));
+  }, [resources, file_uuid]);
 
   const formatFileTitle = (file_name) => {
     if (!file_name) return "";
@@ -55,10 +64,106 @@ const ViewFilePage = () => {
   const [title, setTitle] = useState(formatFileTitle(file_name) || "Untitled File");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
-  const [content, setContent] = useState(`File UUID: ${file_uuid}
+  const [content, setContent] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [fileData, setFileData] = useState(null);
+  const [error, setError] = useState(null);
 
-This is dynamic content.
-You can now fetch real file data using file_uuid.`);
+  // Fetch file data and content
+  useEffect(() => {
+    const fetchFileContent = async () => {
+      if (!file) {
+        setError("File not found");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        setFileData(file);
+
+        // Fetch content from the file URL
+        const response = await fetch(file.file_url);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file content: ${response.statusText}`);
+        }
+
+        const contentType = response.headers.get('content-type');
+        const fileExtension = file.file_name.split('.').pop()?.toLowerCase();
+        
+        // Clone the response since we can only read it once
+        const responseClone = response.clone();
+        
+        // Try to get content as text first for common file extensions
+        if (contentType?.includes('application/json')) {
+          try {
+            const jsonData = await response.json();
+            setContent(JSON.stringify(jsonData, null, 2));
+          } catch (jsonError) {
+            // If JSON parsing fails, try as text
+            const textData = await responseClone.text();
+            setContent(textData);
+          }
+        } else if (contentType?.includes('text/') || 
+                   contentType?.includes('application/sql') ||
+                   contentType?.includes('application/javascript') ||
+                   contentType?.includes('application/xml') ||
+                   ['sql', 'txt', 'js', 'jsx', 'ts', 'tsx', 'json', 'xml', 'csv', 'log', 'md', 'py', 'php', 'html', 'css', 'scss', 'less', 'db', 'sqlite', 'sqlite3'].includes(fileExtension)) {
+          
+          // For these types, try to get text content even if content-type is wrong
+          try {
+            const textData = await response.text();
+            
+            // Check if the content is actually readable text (not binary garbage)
+            if (textData && textData.length > 0) {
+              // Simple check for readable text - if it contains mostly printable characters
+              const printableChars = textData.replace(/[\x00-\x1F\x7F]/g, '').length;
+              const totalChars = textData.length;
+              const readableRatio = printableChars / totalChars;
+              
+              if (readableRatio > 0.7) { // If 70% or more is readable text
+                setContent(textData);
+              } else {
+                setContent(`File appears to be binary despite having a text-based extension.\n\nFile type: ${contentType || 'Unknown'}\nFile extension: ${fileExtension || 'Unknown'}\nReadable content ratio: ${(readableRatio * 100).toFixed(1)}%\n\nPlease download the file to view its contents with appropriate software.`);
+              }
+            } else {
+              setContent('File appears to be empty.');
+            }
+          } catch (textError) {
+            console.error('Error reading file as text:', textError);
+            setContent(`File could not be displayed as text. This might be a binary file.\n\nFile type: ${contentType || 'Unknown'}\nFile extension: ${fileExtension || 'Unknown'}\n\nPlease download the file to view its contents.`);
+          }
+        } else {
+          // For unknown binary types, still try to read as text as a fallback
+          try {
+            const textData = await responseClone.text();
+            
+            // Check if it might actually be readable text
+            const printableChars = textData.replace(/[\x00-\x1F\x7F]/g, '').length;
+            const totalChars = textData.length;
+            const readableRatio = printableChars / totalChars;
+            
+            if (textData.length > 0 && readableRatio > 0.7) {
+              setContent(`File was detected as binary but appears to contain readable text:\n\n${textData}`);
+            } else {
+              setContent(`Binary file (${contentType}) - Content cannot be displayed as text. Download the file to view its contents.\n\nFile type: ${contentType || 'Unknown'}\nFile extension: ${fileExtension || 'Unknown'}`);
+            }
+          } catch (fallbackError) {
+            setContent(`Binary file (${contentType}) - Content cannot be displayed as text. Download the file to view its contents.\n\nFile type: ${contentType || 'Unknown'}\nFile extension: ${fileExtension || 'Unknown'}`);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching file content:', err);
+        setError(err.message || 'Failed to load file content');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFileContent();
+  }, [file]); // Only depend on the file object to prevent duplicate calls
 
   const [isEditingContent, setIsEditingContent] = useState(false);
 
@@ -200,7 +305,14 @@ You can now fetch real file data using file_uuid.`);
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <h3 className="text-xl font-semibold">Content</h3>
-                {!isEditingContent && (
+                {fileData && (
+                  <div className="flex items-center gap-2 text-sm" style={{ color: currentColors.textSecondary }}>
+                    <span>•</span>
+                    <span>{fileData.file_size ? `${(fileData.file_size / 1024).toFixed(2)} KB` : 'Unknown size'}</span>
+            
+                  </div>
+                )}
+                {!isEditingContent && !isLoading && !error && (
                   <button
                     onClick={() => setIsEditingContent(true)}
                     className="text-sm hover:underline transition-colors"
@@ -211,7 +323,39 @@ You can now fetch real file data using file_uuid.`);
                 )}
               </div>
 
-              {isEditingContent ? (
+              {isLoading ? (
+                <div className="flex items-center justify-center p-8" style={{
+                    backgroundColor: currentColors.background,
+                    border: `1px solid ${currentColors.border}`,
+                    minHeight: "200px"
+                  }}>
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <p style={{ color: currentColors.textSecondary }}>Loading file content...</p>
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="p-4 rounded" style={{
+                    backgroundColor: isDarkMode ? '#991b1b20' : '#ef444420',
+                    border: `1px solid ${isDarkMode ? '#991b1b' : '#ef4444'}`,
+                    color: isDarkMode ? '#fca5a5' : '#dc2626'
+                  }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">⚠️</span>
+                    <h4 className="font-semibold">Error Loading File</h4>
+                  </div>
+                  <p className="text-sm">{error}</p>
+                  {fileData && (
+                    <button
+                      onClick={() => window.open(fileData.file_url, '_blank')}
+                      className="mt-3 text-sm underline"
+                      style={{ color: currentColors.primary }}
+                    >
+                      Try opening the file directly
+                    </button>
+                  )}
+                </div>
+              ) : isEditingContent ? (
                 <div className="space-y-3">
                   <textarea
                     value={content}
@@ -248,13 +392,16 @@ You can now fetch real file data using file_uuid.`);
                   </div>
                 </div>
               ) : (
-                <div className="whitespace-pre-line p-4 rounded font-mono text-sm" style={{
-                    backgroundColor: currentColors.background,
-                    border: `1px solid ${currentColors.border}`,
-                    color: currentColors.text,
-                    minHeight: "200px"
-                  }}>
-                  {content}
+                <div className="relative">
+                  <div className="whitespace-pre-line p-4 rounded font-mono text-sm overflow-x-auto" style={{
+                      backgroundColor: currentColors.background,
+                      border: `1px solid ${currentColors.border}`,
+                      color: currentColors.text,
+                      minHeight: "200px"
+                    }}>
+                    {content || 'No content available'}
+                  </div>
+                
                 </div>
               )}
             </div>

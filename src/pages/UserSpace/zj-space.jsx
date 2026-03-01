@@ -10,7 +10,6 @@ import {
   SuccessDialog,
   CancelledDialog,
 } from "../component/SweetAlert.jsx";
-import ChatPopup from "../component/ChatPopup";
 import {
   FiSearch,
   FiFileText,
@@ -23,6 +22,11 @@ import {
   FiCopy,
   FiUpload,
   FiRefreshCw,
+  FiPaperclip,
+  FiUser,
+  FiMinimize2,
+  FiMaximize2,
+  FiSend,
 } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import { useUser } from "../../contexts/user/useUser";
@@ -35,6 +39,7 @@ import PageNotFound from "../PageNotFound/pageNotFound";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { timeAgo } from "../../utils/timeAgo.js";
 import isValidEmail from "../../utils/isValidEmail.js";
+import { useSpaceChat } from "../../hooks/useSpaceChat";
 
 const UserPage = () => {
   const { space_uuid, space_name } = useParams();
@@ -64,6 +69,13 @@ const UserPage = () => {
   const [showUploadNotification, setShowUploadNotification] = useState(false);
   const [showChatPopup, setShowChatPopup] = useState(false);
 
+  // Chat states
+  const [showChat, setShowChat] = useState(false);
+  const [isChatMinimized, setIsChatMinimized] = useState(false);
+  const [isChatMaximized, setIsChatMaximized] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef(null);
+
   // State for dialog management
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -91,6 +103,9 @@ const UserPage = () => {
     deleteSpace,
     inviteUser,
   } = useSpace();
+
+  // Chat hook
+  const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } = useSpaceChat(space_uuid, user);
 
   // Find current space
   const allSpaces = [
@@ -280,6 +295,26 @@ const UserPage = () => {
     const selection = window.getSelection();
     if (!selection || selection.toString() === "") return;
     document.execCommand(command, false, null);
+  };
+
+  // Chat handlers
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+
+    sendMessage(newMessage.trim());
+    setNewMessage('');
+
+    // Auto-scroll
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  };
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   // Handle post creation
@@ -499,29 +534,6 @@ const UserPage = () => {
 
   const handleCloseChat = () => {
     setShowChatPopup(false);
-  };
-
-  const handleSendMessage = (messageText) => {
-    // Add message to chat (you can integrate with your chat backend here)
-    const newMessage = {
-      id: Date.now(),
-      senderId: user?.id,
-      senderName: user?.fullname || "You",
-      text: messageText,
-      timestamp: "Just now",
-      avatar: user?.profile_pic,
-      isRead: false,
-    };
-
-    // For now, just show a notification (replace with actual chat implementation)
-    addNotification({
-      type: "success",
-      title: "Message Sent",
-      message: "Your message was sent successfully",
-      duration: 3000,
-    });
-
-    console.log("Message sent:", newMessage);
   };
 
   // Sample space members (replace with actual data from your backend)
@@ -989,7 +1001,7 @@ const UserPage = () => {
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex justify-center space-x-12">
-                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
+                <button className="font-semibold border-b-2 border-white pb-2">
                   Stream
                 </button>
                 <button
@@ -1078,9 +1090,6 @@ const UserPage = () => {
                     ${isFocused ? "border-black" : "border-transparent"}
                     hover:border-black
                   `}
-                    style={{
-                      borderColor: isFocused ? (isDarkMode ? currentColors.text : "black") : (isDarkMode ? "transparent" : "transparent")
-                    }}
                     onClick={() => editorRef.current?.focus()}
                   >
                     <div className="relative p-6">
@@ -1218,7 +1227,7 @@ const UserPage = () => {
 
                 {/* CHAT */}
                 <button
-                  onClick={handleEnterChat}
+                  onClick={() => setShowChat(true)}
                   className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
                   style={{
                     backgroundColor: isDarkMode ? "#000000" : "transparent",
@@ -1239,6 +1248,78 @@ const UserPage = () => {
                   <FiMessageCircle />
                   Enter Chat
                 </button>
+
+                {/* Chat Popup */}
+                {showChat && (
+                  <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !isChatMinimized && setShowChat(false)} />
+                    <div className={`relative w-full ${isChatMaximized ? 'h-screen max-w-full' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
+                      {/* Chat Header */}
+                      <div className="flex items-center justify-between bg-[#1E222A] rounded-t-lg p-3 border-b border-gray-700 cursor-pointer">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                            <FiUser className="text-white text-sm" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-white text-sm">{spaceName}</h3>
+                            <div className="flex items-center py-2 text-sm text-gray-400">
+                              <div className={`w-2 h-2 rounded-full mr-2 ${spaceOnlineUsers[space_uuid]?.length ? 'bg-green-500' : 'bg-red-500'}`} />
+                              <span>{spaceOnlineUsers[space_uuid]?.length || 0} online</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <button onClick={(e) => { e.stopPropagation(); setIsChatMaximized(!isChatMaximized); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title={isChatMaximized ? 'Restore' : 'Maximize'}>
+                            {isChatMaximized ? <FiMinimize2 size={14} /> : <FiMaximize2 size={14} />}
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); setShowChat(false); setIsChatMinimized(false); setIsChatMaximized(false); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title="Close">
+                            <FiX size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Chat Messages */}
+                      {!isChatMinimized && (
+                        <>
+                          <div className={`bg-[#141820] overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}>
+                            {messages.map((message) => (
+                              <div key={message.id} className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`flex flex-col pl-2 ${message.senderId === user?.id ? 'items-end' : 'items-start'}`}>
+                                  <div className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'bg-blue-500 rounded-tr-none text-white' : 'bg-gray-700 rounded-tl-none text-gray-200'}`}>
+                                    {message.content}
+                                  </div>
+                                  <p className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-blue-100 text-right' : 'text-gray-400 text-left'}`}>
+                                    {formatTime(message.timestamp)}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                          </div>
+
+                          {/* Chat Input */}
+                          <form onSubmit={handleSendMessage} className="bg-[#1B1F26] p-3 rounded-b-lg border-t border-gray-700">
+                            <div className="flex items-center space-x-2">
+                              <button type="button" className="text-gray-400 hover:text-white p-2">
+                                <FiPaperclip />
+                              </button>
+                              <input
+                                type="text"
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                placeholder="Type a message..."
+                                className="flex-1 bg-[#141820] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              />
+                              <button type="submit" className="text-blue-400 hover:text-blue-300 p-2" disabled={!newMessage.trim()}>
+                                <FiSend />
+                              </button>
+                            </div>
+                          </form>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1253,9 +1334,6 @@ const UserPage = () => {
                     ${isFocused ? "border-black" : "border-black"}
                     hover:border-black
                   `}
-                    style={{
-                      borderColor: isDarkMode ? currentColors.text : "black"
-                    }}
                     onClick={() => editorRef.current?.focus()}
                   >
                     <div className="relative p-6">
@@ -1979,15 +2057,7 @@ const UserPage = () => {
         message={dialogMessage}
       />
 
-      {/* CHAT POPUP */}
-      <ChatPopup
-        isOpen={showChatPopup}
-        onClose={handleCloseChat}
-        spaceName={spaceName}
-        currentUser={user}
-        spaceMembers={spaceMembers}
-        onSendMessage={handleSendMessage}
-      />
+      
     </div>
   );
 };

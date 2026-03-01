@@ -21,7 +21,6 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 import AddMember from "../component/AddMember";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
-import ChatPopup from "../component/ChatPopup";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 

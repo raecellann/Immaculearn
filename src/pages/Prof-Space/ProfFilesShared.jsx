@@ -353,7 +353,7 @@ const ProfFilesShared = () => {
       notifId = showGlobalNotification({
         type: "loading",
         title: "Uploading File",
-        message: `Uploading "${file.file_name}"...`,
+        message: `Uploading please wait`,
         duration: null,
         persistent: true,
       });
@@ -363,7 +363,7 @@ const ProfFilesShared = () => {
       showGlobalNotification({
         type: "success",
         title: "Upload Complete",
-        message: `"${file.file_name}" uploaded successfully.`,
+        message: `"Resources uploaded successfully.`,
         duration: 3000,
         actions: [
           {
@@ -415,7 +415,8 @@ const ProfFilesShared = () => {
 
   const handleOpenFile = (file) =>
     navigate(
-      `/prof/space/${space_uuid}/${space_name}/files/${file.file_name}/${file.id || "unknown"}`,
+         
+      `/prof/space/${space_uuid}/${space_name}/files/${file.file_name}/${file.file_id}`,
     );
 
   const handleDeleteFile = (file) => {
@@ -972,9 +973,7 @@ const ProfFilesShared = () => {
                                         color: c.textSecondary,
                                       }}
                                     >
-                                      {formatSize(
-                                        file.metadata?.size || file.size,
-                                      )}
+                                      {file.file_size ? `${(file.file_size / 1024).toFixed(2)} KB` : 'Unknown size'}
                                     </div>
                                     {/* Actions */}
                                     <div
