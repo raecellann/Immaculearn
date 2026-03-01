@@ -20,6 +20,7 @@ const ProfNotificationPage = () => {
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -129,6 +130,41 @@ const ProfNotificationPage = () => {
       message:
         "Updated course materials are now available in the faculty portal.",
       date: "2024-02-19",
+      priority: "medium",
+    },
+    {
+      id: 3,
+      title: "Research Grant Deadline",
+      message: "Reminder: Research grant applications are due next Monday. Submit your proposals early.",
+      date: "2024-02-18",
+      priority: "high",
+    },
+    {
+      id: 4,
+      title: "Professional Development Workshop",
+      message: "Free workshop on innovative teaching methods will be held this Thursday.",
+      date: "2024-02-17",
+      priority: "medium",
+    },
+    {
+      id: 5,
+      title: "Faculty Lounge Renovation",
+      message: "Faculty lounge will be renovated next week. Temporary lounge available in Room 205.",
+      date: "2024-02-16",
+      priority: "low",
+    },
+    {
+      id: 6,
+      title: "New Academic Calendar",
+      message: "Updated academic calendar for next semester has been published. Please review important dates.",
+      date: "2024-02-15",
+      priority: "high",
+    },
+    {
+      id: 7,
+      title: "Student Advisory Meeting",
+      message: "Monthly student advisory committee meeting scheduled for next Tuesday at 2 PM.",
+      date: "2024-02-14",
       priority: "medium",
     },
   ];
@@ -506,50 +542,97 @@ const ProfNotificationPage = () => {
                 </div>
 
                 {/* Display announcements */}
-                {schoolAnnouncements.map((announcement) => (
-                  <div
-                    key={announcement.id}
-                    className="mt-3 p-3 rounded-lg"
-                    style={{ backgroundColor: currentColors.surface }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">
-                          {announcement.title}
-                        </p>
-                        <p
-                          className="text-sm mt-1"
-                          style={{
-                            color: isDarkMode
-                              ? currentColors.textSecondary
-                              : "#666666",
-                          }}
+                {schoolAnnouncements.length === 0 ? (
+                  <div className="mt-3 p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                    <div className="flex flex-col items-center gap-3">
+                      <FiBell size={32} className="text-gray-400" />
+                      <div>
+                        <p 
+                          className="text-sm font-medium mb-1"
+                          style={{ color: isDarkMode ? "white" : "black" }}
                         >
-                          {announcement.message}
+                          No announcements yet
                         </p>
-                        <p
+                        <p 
                           className="text-xs"
-                          style={{
-                            color: isDarkMode
-                              ? currentColors.textSecondary
-                              : "#666666",
-                          }}
+                          style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
                         >
-                          {announcement.date}
+                          Admin hasn't posted any announcements at the moment
                         </p>
                       </div>
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          announcement.priority === "high"
-                            ? "bg-red-600 text-white"
-                            : "bg-yellow-600 text-white"
-                        }`}
-                      >
-                        {announcement.priority}
-                      </span>
                     </div>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    {schoolAnnouncements.slice(0, selectedFilter === "announcements" ? schoolAnnouncements.length : 3).map((announcement) => (
+                      <div
+                        key={announcement.id}
+                        className="mt-3 p-3 rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                        style={{
+                          backgroundColor: isDarkMode
+                            ? "rgba(31, 41, 55, 0.5)"
+                            : currentColors.surface,
+                          backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                          borderColor: isDarkMode
+                            ? "rgb(55 65 81 / var(--tw-border-opacity, 1))"
+                            : "black",
+                        }}
+                        onClick={() => setSelectedAnnouncement(announcement)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p 
+                              className="text-sm font-medium"
+                              style={{ color: isDarkMode ? "white" : "black" }}
+                            >
+                              {announcement.title}
+                            </p>
+                            <p
+                              className="text-xs mt-1"
+                              style={{
+                                color: isDarkMode
+                                  ? currentColors.textSecondary
+                                  : "#666666",
+                              }}
+                            >
+                              {announcement.message}
+                            </p>
+                            <p
+                              className="text-xs mt-2"
+                              style={{
+                                color: isDarkMode
+                                  ? currentColors.textSecondary
+                                  : "#666666",
+                              }}
+                            >
+                              {announcement.date}
+                            </p>
+                          </div>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              announcement.priority === "high"
+                                ? "bg-red-600 text-white"
+                                : "bg-yellow-600 text-white"
+                            }`}
+                          >
+                            {announcement.priority}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {schoolAnnouncements.length > 3 && selectedFilter !== "announcements" && (
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={() => setSelectedFilter("announcements")}
+                          className="px-4 py-2 text-sm hover:underline transition-colors"
+                          style={{ color: isDarkMode ? "#60A5FA" : "#007AFF" }}
+                        >
+                          View All Announcements
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -682,6 +765,87 @@ const ProfNotificationPage = () => {
       )}
 
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+
+      {/* Announcement Detail Modal */}
+      {selectedAnnouncement && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div
+            className="rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col"
+            style={{ 
+              backgroundColor: isDarkMode
+                ? "rgba(45, 55, 72, 0.5)"
+                : currentColors.surface,
+              backdropFilter: isDarkMode ? "blur(10px)" : "none",
+            }}
+          >
+            <div
+              className="p-4 border-b"
+              style={{ borderColor: currentColors.border }}
+            >
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
+                {selectedAnnouncement.title}
+              </h2>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`px-3 py-1 text-sm rounded-full ${
+                      selectedAnnouncement.priority === "high"
+                        ? "bg-red-600 text-white"
+                        : "bg-yellow-600 text-white"
+                    }`}
+                  >
+                    {selectedAnnouncement.priority.toUpperCase()}
+                  </span>
+                  <p
+                    className="text-sm"
+                    style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                  >
+                    {selectedAnnouncement.date}
+                  </p>
+                </div>
+
+                <div
+                  className="p-4 rounded-lg border"
+                  style={{
+                    backgroundColor: isDarkMode
+                      ? "rgba(31, 41, 55, 0.5)"
+                      : currentColors.surface,
+                    backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                    borderColor: isDarkMode
+                      ? "rgb(55 65 81 / var(--tw-border-opacity, 1))"
+                      : "black",
+                  }}
+                >
+                  <p
+                    className="text-base leading-relaxed"
+                    style={{ color: isDarkMode ? "white" : "black" }}
+                  >
+                    {selectedAnnouncement.message}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="p-4 border-t flex justify-end"
+              style={{ borderColor: currentColors.border }}
+            >
+              <button
+                onClick={() => setSelectedAnnouncement(null)}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

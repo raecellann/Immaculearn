@@ -20,6 +20,7 @@ const NotificationPage = () => {
     useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
 
   const { user, isLoading: userLoading } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
@@ -55,6 +56,41 @@ const NotificationPage = () => {
         "Final exam schedule has been posted. Check your student portal.",
       date: "2024-02-19",
       priority: "medium",
+    },
+    {
+      id: 3,
+      title: "New Library Hours",
+      message: "Library will now be open until 9 PM on weekdays for extended study hours.",
+      date: "2024-02-18",
+      priority: "low",
+    },
+    {
+      id: 4,
+      title: "Sports Day Registration",
+      message: "Registration for annual sports day is now open. Sign up at the student affairs office.",
+      date: "2024-02-17",
+      priority: "medium",
+    },
+    {
+      id: 5,
+      title: "Campus Wi-Fi Upgrade",
+      message: "Campus Wi-Fi will be upgraded this weekend. Expect intermittent connectivity.",
+      date: "2024-02-16",
+      priority: "high",
+    },
+    {
+      id: 6,
+      title: "New Cafeteria Menu",
+      message: "The cafeteria has updated its menu with new healthy options and student favorites.",
+      date: "2024-02-15",
+      priority: "low",
+    },
+    {
+      id: 7,
+      title: "Career Fair Next Week",
+      message: "Annual career fair will be held next Wednesday. Over 50 companies will be recruiting.",
+      date: "2024-02-14",
+      priority: "high",
     },
   ];
 
@@ -476,50 +512,86 @@ const NotificationPage = () => {
                 </div>
 
                 {/* Display announcements */}
-                {schoolAnnouncements.map((announcement) => (
-                  <div
-                    key={announcement.id}
-                    className="mt-3 p-3 rounded-lg border"
-                    style={{
-                      backgroundColor: isDarkMode
-                        ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
-                        : "white",
-                      borderColor: isDarkMode ? currentColors.border : "black",
-                    }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p
-                          className="text-sm font-medium"
+                {schoolAnnouncements.length === 0 ? (
+                  <div className="mt-3 p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                    <div className="flex flex-col items-center gap-3">
+                      <FiBell size={32} className="text-gray-400" />
+                      <div>
+                        <p 
+                          className="text-sm font-medium mb-1"
                           style={{ color: currentColors.text }}
                         >
-                          {announcement.title}
+                          No announcements yet
                         </p>
-                        <p
-                          className="text-xs mt-1"
+                        <p 
+                          className="text-xs"
                           style={{ color: currentColors.textSecondary }}
                         >
-                          {announcement.message}
-                        </p>
-                        <p
-                          className="text-xs mt-2"
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          {announcement.date}
+                          Admin hasn't posted any announcements at the moment
                         </p>
                       </div>
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          announcement.priority === "high"
-                            ? "bg-red-600 text-white"
-                            : "bg-yellow-600 text-white"
-                        }`}
-                      >
-                        {announcement.priority}
-                      </span>
                     </div>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    {schoolAnnouncements.slice(0, selectedFilter === "announcements" ? schoolAnnouncements.length : 3).map((announcement) => (
+                      <div
+                        key={announcement.id}
+                        className="mt-3 p-3 rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                        style={{
+                          backgroundColor: isDarkMode
+                            ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                            : "white",
+                          borderColor: isDarkMode ? currentColors.border : "black",
+                        }}
+                        onClick={() => setSelectedAnnouncement(announcement)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p
+                              className="text-sm font-medium"
+                              style={{ color: currentColors.text }}
+                            >
+                              {announcement.title}
+                            </p>
+                            <p
+                              className="text-xs mt-1"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              {announcement.message}
+                            </p>
+                            <p
+                              className="text-xs mt-2"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              {announcement.date}
+                            </p>
+                          </div>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              announcement.priority === "high"
+                                ? "bg-red-600 text-white"
+                                : "bg-yellow-600 text-white"
+                            }`}
+                          >
+                            {announcement.priority}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {schoolAnnouncements.length > 3 && selectedFilter !== "announcements" && (
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={() => setSelectedFilter("announcements")}
+                          className="px-4 py-2 text-sm hover:underline transition-colors"
+                          style={{ color: isDarkMode ? "#60A5FA" : "#007AFF" }}
+                        >
+                          View All Announcements
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -738,6 +810,79 @@ const NotificationPage = () => {
       )}
 
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+
+      {/* Announcement Detail Modal */}
+      {selectedAnnouncement && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div
+            className="rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col"
+            style={{ backgroundColor: currentColors.surface }}
+          >
+            <div
+              className="p-4 border-b"
+              style={{ borderColor: currentColors.border }}
+            >
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: currentColors.text }}
+              >
+                {selectedAnnouncement.title}
+              </h2>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`px-3 py-1 text-sm rounded-full ${
+                      selectedAnnouncement.priority === "high"
+                        ? "bg-red-600 text-white"
+                        : "bg-yellow-600 text-white"
+                    }`}
+                  >
+                    {selectedAnnouncement.priority.toUpperCase()}
+                  </span>
+                  <p
+                    className="text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {selectedAnnouncement.date}
+                  </p>
+                </div>
+
+                <div
+                  className="p-4 rounded-lg border"
+                  style={{
+                    backgroundColor: isDarkMode
+                      ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                      : "white",
+                    borderColor: isDarkMode ? currentColors.border : "black",
+                  }}
+                >
+                  <p
+                    className="text-base leading-relaxed"
+                    style={{ color: currentColors.text }}
+                  >
+                    {selectedAnnouncement.message}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="p-4 border-t flex justify-end"
+              style={{ borderColor: currentColors.border }}
+            >
+              <button
+                onClick={() => setSelectedAnnouncement(null)}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
