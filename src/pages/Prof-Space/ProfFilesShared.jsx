@@ -293,7 +293,9 @@ const ProfFilesShared = () => {
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
   const checkFileExists = (name) =>
-    resources?.some((r) => r.name.toLowerCase().includes(name.toLowerCase()));
+    resources?.some((r) =>
+      r.file_name.toLowerCase().includes(name.toLowerCase()),
+    );
 
   const initiateUpload = (files) => {
     if (!files?.length) return;
