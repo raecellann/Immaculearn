@@ -21,6 +21,7 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 import AddMember from "../component/AddMember";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
+
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
@@ -1086,15 +1087,7 @@ const ProfStreamPage = () => {
         itemName={dialogMessage}
       />
 
-      {/* CHAT POPUP */}
-      <ChatPopup
-        isOpen={showChatPopup}
-        onClose={handleCloseChat}
-        spaceName={spaceName}
-        currentUser={user}
-        spaceMembers={spaceMembers}
-        onSendMessage={handleSendMessage}
-      />
+    
     </div>
   );
 };
