@@ -6,6 +6,7 @@ import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { GroupCover } from "../component/groupCover";
+import profanityFilter from "../../utils/profanityFilter";
 
 const ChatList = () => {
   const { userSpaces, friendSpaces } = useSpace();
@@ -23,6 +24,7 @@ const ChatList = () => {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [hasProfanity, setHasProfanity] = useState(false);
   
   // Theme state
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -244,12 +246,26 @@ const ChatList = () => {
   const statusColorClass = participantStatus === "Online" ? "text-green-500" : "text-gray-500";
   const statusDotClass = participantStatus === "Online" ? "bg-green-500" : "bg-gray-500";
 
-  // Send message helper
+  // Handle input change with profanity detection
+  const handleInputChange = (value) => {
+    setInput(value);
+    setHasProfanity(profanityFilter.containsProfanity(value));
+  };
+
+  // Send message helper with profanity filtering
   const handleSend = () => {
     if (!input.trim()) return;
     
-    sendMessage(input);
+    // Additional check to prevent sending profanity
+    if (hasProfanity) return;
+    
+    // Check for profanity and censor if found
+    const censoredMessage = profanityFilter.censorText(input);
+    
+    // Send the censored message
+    sendMessage(censoredMessage);
     setInput("");
+    setHasProfanity(false); // Reset profanity warning
     inputRef.current?.focus();
   };
 
@@ -307,7 +323,7 @@ const ChatList = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ maxHeight: '100vh' }}>
         {/* Mobile + Tablet Header */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
@@ -433,9 +449,10 @@ const ChatList = () => {
         </div>
 
         {/* CHAT PANEL */}
-        <div className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 rounded-xl flex flex-col min-h-[500px] lg:min-h-0 pr-4`} style={{ 
+        <div className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 rounded-xl flex flex-col h-full pr-4 overflow-hidden`} style={{ 
           backgroundColor: currentColors.surface,
-          border: isDarkMode ? 'none' : '1px solid black'
+          border: isDarkMode ? 'none' : '1px solid black',
+          maxHeight: '100vh'
         }}>
           {!activeSpaceUuid ? (
             <div className="flex-1 flex items-center justify-center min-h-[400px] mt-16">
@@ -528,12 +545,11 @@ const ChatList = () => {
               </div>
 
               {/* Messages - Scrollable Area */}
-              <div className={`chat-messages-container flex-1 p-2 sm:p-3 md:p-4 overflow-y-auto min-h-0 transition-all duration-300 scrollbar-hide ${showHeader ? 'max-h-[calc(100vh-160px)] sm:max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-170px)]' : 'max-h-[calc(100vh-80px)] sm:max-h-[calc(100vh-90px)] md:max-h-[calc(100vh-100px)]'}`} style={{
+              <div className={`chat-messages-container flex-1 p-2 sm:p-3 md:p-4 overflow-y-auto min-h-0 scrollbar-hide`} style={{
                 msOverflowStyle: 'none',
                 scrollbarWidth: 'none',
-                transform: 'translateX(0)',
-                paddingRight: '0',
-                marginRight: '0'
+                maxHeight: 'calc(100vh - 180px)',
+                minHeight: '200px'
               }}>
                 {Object.entries(messagesByDate).map(([dateLabel, dateMessages]) => (
                   <div key={dateLabel}>
@@ -603,7 +619,7 @@ const ChatList = () => {
               </div>
 
               {/* Fixed Input - Always Visible */}
-              <div className="p-2 sm:p-3 md:p-4 border-t rounded-b-xl sticky bottom-0" style={{ 
+              <div className="p-2 sm:p-3 md:p-4 border-t rounded-b-xl sticky bottom-0 relative" style={{ 
                 backgroundColor: currentColors.surface,
                 borderColor: currentColors.border
               }}>
@@ -625,7 +641,7 @@ const ChatList = () => {
                   <input
                     ref={inputRef}
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => handleInputChange(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
@@ -638,13 +654,26 @@ const ChatList = () => {
                   />
                   <button 
                     onClick={handleSend} 
-                    className="transition-colors p-1 sm:p-0 bg-transparent border-none"
-                    style={{ color: '#3b82f6' }}
-                    disabled={!input.trim()}
+                    className={`transition-colors p-1 sm:p-0 bg-transparent border-none ${hasProfanity ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    style={{ color: hasProfanity ? '#9ca3af' : '#3b82f6' }}
+                    disabled={!input.trim() || hasProfanity}
                   >
                     <FiSend />
                   </button>
                 </div>
+                
+                {/* Profanity Warning - Absolute Position */}
+                {hasProfanity && (
+                  <div className="absolute -top-12 left-3 right-3 px-3 py-2 rounded-lg text-xs flex items-center gap-2 animate-pulse lg:-top-12" style={{
+                    backgroundColor: isDarkMode ? '#dc2626' : '#ef4444',
+                    color: 'white',
+                    zIndex: 10
+                  }}>
+                    <span>🚫</span>
+                    <span className="hidden sm:inline"><strong>Content Warning:</strong> Your message contains inappropriate language and will be automatically censored to maintain a respectful chat environment.</span>
+                    <span className="sm:hidden"><strong>Warning:</strong> Message contains inappropriate language and will be censored.</span>
+                  </div>
+                )}
               </div>
             </>
           )}
