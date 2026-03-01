@@ -387,7 +387,7 @@ const ProfTaskPage = () => {
       if (status_type === "uploaded") {
         await uploadTaskMutation.mutateAsync({
           space_uuid: currentSpace?.space_uuid,
-          taskData: payload,
+          taskData: taskData,
         });
         alert("Task published successfully!");
       } else {

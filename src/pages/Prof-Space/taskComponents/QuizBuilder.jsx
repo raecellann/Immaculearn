@@ -396,8 +396,9 @@ const QuizBuilder = ({
     // Format questions according to the specified structure
     const formattedQuestions = questions.map((question, index) => {
       const questionData = {
-        question_type: question.type === "multiple-choice" ? "mcq" : question.type,
-        [`q${index + 1}`]: question.question,
+        question_type:
+          question.type === "multiple-choice" ? "mcq" : question.type,
+        question: question.question,
         point: question.points || 1,
         choices: [],
       };
