@@ -14,6 +14,18 @@ import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { toast } from "react-toastify";
 
+// Hardcoded lesson data for demonstration
+export const hardcodedLessons = [
+  { id: 1, name: "Module 1: Introduction to React", description: "Basic React concepts and components" },
+  { id: 2, name: "Module 2: State and Props", description: "Managing component state and passing props" },
+  { id: 3, name: "Module 3: React Hooks", description: "Using useState, useEffect, and custom hooks" },
+  { id: 4, name: "Module 4: Component Lifecycle", description: "Understanding component lifecycle methods" },
+  { id: 5, name: "Module 5: Routing in React", description: "Implementing navigation with React Router" },
+  { id: 6, name: "Module 6: Forms and Validation", description: "Building forms with validation" },
+  { id: 7, name: "Module 7: Redux Integration", description: "State management with Redux" },
+  { id: 8, name: "Module 8: Testing React Apps", description: "Unit and integration testing" }
+];
+
 const UserFilesShared = () => {
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;

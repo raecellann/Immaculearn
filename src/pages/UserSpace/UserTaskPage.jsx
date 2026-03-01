@@ -4,6 +4,7 @@ import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useTasks } from "../../hooks/useTasks";
 import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
+import { hardcodedLessons } from "./UserFilesShared.jsx";
 import Sidebar from "../component/sidebar";
 import Button from "../component/button_2";
 import MainButton from "../component/Button.jsx";
@@ -87,9 +88,7 @@ const AdminTaskPage = () => {
     quickTaskTitle: "",
     quickLessonUnder: ""
   });
-  const [lessons, setLessons] = useState([]);
-  const [showAddLesson, setShowAddLesson] = useState(false);
-  const [newLesson, setNewLesson] = useState("");
+  const [lessons, setLessons] = useState(hardcodedLessons.map(lesson => lesson.name));
 
   // Exam filter state
   const [examFilter, setExamFilter] = useState("all"); // "all", "prelim", "midterm", "prefinals", "finals"
@@ -638,18 +637,6 @@ const AdminTaskPage = () => {
     }));
   };
 
-  const handleAddNewLesson = () => {
-    if (newLesson.trim()) {
-      if (!lessons.includes(newLesson.trim())) {
-        setLessons(prev => [...prev, newLesson.trim()]);
-      }
-      setQuickLessonUnder(newLesson.trim());
-      setNewLesson("");
-      setShowAddLesson(false);
-      clearQuickTaskError('quickLessonUnder');
-    }
-  };
-
   const handleQuickTaskCreate = () => {
     // Clear previous errors
     const newErrors = {
@@ -710,8 +697,6 @@ const AdminTaskPage = () => {
       quickTaskTitle: "",
       quickLessonUnder: ""
     });
-    setShowAddLesson(false);
-    setNewLesson("");
   };
 
   const confirmDeleteRoom = () => {
@@ -785,14 +770,14 @@ const AdminTaskPage = () => {
           <div className="absolute inset-0 bg-black/30" />
         </div>
         <div className="p-4 sm:p-6">
-          <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
-            <div className="flex items-center gap-2 mt-2">
+          <div className="hidden md:block mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">{spaceName}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
               <span className="text-xs text-gray-400">
                 ({currentSpace?.members?.length || 0} member(s))
               </span>
               {isOwnerSpace && (
-                <>
+                <div className="flex flex-wrap gap-2">
                   <div onClick={handleInviteMember}>
                     <Button text="Add Member" />
                   </div>
@@ -802,10 +787,10 @@ const AdminTaskPage = () => {
                   <div onClick={handleDeleteRoom}>
                     <Button text="Delete Room" />
                   </div>
-                </>
+                </div>
               )}
               {isFriendSpace && (
-                <div className="flex flex-col gap-2 mt-2">
+                <div className="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0">
                   <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
                     <span className="text-xs text-blue-400 break-all">
                       {currentSpace?.space_link || "Loading..."}
@@ -824,20 +809,24 @@ const AdminTaskPage = () => {
           </div>
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
-              <div className="flex justify-center space-x-12">
+              <div className="flex justify-center space-x-6 sm:space-x-8 md:space-x-12">
                 <button
                   onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}
+                  className="px-3 py-2 text-sm sm:text-base hover:opacity-80 transition-opacity"
                 >
                   Stream
                 </button>
-                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
+                <button 
+                  className="px-3 py-2 text-sm sm:text-base font-semibold border-b-2 pb-2 hover:opacity-80 transition-opacity" 
+                  style={{ borderColor: currentColors.text }}
+                >
                   Tasks
-
                 </button>
                 <button
                   onClick={() =>
                     navigate(`/space/${space_uuid}/${space_name}/files`)
                   }
+                  className="px-3 py-2 text-sm sm:text-base hover:opacity-80 transition-opacity"
                 >
                   Files
                 </button>
@@ -845,6 +834,7 @@ const AdminTaskPage = () => {
                   onClick={() =>
                     navigate(`/space/${space_uuid}/${space_name}/people`)
                   }
+                  className="px-3 py-2 text-sm sm:text-base hover:opacity-80 transition-opacity"
                 >
                   People
                 </button>
@@ -854,14 +844,14 @@ const AdminTaskPage = () => {
 
           {/* Mobile Add Member Button */}
           {isOwnerSpace && (
-            <div className="md:hidden flex justify-end gap-2 mb-6">
-              <div onClick={handleInviteMember}>
+            <div className="md:hidden flex flex-col sm:flex-row sm:justify-end gap-2 mb-6 px-2 sm:px-0">
+              <div onClick={handleInviteMember} className="w-full sm:w-auto">
                 <Button text="Add Member" />
               </div>
-              <div onClick={handlePendingInvites}>
+              <div onClick={handlePendingInvites} className="w-full sm:w-auto">
                 <Button text="Pending Invites" />
               </div>
-              <div onClick={handleDeleteRoom}>
+              <div onClick={handleDeleteRoom} className="w-full sm:w-auto">
                 <Button text="Delete Room" />
               </div>
             </div>
@@ -870,33 +860,35 @@ const AdminTaskPage = () => {
           {/* TASKS LIST VIEW */}
             <div className="max-w-5xl mx-auto">
               {isOwnerSpace && (
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                   {/* Exam Filter - Left Side */}
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-medium" style={{ color: currentColors.text, fontSize: '0.65rem' }}>
                         Filter:
                       </span>
-                      {[
-                        { value: "all", label: "All" },
-                        { value: "prelim", label: "Prelim" },
-                        { value: "midterm", label: "Midterm" },
-                        { value: "prefinals", label: "Prefinals" },
-                        { value: "finals", label: "Finals" }
-                      ].map((filter) => (
-                        <button
-                          key={filter.value}
-                          onClick={() => setExamFilter(filter.value)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                            examFilter === filter.value
-                              ? "bg-blue-600 text-white"
-                              : "bg-gray-600 text-gray-300 hover:bg-gray-500"
-                          }`}
-                          style={{ fontSize: '0.65rem' }}
-                        >
-                          {filter.label}
-                        </button>
-                      ))}
+                      <div className="flex flex-wrap gap-1 sm:gap-2">
+                        {[
+                          { value: "all", label: "All" },
+                          { value: "prelim", label: "Prelim" },
+                          { value: "midterm", label: "Midterm" },
+                          { value: "prefinals", label: "Prefinals" },
+                          { value: "finals", label: "Finals" }
+                        ].map((filter) => (
+                          <button
+                            key={filter.value}
+                            onClick={() => setExamFilter(filter.value)}
+                            className={`px-2 py-1 rounded-full text-xs font-medium transition-all ${
+                              examFilter === filter.value
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-600 text-gray-300 hover:bg-gray-500"
+                            }`}
+                            style={{ fontSize: '0.65rem' }}
+                          >
+                            {filter.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     
                     <div className="flex items-center gap-2">
@@ -906,7 +898,7 @@ const AdminTaskPage = () => {
                       {examFilter !== "all" && (
                         <button
                           onClick={() => setExamFilter("all")}
-                          className="px-3 py-1 rounded-full text-xs bg-gray-600 text-gray-300 hover:bg-gray-500 transition-colors"
+                          className="px-2 py-1 rounded-full text-xs bg-gray-600 text-gray-300 hover:bg-gray-500 transition-colors"
                           style={{ fontSize: '0.65rem' }}
                         >
                           Clear
@@ -917,7 +909,7 @@ const AdminTaskPage = () => {
 
                   {/* Create Task Button - Right Side */}
                   <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start"
                     onClick={() => setShowQuickTaskModal(true)}
                   >
                     <FiFileText size={16} />
@@ -930,15 +922,15 @@ const AdminTaskPage = () => {
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>
               </div>
 
-              {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
+              {/* Desktop/Tablet Table */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full min-w-[600px]">
                   <thead>
                     <tr className="border-b border-gray-600 text-gray-400 text-left">
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Task Name</th>
-                      <th className="py-3 px-4">Deadline</th>
-                      <th className="py-3 px-4">Details</th>
+                      <th className="py-3 px-2 sm:px-4 text-sm sm:text-base">Status</th>
+                      <th className="py-3 px-2 sm:px-4 text-sm sm:text-base">Task Name</th>
+                      <th className="py-3 px-2 sm:px-4 text-sm sm:text-base hidden lg:table-cell">Deadline</th>
+                      <th className="py-3 px-2 sm:px-4 text-sm sm:text-base">Details</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -947,27 +939,28 @@ const AdminTaskPage = () => {
                         key={index}
                         className="border-b border-gray-700 hover:bg-[#1E222A]"
                       >
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-2 sm:px-4">
                           <div className="relative inline-block">
                             <button
                               onClick={() =>
                                 setOpenIndex(openIndex === index ? null : index)
                               }
-                              className={`px-4 py-1 rounded-full bg-black text-sm ${statusStyles[task.task_status]}`}
+                              className={`px-2 sm:px-4 py-1 rounded-full bg-black text-xs sm:text-sm ${statusStyles[task.task_status]}`}
                             >
                               {task.task_status} ▼
                             </button>
 
                             {openIndex === index && (
-                              <div className="absolute left-0 mt-2 w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-3 z-50 shadow-lg">
-                                <div className="flex flex-col gap-2">
+                              <div className="absolute left-0 mt-2 w-40 sm:w-44 bg-[#1E222A] border border-gray-700 rounded-lg p-2 sm:p-3 z-50 shadow-lg">
+                                <div className="flex flex-col gap-1 sm:gap-2">
                                   {Object.keys(statusStyles).map((st) => (
                                     <button
                                       key={st}
-                                      onClick={() =>
-                                        handleStatusChange(index, st)
-                                      }
-                                      className={`w-full text-center px-4 py-2 rounded-full bg-black ${statusStyles[st]} text-sm font-medium hover:opacity-90 whitespace-nowrap`}
+                                      onClick={() => {
+                                        handleStatusChange(index, st);
+                                        setOpenIndex(null);
+                                      }}
+                                      className={`w-full text-center px-2 sm:px-4 py-1 sm:py-2 rounded-full bg-black text-xs sm:text-sm font-medium hover:opacity-90 whitespace-nowrap ${statusStyles[st]}`}
                                     >
                                       {st}
                                     </button>
@@ -978,28 +971,30 @@ const AdminTaskPage = () => {
                           </div>
                         </td>
 
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">
+                        <td className="py-3 px-2 sm:px-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
+                            <span className="text-sm sm:text-lg flex-shrink-0">
                               {getCategoryDisplay(task.task_category)}
                             </span>
 
-                            <span className="text-sm font-semibold">
+                            <span className="text-xs sm:text-sm font-semibold truncate">
                               {task.task_title}
                             </span>
                           </div>
                         </td>
 
-                        <td className="py-3 px-4">
-                          {new Date(task.task_due).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "2-digit",
-                          })}
+                        <td className="py-3 px-2 sm:px-4 hidden lg:table-cell">
+                          <span className="text-xs sm:text-sm">
+                            {new Date(task.task_due).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "2-digit",
+                            })}
+                          </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-2 sm:px-4">
                           <MainButton
-                            className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                            className="px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium w-full sm:w-auto"
                             onClick={() =>
                               navigate(
                                 `/task/${currentSpace?.space_uuid}/${currentSpace?.space_name}/${task.task_title}`,
@@ -1016,39 +1011,67 @@ const AdminTaskPage = () => {
               </div>
 
               {/* Mobile Cards */}
-              <div className="md:hidden space-y-4">
+              <div className="sm:hidden space-y-3 sm:space-y-4 px-2 sm:px-0">
                 {filterTasksByExam(uploadedTask)?.map((task, index) => (
                   <div
                     key={index}
-                    className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                    className="bg-[#1B1F26] border border-gray-700 rounded-xl p-3 sm:p-4 shadow-sm"
                   >
-                    <div className="flex justify-between items-center mb-3">
+                    {/* Task Name Section */}
+                    <div className="mb-3">
+                      <p className="text-xs font-medium text-gray-400 mb-1">Task Name</p>
                       <div className="flex items-center gap-2">
-                        <span className="text-lg">
+                        <span className="text-base sm:text-lg flex-shrink-0">
                           {getCategoryDisplay(task.task_category)}
                         </span>
-
-                        <span className="text-sm font-semibold">
+                        <span className="text-sm sm:text-base font-semibold truncate">
                           {task.task_title}
                         </span>
                       </div>
-
-                      <button
-                        onClick={() =>
-                          setOpenIndex(openIndex === index ? null : index)
-                        }
-                        className={`px-3 py-1 rounded-full bg-black text-xs ${statusStyles[task.task_status]}`}
-                      >
-                        {task.task_status}
-                      </button>
                     </div>
 
-                    <p className="text-sm text-gray-400">
-                      Deadline:{" "}
-                      <span className="text-white">
-                        {new Date(task.task_due).toLocaleDateString("en-US")}
-                      </span>
-                    </p>
+                    {/* Status and Deadline Row */}
+                    <div className="flex justify-between items-start gap-3 mb-3">
+                      {/* Status Section */}
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-gray-400 mb-1">Status</p>
+                        <button
+                          onClick={() =>
+                            setOpenIndex(openIndex === index ? null : index)
+                          }
+                          className={`px-2 py-1 rounded-full bg-black text-xs flex-shrink-0 ${statusStyles[task.task_status]}`}
+                        >
+                          {task.task_status}
+                        </button>
+                      </div>
+
+                      {/* Deadline Section */}
+                      <div className="flex-1 text-right">
+                        <p className="text-xs font-medium text-gray-400 mb-1">Deadline</p>
+                        <p className="text-sm text-white">
+                          {new Date(task.task_due).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Details Section */}
+                    <div className="border-t border-gray-700 pt-3">
+                      <p className="text-xs font-medium text-gray-400 mb-2">Details</p>
+                      <MainButton
+                        className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium w-full"
+                        onClick={() =>
+                          navigate(
+                            `/task/${currentSpace?.space_uuid}/${currentSpace?.space_name}/${task.task_title}`,
+                          )
+                        }
+                      >
+                        View Task
+                      </MainButton>
+                    </div>
 
                     {openIndex === index && (
                       <div className="mt-3 pt-3 border-t border-gray-700">
@@ -1087,18 +1110,15 @@ const AdminTaskPage = () => {
                   Draft Activities 📝
                 </h2>
 
-                {/* Desktop Table */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full">
+                {/* Desktop/Tablet Table */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full min-w-[600px]">
                     <thead>
                       <tr className="border-b border-gray-600 text-gray-400 text-left">
-                        <th className="py-3 px-4">Status</th>
-
-                        <th className="py-3 px-4">Task Name</th>
-
-                        <th className="py-3 px-4">Deadline</th>
-
-                        <th className="py-3 px-4">Details</th>
+                        <th className="py-3 px-2 sm:px-4 text-sm sm:text-base">Status</th>
+                        <th className="py-3 px-2 sm:px-4 text-sm sm:text-base">Task Name</th>
+                        <th className="py-3 px-2 sm:px-4 text-sm sm:text-base hidden lg:table-cell">Deadline</th>
+                        <th className="py-3 px-2 sm:px-4 text-sm sm:text-base">Details</th>
                       </tr>
                     </thead>
 
@@ -1108,28 +1128,34 @@ const AdminTaskPage = () => {
                           key={index}
                           className="border-b border-gray-700 hover:bg-[#1E222A]"
                         >
-                          <td className="py-3 px-4">
-                            <span className="px-6 py-1 rounded-full bg-black text-sm font-bold border-2 border-gray-500 text-gray-400 inline-block min-w-[120px] text-center">
+                          <td className="py-3 px-2 sm:px-4">
+                            <span className="px-3 sm:px-6 py-1 rounded-full bg-black text-xs sm:text-sm font-bold border-2 border-gray-500 text-gray-400 inline-block min-w-[100px] sm:min-w-[120px] text-center">
                               Draft
                             </span>
                           </td>
 
-                          <td className="py-3 px-4">{draft.task_title}</td>
-
-                          <td className="py-3 px-4">
-                            {new Date(draft.task_due).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "2-digit",
-                              },
-                            )}
+                          <td className="py-3 px-2 sm:px-4">
+                            <span className="text-xs sm:text-sm truncate block max-w-[150px] sm:max-w-none">
+                              {draft.task_title}
+                            </span>
                           </td>
-                          <td className="py-3 px-4">
+
+                          <td className="py-3 px-2 sm:px-4 hidden lg:table-cell">
+                            <span className="text-xs sm:text-sm">
+                              {new Date(draft.task_due).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "2-digit",
+                                },
+                              )}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 sm:px-4">
                             <a
                               href="/prof-task-view"
-                              className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                              className="block w-full text-center px-2 sm:px-4 py-1 sm:py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium"
                             >
                               View Details
                             </a>
@@ -1140,30 +1166,47 @@ const AdminTaskPage = () => {
                   </table>
                 </div>
 
-                <div className="md:hidden space-y-4">
+                {/* Mobile Cards */}
+                <div className="sm:hidden space-y-3 sm:space-y-4 px-2 sm:px-0">
                   {draftedTask?.map((draft, index) => (
                     <div
                       key={index}
-                      className="bg-[#1B1F26] border border-gray-700 rounded-xl p-4"
+                      className="bg-[#1B1F26] border border-gray-700 rounded-xl p-3 sm:p-4 shadow-sm"
                     >
-                      <div className="flex justify-between items-center mb-3">
-                        <p className="text-sm font-semibold">
+                      {/* Task Name Section */}
+                      <div className="mb-3">
+                        <p className="text-xs font-medium text-gray-400 mb-1">Task Name</p>
+                        <p className="text-sm font-semibold truncate">
                           {draft.task_title}
                         </p>
-
-                        <span className="px-3 py-1 rounded-full bg-black text-xs border-2 border-gray-500 text-gray-400 font-bold">
-                          Draft
-                        </span>
                       </div>
 
-                      <p className="text-xs text-gray-400">
-                        Deadline:{" "}
-                        <span className="text-white">
-                          {new Date(draft.task_due).toLocaleDateString("en-US")}
-                        </span>
-                      </p>
+                      {/* Status and Deadline Row */}
+                      <div className="flex justify-between items-start gap-3 mb-3">
+                        {/* Status Section */}
+                        <div className="flex-1">
+                          <p className="text-xs font-medium text-gray-400 mb-1">Status</p>
+                          <span className="px-3 py-1 rounded-full bg-black text-xs border-2 border-gray-500 text-gray-400 font-bold inline-block">
+                            Draft
+                          </span>
+                        </div>
 
-                      <div className="mt-3 pt-3 border-t border-gray-700">
+                        {/* Deadline Section */}
+                        <div className="flex-1 text-right">
+                          <p className="text-xs font-medium text-gray-400 mb-1">Deadline</p>
+                          <p className="text-sm text-white">
+                            {new Date(draft.task_due).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Details Section */}
+                      <div className="border-t border-gray-700 pt-3">
+                        <p className="text-xs font-medium text-gray-400 mb-2">Details</p>
                         <a
                           href="/prof-task-view"
                           className="block w-full text-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
@@ -1237,12 +1280,12 @@ const AdminTaskPage = () => {
 
       {/* QUICK TASK CREATION MODAL */}
       {showQuickTaskModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div 
-            className="rounded-xl p-6 w-full max-w-md mx-4"
+            className="rounded-xl p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto mx-4"
             style={{ backgroundColor: currentColors.surface, border: `1px solid ${currentColors.border}` }}
           >
-            <h3 className="text-xl font-semibold mb-4" style={{ color: currentColors.text }}>
+            <h3 className="text-lg sm:text-xl font-semibold mb-4" style={{ color: currentColors.text }}>
               Create New Task
             </h3>
             
@@ -1259,7 +1302,7 @@ const AdminTaskPage = () => {
                     setQuickTaskTitle(e.target.value);
                     clearQuickTaskError('quickTaskTitle');
                   }}
-                  className={`w-full px-3 py-2 rounded-lg border outline-none transition-colors ${
+                  className={`w-full px-3 py-2 rounded-lg border outline-none transition-colors text-sm ${
                     quickTaskErrors.quickTaskTitle ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'
                   }`}
                   style={{ 
@@ -1289,7 +1332,7 @@ const AdminTaskPage = () => {
                       setQuickLessonUnder(e.target.value);
                       clearQuickTaskError('quickLessonUnder');
                     }}
-                    className={`flex-1 px-3 py-2 rounded-lg border outline-none transition-colors ${
+                    className={`flex-1 px-3 py-2 rounded-lg border outline-none transition-colors text-sm ${
                       quickTaskErrors.quickLessonUnder ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'
                     }`}
                     style={{ 
@@ -1307,19 +1350,6 @@ const AdminTaskPage = () => {
                       </option>
                     ))}
                   </select>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddLesson(!showAddLesson)}
-                    className="px-3 py-2 rounded-lg border transition-colors hover:scale-105"
-                    style={{ 
-                      backgroundColor: currentColors.accent, 
-                      borderColor: currentColors.accent,
-                      color: 'white'
-                    }}
-                    title="Add new lesson"
-                  >
-                    +
-                  </button>
                 </div>
                 {quickTaskErrors.quickLessonUnder && (
                   <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
@@ -1328,70 +1358,7 @@ const AdminTaskPage = () => {
                   </p>
                 )}
                 
-                {/* Add New Lesson Section */}
-                {showAddLesson && (
-                  <div className="mt-3 p-3 rounded-lg border" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newLesson}
-                        onChange={(e) => setNewLesson(e.target.value)}
-                        placeholder="Enter new lesson name..."
-                        className="flex-1 px-3 py-2 rounded-lg border outline-none focus:border-blue-500"
-                        style={{ 
-                          backgroundColor: currentColors.surface, 
-                          borderColor: currentColors.border,
-                          color: currentColors.text
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            handleAddNewLesson();
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddNewLesson}
-                        className="px-3 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
-                      >
-                        Add
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAddLesson(false);
-                          setNewLesson("");
-                        }}
-                        className="px-3 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                    {newLesson.trim() && lessons.includes(newLesson.trim()) && (
-                      <p className="text-yellow-500 text-xs mt-2">
-                        This lesson already exists
-                      </p>
-                    )}
-                  </div>
-                )}
-                
-                {/* Show add lesson prompt when no lessons exist */}
-                {lessons.length === 0 && !showAddLesson && (
-                  <div className="mt-3 p-3 rounded-lg border border-dashed" style={{ backgroundColor: currentColors.background, borderColor: currentColors.accent }}>
-                    <p className="text-sm text-center" style={{ color: currentColors.textSecondary }}>
-                      No lessons available yet. 
-                      <button
-                        type="button"
-                        onClick={() => setShowAddLesson(true)}
-                        className="ml-2 px-2 py-1 rounded text-xs transition-colors hover:scale-105"
-                        style={{ backgroundColor: currentColors.accent, color: 'white' }}
-                      >
-                        Add your first lesson
-                      </button>
-                    </p>
-                  </div>
-                )}
-              </div>
+                </div>
 
               {/* Category */}
               <div>
@@ -1401,7 +1368,7 @@ const AdminTaskPage = () => {
                 <select
                   value={quickTaskCategory}
                   onChange={(e) => setQuickTaskCategory(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border focus:border-blue-500 outline-none"
+                  className="w-full px-3 py-2 rounded-lg border focus:border-blue-500 outline-none text-sm"
                   style={{ 
                     backgroundColor: currentColors.background, 
                     borderColor: currentColors.border,
@@ -1416,7 +1383,7 @@ const AdminTaskPage = () => {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-3 mt-6">
               <button
                 onClick={() => {
                   setShowQuickTaskModal(false);
@@ -1427,10 +1394,8 @@ const AdminTaskPage = () => {
                     quickTaskTitle: "",
                     quickLessonUnder: ""
                   });
-                  setShowAddLesson(false);
-                  setNewLesson("");
                 }}
-                className="px-4 py-2 rounded-lg transition"
+                className="px-4 py-2 rounded-lg transition w-full sm:w-auto order-2 sm:order-1"
                 style={{ 
                   backgroundColor: currentColors.textSecondary, 
                   color: 'white'
@@ -1442,7 +1407,7 @@ const AdminTaskPage = () => {
               </button>
               <button
                 onClick={handleQuickTaskCreate}
-                className="px-4 py-2 rounded-lg transition"
+                className="px-4 py-2 rounded-lg transition w-full sm:w-auto order-1 sm:order-2"
                 style={{ 
                   backgroundColor: currentColors.accent, 
                   color: 'white'

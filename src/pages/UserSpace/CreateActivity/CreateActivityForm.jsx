@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useSpaceTheme } from "../../../contexts/theme/spaceThemeContextProvider";
+import { hardcodedLessons } from "../UserFilesShared.jsx";
 import {
   FiBold,
   FiItalic,
@@ -323,9 +324,9 @@ const CreateActivityForm = ({ spaceName }) => {
   return (
     <div className="font-sans">
       {/* Form Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* LEFT COLUMN */}
-        <div className="flex-1 flex flex-col gap-6">
+        <div className="flex-1 flex flex-col gap-4 lg:gap-6">
           {/* Title Field */}
           <div>
             <label className="block font-semibold mb-2">
@@ -361,8 +362,7 @@ const CreateActivityForm = ({ spaceName }) => {
             <label className="block font-semibold mb-2">
               Lesson Under: <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
+            <select
               value={lessonUnder}
               onChange={(e) => {
                 setLessonUnder(e.target.value);
@@ -375,9 +375,15 @@ const CreateActivityForm = ({ spaceName }) => {
                 backgroundColor: currentColors.surface, 
                 borderColor: errors.lessonUnder ? '#ef4444' : currentColors.border 
               }}
-              placeholder="e.g., Module 1: Introduction to React"
               disabled={isSubmitting}
-            />
+            >
+              <option value="">Select a lesson...</option>
+              {hardcodedLessons.map((lesson) => (
+                <option key={lesson.id} value={lesson.name}>
+                  {lesson.name}
+                </option>
+              ))}
+            </select>
             {errors.lessonUnder && (
               <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                 <FiX size={12} />
@@ -422,7 +428,7 @@ const CreateActivityForm = ({ spaceName }) => {
         </div>
 
         {/* RIGHT COLUMN */}
-        <div className="flex-1 flex flex-col gap-6">
+        <div className="flex-1 flex flex-col gap-4 lg:gap-6">
           {/* Score Field */}
           <div>
             <label className="block font-semibold mb-2">
@@ -525,7 +531,7 @@ const CreateActivityForm = ({ spaceName }) => {
           {taskCategory !== 'quiz' && (
             <div className="mt-6">
               {/* Section Header with Buttons */}
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                 <div>
                   <h3 className="text-lg font-bold mb-1" style={{ color: currentColors.text }}>
                     📊 Scoring Criteria
@@ -540,7 +546,7 @@ const CreateActivityForm = ({ spaceName }) => {
                   <button
                     type="button"
                     onClick={() => setShowTemplates(!showTemplates)}
-                    className="px-3 py-2 text-xs rounded-lg transition-all hover:scale-105 flex items-center gap-1"
+                    className="px-3 py-2 text-xs rounded-lg transition-all hover:scale-105 flex items-center gap-1 whitespace-nowrap"
                     style={{ backgroundColor: currentColors.accent, color: 'white' }}
                     disabled={isSubmitting}
                   >
@@ -550,7 +556,7 @@ const CreateActivityForm = ({ spaceName }) => {
                   <button
                     type="button"
                     onClick={() => setShowCriteriaSection(!showCriteriaSection)}
-                    className="px-3 py-2 text-xs rounded-lg transition-all hover:scale-105 flex items-center gap-1"
+                    className="px-3 py-2 text-xs rounded-lg transition-all hover:scale-105 flex items-center gap-1 whitespace-nowrap"
                     style={{ backgroundColor: currentColors.accent, color: 'white' }}
                     disabled={isSubmitting}
                   >
@@ -693,9 +699,9 @@ const CreateActivityForm = ({ spaceName }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-4 mt-8">
+      <div className="flex flex-col items-center sm:items-end sm:flex-row gap-2 sm:gap-4 mt-6 lg:mt-8">
         <button 
-          className="px-6 py-3 rounded-lg transition-all hover:scale-105 flex items-center gap-2" 
+          className="w-48 sm:w-auto px-3 py-2 rounded-lg transition-all hover:scale-105 flex items-center justify-center gap-2 text-xs" 
           style={{ backgroundColor: currentColors.textSecondary, color: 'white' }}
           onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.text}
           onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.textSecondary}
@@ -704,12 +710,12 @@ const CreateActivityForm = ({ spaceName }) => {
         >
           {isDraftSaving ? (
             <>
-              <FiLoader className="animate-spin" size={16} />
+              <FiLoader className="animate-spin" size={12} />
               Saving...
             </>
           ) : (
             <>
-              <FiSave size={16} />
+              <FiSave size={12} />
               Save as Draft
             </>
           )}
@@ -718,19 +724,20 @@ const CreateActivityForm = ({ spaceName }) => {
         {/* Open Form Builder Button - Only show for quiz and reflection-essay categories */}
         {(taskCategory === 'quiz' || taskCategory === 'reflection-essay') && (
           <button 
-            className="px-6 py-3 rounded-lg transition-all hover:scale-105" 
+            className="w-48 sm:w-auto px-3 py-2 rounded-lg transition-all hover:scale-105 flex items-center justify-center gap-2 text-xs" 
             style={{ backgroundColor: '#6366f1', color: 'white' }}
             onMouseEnter={(e) => e.target.style.backgroundColor = '#4f46e5'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#6366f1'}
             onClick={handleOpenFormBuilder}
             disabled={isSubmitting}
           >
+            <FiEdit3 size={12} />
             Open Form Builder
           </button>
         )}
         
         <button 
-          className="px-6 py-3 rounded-lg transition-all hover:scale-105 flex items-center gap-2" 
+          className="w-48 sm:w-auto px-3 py-2 rounded-lg transition-all hover:scale-105 flex items-center justify-center gap-2 text-xs" 
           style={{ backgroundColor: currentColors.accent, color: 'white' }}
           onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
           onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}
@@ -739,11 +746,12 @@ const CreateActivityForm = ({ spaceName }) => {
         >
           {isSubmitting ? (
             <>
-              <FiLoader className="animate-spin" size={16} />
+              <FiLoader className="animate-spin" size={12} />
               Creating...
             </>
           ) : (
             <>
+              <FiTarget size={12} />
               Create Task
             </>
           )}

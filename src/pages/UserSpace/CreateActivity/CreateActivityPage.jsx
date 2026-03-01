@@ -88,10 +88,10 @@ const CreateActivityPage = () => {
          style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       
       {/* Enhanced Header */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
           <button
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow-lg transition-all hover:shadow-xl transform hover:scale-105"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow-lg transition-all hover:shadow-xl transform hover:scale-105 w-fit"
             style={{ 
               backgroundColor: isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)',
               color: currentColors.text,
@@ -104,16 +104,16 @@ const CreateActivityPage = () => {
             <span className="sm:hidden">Back</span>
           </button>
           
-          <div className="text-right">
-            <h1 className="text-2xl font-bold" style={{ color: currentColors.accent }}>
+          <div className="text-center sm:text-right">
+            <h1 className="text-xl sm:text-2xl font-bold" style={{ color: currentColors.accent }}>
               {displayName}
             </h1>
-            <p className="text-xs opacity-60">Space</p>
+            <p className="text-xs opacity-60">{displayName} Space</p>
           </div>
         </div>
         
         {/* Progress Indicator */}
-        <div className="flex items-center gap-2 text-sm opacity-75">
+        <div className="flex items-center gap-2 text-sm opacity-75 overflow-x-auto">
           <span>Tasks</span>
           <span style={{ color: currentColors.accent }}>→</span>
           <span>Create Activity</span>
@@ -127,21 +127,21 @@ const CreateActivityPage = () => {
              border: `1px solid ${currentColors.border}`
            }}>
         {/* Form Header */}
-        <div className="p-6 border-b" style={{ borderColor: currentColors.border }}>
+        <div className="p-4 sm:p-6 border-b" style={{ borderColor: currentColors.border }}>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center"
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center"
                  style={{ backgroundColor: currentColors.accent }}>
-              <span className="text-white font-bold text-lg">+</span>
+              <span className="text-white font-bold text-sm sm:text-lg">+</span>
             </div>
-            <div>
-              <h2 className="text-xl font-semibold">Create New Activity</h2>
-              <p className="text-sm opacity-75">Fill in the details below to create your activity</p>
+            <div className="flex-1">
+              <h2 className="text-lg sm:text-xl font-semibold">Create New Activity</h2>
+              <p className="text-xs sm:text-sm opacity-75">Fill in the details below to create your activity</p>
             </div>
           </div>
         </div>
 
         {/* Form Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <CreateActivityForm spaceName={displayName} />
         </div>
       </div>
