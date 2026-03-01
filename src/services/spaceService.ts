@@ -8,6 +8,7 @@ import {
   PendingSpaceInvitation,
   CourseSpaceCreateData,
   CourseSPace,
+  TaskCreateData,
 } from "../types/space";
 
 class SpaceService {
@@ -421,23 +422,13 @@ class SpaceService {
 
   // Tasks
   async uploadTask(
-    space_id: number,
-    title: string,
-    instruction: string,
-    scoring: number,
-    status: string,
-    dueDate: string,
-    groupsData: any[],
+    space_uuid: string,
+    taskData: TaskCreateData
   ) {
     try {
-      const response = await api.post(`/tasks/upload`, {
-        space_id,
-        title,
-        instruction,
-        scoring,
-        status,
-        due_date: dueDate,
-        groupsData,
+      const response = await api.post(`/tasks`, {
+        space_uuid,
+        taskData
       });
       return response.data;
     } catch (err: any) {

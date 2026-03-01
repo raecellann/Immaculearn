@@ -396,41 +396,41 @@ const QuizBuilder = ({
     // Format questions according to the specified structure
     const formattedQuestions = questions.map((question, index) => {
       const questionData = {
-        [`q${index + 1}`]: {
-          question: question.question,
-          answers: [],
-        },
+        question_type: question.type === "multiple-choice" ? "mcq" : question.type,
+        [`q${index + 1}`]: question.question,
+        point: question.points || 1,
+        choices: [],
       };
 
       // Handle different question types
       if (question.type === "multiple-choice") {
         question.options.forEach((option, optIndex) => {
-          questionData[`q${index + 1}`].answers.push({
+          questionData.choices.push({
             letter_identifier: String.fromCharCode(65 + optIndex), // A, B, C, D
-            isRightAnswer: question.correctAnswer === optIndex ? 1 : 0,
-            answer_text: option,
+            choice_answer: option,
+            isRightAnswer: question.correctAnswer === optIndex,
           });
         });
       } else if (question.type === "true-false") {
-        questionData[`q${index + 1}`].answers = [
+        questionData.choices = [
           {
-            letter_identifier: "T",
-            isRightAnswer: question.correctAnswer === "true" ? 1 : 0,
-            answer_text: "True",
+            letter_identifier: "A",
+            choice_answer: "True",
+            isRightAnswer: question.correctAnswer === "true",
           },
           {
-            letter_identifier: "F",
-            isRightAnswer: question.correctAnswer === "false" ? 1 : 0,
-            answer_text: "False",
+            letter_identifier: "B",
+            choice_answer: "False",
+            isRightAnswer: question.correctAnswer === "false",
           },
         ];
       } else {
         // For identification, enumeration, short-answer
-        questionData[`q${index + 1}`].answers = [
+        questionData.choices = [
           {
             letter_identifier: "A",
-            isRightAnswer: 1,
-            answer_text: question.correctAnswer || "",
+            choice_answer: question.correctAnswer || "",
+            isRightAnswer: true,
           },
         ];
       }
@@ -440,10 +440,11 @@ const QuizBuilder = ({
 
     // Create task object with the specified structure
     const taskData = {
-      task_type: "quiz",
+      task_category: "quiz",
+      task_title: quizTitle,
+      due_date: combinedDueDate,
+      task_instruction: instruction,
       total_score: totalScore,
-      task_due_date: combinedDueDate,
-      task_instructions: instruction,
       lesson_id: selectedLesson ? parseInt(selectedLesson) : null,
       questions: formattedQuestions,
     };
@@ -456,28 +457,28 @@ const QuizBuilder = ({
       console.error("Error saving to localStorage:", error);
     }
 
-    const quizData = {
-      title: quizTitle,
-      instruction,
-      score: totalScore,
-      dueDate: combinedDueDate,
-      timeLimit,
-      attempts: Number(attempts),
-      showCorrectAnswers,
-      questions,
-      category: "quiz",
-      lessonId: selectedLesson ? parseInt(selectedLesson) : null,
-      lessonName: selectedLesson
-        ? resources.find(
-            (lesson) => lesson.lesson_id === parseInt(selectedLesson),
-          )?.lesson_name
-        : null,
-    };
+    // const quizData = {
+    //   title: quizTitle,
+    //   instruction,
+    //   score: totalScore,
+    //   dueDate: combinedDueDate,
+    //   timeLimit,
+    //   attempts: Number(attempts),
+    //   showCorrectAnswers,
+    //   questions,
+    //   category: "quiz",
+    //   lessonId: selectedLesson ? parseInt(selectedLesson) : null,
+    //   lessonName: selectedLesson
+    //     ? resources.find(
+    //         (lesson) => lesson.lesson_id === parseInt(selectedLesson),
+    //       )?.lesson_name
+    //     : null,
+    // };
 
     if (status === "published") {
-      onPublish(quizData);
+      onPublish(taskData);
     } else {
-      onSave(quizData);
+      onSave(taskData);
     }
   };
 

@@ -374,72 +374,19 @@ const ProfTaskPage = () => {
   };
 
   // ================= UPLOAD HANDLER =================
-  const handleUpload = async (status_type, taskData = null) => {
+  const handleUpload = async (status_type, taskData) => {
     let payload;
 
-    if (taskData) {
-      // Data comes from specialized builders
-      payload = {
-        title: taskData.title,
-        instruction: taskData.instruction || "No instruction provided",
-        scoring: taskData.score,
-        status: status_type,
-        due_date: taskData.dueDate,
-        category: taskData.category,
-        // Include builder-specific data
-        ...taskData
-      };
-    } else {
-      // Legacy form validation (for backward compatibility)
-      if (!taskTitle.trim()) {
-        alert("Task title is required");
-        return;
-      }
+    console.log(taskData)
 
-      if (!dueDate) {
-        alert("Due date is required");
-        return;
-      }
+    
 
-      if (!score) {
-        alert("Score is required");
-        return;
-      }
-
-      payload = {
-        title: taskTitle,
-        instruction: instruction || "No instruction provided",
-        scoring: Number(score),
-        status: status_type,
-        due_date: dueDate,
-        category: taskCategory,
-      };
-
-      // Add groups data if configured
-      if (groupsConfigured && groups.length > 0) {
-        // Filter out empty groups and transform to backend format
-        const validGroups = groups.filter(group => 
-          group.leader?.trim() || group.members?.some(m => m?.trim())
-        );
-
-        if (validGroups.length > 0) {
-          payload.groupsData = validGroups.map((group, index) => ({
-            group_name: `Group_${index + 1}`,
-            leader_id: group.leader?.trim() || null,
-            members: group.members
-              .filter(member => member?.trim())
-              .map(member => member.trim())
-          }));
-        }
-      }
-    }
-
-    console.log("Uploading task with payload:", payload);
+    console.log("Uploading task with payload:", taskData);
 
     try {
       if (status_type === "uploaded") {
         await uploadTaskMutation.mutateAsync({
-          spaceId: Number(currentSpace?.space_id),
+          space_uuid: currentSpace?.space_uuid,
           taskData: payload,
         });
         alert("Task published successfully!");

@@ -149,12 +149,11 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     });
 
   // Task queries
-  const useUploadedTasks = (spaceId: string) =>
+  const useUploadedTasks = (space_uuid: string) =>
     useQuery({
-      queryKey: ["uploadedTasks", spaceId],
-      queryFn: () => fetchUploadedTasks(spaceId),
-      enabled: !!spaceId && isAuthenticated,
-      staleTime: 30_000,
+      queryKey: ["uploadedTasks", space_uuid],
+      queryFn: () => fetchUploadedTasks(space_uuid),
+      enabled: !!space_uuid && isAuthenticated,
     });
 
   const useDraftedTasks = (spaceId: string) =>
@@ -339,24 +338,19 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   // Task mutations
   const uploadTaskMutation = useMutation({
     mutationFn: ({
-      spaceId,
+      space_uuid,
       taskData,
     }: {
-      spaceId: number;
+      space_uuid: string;
       taskData: TaskCreateData;
     }) =>
       spaceService.uploadTask(
-        spaceId,
-        taskData.title,
-        taskData.instruction || "",
-        taskData.scoring || 0,
-        taskData.status,
-        taskData.due_date,
-        taskData.groupsData || [],
+        space_uuid,
+        taskData
       ),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["uploadedTasks", variables.spaceId],
+        queryKey: ["uploadedTasks", variables.space_uuid],
       });
     },
   });

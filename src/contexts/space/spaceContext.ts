@@ -38,7 +38,7 @@ export interface SpaceContextType {
   ) => UseQueryResult<SpacePendingInvitation[], Error>;
 
   // New: Task queries
-  useUploadedTasks: (spaceId: string) => UseQueryResult<Task[], Error>;
+  useUploadedTasks: (space_uuid: string) => UseQueryResult<Task[], Error>;
 
   useDraftedTasks: (spaceId: string) => UseQueryResult<DraftTask[], Error>;
 
@@ -68,7 +68,7 @@ export interface SpaceContextType {
   uploadTaskMutation: UseMutationResult<
     any,
     Error,
-    { spaceId: number; taskData: TaskCreateData },
+    { space_uuid: string; taskData: TaskCreateData },
     unknown
   >;
 
