@@ -348,18 +348,18 @@ const AdminTeachers = () => {
                 />
                 <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
               </div>
-              <div className="relative">
+              <div className="relative w-32">
                 <select
                   value={selectedDepartment}
                   onChange={(e) => setSelectedDepartment(e.target.value)}
-                  className="px-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-10"
+                  className="w-full px-3 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-8 text-sm truncate"
                 >
-                  <option value="">All Departments</option>
+                  <option value="">All Depts.</option>
                   {uniqueDepartments.map(department => (
                     <option key={department} value={department}>{department}</option>
                   ))}
                 </select>
-                <span className="absolute right-3 top-2.5 text-gray-400 pointer-events-none">▼</span>
+                <span className="absolute right-2 top-2.5 text-gray-400 pointer-events-none text-xs">▼</span>
               </div>
             </div>
             <div className="flex gap-3">
@@ -393,18 +393,18 @@ const AdminTeachers = () => {
                 />
                 <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
               </div>
-              <div className="relative">
+              <div className="relative w-40">
                 <select
                   value={selectedDepartment}
                   onChange={(e) => setSelectedDepartment(e.target.value)}
-                  className="px-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-10"
+                  className="px-3 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-8 text-sm"
                 >
                   <option value="">All Departments</option>
                   {uniqueDepartments.map(department => (
                     <option key={department} value={department}>{department}</option>
                   ))}
                 </select>
-                <span className="absolute right-3 top-2.5 text-gray-400 pointer-events-none">▼</span>
+                <span className="absolute right-2 top-2.5 text-gray-400 pointer-events-none text-xs">▼</span>
               </div>
             </div>
             <div className="flex gap-3">

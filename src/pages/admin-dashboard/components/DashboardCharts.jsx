@@ -366,7 +366,7 @@ export const CoursesChart = ({ students = [] }) => {
    └─────────────────────────┴─────────────────┘
 ───────────────────────────────────────────── */
 const DashboardCharts = ({ students = [], teachers = [] }) => (
-  <div className="max-w-6xl mx-auto mb-6 space-y-6">
+  <div className="w-full mb-6 space-y-6">
 
     {/* ROW 1: Growth Overview (col-2) + Gender (col-1) */}
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
