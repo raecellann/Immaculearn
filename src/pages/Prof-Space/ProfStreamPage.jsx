@@ -12,7 +12,7 @@ import {
   FiX,
   FiChevronLeft,
   FiCopy,
-  FiUpload
+  FiUpload,
 } from "react-icons/fi";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -46,7 +46,7 @@ const ProfStreamPage = () => {
   const [deleteButtonClicked, setDeleteButtonClicked] = useState(false);
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogMessage, setDialogMessage] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [showChatPopup, setShowChatPopup] = useState(false);
@@ -90,11 +90,12 @@ const ProfStreamPage = () => {
     isLoading: spaceLoading,
     acceptJoinRequest,
     declineJoinRequest,
-    deleteSpace
+    deleteSpace,
   } = useSpace();
 
   // Join requests - MUST BE AT THE TOP (unconditionally)
-  const { data: joinRequestsData = [], isLoading: joinRequestsLoading } = useJoinRequests(space_uuid || "");
+  const { data: joinRequestsData = [], isLoading: joinRequestsLoading } =
+    useJoinRequests(space_uuid || "");
 
   // Scroll handler
   useEffect(() => {
@@ -113,33 +114,29 @@ const ProfStreamPage = () => {
   }, []);
 
   // UUID validation
-  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  const uuidPattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
   const isValidUuid = uuidPattern.test(space_uuid);
 
   // Find current space
-  const allSpaces = [...(userSpaces || []), ...(courseSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(courseSpaces || []),
+    ...(friendSpaces || []),
+  ];
 
-  const currentSpace = allSpaces.find(space => space.space_uuid === space_uuid);
+  const currentSpace = allSpaces.find(
+    (space) => space.space_uuid === space_uuid,
+  );
 
-  console.log(userSpaces)
-  console.log(courseSpaces)
-  console.log(friendSpaces)
+  console.log(userSpaces);
+  console.log(courseSpaces);
+  console.log(friendSpaces);
 
-  
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
 
   const isFriendSpace = !isOwnerSpace;
-
-  // Loading state
-  if (userLoading || spaceLoading) {
-    return <div className="flex h-screen justify-center items-center"><MainLoading /></div>;
-  }
-
-  // Invalid space or not found
-  if (!isValidUuid || !currentSpace) {
-    return <PageNotFound />;
-  }
 
   // Space name
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
@@ -166,7 +163,7 @@ const ProfStreamPage = () => {
   // Delete room
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
-    
+
     // Show delete confirmation dialog
     setDialogMessage(currentSpace.space_name);
     setShowDeleteDialog(true);
@@ -175,14 +172,14 @@ const ProfStreamPage = () => {
   const handleConfirmDelete = async () => {
     // Prevent multiple executions
     if (!currentSpace || !showDeleteDialog) return;
-    
+
     setShowDeleteDialog(false);
     setDeleteButtonClicked(true);
     setIsDeleting(true);
-    
+
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-      
+
       // Navigate immediately after successful deletion
       navigate("/prof/spaces");
     } catch (error) {
@@ -234,13 +231,14 @@ const ProfStreamPage = () => {
 
   // Copy link
   const handleCopyLink = (space_link) => {
-    navigator.clipboard.writeText(space_link)
+    navigator.clipboard
+      .writeText(space_link)
       .then(() => {
         setCopyFeedback("Copied!");
         setTimeout(() => setCopyFeedback(""), 2000);
       })
-      .catch(err => {
-        console.error('Failed to copy: ', err);
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
         setCopyFeedback("Error!");
         setTimeout(() => setCopyFeedback(""), 2000);
       });
@@ -283,13 +281,6 @@ const ProfStreamPage = () => {
   }, [space_uuid]);
 
   // Save cover photo to localStorage when it changes
-  useEffect(() => {
-    if (coverPhotoUrl && !showCoverPhotoEditor) {
-      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
-      // Dispatch custom event to notify HomePage
-      window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
-    }
-  }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
 
   // Cover photo drag handlers
   const handleMouseDown = (e) => {
@@ -301,34 +292,21 @@ const ProfStreamPage = () => {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    
+
     const deltaY = e.clientY - dragStartY;
     const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
     const positionChange = (deltaY / containerHeight) * 100;
-    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
-    
+    const newPosition = Math.max(
+      0,
+      Math.min(100, dragStartPosition - positionChange),
+    );
+
     setCoverPhotoPosition(newPosition);
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
   };
-
-  // Add global mouse event listeners for dragging
-  useEffect(() => {
-    if (isDragging) {
-      const handleGlobalMouseMove = (e) => handleMouseMove(e);
-      const handleGlobalMouseUp = () => handleMouseUp();
-      
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-      
-      return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleGlobalMouseUp);
-      };
-    }
-  }, [isDragging, dragStartY, dragStartPosition]);
 
   // Cover photo handlers
   const handleCoverPhotoClick = () => {
@@ -341,7 +319,13 @@ const ProfStreamPage = () => {
     const file = event.target.files[0];
     if (file) {
       // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!validTypes.includes(file.type)) {
         addNotification({
           type: "error",
@@ -382,40 +366,43 @@ const ProfStreamPage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Create canvas to apply transformations
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = new Image();
-    
+
     img.onload = () => {
       // Set canvas size to cover photo dimensions
       canvas.width = 1200;
       canvas.height = 400;
-      
+
       // Calculate scale to cover the entire canvas
-      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scale = Math.max(
+        canvas.width / img.width,
+        canvas.height / img.height,
+      );
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
-      
+
       // Calculate position based on user vertical positioning
       const x = (canvas.width - scaledWidth) / 2;
       const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-      
+
       // Draw the image with transformations
       ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-      
+
       // Convert to data URL and update
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setCoverPhotoUrl(dataUrl);
-      
+
       // Save to localStorage
       localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-      
+
       // Dispatch custom event to notify ProfStreamPage
-      window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
-      
+      window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
+
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       addNotification({
         type: "success",
         title: "Cover Photo Updated",
@@ -423,7 +410,7 @@ const ProfStreamPage = () => {
         duration: 3000,
       });
     };
-    
+
     img.src = coverPhotoUrl;
   };
 
@@ -437,7 +424,7 @@ const ProfStreamPage = () => {
     // Don't clear coverPhotoUrl on cancel, keep the existing cover photo
     setCoverPhotoPosition(50);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -448,7 +435,7 @@ const ProfStreamPage = () => {
     // Remove from localStorage
     localStorage.removeItem(`coverPhoto_${space_uuid}`);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -509,7 +496,7 @@ const ProfStreamPage = () => {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    
+
     if (seconds < 60) return "Just now";
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -529,9 +516,9 @@ const ProfStreamPage = () => {
 
   // Handle comment change
   const handleCommentChange = (postId, value) => {
-    setCommentInputs(prev => ({
+    setCommentInputs((prev) => ({
       ...prev,
-      [postId]: value
+      [postId]: value,
     }));
   };
 
@@ -540,30 +527,74 @@ const ProfStreamPage = () => {
     const content = commentInputs[postId]?.trim();
     if (!content) return;
 
-    setIsLoadingComments(prev => ({
+    setIsLoadingComments((prev) => ({
       ...prev,
-      [postId]: true
+      [postId]: true,
     }));
 
     try {
       // TODO: Implement actual comment creation logic
       console.log("Creating comment:", content, "for post:", postId);
-      setCommentInputs(prev => ({
+      setCommentInputs((prev) => ({
         ...prev,
-        [postId]: ""
+        [postId]: "",
       }));
     } catch (error) {
       console.error("Failed to create comment:", error);
     } finally {
-      setIsLoadingComments(prev => ({
+      setIsLoadingComments((prev) => ({
         ...prev,
-        [postId]: false
+        [postId]: false,
       }));
     }
   };
 
+  // Add global mouse event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      const handleGlobalMouseMove = (e) => handleMouseMove(e);
+      const handleGlobalMouseUp = () => handleMouseUp();
+
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+      document.addEventListener("mouseup", handleGlobalMouseUp);
+
+      return () => {
+        document.removeEventListener("mousemove", handleGlobalMouseMove);
+        document.removeEventListener("mouseup", handleGlobalMouseUp);
+      };
+    }
+  }, [isDragging, dragStartY, dragStartPosition]);
+
+  useEffect(() => {
+    if (coverPhotoUrl && !showCoverPhotoEditor) {
+      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
+      // Dispatch custom event to notify HomePage
+      window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
+    }
+  }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
+
+  // Loading state
+  if (userLoading || spaceLoading) {
+    return (
+      <div className="flex h-screen justify-center items-center">
+        <MainLoading />
+      </div>
+    );
+  }
+
+  // Invalid space or not found
+  if (!isValidUuid || !currentSpace) {
+    return <PageNotFound />;
+  }
+
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+    <div
+      className="flex min-h-screen font-sans"
+      style={{
+        backgroundColor: currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -583,7 +614,7 @@ const ProfStreamPage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
         style={{
-          backgroundColor: currentColors.surface
+          backgroundColor: currentColors.surface,
         }}
       >
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -599,7 +630,7 @@ const ProfStreamPage = () => {
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
           style={{
             backgroundColor: currentColors.surface,
-            borderColor: currentColors.border
+            borderColor: currentColors.border,
           }}
         >
           <button
@@ -616,15 +647,15 @@ const ProfStreamPage = () => {
         <div className="lg:hidden h-16" />
 
         {/* ================= COVER ================= */}
-        <div 
+        <div
           className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
           onClick={handleCoverPhotoClick}
         >
           {coverPhotoUrl ? (
             <>
-              <img 
-                src={coverPhotoUrl} 
-                alt="Space Cover" 
+              <img
+                src={coverPhotoUrl}
+                alt="Space Cover"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
@@ -667,7 +698,16 @@ const ProfStreamPage = () => {
           <div className="hidden md:block mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs" style={{ color: currentColors.textSecondary }}>({currentSpace?.space_type === "course" ? (currentSpace?.members?.length - 1) + " student(s)": (currentSpace?.members?.length) + " member(s)" || 0})</span>
+              <span
+                className="text-xs"
+                style={{ color: currentColors.textSecondary }}
+              >
+                (
+                {currentSpace?.space_type === "course"
+                  ? currentSpace?.members?.length - 1 + " student(s)"
+                  : currentSpace?.members?.length + " member(s)" || 0}
+                )
+              </span>
               {isOwnerSpace && (
                 <>
                   <div onClick={handleInviteMember}>
@@ -688,23 +728,29 @@ const ProfStreamPage = () => {
               )}
               {isFriendSpace && (
                 <div className="flex flex-col gap-2 mt-2">
-                  <div className="flex items-center gap-2 p-2 rounded-md" style={{ backgroundColor: currentColors.surface }}>
-                    <span className="text-xs break-all" style={{ color: currentColors.accent }}>
-                      {currentSpace?.space_link || 'Loading...'}
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-md"
+                    style={{ backgroundColor: currentColors.surface }}
+                  >
+                    <span
+                      className="text-xs break-all"
+                      style={{ color: currentColors.accent }}
+                    >
+                      {currentSpace?.space_link || "Loading..."}
                     </span>
                     <button
                       onClick={() => handleCopyLink(currentSpace?.space_link)}
                       className="p-1 rounded transition-colors"
                       style={{
                         color: currentColors.textSecondary,
-                        backgroundColor: 'transparent'
+                        backgroundColor: "transparent",
                       }}
                       onMouseEnter={(e) => {
                         e.target.style.backgroundColor = currentColors.hover;
                         e.target.style.color = currentColors.text;
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = 'transparent';
+                        e.target.style.backgroundColor = "transparent";
                         e.target.style.color = currentColors.textSecondary;
                       }}
                       title="Copy to clipboard"
@@ -718,15 +764,23 @@ const ProfStreamPage = () => {
           </div>
 
           {/* ================= TABS ================= */}
-          <div className="w-full overflow-x-auto no-scrollbar border-b pb-4 mb-6" style={{ borderColor: currentColors.border }}>
+          <div
+            className="w-full overflow-x-auto no-scrollbar border-b pb-4 mb-6"
+            style={{ borderColor: currentColors.border }}
+          >
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex justify-center space-x-12">
-                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
+                <button
+                  className="font-semibold border-b-2 pb-2"
+                  style={{ borderColor: currentColors.text }}
+                >
                   Stream
                 </button>
                 <button
-                 onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/tasks`)}
-                 style={{ color: currentColors.textSecondary }}
+                  onClick={() =>
+                    navigate(`/prof/space/${space_uuid}/${space_name}/tasks`)
+                  }
+                  style={{ color: currentColors.textSecondary }}
                 >
                   Tasks
                 </button>
@@ -770,63 +824,62 @@ const ProfStreamPage = () => {
             </div>
           )}
 
-
-                  {/* MAIN CONTENT GRID */}
-                  <div className="flex flex-col lg:flex-row gap-4 md:gap-6 mt-4">
-                    {/* LEFT SIDEBAR - 30% */}
-                    <div className="w-full lg:w-[30%]">
-                      {/* MOBILE CREATE POST - Only visible on mobile */}
-                      {isOwnerSpace && (
-                        <div className="lg:hidden mb-6">
-                          <div
-                            className={`
+          {/* MAIN CONTENT GRID */}
+          <div className="flex flex-col lg:flex-row gap-4 md:gap-6 mt-4">
+            {/* LEFT SIDEBAR - 30% */}
+            <div className="w-full lg:w-[30%]">
+              {/* MOBILE CREATE POST - Only visible on mobile */}
+              {isOwnerSpace && (
+                <div className="lg:hidden mb-6">
+                  <div
+                    className={`
                             bg-white rounded-xl border cursor-text transition
                             ${isFocused ? "border-black" : "border-black"}
                             hover:border-black
                           `}
-                            onClick={() => editorRef.current?.focus()}
-                          >
-                            <div className="relative p-6">
-                              {/* AVATAR */}
-                              <img
-                                src={
-                                  user?.profile_pic ||
-                                  "/src/assets/HomePage/frieren-avatar.jpg"
-                                }
-                                alt="Avatar"
-                                className="absolute left-6 top-6 w-10 h-10 rounded-full"
-                              />
+                    onClick={() => editorRef.current?.focus()}
+                  >
+                    <div className="relative p-6">
+                      {/* AVATAR */}
+                      <img
+                        src={
+                          user?.profile_pic ||
+                          "/src/assets/HomePage/frieren-avatar.jpg"
+                        }
+                        alt="Avatar"
+                        className="absolute left-6 top-6 w-10 h-10 rounded-full"
+                      />
 
-                              {/* EDITOR */}
-                              <div
-                                ref={editorRef}
-                                contentEditable
-                                suppressContentEditableWarning
-                                onFocus={() => setIsFocused(true)}
-                                onBlur={() => {
-                                  if (editorRef.current.innerText.trim() === "") {
-                                    setIsFocused(false);
-                                  }
-                                }}
-                                onInput={() => {
-                                  let text = editorRef.current.innerText;
+                      {/* EDITOR */}
+                      <div
+                        ref={editorRef}
+                        contentEditable
+                        suppressContentEditableWarning
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => {
+                          if (editorRef.current.innerText.trim() === "") {
+                            setIsFocused(false);
+                          }
+                        }}
+                        onInput={() => {
+                          let text = editorRef.current.innerText;
 
-                                  if (text.length > MAX_CHAR) {
-                                    text = text.substring(0, MAX_CHAR);
-                                    editorRef.current.innerText = text;
+                          if (text.length > MAX_CHAR) {
+                            text = text.substring(0, MAX_CHAR);
+                            editorRef.current.innerText = text;
 
-                                    // Move cursor to end
-                                    const range = document.createRange();
-                                    const sel = window.getSelection();
-                                    range.selectNodeContents(editorRef.current);
-                                    range.collapse(false);
-                                    sel.removeAllRanges();
-                                    sel.addRange(range);
-                                  }
+                            // Move cursor to end
+                            const range = document.createRange();
+                            const sel = window.getSelection();
+                            range.selectNodeContents(editorRef.current);
+                            range.collapse(false);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                          }
 
-                                  setCharCount(text.length);
-                                }}
-                                className="
+                          setCharCount(text.length);
+                        }}
+                        className="
                                   editor
                                   w-full
                                   min-h-[40px]
@@ -838,163 +891,176 @@ const ProfStreamPage = () => {
                                   py-2
                                   outline-none
                                 "
-                              />
+                      />
 
-                              {/* ACTIONS */}
-                              {isFocused && (
-                                <>
-                                  {/* FORMAT */}
+                      {/* ACTIONS */}
+                      {isFocused && (
+                        <>
+                          {/* FORMAT */}
 
-                                  <div className="mt-4 border-t" style={{ borderColor: currentColors.border }} />
+                          <div
+                            className="mt-4 border-t"
+                            style={{ borderColor: currentColors.border }}
+                          />
 
-                                  {/* FOOTER */}
-                                  <div className="mt-4 flex justify-between items-center">
-                                    <div>
-                                      <span
-                                        className={`text-xs sm:text-sm ${
-                                          charCount > MAX_CHAR
-                                            ? "text-red-500"
-                                            : "text-gray-500"
-                                        }`}
-                                      >
-                                        {charCount}/{MAX_CHAR}
-                                      </span>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
-                                      <button
-                                        onClick={() => {
-                                          setIsFocused(false);
-                                          editorRef.current.innerHTML = "";
-                                        }}
-                                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
-                                      >
-                                        Cancel
-                                      </button>
-                                      <button
-                                        onClick={handleCreatePost}
-                                        disabled={isCreatingPost}
-                                        className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                                      >
-                                        {isCreatingPost ? "Posting..." : "Post"}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </>
-                              )}
+                          {/* FOOTER */}
+                          <div className="mt-4 flex justify-between items-center">
+                            <div>
+                              <span
+                                className={`text-xs sm:text-sm ${
+                                  charCount > MAX_CHAR
+                                    ? "text-red-500"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {charCount}/{MAX_CHAR}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
+                              <button
+                                onClick={() => {
+                                  setIsFocused(false);
+                                  editorRef.current.innerHTML = "";
+                                }}
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleCreatePost}
+                                disabled={isCreatingPost}
+                                className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {isCreatingPost ? "Posting..." : "Post"}
+                              </button>
                             </div>
                           </div>
-                        </div>
+                        </>
                       )}
-
-                      {/* REMINDERS - STICKY */}
-                      <div
-                        className={`sticky top-4 border rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
-                        style={{
-                          backgroundColor: currentColors.surface,
-                          borderColor: currentColors.border
-                        }}
-                      >
-                        <h2 className="font-bold mb-4">Reminders</h2>
-                        <div className="text-center py-6">
-                          <div className="mb-2" style={{ color: currentColors.textSecondary }}>
-                            <svg
-                              className="w-12 h-12 mx-auto"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                          </div>
-                          <p className="text-gray-400 text-sm">
-                            No reminders posted yet
-                          </p>
-                          <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
-                            Reminders will appear here when created
-                          </p>
-                        </div>
-        
-                        {/* CHAT */}
-                        <button
-                          onClick={handleEnterChat}
-                          className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
-                          style={{
-                            backgroundColor: isDarkMode ? '#000000' : 'transparent',
-                            borderColor: currentColors.border,
-                            color: currentColors.text
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = isDarkMode ? '#1f2937' : currentColors.hover;
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = isDarkMode ? '#000000' : 'transparent';
-                          }}
-                        >
-                          <FiMessageCircle />
-                          Enter Chat
-                        </button>
-                      </div>
                     </div>
-        
-                    {/* RIGHT CONTENT - 70% */}
-                    <div className="w-full lg:w-[70%] space-y-6">
-                      {/* CREATE POST - Desktop/Laptop Only */}
-                      {isOwnerSpace && (
-                        <div className="hidden lg:block mb-6">
-                          <div
-                            className={`
+                  </div>
+                </div>
+              )}
+
+              {/* REMINDERS - STICKY */}
+              <div
+                className={`sticky top-4 border rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
+                style={{
+                  backgroundColor: currentColors.surface,
+                  borderColor: currentColors.border,
+                }}
+              >
+                <h2 className="font-bold mb-4">Reminders</h2>
+                <div className="text-center py-6">
+                  <div
+                    className="mb-2"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    <svg
+                      className="w-12 h-12 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400 text-sm">
+                    No reminders posted yet
+                  </p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    Reminders will appear here when created
+                  </p>
+                </div>
+
+                {/* CHAT */}
+                <button
+                  onClick={handleEnterChat}
+                  className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
+                  style={{
+                    backgroundColor: isDarkMode ? "#000000" : "transparent",
+                    borderColor: currentColors.border,
+                    color: currentColors.text,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = isDarkMode
+                      ? "#1f2937"
+                      : currentColors.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = isDarkMode
+                      ? "#000000"
+                      : "transparent";
+                  }}
+                >
+                  <FiMessageCircle />
+                  Enter Chat
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT CONTENT - 70% */}
+            <div className="w-full lg:w-[70%] space-y-6">
+              {/* CREATE POST - Desktop/Laptop Only */}
+              {isOwnerSpace && (
+                <div className="hidden lg:block mb-6">
+                  <div
+                    className={`
                             bg-white rounded-xl border cursor-text transition
                             ${isFocused ? "border-black" : "border-black"}
                             hover:border-black
                           `}
-                            onClick={() => editorRef.current?.focus()}
-                          >
-                            <div className="relative p-6">
-                              {/* AVATAR */}
-                              <img
-                                src={
-                                  user?.profile_pic ||
-                                  "/src/assets/HomePage/frieren-avatar.jpg"
-                                }
-                                alt="Avatar"
-                                className="absolute left-6 top-6 w-10 h-10 rounded-full"
-                              />
-        
-                            {/* EDITOR */}
-                            <div
-                              ref={editorRef}
-                              contentEditable
-                              suppressContentEditableWarning
-                              onFocus={() => setIsFocused(true)}
-                              onBlur={() => {
-                                if (editorRef.current.innerText.trim() === "") {
-                                  setIsFocused(false);
-                                }
-                              }}
-                              onInput={() => {
-                                let text = editorRef.current.innerText;
-        
-                                if (text.length > MAX_CHAR) {
-                                  text = text.substring(0, MAX_CHAR);
-                                  editorRef.current.innerText = text;
-        
-                                  // Move cursor to end
-                                  const range = document.createRange();
-                                  const sel = window.getSelection();
-                                  range.selectNodeContents(editorRef.current);
-                                  range.collapse(false);
-                                  sel.removeAllRanges();
-                                  sel.addRange(range);
-                                }
-        
-                                setCharCount(text.length);
-                              }}
-                              className="
+                    onClick={() => editorRef.current?.focus()}
+                  >
+                    <div className="relative p-6">
+                      {/* AVATAR */}
+                      <img
+                        src={
+                          user?.profile_pic ||
+                          "/src/assets/HomePage/frieren-avatar.jpg"
+                        }
+                        alt="Avatar"
+                        className="absolute left-6 top-6 w-10 h-10 rounded-full"
+                      />
+
+                      {/* EDITOR */}
+                      <div
+                        ref={editorRef}
+                        contentEditable
+                        suppressContentEditableWarning
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => {
+                          if (editorRef.current.innerText.trim() === "") {
+                            setIsFocused(false);
+                          }
+                        }}
+                        onInput={() => {
+                          let text = editorRef.current.innerText;
+
+                          if (text.length > MAX_CHAR) {
+                            text = text.substring(0, MAX_CHAR);
+                            editorRef.current.innerText = text;
+
+                            // Move cursor to end
+                            const range = document.createRange();
+                            const sel = window.getSelection();
+                            range.selectNodeContents(editorRef.current);
+                            range.collapse(false);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                          }
+
+                          setCharCount(text.length);
+                        }}
+                        className="
                                 editor
                                 w-full
                                 min-h-[40px]
@@ -1006,283 +1072,348 @@ const ProfStreamPage = () => {
                                 py-2
                                 outline-none
                               "
-                            />
-        
-                            {/* ACTIONS */}
-                            {isFocused && (
-                              <>
-                                {/* FORMAT */}
-        
-                                <div className="mt-4 border-t border-gray-300" />
-        
-                                {/* FOOTER */}
-                                <div className="mt-4 flex justify-between items-center">
-                                  <div>
-                                      <span
-                                        className={`text-xs sm:text-sm ${
-                                          charCount > MAX_CHAR
-                                            ? "text-red-500"
-                                            : "text-gray-500"
-                                        }`}
-                                      >
-                                        {charCount}/{MAX_CHAR}
-                                      </span>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
-                                      <button
-                                        onClick={() => {
-                                          setIsFocused(false);
-                                          editorRef.current.innerHTML = "";
-                                        }}
-                                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
-                                      >
-                                        Cancel
-                                      </button>
-                                      <button
-                                        onClick={handleCreatePost}
-                                        disabled={isCreatingPost}
-                                        className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                                      >
-                                        {isCreatingPost ? "Posting..." : "Post"}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </>
-                              )}
+                      />
+
+                      {/* ACTIONS */}
+                      {isFocused && (
+                        <>
+                          {/* FORMAT */}
+
+                          <div className="mt-4 border-t border-gray-300" />
+
+                          {/* FOOTER */}
+                          <div className="mt-4 flex justify-between items-center">
+                            <div>
+                              <span
+                                className={`text-xs sm:text-sm ${
+                                  charCount > MAX_CHAR
+                                    ? "text-red-500"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {charCount}/{MAX_CHAR}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2 sm:gap-3 justify-end">
+                              <button
+                                onClick={() => {
+                                  setIsFocused(false);
+                                  editorRef.current.innerHTML = "";
+                                }}
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleCreatePost}
+                                disabled={isCreatingPost}
+                                className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {isCreatingPost ? "Posting..." : "Post"}
+                              </button>
                             </div>
                           </div>
-                        </div>
+                        </>
                       )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
-                      {/* POSTS FEED */}
+              {/* POSTS FEED */}
+              <div
+                className={`border rounded-xl p-6 ${!isOwnerSpace && "h-full"}`}
+                style={{
+                  backgroundColor: currentColors.surface,
+                  borderColor: currentColors.border,
+                }}
+              >
+                <h2 className="font-bold mb-4">Announcement Feed</h2>
+
+                {isLoadingPosts ? (
+                  <div className="text-center py-8">
+                    <p style={{ color: currentColors.textSecondary }}>
+                      Loading posts...
+                    </p>
+                  </div>
+                ) : postsError ? (
+                  <div className="text-center py-8">
+                    <p className="text-red-400">Error loading posts</p>
+                  </div>
+                ) : posts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p
+                      style={{ color: currentColors.textSecondary }}
+                      className="text-lg"
+                    >
+                      No posts yet
+                    </p>
+                    <p
+                      className="text-sm mt-1"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Posts will appear here when created
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {posts.map((post) => (
                       <div
-                        className={`border rounded-xl p-6 ${!isOwnerSpace && "h-full"}`}
+                        key={post.post_id}
+                        className="rounded-lg p-4 border"
                         style={{
-                          backgroundColor: currentColors.surface,
-                          borderColor: currentColors.border
+                          backgroundColor: currentColors.background,
+                          borderColor: currentColors.border,
                         }}
                       >
-                        <h2 className="font-bold mb-4">Announcement Feed</h2>
-        
-                        {isLoadingPosts ? (
-                          <div className="text-center py-8">
-                            <p style={{ color: currentColors.textSecondary }}>Loading posts...</p>
-                          </div>
-                        ) : postsError ? (
-                          <div className="text-center py-8">
-                            <p className="text-red-400">Error loading posts</p>
-                          </div>
-                        ) : posts.length === 0 ? (
-                          <div className="text-center py-8">
-                            <p style={{ color: currentColors.textSecondary }} className="text-lg">No posts yet</p>
-                            <p className="text-sm mt-1" style={{ color: currentColors.textSecondary }}>
-                              Posts will appear here when created
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            {posts.map((post) => (
-                              <div
-                                key={post.post_id}
-                                className="rounded-lg p-4 border"
-                                style={{
-                                  backgroundColor: currentColors.background,
-                                  borderColor: currentColors.border
-                                }}
+                        <div className="flex items-start space-x-3">
+                          {/* Avatar */}
+                          {post.profile_pic ? (
+                            <div
+                              className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center"
+                              style={{
+                                backgroundColor: currentColors.surface,
+                                borderColor: currentColors.border,
+                              }}
+                            >
+                              <img
+                                src={post.profile_pic}
+                                alt={post.user_full_name || "User"}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                              {post.user_full_name?.charAt(0)?.toUpperCase() ||
+                                "U"}
+                            </div>
+                          )}
+
+                          {/* Post Content */}
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <span
+                                className="font-semibold text-sm"
+                                style={{ color: currentColors.text }}
                               >
-                                <div className="flex items-start space-x-3">
-                                  {/* Avatar */}
-                                  {post.profile_pic ? (
-                                    <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center"
+                                {post.user_full_name || "Unknown User"}
+                              </span>
+                              <span
+                                className="text-sm"
+                                style={{ color: currentColors.textSecondary }}
+                              >
+                                {timeAgo(post?.created_at)}
+                              </span>
+                            </div>
+                            <p
+                              className="whitespace-pre-wrap mb-3"
+                              style={{ color: currentColors.text }}
+                            >
+                              {post.post_content}
+                            </p>
+
+                            {/* Comment Button */}
+                            <button
+                              onClick={() => toggleComments(post.post_id)}
+                              className="flex items-center space-x-2 transition-colors text-sm"
+                              style={{ color: currentColors.textSecondary }}
+                              onMouseEnter={(e) => {
+                                e.target.style.color = currentColors.text;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.color =
+                                  currentColors.textSecondary;
+                              }}
+                            >
+                              <FiMessageCircle size={16} />
+                              <span>Comments</span>
+                              {post.reply_count > 0 && (
+                                <span
+                                  className="text-xs px-2 py-1 rounded-full"
+                                  style={{
+                                    backgroundColor: currentColors.surface,
+                                    color: currentColors.textSecondary,
+                                  }}
+                                >
+                                  {post.reply_count}
+                                </span>
+                              )}
+                            </button>
+
+                            {/* Comments Section */}
+                            {expandedPosts.has(post.post_id) && (
+                              <div
+                                className="mt-4 pt-4"
+                                style={{ borderColor: currentColors.border }}
+                              >
+                                {/* Existing Comments */}
+                                {comments[post.post_id] &&
+                                  comments[post.post_id].length > 0 && (
+                                    <div className="space-y-3 mb-4">
+                                      {comments[post.post_id].map((comment) => (
+                                        <div
+                                          key={comment.post_id}
+                                          className="flex items-start space-x-2"
+                                        >
+                                          {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                                                    {comment.user_full_name
+                                                      ?.charAt(0)
+                                                      ?.toUpperCase() || "U"}
+                                                  </div> */}
+
+                                          {post.profile_pic ? (
+                                            <div
+                                              className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center"
+                                              style={{
+                                                backgroundColor:
+                                                  currentColors.surface,
+                                              }}
+                                            >
+                                              <img
+                                                src={comment.profile_pic}
+                                                alt={
+                                                  comment.user_full_name ||
+                                                  "User"
+                                                }
+                                                className="w-full h-full object-cover"
+                                              />
+                                            </div>
+                                          ) : (
+                                            <div
+                                              className="w-10 h-10 rounded-full flex items-center justify-center font-semibold"
+                                              style={{
+                                                backgroundColor:
+                                                  currentColors.surface,
+                                                color: currentColors.text,
+                                              }}
+                                            >
+                                              {post.user_full_name
+                                                ?.charAt(0)
+                                                ?.toUpperCase() || "U"}
+                                            </div>
+                                          )}
+                                          <div className="flex-1">
+                                            <div className="flex items-center space-x-2 mb-1">
+                                              <span
+                                                className="font-medium text-sm"
+                                                style={{
+                                                  color: currentColors.text,
+                                                }}
+                                              >
+                                                {comment.user_full_name ||
+                                                  "Unknown User"}
+                                              </span>
+                                              <span
+                                                className="text-xs"
+                                                style={{
+                                                  color:
+                                                    currentColors.textSecondary,
+                                                }}
+                                              >
+                                                {timeAgo(comment?.created_at)}
+                                              </span>
+                                            </div>
+                                            <p
+                                              className="text-sm whitespace-pre-wrap"
+                                              style={{
+                                                color: currentColors.text,
+                                              }}
+                                            >
+                                              {comment.post_content}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                {/* Comment Loading */}
+                                {isLoadingComments[post.post_id] && (
+                                  <div className="text-center py-2">
+                                    <p
+                                      className="text-sm"
                                       style={{
-                                        backgroundColor: currentColors.surface,
-                                        borderColor: currentColors.border
+                                        color: currentColors.textSecondary,
                                       }}
                                     >
+                                      Loading comments...
+                                    </p>
+                                  </div>
+                                )}
+
+                                {/* Add Comment */}
+                                <div className="flex items-start space-x-2">
+                                  {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                                            {user?.username?.charAt(0)?.toUpperCase() ||
+                                              "Y"}
+                                          </div> */}
+                                  {user?.profile_pic ? (
+                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
                                       <img
-                                        src={post.profile_pic}
-                                        alt={post.user_full_name || "User"}
+                                        src={user?.profile_pic}
+                                        alt={user?.full_name || "User"}
                                         className="w-full h-full object-cover"
                                       />
                                     </div>
                                   ) : (
                                     <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                      {post.user_full_name?.charAt(0)?.toUpperCase() ||
-                                        "U"}
+                                      {post.user_full_name
+                                        ?.charAt(0)
+                                        ?.toUpperCase() || "Y"}
                                     </div>
                                   )}
-        
-                                  {/* Post Content */}
                                   <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-2">
-                                      <span className="font-semibold text-sm" style={{ color: currentColors.text }}>
-                                        {post.user_full_name || "Unknown User"}
-                                      </span>
-                                      <span className="text-sm" style={{ color: currentColors.textSecondary }}>
-                                        {timeAgo(post?.created_at)}
-                                      </span>
+                                    <textarea
+                                      value={commentInputs[post.post_id] || ""}
+                                      onChange={(e) =>
+                                        handleCommentChange(
+                                          post.post_id,
+                                          e.target.value,
+                                        )
+                                      }
+                                      placeholder="Write a comment..."
+                                      className="w-full rounded-lg p-2 resize-none focus:outline-none focus:ring-2"
+                                      style={{
+                                        backgroundColor:
+                                          currentColors.background,
+                                        color: currentColors.text,
+                                        borderColor: currentColors.border,
+                                      }}
+                                      rows="2"
+                                    />
+                                    <div className="flex justify-end mt-2">
+                                      <button
+                                        onClick={() =>
+                                          handleCreateComment(post.post_id)
+                                        }
+                                        disabled={
+                                          !commentInputs[
+                                            post.post_id
+                                          ]?.trim() ||
+                                          isLoadingComments[post.post_id]
+                                        }
+                                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      >
+                                        {isLoadingComments[post.post_id]
+                                          ? "Posting..."
+                                          : "Post"}
+                                      </button>
                                     </div>
-                                    <p className="whitespace-pre-wrap mb-3" style={{ color: currentColors.text }}>
-                                      {post.post_content}
-                                    </p>
-        
-                                    {/* Comment Button */}
-                                    <button
-                                      onClick={() => toggleComments(post.post_id)}
-                                      className="flex items-center space-x-2 transition-colors text-sm"
-                                      style={{ color: currentColors.textSecondary }}
-                                      onMouseEnter={(e) => {
-                                        e.target.style.color = currentColors.text;
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.target.style.color = currentColors.textSecondary;
-                                      }}
-                                    >
-                                      <FiMessageCircle size={16} />
-                                      <span>Comments</span>
-                                      {post.reply_count > 0 && (
-                                        <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: currentColors.surface, color: currentColors.textSecondary }}>
-                                          {post.reply_count}
-                                        </span>
-                                      )}
-                                    </button>
-        
-                                    {/* Comments Section */}
-                                    {expandedPosts.has(post.post_id) && (
-                                      <div className="mt-4 pt-4" style={{ borderColor: currentColors.border }}>
-                                        {/* Existing Comments */}
-                                        {comments[post.post_id] &&
-                                          comments[post.post_id].length > 0 && (
-                                            <div className="space-y-3 mb-4">
-                                              {comments[post.post_id].map((comment) => (
-                                                <div
-                                                  key={comment.post_id}
-                                                  className="flex items-start space-x-2"
-                                                >
-                                                  {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
-                                                    {comment.user_full_name
-                                                      ?.charAt(0)
-                                                      ?.toUpperCase() || "U"}
-                                                  </div> */}
-        
-                                                  {post.profile_pic ? (
-                                                    <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center" style={{ backgroundColor: currentColors.surface }}>
-                                                      <img
-                                                        src={comment.profile_pic}
-                                                        alt={
-                                                          comment.user_full_name ||
-                                                          "User"
-                                                        }
-                                                        className="w-full h-full object-cover"
-                                                      />
-                                                    </div>
-                                                  ) : (
-                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold" style={{ backgroundColor: currentColors.surface, color: currentColors.text }}>
-                                                      {post.user_full_name
-                                                        ?.charAt(0)
-                                                        ?.toUpperCase() || "U"}
-                                                    </div>
-                                                  )}
-                                                  <div className="flex-1">
-                                                    <div className="flex items-center space-x-2 mb-1">
-                                                      <span className="font-medium text-sm" style={{ color: currentColors.text }}>
-                                                        {comment.user_full_name ||
-                                                          "Unknown User"}
-                                                      </span>
-                                                      <span className="text-xs" style={{ color: currentColors.textSecondary }}>
-                                                        {timeAgo(comment?.created_at)}
-                                                      </span>
-                                                    </div>
-                                                    <p className="text-sm whitespace-pre-wrap" style={{ color: currentColors.text }}>
-                                                      {comment.post_content}
-                                                    </p>
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          )}
-        
-                                        {/* Comment Loading */}
-                                        {isLoadingComments[post.post_id] && (
-                                          <div className="text-center py-2">
-                                            <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                                              Loading comments...
-                                            </p>
-                                          </div>
-                                        )}
-        
-                                        {/* Add Comment */}
-                                        <div className="flex items-start space-x-2">
-                                          {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
-                                            {user?.username?.charAt(0)?.toUpperCase() ||
-                                              "Y"}
-                                          </div> */}
-                                          {user?.profile_pic ? (
-                                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
-                                              <img
-                                                src={user?.profile_pic}
-                                                alt={user?.full_name || "User"}
-                                                className="w-full h-full object-cover"
-                                              />
-                                            </div>
-                                          ) : (
-                                            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                              {post.user_full_name
-                                                ?.charAt(0)
-                                                ?.toUpperCase() || "Y"}
-                                            </div>
-                                          )}
-                                          <div className="flex-1">
-                                            <textarea
-                                              value={commentInputs[post.post_id] || ""}
-                                              onChange={(e) =>
-                                                handleCommentChange(
-                                                  post.post_id,
-                                                  e.target.value,
-                                                )
-                                              }
-                                              placeholder="Write a comment..."
-                                              className="w-full rounded-lg p-2 resize-none focus:outline-none focus:ring-2"
-                                              style={{
-                                                backgroundColor: currentColors.background,
-                                                color: currentColors.text,
-                                                borderColor: currentColors.border
-                                              }}
-                                              rows="2"
-                                            />
-                                            <div className="flex justify-end mt-2">
-                                              <button
-                                                onClick={() =>
-                                                  handleCreateComment(post.post_id)
-                                                }
-                                                disabled={
-                                                  !commentInputs[
-                                                    post.post_id
-                                                  ]?.trim() ||
-                                                  isLoadingComments[post.post_id]
-                                                }
-                                                className="px-3 py-1 text-sm bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                              >
-                                                {isLoadingComments[post.post_id]
-                                                  ? "Posting..."
-                                                  : "Post"}
-                                              </button>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
                                   </div>
                                 </div>
                               </div>
-                            ))}
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                </div>
-        
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* ADD MEMBER COMPONENT */}
         <AddMember
           currentSpace={currentSpace}
@@ -1290,7 +1421,6 @@ const ProfStreamPage = () => {
           showInvitePopup={showInvitePopup}
           setShowInvitePopup={setShowInvitePopup}
         />
-
       </div>
 
       {/* PLACEHOLDER STYLE */}
@@ -1321,7 +1451,9 @@ const ProfStreamPage = () => {
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Position Cover Photo</h2>
+              <h2 className="text-lg font-semibold text-white">
+                Position Cover Photo
+              </h2>
               <button
                 onClick={handleCoverPhotoCancel}
                 className="text-gray-400 hover:text-white p-1 bg-transparent"
@@ -1337,12 +1469,12 @@ const ProfStreamPage = () => {
                 <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                   <div
                     ref={coverPhotoEditorRef}
-                    className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                    className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
                     style={{
                       backgroundImage: `url(${coverPhotoUrl})`,
-                      backgroundSize: 'cover',
+                      backgroundSize: "cover",
                       backgroundPosition: `center ${coverPhotoPosition}%`,
-                      backgroundRepeat: 'no-repeat',
+                      backgroundRepeat: "no-repeat",
                     }}
                     onMouseDown={handleMouseDown}
                   />
@@ -1384,13 +1516,16 @@ const ProfStreamPage = () => {
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-gray-700">
-              <h2 className="text-lg font-semibold text-white">Change Cover Photo?</h2>
+              <h2 className="text-lg font-semibold text-white">
+                Change Cover Photo?
+              </h2>
             </div>
 
             {/* Content */}
             <div className="p-4">
               <p className="text-gray-300">
-                Do you want to change the cover photo for this space with the image you uploaded?
+                Do you want to change the cover photo for this space with the
+                image you uploaded?
               </p>
             </div>
 
@@ -1412,7 +1547,6 @@ const ProfStreamPage = () => {
           </div>
         </div>
       )}
-    
     </div>
   );
 };
