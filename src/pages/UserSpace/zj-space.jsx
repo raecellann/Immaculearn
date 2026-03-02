@@ -1306,7 +1306,7 @@ const UserPage = () => {
           {/* MAIN CONTENT GRID */}
           <div className="flex flex-col lg:flex-row gap-4 md:gap-6 mt-4">
             {/* LEFT SIDEBAR - 30% */}
-            <div className="w-full lg:w-[30%]">
+            <div className="w-full lg:w-[30%] order-1 lg:order-1">
               {/* MOBILE CREATE POST - Only visible on mobile */}
               {isOwnerSpace && (
                 <div className="lg:hidden mb-6">
@@ -1550,7 +1550,7 @@ const UserPage = () => {
             </div>
 
             {/* RIGHT CONTENT - 70% */}
-            <div className="w-full lg:w-[70%] space-y-6">
+            <div className="w-full lg:w-[70%] space-y-6 order-2 lg:order-2">
               {/* DESKTOP CREATE POST - Only visible on desktop/laptop */}
               {isOwnerSpace && (
                 <div className="hidden lg:block">
@@ -1670,20 +1670,33 @@ const UserPage = () => {
                   borderColor: currentColors.border,
                 }}
               >
-                <h2 className="font-bold mb-4">Announcement Feed</h2>
+                <h2 className="font-bold mb-4 text-sm sm:text-base">Announcement Feed</h2>
 
                 {isLoadingPosts ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-400">Loading posts...</p>
+                    <p 
+                      className="text-sm sm:text-base"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Loading posts...
+                    </p>
                   </div>
                 ) : postsError ? (
                   <div className="text-center py-8">
-                    <p className="text-red-400">Error loading posts</p>
+                    <p className="text-red-400 text-sm sm:text-base">Error loading posts</p>
                   </div>
                 ) : posts.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-400 text-lg">No posts yet</p>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p 
+                      className="text-base sm:text-lg"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      No posts yet
+                    </p>
+                    <p
+                      className="text-xs sm:text-sm mt-1"
+                      style={{ color: currentColors.textSecondary }}
+                    >
                       Posts will appear here when created
                     </p>
                   </div>
@@ -1692,12 +1705,23 @@ const UserPage = () => {
                     {posts.map((post) => (
                       <div
                         key={post.post_id}
-                        className="bg-gray-800 rounded-lg p-4 border border-gray-700"
+                        className="rounded-lg p-4 border"
+                        style={{
+                          backgroundColor: currentColors.background,
+                          borderColor: isDarkMode ? currentColors.border : '#e5e7eb',
+                          borderWidth: isDarkMode ? '1px' : '1px 0 1px 0',
+                        }}
                       >
-                        <div className="flex items-start space-x-3">
+                        <div className="flex items-start space-x-2 sm:space-x-3">
                           {/* Avatar */}
                           {post.profile_pic ? (
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                            <div
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                              style={{
+                                backgroundColor: currentColors.surface,
+                                borderColor: currentColors.border,
+                              }}
+                            >
                               <img
                                 src={post.profile_pic}
                                 alt={post.user_full_name || "User"}
@@ -1705,35 +1729,63 @@ const UserPage = () => {
                               />
                             </div>
                           ) : (
-                            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            <div 
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-xs sm:text-sm"
+                              style={{
+                                backgroundColor: currentColors.surface,
+                                color: currentColors.text,
+                              }}
+                            >
                               {post.user_full_name?.charAt(0)?.toUpperCase() ||
                                 "U"}
                             </div>
                           )}
 
                           {/* Post Content */}
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <span className="font-semibold text-white">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2">
+                              <span
+                                className="font-semibold text-xs sm:text-sm truncate"
+                                style={{ color: currentColors.text }}
+                              >
                                 {post.user_full_name || "Unknown User"}
                               </span>
-                              <span className="text-gray-400 text-sm">
+                              <span
+                                className="text-xs"
+                                style={{ color: currentColors.textSecondary }}
+                              >
                                 {timeAgo(post?.created_at)}
                               </span>
                             </div>
-                            <p className="text-gray-200 whitespace-pre-wrap mb-3">
+                            <p
+                              className="whitespace-pre-wrap mb-3 text-sm break-words"
+                              style={{ color: currentColors.text }}
+                            >
                               {post.post_content}
                             </p>
 
                             {/* Comment Button */}
                             <button
                               onClick={() => toggleComments(post.post_id)}
-                              className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors text-sm"
+                              className="flex items-center space-x-2 transition-colors text-xs sm:text-sm"
+                              style={{ color: currentColors.textSecondary }}
+                              onMouseEnter={(e) => {
+                                e.target.style.color = currentColors.text;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.color = currentColors.textSecondary;
+                              }}
                             >
-                              <FiMessageCircle size={16} />
+                              <FiMessageCircle size={12} className="sm:size-4" />
                               <span>Comments</span>
                               {post.reply_count > 0 && (
-                                <span className="text-xs bg-gray-700 px-2 py-1 rounded-full">
+                                <span
+                                  className="text-xs px-2 py-1 rounded-full"
+                                  style={{
+                                    backgroundColor: currentColors.surface,
+                                    color: currentColors.textSecondary,
+                                  }}
+                                >
                                   {post.reply_count}
                                 </span>
                               )}
@@ -1741,7 +1793,12 @@ const UserPage = () => {
 
                             {/* Comments Section */}
                             {expandedPosts.has(post.post_id) && (
-                              <div className="mt-4 border-t border-gray-700 pt-4">
+                              <div
+                                className="mt-4 pt-4 border-t"
+                                style={{ 
+                                  borderColor: isDarkMode ? currentColors.border : '#d1d5db'
+                                }}
+                              >
                                 {/* Existing Comments */}
                                 {comments[post.post_id] &&
                                   comments[post.post_id].length > 0 && (
@@ -1749,7 +1806,10 @@ const UserPage = () => {
                                       {comments[post.post_id].map((comment) => (
                                         <div
                                           key={comment.post_id}
-                                          className="flex items-start space-x-2"
+                                          className="flex items-start space-x-2 py-3 border-b last:border-b-0"
+                                          style={{
+                                            borderColor: isDarkMode ? currentColors.border : '#e5e7eb'
+                                          }}
                                         >
                                           {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
                                             {comment.user_full_name
@@ -1757,8 +1817,13 @@ const UserPage = () => {
                                               ?.toUpperCase() || "U"}
                                           </div> */}
 
-                                          {post.profile_pic ? (
-                                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                          {comment.profile_pic ? (
+                                            <div
+                                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                                              style={{
+                                                backgroundColor: currentColors.surface,
+                                              }}
+                                            >
                                               <img
                                                 src={comment.profile_pic}
                                                 alt={
@@ -1769,23 +1834,40 @@ const UserPage = () => {
                                               />
                                             </div>
                                           ) : (
-                                            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                              {post.user_full_name
+                                            <div
+                                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-sm sm:text-sm"
+                                              style={{
+                                                backgroundColor: currentColors.surface,
+                                                color: currentColors.text,
+                                              }}
+                                            >
+                                              {comment.user_full_name
                                                 ?.charAt(0)
                                                 ?.toUpperCase() || "U"}
                                             </div>
                                           )}
-                                          <div className="flex-1">
-                                            <div className="flex items-center space-x-2 mb-1">
-                                              <span className="font-medium text-white text-sm">
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-1">
+                                              <span
+                                                className="font-medium text-sm sm:text-sm truncate"
+                                                style={{
+                                                  color: currentColors.text,
+                                                }}
+                                              >
                                                 {comment.user_full_name ||
                                                   "Unknown User"}
                                               </span>
-                                              <span className="text-gray-400 text-xs">
+                                              <span
+                                                className="text-xs sm:text-xs"
+                                                style={{ color: currentColors.textSecondary }}
+                                              >
                                                 {timeAgo(comment?.created_at)}
                                               </span>
                                             </div>
-                                            <p className="text-gray-200 text-sm whitespace-pre-wrap">
+                                            <p 
+                                              className="text-sm sm:text-sm whitespace-pre-wrap break-words"
+                                              style={{ color: currentColors.text }}
+                                            >
                                               {comment.post_content}
                                             </p>
                                           </div>
@@ -1797,7 +1879,10 @@ const UserPage = () => {
                                 {/* Comment Loading */}
                                 {isLoadingComments[post.post_id] && (
                                   <div className="text-center py-2">
-                                    <p className="text-gray-400 text-sm">
+                                    <p 
+                                      className="text-sm"
+                                      style={{ color: currentColors.textSecondary }}
+                                    >
                                       Loading comments...
                                     </p>
                                   </div>
@@ -1810,7 +1895,12 @@ const UserPage = () => {
                                       "Y"}
                                   </div> */}
                                   {user?.profile_pic ? (
-                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                    <div
+                                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                                      style={{
+                                        backgroundColor: currentColors.surface,
+                                      }}
+                                    >
                                       <img
                                         src={user?.profile_pic}
                                         alt={user?.full_name || "User"}
@@ -1818,13 +1908,19 @@ const UserPage = () => {
                                       />
                                     </div>
                                   ) : (
-                                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                      {post.user_full_name
+                                    <div
+                                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-sm sm:text-sm"
+                                      style={{
+                                        backgroundColor: currentColors.surface,
+                                        color: currentColors.text,
+                                      }}
+                                    >
+                                      {user?.full_name
                                         ?.charAt(0)
                                         ?.toUpperCase() || "Y"}
                                     </div>
                                   )}
-                                  <div className="flex-1">
+                                  <div className="flex-1 min-w-0">
                                     <textarea
                                       value={commentInputs[post.post_id] || ""}
                                       onChange={(e) =>
@@ -1834,7 +1930,12 @@ const UserPage = () => {
                                         )
                                       }
                                       placeholder="Write a comment..."
-                                      className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      className="w-full rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-sm"
+                                      style={{
+                                        backgroundColor: currentColors.background,
+                                        color: currentColors.text,
+                                        border: `1px solid ${currentColors.border}`,
+                                      }}
                                       rows="2"
                                     />
                                     <div className="flex justify-end mt-2">

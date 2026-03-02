@@ -13,12 +13,21 @@ import {
   FiChevronLeft,
   FiCopy,
   FiUpload,
+  FiUser,
+  FiMinimize2,
+  FiMaximize2,
+  FiSend,
+  FiPaperclip,
 } from "react-icons/fi";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useUserPosts } from "../../hooks/useUserPosts";
+import { useSpaceChat } from "../../hooks/useSpaceChat";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 import PageNotFound from "../PageNotFound/pageNotFound";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { timeAgo } from "../../utils/timeAgo.js";
 import Button from "../component/button_2";
 import AddMember from "../component/AddMember";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
@@ -50,6 +59,10 @@ const ProfStreamPage = () => {
   const [charCount, setCharCount] = useState(0);
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [showChatPopup, setShowChatPopup] = useState(false);
+  const [isChatMinimized, setIsChatMinimized] = useState(false);
+  const [isChatMaximized, setIsChatMaximized] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef(null);
   const MAX_CHAR = 250;
 
   // Cover photo state
@@ -65,9 +78,6 @@ const ProfStreamPage = () => {
   const coverPhotoEditorRef = useRef(null);
 
   // Additional state for posts and comments
-  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
-  const [postsError, setPostsError] = useState(null);
-  const [posts, setPosts] = useState([]);
   const [expandedPosts, setExpandedPosts] = useState(new Set());
   const [comments, setComments] = useState({});
   const [isLoadingComments, setIsLoadingComments] = useState({});
@@ -82,6 +92,7 @@ const ProfStreamPage = () => {
   const { addNotification, showGlobalNotification } = useNotification();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
+  const queryClient = useQueryClient();
   const {
     userSpaces,
     courseSpaces,
@@ -93,11 +104,16 @@ const ProfStreamPage = () => {
     deleteSpace,
   } = useSpace();
 
+  // Posts hook with React Query for 15-minute auto-render
+  const { createPost, createComment, getPosts, getComments } = useUserPosts();
+
+  // Chat hook
+  const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } = useSpaceChat(space_uuid, user);
+
   // Join requests - MUST BE AT THE TOP (unconditionally)
   const { data: joinRequestsData = [], isLoading: joinRequestsLoading } =
     useJoinRequests(space_uuid || "");
 
-  // Scroll handler
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -140,6 +156,22 @@ const ProfStreamPage = () => {
 
   // Space name
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
+
+  // Posts query - moved after currentSpace is defined
+  const {
+    data: postsData,
+    isLoading: isLoadingPosts,
+    error: postsError,
+    refetch: refetchPosts,
+  } = useQuery({
+    queryKey: ["posts", currentSpace?.space_id],
+    queryFn: () => getPosts(currentSpace?.space_id || ""),
+    enabled: !!currentSpace?.space_id,
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    cacheTime: 20 * 60 * 1000, // 20 minutes
+  });
+
+  const posts = postsData?.data || [];
 
   // Text formatting
   const applyFormat = (command) => {
@@ -247,17 +279,45 @@ const ProfStreamPage = () => {
   // Create post
   const handleCreatePost = async () => {
     const content = editorRef.current?.innerText?.trim();
-    if (!content) return;
+    if (!content || !currentSpace?.space_id) {
+      addNotification({
+        type: "error",
+        message: "Please write something before posting",
+      });
+      return;
+    }
 
     setIsCreatingPost(true);
     try {
-      // TODO: Implement actual post creation logic
-      console.log("Creating post:", content);
-      editorRef.current.innerHTML = "";
-      setIsFocused(false);
-      setCharCount(0);
+      const result = await createPost({
+        space_id: currentSpace.space_id,
+        post_content: content,
+      });
+
+      if (result.success) {
+        // Clear editor
+        editorRef.current.innerHTML = "";
+        setIsFocused(false);
+        setCharCount(0);
+
+        // Refetch posts to get the latest data
+        refetchPosts();
+
+        addNotification({
+          type: "success",
+          message: "Post created successfully!",
+        });
+      } else {
+        addNotification({
+          type: "error",
+          message: result.message || "Failed to create post",
+        });
+      }
     } catch (error) {
-      console.error("Failed to create post:", error);
+      addNotification({
+        type: "error",
+        message: "Failed to create post. Please try again.",
+      });
     } finally {
       setIsCreatingPost(false);
     }
@@ -270,6 +330,26 @@ const ProfStreamPage = () => {
 
   const handleCloseChat = () => {
     setShowChatPopup(false);
+  };
+
+  // Handle send message
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+
+    sendMessage(newMessage.trim());
+    setNewMessage('');
+
+    // Auto-scroll
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  };
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   // Load saved cover photo on component mount
@@ -439,30 +519,6 @@ const ProfStreamPage = () => {
     }
   };
 
-  // Handle send message
-  const handleSendMessage = (messageText) => {
-    // Add message to chat (you can integrate with your chat backend here)
-    const newMessage = {
-      id: Date.now(),
-      senderId: user?.id,
-      senderName: user?.fullname || "You",
-      text: messageText,
-      timestamp: "Just now",
-      avatar: user?.profile_pic,
-      isRead: false,
-    };
-
-    // For now, just show a notification (replace with actual chat implementation)
-    addNotification({
-      type: "success",
-      title: "Message Sent",
-      message: "Your message was sent successfully",
-      duration: 3000,
-    });
-
-    console.log("Message sent:", newMessage);
-  };
-
   // Sample space members (replace with actual data from your backend)
   const spaceMembers = [
     {
@@ -510,8 +566,26 @@ const ProfStreamPage = () => {
       newExpanded.delete(postId);
     } else {
       newExpanded.add(postId);
+      // Load comments if not already loaded
+      if (!comments[postId]) {
+        loadComments(postId);
+      }
     }
     setExpandedPosts(newExpanded);
+  };
+
+  const loadComments = async (postId) => {
+    setIsLoadingComments((prev) => ({ ...prev, [postId]: true }));
+    try {
+      const result = await getComments(postId);
+      if (result.success && result.data) {
+        setComments((prev) => ({ ...prev, [postId]: result.data }));
+      }
+    } catch (error) {
+      console.error("Failed to load comments:", error);
+    } finally {
+      setIsLoadingComments((prev) => ({ ...prev, [postId]: false }));
+    }
   };
 
   // Handle comment change
@@ -525,7 +599,13 @@ const ProfStreamPage = () => {
   // Create comment
   const handleCreateComment = async (postId) => {
     const content = commentInputs[postId]?.trim();
-    if (!content) return;
+    if (!content || !currentSpace?.space_id) {
+      addNotification({
+        type: "error",
+        message: "Please write something before commenting",
+      });
+      return;
+    }
 
     setIsLoadingComments((prev) => ({
       ...prev,
@@ -533,14 +613,37 @@ const ProfStreamPage = () => {
     }));
 
     try {
-      // TODO: Implement actual comment creation logic
-      console.log("Creating comment:", content, "for post:", postId);
-      setCommentInputs((prev) => ({
-        ...prev,
-        [postId]: "",
-      }));
+      const result = await createComment({
+        space_id: currentSpace?.space_id,
+        post_id: postId,
+        post_content: content,
+      });
+
+      if (result.success) {
+        // Clear comment input
+        setCommentInputs((prev) => ({
+          ...prev,
+          [postId]: "",
+        }));
+
+        // Reload comments
+        await loadComments(postId);
+
+        addNotification({
+          type: "success",
+          message: "Comment posted successfully!",
+        });
+      } else {
+        addNotification({
+          type: "error",
+          message: result.message || "Failed to post comment",
+        });
+      }
     } catch (error) {
-      console.error("Failed to create comment:", error);
+      addNotification({
+        type: "error",
+        message: "Failed to post comment. Please try again.",
+      });
     } finally {
       setIsLoadingComments((prev) => ({
         ...prev,
@@ -944,7 +1047,7 @@ const ProfStreamPage = () => {
 
               {/* REMINDERS - STICKY */}
               <div
-                className={`sticky top-4 border rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
+                className={`sticky top-4 border rounded-xl p-6 ${isOwnerSpace ? "h-fit max-h-[400px]" : "h-full"}`}
                 style={{
                   backgroundColor: currentColors.surface,
                   borderColor: currentColors.border,
@@ -1163,7 +1266,8 @@ const ProfStreamPage = () => {
                         className="rounded-lg p-4 border"
                         style={{
                           backgroundColor: currentColors.background,
-                          borderColor: currentColors.border,
+                          borderColor: isDarkMode ? currentColors.border : '#e5e7eb',
+                          borderWidth: isDarkMode ? '1px' : '1px 0 1px 0',
                         }}
                       >
                         <div className="flex items-start space-x-3">
@@ -1243,8 +1347,10 @@ const ProfStreamPage = () => {
                             {/* Comments Section */}
                             {expandedPosts.has(post.post_id) && (
                               <div
-                                className="mt-4 pt-4"
-                                style={{ borderColor: currentColors.border }}
+                                className="mt-4 pt-4 border-t"
+                                style={{ 
+                                  borderColor: isDarkMode ? currentColors.border : '#d1d5db'
+                                }}
                               >
                                 {/* Existing Comments */}
                                 {comments[post.post_id] &&
@@ -1253,7 +1359,10 @@ const ProfStreamPage = () => {
                                       {comments[post.post_id].map((comment) => (
                                         <div
                                           key={comment.post_id}
-                                          className="flex items-start space-x-2"
+                                          className="flex items-start space-x-2 py-3 border-b last:border-b-0"
+                                          style={{
+                                            borderColor: isDarkMode ? currentColors.border : '#e5e7eb'
+                                          }}
                                         >
                                           {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
                                                     {comment.user_full_name
@@ -1551,6 +1660,78 @@ const ProfStreamPage = () => {
                 Change Cover Photo
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* CHAT POPUP */}
+      {showChatPopup && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0">
+          <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !isChatMinimized && setShowChatPopup(false)} />
+          <div className={`relative w-full ${isChatMaximized ? 'h-screen max-w-full' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
+            {/* Chat Header */}
+            <div className="flex items-center justify-between bg-[#1E222A] rounded-t-lg p-3 border-b border-gray-700 cursor-pointer">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                  <FiUser className="text-white text-sm" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-white text-sm">{spaceName}</h3>
+                  <div className="flex items-center py-2 text-sm text-gray-400">
+                    <div className={`w-2 h-2 rounded-full mr-2 ${spaceOnlineUsers[space_uuid]?.length ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <span>{spaceOnlineUsers[space_uuid]?.length || 0} online</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center space-x-1">
+                <button onClick={(e) => { e.stopPropagation(); setIsChatMaximized(!isChatMaximized); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title={isChatMaximized ? 'Restore' : 'Maximize'}>
+                  {isChatMaximized ? <FiMinimize2 size={14} /> : <FiMaximize2 size={14} />}
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); setShowChatPopup(false); setIsChatMinimized(false); setIsChatMaximized(false); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title="Close">
+                  <FiX size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Chat Messages */}
+            {!isChatMinimized && (
+              <>
+                <div className={`bg-[#141820] overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}>
+                  {messages.map((message) => (
+                    <div key={message.id} className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex flex-col pl-2 ${message.senderId === user?.id ? 'items-end' : 'items-start'}`}>
+                        <div className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'bg-blue-500 rounded-tr-none text-white' : 'bg-gray-700 rounded-tl-none text-gray-200'}`}>
+                          {message.content}
+                        </div>
+                        <p className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-blue-100 text-right' : 'text-gray-400 text-left'}`}>
+                          {formatTime(message.timestamp)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Chat Input */}
+                <form onSubmit={handleSendMessage} className="bg-[#1B1F26] p-3 rounded-b-lg border-t border-gray-700">
+                  <div className="flex items-center space-x-2">
+                    <button type="button" className="text-gray-400 hover:text-white p-2">
+                      <FiPaperclip />
+                    </button>
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Type a message..."
+                      className="flex-1 bg-[#141820] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    <button type="submit" className="text-blue-400 hover:text-blue-300 p-2" disabled={!newMessage.trim()}>
+                      <FiSend />
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
