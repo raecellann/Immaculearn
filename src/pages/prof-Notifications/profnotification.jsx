@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useLocation } from "react-router";
 import Sidebar from "../component/profsidebar";
 import Logout from "../component/logout";
 import { FiUsers, FiBell, FiFilter } from "react-icons/fi";
@@ -14,12 +15,13 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 
 const ProfNotificationPage = () => {
+  const location = useLocation();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedFilter, setSelectedFilter] = useState(location.state?.filter || "all");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;

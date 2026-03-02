@@ -21,6 +21,7 @@ import { getGreeting } from "../../utils/greetings";
 import { SpaceCover } from "../component/spaceCover";
 import Logout from "../component/logout";
 import ArticlesScrape from "../component/articles_scrape";
+import AnnouncementByAdmin from "./components/announcementbyadmin";
 import { DeleteConfirmationDialog } from "../component/SweetAlert";
 
 const ProfHomePage = () => {
@@ -291,6 +292,11 @@ const ProfHomePage = () => {
               </div>
             </div>
 
+            {/* Announcements by Admin (Mobile/Tablet/Small Laptop Only) */}
+            <div className="xl:hidden mb-8">
+              <AnnouncementByAdmin />
+            </div>
+
             {/* Your Spaces Section */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-3">
@@ -521,12 +527,13 @@ const ProfHomePage = () => {
             <ArticlesScrape />
           </div>
 
-          {/* RIGHT CONTENT - Task Deployed (Desktop Only - Sticky Sidebar) */}
-          <div className="hidden xl:block w-80 rounded-xl p-6 mr-6 my-6 flex-shrink-0 self-start sticky top-4" style={{ 
-            backgroundColor: currentColors.surface,
-            border: isDarkMode ? 'none' : '1px solid black'
-          }}>
-            <div>
+          {/* RIGHT CONTENT - Task Deployed + Announcements (Desktop Only - Sticky Sidebar) */}
+          <div className="hidden xl:flex xl:flex-col w-80 gap-4 mr-6 my-6 flex-shrink-0 self-start sticky top-4">
+            {/* Task Deployed */}
+            <div className="rounded-xl p-6" style={{ 
+              backgroundColor: currentColors.surface,
+              border: isDarkMode ? 'none' : '1px solid black'
+            }}>
               <h4 className="font-semibold mb-3" style={{ color: isDarkMode ? 'white' : 'black' }}>Task Deployed:</h4>
               <div className="text-center py-8">
                 <Calendar className="w-12 h-12 mx-auto mb-4" style={{ color: isDarkMode ? '#9ca3af' : currentColors.textSecondary }} />
@@ -544,6 +551,9 @@ const ProfHomePage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Announcements by Admin */}
+            <AnnouncementByAdmin />
           </div>
 
           {/* Delete Space Confirmation Dialog */}
