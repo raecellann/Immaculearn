@@ -63,19 +63,21 @@ const StudentAnnouncementByAdmin = () => {
     <div
       className="rounded-xl p-4 sm:p-6 mt-4"
       style={{
-        backgroundColor: currentColors.surface,
-        border: isDarkMode ? "none" : "1px solid black",
+        background: isDarkMode
+          ? currentColors.surface
+          : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
+        border: isDarkMode ? "none" : "none",
       }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Megaphone
           className="w-5 h-5 flex-shrink-0"
-          style={{ color: isDarkMode ? "#60A5FA" : "#1e3a8a" }}
+          style={{ color: isDarkMode ? "#60A5FA" : "white" }}
         />
         <h4
           className="font-semibold text-base sm:text-lg"
-          style={{ color: isDarkMode ? "white" : "black" }}
+          style={{ color: "white" }}
         >
           Announcements
         </h4>
@@ -175,7 +177,7 @@ const StudentAnnouncementByAdmin = () => {
         <button
           onClick={() => navigate("/notifications", { state: { filter: "announcements" } })}
           className="text-sm font-medium hover:underline transition-colors"
-          style={{ color: isDarkMode ? "#60A5FA" : "#007AFF" }}
+          style={{ color: isDarkMode ? "#60A5FA" : "white" }}
         >
           View All Announcements →
         </button>

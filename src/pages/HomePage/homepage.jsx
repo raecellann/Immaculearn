@@ -422,26 +422,24 @@ const HomePage1 = () => {
             <div
               className="rounded-xl p-6 mb-10 relative"
               style={{
-                backgroundColor: isDarkMode
+                background: isDarkMode
                   ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
-                  : "white",
-                border: isDarkMode ? "none" : "1px solid black",
+                  : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
+                border: isDarkMode ? "none" : "none",
               }}
             >
               <div className="flex flex-col sm:flex-row justify-between gap-6">
                 <div>
                   <h1
                     className="text-lg sm:text-xl font-semibold mb-2"
-                    style={{ color: isDarkMode ? "#B0C4FF" : "#1e3a8a" }}
+                    style={{ color: "white" }}
                   >
                     {greeting}, {user?.name || "Student"}
                   </h1>
                   <p
                     className="mb-1"
                     style={{
-                      color: isDarkMode
-                        ? currentColors.textSecondary
-                        : "#333333",
+                      color: "white",
                     }}
                   >
                     Meet your classmates and collaborate with them.
@@ -449,19 +447,17 @@ const HomePage1 = () => {
                   <p
                     className="mb-5"
                     style={{
-                      color: isDarkMode
-                        ? currentColors.textSecondary
-                        : "#666666",
+                      color: "rgba(255, 255, 255, 0.8)",
                     }}
                   >
                     Join a space or create your own.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
-                      className="border bg-[#007AFF] hover:bg-blue-700 text-sm py-2 px-4"
+                      className="border bg-white hover:bg-gray-100 text-sm py-2 px-4"
                       style={{
-                        borderColor: isDarkMode ? "#4a5568" : "black",
-                        color: isDarkMode ? "white" : "black",
+                        borderColor: "white",
+                        color: "white",
                       }}
                       onClick={() => navigate("/space/create")}
                     >
@@ -470,8 +466,8 @@ const HomePage1 = () => {
                     <Button
                       className="border text-sm py-2 px-4"
                       style={{
-                        borderColor: isDarkMode ? "#4a5568" : "black",
-                        color: isDarkMode ? "white" : "black",
+                        borderColor: "white",
+                        color: "white",
                       }}
                       onClick={() => navigate("/space")}
                     >
@@ -481,9 +477,13 @@ const HomePage1 = () => {
                 </div>
               </div>
               <img
-                src="src/assets/HomePage/book-pen.svg"
-                alt="Book & Pen"
-                className="absolute top-6 right-6 w-24 h-24 object-contain hidden sm:block"
+                src={
+                  user?.gender === "F"
+                    ? "https://res.cloudinary.com/diws5bcu6/image/upload/v1772464536/girl-student_y97ybd.png"
+                    : "https://res.cloudinary.com/diws5bcu6/image/upload/v1772464537/boy-student_gzqw2n.png"
+                }
+                alt="Student Icon"
+                className="absolute top-1 right-1 w-48 h-48 object-contain hidden sm:block"
               />
             </div>
 
@@ -498,21 +498,21 @@ const HomePage1 = () => {
               <div
                 className="rounded-xl p-4 sm:p-6"
                 style={{
-                  backgroundColor: isDarkMode
+                  background: isDarkMode
                     ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
-                    : "white",
-                  border: isDarkMode ? "none" : "1px solid black",
+                    : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
+                  border: isDarkMode ? "none" : "none",
                 }}
               >
                 <div className="text-center py-8">
                   <Calendar
                     className="w-12 h-12 mx-auto mb-4"
-                    style={{ color: currentColors.textSecondary }}
+                    style={{ color: isDarkMode ? currentColors.textSecondary : "white" }}
                   />
                   <p
                     className="text-sm"
                     style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
+                      color: "white",
                     }}
                   >
                     No tasks created yet
@@ -520,7 +520,7 @@ const HomePage1 = () => {
                   <p
                     className="text-xs mt-2"
                     style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
+                      color: "rgba(255, 255, 255, 0.8)",
                     }}
                   >
                     Go to your calendar to create tasks and set reminders
@@ -1062,28 +1062,28 @@ const HomePage1 = () => {
             <div
               className="rounded-xl p-6 flex-1"
               style={{
-                backgroundColor: isDarkMode
+                background: isDarkMode
                   ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
-                  : "white",
-                border: isDarkMode ? "none" : "1px solid black",
+                  : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
+                border: isDarkMode ? "none" : "none",
               }}
             >
               <div>
                 <h4
                   className="font-semibold mb-3"
-                  style={{ color: isDarkMode ? "white" : "black" }}
+                  style={{ color: "white" }}
                 >
                   Reminders
                 </h4>
                 <div className="text-center py-8">
                   <Calendar
                     className="w-12 h-12 mx-auto mb-4"
-                    style={{ color: currentColors.textSecondary }}
+                    style={{ color: isDarkMode ? currentColors.textSecondary : "white" }}
                   />
                   <p
                     className="text-sm"
                     style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
+                      color: "white",
                     }}
                   >
                     No tasks created yet
@@ -1091,7 +1091,7 @@ const HomePage1 = () => {
                   <p
                     className="text-xs mt-2"
                     style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
+                      color: "rgba(255, 255, 255, 0.8)",
                     }}
                   >
                     Go to your calendar to create tasks and set reminders

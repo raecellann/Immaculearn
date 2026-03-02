@@ -82,6 +82,10 @@ const Button = ({ text = "Share", onClick }) => {
     const hasDarkBackground = document.body.style.backgroundColor === '' && 
                              (document.body.classList.contains('bg-[#161A20]') || 
                               getComputedStyle(document.body).backgroundColor === 'rgb(22, 26, 32)');
+    // Special case: Go to Calendar button should have white text in light mode (used on gradient backgrounds)
+    if (text === "Go to Calendar") {
+      return isDarkMode ? "white" : "white";
+    }
     return (isDarkMode || hasDarkBackground) ? "white" : "black";
   };
 
@@ -112,7 +116,7 @@ const Button = ({ text = "Share", onClick }) => {
       case "School Announcements":
         return "#fbbf24"; // Amber/Yellow
       case "Go to Calendar":
-        return "#3b82f6"; // Always blue for visibility
+        return isDarkMode ? "#3b82f6" : "white"; // White border in light mode for gradient backgrounds
       default:
         return "transparent"; // Default transparent
     }
