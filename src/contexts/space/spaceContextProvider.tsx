@@ -73,9 +73,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   };
 
   // Task API functions
-  const fetchUploadedTasks = async (spaceId: string): Promise<Task[]> => {
+  const fetchUploadedTasks = async (space_uuid: string): Promise<Task[]> => {
     try {
-      const res = await spaceService.getUploadedTasks(spaceId);
+      const res = await spaceService.getUploadedTasks(space_uuid);
       return Array.isArray(res.data) ? res.data : [];
     } catch (error) {
       console.error("Error fetching uploaded tasks:", error);
@@ -343,11 +343,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     }: {
       space_uuid: string;
       taskData: TaskCreateData;
-    }) =>
-      spaceService.uploadTask(
-        space_uuid,
-        taskData
-      ),
+    }) => spaceService.uploadTask(space_uuid, taskData),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["uploadedTasks", variables.space_uuid],

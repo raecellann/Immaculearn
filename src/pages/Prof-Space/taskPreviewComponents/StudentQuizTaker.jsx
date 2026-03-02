@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { FiArrowLeft, FiCheck } from 'react-icons/fi';
-import { useSpaceTheme } from '../../../contexts/theme/useSpaceTheme';
+import React, { useState } from "react";
+import { FiArrowLeft, FiCheck } from "react-icons/fi";
+import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 
 const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const { isDarkMode, colors } = useSpaceTheme();
@@ -23,45 +23,56 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
         question: question.question,
         answers: question.answers || [],
         type: determineQuestionType(question.answers),
-        points: Math.floor((quizData?.total_score || 100) / (quizData?.questions?.length || 1))
+        points: Math.floor(
+          (quizData?.total_score || 100) / (quizData?.questions?.length || 1),
+        ),
       };
     });
   };
 
   const determineQuestionType = (answers) => {
-    if (!answers || answers.length === 0) return 'short-answer';
+    if (!answers || answers.length === 0) return "short-answer";
     if (
       answers.length === 2 &&
-      answers.some(a => a.letter_identifier === 'T') &&
-      answers.some(a => a.letter_identifier === 'F')
-    ) return 'true-false';
-    if (answers.length > 2 && answers.every(a => /^[A-Z]$/.test(a.letter_identifier)))
-      return 'multiple-choice';
-    return 'short-answer';
+      answers.some((a) => a.letter_identifier === "T") &&
+      answers.some((a) => a.letter_identifier === "F")
+    )
+      return "true-false";
+    if (
+      answers.length > 2 &&
+      answers.every((a) => /^[A-Z]$/.test(a.letter_identifier))
+    )
+      return "multiple-choice";
+    return "short-answer";
   };
 
   const handleOptionClick = (questionId, letterIdentifier) => {
-    setUserAnswers(prev => ({ ...prev, [questionId]: letterIdentifier }));
+    setUserAnswers((prev) => ({ ...prev, [questionId]: letterIdentifier }));
   };
 
   const handleTextAnswer = (questionId, answer) => {
-    setUserAnswers(prev => ({ ...prev, [questionId]: answer }));
+    setUserAnswers((prev) => ({ ...prev, [questionId]: answer }));
   };
 
-  const handleStartQuiz = () => setQuizStarted(true);
+  const handleStartQuiz = () => {
+    setQuizStarted(true);
+  };
   const handleSubmit = () => setShowSubmitConfirm(true);
   const confirmSubmit = () => onSubmit(userAnswers);
 
   const questions = getQuestions();
   const answeredQuestions = Object.keys(userAnswers).length;
-  const progress = questions.length > 0 ? (answeredQuestions / questions.length) * 100 : 0;
+  const progress =
+    questions.length > 0 ? (answeredQuestions / questions.length) * 100 : 0;
 
   // Pagination: only if > 10 questions
   const usesPagination = questions.length > 10;
   const questionsPerPage = usesPagination
     ? Math.ceil(questions.length / Math.ceil(questions.length / 10))
     : questions.length;
-  const totalPages = usesPagination ? Math.ceil(questions.length / questionsPerPage) : 1;
+  const totalPages = usesPagination
+    ? Math.ceil(questions.length / questionsPerPage)
+    : 1;
   const startIndex = currentPage * questionsPerPage;
   const endIndex = startIndex + questionsPerPage;
   const paginatedQuestions = questions.slice(startIndex, endIndex);
@@ -89,60 +100,78 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   };
 
   const getOptionClass = (selected) => {
-    const base = 'flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200';
-    if (selected) return `${base} border-blue-500 ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'}`;
-    return `${base} ${isDarkMode ? 'border-gray-600 hover:border-gray-400 hover:bg-gray-700/40' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`;
+    const base =
+      "flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200";
+    if (selected)
+      return `${base} border-blue-500 ${isDarkMode ? "bg-blue-900/30" : "bg-blue-50"}`;
+    return `${base} ${isDarkMode ? "border-gray-600 hover:border-gray-400 hover:bg-gray-700/40" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`;
   };
 
   const getLetterBadgeClass = (selected) => {
-    const base = 'w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all';
+    const base =
+      "w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all";
     if (selected) return `${base} bg-blue-600 border-blue-600 text-white`;
-    return `${base} ${isDarkMode ? 'border-gray-500 text-gray-400' : 'border-gray-300 text-gray-500'}`;
+    return `${base} ${isDarkMode ? "border-gray-500 text-gray-400" : "border-gray-300 text-gray-500"}`;
   };
 
   const renderQuestion = (question) => {
     switch (question.type) {
-      case 'multiple-choice':
-      case 'true-false':
+      case "multiple-choice":
+      case "true-false":
         return (
           <div className="space-y-3">
             {question.answers.map((answer, index) => {
-              const selected = userAnswers[question.id] === answer.letter_identifier;
+              const selected =
+                userAnswers[question.id] === answer.letter_identifier;
               return (
                 <div
                   key={index}
                   className={getOptionClass(selected)}
-                  onClick={() => handleOptionClick(question.id, answer.letter_identifier)}
+                  onClick={() =>
+                    handleOptionClick(question.id, answer.letter_identifier)
+                  }
                 >
                   <div className={getLetterBadgeClass(selected)}>
                     {answer.letter_identifier}
                   </div>
                   <div className="flex-1">
-                    <p className="text-base leading-relaxed" style={{ color: currentColors.text }}>
+                    <p
+                      className="text-base leading-relaxed"
+                      style={{ color: currentColors.text }}
+                    >
                       {answer.answer_text}
                     </p>
                   </div>
-                  {selected && <FiCheck size={20} className="text-blue-500 flex-shrink-0 mt-1" />}
+                  {selected && (
+                    <FiCheck
+                      size={20}
+                      className="text-blue-500 flex-shrink-0 mt-1"
+                    />
+                  )}
                 </div>
               );
             })}
           </div>
         );
 
-      case 'short-answer':
+      case "short-answer":
       default:
         return (
-          <div className={`rounded-xl border-2 overflow-hidden transition-colors ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+          <div
+            className={`rounded-xl border-2 overflow-hidden transition-colors ${isDarkMode ? "border-gray-600" : "border-gray-200"}`}
+          >
             <textarea
               placeholder="Type your answer here..."
               className="w-full p-4 resize-none h-36 text-base outline-none transition-colors"
               style={{
-                backgroundColor: isDarkMode ? '#1B1F26' : '#ffffff',
+                backgroundColor: isDarkMode ? "#1B1F26" : "#ffffff",
                 color: currentColors.text,
-                borderColor: userAnswers[question.id] ? '#2563eb' : 'transparent',
-                borderWidth: '2px',
+                borderColor: userAnswers[question.id]
+                  ? "#2563eb"
+                  : "transparent",
+                borderWidth: "2px",
               }}
-              value={userAnswers[question.id] || ''}
+              value={userAnswers[question.id] || ""}
               onChange={(e) => handleTextAnswer(question.id, e.target.value)}
             />
           </div>
@@ -163,43 +192,81 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
         <div className="w-full max-w-2xl mx-auto px-4 py-8 sm:py-12">
           <div
             className="rounded-2xl shadow-2xl p-5 sm:p-8 text-center"
-            style={{ backgroundColor: currentColors.surface, border: `1px solid ${currentColors.border}` }}
+            style={{
+              backgroundColor: currentColors.surface,
+              border: `1px solid ${currentColors.border}`,
+            }}
           >
             <div className="text-5xl sm:text-6xl mb-4 sm:mb-5">📝</div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: currentColors.text }}>
+            <h1
+              className="text-2xl sm:text-3xl font-bold mb-2"
+              style={{ color: currentColors.text }}
+            >
               Quiz Ready
             </h1>
-            <p className="text-sm mb-5 sm:mb-6" style={{ color: currentColors.textSecondary }}>
+            <p
+              className="text-sm mb-5 sm:mb-6"
+              style={{ color: currentColors.textSecondary }}
+            >
               Review the details below before starting
             </p>
 
             {/* Instructions */}
             <div
               className="mb-5 sm:mb-6 p-4 sm:p-5 rounded-xl text-left"
-              style={{ backgroundColor: isDarkMode ? '#161A20' : '#f8fafc', border: `1px solid ${currentColors.border}` }}
+              style={{
+                backgroundColor: isDarkMode ? "#161A20" : "#f8fafc",
+                border: `1px solid ${currentColors.border}`,
+              }}
             >
-              <h2 className="text-base sm:text-lg font-semibold mb-3" style={{ color: currentColors.text }}>
+              <h2
+                className="text-base sm:text-lg font-semibold mb-3"
+                style={{ color: currentColors.text }}
+              >
                 Instructions
               </h2>
               {quizData?.task_instructions && (
-                <p className="text-sm mb-4 leading-relaxed" style={{ color: currentColors.textSecondary }}>
+                <p
+                  className="text-sm mb-4 leading-relaxed"
+                  style={{ color: currentColors.textSecondary }}
+                >
                   {quizData.task_instructions}
                 </p>
               )}
               <div className="grid grid-cols-2 gap-3">
                 <div
                   className="p-3 sm:p-4 rounded-xl text-center"
-                  style={{ backgroundColor: isDarkMode ? '#1B1F26' : '#ffffff', border: `1px solid ${currentColors.border}` }}
+                  style={{
+                    backgroundColor: isDarkMode ? "#1B1F26" : "#ffffff",
+                    border: `1px solid ${currentColors.border}`,
+                  }}
                 >
-                  <p className="text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>Questions</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-blue-500">{questions.length}</p>
+                  <p
+                    className="text-xs font-medium mb-1"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    Questions
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-bold text-blue-500">
+                    {quizData.question_count}
+                  </p>
                 </div>
                 <div
                   className="p-3 sm:p-4 rounded-xl text-center"
-                  style={{ backgroundColor: isDarkMode ? '#1B1F26' : '#ffffff', border: `1px solid ${currentColors.border}` }}
+                  style={{
+                    backgroundColor: isDarkMode ? "#1B1F26" : "#ffffff",
+                    border: `1px solid ${currentColors.border}`,
+                  }}
                 >
-                  <p className="text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>Total Points</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-green-500">{quizData?.total_score || 0}</p>
+                  <p
+                    className="text-xs font-medium mb-1"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    Total Points
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-bold text-green-500">
+                    {quizData?.total_score || 0}
+                  </p>
                 </div>
               </div>
             </div>
@@ -207,8 +274,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
             {/* Warning */}
             <div className="mb-5 sm:mb-6 p-4 rounded-xl text-left bg-amber-500/10 border border-amber-500/30">
               <p className="text-sm text-amber-600">
-                <strong>Important:</strong> Once you start the quiz, you can navigate freely between questions.
-                Make sure you have a stable internet connection and complete all questions before submitting.
+                <strong>Important:</strong> Once you start the quiz, you can
+                navigate freely between questions. Make sure you have a stable
+                internet connection and complete all questions before
+                submitting.
               </p>
             </div>
 
@@ -227,10 +296,14 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 style={{
                   border: `2px solid ${currentColors.border}`,
                   color: currentColors.textSecondary,
-                  backgroundColor: 'transparent',
+                  backgroundColor: "transparent",
                 }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = currentColors.hover}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = currentColors.hover)
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "transparent")
+                }
               >
                 Exit Quiz
               </button>
@@ -243,12 +316,17 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
   // ── QUIZ SCREEN ────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen w-full flex flex-col" style={{ backgroundColor: currentColors.background }}>
-
+    <div
+      className="min-h-screen w-full flex flex-col"
+      style={{ backgroundColor: currentColors.background }}
+    >
       {/* ── STICKY HEADER ── */}
       <div
         className="sticky top-0 z-20 w-full shadow-md"
-        style={{ backgroundColor: currentColors.surface, borderBottom: `1px solid ${currentColors.border}` }}
+        style={{
+          backgroundColor: currentColors.surface,
+          borderBottom: `1px solid ${currentColors.border}`,
+        }}
       >
         <div className="w-full max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           {/* Left: back + title */}
@@ -257,20 +335,34 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
               onClick={onExit}
               className="p-2 rounded-lg flex-shrink-0 transition-colors"
               style={{ color: currentColors.text }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = currentColors.hover}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = currentColors.hover)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
             >
               <FiArrowLeft size={20} />
             </button>
             <div className="min-w-0">
-              <h1 className="font-bold text-sm sm:text-base truncate" style={{ color: currentColors.text }}>
-                Question {currentQuestion + 1}{' '}
-                <span className="font-normal" style={{ color: currentColors.textSecondary }}>
+              <h1
+                className="font-bold text-sm sm:text-base truncate"
+                style={{ color: currentColors.text }}
+              >
+                Question {currentQuestion + 1}{" "}
+                <span
+                  className="font-normal"
+                  style={{ color: currentColors.textSecondary }}
+                >
                   of {questions.length}
                 </span>
               </h1>
-              <p className="text-xs" style={{ color: currentColors.textSecondary }}>
-                {answeredQuestions} answered · {questions.length - answeredQuestions} remaining
+              <p
+                className="text-xs"
+                style={{ color: currentColors.textSecondary }}
+              >
+                {answeredQuestions} answered ·{" "}
+                {questions.length - answeredQuestions} remaining
               </p>
             </div>
           </div>
@@ -278,21 +370,40 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
           {/* Right: progress */}
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="hidden sm:flex items-center gap-2">
-              <span className="text-xs" style={{ color: currentColors.textSecondary }}>Progress</span>
-              <div className="w-24 lg:w-36 h-2 rounded-full" style={{ backgroundColor: isDarkMode ? '#374151' : '#e2e8f0' }}>
+              <span
+                className="text-xs"
+                style={{ color: currentColors.textSecondary }}
+              >
+                Progress
+              </span>
+              <div
+                className="w-24 lg:w-36 h-2 rounded-full"
+                style={{ backgroundColor: isDarkMode ? "#374151" : "#e2e8f0" }}
+              >
                 <div
                   className="h-2 bg-blue-500 rounded-full transition-all duration-500"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <span className="text-xs font-semibold" style={{ color: currentColors.text }}>{Math.round(progress)}%</span>
+              <span
+                className="text-xs font-semibold"
+                style={{ color: currentColors.text }}
+              >
+                {Math.round(progress)}%
+              </span>
             </div>
           </div>
         </div>
 
         {/* Mobile progress bar */}
-        <div className="sm:hidden w-full h-1" style={{ backgroundColor: isDarkMode ? '#374151' : '#e2e8f0' }}>
-          <div className="h-1 bg-blue-500 transition-all duration-500" style={{ width: `${progress}%` }} />
+        <div
+          className="sm:hidden w-full h-1"
+          style={{ backgroundColor: isDarkMode ? "#374151" : "#e2e8f0" }}
+        >
+          <div
+            className="h-1 bg-blue-500 transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
 
@@ -301,15 +412,26 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
         {questions.length > 0 && (
           <div
             className="rounded-2xl shadow-xl overflow-hidden"
-            style={{ backgroundColor: currentColors.surface, border: `1px solid ${currentColors.border}` }}
+            style={{
+              backgroundColor: currentColors.surface,
+              border: `1px solid ${currentColors.border}`,
+            }}
           >
             {/* ── SCROLLABLE QUESTIONS ── */}
-            <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+            <div
+              className="overflow-y-auto"
+              style={{ maxHeight: "calc(100vh - 200px)" }}
+            >
               {paginatedQuestions.map((question, index) => (
                 <div
                   key={question.id}
                   className="p-5 sm:p-7 lg:p-8"
-                  style={{ borderBottom: index !== paginatedQuestions.length - 1 ? `1px solid ${currentColors.border}` : 'none' }}
+                  style={{
+                    borderBottom:
+                      index !== paginatedQuestions.length - 1
+                        ? `1px solid ${currentColors.border}`
+                        : "none",
+                  }}
                 >
                   <div className="mb-5">
                     <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -318,7 +440,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                       </span>
                       <span
                         className="px-3 py-1 rounded text-xs font-medium"
-                        style={{ backgroundColor: isDarkMode ? '#2d3748' : '#f1f5f9', color: currentColors.textSecondary }}
+                        style={{
+                          backgroundColor: isDarkMode ? "#2d3748" : "#f1f5f9",
+                          color: currentColors.textSecondary,
+                        }}
                       >
                         {question.points} pts
                       </span>
@@ -328,7 +453,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                         </span>
                       )}
                     </div>
-                    <h2 className="text-base sm:text-lg font-semibold leading-relaxed" style={{ color: currentColors.text }}>
+                    <h2
+                      className="text-base sm:text-lg font-semibold leading-relaxed"
+                      style={{ color: currentColors.text }}
+                    >
                       {question.question}
                     </h2>
                   </div>
@@ -341,7 +469,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
             {/* ── NAVIGATION FOOTER ── */}
             <div
               className="px-4 sm:px-6 py-4"
-              style={{ borderTop: `1px solid ${currentColors.border}`, backgroundColor: isDarkMode ? '#161A20' : '#f8fafc' }}
+              style={{
+                borderTop: `1px solid ${currentColors.border}`,
+                backgroundColor: isDarkMode ? "#161A20" : "#f8fafc",
+              }}
             >
               {usesPagination ? (
                 /* > 10 questions: Prev / counter / Next — Next becomes Submit on last page */
@@ -351,8 +482,16 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                     disabled={currentPage === 0}
                     className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
-                      backgroundColor: currentPage === 0 ? (isDarkMode ? '#2d3748' : '#e2e8f0') : currentColors.accent,
-                      color: currentPage === 0 ? currentColors.textSecondary : '#ffffff',
+                      backgroundColor:
+                        currentPage === 0
+                          ? isDarkMode
+                            ? "#2d3748"
+                            : "#e2e8f0"
+                          : currentColors.accent,
+                      color:
+                        currentPage === 0
+                          ? currentColors.textSecondary
+                          : "#ffffff",
                     }}
                   >
                     Prev
@@ -360,7 +499,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
                   <span
                     className="text-xs font-medium px-3 py-1 rounded-full"
-                    style={{ backgroundColor: isDarkMode ? '#2d3748' : '#e2e8f0', color: currentColors.textSecondary }}
+                    style={{
+                      backgroundColor: isDarkMode ? "#2d3748" : "#e2e8f0",
+                      color: currentColors.textSecondary,
+                    }}
                   >
                     Page {currentPage + 1} / {totalPages}
                   </span>
@@ -403,26 +545,46 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div
             className="rounded-2xl shadow-2xl p-6 w-full max-w-md"
-            style={{ backgroundColor: currentColors.surface, border: `1px solid ${currentColors.border}` }}
+            style={{
+              backgroundColor: currentColors.surface,
+              border: `1px solid ${currentColors.border}`,
+            }}
           >
             <div className="text-4xl text-center mb-4">📋</div>
-            <h3 className="text-xl font-bold mb-2 text-center" style={{ color: currentColors.text }}>
+            <h3
+              className="text-xl font-bold mb-2 text-center"
+              style={{ color: currentColors.text }}
+            >
               Submit Quiz?
             </h3>
-            <p className="text-sm text-center mb-6 leading-relaxed" style={{ color: currentColors.textSecondary }}>
-              You have answered{' '}
-              <strong style={{ color: currentColors.text }}>{answeredQuestions}</strong> out of{' '}
-              <strong style={{ color: currentColors.text }}>{questions.length}</strong> questions.
-              {answeredQuestions < questions.length && ' Unanswered questions will be marked as incorrect.'}
+            <p
+              className="text-sm text-center mb-6 leading-relaxed"
+              style={{ color: currentColors.textSecondary }}
+            >
+              You have answered{" "}
+              <strong style={{ color: currentColors.text }}>
+                {answeredQuestions}
+              </strong>{" "}
+              out of{" "}
+              <strong style={{ color: currentColors.text }}>
+                {questions.length}
+              </strong>{" "}
+              questions.
+              {answeredQuestions < questions.length &&
+                " Unanswered questions will be marked as incorrect."}
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="text-center p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-                <p className="text-2xl font-bold text-green-500">{answeredQuestions}</p>
+                <p className="text-2xl font-bold text-green-500">
+                  {answeredQuestions}
+                </p>
                 <p className="text-xs text-green-600">Answered</p>
               </div>
               <div className="text-center p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                <p className="text-2xl font-bold text-red-500">{questions.length - answeredQuestions}</p>
+                <p className="text-2xl font-bold text-red-500">
+                  {questions.length - answeredQuestions}
+                </p>
                 <p className="text-xs text-red-500">Unanswered</p>
               </div>
             </div>
@@ -431,9 +593,17 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
               <button
                 onClick={() => setShowSubmitConfirm(false)}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
-                style={{ border: `1px solid ${currentColors.border}`, color: currentColors.textSecondary, backgroundColor: 'transparent' }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = currentColors.hover}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                style={{
+                  border: `1px solid ${currentColors.border}`,
+                  color: currentColors.textSecondary,
+                  backgroundColor: "transparent",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = currentColors.hover)
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "transparent")
+                }
               >
                 Keep Reviewing
               </button>

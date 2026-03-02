@@ -465,9 +465,10 @@ class SpaceService {
     }
   }
 
-  async getUploadedTasks(spaceId: string) {
+  async getUploadedTasks(space_uuid: string) {
     try {
-      const response = await api.get(`/tasks/upload/${spaceId}`);
+      // const response = await api.get(`/tasks/upload/${space_uuid}`);
+      const response = await api.get(`/tasks/${space_uuid}`);
       return response.data;
     } catch (err: any) {
       return {

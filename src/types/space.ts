@@ -97,17 +97,15 @@ export interface CourseSPace {
 
 
 export interface Task {
-    id: number;
-    task_id?: number;
+    task_id: number;
+    lesson_id?: number;
+    space_id?: number;
     task_title: string;
     task_instruction?: string;
-    task_scoring?: number;
-    task_due: string;
-    task_status: string;
-    task_file?: string;
+    total_score?: number;
+    due_date: string;
     created_at: string;
     updated_at: string;
-    space_id: string;
 }
 
 export interface DraftTask {
