@@ -370,7 +370,7 @@ const AdminStudents = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[#161A20] text-white">
+    <div className="flex min-h-screen bg-gray-50 text-gray-900">
 
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
@@ -398,13 +398,13 @@ const AdminStudents = () => {
 
         {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+          className={`lg:hidden bg-white p-4 border-b border-gray-200 flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            className="bg-transparent border-none text-gray-900 text-2xl p-0 focus:outline-none"
           >
             ☰
           </button>
@@ -431,35 +431,35 @@ const AdminStudents = () => {
                   placeholder="Search student..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+                <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
               </div>
               <div className="relative">
                 <select
                   value={selectedCourse}
                   onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="px-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-10"
+                  className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
                 >
                   <option value="">All Courses</option>
                   {uniqueCourses.map(course => (
                     <option key={course} value={course}>{course}</option>
                   ))}
                 </select>
-                <span className="absolute right-3 top-2.5 text-gray-400 pointer-events-none">▼</span>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                className=" text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
               >
                 <UserPlus className="w-4 h-4" />
                 Add Student
               </button>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
               >
                 <Upload className="w-4 h-4" />
                 Import Excel
@@ -476,35 +476,35 @@ const AdminStudents = () => {
                   placeholder="Search student..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+                <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
               </div>
               <div className="relative">
                 <select
                   value={selectedCourse}
                   onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="px-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-10"
+                  className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
                 >
                   <option value="">All Courses</option>
                   {uniqueCourses.map(course => (
                     <option key={course} value={course}>{course}</option>
                   ))}
                 </select>
-                <span className="absolute right-3 top-2.5 text-gray-400 pointer-events-none">▼</span>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
               >
                 <UserPlus className="w-4 h-4" />
                 Add Student
               </button>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
               >
                 <Upload className="w-4 h-4" />
                 Import Excel
@@ -518,14 +518,14 @@ const AdminStudents = () => {
             <div className="mb-4 flex gap-3">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
               >
                 <UserPlus className="w-4 h-4" />
                 Add Student
               </button>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
               >
                 <Upload className="w-4 h-4" />
                 Import Excel
@@ -540,22 +540,22 @@ const AdminStudents = () => {
                   placeholder="Search student..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+                <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
               </div>
               <div className="relative max-w-sm">
                 <select
                   value={selectedCourse}
                   onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="w-full px-4 py-2 bg-[#242B38] rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 text-white appearance-none pr-10"
+                  className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
                 >
                   <option value="">All Courses</option>
                   {uniqueCourses.map(course => (
                     <option key={course} value={course}>{course}</option>
                   ))}
                 </select>
-                <span className="absolute right-3 top-2.5 text-gray-400 pointer-events-none">▼</span>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
             </div>
           </div>
@@ -565,21 +565,21 @@ const AdminStudents = () => {
             {filteredStudents.map((student) => (
               <div
                 key={student.id}
-                className="bg-[#1E242E] p-5 rounded-xl border border-white/10"
+                className="bg-white p-5 rounded-xl border border-gray-200"
               >
                 <h2 className="font-semibold text-base mb-1">
                   {student.name}
                 </h2>
-                <p className="text-sm text-gray-400 mb-1">
+                <p className="text-sm text-gray-600 mb-1">
                   {student.studentNumber}
                 </p>
-                <p className="text-xs text-gray-400 mb-1">
+                <p className="text-xs text-gray-600 mb-1">
                   {student.email}
                 </p>
-                <p className="text-sm text-gray-400 mb-1">
+                <p className="text-sm text-gray-600 mb-1">
                   {student.course}
                 </p>
-                <p className="text-sm text-gray-400 mb-3">
+                <p className="text-sm text-gray-600 mb-3">
                   {student.yearLevel}
                 </p>
 
@@ -596,10 +596,10 @@ const AdminStudents = () => {
           </div>
 
           {/* DESKTOP TABLE */}
-          <div className="hidden lg:block bg-[#1E242E] p-6 rounded-xl">
+          <div className="hidden lg:block bg-white p-6 rounded-xl border border-gray-200">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-gray-400 border-b border-gray-700">
+                <tr className="text-gray-600 border-b border-gray-200">
                   <th className="py-3">First Name</th>
                   <th className="py-3">Last Name</th>
                   <th className="py-3">Email</th>
@@ -614,7 +614,7 @@ const AdminStudents = () => {
                 {filteredStudents.map((student) => (
                   <tr
                     key={student.id}
-                    className="border-b border-gray-800 hover:bg-[#242B38]"
+                    className="border-b border-gray-100 hover:bg-gray-50"
                   >
 
                     <td className="py-4 text-sm">{student.firstName}</td>
@@ -645,12 +645,12 @@ const AdminStudents = () => {
       {/* IMPORT MODAL */}
       {showImportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">Import Students from Excel</h2>
+              <h2 className="text-xl font-bold text-gray-900">Import Students from Excel</h2>
               <button
                 onClick={handleCancelImport}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-600 hover:text-gray-900"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -659,14 +659,14 @@ const AdminStudents = () => {
             {/* File Upload Area */}
             <div className="mb-6">
               <div
-                className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-gray-500 transition-colors cursor-pointer"
+                className="border-2 border-dashed border-gray-400 rounded-lg p-8 text-center hover:border-gray-500 transition-colors cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-300 mb-2">
+                <Upload className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                <p className="text-gray-700 mb-2">
                   Click to upload CSV or Excel file or drag and drop
                 </p>
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-600 text-sm">
                   Supported formats: .csv, .xlsx, .xls
                 </p>
                 <input
@@ -681,12 +681,12 @@ const AdminStudents = () => {
 
             {/* File Info */}
             {importFile && (
-              <div className="mb-6 p-4 bg-[#242B38] rounded-lg">
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-blue-400" />
                   <div>
-                    <p className="text-white font-medium">{importFile.name}</p>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-900 font-medium">{importFile.name}</p>
+                    <p className="text-gray-600 text-sm">
                       {(importFile.size / 1024).toFixed(2)} KB
                     </p>
                   </div>
@@ -697,26 +697,26 @@ const AdminStudents = () => {
             {/* Preview */}
             {importPreview.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-white mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Preview ({importPreview.length} students found)
                 </h3>
                 <div className="max-h-60 overflow-y-auto">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="text-gray-400 border-b border-gray-700">
+                      <tr className="text-gray-600 border-b border-gray-200">
                         <th className="py-2 text-sm">Email</th>
                       </tr>
                     </thead>
                     <tbody>
                       {importPreview.slice(0, 5).map((student, index) => (
-                        <tr key={index} className="border-b border-gray-800">
+                        <tr key={index} className="border-b border-gray-100">
                           <td className="py-2 text-sm">{student.email}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                   {importPreview.length > 5 && (
-                    <p className="text-gray-400 text-sm mt-2 text-center">
+                    <p className="text-gray-600 text-sm mt-2 text-center">
                       ... and {importPreview.length - 5} more students
                     </p>
                   )}
@@ -725,12 +725,12 @@ const AdminStudents = () => {
             )}
 
             {/* Excel Format Instructions */}
-            <div className="mb-6 p-4 bg-[#242B38] rounded-lg">
-              <h3 className="text-white font-medium mb-2">Excel Format Required:</h3>
-              <p className="text-gray-300 text-sm mb-2">
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-gray-900 font-medium mb-2">Excel Format Required:</h3>
+              <p className="text-gray-700 text-sm mb-2">
                 Your Excel / CSV file should have the following column in the first row:
               </p>
-              <ul className="text-gray-400 text-sm space-y-1">
+              <ul className="text-gray-600 text-sm space-y-1">
                 <li>• Gmail (Gmail only — must end with <b>@gmail.com</b>)</li>
               </ul>
             </div>
@@ -758,12 +758,12 @@ const AdminStudents = () => {
       {/* ADD STUDENT MODAL */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">Add New Student</h2>
+              <h2 className="text-xl font-bold text-gray-900">Add New Student</h2>
               <button
                 onClick={handleCancelAdd}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-600 hover:text-gray-900"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -774,7 +774,7 @@ const AdminStudents = () => {
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email *
                 </label>
                 <input
@@ -782,13 +782,13 @@ const AdminStudents = () => {
                   name="email"
                   value={newStudent.email}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 bg-[#242B38] border rounded-lg text-white focus:outline-none focus:border-blue-500 ${
-                    emailError ? 'border-red-500' : 'border-gray-600'
+                  className={`w-full px-3 py-2 bg-white border rounded-lg text-gray-900 focus:outline-none focus:border-blue-500 ${
+                    emailError ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="student@example.com"
                   style={{
-                    WebkitTextFillColor: 'white',
-                    WebkitBoxShadow: '0 0 0 1000px #242B38 inset',
+                    WebkitTextFillColor: 'gray-900',
+                    WebkitBoxShadow: '0 0 0 1000px white inset',
                     transition: 'background-color 0s',
                   }}
                 />
@@ -820,9 +820,9 @@ const AdminStudents = () => {
       {/* DELETE CONFIRMATION MODAL */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E242E] rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-white mb-4">Delete Student Account</h2>
-            <p className="text-gray-300 mb-6">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md border border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Delete Student Account</h2>
+            <p className="text-gray-700 mb-6">
               Are you sure you want to delete this student account? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">

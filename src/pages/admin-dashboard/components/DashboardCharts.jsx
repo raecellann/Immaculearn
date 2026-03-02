@@ -35,11 +35,11 @@ ChartJS.register(
    THEME
 ───────────────────────────────────────────── */
 const THEME = {
-  bg: "#1E242E",
-  card: "#2E3440",
-  border: "#3B4457",
-  text: "#FFFFFF",
-  muted: "#9CA3AF",
+  bg: "#FFFFFF",
+  card: "#F9FAFB",
+  border: "#E5E7EB",
+  text: "#111827",
+  muted: "#6B7280",
   blue: "#3B82F6",
   green: "#10B981",
   indigo: "#6366F1",
@@ -62,17 +62,17 @@ const PALETTE = [
 ];
 
 const baseTooltip = {
-  backgroundColor: "#2E3440",
-  borderColor: "#3B4457",
+  backgroundColor: "#FFFFFF",
+  borderColor: "#E5E7EB",
   borderWidth: 1,
-  titleColor: "#FFFFFF",
-  bodyColor: "#9CA3AF",
+  titleColor: "#111827",
+  bodyColor: "#6B7280",
   padding: 10,
   cornerRadius: 8,
 };
 
 const baseGrid = {
-  color: "rgba(59,68,87,0.4)",
+  color: "rgba(229, 231, 235, 0.5)",
   drawBorder: false,
 };
 
@@ -82,8 +82,8 @@ const baseTick = { color: THEME.muted, font: { size: 11 } };
    WRAPPER: ChartCard
 ───────────────────────────────────────────── */
 const ChartCard = ({ title, children }) => (
-  <div className="bg-[#1E242E] rounded-xl p-5 sm:p-6 h-full">
-    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+  <div className="bg-white rounded-xl p-5 sm:p-6 h-full border border-gray-200 shadow-sm">
+    <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-4">
       {title}
     </h3>
     {children}
@@ -371,8 +371,8 @@ const DashboardCharts = ({ students = [], teachers = [] }) => (
     {/* ROW 1: Growth Overview (col-2) + Gender (col-1) */}
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
       <div className="lg:col-span-2 flex flex-col">
-        <div className="bg-[#1E242E] rounded-xl p-5 sm:p-6 flex flex-col flex-1" style={{ minHeight: 340 }}>
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+        <div className="bg-white rounded-xl p-5 sm:p-6 flex flex-col flex-1 border border-gray-200 shadow-sm" style={{ minHeight: 340 }}>
+          <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-4">
             Growth Overview (Current Term)
           </h3>
           <div className="flex-1 min-h-0">

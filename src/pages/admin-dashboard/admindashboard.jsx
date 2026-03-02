@@ -167,7 +167,7 @@ const AdminDashboard = () => {
   return (
     <>
       <DashboardStyles />
-      <div className="flex min-h-screen bg-[#161A20] text-white">
+      <div className="flex min-h-screen bg-gray-50 text-gray-900">
 
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
@@ -184,7 +184,7 @@ const AdminDashboard = () => {
 
       {/* MOBILE/TABLET SIDEBAR */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300
+        className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 border-r border-gray-200
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
@@ -196,13 +196,13 @@ const AdminDashboard = () => {
 
         {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+          className={`lg:hidden bg-white p-4 border-b border-gray-200 flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            className="bg-transparent border-none text-gray-900 text-2xl p-0 focus:outline-none"
           >
             ☰
           </button>
@@ -216,11 +216,11 @@ const AdminDashboard = () => {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {/* Loading Overlay */}
           {isLoading && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-              <div className="bg-[#1E242E] p-8 rounded-2xl shadow-2xl">
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="bg-white p-8 rounded-2xl shadow-2xl">
                 <div className="flex items-center space-x-4">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                  <span className="text-white text-lg">Loading Dashboard...</span>
+                  <span className="text-gray-900 text-lg">Loading Dashboard...</span>
                 </div>
               </div>
             </div>
@@ -228,10 +228,10 @@ const AdminDashboard = () => {
 
           {/* Header with animation */}
           <div className="mb-8 animate-fade-in">
-            <h1 className="hidden lg:block text-3xl font-bold text-center text-white">
+            <h1 className="hidden lg:block text-3xl font-bold text-center text-gray-900">
               Admin Dashboard
             </h1>
-            <p className="text-center text-gray-400 mt-2">Welcome back! Here's your overview.</p>
+            <p className="text-center text-gray-600 mt-2">Welcome back! Here's your overview.</p>
           </div>
 
           {/* ===== ENHANCED STAT CARDS ===== */}
@@ -282,34 +282,34 @@ const AdminDashboard = () => {
           {/* ===== ENHANCED TEACHERS AND STUDENTS LISTS ===== */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             {/* ===== TEACHERS LIST ===== */}
-            <div className="bg-[#1E242E] p-4 sm:p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-200">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
                   <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                   <span className="hidden sm:inline">Teachers</span>
                   <span className="sm:hidden">Tchrs</span>
                 </h2>
-                <span className="text-xs sm:text-sm text-gray-400 bg-[#2E3440] px-2 sm:px-3 py-1 rounded-full">
+                <span className="text-xs sm:text-sm text-gray-500 bg-gray-100 px-2 sm:px-3 py-1 rounded-full">
                   {teachers.length}
                 </span>
               </div>
 
-              <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto custom-scrollbar">
-                {teachers.slice(0, 8).map((teacher, index) => (
+              <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto overflow-x-hidden">
+                {teachers.slice(0, 3).map((teacher, index) => (
                   <div
                     key={teacher.id}
-                    className="bg-[#2E3440] p-3 sm:p-4 rounded-lg hover:bg-[#363D4A] transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg cursor-pointer"
+                    className="bg-gray-50 p-3 sm:p-4 rounded-lg transition-all duration-200"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <p className="font-medium text-xs sm:text-sm text-white mb-1 truncate">{teacher.name}</p>
-                        <p className="text-gray-400 text-xs mb-1 truncate">{teacher.email}</p>
+                        <p className="font-medium text-xs sm:text-sm text-gray-900 mb-1 truncate">{teacher.name}</p>
+                        <p className="text-gray-600 text-xs mb-1 truncate">{teacher.email}</p>
                         <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
-                          <span className="text-xs bg-blue-500/20 text-blue-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-medium">
                             {teacher.gender}
                           </span>
-                          <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded truncate max-w-[100px] sm:max-w-none">
+                          <span className="text-xs bg-purple-100 text-purple-800 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded truncate max-w-[100px] sm:max-w-none font-medium">
                             {teacher.department}
                           </span>
                         </div>
@@ -318,46 +318,51 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 ))}
-                {teachers.length > 8 && (
-                  <div className="text-center py-3 text-gray-400 text-sm hover:text-white transition-colors cursor-pointer">
-                    View all {teachers.length} teachers →
+                {teachers.length > 3 && (
+                  <div className="flex justify-end">
+                    <button
+                      onClick={navigateToTeachers}
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline transition-colors duration-200"
+                    >
+                      View All Teachers ({teachers.length})
+                    </button>
                   </div>
                 )}
               </div>
             </div>
 
             {/* ===== STUDENTS LIST ===== */}
-            <div className="bg-[#1E242E] p-4 sm:p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-200">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
                   <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
                   <span className="hidden sm:inline">Students</span>
                   <span className="sm:hidden">Stds</span>
                 </h2>
-                <span className="text-xs sm:text-sm text-gray-400 bg-[#2E3440] px-2 sm:px-3 py-1 rounded-full">
+                <span className="text-xs sm:text-sm text-gray-500 bg-gray-100 px-2 sm:px-3 py-1 rounded-full">
                   {students.length}
                 </span>
               </div>
 
-              <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto custom-scrollbar">
-                {students.slice(0, 8).map((student, index) => (
+              <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto overflow-x-hidden">
+                {students.slice(0, 3).map((student, index) => (
                   <div
                     key={student.id}
-                    className="bg-[#2E3440] p-3 sm:p-4 rounded-lg hover:bg-[#363D4A] transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg cursor-pointer"
+                    className="bg-gray-50 p-3 sm:p-4 rounded-lg transition-all duration-200"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <p className="font-medium text-xs sm:text-sm text-white mb-1 truncate">{student.name}</p>
-                        <p className="text-gray-400 text-xs mb-1 truncate">{student.email}</p>
+                        <p className="font-medium text-xs sm:text-sm text-gray-900 mb-1 truncate">{student.name}</p>
+                        <p className="text-gray-600 text-xs mb-1 truncate">{student.email}</p>
                         <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
-                          <span className="text-xs bg-green-500/20 text-green-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                          <span className="text-xs bg-green-100 text-green-800 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-medium">
                             {student.gender}
                           </span>
-                          <span className="text-xs bg-amber-500/20 text-amber-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded truncate max-w-[80px] sm:max-w-none">
+                          <span className="text-xs bg-amber-100 text-amber-800 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded truncate max-w-[80px] sm:max-w-none font-medium">
                             {student.course}
                           </span>
-                          <span className="text-xs bg-indigo-500/20 text-indigo-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
+                          <span className="text-xs bg-indigo-100 text-indigo-800 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-medium">
                             {student.yearLevel}
                           </span>
                         </div>
@@ -366,9 +371,14 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 ))}
-                {students.length > 8 && (
-                  <div className="text-center py-3 text-gray-400 text-sm hover:text-white transition-colors cursor-pointer">
-                    View all {students.length} students →
+                {students.length > 3 && (
+                  <div className="flex justify-end">
+                    <button
+                      onClick={navigateToStudents}
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline transition-colors duration-200"
+                    >
+                      View All Students ({students.length})
+                    </button>
                   </div>
                 )}
               </div>
@@ -436,7 +446,7 @@ const StatCard = ({ icon: Icon, label, value, color, onClick, trend, iconBg: Ico
         shadow-lg hover:shadow-2xl hover:shadow-${color}-500/30 
         transition-all duration-500 transform hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-[1.02] sm:hover:scale-105 
         active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 
-        focus:ring-offset-[#1E242E] focus:ring-${color}-400
+        focus:ring-offset-white focus:ring-${color}-400
         border border-${color}-400/20 relative overflow-hidden group`}
     >
       {/* Animated background pattern */}
