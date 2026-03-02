@@ -118,6 +118,19 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     staleTime: 60_000,
   });
 
+  const { data: archivedSpaces = [], isLoading: archivedSpacesLoading } =
+    useQuery({
+      queryKey: ["archivedSpaces"],
+      queryFn: async () => {
+        const res = await spaceService.getAllArchivedCourses();
+        return res.data || [];
+      },
+      enabled: isAuthenticated,
+      staleTime: Infinity, // never becomes stale automatically
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    });
+
   const fetchAllJoinRequests = async (): Promise<SpacePendingInvitation[]> => {
     try {
       const res = await spaceService.getAllJoinSpaceRequests();
@@ -301,6 +314,14 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
     queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
     queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+
+    return result;
+  };
+
+  const setArchive = async (spaceUuid: string) => {
+    const result = await spaceService.setArchive(spaceUuid);
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["archivedSpaces"] });
 
     return result;
   };
@@ -511,6 +532,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     userSpaces,
     courseSpaces,
     friendSpaces,
+    archivedSpaces,
+    archivedSpacesLoading,
     isLoading,
 
     joinRequestsByLink,
@@ -537,6 +560,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     leaveSpace,
     deleteSpace,
     removeUserFromSpace,
+    setArchive,
 
     // Invitation mutations
 

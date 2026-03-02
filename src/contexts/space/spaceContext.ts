@@ -26,6 +26,9 @@ export interface SpaceContextType {
   friendSpaces: Space[];
   isLoading: boolean;
 
+  archivedSpaces: CourseSPace[];
+  archivedSpacesLoading: boolean;
+
   joinRequestsByLink: SpacePendingInvitation[];
   joinRequestsByLinkLoading: boolean;
 
@@ -55,6 +58,7 @@ export interface SpaceContextType {
   leaveSpace: (space_uuid: string) => Promise<any>;
   deleteSpace: (spaceUuid: string) => Promise<any>;
   removeUserFromSpace: (spaceUuid: string, userId: number) => Promise<any>;
+  setArchive: (spaceUuid: string) => Promise<any>;
 
   // Invitation mutations
   getAllPendingRequest: (spaceUuid: string) => Promise<any>;

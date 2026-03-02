@@ -528,7 +528,7 @@ class SpaceService {
     finals: number | null,
   ) {
     try {
-      const response = await api.post(`/space/remarks`, {
+      const response = await api.post(`/spaces/remarks`, {
         student_id,
         space_uuid,
         prelim,
@@ -541,6 +541,42 @@ class SpaceService {
       return {
         success: false,
         message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
+  async setArchive(
+    space_uuid: string
+  ) {
+    try {
+      const response = await api.patch(`/spaces/${space_uuid}/archive`);
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
+  async getAllArchivedCourses(): Promise<ApiResponse<CourseSPace[]>> {
+    try {
+      const response = await api.get<ApiResponse<CourseSPace[]>>(
+        "/spaces/archived",
+      );
+      const data = Array.isArray(response.data?.data) ? response.data.data : [];
+      console.log(response);
+      return {
+        success: response.data.success,
+        message: response.data.message,
+        data,
+      };
+      // return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to fetch archived",
+        data: [],
       };
     }
   }
