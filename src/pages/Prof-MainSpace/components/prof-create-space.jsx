@@ -28,7 +28,7 @@ const ProfCreateSpace = () => {
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
 
   // Cover image state
-  const [coverImage, setCoverImage] = useState("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
+  const [coverImage, setCoverImage] = useState("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
   const [uploadedImage, setUploadedImage] = useState(null);
   const [originalImage, setOriginalImage] = useState(null);
 
@@ -81,12 +81,12 @@ const ProfCreateSpace = () => {
   ];
 
   const galleryImages = [
-    "/src/assets/HomePage/spaces-cover/cover1.jpg",
-    "/src/assets/HomePage/spaces-cover/cover2.jpg",
-    "/src/assets/HomePage/spaces-cover/cover3.jpg",
-    "/src/assets/HomePage/spaces-cover/grades.jpg",
-    "/src/assets/HomePage/spaces-cover/lectures.jpg",
-    "/src/assets/HomePage/spaces-cover/space-board.jpg",
+    "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
+    "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809913/uts_k4mlri.jpg",
+    "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/thesis_jmvpxb.jpg",
+    "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/pe_bf0fbt.jpg",
+    "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/modtech_e8tski.jpg",
+    "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809911/datastructure_ekrsn5.jpg",
   ];
 
   const handleShortDescriptionChange = (e) => {

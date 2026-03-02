@@ -5,7 +5,6 @@ import { useSpace } from "../../contexts/space/useSpace";
 import { useTasks } from "../../hooks/useTasks";
 import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
-import { hardcodedLessons } from "./UserFilesShared.jsx";
 import Sidebar from "../component/sidebar";
 import Button from "../component/button_2";
 import MainButton from "../component/Button.jsx";
@@ -82,19 +81,7 @@ const AdminTaskPage = () => {
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
-  // Quick task creation modal state
-  const [showQuickTaskModal, setShowQuickTaskModal] = useState(false);
-  const [quickTaskTitle, setQuickTaskTitle] = useState("");
-  const [quickLessonUnder, setQuickLessonUnder] = useState("");
-  const [quickTaskCategory, setQuickTaskCategory] = useState("quiz");
-  const [quickTaskErrors, setQuickTaskErrors] = useState({
-    quickTaskTitle: "",
-    quickLessonUnder: ""
-  });
-  const [lessons, setLessons] = useState(hardcodedLessons.map(lesson => lesson.name));
 
-  // Exam filter state
-  const [examFilter, setExamFilter] = useState("all"); // "all", "prelim", "midterm", "prefinals", "finals"
 
   // Cover photo state
   const [coverPhoto, setCoverPhoto] = useState(null);
@@ -108,26 +95,6 @@ const AdminTaskPage = () => {
   const coverPhotoInputRef = useRef(null);
   const coverPhotoEditorRef = useRef(null);
 
-  // Function to filter tasks by exam type
-  const filterTasksByExam = (tasks) => {
-    if (examFilter === "all") return tasks;
-    
-    return tasks.filter(task => {
-      const lessonUnder = task.lessonUnder?.toLowerCase() || "";
-      switch (examFilter) {
-        case "prelim":
-          return lessonUnder.includes("prelim");
-        case "midterm":
-          return lessonUnder.includes("midterm");
-        case "prefinals":
-          return lessonUnder.includes("prefinals");
-        case "finals":
-          return lessonUnder.includes("finals");
-        default:
-          return true;
-      }
-    });
-  };
 
   // Add Member modal state
   const [showInvitePopup, setShowInvitePopup] = useState(false);
@@ -169,107 +136,7 @@ const AdminTaskPage = () => {
   const fileInputRef = useRef(null);
   const instructionRef = useRef(null);
 
-  // Task categories
-  const taskCategories = [
-    { value: "quiz", label: "Quiz", emoji: "�" },
-    { value: "group-activity", label: "Group Activity", emoji: "👥" },
-    { value: "individual-activity", label: "Individual Activity", emoji: "📝" },
-  ];
 
-  // Form field types
-  const fieldTypes = [
-    { value: "text", label: "Short Answer", icon: "📝" },
-    { value: "textarea", label: "Long Answer", icon: "📄" },
-    { value: "multiple-choice", label: "Multiple Choice", icon: "🔘" },
-    { value: "checkbox", label: "Checkbox", icon: "☑️" },
-    { value: "number", label: "Number", icon: "🔢" },
-    { value: "date", label: "Date", icon: "📅" },
-  ];
-
-  // Criteria templates
-  const criteriaTemplates = {
-    quiz: [
-      {
-        name: "Correct Answers",
-        description: "Accuracy of responses and correct solutions",
-        points: "40",
-      },
-      {
-        name: "Understanding",
-        description: "Demonstration of concept comprehension",
-        points: "30",
-      },
-      {
-        name: "Problem Solving",
-        description: "Ability to apply knowledge to solve problems",
-        points: "20",
-      },
-      {
-        name: "Clarity",
-        description: "Clear and organized presentation of answers",
-        points: "10",
-      },
-    ],
-    "individual-activity": [
-      {
-        name: "Content Quality",
-        description: "Depth, accuracy, and relevance of content",
-        points: "30",
-      },
-      {
-        name: "Critical Thinking",
-        description: "Analysis, evaluation, and independent thought",
-        points: "25",
-      },
-      {
-        name: "Organization",
-        description: "Structure, coherence, and logical flow",
-        points: "20",
-      },
-      {
-        name: "Completeness",
-        description: "Thoroughness and attention to requirements",
-        points: "15",
-      },
-      {
-        name: "Presentation",
-        description: "Clarity, formatting, and professional appearance",
-        points: "10",
-      },
-    ],
-    "group-activity": [
-      {
-        name: "Collaboration",
-        description: "Teamwork, communication, and cooperation",
-        points: "25",
-      },
-      {
-        name: "Content Quality",
-        description: "Accuracy, depth, and relevance of work",
-        points: "25",
-      },
-      {
-        name: "Individual Contribution",
-        description: "Each member's participation and effort",
-        points: "20",
-      },
-      {
-        name: "Process & Planning",
-        description: "Organization, time management, and workflow",
-        points: "15",
-      },
-      {
-        name: "Final Output",
-        description: "Quality and completeness of the final deliverable",
-        points: "15",
-      },
-    ],
-  };
-
-  const getCategoryDisplay = (categoryValue) => {
-    const category = taskCategories.find((cat) => cat.value === categoryValue);
-    return category ? `${category.emoji} ${category.label}` : "📝 Task";
-  };
 
   // File handling functions
   const handleFileClick = () => {
@@ -436,21 +303,7 @@ const AdminTaskPage = () => {
     // Implementation would depend on your API structure
   };
 
-  const applyTemplate = (templateType) => {
-    const template = criteriaTemplates[templateType];
-    if (template) {
-      const newCriteria = template.map((criterion, index) => ({
-        id: Date.now() + index,
-        name: criterion.name,
-        description: criterion.description,
-        points: criterion.points,
-      }));
-      setCriteria(newCriteria);
-      setShowTemplates(false);
-      setShowCriteriaSection(true);
-    }
-  };
-
+  
   const clearCriteria = () => {
     setCriteria([{ id: 1, name: "", description: "", points: "" }]);
     setShowTemplates(false);
@@ -817,75 +670,6 @@ const AdminTaskPage = () => {
     setShowDeleteRoom(true);
   };
 
-  // Quick Task Creation functions
-  const clearQuickTaskError = (field) => {
-    setQuickTaskErrors(prev => ({
-      ...prev,
-      [field]: ""
-    }));
-  };
-
-  const handleQuickTaskCreate = () => {
-    // Clear previous errors
-    const newErrors = {
-      quickTaskTitle: "",
-      quickLessonUnder: ""
-    };
-    
-    let hasErrors = false;
-
-    // Validate required fields
-    if (!quickTaskTitle.trim()) {
-      newErrors.quickTaskTitle = "Task title is required";
-      hasErrors = true;
-    } else if (quickTaskTitle.trim().length < 3) {
-      newErrors.quickTaskTitle = "Title must be at least 3 characters long";
-      hasErrors = true;
-    }
-
-    if (!quickLessonUnder.trim()) {
-      newErrors.quickLessonUnder = "Lesson under is required";
-      hasErrors = true;
-    }
-
-    // Set errors if any
-    if (hasErrors) {
-      setQuickTaskErrors(newErrors);
-      return;
-    }
-
-    // Clear errors if validation passes
-    setQuickTaskErrors({
-      quickTaskTitle: "",
-      quickLessonUnder: ""
-    });
-
-    // Store task data in localStorage for the next page
-    const taskData = {
-      taskTitle: quickTaskTitle,
-      lessonUnder: quickLessonUnder,
-      taskCategory: quickTaskCategory,
-      instruction: "",
-      score: "",
-      dueDate: "",
-      selectedFile: null,
-      criteria: [{ id: 1, name: "", description: "", points: "" }]
-    };
-    localStorage.setItem("taskFormData", JSON.stringify(taskData));
-
-    // Navigate to CreateActivityForm
-    navigate(`/space/${space_uuid}/${space_name}/create-activity`);
-
-    // Reset modal state
-    setShowQuickTaskModal(false);
-    setQuickTaskTitle("");
-    setQuickLessonUnder("");
-    setQuickTaskCategory("quiz");
-    setQuickTaskErrors({
-      quickTaskTitle: "",
-      quickLessonUnder: ""
-    });
-  };
 
   const confirmDeleteRoom = () => {
     // Here you would implement the actual delete logic
@@ -1091,57 +875,10 @@ const AdminTaskPage = () => {
           {/* TASKS LIST VIEW */}
             <div className="max-w-5xl mx-auto">
               {isOwnerSpace && (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                  {/* Exam Filter - Left Side */}
-                  <div className="flex flex-col gap-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-medium" style={{ color: currentColors.text, fontSize: '0.65rem' }}>
-                        Filter:
-                      </span>
-                      <div className="flex flex-wrap gap-1 sm:gap-2">
-                        {[
-                          { value: "all", label: "All" },
-                          { value: "prelim", label: "Prelim" },
-                          { value: "midterm", label: "Midterm" },
-                          { value: "prefinals", label: "Prefinals" },
-                          { value: "finals", label: "Finals" }
-                        ].map((filter) => (
-                          <button
-                            key={filter.value}
-                            onClick={() => setExamFilter(filter.value)}
-                            className={`px-2 py-1 rounded-full text-xs font-medium transition-all ${
-                              examFilter === filter.value
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-600 text-gray-300 hover:bg-gray-500"
-                            }`}
-                            style={{ fontSize: '0.65rem' }}
-                          >
-                            {filter.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs" style={{ color: currentColors.textSecondary, fontSize: '0.6rem' }}>
-                        {filterTasksByExam(uploadedTask).length} of {uploadedTask.length}
-                      </span>
-                      {examFilter !== "all" && (
-                        <button
-                          onClick={() => setExamFilter("all")}
-                          className="px-2 py-1 rounded-full text-xs bg-gray-600 text-gray-300 hover:bg-gray-500 transition-colors"
-                          style={{ fontSize: '0.65rem' }}
-                        >
-                          Clear
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Create Task Button - Right Side */}
+                <div className="flex justify-end mb-6">
+                  {/* Create Task Button */}
                   <button
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start"
-                    onClick={() => setShowQuickTaskModal(true)}
                   >
                     <FiFileText size={16} />
                     Create Task
@@ -1165,7 +902,7 @@ const AdminTaskPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filterTasksByExam(uploadedTask)?.map((task, index) => (
+                    {uploadedTask?.map((task, index) => (
                       <tr
                         key={index}
                         className="border-b border-gray-700 hover:bg-[#1E222A]"
@@ -1205,7 +942,7 @@ const AdminTaskPage = () => {
                         <td className="py-3 px-2 sm:px-4">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
                             <span className="text-sm sm:text-lg flex-shrink-0">
-                              {getCategoryDisplay(task.task_category)}
+                              📝 Task
                             </span>
 
                             <span className="text-xs sm:text-sm font-semibold truncate">
@@ -1243,7 +980,7 @@ const AdminTaskPage = () => {
 
               {/* Mobile Cards */}
               <div className="sm:hidden space-y-3 sm:space-y-4 px-2 sm:px-0">
-                {filterTasksByExam(uploadedTask)?.map((task, index) => (
+                {uploadedTask?.map((task, index) => (
                   <div
                     key={index}
                     className="bg-[#1B1F26] border border-gray-700 rounded-xl p-3 sm:p-4 shadow-sm"
@@ -1253,7 +990,7 @@ const AdminTaskPage = () => {
                       <p className="text-xs font-medium text-gray-400 mb-1">Task Name</p>
                       <div className="flex items-center gap-2">
                         <span className="text-base sm:text-lg flex-shrink-0">
-                          {getCategoryDisplay(task.task_category)}
+                          📝 Task
                         </span>
                         <span className="text-sm sm:text-base font-semibold truncate">
                           {task.task_title}
@@ -1509,150 +1246,7 @@ const AdminTaskPage = () => {
         }}
       />
 
-      {/* QUICK TASK CREATION MODAL */}
-      {showQuickTaskModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div 
-            className="rounded-xl p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto mx-4"
-            style={{ backgroundColor: currentColors.surface, border: `1px solid ${currentColors.border}` }}
-          >
-            <h3 className="text-lg sm:text-xl font-semibold mb-4" style={{ color: currentColors.text }}>
-              Create New Task
-            </h3>
             
-            <div className="space-y-4">
-              {/* Title Activity */}
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: currentColors.text }}>
-                  Title Activity: <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={quickTaskTitle}
-                  onChange={(e) => {
-                    setQuickTaskTitle(e.target.value);
-                    clearQuickTaskError('quickTaskTitle');
-                  }}
-                  className={`w-full px-3 py-2 rounded-lg border outline-none transition-colors text-sm ${
-                    quickTaskErrors.quickTaskTitle ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'
-                  }`}
-                  style={{ 
-                    backgroundColor: currentColors.background, 
-                    borderColor: quickTaskErrors.quickTaskTitle ? '#ef4444' : currentColors.border,
-                    color: currentColors.text
-                  }}
-                  placeholder="Enter task title"
-                />
-                {quickTaskErrors.quickTaskTitle && (
-                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                    <FiX size={12} />
-                    {quickTaskErrors.quickTaskTitle}
-                  </p>
-                )}
-              </div>
-
-              {/* Lesson Under */}
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: currentColors.text }}>
-                  Lesson Under: <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-2">
-                  <select
-                    value={quickLessonUnder}
-                    onChange={(e) => {
-                      setQuickLessonUnder(e.target.value);
-                      clearQuickTaskError('quickLessonUnder');
-                    }}
-                    className={`flex-1 px-3 py-2 rounded-lg border outline-none transition-colors text-sm ${
-                      quickTaskErrors.quickLessonUnder ? 'border-red-500 focus:border-red-500' : 'focus:border-blue-500'
-                    }`}
-                    style={{ 
-                      backgroundColor: currentColors.background, 
-                      borderColor: quickTaskErrors.quickLessonUnder ? '#ef4444' : currentColors.border,
-                      color: currentColors.text
-                    }}
-                  >
-                    <option value="">
-                      {lessons.length === 0 ? "Add lessons below to get started..." : "Select a lesson..."}
-                    </option>
-                    {lessons.map((lesson, index) => (
-                      <option key={index} value={lesson}>
-                        {lesson}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {quickTaskErrors.quickLessonUnder && (
-                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                    <FiX size={12} />
-                    {quickTaskErrors.quickLessonUnder}
-                  </p>
-                )}
-                
-                </div>
-
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: currentColors.text }}>
-                  Category: <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={quickTaskCategory}
-                  onChange={(e) => setQuickTaskCategory(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border focus:border-blue-500 outline-none text-sm"
-                  style={{ 
-                    backgroundColor: currentColors.background, 
-                    borderColor: currentColors.border,
-                    color: currentColors.text
-                  }}
-                >
-                  <option value="quiz">📝 Quiz</option>
-                  <option value="reflection-essay">📄 Reflection/Essay</option>
-                  <option value="group-activity">👥 Group Activity</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row sm:justify-end gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowQuickTaskModal(false);
-                  setQuickTaskTitle("");
-                  setQuickLessonUnder("");
-                  setQuickTaskCategory("quiz");
-                  setQuickTaskErrors({
-                    quickTaskTitle: "",
-                    quickLessonUnder: ""
-                  });
-                }}
-                className="px-4 py-2 rounded-lg transition w-full sm:w-auto order-2 sm:order-1"
-                style={{ 
-                  backgroundColor: currentColors.textSecondary, 
-                  color: 'white'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.text}
-                onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.textSecondary}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleQuickTaskCreate}
-                className="px-4 py-2 rounded-lg transition w-full sm:w-auto order-1 sm:order-2"
-                style={{ 
-                  backgroundColor: currentColors.accent, 
-                  color: 'white'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}
-              >
-                Create Task
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* COVER PHOTO EDITOR MODAL */}
       {showCoverPhotoEditor && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
