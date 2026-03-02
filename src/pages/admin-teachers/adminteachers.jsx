@@ -506,7 +506,7 @@ const AdminTeachers = () => {
           <div className="hidden lg:block bg-white p-6 rounded-xl border border-gray-200">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-gray-600 border-b border-gray-200">
+                <tr className="text-gray-600 border-b-2" style={{ borderColor: '#22282fff' }}>
                   <th className="py-3">First Name</th>
                   <th className="py-3">Last Name</th>
                   <th className="py-3">Email</th>
@@ -519,7 +519,7 @@ const AdminTeachers = () => {
                 {filteredTeachers.map((teacher) => (
                   <tr
                     key={teacher.id}
-                    className="border-b border-gray-100 hover:bg-gray-50"
+                    className="border-b hover:bg-gray-50" style={{ borderColor: '#22282fff' }}
                   >
                     <td className="py-4 text-sm">{teacher.firstName}</td>
                     <td className="py-4 text-sm">{teacher.lastName}</td>
@@ -677,13 +677,13 @@ const AdminTeachers = () => {
                 <div className="max-h-60 overflow-y-auto">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="text-gray-600 border-b border-gray-200">
+                      <tr className="text-gray-600 border-b-2 border-gray-800">
                         <th className="py-2 text-sm">Email</th>
                       </tr>
                     </thead>
                     <tbody>
                       {importPreview.slice(0, 5).map((teacher, index) => (
-                        <tr key={index} className="border-b border-gray-100">
+                        <tr key={index} className="border-b border-gray-300">
                           <td className="py-2 text-sm">{teacher.email}</td>
                         </tr>
                       ))}

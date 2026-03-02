@@ -108,26 +108,26 @@ const AdminAnnouncement = () => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case "high":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
+        return "bg-red-100 text-red-800 border-red-200";
       case "medium":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "normal":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+        return "bg-blue-100 text-blue-800 border-blue-200";
       default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
       case "published":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
+        return "bg-green-100 text-green-800 border-green-200";
       case "draft":
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+        return "bg-gray-100 text-gray-800 border-gray-200";
       case "scheduled":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
+        return "bg-purple-100 text-purple-800 border-purple-200";
       default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
@@ -231,7 +231,7 @@ const AdminAnnouncement = () => {
   ) : [];
 
   return (
-    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
+    <div className="flex font-sans min-h-screen bg-gray-50 text-gray-900">
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -247,7 +247,7 @@ const AdminAnnouncement = () => {
 
       {/* MOBILE SIDEBAR */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
+        className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 lg:hidden overflow-hidden border-r border-gray-200
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -258,17 +258,17 @@ const AdminAnnouncement = () => {
 
         {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+          className={`lg:hidden bg-white p-4 border-b border-gray-200 flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            className="bg-transparent border-none text-gray-900 text-2xl p-0 focus:outline-none"
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">Announcements</h1>
+          <h1 className="text-xl font-bold text-gray-900">Announcements</h1>
         </div>
 
         {/* HEADER SPACER */}
@@ -278,7 +278,7 @@ const AdminAnnouncement = () => {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
 
           {/* DESKTOP TITLE */}
-          <h1 className="hidden lg:block text-2xl font-bold mb-6">
+          <h1 className="hidden lg:block text-2xl font-bold mb-6 text-gray-900">
             Announcements
           </h1>
 
