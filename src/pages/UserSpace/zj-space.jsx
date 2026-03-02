@@ -68,6 +68,17 @@ const UserPage = () => {
   const [backgroundUpload, setBackgroundUpload] = useState(false);
   const [showUploadNotification, setShowUploadNotification] = useState(false);
   const [showChatPopup, setShowChatPopup] = useState(false);
+  const [coverPhoto, setCoverPhoto] = useState(null);
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState(null);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [showCoverPhotoEditor, setShowCoverPhotoEditor] = useState(false);
+  const [coverPhotoPosition, setCoverPhotoPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [dragStartPosition, setDragStartPosition] = useState(50);
+  const [showCoverPhotoConfirm, setShowCoverPhotoConfirm] = useState(false);
+  const coverPhotoInputRef = useRef(null);
+  const coverPhotoEditorRef = useRef(null);
 
   // Chat states
   const [showChat, setShowChat] = useState(false);
@@ -250,6 +261,37 @@ const UserPage = () => {
 
   // Calculate pending invites count
   const pendingInvitesCount = joinRequestsByLink?.length || 0;
+
+  // Load saved cover photo on component mount
+  useEffect(() => {
+    const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space_uuid}`);
+    if (savedCoverPhoto) {
+      setCoverPhotoUrl(savedCoverPhoto);
+    }
+  }, [space_uuid]);
+
+  // Save cover photo to localStorage when it changes
+  useEffect(() => {
+    if (coverPhotoUrl && !showCoverPhotoEditor) {
+      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
+    }
+  }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
+
+  // Add global mouse event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      const handleGlobalMouseMove = (e) => handleMouseMove(e);
+      const handleGlobalMouseUp = () => handleMouseUp();
+      
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+      };
+    }
+  }, [isDragging, dragStartY, dragStartPosition]);
 
   // Scroll handler
   useEffect(() => {
@@ -525,6 +567,148 @@ const UserPage = () => {
         setCopyFeedback("Error!");
         setTimeout(() => setCopyFeedback(""), 2000);
       });
+  };
+
+  // Cover photo drag handlers
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStartY(e.clientY);
+    setDragStartPosition(coverPhotoPosition);
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    
+    const deltaY = e.clientY - dragStartY;
+    const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
+    const positionChange = (deltaY / containerHeight) * 100;
+    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
+    
+    setCoverPhotoPosition(newPosition);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Cover photo handlers
+  const handleCoverPhotoClick = () => {
+    if (isOwnerSpace) {
+      coverPhotoInputRef.current?.click();
+    }
+  };
+
+  const handleCoverPhotoChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        addNotification({
+          type: "error",
+          title: "Invalid File",
+          message: "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+          duration: 3000,
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        addNotification({
+          type: "error",
+          title: "File Too Large",
+          message: "Please upload an image smaller than 5MB",
+          duration: 3000,
+        });
+        return;
+      }
+
+      setCoverPhoto(file);
+
+      // Create preview and open editor
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCoverPhotoUrl(e.target.result);
+        setShowCoverPhotoEditor(true);
+        setCoverPhotoPosition(50);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCoverPhotoSave = () => {
+    setShowCoverPhotoConfirm(true);
+  };
+
+  const handleConfirmCoverPhoto = () => {
+    // Create canvas to apply transformations
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Set canvas size to cover photo dimensions
+      canvas.width = 1200;
+      canvas.height = 400;
+      
+      // Calculate scale to cover the entire canvas
+      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scaledWidth = img.width * scale;
+      const scaledHeight = img.height * scale;
+      
+      // Calculate position based on user vertical positioning
+      const x = (canvas.width - scaledWidth) / 2;
+      const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
+      
+      // Draw the image with transformations
+      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+      
+      // Convert to data URL and update
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      setCoverPhotoUrl(dataUrl);
+      
+      // Save to localStorage
+      localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
+      
+      setShowCoverPhotoEditor(false);
+      setShowCoverPhotoConfirm(false);
+      
+      addNotification({
+        type: "success",
+        title: "Cover Photo Updated",
+        message: "Your cover photo has been updated successfully!",
+        duration: 3000,
+      });
+    };
+    
+    img.src = coverPhotoUrl;
+  };
+
+  const handleCancelCoverPhoto = () => {
+    setShowCoverPhotoConfirm(false);
+  };
+
+  const handleCoverPhotoCancel = () => {
+    setShowCoverPhotoEditor(false);
+    setCoverPhoto(null);
+    // Don't clear coverPhotoUrl on cancel, keep the existing cover photo
+    setCoverPhotoPosition(50);
+    if (coverPhotoInputRef.current) {
+      coverPhotoInputRef.current.value = '';
+    }
+  };
+
+  const resetCoverPhoto = () => {
+    setCoverPhoto(null);
+    setCoverPhotoUrl(null);
+    setCoverPhotoPosition(50);
+    // Remove from localStorage
+    localStorage.removeItem(`coverPhoto_${space_uuid}`);
+    if (coverPhotoInputRef.current) {
+      coverPhotoInputRef.current.value = '';
+    }
   };
 
   // Handle chat popup
@@ -945,8 +1129,50 @@ const UserPage = () => {
         <div className="lg:hidden h-16" />
 
         {/* ================= COVER ================= */}
-        <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 h-32 sm:h-40 md:h-48">
-          <div className="absolute inset-0 bg-black/30" />
+        <div 
+          className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
+          onClick={handleCoverPhotoClick}
+        >
+          {coverPhotoUrl ? (
+            <>
+              <img 
+                src={coverPhotoUrl} 
+                alt="Space Cover" 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
+              {isOwnerSpace && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                    <FiUpload size={16} />
+                    <span className="text-sm">Change Cover Photo</span>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
+              <div className="absolute inset-0 bg-black/30" />
+              {isOwnerSpace && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                    <FiUpload size={16} />
+                    <span className="text-sm">Upload Cover Photo</span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          {isOwnerSpace && (
+            <input
+              ref={coverPhotoInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              onChange={handleCoverPhotoChange}
+              className="hidden"
+            />
+          )}
         </div>
 
         <div className="p-4 sm:p-6">
@@ -2056,6 +2282,104 @@ const UserPage = () => {
         onClose={handleCancelledClose}
         message={dialogMessage}
       />
+
+      {/* COVER PHOTO EDITOR MODAL */}
+      {showCoverPhotoEditor && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">Position Cover Photo</h2>
+              <button
+                onClick={handleCoverPhotoCancel}
+                className="text-gray-400 hover:text-white p-1 bg-transparent"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            {/* Editor Content */}
+            <div className="flex-1 p-6 overflow-y-auto">
+              {/* Preview Area */}
+              <div className="mb-6">
+                <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
+                  <div
+                    ref={coverPhotoEditorRef}
+                    className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                    style={{
+                      backgroundImage: `url(${coverPhotoUrl})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: `center ${coverPhotoPosition}%`,
+                      backgroundRepeat: 'no-repeat',
+                    }}
+                    onMouseDown={handleMouseDown}
+                  />
+                  <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
+                  {isDragging && (
+                    <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+                      Dragging...
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-gray-400 mt-2">
+                  Click and drag the image up or down to position it
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={handleCoverPhotoCancel}
+                className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCoverPhotoSave}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* COVER PHOTO CONFIRMATION DIALOG */}
+      {showCoverPhotoConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-hidden">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-700">
+              <h2 className="text-lg font-semibold text-white">Change Cover Photo?</h2>
+            </div>
+
+            {/* Content */}
+            <div className="p-4">
+              <p className="text-gray-300">
+                Do you want to change the cover photo for this space with the image you uploaded?
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={handleCancelCoverPhoto}
+                className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmCoverPhoto}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+              >
+                Change Cover Photo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       
     </div>
