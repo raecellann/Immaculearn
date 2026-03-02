@@ -32,6 +32,16 @@ export const SpaceCover = ({ image, name, description, className = "" }) => {
         <div className={`absolute inset-0 bg-gradient-to-br ${color}`} />
       )}
 
+      {/* Letter and Name Overlay - only show when no image */}
+      {!image && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+          <div className="text-6xl font-bold mb-2 opacity-90 font-serif">{letter}</div>
+          <div className="text-sm font-medium opacity-80 text-center px-4 truncate max-w-full font-serif">
+            {name}
+          </div>
+        </div>
+      )}
+
       {/* Hover Description */}
       {description && (
         <div
