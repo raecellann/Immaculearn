@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import Cropper from "react-easy-crop";
 import Sidebar from "../../component/profsidebar";
 import InputField from "../../component/InputField";
 import Button from "../../component/Button";
@@ -32,11 +31,14 @@ const ProfCreateClassroomSpace = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [originalImage, setOriginalImage] = useState(null);
 
-  // Cropper states
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const [isCropping, setIsCropping] = useState(false);
+  // Cover photo positioning state (same as UserTaskPage)
+  const [showCoverPhotoEditor, setShowCoverPhotoEditor] = useState(false);
+  const [coverPhotoPosition, setCoverPhotoPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [dragStartPosition, setDragStartPosition] = useState(50);
+  const coverPhotoInputRef = useRef(null);
+  const coverPhotoEditorRef = useRef(null);
 
   // New state for year level, schedule, and time
   const [yearLevel, setYearLevel] = useState("");
@@ -190,6 +192,7 @@ const ProfCreateClassroomSpace = () => {
           space_time_end: timeEnd24,
           space_yr_lvl: parseInt(yearLevel) || 1,
           space_settings: spaceSettings.current,
+          cover_image: coverImage
         };
 
         // Call the API
@@ -199,13 +202,22 @@ const ProfCreateClassroomSpace = () => {
           const space_uuid = result?.space_uuid;
           console.log(space_uuid);
           toast.success(`Course Space "${spaceName}" created successfully!`);
+          
+          // Save cover photo to localStorage for immediate display
+          if (coverImage && coverImage !== "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg") {
+            localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
+            // Dispatch custom event to notify other components of the cover photo update
+            window.dispatchEvent(new CustomEvent('coverPhotoUpdated', { 
+              detail: { space_uuid, coverPhoto: coverImage } 
+            }));
+          }
 
           // Reset form
           setSpaceName("");
           setShortDescription("");
           setWordCount(0);
           setSectionContent("");
-          setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
+          setCoverImage("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
           setYearLevel("");
           setSelectedDay("");
           setTimeSchedule("");
@@ -222,67 +234,113 @@ const ProfCreateClassroomSpace = () => {
     }
   };
 
-  const handleUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Max file size is 5MB");
-      return;
-    }
-
-    const url = URL.createObjectURL(file);
-    setUploadedImage(url);
-    setOriginalImage(url);
-    setIsCropping(true);
-    setIsCoverModalOpen(false);
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStartY(e.clientY);
+    setDragStartPosition(coverPhotoPosition);
+    e.preventDefault();
   };
 
-  const onCropComplete = useCallback((_, croppedPixels) => {
-    setCroppedAreaPixels(croppedPixels);
+  const handleMouseMove = useCallback((e) => {
+    if (!isDragging) return;
+    
+    const deltaY = e.clientY - dragStartY;
+    const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
+    const positionChange = (deltaY / containerHeight) * 100;
+    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
+    
+    setCoverPhotoPosition(newPosition);
+  }, [isDragging, dragStartY, dragStartPosition]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
   }, []);
 
-  const createCroppedImage = async (imageSrc, croppedAreaPixels) => {
-    const image = new Image();
-    image.src = originalImage || imageSrc;
+  useEffect(() => {
+    const handleGlobalMouseMove = (e) => handleMouseMove(e);
+    const handleGlobalMouseUp = () => handleMouseUp();
 
-    return new Promise((resolve) => {
-      image.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
 
-        canvas.width = croppedAreaPixels.width;
-        canvas.height = croppedAreaPixels.height;
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
-        ctx.drawImage(
-          image,
-          croppedAreaPixels.x,
-          croppedAreaPixels.y,
-          croppedAreaPixels.width,
-          croppedAreaPixels.height,
-          0,
-          0,
-          croppedAreaPixels.width,
-          croppedAreaPixels.height,
-        );
+  const handleCoverPhotoChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+        return;
+      }
 
-        canvas.toBlob((blob) => {
-          const url = URL.createObjectURL(blob);
-          resolve(url);
-        }, "image/jpeg");
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+
+      setUploadedImage(file);
+
+      // Create preview and open editor
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCoverImage(e.target.result);
+        setShowCoverPhotoEditor(true);
+        setCoverPhotoPosition(50);
+        setIsCoverModalOpen(false);
       };
-    });
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleCropSave = async () => {
-    if ((originalImage || uploadedImage) && croppedAreaPixels) {
-      const croppedImageUrl = await createCroppedImage(
-        uploadedImage,
-        croppedAreaPixels,
-      );
-      setCoverImage(croppedImageUrl);
-      setIsCropping(false);
-      setIsCoverModalOpen(false);
+  const handleCoverPhotoSave = () => {
+    // Create canvas to apply transformations
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Set canvas size to cover photo dimensions
+      canvas.width = 1200;
+      canvas.height = 400;
+      
+      // Calculate scale to fit
+      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scaledWidth = img.width * scale;
+      const scaledHeight = img.height * scale;
+      
+      // Calculate position based on user vertical positioning
+      const x = (canvas.width - scaledWidth) / 2;
+      const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
+      
+      // Draw the image with transformations
+      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+      
+      // Convert to data URL and update
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      setCoverImage(dataUrl);
+      
+      setShowCoverPhotoEditor(false);
+    };
+    
+    img.src = coverImage;
+  };
+
+  const handleCoverPhotoCancel = () => {
+    setShowCoverPhotoEditor(false);
+    setUploadedImage(null);
+    // Don't clear coverImage on cancel, keep the existing cover photo
+    setCoverPhotoPosition(50);
+    if (coverPhotoInputRef.current) {
+      coverPhotoInputRef.current.value = '';
     }
   };
 
@@ -358,63 +416,60 @@ const ProfCreateClassroomSpace = () => {
                 backgroundColor: currentColors.surface,
               }}
             >
-              {/* 🔵 CROP MODAL */}
-              {isCropping && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-                  <div
-                    className="rounded-xl p-4 w-full max-w-4xl relative"
-                    style={{
-                      backgroundColor: currentColors.surface,
-                    }}
-                  >
-                    <button
-                      className="absolute top-3 right-3 p-1 rounded-full"
-                      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-                      onClick={() => setIsCropping(false)}
-                    >
-                      <X size={20} style={{ color: "white" }} />
-                    </button>
-
-                    <div className="relative w-full h-[300px] sm:h-[350px] md:h-[420px] rounded-lg overflow-hidden bg-black">
-                      <Cropper
-                        image={uploadedImage}
-                        crop={crop}
-                        zoom={zoom}
-                        onCropChange={setCrop}
-                        onCropComplete={onCropComplete}
-                        onZoomChange={setZoom}
-                        zoomWithScroll={true}
-                        showGrid={false}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-center mt-4">
-                      <input
-                        type="range"
-                        min={1}
-                        max={3}
-                        step={0.01}
-                        value={zoom}
-                        onChange={(e) => setZoom(e.target.value)}
-                        className="w-1/2 sm:w-2/3"
-                      />
-                    </div>
-
-                    <div className="flex justify-end mt-5 gap-2">
+              {/* COVER PHOTO EDITOR MODAL */}
+              {showCoverPhotoEditor && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                  <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+                    {/* Header */}
+                    <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+                      <h2 className="text-sm lg:text-lg font-semibold text-white">Position Cover Photo</h2>
                       <button
-                        className="px-4 py-2 text-sm rounded-lg transition-colors"
-                        style={{
-                          backgroundColor: isDarkMode ? "#444" : "#6b7280",
-                          color: "white",
-                        }}
-                        onClick={() => setIsCropping(false)}
+                        onClick={handleCoverPhotoCancel}
+                        className="text-gray-400 hover:text-white p-1 bg-transparent"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <div className="mb-6">
+                        <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
+                          <div
+                            ref={coverPhotoEditorRef}
+                            className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                            style={{
+                              backgroundImage: `url(${coverImage})`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: `center ${coverPhotoPosition}%`,
+                              backgroundRepeat: 'no-repeat',
+                            }}
+                            onMouseDown={handleMouseDown}
+                          />
+                          <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
+                          {isDragging && (
+                            <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+                              Dragging...
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs lg:text-sm text-gray-400 mt-2">
+                          Click and drag the image up or down to position it
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+                      <button
+                        onClick={handleCoverPhotoCancel}
+                        className="px-2 lg:px-4 py-2 text-xs lg:text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
                       >
                         Cancel
                       </button>
                       <button
-                        className="px-4 py-2 text-sm rounded-lg transition-colors"
-                        style={{ backgroundColor: "#007AFF", color: "white" }}
-                        onClick={handleCropSave}
+                        onClick={handleCoverPhotoSave}
+                        className="px-2 lg:px-4 py-2 text-xs lg:text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
                       >
                         Apply
                       </button>
@@ -446,21 +501,6 @@ const ProfCreateClassroomSpace = () => {
                   >
                     Change Cover
                   </button>
-                  {!coverImage.includes("gradient") && originalImage && (
-                    <button
-                      className="px-2 py-1 rounded text-xs"
-                      style={{
-                        backgroundColor: "rgba(0,0,0,0.5)",
-                        color: "white",
-                      }}
-                      onClick={() => {
-                        setUploadedImage(originalImage);
-                        setIsCropping(true);
-                      }}
-                    >
-                      Crop
-                    </button>
-                  )}
                   <button
                     className="px-2 py-1 rounded text-xs"
                     style={{
@@ -527,7 +567,7 @@ const ProfCreateClassroomSpace = () => {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleUpload}
+                      onChange={handleCoverPhotoChange}
                       className="w-full text-sm p-2 rounded"
                       style={{
                         backgroundColor: isDarkMode ? "#1E1E1E" : "#f8fafc",

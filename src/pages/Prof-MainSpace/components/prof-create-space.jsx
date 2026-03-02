@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import Cropper from "react-easy-crop";
 import Sidebar from "../../component/profsidebar";
 import InputField from "../../component/InputField";
 import Button from "../../component/Button";
-import { X, ChevronDown } from "lucide-react";
+import { X } from "lucide-react";
 import Logout from "../../component/logout";
 import { useNavigate } from "react-router";
 import { useSpace } from "../../../contexts/space/useSpace";
@@ -19,24 +18,21 @@ const ProfCreateSpace = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [spaceName, setSpaceName] = useState("");
-  const [shortDescription, setShortDescription] = useState("");
+  const [people, setPeople] = useState(Array(5).fill(""));
   const [wordCount, setWordCount] = useState(0);
-  const [numMembers, setNumMembers] = useState(5);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
-  const spaceSettings = useRef({ space_cover: null, max_member: 50 });
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
-
-  // Cover image state
   const [coverImage, setCoverImage] = useState("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
   const [uploadedImage, setUploadedImage] = useState(null);
   const [originalImage, setOriginalImage] = useState(null);
 
-  // Cropper states
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const [isCropping, setIsCropping] = useState(false);
+  // Cover photo positioning state (same as UserTaskPage)
+  const [showCoverPhotoEditor, setShowCoverPhotoEditor] = useState(false);
+  const [coverPhotoPosition, setCoverPhotoPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [dragStartPosition, setDragStartPosition] = useState(50);
+  const coverPhotoInputRef = useRef(null);
+  const coverPhotoEditorRef = useRef(null);
 
   /* STICKY HEADER LOGIC */
   const [showHeader, setShowHeader] = useState(true);
@@ -59,15 +55,17 @@ const ProfCreateSpace = () => {
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsDropdownOpen(false);
+      if (coverPhotoEditorRef.current && !coverPhotoEditorRef.current.contains(e.target)) {
+        setShowCoverPhotoEditor(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const memberOptions = [2, 3, 4, 5, 6, 7, 8, 9];
+  useEffect(() => {
+    setPeople(Array(5).fill(""));
+  }, []);
 
   const colorOptions = [
     "linear-gradient(45deg, #FFC107, #FF5722)",
@@ -89,12 +87,14 @@ const ProfCreateSpace = () => {
     "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809911/datastructure_ekrsn5.jpg",
   ];
 
+  // Word count handler
   const handleShortDescriptionChange = (e) => {
     const text = e.target.value;
     const words = text.trim().split(/\s+/).filter(word => word.length > 0);
     const count = words.length;
+    
     if (count <= 100) {
-      setShortDescription(text);
+      setPeople([text, ...people.slice(1)]);
       setWordCount(count);
     }
   };
@@ -104,20 +104,28 @@ const ProfCreateSpace = () => {
       try {
         const spaceData = {
           space_name: spaceName,
-          short_description: shortDescription,
-          max_members: numMembers,
-          space_settings: spaceSettings.current,
-          cover_image: coverImage,
+          short_description: people[0] || "",
+          cover_image: coverImage
         };
         const result = await createSpace(spaceData);
         if (result.success) {
           const space_uuid = result.space_uuid;
           toast.success(`Course Space "${spaceName}" created successfully!`);
+          
+          // Save cover photo to localStorage for immediate display
+          if (coverImage && coverImage !== "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg") {
+            localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
+            // Dispatch custom event to notify other components of the cover photo update
+            window.dispatchEvent(new CustomEvent('coverPhotoUpdated', { 
+              detail: { space_uuid, coverPhoto: coverImage } 
+            }));
+          }
+          
+          // Reset form
           setSpaceName("");
-          setShortDescription("");
+          setPeople(Array(5).fill(""));
           setWordCount(0);
-          setNumMembers(5);
-          setCoverImage("/src/assets/HomePage/Spaces-Cover/cover1.jpg");
+          setCoverImage("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
           navigator(`/prof/space/${space_uuid}/${spaceName}`);
         } else {
           alert(result.message || "Failed to create space. Please try again.");
@@ -131,42 +139,113 @@ const ProfCreateSpace = () => {
     }
   };
 
-  const handleUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert("Max file size is 5MB"); return; }
-    const url = URL.createObjectURL(file);
-    setUploadedImage(url);
-    setOriginalImage(url);
-    setIsCropping(true);
-    setIsCoverModalOpen(false);
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStartY(e.clientY);
+    setDragStartPosition(coverPhotoPosition);
+    e.preventDefault();
   };
 
-  const onCropComplete = useCallback((_, croppedPixels) => {
-    setCroppedAreaPixels(croppedPixels);
+  const handleMouseMove = useCallback((e) => {
+    if (!isDragging) return;
+    
+    const deltaY = e.clientY - dragStartY;
+    const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
+    const positionChange = (deltaY / containerHeight) * 100;
+    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
+    
+    setCoverPhotoPosition(newPosition);
+  }, [isDragging, dragStartY, dragStartPosition]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
   }, []);
 
-  const createCroppedImage = async (imageSrc, croppedAreaPixels) => {
-    const image = new Image();
-    image.src = originalImage || imageSrc;
-    return new Promise((resolve) => {
-      image.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = croppedAreaPixels.width;
-        canvas.height = croppedAreaPixels.height;
-        ctx.drawImage(image, croppedAreaPixels.x, croppedAreaPixels.y, croppedAreaPixels.width, croppedAreaPixels.height, 0, 0, croppedAreaPixels.width, croppedAreaPixels.height);
-        canvas.toBlob((blob) => resolve(URL.createObjectURL(blob)), "image/jpeg");
+  useEffect(() => {
+    const handleGlobalMouseMove = (e) => handleMouseMove(e);
+    const handleGlobalMouseUp = () => handleMouseUp();
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  const handleCoverPhotoChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+
+      setUploadedImage(file);
+
+      // Create preview and open editor
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCoverImage(e.target.result);
+        setShowCoverPhotoEditor(true);
+        setCoverPhotoPosition(50);
+        setIsCoverModalOpen(false);
       };
-    });
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleCropSave = async () => {
-    if ((originalImage || uploadedImage) && croppedAreaPixels) {
-      const croppedImageUrl = await createCroppedImage(uploadedImage, croppedAreaPixels);
-      setCoverImage(croppedImageUrl);
-      setIsCropping(false);
-      setIsCoverModalOpen(false);
+  const handleCoverPhotoSave = () => {
+    // Create canvas to apply transformations
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Set canvas size to cover photo dimensions
+      canvas.width = 1200;
+      canvas.height = 400;
+      
+      // Calculate scale to fit
+      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scaledWidth = img.width * scale;
+      const scaledHeight = img.height * scale;
+      
+      // Calculate position based on user vertical positioning
+      const x = (canvas.width - scaledWidth) / 2;
+      const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
+      
+      // Draw the image with transformations
+      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+      
+      // Convert to data URL and update
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      setCoverImage(dataUrl);
+      
+      setShowCoverPhotoEditor(false);
+    };
+    
+    img.src = coverImage;
+  };
+
+  const handleCoverPhotoCancel = () => {
+    setShowCoverPhotoEditor(false);
+    setUploadedImage(null);
+    // Don't clear coverImage on cancel, keep the existing cover photo
+    setCoverPhotoPosition(50);
+    if (coverPhotoInputRef.current) {
+      coverPhotoInputRef.current.value = '';
     }
   };
 
@@ -223,35 +302,63 @@ const ProfCreateSpace = () => {
 
             <div className="rounded-xl p-4 lg:p-6 w-full mx-auto" style={{ backgroundColor: currentColors.surface }}>
 
-              {/* CROP MODAL */}
-              {isCropping && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-                  <div className="rounded-xl p-4 w-full max-w-4xl relative" style={{ backgroundColor: currentColors.surface }}>
-                    <button
-                      className="absolute top-3 right-3 p-1 rounded-full"
-                      style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-                      onClick={() => setIsCropping(false)}
-                    >
-                      <X size={20} style={{ color: 'white' }} />
-                    </button>
-                    <div className="relative w-full h-[300px] sm:h-[350px] md:h-[420px] rounded-lg overflow-hidden bg-black">
-                      <Cropper
-                        image={uploadedImage}
-                        crop={crop}
-                        zoom={zoom}
-                        onCropChange={setCrop}
-                        onCropComplete={onCropComplete}
-                        onZoomChange={setZoom}
-                        zoomWithScroll={true}
-                        showGrid={false}
-                      />
+              {/* COVER PHOTO EDITOR MODAL */}
+              {showCoverPhotoEditor && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                  <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+                    {/* Header */}
+                    <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+                      <h2 className="text-sm lg:text-lg font-semibold text-white">Position Cover Photo</h2>
+                      <button
+                        onClick={handleCoverPhotoCancel}
+                        className="text-gray-400 hover:text-white p-1 bg-transparent"
+                      >
+                        <X size={20} />
+                      </button>
                     </div>
-                    <div className="flex items-center justify-center mt-4">
-                      <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={(e) => setZoom(e.target.value)} className="w-1/2 sm:w-2/3" />
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <div className="mb-6">
+                        <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
+                          <div
+                            ref={coverPhotoEditorRef}
+                            className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                            style={{
+                              backgroundImage: `url(${coverImage})`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: `center ${coverPhotoPosition}%`,
+                              backgroundRepeat: 'no-repeat',
+                            }}
+                            onMouseDown={handleMouseDown}
+                          />
+                          <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
+                          {isDragging && (
+                            <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+                              Dragging...
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs lg:text-sm text-gray-400 mt-2">
+                          Click and drag the image up or down to position it
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex justify-end mt-5 gap-2">
-                      <button className="px-4 py-2 text-sm rounded-lg" style={{ backgroundColor: isDarkMode ? '#444' : '#6b7280', color: 'white' }} onClick={() => setIsCropping(false)}>Cancel</button>
-                      <button className="px-4 py-2 text-sm rounded-lg" style={{ backgroundColor: '#007AFF', color: 'white' }} onClick={handleCropSave}>Apply</button>
+
+                    {/* Footer */}
+                    <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+                      <button
+                        onClick={handleCoverPhotoCancel}
+                        className="px-2 lg:px-4 py-2 text-xs lg:text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleCoverPhotoSave}
+                        className="px-2 lg:px-4 py-2 text-xs lg:text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+                      >
+                        Apply
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -267,16 +374,13 @@ const ProfCreateSpace = () => {
                 />
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
                   <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => setIsCoverModalOpen(true)}>Change Cover</button>
-                  {!coverImage.includes("gradient") && originalImage && (
-                    <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => { setUploadedImage(originalImage); setIsCropping(true); }}>Crop</button>
-                  )}
                   <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => setCoverImage("")}>Delete Cover</button>
                 </div>
               </div>
 
               {/* Cover Modal */}
               {isCoverModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4">
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
                   <div className="rounded-lg p-4 sm:p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto" style={{ backgroundColor: currentColors.surface }}>
                     <button className="absolute top-2 right-2" onClick={() => setIsCoverModalOpen(false)}><X size={20} /></button>
                     <h3 className="text-lg font-semibold mb-4">Edit Cover Photo</h3>
@@ -293,20 +397,20 @@ const ProfCreateSpace = () => {
                       ))}
                     </div>
                     <label className="block text-sm mb-1">Upload from computer (max 5MB)</label>
-                    <input type="file" accept="image/*" onChange={handleUpload} className="w-full text-sm p-2 rounded" style={{ backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc', color: currentColors.text, borderColor: currentColors.border }} />
+                    <input type="file" accept="image/*" onChange={handleCoverPhotoChange} className="w-full text-xs lg:text-sm p-2 rounded" style={{ backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc', color: currentColors.text, borderColor: currentColors.border }} />
                   </div>
                 </div>
               )}
 
               {/* ─────────────────────────────────────────────────
-                  ROW 1: Space Name | Max Members
+                  ROW 1: Space Name 
                   Mobile: stacked
-                  Tablet+: Space Name takes 3/4, Members 1/4
+                  Tablet+: Space Name takes 3/4
               ───────────────────────────────────────────────── */}
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-[1fr_160px] gap-4 items-end">
+              <div className="mt-6">
                 {/* Space Name */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Space Name</label>
+                  <label className="block text-xs lg:text-sm font-medium mb-2">Space Name</label>
                   <InputField
                     placeholder="Enter space name"
                     value={spaceName}
@@ -314,90 +418,23 @@ const ProfCreateSpace = () => {
                     style={{ width: "100%", backgroundColor: "#ffffff" }}
                   />
                 </div>
-
-                {/* Max Members — custom dropdown */}
-                <div ref={dropdownRef} className="relative">
-                  <label className="block text-sm font-medium mb-2">Max Members</label>
-                  <button
-                    type="button"
-                    className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border transition-colors"
-                    style={{
-                      backgroundColor: isDarkMode ? '#374151' : '#ffffff',
-                      borderColor: isDropdownOpen ? '#007AFF' : currentColors.border,
-                      color: currentColors.text,
-                      outline: 'none',
-                    }}
-                    onClick={() => setIsDropdownOpen((prev) => !prev)}
-                  >
-                    <span className="flex items-center gap-2">
-                      {/* people icon */}
-                      <svg className="w-4 h-4 flex-shrink-0" style={{ color: isDarkMode ? '#9ca3af' : '#6b7280' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-5-4M9 20H4v-2a4 4 0 015-4m6-4a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                      <span className="font-medium">{numMembers} members</span>
-                    </span>
-                    <ChevronDown
-                      size={16}
-                      className="transition-transform duration-200"
-                      style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', color: isDarkMode ? '#9ca3af' : '#6b7280' }}
-                    />
-                  </button>
-
-                  {/* Dropdown list */}
-                  {isDropdownOpen && (
-                    <div
-                      className="absolute left-0 right-0 top-full mt-1 rounded-lg overflow-hidden z-20 shadow-lg"
-                      style={{ backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', border: `1px solid ${currentColors.border}` }}
-                    >
-                      {memberOptions.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          className="w-full flex items-center justify-between px-3 py-2 text-sm transition-colors text-left"
-                          style={{
-                            backgroundColor: numMembers === option
-                              ? (isDarkMode ? '#1d4ed8' : '#eff6ff')
-                              : 'transparent',
-                            color: numMembers === option
-                              ? (isDarkMode ? '#bfdbfe' : '#1d4ed8')
-                              : currentColors.text,
-                          }}
-                          onMouseEnter={(e) => {
-                            if (numMembers !== option) e.currentTarget.style.backgroundColor = isDarkMode ? '#374151' : '#f3f4f6';
-                          }}
-                          onMouseLeave={(e) => {
-                            if (numMembers !== option) e.currentTarget.style.backgroundColor = 'transparent';
-                          }}
-                          onClick={() => { setNumMembers(option); setIsDropdownOpen(false); }}
-                        >
-                          <span>{option} members</span>
-                          {numMembers === option && (
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* ─────────────────────────────────────────────────
                   ROW 2: Short Description — full width at bottom
               ───────────────────────────────────────────────── */}
               <div className="mt-5">
-                <label className="block text-sm font-medium mb-2">Short Description</label>
+                <label className="block text-xs lg:text-sm font-medium mb-2">Short Description</label>
                 <InputField
-                  placeholder="Enter a brief description for this space"
-                  value={shortDescription}
+                  placeholder="Brief description for this space"
+                  value={people[0]}
                   onChange={handleShortDescriptionChange}
                   style={{ width: "100%", backgroundColor: "#ffffff" }}
                 />
                 <div className="flex items-center justify-between mt-1.5">
-                  <span className="text-xs" style={{ color: currentColors.textSecondary }}>Describe what this space is about</span>
+                  <span className="text-xs lg:text-xs" style={{ color: currentColors.textSecondary }}>Describe what this space is about</span>
                   <span
-                    className="text-xs font-medium"
+                    className="text-xs lg:text-xs font-medium"
                     style={{
                       color: wordCount >= 100 ? '#ef4444' : wordCount >= 90 ? '#f59e0b' : currentColors.textSecondary
                     }}
