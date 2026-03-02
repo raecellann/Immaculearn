@@ -185,7 +185,7 @@ const SidebarItem = ({ icon, label, path, onClick, active, isMinimized }) => {
 
         ${
           active
-            ? "bg-[#161A20] text-white shadow-lg"
+            ? "bg-gray-50 text-gray-900 shadow-lg"
             : "text-blue-100 hover:text-white hover:shadow-md before:hover:scale-x-100"
         }
         ${isMinimized ? "lg:px-2 lg:justify-center" : "pl-5"}
