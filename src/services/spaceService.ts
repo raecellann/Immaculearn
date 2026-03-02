@@ -41,7 +41,10 @@ class SpaceService {
           space_time_start: spaceData.space_time_start,
           space_time_end: spaceData.space_time_end,
           space_yr_lvl: spaceData.space_yr_lvl,
-          space_settings: spaceData.space_settings || { space_cover: null, max_member: 50 },
+          space_settings: spaceData.space_settings || {
+            space_cover: null,
+            max_member: 50,
+          },
         },
       );
 
@@ -150,7 +153,7 @@ class SpaceService {
         email: email,
       });
 
-      console.log(response.data)
+      console.log(response.data);
       return response.data;
     } catch (error: any) {
       return {
@@ -324,10 +327,11 @@ class SpaceService {
   ): Promise<ApiResponse> {
     try {
       const response = await api.patch<ApiResponse>(
-        `/spaces/join-by-link/decline`, {
+        `/spaces/join-by-link/decline`,
+        {
           space_uuid: space_uuid,
-          invited_account_id: user_id
-        }
+          invited_account_id: user_id,
+        },
       );
       return response.data;
     } catch (error: any) {
@@ -422,14 +426,11 @@ class SpaceService {
   }
 
   // Tasks
-  async uploadTask(
-    space_uuid: string,
-    taskData: TaskCreateData
-  ) {
+  async uploadTask(space_uuid: string, taskData: TaskCreateData) {
     try {
       const response = await api.post(`/tasks`, {
         space_uuid,
-        taskData
+        taskData,
       });
       return response.data;
     } catch (err: any) {
@@ -509,6 +510,32 @@ class SpaceService {
   async getQuestionnaireByTaskId(taskId: number) {
     try {
       const response = await api.get(`/tasks/questions/${taskId}`);
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
+  async updateGrade(
+    student_id: number,
+    space_uuid: string,
+    prelim: number | null,
+    midterm: number | null,
+    prefinals: number | null,
+    finals: number | null,
+  ) {
+    try {
+      const response = await api.post(`/space/remarks`, {
+        student_id,
+        space_uuid,
+        prelim,
+        midterm,
+        prefinals,
+        finals
+      });
       return response.data;
     } catch (err: any) {
       return {
