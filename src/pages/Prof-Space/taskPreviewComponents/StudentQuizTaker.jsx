@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { FiArrowLeft, FiCheck } from "react-icons/fi";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
+import { useSpace } from "../../../contexts/space/useSpace";
 
 const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
+
+  const { questionnaire, setTaskId } = useSpace();
+  console.log(questionnaire);
 
   const [userAnswers, setUserAnswers] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -14,15 +18,14 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
   // Parse questions from the task data
   const getQuestions = () => {
-    if (!quizData || !quizData.questions) return [];
-    return quizData.questions.map((questionObj, index) => {
-      const questionKey = `q${index + 1}`;
-      const question = questionObj[questionKey];
+    if (!questionnaire || questionnaire.length === 0) return [];
+    return questionnaire?.map((questionObj, index) => {
+      const question = questionObj;
       return {
         id: index + 1,
-        question: question.question,
-        answers: question.answers || [],
-        type: determineQuestionType(question.answers),
+        question: question?.question,
+        type: determineQuestionType(question?.choices || [], question?.question_type),
+        answers: question?.choices || [],
         points: Math.floor(
           (quizData?.total_score || 100) / (quizData?.questions?.length || 1),
         ),
@@ -30,7 +33,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
     });
   };
 
-  const determineQuestionType = (answers) => {
+  const determineQuestionType = (answers, questionType) => {
+    // If question_type is explicitly "mcq", treat as multiple-choice
+    if (questionType === "mcq") return "multiple-choice";
+    
     if (!answers || answers.length === 0) return "short-answer";
     if (
       answers.length === 2 &&
@@ -55,6 +61,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   };
 
   const handleStartQuiz = () => {
+    setTaskId(quizData.task_id);
     setQuizStarted(true);
   };
   const handleSubmit = () => setShowSubmitConfirm(true);
@@ -139,7 +146,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                       className="text-base leading-relaxed"
                       style={{ color: currentColors.text }}
                     >
-                      {answer.answer_text}
+                      {answer.choice_answer}
                     </p>
                   </div>
                   {selected && (

@@ -26,6 +26,7 @@ export interface SpaceCreateData {
 }
 export interface CourseSpaceCreateData {
     space_name: string;
+    space_description: string;
     space_day: string;
     space_time_start: string;
     space_time_end: string;
@@ -77,6 +78,7 @@ export interface CourseSPace {
     space_id: string;
     space_uuid: string;
     space_name: string;
+    space_description: string;
     space_day: string;
     space_time_start: string;
     space_time_end: string;
@@ -131,3 +133,22 @@ export interface TaskCreateData {
     due_date: string;
     groupsData?: any[];
 }
+
+
+export interface Choice {
+  choice_id: number;
+  letter_identifier: string;
+  choice_answer: string;
+}
+
+export interface Question {
+  question_id: number;
+  task_id: number;
+  question: string;
+  question_type: string; // e.g., "mcq"
+  order_no: number;
+  choices: Choice[];
+}
+
+// The "data" array is just: Question[]
+export type QuestionnaireData = Question[];

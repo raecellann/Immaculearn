@@ -27,6 +27,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   const { isAuthenticated, user } = useUser();
   const queryClient = useQueryClient();
   const [currentSpace, setCurrentSpace] = useState<Space | null>(null);
+  const [taskId, setTaskId] = useState<number>(0);
   const navigator = useNavigate();
 
   // ----------------------------
@@ -390,6 +391,19 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     },
   });
 
+  const { data: questionnaire = [], isLoading: questionnaireLoading } =
+    useQuery({
+      queryKey: ["questionnaire", taskId],
+      queryFn: async () => {
+        const res = await spaceService.getQuestionnaireByTaskId(taskId);
+        return res.data || [];
+      },
+      enabled: isAuthenticated && !!taskId,
+      staleTime: Infinity, // never becomes stale automatically
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    });
+
   // WebSocket connection for real-time updates
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -490,6 +504,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     // UI state
     currentSpace,
     setCurrentSpace,
+    setTaskId,
+    questionnaire,
 
     // Server data
     userSpaces,

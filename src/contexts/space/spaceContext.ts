@@ -9,6 +9,7 @@ import {
   PendingSpaceInvitation,
   CourseSpaceCreateData,
   CourseSPace,
+  QuestionnaireData,
 } from "../../types/space";
 import { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
@@ -16,6 +17,8 @@ export interface SpaceContextType {
   // UI state
   currentSpace: Space | null;
   setCurrentSpace: (space: Space | null) => void;
+  setTaskId: (taskID: number) => void;
+  questionnaire: QuestionnaireData[];
 
   // Server data
   userSpaces: Space[];

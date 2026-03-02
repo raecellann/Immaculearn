@@ -36,6 +36,7 @@ class SpaceService {
         "/spaces/course-space",
         {
           space_name: spaceData.space_name,
+          space_description: spaceData.space_description,
           space_day: spaceData.space_day,
           space_time_start: spaceData.space_time_start,
           space_time_end: spaceData.space_time_end,
@@ -496,6 +497,18 @@ class SpaceService {
       const response = await api.patch(`/tasks/${taskId}/status`, {
         status: newStatus,
       });
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
+  async getQuestionnaireByTaskId(taskId: number) {
+    try {
+      const response = await api.get(`/tasks/questions/${taskId}`);
       return response.data;
     } catch (err: any) {
       return {
