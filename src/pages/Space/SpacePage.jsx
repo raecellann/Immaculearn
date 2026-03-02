@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Sidebar from "../component/sidebar";
 import { ArrowLeft, MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router";
@@ -28,11 +28,80 @@ const SpacePage = () => {
   const [showMenu, setShowMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
+  const [hoveredSpace, setHoveredSpace] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  // Memoized space descriptions for better performance
+  const spaceDescriptions = useMemo(() => {
+    const descriptions = {};
+    
+    const getDescription = (spaceName) => {
+      const name = spaceName.toLowerCase();
+      
+      // Check for keywords in space name
+      if (name.includes('personal') || name.includes('my')) return "Your personal workspace for organizing notes, tasks, and study materials.";
+      if (name.includes('study') || name.includes('learn')) return "Collaborative study space for group projects and shared learning resources.";
+      if (name.includes('research') || name.includes('thesis')) return "Research workspace for academic papers, sources, and bibliography management.";
+      if (name.includes('project') || name.includes('assignment')) return "Project management space for tracking assignments and deadlines.";
+      if (name.includes('math') || name.includes('calculus') || name.includes('algebra')) return "Mathematics course space for problem sets, formulas, and mathematical discussions.";
+      if (name.includes('science') || name.includes('lab') || name.includes('chemistry')) return "Science laboratory space for experiments, lab reports, and scientific research.";
+      if (name.includes('literature') || name.includes('english') || name.includes('writing')) return "Literature discussion space for book analysis, essays, and creative writing.";
+      if (name.includes('history') || name.includes('historical')) return "History study space for timelines, historical documents, and discussions.";
+      if (name.includes('programming') || name.includes('code') || name.includes('computer')) return "Programming workspace for code sharing, debugging, and software development.";
+      if (name.includes('shared') || name.includes('collaborative')) return "Shared workspace for collaborative projects and peer-to-peer learning.";
+      if (name.includes('group') || name.includes('team')) return "Group study space for exam preparation and knowledge sharing.";
+      if (name.includes('discussion') || name.includes('debate')) return "Discussion forum for academic debates and intellectual exchange.";
+      if (name.includes('review') || name.includes('feedback')) return "Peer review space for feedback and improvement of assignments.";
+      
+      // Create unique descriptions based on specific names
+      if (name.includes('flins')) return "Flins's personal study space for organizing coursework and collaborative projects.";
+      if (name.includes('sample')) return "Sample workspace for testing features and demonstrating platform capabilities.";
+      if (name.includes('sienna')) return "Sienna's creative space for sharing ideas and working on group assignments.";
+      if (name.includes('alex')) return "Alex's productivity hub for managing tasks and academic resources.";
+      if (name.includes('jordan')) return "Jordan's collaborative workspace for team projects and study sessions.";
+      if (name.includes('taylor')) return "Taylor's research area for academic papers and knowledge sharing.";
+      if (name.includes('morgan')) return "Morgan's innovation space for creative projects and brainstorming.";
+      if (name.includes('casey')) return "Casey's learning environment for skill development and peer collaboration.";
+      if (name.includes('riley')) return "Riley's academic hub for organizing study materials and group discussions.";
+      if (name.includes('quinn')) return "Quinn's knowledge center for research, writing, and intellectual exploration.";
+      
+      // Generate varied descriptions based on name patterns
+      if (name.includes('space')) {
+        if (name.includes('1') || name.includes('one')) return "Primary workspace for main projects and important tasks.";
+        if (name.includes('2') || name.includes('two')) return "Secondary space for collaborative work and group activities.";
+        if (name.includes('3') || name.includes('three')) return "Tertiary workspace for creative projects and brainstorming sessions.";
+      }
+      
+      // Different descriptions based on name length and characteristics
+      if (name.length <= 4) return "Compact workspace for focused study and quick collaboration.";
+      if (name.length >= 8) return "Comprehensive workspace for extensive projects and detailed research.";
+      
+      // Time-based descriptions
+      const hour = new Date().getHours();
+      if (hour < 12) return "Morning workspace for productive study and early collaboration.";
+      if (hour < 17) return "Afternoon workspace for focused work and team projects.";
+      return "Evening workspace for relaxed study and creative thinking.";
+    };
+    
+    // Pre-compute descriptions for all spaces
+    [...(userSpaces || []), ...(courseSpaces || [])].forEach(space => {
+      if (space && space.space_name) {
+        descriptions[space.space_uuid] = getDescription(space.space_name);
+      }
+    });
+    
+    return descriptions;
+  }, [userSpaces, courseSpaces]);
+
+  // Helper function to get space description (now just a lookup)
+  const getSpaceDescription = (spaceUuid, spaceName) => {
+    return spaceDescriptions[spaceUuid] || "A collaborative workspace for learning and sharing knowledge.";
+  };
 
   // Mobile sidebar
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -93,6 +162,16 @@ const SpacePage = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
+
+  // Handle mouse move for tooltip positioning
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   // Join Space Functionality
   const handleJoinRequestSubmit = async () => {
@@ -311,6 +390,8 @@ const SpacePage = () => {
                         )
                       }
                       className="cursor-pointer"
+                      onMouseEnter={() => setHoveredSpace({ uuid: space.space_uuid, name: space.space_name })}
+                      onMouseLeave={() => setHoveredSpace(null)}
                     >
                       <div
                         className="relative overflow-hidden h-40"
@@ -421,6 +502,8 @@ const SpacePage = () => {
                         )
                       }
                       className="cursor-pointer"
+                      onMouseEnter={() => setHoveredSpace({ uuid: course.space_uuid, name: course.space_name })}
+                      onMouseLeave={() => setHoveredSpace(null)}
                     >
                       <div
                         className="relative h-40 overflow-hidden"
@@ -550,6 +633,8 @@ const SpacePage = () => {
                         )
                       }
                       className="cursor-pointer"
+                      onMouseEnter={() => setHoveredSpace({ uuid: space.space_uuid, name: space.space_name })}
+                      onMouseLeave={() => setHoveredSpace(null)}
                     >
                       <div
                         className="relative h-40 overflow-hidden"
@@ -687,9 +772,45 @@ const SpacePage = () => {
             </div>
           </div>
         )}
-      </div>
 
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+        {/* Custom Tooltip for Instant Hover Descriptions */}
+        {hoveredSpace && (
+          <div
+            className="fixed z-50 px-4 py-3 rounded-2xl shadow-2xl max-w-sm pointer-events-none"
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(0, 0, 0, 0.85)',
+              color: isDarkMode ? '#ffffff' : '#ffffff',
+              left: `${mousePosition.x + 15}px`,
+              top: `${mousePosition.y + 15}px`,
+              transform: 'translate(-50%, -100%)',
+              backdropFilter: 'blur(8px)',
+              border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.2)'}`,
+              borderRadius: '12px',
+            }}
+          >
+            <div className="relative">
+              <div className="text-sm font-medium leading-relaxed">
+                {getSpaceDescription(hoveredSpace.uuid, hoveredSpace.name)}
+              </div>
+              
+              {/* Traditional tooltip arrow */}
+              <div 
+                className="absolute w-0 h-0"
+                style={{
+                  top: '100%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  borderLeft: '8px solid transparent',
+                  borderRight: '8px solid transparent',
+                  borderTop: `8px solid ${isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(0, 0, 0, 0.85)'}`,
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+      </div>
     </div>
   );
 };

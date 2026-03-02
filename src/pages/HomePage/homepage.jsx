@@ -46,6 +46,8 @@ const HomePage1 = () => {
   const [showMenu, setShowMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
+  const [hoveredSpace, setHoveredSpace] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   // Cover photos state
   const [spaceCoverPhotos, setSpaceCoverPhotos] = useState({});
@@ -232,6 +234,16 @@ const HomePage1 = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
+
+  // Handle mouse move for tooltip positioning
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   // Handle delete space
   const handleDeleteSpace = async () => {
@@ -503,7 +515,8 @@ const HomePage1 = () => {
                             <div
                               onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
                               className="cursor-pointer"
-                              title={getSpaceDescription(space.space_uuid, space.space_name)}
+                              onMouseEnter={() => setHoveredSpace({ uuid: space.space_uuid, name: space.space_name })}
+                              onMouseLeave={() => setHoveredSpace(null)}
                             >
                               <SpaceCover
                                 image={spaceCoverPhotos[space.space_uuid] || space.image}
@@ -628,7 +641,8 @@ const HomePage1 = () => {
                             <div
                               onClick={() => navigate(`/space/${course.space_uuid}/${encodeURIComponent(course.space_name)}`)}
                               className="cursor-pointer"
-                              title={getSpaceDescription(course.space_name)}
+                              onMouseEnter={() => setHoveredSpace({ uuid: course.space_uuid, name: course.space_name })}
+                              onMouseLeave={() => setHoveredSpace(null)}
                             >
                               <SpaceCover
                                 image={spaceCoverPhotos[course.space_uuid] || course.image}
@@ -761,7 +775,8 @@ const HomePage1 = () => {
                             <div
                               onClick={() => navigate(`/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
                               className="cursor-pointer"
-                              title={getSpaceDescription(space.space_uuid, space.space_name)}
+                              onMouseEnter={() => setHoveredSpace({ uuid: space.space_uuid, name: space.space_name })}
+                              onMouseLeave={() => setHoveredSpace(null)}
                             >
                               <SpaceCover
                                 image={spaceCoverPhotos[space.space_uuid] || space.background_img || space.image}
@@ -862,6 +877,42 @@ const HomePage1 = () => {
             <StudentAnnouncementByAdmin />
           </div>
         </div>
+
+        {/* Custom Tooltip for Instant Hover Descriptions */}
+        {hoveredSpace && (
+          <div
+            className="fixed z-50 px-4 py-3 rounded-2xl shadow-2xl max-w-sm pointer-events-none"
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(0, 0, 0, 0.85)',
+              color: isDarkMode ? '#ffffff' : '#ffffff',
+              left: `${mousePosition.x + 15}px`,
+              top: `${mousePosition.y + 15}px`,
+              transform: 'translate(-50%, -100%)',
+              backdropFilter: 'blur(8px)',
+              border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.2)'}`,
+              borderRadius: '12px',
+            }}
+          >
+            <div className="relative">
+              <div className="text-sm font-medium leading-relaxed">
+                {getSpaceDescription(hoveredSpace.uuid, hoveredSpace.name)}
+              </div>
+              
+              {/* Traditional tooltip arrow */}
+              <div 
+                className="absolute w-0 h-0"
+                style={{
+                  top: '100%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  borderLeft: '8px solid transparent',
+                  borderRight: '8px solid transparent',
+                  borderTop: `8px solid ${isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(0, 0, 0, 0.85)'}`,
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Delete Confirmation Modal */}
         <DeleteConfirmationDialog
