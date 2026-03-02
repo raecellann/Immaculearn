@@ -328,26 +328,16 @@ const ProfHomePage = () => {
                     >
                       Create Space
                     </Button>
-                    <Button
-                      onClick={() => navigate('/prof/space')}
-                      className="border text-sm py-2 px-4"
-                      style={{
-                        borderColor: "white",
-                        color: "white",
-                      }}
-                    >
-                      Join Space
-                    </Button>
                   </div>
                 </div>
               </div>
               <img
                 src={
                   user?.gender === "F"
-                    ? "https://res.cloudinary.com/diws5bcu6/image/upload/v1772464536/girl-student_y97ybd.png"
-                    : "https://res.cloudinary.com/diws5bcu6/image/upload/v1772464537/boy-student_gzqw2n.png"
+                    ? "https://res.cloudinary.com/diws5bcu6/image/upload/v1772464537/ma_am-icon_sjowcg.png"
+                    : "https://res.cloudinary.com/diws5bcu6/image/upload/v1772464537/sir-icon_lqifeh.png"
                 }
-                alt="Student Icon"
+                alt="Professor Icon"
                 className="absolute top-1 right-1 w-48 h-48 object-contain hidden sm:block"
               />
             </div>
