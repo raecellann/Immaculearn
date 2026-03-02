@@ -23,6 +23,7 @@ const NotificationPage = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState(location.state?.filter || "all");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [viewedAnnouncements, setViewedAnnouncements] = useState(new Set());
 
   const { user, isLoading: userLoading } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
@@ -39,6 +40,13 @@ const NotificationPage = () => {
     isLoading: spaceLoading,
   } = useSpace();
 
+  const handleAnnouncementClick = (announcement) => {
+    setSelectedAnnouncement(announcement);
+    if (!viewedAnnouncements.has(announcement.id)) {
+      setViewedAnnouncements(prev => new Set(prev).add(announcement.id));
+    }
+  };
+
   const allJoinRequests = joinRequestsByLink || [];
   const allPendingSpaceInvitation = pendingSpaceInvitation || [];
 
@@ -49,7 +57,6 @@ const NotificationPage = () => {
       title: "School Holiday Notice",
       message: "School will be closed on Monday for maintenance.",
       date: "2024-02-20",
-      priority: "high",
     },
     {
       id: 2,
@@ -57,42 +64,36 @@ const NotificationPage = () => {
       message:
         "Final exam schedule has been posted. Check your student portal.",
       date: "2024-02-19",
-      priority: "medium",
     },
     {
       id: 3,
       title: "New Library Hours",
       message: "Library will now be open until 9 PM on weekdays for extended study hours.",
       date: "2024-02-18",
-      priority: "low",
     },
     {
       id: 4,
       title: "Sports Day Registration",
       message: "Registration for annual sports day is now open. Sign up at the student affairs office.",
       date: "2024-02-17",
-      priority: "medium",
     },
     {
       id: 5,
       title: "Campus Wi-Fi Upgrade",
       message: "Campus Wi-Fi will be upgraded this weekend. Expect intermittent connectivity.",
       date: "2024-02-16",
-      priority: "high",
     },
     {
       id: 6,
       title: "New Cafeteria Menu",
       message: "The cafeteria has updated its menu with new healthy options and student favorites.",
       date: "2024-02-15",
-      priority: "low",
     },
     {
       id: 7,
       title: "Career Fair Next Week",
       message: "Annual career fair will be held next Wednesday. Over 50 companies will be recruiting.",
       date: "2024-02-14",
-      priority: "high",
     },
   ];
 
@@ -515,9 +516,9 @@ const NotificationPage = () => {
 
                 {/* Display announcements */}
                 {schoolAnnouncements.length === 0 ? (
-                  <div className="mt-3 p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                  <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
                     <div className="flex flex-col items-center gap-3">
-                      <FiBell size={32} className="text-gray-400" />
+                      <FiBell size={40} className="text-gray-400" />
                       <div>
                         <p 
                           className="text-sm font-medium mb-1"
@@ -539,45 +540,63 @@ const NotificationPage = () => {
                     {schoolAnnouncements.slice(0, selectedFilter === "announcements" ? schoolAnnouncements.length : 3).map((announcement) => (
                       <div
                         key={announcement.id}
-                        className="mt-3 p-3 rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                        className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
                         style={{
                           backgroundColor: isDarkMode
-                            ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
-                            : "white",
-                          borderColor: isDarkMode ? currentColors.border : "black",
+                            ? "rgba(30, 36, 46, 0.9)"
+                            : "rgba(255, 255, 255, 0.95)",
+                          borderColor: isDarkMode ? currentColors.border : "rgb(229, 231, 235)",
+                          borderWidth: "1px",
                         }}
-                        onClick={() => setSelectedAnnouncement(announcement)}
+                        onClick={() => handleAnnouncementClick(announcement)}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              {!viewedAnnouncements.has(announcement.id) && (
+                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#3B82F6" }}></div>
+                              )}
+                              <p
+                                className="text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                              >
+                                {announcement.title}
+                              </p>
+                            </div>
                             <p
-                              className="text-sm font-medium"
-                              style={{ color: currentColors.text }}
-                            >
-                              {announcement.title}
-                            </p>
-                            <p
-                              className="text-xs mt-1"
-                              style={{ color: currentColors.textSecondary }}
+                              className="text-sm leading-relaxed mb-3"
+                              style={{
+                                color: currentColors.textSecondary,
+                                lineHeight: "1.5",
+                              }}
                             >
                               {announcement.message}
                             </p>
-                            <p
-                              className="text-xs mt-2"
-                              style={{ color: currentColors.textSecondary }}
-                            >
-                              {announcement.date}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <svg 
+                                className="w-4 h-4" 
+                                style={{ color: currentColors.textSecondary }}
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round" 
+                                  strokeWidth={2} 
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                                />
+                              </svg>
+                              <p
+                                className="text-xs font-medium"
+                                style={{
+                                  color: currentColors.textSecondary,
+                                }}
+                              >
+                                {announcement.date}
+                              </p>
+                            </div>
                           </div>
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              announcement.priority === "high"
-                                ? "bg-red-600 text-white"
-                                : "bg-yellow-600 text-white"
-                            }`}
-                          >
-                            {announcement.priority}
-                          </span>
                         </div>
                       </div>
                     ))}
@@ -815,67 +834,91 @@ const NotificationPage = () => {
 
       {/* Announcement Detail Modal */}
       {selectedAnnouncement && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div
-            className="rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col"
-            style={{ backgroundColor: currentColors.surface }}
+            className="rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
+            style={{
+              backgroundColor: currentColors.surface,
+              backdropFilter: "blur(20px)",
+              border: "1px solid",
+              borderColor: currentColors.border,
+            }}
           >
+            {/* Header */}
             <div
-              className="p-4 border-b flex justify-between items-center"
+              className="p-6 border-b flex justify-between items-start"
               style={{ borderColor: currentColors.border }}
             >
-              <h2
-                className="text-lg font-semibold"
-                style={{ color: currentColors.text }}
-              >
-                {selectedAnnouncement.title}
-              </h2>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#3B82F6" }}></div>
+                  <h2
+                    className="text-xl font-bold"
+                    style={{ color: currentColors.text }}
+                  >
+                    {selectedAnnouncement.title}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg 
+                    className="w-4 h-4" 
+                    style={{ color: currentColors.textSecondary }}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                    />
+                  </svg>
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {selectedAnnouncement.date}
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => setSelectedAnnouncement(null)}
-                className="text-2xl hover:opacity-80"
+                className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 style={{ color: currentColors.textSecondary }}
               >
                 ×
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`px-3 py-1 text-sm rounded-full ${
-                      selectedAnnouncement.priority === "high"
-                        ? "bg-red-600 text-white"
-                        : "bg-yellow-600 text-white"
-                    }`}
-                  >
-                    {selectedAnnouncement.priority.toUpperCase()}
-                  </span>
-                  <p
-                    className="text-sm"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    {selectedAnnouncement.date}
-                  </p>
-                </div>
-
-                <div
-                  className="p-4 rounded-lg border"
-                  style={{
-                    backgroundColor: isDarkMode
-                      ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
-                      : "white",
-                    borderColor: isDarkMode ? currentColors.border : "black",
-                  }}
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div
+                className="p-6 rounded-xl leading-relaxed"
+                style={{
+                  backgroundColor: isDarkMode
+                    ? "rgba(17, 24, 39, 0.5)"
+                    : "rgba(249, 250, 251, 0.8)",
+                  border: "1px solid",
+                  borderColor: currentColors.border,
+                  fontSize: "16px",
+                  lineHeight: "1.7",
+                }}
+              >
+                <p
+                  className="text-base"
+                  style={{ color: currentColors.text }}
                 >
-                  <p
-                    className="text-base leading-relaxed"
-                    style={{ color: currentColors.text }}
-                  >
-                    {selectedAnnouncement.message}
-                  </p>
-                </div>
+                  {selectedAnnouncement.message}
+                </p>
               </div>
+            </div>
+
+            {/* Footer */}
+            <div
+              className="p-4 border-t"
+              style={{ borderColor: currentColors.border }}
+            >
             </div>
           </div>
         </div>

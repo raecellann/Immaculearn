@@ -263,7 +263,7 @@ const AdminAcademicTerm = () => {
   }, []);
 
   return (
-    <div className="flex font-sans min-h-screen bg-[#161A20] text-white">
+    <div className="flex font-sans min-h-screen bg-gray-50 text-gray-900">
       {/* Sidebar components */}
       <div className="hidden lg:block">
         <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -277,7 +277,7 @@ const AdminAcademicTerm = () => {
       )}
 
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
+        className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 lg:hidden overflow-hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -287,13 +287,13 @@ const AdminAcademicTerm = () => {
       <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
         {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden bg-[#1E222A] p-4 border-b border-[#3B4457] flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
+          className={`lg:hidden bg-white p-4 border-b border-gray-200 flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-white text-2xl p-0 focus:outline-none"
+            className="bg-transparent border-none text-gray-900 text-2xl p-0 focus:outline-none"
           >
             ☰
           </button>
@@ -307,12 +307,12 @@ const AdminAcademicTerm = () => {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {/* Error Message Display */}
           {errorMessage && (
-            <div className="mb-4 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-400">
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-red-600">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm">{errorMessage}</p>
               <button
                 onClick={() => setErrorMessage("")}
-                className="ml-auto text-red-400 hover:text-red-300"
+                className="ml-auto text-red-600 hover:text-red-700"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -321,7 +321,7 @@ const AdminAcademicTerm = () => {
 
           {/* Active Term Warning */}
           {hasActiveTerm && (
-            <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/50 rounded-lg flex items-center gap-3 text-yellow-400">
+            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-3 text-yellow-600">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm">
                 There is an active academic term. You cannot create new terms
@@ -373,14 +373,14 @@ const AdminAcademicTerm = () => {
           {academicTerms.length === 0 ? (
             /* No Academic Terms State */
             <div className="max-w-2xl mx-auto">
-              <div className="bg-[#1E242E] rounded-xl border border-[#3B4457] p-8 text-center">
-                <div className="w-16 h-16 bg-[#2A2F3A] rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Calendar className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
                   No Academic Terms Yet
                 </h3>
-                <p className="text-gray-400 mb-6">
+                <p className="text-gray-600 mb-6">
                   Get started by creating your first academic term. You can set
                   up semesters, periods, and academic years.
                 </p>
@@ -403,27 +403,27 @@ const AdminAcademicTerm = () => {
             </div>
           ) : (
             /* Academic Terms Table */
-            <div className="bg-[#1E242E] rounded-xl border border-[#3B4457] overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-[#3B4457] bg-[#161A20]">
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                         Semester
                       </th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                         Period
                       </th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                         Academic Year
                       </th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                         Status
                       </th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                         Created
                       </th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-300">
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">
                         Actions
                       </th>
                     </tr>
@@ -432,7 +432,7 @@ const AdminAcademicTerm = () => {
                     {academicTerms.map((term) => (
                       <tr
                         key={term.academic_id}
-                        className="border-b border-[#3B4457] hover:bg-[#2A2F3A] transition-colors"
+                        className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-6 py-4 text-sm">
                           {term.academic_semester}
@@ -446,13 +446,13 @@ const AdminAcademicTerm = () => {
                         <td className="px-6 py-4 text-sm">
                           {getStatusBadge(term.academic_status)}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">
+                        <td className="px-6 py-4 text-sm text-gray-600">
                           {new Date(term.created_at).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button
                             onClick={() => openEditModal(term)}
-                            className="text-blue-400 hover:text-blue-300 transition-colors"
+                            className="text-blue-600 hover:text-blue-700 transition-colors"
                             title="Edit"
                           >
                             <Edit className="w-4 h-4" />
@@ -468,10 +468,10 @@ const AdminAcademicTerm = () => {
 
           {/* Create Academic Term Modal */}
           {showCreateModal && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-              <div className="bg-[#1E242E] rounded-xl border border-[#3B4457] w-full max-w-md">
-                <div className="flex justify-between items-center p-6 border-b border-[#3B4457]">
-                  <h2 className="text-xl font-bold text-white">
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-xl border border-gray-200 w-full max-w-md">
+                <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-bold text-gray-900">
                     Create Academic Term
                   </h2>
                   <button
@@ -479,7 +479,7 @@ const AdminAcademicTerm = () => {
                       setShowCreateModal(false);
                       resetForm();
                     }}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -488,7 +488,7 @@ const AdminAcademicTerm = () => {
                 <div className="p-6">
                   {/* Semester Dropdown */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Semester
                     </label>
                     <select
@@ -499,7 +499,7 @@ const AdminAcademicTerm = () => {
                           academic_semester: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none"
                     >
                       <option value="1st Semester">1st Semester</option>
                       <option value="2nd Semester">2nd Semester</option>
@@ -508,7 +508,7 @@ const AdminAcademicTerm = () => {
 
                   {/* Period Dropdown */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Period
                     </label>
                     <select
@@ -519,7 +519,7 @@ const AdminAcademicTerm = () => {
                           academic_period: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none"
                     >
                       <option value="PRELIM">PRELIM</option>
                       <option value="MIDTERM">MIDTERM</option>
@@ -530,13 +530,13 @@ const AdminAcademicTerm = () => {
 
                   {/* Academic Year Start */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Academic Year Start
                     </label>
                     <select
                       value={formData.academic_year}
                       onChange={(e) => handleYearChange(e.target.value)}
-                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none"
                     >
                       {Array.from(
                         { length: 10 },
@@ -547,17 +547,17 @@ const AdminAcademicTerm = () => {
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-gray-400 mt-2">
+                    <p className="text-xs text-gray-500 mt-2">
                       Academic Year:{" "}
-                      <span className="text-white">
+                      <span className="text-gray-900">
                         {formData.academic_year}-{formData.academic_year + 1}
                       </span>
                     </p>
                   </div>
 
                   {/* Note about status */}
-                  <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/50 rounded-lg">
-                    <p className="text-xs text-blue-400">
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-600">
                       <Info className="w-3 h-3 inline mr-1" />
                       New terms are automatically set to Active status.
                     </p>
@@ -570,13 +570,13 @@ const AdminAcademicTerm = () => {
                         setShowCreateModal(false);
                         resetForm();
                       }}
-                      className="flex-1 px-4 py-2 bg-[#2A2F3A] text-gray-300 rounded-lg hover:bg-[#3B4457] transition-colors"
+                      className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleCreateAcademicTerm}
-                      className="flex-1 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                     >
                       <Plus className="w-4 h-4" />
                       Create
@@ -589,10 +589,10 @@ const AdminAcademicTerm = () => {
 
           {/* Edit Academic Term Modal */}
           {showEditModal && selectedTerm && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-              <div className="bg-[#1E242E] rounded-xl border border-[#3B4457] w-full max-w-md">
-                <div className="flex justify-between items-center p-6 border-b border-[#3B4457]">
-                  <h2 className="text-xl font-bold text-white">
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-xl border border-gray-200 w-full max-w-md">
+                <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-bold text-gray-900">
                     Edit Academic Term
                   </h2>
                   <button
@@ -601,7 +601,7 @@ const AdminAcademicTerm = () => {
                       setSelectedTerm(null);
                       resetForm();
                     }}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -610,7 +610,7 @@ const AdminAcademicTerm = () => {
                 <div className="p-6">
                   {/* Semester Dropdown */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Semester
                     </label>
                     <select
@@ -621,7 +621,7 @@ const AdminAcademicTerm = () => {
                           academic_semester: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none"
                     >
                       <option value="1">1st Semester</option>
                       <option value="2">2nd Semester</option>
@@ -630,7 +630,7 @@ const AdminAcademicTerm = () => {
 
                   {/* Period Dropdown */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Period
                     </label>
                     <select
@@ -641,7 +641,7 @@ const AdminAcademicTerm = () => {
                           academic_period: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none"
                     >
                       <option value="PRELIM">PRELIM</option>
                       <option value="MIDTERM">MIDTERM</option>
@@ -652,13 +652,13 @@ const AdminAcademicTerm = () => {
 
                   {/* Academic Year Start */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Academic Year Start
                     </label>
                     <select
                       value={formData.academic_year}
                       onChange={(e) => handleYearChange(e.target.value)}
-                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none"
                     >
                       {Array.from(
                         { length: 10 },
@@ -669,9 +669,9 @@ const AdminAcademicTerm = () => {
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-gray-400 mt-2">
+                    <p className="text-xs text-gray-500 mt-2">
                       Academic Year:{" "}
-                      <span className="text-white">
+                      <span className="text-gray-900">
                         {formData.academic_year}-{formData.academic_year + 1}
                       </span>
                     </p>
@@ -679,7 +679,7 @@ const AdminAcademicTerm = () => {
 
                   {/* Status Dropdown - Only Active and Completed */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Status
                     </label>
                     <select
@@ -690,7 +690,7 @@ const AdminAcademicTerm = () => {
                           academic_status: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 bg-[#161A20] border border-[#3B4457] rounded-lg text-white focus:border-[#007AFF] focus:outline-none"
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none"
                     >
                       <option value="active">Active</option>
                       <option value="completed">Completed</option>
@@ -698,7 +698,7 @@ const AdminAcademicTerm = () => {
                     {formData.academic_status === "active" &&
                       hasActiveTerm &&
                       selectedTerm.academic_status !== "active" && (
-                        <p className="text-xs text-red-400 mt-1">
+                        <p className="text-xs text-red-600 mt-1">
                           Warning: Another term is currently active. Activating
                           this will deactivate the other term.
                         </p>
@@ -713,13 +713,13 @@ const AdminAcademicTerm = () => {
                         setSelectedTerm(null);
                         resetForm();
                       }}
-                      className="flex-1 px-4 py-2 bg-[#2A2F3A] text-gray-300 rounded-lg hover:bg-[#3B4457] transition-colors"
+                      className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleEditTerm}
-                      className="flex-1 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                     >
                       <Save className="w-4 h-4" />
                       Save Changes
