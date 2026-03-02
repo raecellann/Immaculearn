@@ -468,19 +468,13 @@ const ProfArchiveClass = () => {
                       setShowRestoreConfirm(null);
                       setShowMenu(null);
                     }}
-                    className="px-5 py-2 rounded-lg text-white text-sm transition-colors"
-                    style={{
-                      backgroundColor: isDarkMode ? "#4b5563" : "#6b7280",
-                    }}
+                    className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => handleRestoreClass(showRestoreConfirm)}
-                    className="px-5 py-2 rounded-lg text-white text-sm transition-colors"
-                    style={{
-                      backgroundColor: "#60A5FA",
-                    }}
+                    className="px-5 py-2 rounded-lg bg-[#60A5FA] hover:bg-[#3B82F6] text-white text-sm transition-colors"
                   >
                     Restore
                   </button>
