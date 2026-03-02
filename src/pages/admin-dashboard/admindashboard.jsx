@@ -8,9 +8,12 @@ import { genderOptions, yearLevelOptions, departmentOptions } from "../component
 import { toast } from "react-toastify";
 import DashboardCharts from "./components/DashboardCharts";
 import DashboardStyles from "./components/DashboardStyles";
+import { useAdminAnnouncement } from "../../hooks/useAdminAnnouncement";
+
 
 
 const AdminDashboard = () => {
+  const { getAllAnnouncements } = useAdminAnnouncement();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const navigate = useNavigate();
@@ -23,6 +26,7 @@ const AdminDashboard = () => {
 
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
 
   // Helper functions to get display names
   const getGenderName = (code) => {
@@ -131,10 +135,23 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchAnnouncements = async () => {
+    try {
+      const result = await getAllAnnouncements();
+      if (result.success && result.data) {
+        const announcementsData = Array.isArray(result.data) ? result.data : result.data.announcements || [];
+        setAnnouncements(announcementsData);
+      }
+    } catch (error) {
+      console.error('Error fetching announcements:', error);
+    }
+  };
+
 
   useEffect(() => {
   fetchStudents();
   fetchTeachers();
+  fetchAnnouncements();
 }, []);
 
   /* NAVIGATION FUNCTIONS */
@@ -257,7 +274,7 @@ const AdminDashboard = () => {
             <StatCard 
               icon={Megaphone} 
               label="Announcements" 
-              value="5" 
+              value={announcements.length}
               color="orange" 
               onClick={() => navigate('/admin/announcement')}
               trend="+2"

@@ -7,13 +7,19 @@ const AnnouncementForm = ({
   publishOption,
   setPublishOption,
   onCreateAnnouncement,
-  onClear
+  onUpdateAnnouncement,
+  onClear,
+  editingAnnouncement
 }) => {
   return (
     <div className="bg-[#1E242E] rounded-xl p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white mb-2">Create Announcement</h1>
-        <p className="text-gray-400">Create and publish announcements for students and faculty</p>
+        <h1 className="text-2xl font-bold text-white mb-2">
+          {editingAnnouncement ? "Update Announcement" : "Create Announcement"}
+        </h1>
+        <p className="text-gray-400">
+          {editingAnnouncement ? "Update announcement details" : "Create and publish announcements for students and faculty"}
+        </p>
       </div>
 
       <div className="space-y-6">
@@ -60,7 +66,6 @@ const AnnouncementForm = ({
               className="w-full bg-[#242B38] border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="now">Publish Now</option>
-              <option value="draft">Save as Draft</option>
               <option value="schedule">Schedule for Later</option>
             </select>
           </div>
@@ -99,9 +104,12 @@ const AnnouncementForm = ({
           </Button>
           <Button
             className="flex h-12 justify-between items-center bg-[#007AFF] hover:bg-blue-700 text-white px-6 py-3"
-            onClick={onCreateAnnouncement}
+            onClick={editingAnnouncement ? onUpdateAnnouncement : onCreateAnnouncement}
           >
-            {publishOption === "now" ? "Publish Announcement" : publishOption === "draft" ? "Save as Draft" : "Schedule Announcement"}
+            {editingAnnouncement 
+              ? "Update Announcement" 
+              : (publishOption === "now" ? "Publish Announcement" : publishOption === "draft" ? "Save as Draft" : "Schedule Announcement")
+            }
           </Button>
         </div>
       </div>

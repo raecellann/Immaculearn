@@ -42,10 +42,10 @@ const AnnouncementList = ({
           {filteredAnnouncements.length > 0 ? (
             filteredAnnouncements.map((announcement, index) => (
               <div
-                key={announcement.announcement_id || announcement.id || index}
+                key={announcement.announce_id || index}
                 onClick={() => onAnnouncementClick(announcement)}
                 className={`p-5 rounded-lg border cursor-pointer transition-all hover:border-[#4A5568] ${
-                  selectedAnnouncement?.announcement_id === announcement.announcement_id || selectedAnnouncement?.id === announcement.id
+                  selectedAnnouncement?.announce_id === announcement.announce_id
                     ? "bg-[#242B38] border-[#007AFF]"
                     : "bg-[#1E242E] border-gray-600"
                 }`}
@@ -53,11 +53,11 @@ const AnnouncementList = ({
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-medium text-sm line-clamp-2 flex-1">{announcement.announcement_title || announcement.title}</h3>
                   <div className="flex items-center gap-2 ml-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(announcement.priority)}`}>
-                      {announcement.priority}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(announcement.announcement_status || announcement.status)}`}>
+                      {announcement.target_audience}
                     </span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(announcement.announcement_status || announcement.status)}`}>
-                      {announcement.announcement_status || announcement.status}
+                      {announcement.publish_option === 'NOW' ? 'PUBLISH' : 'SCHEDULE'}
                     </span>
                   </div>
                 </div>
@@ -65,13 +65,14 @@ const AnnouncementList = ({
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    <span>{formatDate(announcement.announcement_date || announcement.date)}</span>
+
+                      {announcement.publish_option === 'NOW' ? (
+                        <span>`Published on` {formatDate(announcement.created_at)}</span>
+                      ) : (
+                        <span>`Scheduled at` {formatDate(announcement.scheduled_at)}</span>
+                      )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span>{announcement.views || 0} views</span>
-                    <span>•</span>
-                    <span>{announcement.likes || 0} likes</span>
-                  </div>
+                  
                 </div>
               </div>
             ))
@@ -94,18 +95,18 @@ const AnnouncementList = ({
         {filteredAnnouncements.length > 0 ? (
           filteredAnnouncements.map((announcement, index) => (
             <div
-              key={announcement.announcement_id || announcement.id || index}
+              key={announcement.announce_id || index}
               onClick={() => onAnnouncementClick(announcement)}
               className="bg-[#1E242E] rounded-xl p-5 border border-gray-600 cursor-pointer hover:border-[#4A5568] transition-all"
             >
               <div className="flex items-start justify-between mb-3">
                 <h3 className="font-semibold text-base flex-1">{announcement.announcement_title || announcement.title}</h3>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(announcement.priority)}`}>
-                    {announcement.priority}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(announcement.announcement_status || announcement.status)}`}>
+                    {announcement.target_audience}
                   </span>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(announcement.announcement_status || announcement.status)}`}>
-                    {announcement.announcement_status || announcement.status}
+                    {announcement.publish_option === 'NOW' ? 'PUBLISH' : 'SCHEDULE'}
                   </span>
                 </div>
               </div>
@@ -113,12 +114,11 @@ const AnnouncementList = ({
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  <span>{formatDate(announcement.announcement_date || announcement.date)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>{announcement.views || 0} views</span>
-                  <span>•</span>
-                  <span>{announcement.likes || 0} likes</span>
+                  {announcement.publish_option === 'NOW' ? (
+                    <span>`Published on` {formatDate(announcement.created_at)}</span>
+                  ) : (
+                    <span>`Scheduled at` {formatDate(announcement.scheduled_at)}</span>
+                  )}
                 </div>
               </div>
             </div>

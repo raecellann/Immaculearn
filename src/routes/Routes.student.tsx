@@ -34,7 +34,12 @@ export const StudentRoutes = [
   {
     key: "/home",
     path: "/home",
-    element: <HomePage />,
+    element: (
+      <ProtectedRoute>
+        <HomePage />
+      </ProtectedRoute>
+    )
+    
   },
   {
     key: "/accsettings",
