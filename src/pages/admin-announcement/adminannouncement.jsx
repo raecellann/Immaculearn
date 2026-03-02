@@ -4,19 +4,25 @@ import {
   Menu,
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
+import { useAdminAnnouncement } from "../../hooks/useAdminAnnouncement";
 import AdminSidebar from "../component/adminsidebar";
 import AnnouncementList from "./components/AnnouncementList";
 import AnnouncementForm from "./components/AnnouncementForm";
 import AnnouncementDetail from "./components/AnnouncementDetail";
+import { useAdmin } from "../../contexts/admin/useAdmin";
+import { toast } from "react-toastify";
 
 const AdminAnnouncement = () => {
   const { user } = useUser();
+  const { createAnnouncement, getAllAnnouncements, updateAnnouncement, deleteAnnouncement } = useAdminAnnouncement();
   const [showLogout, setShowLogout] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [announcements, setAnnouncements] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -27,64 +33,33 @@ const AdminAnnouncement = () => {
     attachments: []
   });
   const [publishOption, setPublishOption] = useState("now"); // "now", "draft", "schedule"
-  const [announcements, setAnnouncements] = useState([
-    {
-      id: 1,
-      title: "Midterm Examination Schedule",
-      content: "Please be informed that the midterm examinations for the first semester will start on October 15, 2024. Students are advised to review their examination schedules and prepare accordingly.",
-      author: "Dr. Maria Santos",
-      date: "2024-10-01",
-      time: "09:00 AM",
-      priority: "high",
-      status: "published",
-      views: 1250,
-      likes: 89,
-      targetAudience: "all",
-      attachments: ["exam_schedule.pdf"]
-    },
-    {
-      id: 2,
-      title: "System Maintenance Notice",
-      content: "The learning management system will undergo scheduled maintenance on October 5, 2024, from 2:00 AM to 6:00 AM. During this time, the system will be inaccessible.",
-      author: "IT Department",
-      date: "2024-09-28",
-      time: "02:30 PM",
-      priority: "medium",
-      status: "published",
-      views: 890,
-      likes: 23,
-      targetAudience: "all",
-      attachments: []
-    },
-    {
-      id: 3,
-      title: "New Course Registration Guidelines",
-      content: "Updated guidelines for course registration for the second semester are now available. Please review the new procedures before the registration period begins.",
-      author: "Registrar Office",
-      date: "2024-09-25",
-      time: "11:00 AM",
-      priority: "normal",
-      status: "draft",
-      views: 0,
-      likes: 0,
-      targetAudience: "students",
-      attachments: ["registration_guide.pdf", "academic_calendar.pdf"]
-    },
-    {
-      id: 4,
-      title: "Faculty Development Workshop",
-      content: "A professional development workshop on innovative teaching methods will be held on October 10, 2024. All faculty members are encouraged to attend.",
-      author: "Academic Affairs",
-      date: "2024-09-20",
-      time: "03:00 PM",
-      priority: "medium",
-      status: "published",
-      views: 156,
-      likes: 34,
-      targetAudience: "faculty",
-      attachments: ["workshop_details.pdf", "registration_form.docx"]
+
+  // Fetch announcements on component mount
+  useEffect(() => {
+    fetchAnnouncements();
+  }, []);
+
+  const fetchAnnouncements = async () => {
+    setIsLoading(true);
+    try {
+      const result = await getAllAnnouncements();
+      console.log('API Response:', result); // Debug log
+      if (result.success && result.data) {
+        // Handle different response structures
+        const announcementsData = Array.isArray(result.data) ? result.data : result.data.announcements || [];
+        setAnnouncements(announcementsData);
+      } else {
+        toast.error(result.message || "Failed to fetch announcements");
+        setAnnouncements([]); // Set empty array on error
+      }
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      toast.error("Failed to fetch announcements");
+      setAnnouncements([]); // Set empty array on error
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  };
 
   const lastScrollY = useRef(0);
   const [showHeader, setShowHeader] = useState(true);
@@ -156,47 +131,66 @@ const AdminAnnouncement = () => {
     }
   };
 
-  const handleCreateAnnouncement = () => {
-    const now = new Date();
-    let announcementStatus = "published";
-    let announcementDate = now.toISOString().split('T')[0];
-    let announcementTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-    if (publishOption === "draft") {
-      announcementStatus = "draft";
-    } else if (publishOption === "schedule" && formData.scheduledDate && formData.scheduledTime) {
-      announcementStatus = "scheduled";
-      announcementDate = formData.scheduledDate;
-      announcementTime = formData.scheduledTime;
+  const handleCreateAnnouncement = async () => {
+    let scheduled_at = undefined;
+    
+    if (publishOption === "schedule" && formData.scheduledDate && formData.scheduledTime) {
+      scheduled_at = new Date(`${formData.scheduledDate}T${formData.scheduledTime}`).toISOString();
     }
 
-    const newAnnouncement = {
-      id: announcements.length + 1,
-      ...formData,
-      author: user?.name || "Admin",
-      date: announcementDate,
-      time: announcementTime,
-      status: announcementStatus,
-      views: announcementStatus === "published" ? 0 : 0,
-      likes: 0
+    const announcementData = {
+      title: formData.title,
+      content: formData.content,
+      target_audience: formData.targetAudience.toUpperCase(),
+      scheduled_at,
+      publish_option: publishOption.toUpperCase()
     };
-    setAnnouncements([newAnnouncement, ...announcements]);
-    setFormData({
-      title: "",
-      content: "",
-      priority: "normal",
-      targetAudience: "all",
-      scheduledDate: "",
-      scheduledTime: "",
-      attachments: []
-    });
-    setPublishOption("now");
-    setShowCreateModal(false);
+
+    setIsLoading(true);
+    try {
+      const result = await createAnnouncement(announcementData);
+      if (result.success) {
+        toast.success("Announcement created successfully!");
+        fetchAnnouncements(); // Refresh the list
+        setFormData({
+          title: "",
+          content: "",
+          priority: "normal",
+          targetAudience: "all",
+          scheduledDate: "",
+          scheduledTime: "",
+          attachments: []
+        });
+        setPublishOption("now");
+        setShowCreateModal(false);
+      } else {
+        toast.error(result.message || "Failed to create announcement");
+      }
+    } catch (error) {
+      console.error("Error creating announcement:", error);
+      toast.error("Failed to create announcement");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteAnnouncement = (id) => {
-    setAnnouncements(announcements.filter(ann => ann.id !== id));
-    setSelectedAnnouncement(null);
+  const handleDeleteAnnouncement = async (announcementId) => {
+    setIsLoading(true);
+    try {
+      const result = await deleteAnnouncement(announcementId);
+      if (result.success) {
+        toast.success("Announcement deleted successfully!");
+        fetchAnnouncements(); // Refresh the list
+        setSelectedAnnouncement(null);
+      } else {
+        toast.error(result.message || "Failed to delete announcement");
+      }
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+      toast.error("Failed to delete announcement");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEditAnnouncement = (announcement) => {
@@ -230,11 +224,11 @@ const AdminAnnouncement = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const filteredAnnouncements = announcements.filter((a) =>
+  const filteredAnnouncements = Array.isArray(announcements) ? announcements.filter((a) =>
     a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     a.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
     a.author.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   return (
     <div className="flex font-sans min-h-screen bg-[#161A20] text-white">

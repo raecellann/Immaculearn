@@ -89,10 +89,10 @@ const ProfViewFiles = () => {
       </div>
     );
   }
-    const formatFileTitle = (filename) => {
-  if (!filename) return "";
+    const formatFileTitle = (orig_file_name) => {
+  if (!orig_file_name) return "";
 
-  const decodedFileName = decodeURIComponent(filename);
+  const decodedFileName = decodeURIComponent(orig_file_name);
   const nameWithoutExtension = decodedFileName.split(".")[0];
   const cleanTitle = nameWithoutExtension.split("_")[0];
 
@@ -182,7 +182,7 @@ const ProfViewFiles = () => {
               )}
               {files.map((file, index) => (
                 <div
-                  key={file.file_uuid}
+                  key={file.file_id || `file-${index}`}
                   className="rounded-lg p-4 flex flex-col gap-3 border"
                   style={{
                     backgroundColor: currentColors.surface,
@@ -194,7 +194,7 @@ const ProfViewFiles = () => {
                   </p>
 
                   <p className="font-medium break-words" style={{ color: '#3b82f6' }}>
-                    {formatFileTitle(file.filename)}
+                    {formatFileTitle(file.orig_file_name)}
                   </p>
 
                   <p className="text-sm" style={{ color: currentColors.textSecondary }}>
@@ -206,7 +206,7 @@ const ProfViewFiles = () => {
                     <span 
                       onClick={() =>
                         navigate(
-                          `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.filename)}/${file.file_uuid}`
+                          `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.orig_file_name)}/${file.file_id}`
                         )
                       }
                       className="px-3 py-1 text-xs rounded-md cursor-pointer transition-colors"
@@ -248,9 +248,9 @@ const ProfViewFiles = () => {
                         </td>
                       </tr>
                     )}
-                    {files.map((file) => (
+                    {files.map((file, index) => (
                       <tr
-                        key={file.file_uuid}
+                        key={file.file_id || `file-${index}`}
                         className="transition"
                         style={{ backgroundColor: 'transparent' }}
                         onMouseEnter={(e) => {
@@ -269,8 +269,8 @@ const ProfViewFiles = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-medium text-sm truncate max-w-[200px]" title={formatFileTitle(file.filename)} style={{ color: currentColors.text }}>
-                            {formatFileTitle(file.filename)}
+                          <div className="font-medium text-sm truncate max-w-[200px]" title={formatFileTitle(file.orig_file_name)} style={{ color: currentColors.text }}>
+                            {formatFileTitle(file.orig_file_name)}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm" style={{ color: currentColors.textSecondary }}>
@@ -280,7 +280,7 @@ const ProfViewFiles = () => {
                           <span 
                             onClick={() =>
                               navigate(
-                                `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.filename)}/${file.file_uuid}`
+                                `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.orig_file_name)}/${file.file_id}`
                               )
                             }
                             className="px-2 py-1 text-xs rounded-md cursor-pointer transition-colors"
@@ -328,9 +328,9 @@ const ProfViewFiles = () => {
                     </tr>
                   )}
 
-                  {files.map((file) => (
+                  {files.map((file, index) => (
                     <tr
-                      key={file.file_uuid}
+                      key={file.file_id || `file-${index}`}
                       className="transition"
                       style={{ backgroundColor: 'transparent' }}
                       onMouseEnter={(e) => {
@@ -350,7 +350,7 @@ const ProfViewFiles = () => {
                       </td>
 
                       <td className="px-6 py-4 font-medium" style={{ color: currentColors.text }}>
-                        {formatFileTitle(file.filename)}
+                        {formatFileTitle(file.orig_file_name)}
                       </td>
 
                       <td className="px-6 py-4" style={{ color: currentColors.textSecondary }}>
@@ -363,7 +363,7 @@ const ProfViewFiles = () => {
                         <span 
                           onClick={() =>
                             navigate(
-                              `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.filename)}/${file.file_uuid}`
+                              `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.orig_file_name)}/${file.file_id}`
                             )
                           }
                           className="px-3 py-1 text-xs rounded-md cursor-pointer transition-colors"

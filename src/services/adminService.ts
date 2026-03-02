@@ -1,5 +1,5 @@
 import { adminApi } from "../lib/api.admin";
-import { AcademicData, ApiResponse } from "../types/admin";
+import { AcademicData, AnnouncementData, ApiResponse } from "../types/admin";
 
 class AdminService {
 
@@ -73,6 +73,98 @@ class AdminService {
       return {
         success: false,
         message: error.response?.data?.message || "Failed to fetch academic terms",
+      };
+    }
+  }
+
+
+  async create_announcement(
+    title: string,
+    content: string,
+    target_audience: string,
+    scheduled_at?: string,
+    publish_option: string = "NOW"
+  ): Promise<ApiResponse<AnnouncementData>> {
+    try {
+      const response = await adminApi.post<ApiResponse<AnnouncementData>>(
+        "/announce/create", {
+          title,
+          content,
+          target_audience,
+          scheduled_at,
+          publish_option
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Failed to create announcement",
+      };
+    }
+  }
+
+  async getAllAnnouncements(): Promise<ApiResponse<AnnouncementData[]>> {
+    try {
+      const response = await adminApi.get<ApiResponse<AnnouncementData[]>>(
+        "/announce/"
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to fetch announcements",
+      };
+    }
+  }
+
+  async updateAnnouncement(
+    announcement_id: number,
+    title?: string,
+    content?: string,
+    target_audience?: string,
+    scheduled_at?: string,
+    publish_option?: string
+  ): Promise<ApiResponse<AnnouncementData>> {
+    try {
+      const payload: Record<string, any> = { announcement_id };
+
+      if (title !== undefined) payload.title = title;
+      if (content !== undefined) payload.content = content;
+      if (target_audience !== undefined) payload.target_audience = target_audience;
+      if (scheduled_at !== undefined) payload.scheduled_at = scheduled_at;
+      if (publish_option !== undefined) payload.publish_option = publish_option;
+
+      const response = await adminApi.patch<ApiResponse<AnnouncementData>>(
+        "/announce/update",
+        payload
+      );
+
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Failed to update announcement",
+      };
+    }
+  }
+
+  async deleteAnnouncement(announcement_id: number): Promise<ApiResponse> {
+    try {
+      const response = await adminApi.delete<ApiResponse>(
+        `/announce/delete/${announcement_id}`
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Failed to delete announcement",
       };
     }
   }

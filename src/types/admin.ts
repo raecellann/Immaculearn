@@ -47,3 +47,28 @@ export interface AcademicData {
   academic_year: string;
   academic_status: string;
 }
+
+export interface AnnouncementData {
+  announcement_id: number;
+  announcement_title: string;
+  announcement_content: string;
+  announcement_date: string;
+  announcement_status: string;
+  target_audience: string;
+  publish_option: string;
+  scheduled_at: string;
+  created_by: string;
+
+}
+
+export interface AnnouncementCreateData {
+  title: string;
+  content: string;
+  target_audience: string;
+  scheduled_at?: string;
+  publish_option: string;
+}
+
+
+
+

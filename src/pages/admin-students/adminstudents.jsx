@@ -126,6 +126,31 @@ const AdminStudents = () => {
         }
         
         
+        // Process the parsed data to extract Gmail addresses
+        console.log('Raw parsed data:', data);
+        console.log('Available columns:', data.length > 0 ? Object.keys(data[0]) : 'No data');
+        
+        const mappedData = data.map(row => {
+          // Look through all values in the row to find any @gmail.com email
+          let gmailEmail = '';
+          Object.values(row).forEach(value => {
+            const strValue = String(value).trim();
+            if (strValue.endsWith('@gmail.com')) {
+              gmailEmail = strValue;
+            }
+          });
+          
+          console.log('Row:', row, 'Found gmail:', gmailEmail);
+          return {
+            email: gmailEmail
+          };
+        }).filter(item => {
+          const isValid = item.email && item.email.endsWith('@gmail.com');
+          console.log('Filtered item:', item, 'Valid:', isValid);
+          return isValid;
+        });
+        
+        console.log('Final mapped data:', mappedData);
         setImportPreview(mappedData);
       } catch (error) {
         console.error('Error parsing file:', error);

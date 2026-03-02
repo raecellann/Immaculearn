@@ -40,37 +40,37 @@ const AnnouncementList = ({
         style={{ maxHeight: '70vh', scrollbarWidth: 'thin', scrollbarColor: '#4A5568 #1E242E' }}>
         <div className="space-y-3">
           {filteredAnnouncements.length > 0 ? (
-            filteredAnnouncements.map((announcement) => (
+            filteredAnnouncements.map((announcement, index) => (
               <div
-                key={announcement.id}
+                key={announcement.announcement_id || announcement.id || index}
                 onClick={() => onAnnouncementClick(announcement)}
                 className={`p-5 rounded-lg border cursor-pointer transition-all hover:border-[#4A5568] ${
-                  selectedAnnouncement?.id === announcement.id
+                  selectedAnnouncement?.announcement_id === announcement.announcement_id || selectedAnnouncement?.id === announcement.id
                     ? "bg-[#242B38] border-[#007AFF]"
                     : "bg-[#1E242E] border-gray-600"
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-medium text-sm line-clamp-2 flex-1">{announcement.title}</h3>
+                  <h3 className="font-medium text-sm line-clamp-2 flex-1">{announcement.announcement_title || announcement.title}</h3>
                   <div className="flex items-center gap-2 ml-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(announcement.priority)}`}>
                       {announcement.priority}
                     </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(announcement.status)}`}>
-                      {announcement.status}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(announcement.announcement_status || announcement.status)}`}>
+                      {announcement.announcement_status || announcement.status}
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 line-clamp-2 mb-4">{announcement.content}</p>
+                <p className="text-xs text-gray-400 line-clamp-2 mb-4">{announcement.announcement_content || announcement.content}</p>
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    <span>{formatDate(announcement.date)}</span>
+                    <span>{formatDate(announcement.announcement_date || announcement.date)}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span>{announcement.views} views</span>
+                    <span>{announcement.views || 0} views</span>
                     <span>•</span>
-                    <span>{announcement.likes} likes</span>
+                    <span>{announcement.likes || 0} likes</span>
                   </div>
                 </div>
               </div>
@@ -92,33 +92,33 @@ const AnnouncementList = ({
       {/* MOBILE/TABLET: Announcements Cards */}
       <div className="lg:hidden space-y-4">
         {filteredAnnouncements.length > 0 ? (
-          filteredAnnouncements.map((announcement) => (
+          filteredAnnouncements.map((announcement, index) => (
             <div
-              key={announcement.id}
+              key={announcement.announcement_id || announcement.id || index}
               onClick={() => onAnnouncementClick(announcement)}
               className="bg-[#1E242E] rounded-xl p-5 border border-gray-600 cursor-pointer hover:border-[#4A5568] transition-all"
             >
               <div className="flex items-start justify-between mb-3">
-                <h3 className="font-semibold text-base flex-1">{announcement.title}</h3>
+                <h3 className="font-semibold text-base flex-1">{announcement.announcement_title || announcement.title}</h3>
                 <div className="flex items-center gap-2">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(announcement.priority)}`}>
                     {announcement.priority}
                   </span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(announcement.status)}`}>
-                    {announcement.status}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(announcement.announcement_status || announcement.status)}`}>
+                    {announcement.announcement_status || announcement.status}
                   </span>
                 </div>
               </div>
-              <p className="text-sm text-gray-400 mb-4 line-clamp-3">{announcement.content}</p>
+              <p className="text-sm text-gray-400 mb-4 line-clamp-3">{announcement.announcement_content || announcement.content}</p>
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  <span>{formatDate(announcement.date)}</span>
+                  <span>{formatDate(announcement.announcement_date || announcement.date)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>{announcement.views} views</span>
+                  <span>{announcement.views || 0} views</span>
                   <span>•</span>
-                  <span>{announcement.likes} likes</span>
+                  <span>{announcement.likes || 0} likes</span>
                 </div>
               </div>
             </div>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { adminApi } from "../../lib/api.admin";
 import { AdminContext, AdminContextType } from "./adminContext";
-import { Admin, AdminStats } from "../../types/admin";
+import { Admin, AdminStats, AnnouncementData, AnnouncementCreateData } from "../../types/admin";
+import { adminService } from "../../services/adminService";
 
 interface AdminProviderProps {
   children: React.ReactNode;
@@ -163,6 +164,81 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     }
   };
 
+  // Announcement functions
+  const createAnnouncement = async (announcementData: AnnouncementCreateData): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
+    try {
+      setIsLoading(true);
+      const result = await adminService.create_announcement(
+        announcementData.title,
+        announcementData.content,
+        announcementData.target_audience,
+        announcementData.scheduled_at,
+        announcementData.publish_option
+      );
+      return result;
+    } catch (err) {
+      console.error("Create announcement error:", err);
+      return {
+        success: false,
+        message: "Failed to create announcement"
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getAllAnnouncements = async (): Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }> => {
+    try {
+      const result = await adminService.getAllAnnouncements();
+      return result;
+    } catch (err) {
+      console.error("Get all announcements error:", err);
+      return {
+        success: false,
+        message: "Failed to fetch announcements"
+      };
+    }
+  };
+
+  const updateAnnouncement = async (announcement_id: number, announcementData: Partial<AnnouncementCreateData>): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
+    try {
+      setIsLoading(true);
+      const result = await adminService.updateAnnouncement(
+        announcement_id,
+        announcementData.title,
+        announcementData.content,
+        announcementData.target_audience,
+        announcementData.scheduled_at,
+        announcementData.publish_option
+      );
+      return result;
+    } catch (err) {
+      console.error("Update announcement error:", err);
+      return {
+        success: false,
+        message: "Failed to update announcement"
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteAnnouncement = async (announcement_id: number): Promise<{ success: boolean; message?: string }> => {
+    try {
+      setIsLoading(true);
+      const result = await adminService.deleteAnnouncement(announcement_id);
+      return result;
+    } catch (err) {
+      console.error("Delete announcement error:", err);
+      return {
+        success: false,
+        message: "Failed to delete announcement"
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Initial check on mount - only if we have a token
   useEffect(() => {
     const token =
@@ -185,6 +261,10 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     getAdminStats,
     updateAdmin,
     deleteAdmin,
+    createAnnouncement,
+    getAllAnnouncements,
+    updateAnnouncement,
+    deleteAnnouncement,
   };
 
   return (
