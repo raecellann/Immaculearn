@@ -239,7 +239,7 @@ const IndividualSpaceSettings = () => {
                       onChange={(e) => handleSettingChange('spaceName', e.target.value)}
                       className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 resize-none"
                       style={{
-                        backgroundColor: currentColors.input,
+                        backgroundColor: isDarkMode ? '#2A3142' : '#ffffff',
                         borderColor: currentColors.border,
                         color: currentColors.text
                       }}
@@ -254,7 +254,7 @@ const IndividualSpaceSettings = () => {
                       rows={3}
                       className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 resize-none"
                       style={{
-                        backgroundColor: currentColors.input,
+                        backgroundColor: isDarkMode ? '#2A3142' : '#ffffff',
                         borderColor: currentColors.border,
                         color: currentColors.text
                       }}
