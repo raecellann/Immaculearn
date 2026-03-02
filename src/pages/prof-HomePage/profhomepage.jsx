@@ -428,15 +428,21 @@ const ProfHomePage = () => {
                           >
                             <div
                               onClick={() => navigate(`/prof/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
-                              className="cursor-pointer"
+                              className="cursor-pointer relative"
                               onMouseEnter={() => setHoveredSpace({ uuid: space.space_uuid, name: space.space_name })}
                               onMouseLeave={() => setHoveredSpace(null)}
                             >
                               <SpaceCover
                                 image={spaceCoverPhotos[space.space_uuid] || space.image}
                                 name={space.space_name}
-                                className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
+                                className="w-full flex-shrink-0 aspect-[3/2] object-cover transition duration-300"
                               />
+                              {/* Description Overlay - shown on hover */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                                <p className="text-white text-sm font-medium leading-relaxed">
+                                  {getSpaceDescription(space.space_uuid, space.space_name)}
+                                </p>
+                              </div>
                               <div className="p-4 flex flex-col justify-between flex-grow">
                                 <h3 className="font-medium truncate">
                                   {capitalizeWords(space.space_name)}'s Space
@@ -542,21 +548,30 @@ const ProfHomePage = () => {
                           >
                             <div
                               onClick={() => navigate(`/prof/space/${space.space_uuid}/${encodeURIComponent(space.space_name)}`)}
-                              className="cursor-pointer"
+                              className="cursor-pointer relative"
                               onMouseEnter={() => setHoveredSpace({ uuid: space.space_uuid, name: space.space_name })}
                               onMouseLeave={() => setHoveredSpace(null)}
                             >
                               <SpaceCover
                                 image={spaceCoverPhotos[space.space_uuid] || space.background_img || space.image}
                                 name={space.space_name}
-                                className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
+                                className="w-full flex-shrink-0 aspect-[3/2] object-cover transition duration-300"
                               />
+                              {/* Description Overlay - shown on hover */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                                <p className="text-white text-sm font-medium leading-relaxed">
+                                  {getSpaceDescription(space.space_uuid, space.space_name)}
+                                </p>
+                              </div>
                               <div className="p-4 flex flex-col justify-between flex-grow">
                                 <h3 className="font-medium truncate">
-                                  {capitalizeWords(space.space_name)}'s Space
+                                  {capitalizeWords(space.space_name)}
                                 </h3>
-                                <p className="text-gray-400 text-xs mt-1">
-                                  {(space.members?.length - 1) || 0} Students
+                                <p className="text-xs mt-1" style={{ color: isDarkMode ? '#9ca3af' : '#666666' }}>
+                                  Prof. {user?.name || 'Unknown'} • {(space.members?.length - 1) || 0} Students
+                                </p>
+                                <p className="text-xs mt-1" style={{ color: isDarkMode ? '#9ca3af' : '#666666' }}>
+                                  {space.space_day || 'TBD'} ({new Date(`2000-01-01T${space.space_time_start}`).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit', hour12: true})} - {new Date(`2000-01-01T${space.space_time_end}`).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit', hour12: true})})
                                 </p>
                               </div>
                             </div>
@@ -714,42 +729,6 @@ const ProfHomePage = () => {
           )}
         </div>
       </div>
-
-      {/* Custom Tooltip for Instant Hover Descriptions */}
-      {hoveredSpace && (
-        <div
-          className="fixed z-50 px-4 py-3 rounded-2xl shadow-2xl max-w-sm pointer-events-none"
-          style={{
-            backgroundColor: isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(0, 0, 0, 0.85)',
-            color: isDarkMode ? '#ffffff' : '#ffffff',
-            left: `${mousePosition.x + 15}px`,
-            top: `${mousePosition.y + 15}px`,
-            transform: 'translate(-50%, -100%)',
-            backdropFilter: 'blur(8px)',
-            border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.2)'}`,
-            borderRadius: '12px',
-          }}
-        >
-          <div className="relative">
-            <div className="text-sm font-medium leading-relaxed">
-              {getSpaceDescription(hoveredSpace.uuid, hoveredSpace.name)}
-            </div>
-            
-            {/* Traditional tooltip arrow */}
-            <div 
-              className="absolute w-0 h-0"
-              style={{
-                top: '100%',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                borderLeft: '8px solid transparent',
-                borderRight: '8px solid transparent',
-                borderTop: `8px solid ${isDarkMode ? 'rgba(31, 41, 55, 0.95)' : 'rgba(0, 0, 0, 0.85)'}`,
-              }}
-            />
-          </div>
-        </div>
-      )}
 
       {/* LOGOUT MODAL */}
       {showLogout && <Logout onClose={() => setShowLogout(false)} />}

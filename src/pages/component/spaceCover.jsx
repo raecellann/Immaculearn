@@ -32,14 +32,6 @@ export const SpaceCover = ({ image, name, description, className = "" }) => {
         <div className={`absolute inset-0 bg-gradient-to-br ${color}`} />
       )}
 
-      {/* Center Letter + Name */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-white pointer-events-none">
-        <span className="text-5xl font-bold font-serif">{letter}</span>
-        <span className="mt-1 text-sm font-medium tracking-wide opacity-90">
-          {name}
-        </span>
-      </div>
-
       {/* Hover Description */}
       {description && (
         <div
