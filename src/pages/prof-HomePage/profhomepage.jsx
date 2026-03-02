@@ -30,6 +30,54 @@ const ProfHomePage = () => {
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const navigate = useNavigate();
 
+  // Cover photos state
+  const [spaceCoverPhotos, setSpaceCoverPhotos] = useState({});
+
+  // Load cover photos from localStorage for all spaces
+  useEffect(() => {
+    const loadCoverPhotos = () => {
+      const allSpaces = [
+        ...(userSpaces || []),
+        ...(courseSpaces || [])
+      ];
+      
+      const coverPhotos = {};
+      allSpaces.forEach(space => {
+        if (space.space_uuid) {
+          const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space.space_uuid}`);
+          if (savedCoverPhoto) {
+            coverPhotos[space.space_uuid] = savedCoverPhoto;
+          }
+        }
+      });
+      
+      setSpaceCoverPhotos(coverPhotos);
+    };
+
+    loadCoverPhotos();
+
+    // Listen for storage changes to update cover photos in real-time
+    const handleStorageChange = (e) => {
+      if (e.key && e.key.startsWith("coverPhoto_")) {
+        loadCoverPhotos();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Also listen for custom events for same-tab updates
+    const handleCoverPhotoUpdate = () => {
+      loadCoverPhotos();
+    };
+    
+    window.addEventListener("coverPhotoUpdated", handleCoverPhotoUpdate);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("coverPhotoUpdated", handleCoverPhotoUpdate);
+    };
+  }, [userSpaces, courseSpaces]);
+
   // Handle delete space
   const handleDeleteSpace = async () => {
     try {
@@ -188,8 +236,25 @@ const ProfHomePage = () => {
                   <p className="mb-1" style={{ color: isDarkMode ? currentColors.textSecondary : '#333333' }}>Manage your classes and collaborate with students.</p>
                   <p className="mb-5" style={{ color: isDarkMode ? currentColors.textSecondary : '#666666' }}>Create spaces or join existing ones.</p>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Button onClick={() => navigate('/prof/space/create')} className="bg-[#007AFF] hover:bg-blue-700 text-white text-sm py-2 px-4">
+                    <Button
+                      onClick={() => navigate('/prof/space/create')}
+                      className="border bg-[#007AFF] hover:bg-blue-700 text-sm py-2 px-4"
+                      style={{
+                        borderColor: isDarkMode ? "#4a5568" : "black",
+                        color: isDarkMode ? "white" : "black",
+                      }}
+                    >
                       Create Space
+                    </Button>
+                    <Button
+                      onClick={() => navigate('/prof/space')}
+                      className="border text-sm py-2 px-4"
+                      style={{
+                        borderColor: isDarkMode ? "#4a5568" : "black",
+                        color: isDarkMode ? "white" : "black",
+                      }}
+                    >
+                      Join Space
                     </Button>
                   </div>
                 </div>
@@ -281,7 +346,7 @@ const ProfHomePage = () => {
                               className="cursor-pointer"
                             >
                               <SpaceCover
-                                image={space.image}
+                                image={spaceCoverPhotos[space.space_uuid] || space.image}
                                 name={space.space_name}
                                 className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
                               />
@@ -393,7 +458,7 @@ const ProfHomePage = () => {
                               className="cursor-pointer"
                             >
                               <SpaceCover
-                                image={space.background_img || space.image}
+                                image={spaceCoverPhotos[space.space_uuid] || space.background_img || space.image}
                                 name={space.space_name}
                                 className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
                               />

@@ -286,6 +286,8 @@ const ProfStreamPage = () => {
   useEffect(() => {
     if (coverPhotoUrl && !showCoverPhotoEditor) {
       localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
+      // Dispatch custom event to notify HomePage
+      window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
     }
   }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
 
@@ -407,6 +409,9 @@ const ProfStreamPage = () => {
       
       // Save to localStorage
       localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
+      
+      // Dispatch custom event to notify ProfStreamPage
+      window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
       
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
