@@ -34,17 +34,22 @@ const ViewFilePage = () => {
 
   /* ================= GET ROUTE PARAMS ================= */
 
-  const { file_uuid, file_name } = useParams();
-  console.log("Route params:", { file_uuid, file_name });
+  const { file_name, file_uuid, orig_file_name, file_id } = useParams();
+  
+  // Use appropriate parameters based on which route is being used
+  const fileName = file_name || orig_file_name;
+  const fileUuid = file_uuid || file_id;
+  
+  console.log("Route params:", { file_uuid, file_name, orig_file_name, file_id, fileName, fileUuid });
   
   const { resources } = useFile();
 
-  const decodedFileName = decodeURIComponent(file_name || "");
+  const decodedFileName = decodeURIComponent(fileName || "");
 
   // Find the file from resources using useMemo to prevent recalculations
   const file = React.useMemo(() => {
-    return resources?.find(resource => resource.file_id === parseInt(file_uuid));
-  }, [resources, file_uuid]);
+    return resources?.find(resource => resource.file_id === parseInt(fileUuid));
+  }, [resources, fileUuid]);
 
   const formatFileTitle = (file_name) => {
     if (!file_name) return "";
@@ -61,7 +66,7 @@ const ViewFilePage = () => {
 
   /* ================= STATES ================= */
 
-  const [title, setTitle] = useState(formatFileTitle(file_name) || "Untitled File");
+  const [title, setTitle] = useState(formatFileTitle(fileName) || "Untitled File");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   const [content, setContent] = useState("");
@@ -251,7 +256,7 @@ const ViewFilePage = () => {
                 {isEditingTitle ? (
                   <div className="flex flex-col gap-2 w-full lg:w-auto">
                     <input
-                      value={formatFileTitle(file_name)}
+                      value={formatFileTitle(fileName)}
                       onChange={(e) => setTitle(e.target.value)}
                       className="px-3 py-2 rounded w-full"
                       style={{
@@ -414,3 +419,4 @@ const ViewFilePage = () => {
 };
 
 export default ViewFilePage;
+

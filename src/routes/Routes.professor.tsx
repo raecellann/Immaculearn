@@ -108,6 +108,19 @@ export const ProfRoutes = () => {
         }
       />
 
+      <Route
+        path="/files/:space_name/:space_uuid/:orig_file_name/:file_id"
+        element={
+          <SpaceProvider>
+            <FileProvider>
+              <ViewFilePage />
+            </FileProvider>
+          </SpaceProvider>
+        }
+      />
+
+
+
       <Route path="calendar" element={<ProfCalendarPage />} />
 
       <Route path="grade-viewing" element={<ProfGradeRecordPage />} />
