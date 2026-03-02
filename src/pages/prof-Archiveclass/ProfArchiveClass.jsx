@@ -99,7 +99,7 @@ const ProfArchiveClass = () => {
     // console.log("Archive space:", space_uuid);
     try {
       await setArchive(space_uuid);
-      toast.success("Successfully Archive ");
+      toast.success("Successfully Restore ");
     } catch (err) {
       toast.error("Error for Archiving Course Space");
     }

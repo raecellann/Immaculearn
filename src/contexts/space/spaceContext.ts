@@ -10,6 +10,7 @@ import {
   CourseSpaceCreateData,
   CourseSPace,
   QuestionnaireData,
+  AnswerData,
 } from "../../types/space";
 import { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
@@ -59,6 +60,7 @@ export interface SpaceContextType {
   deleteSpace: (spaceUuid: string) => Promise<any>;
   removeUserFromSpace: (spaceUuid: string, userId: number) => Promise<any>;
   setArchive: (spaceUuid: string) => Promise<any>;
+  submitTaskAnswer: (answerData: AnswerData) => Promise<any>;
 
   // Invitation mutations
   getAllPendingRequest: (spaceUuid: string) => Promise<any>;

@@ -12,6 +12,7 @@ import {
   TaskCreateData,
   CourseSpaceCreateData,
   CourseSPace,
+  AnswerData,
 } from "../../types/space";
 import { useUser } from "../user/useUser";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -326,6 +327,13 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     return result;
   };
 
+  const submitTaskAnswer = async (answerData: AnswerData) => {
+    const result = await spaceService.submitTaskAnswer(answerData);
+    // queryClient.invalidateQueries({ queryKey: ["archivedSpaces"] });
+
+    return result;
+  };
+
   const declineInvitation = async (accountId: number, spaceUuid: string) => {
     const result = await spaceService.declineInvitation(accountId, spaceUuid);
     queryClient.invalidateQueries({ queryKey: ["joinRequestsByLink"] });
@@ -561,6 +569,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     deleteSpace,
     removeUserFromSpace,
     setArchive,
+    submitTaskAnswer,
 
     // Invitation mutations
 

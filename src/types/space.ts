@@ -99,6 +99,7 @@ export interface CourseSPace {
 
 
 export interface Task {
+    has_answered: boolean,
     task_id: number;
     lesson_id?: number;
     space_id?: number;
@@ -152,3 +153,12 @@ export interface Question {
 
 // The "data" array is just: Question[]
 export type QuestionnaireData = Question[];
+
+
+export type AnswerData = {
+  task_id: number;
+  answers: {
+    question_id: number;
+    choice_id: number;
+  }[];
+};

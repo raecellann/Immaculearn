@@ -9,6 +9,7 @@ import {
   CourseSpaceCreateData,
   CourseSPace,
   TaskCreateData,
+  AnswerData,
 } from "../types/space";
 
 class SpaceService {
@@ -536,6 +537,18 @@ class SpaceService {
         prefinals,
         finals
       });
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
+  async submitTaskAnswer(answerData: AnswerData) {
+    try {
+      const response = await api.post(`/tasks/answer`, answerData);
       return response.data;
     } catch (err: any) {
       return {

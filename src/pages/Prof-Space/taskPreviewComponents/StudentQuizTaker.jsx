@@ -10,7 +10,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const { questionnaire, setTaskId } = useSpace();
   console.log(questionnaire);
 
-  const [userAnswers, setUserAnswers] = useState({});
+  const [userAnswers, setUserAnswers] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [quizStarted, setQuizStarted] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
@@ -22,9 +22,13 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
     return questionnaire?.map((questionObj, index) => {
       const question = questionObj;
       return {
-        id: index + 1,
+        // id: index + 1,
+        question_id: question?.question_id,
         question: question?.question,
-        type: determineQuestionType(question?.choices || [], question?.question_type),
+        type: determineQuestionType(
+          question?.choices || [],
+          question?.question_type,
+        ),
         answers: question?.choices || [],
         points: Math.floor(
           (quizData?.total_score || 100) / (quizData?.questions?.length || 1),
@@ -36,7 +40,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const determineQuestionType = (answers, questionType) => {
     // If question_type is explicitly "mcq", treat as multiple-choice
     if (questionType === "mcq") return "multiple-choice";
-    
+
     if (!answers || answers.length === 0) return "short-answer";
     if (
       answers.length === 2 &&
@@ -52,12 +56,36 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
     return "short-answer";
   };
 
-  const handleOptionClick = (questionId, letterIdentifier) => {
-    setUserAnswers((prev) => ({ ...prev, [questionId]: letterIdentifier }));
+  const handleOptionClick = (questionId, choice_id) => {
+    setUserAnswers((prev) => {
+      const existingAnswerIndex = prev.findIndex(answer => answer.question_id === questionId);
+      
+      if (existingAnswerIndex !== -1) {
+        // Update existing answer
+        const updatedAnswers = [...prev];
+        updatedAnswers[existingAnswerIndex] = { question_id: questionId, choice_id: choice_id };
+        return updatedAnswers;
+      } else {
+        // Add new answer
+        return [...prev, { question_id: questionId, choice_id: choice_id }];
+      }
+    });
   };
 
   const handleTextAnswer = (questionId, answer) => {
-    setUserAnswers((prev) => ({ ...prev, [questionId]: answer }));
+    setUserAnswers((prev) => {
+      const existingAnswerIndex = prev.findIndex(ans => ans.question_id === questionId);
+      
+      if (existingAnswerIndex !== -1) {
+        // Update existing answer
+        const updatedAnswers = [...prev];
+        updatedAnswers[existingAnswerIndex] = { question_id: questionId, text_answer: answer };
+        return updatedAnswers;
+      } else {
+        // Add new answer
+        return [...prev, { question_id: questionId, text_answer: answer }];
+      }
+    });
   };
 
   const handleStartQuiz = () => {
@@ -68,7 +96,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const confirmSubmit = () => onSubmit(userAnswers);
 
   const questions = getQuestions();
-  const answeredQuestions = Object.keys(userAnswers).length;
+  const answeredQuestions = userAnswers.length;
   const progress =
     questions.length > 0 ? (answeredQuestions / questions.length) * 100 : 0;
 
@@ -128,14 +156,15 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
         return (
           <div className="space-y-3">
             {question.answers.map((answer, index) => {
-              const selected =
-                userAnswers[question.id] === answer.letter_identifier;
+              const selected = userAnswers.some(
+                userAnswer => userAnswer.question_id === question.question_id && userAnswer.choice_id === answer.choice_id
+              );
               return (
                 <div
                   key={index}
                   className={getOptionClass(selected)}
                   onClick={() =>
-                    handleOptionClick(question.id, answer.letter_identifier)
+                    handleOptionClick(question.question_id, answer.choice_id)
                   }
                 >
                   <div className={getLetterBadgeClass(selected)}>
@@ -163,26 +192,31 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
       case "short-answer":
       default:
-        return (
-          <div
-            className={`rounded-xl border-2 overflow-hidden transition-colors ${isDarkMode ? "border-gray-600" : "border-gray-200"}`}
-          >
-            <textarea
-              placeholder="Type your answer here..."
-              className="w-full p-4 resize-none h-36 text-base outline-none transition-colors"
-              style={{
-                backgroundColor: isDarkMode ? "#1B1F26" : "#ffffff",
-                color: currentColors.text,
-                borderColor: userAnswers[question.id]
-                  ? "#2563eb"
-                  : "transparent",
-                borderWidth: "2px",
-              }}
-              value={userAnswers[question.id] || ""}
-              onChange={(e) => handleTextAnswer(question.id, e.target.value)}
-            />
-          </div>
-        );
+        const userAnswer = userAnswers.find(answer => answer.question_id === question.question_id);
+              const answerValue = userAnswer?.text_answer || "";
+              
+              return (
+                <div
+                  className={`rounded-xl border-2 overflow-hidden transition-colors ${isDarkMode ? "border-gray-600" : "border-gray-200"}`}
+                >
+                  <textarea
+                    placeholder="Type your answer here..."
+                    className="w-full p-4 resize-none h-36 text-base outline-none transition-colors"
+                    style={{
+                      backgroundColor: isDarkMode ? "#1B1F26" : "#ffffff",
+                      color: currentColors.text,
+                      borderColor: answerValue
+                        ? "#2563eb"
+                        : "transparent",
+                      borderWidth: "2px",
+                    }}
+                    value={answerValue}
+                    onChange={(e) =>
+                      handleTextAnswer(question.question_id, e.target.value)
+                    }
+                  />
+                </div>
+              );
     }
   };
 
@@ -431,7 +465,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
             >
               {paginatedQuestions.map((question, index) => (
                 <div
-                  key={question.id}
+                  key={question.question_id}
                   className="p-5 sm:p-7 lg:p-8"
                   style={{
                     borderBottom:
@@ -443,7 +477,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                   <div className="mb-5">
                     <div className="flex flex-wrap items-center gap-2 mb-3">
                       <span className="px-3 py-1 bg-blue-500/15 text-blue-500 rounded-full text-xs font-bold tracking-wide">
-                        Question {question.id}
+                        Question {question.question_id}
                       </span>
                       <span
                         className="px-3 py-1 rounded text-xs font-medium"
@@ -454,7 +488,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                       >
                         {question.points} pts
                       </span>
-                      {userAnswers[question.id] && (
+                      {userAnswers.some(answer => answer.question_id === question.question_id) && (
                         <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded-full text-xs font-bold flex items-center gap-1">
                           <FiCheck size={11} /> Answered
                         </span>

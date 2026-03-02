@@ -1072,9 +1072,12 @@ const ProfTaskPage = () => {
                         }}
                         className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                         style={{
-                          backgroundColor: "#10B981",
+                          backgroundColor: task.has_answered
+                            ? "black"
+                            : "#10B981",
                           color: "white",
                         }}
+                        // disabled={task.has_answered ? true : false}
                         onMouseEnter={(e) => {
                           e.target.style.backgroundColor = "#059669";
                         }}
@@ -1212,17 +1215,27 @@ const ProfTaskPage = () => {
                           }}
                           className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                           style={{
-                            backgroundColor: "#10B981",
+                            backgroundColor: task.has_answered
+                              ? "gray"
+                              : "#10B981",
                             color: "white",
+                            cursor: task.has_answered
+                              ? "not-allowed"
+                              : "pointer",
                           }}
+                          disabled={task.has_answered ? true : false}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = "#059669";
+                            if (!task.has_answered) {
+                              e.target.style.backgroundColor = "#059669";
+                            }
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = "#10B981";
+                            if (!task.has_answered) {
+                              e.target.style.backgroundColor = "#10B981";
+                            }
                           }}
                         >
-                          Take Quiz
+                          {task.has_answered ? "Completed" : "Take Quiz"}
                         </button>
                       ) : (
                         <a
@@ -1290,7 +1303,18 @@ const ProfTaskPage = () => {
   };
 
   const handleQuizSubmit = (answers) => {
-    console.log("Quiz submitted with answers:", answers);
+    // Filter only choice-based answers (exclude text answers for now)
+    const choiceAnswers = answers.filter((answer) => answer.choice_id);
+
+    const submissionData = {
+      task_id: studentQuizTask.task_id || studentQuizTask.rawData?.task_id,
+      answers: choiceAnswers.map((answer) => ({
+        question_id: answer.question_id,
+        choice_id: answer.choice_id,
+      })),
+    };
+
+    console.log("Quiz submitted with formatted data:", submissionData);
     alert("Quiz submitted successfully!");
     handleCloseStudentQuiz();
   };
