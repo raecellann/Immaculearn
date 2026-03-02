@@ -165,7 +165,7 @@ const ProfStreamPage = () => {
     if (!currentSpace) return;
 
     // Show delete confirmation dialog
-    setDialogMessage(currentSpace.space_name);
+    setDialogMessage(currentSpace);
     setShowDeleteDialog(true);
   };
 
@@ -1442,7 +1442,14 @@ const ProfStreamPage = () => {
         isOpen={showDeleteDialog}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        itemName={dialogMessage}
+        space={
+          currentSpace || {
+            space_name: "Unknown Space",
+            members: [],
+            files: [],
+            tasks: [],
+          }
+        }
       />
 
       {/* COVER PHOTO EDITOR MODAL */}
