@@ -4,7 +4,7 @@ import UserPage from "../pages/UserSpace/zj-space.jsx";
 import UserTaskPage from "../pages/UserSpace/UserTaskPage.jsx";
 import UserFilesShared from "../pages/UserSpace/UserFilesShared.jsx";
 import UserPeoplePage from "../pages/UserSpace/UserPeoplePage.jsx";
-import AdminTaskPage from "../pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
+// import AdminTaskPage from "../pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
 import FormBuilderPage from "../pages/UserSpace/AdminSpacePages/FormBuilderPage.jsx";
 import SpacePage from "../pages/Space/SpacePage.jsx";
 import CreateSpaceAdmin from "../pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
@@ -45,11 +45,11 @@ export const SpaceRoutes = [
     path: "/space/:space_uuid/:space_name/tasks",
     element: <UserTaskPage />,
   },
-  {
-    key: "/admin-tasks",
-    path: "/space/:space_uuid/:space_name/admin-tasks",
-    element: <AdminTaskPage />,
-  },
+  // {
+  //   key: "/admin-tasks",
+  //   path: "/space/:space_uuid/:space_name/admin-tasks",
+  //   element: <AdminTaskPage />,
+  // },
   {
     key: "/essay-form",
     path: "/space/:space_uuid/:space_name/essay-form",

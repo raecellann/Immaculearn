@@ -11,6 +11,7 @@ import MainButton from "../component/Button.jsx";
 import Logout from "../component/logout";
 import AddMember from "../component/AddMember";
 import { DeleteConfirmationDialog } from "../component/SweetAlert";
+import StudentGroupActivityBuilder from "./studentaskcomponents/StudentGroupActivityBuilder";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -76,6 +77,7 @@ const AdminTaskPage = () => {
 
   // Task management
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [showGroupActivityBuilder, setShowGroupActivityBuilder] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -679,6 +681,25 @@ const AdminTaskPage = () => {
     navigate("/spaces");
   };
 
+  // StudentGroupActivityBuilder handlers
+  const handleBackFromGroupActivity = () => {
+    setShowGroupActivityBuilder(false);
+  };
+
+  const handleSaveGroupActivity = (activityData) => {
+    console.log('Saving group activity:', activityData);
+    // TODO: Implement save functionality
+    setShowGroupActivityBuilder(false);
+    toast.success('Group activity saved as draft');
+  };
+
+  const handlePublishGroupActivity = (activityData) => {
+    console.log('Publishing group activity:', activityData);
+    // TODO: Implement publish functionality
+    setShowGroupActivityBuilder(false);
+    toast.success('Group activity published successfully');
+  };
+
   useEffect(() => {
       const stored = localStorage.getItem("saved-form")
   
@@ -824,15 +845,14 @@ const AdminTaskPage = () => {
           </div>
           <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
             <div className="flex justify-center min-w-max mx-auto px-4">
-              <div className="flex justify-center space-x-6 sm:space-x-8 md:space-x-12">
+              <div className="flex justify-center space-x-12">
                 <button
                   onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}
-                  className="px-3 py-2 text-sm sm:text-base hover:opacity-80 transition-opacity"
                 >
                   Stream
                 </button>
                 <button 
-                  className="px-3 py-2 text-sm sm:text-base font-semibold border-b-2 pb-2 hover:opacity-80 transition-opacity" 
+                  className="font-semibold border-b-2 pb-2 hover:opacity-80 transition-opacity" 
                   style={{ borderColor: currentColors.text }}
                 >
                   Tasks
@@ -841,7 +861,7 @@ const AdminTaskPage = () => {
                   onClick={() =>
                     navigate(`/space/${space_uuid}/${space_name}/files`)
                   }
-                  className="px-3 py-2 text-sm sm:text-base hover:opacity-80 transition-opacity"
+                  className="hover:opacity-80 transition-opacity"
                 >
                   Files
                 </button>
@@ -849,7 +869,7 @@ const AdminTaskPage = () => {
                   onClick={() =>
                     navigate(`/space/${space_uuid}/${space_name}/people`)
                   }
-                  className="px-3 py-2 text-sm sm:text-base hover:opacity-80 transition-opacity"
+                  className="hover:opacity-80 transition-opacity"
                 >
                   People
                 </button>
@@ -857,38 +877,45 @@ const AdminTaskPage = () => {
             </div>
           </div>
 
-          {/* Mobile Add Member Button */}
+          {/* MAIN CONTENT AREA - SWITCH BETWEEN TASK LIST AND GROUP ACTIVITY BUILDER */}
+          {/* Mobile Add Member Button - Always visible */}
           {isOwnerSpace && (
-            <div className="md:hidden flex flex-col sm:flex-row sm:justify-end gap-2 mb-6 px-2 sm:px-0">
-              <div onClick={handleInviteMember} className="w-full sm:w-auto">
-                <Button text="Add Member" />
-              </div>
-              <div onClick={handlePendingInvites} className="w-full sm:w-auto">
-                <Button text="Pending Invites" />
-              </div>
-              <div onClick={handleDeleteRoom} className="w-full sm:w-auto">
-                <Button text="Delete Room" />
-              </div>
+            <div className="md:hidden flex justify-end gap-2 mb-6">
+              <Button onClick={handleInviteMember} text="Add Member" />
+              <Button onClick={handlePendingInvites} text="Pending Invites" />
+              <Button onClick={handleDeleteRoom} text="Delete Room" />
             </div>
           )}
 
-          {/* TASKS LIST VIEW */}
-            <div className="max-w-5xl mx-auto">
-              {isOwnerSpace && (
-                <div className="flex justify-end mb-6">
-                  {/* Create Task Button */}
-                  <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start"
-                  >
-                    <FiFileText size={16} />
-                    Create Task
-                  </button>
-                </div>
-              )}
+          <div className="max-w-5xl mx-auto">
+            {showGroupActivityBuilder ? (
+              /* STUDENT GROUP ACTIVITY BUILDER */
+              <StudentGroupActivityBuilder
+                currentColors={currentColors}
+                onBack={handleBackFromGroupActivity}
+                onSave={handleSaveGroupActivity}
+                onPublish={handlePublishGroupActivity}
+                isLoading={false}
+              />
+            ) : (
+              /* TASKS LIST VIEW */
+              <>
+                {isOwnerSpace && (
+                  <div className="flex justify-end mb-6">
+                    {/* Create Task Button */}
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 w-auto justify-center sm:justify-start"
+                      onClick={() => setShowGroupActivityBuilder(true)}
+                    >
+                      <FiFileText size={16} />
+                      Create Task
+                    </button>
+                  </div>
+                )}
 
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold">Assigned Tasks</h2>
-              </div>
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold">Assigned Tasks</h2>
+                </div>
 
               {/* Desktop/Tablet Table */}
               <div className="hidden sm:block overflow-x-auto">
@@ -1186,9 +1213,9 @@ const AdminTaskPage = () => {
                   ))}
                 </div>
               </div>
-            </div>
-        </div>
-      </div>
+              </>
+            )}
+          </div>
 
       {/* INVITE POPUP */}
       <AddMember
@@ -1344,6 +1371,9 @@ const AdminTaskPage = () => {
           </div>
         </div>
       )}
+
+      </div>
+      </div>
     </div>
   );
 };
