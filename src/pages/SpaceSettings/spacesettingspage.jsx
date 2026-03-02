@@ -219,11 +219,16 @@ const SpaceSettingsPage = () => {
                     You haven't created or joined any spaces yet. Create your first space to get started!
                   </p>
                   <button
-                  onClick={() => navigate('/prof/space/create')}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    onClick={() =>
+                      user?.role === "professor"
+                        ? navigate("/prof/space/create")
+                        : navigate("/space/create")
+                    }
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                   >
                     Create Space
                   </button>
+
                 </div>
               </div>
             )}
