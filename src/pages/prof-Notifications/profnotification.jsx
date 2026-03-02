@@ -773,23 +773,25 @@ const ProfNotificationPage = () => {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div
             className="rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col"
-            style={{ 
-              backgroundColor: isDarkMode
-                ? "rgba(45, 55, 72, 0.5)"
-                : currentColors.surface,
-              backdropFilter: isDarkMode ? "blur(10px)" : "none",
-            }}
+            style={{ backgroundColor: currentColors.surface }}
           >
             <div
-              className="p-4 border-b"
+              className="p-4 border-b flex justify-between items-center"
               style={{ borderColor: currentColors.border }}
             >
               <h2
                 className="text-lg font-semibold"
-                style={{ color: isDarkMode ? "white" : "black" }}
+                style={{ color: currentColors.text }}
               >
                 {selectedAnnouncement.title}
               </h2>
+              <button
+                onClick={() => setSelectedAnnouncement(null)}
+                className="text-2xl hover:opacity-80"
+                style={{ color: currentColors.textSecondary }}
+              >
+                ×
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
@@ -806,7 +808,7 @@ const ProfNotificationPage = () => {
                   </span>
                   <p
                     className="text-sm"
-                    style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                    style={{ color: currentColors.textSecondary }}
                   >
                     {selectedAnnouncement.date}
                   </p>
@@ -815,35 +817,18 @@ const ProfNotificationPage = () => {
                 <div
                   className="p-4 rounded-lg border"
                   style={{
-                    backgroundColor: isDarkMode
-                      ? "rgba(31, 41, 55, 0.5)"
-                      : currentColors.surface,
-                    backdropFilter: isDarkMode ? "blur(10px)" : "none",
-                    borderColor: isDarkMode
-                      ? "rgb(55 65 81 / var(--tw-border-opacity, 1))"
-                      : "black",
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.border,
                   }}
                 >
                   <p
                     className="text-base leading-relaxed"
-                    style={{ color: isDarkMode ? "white" : "black" }}
+                    style={{ color: currentColors.text }}
                   >
                     {selectedAnnouncement.message}
                   </p>
                 </div>
               </div>
-            </div>
-
-            <div
-              className="p-4 border-t flex justify-end"
-              style={{ borderColor: currentColors.border }}
-            >
-              <button
-                onClick={() => setSelectedAnnouncement(null)}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-colors"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>

@@ -21,7 +21,7 @@ import { getGreeting } from "../../utils/greetings";
 import { SpaceCover } from "../component/spaceCover";
 import Logout from "../component/logout";
 import ArticlesScrape from "../component/articles_scrape";
-import AnnouncementByAdmin from "./components/announcementbyadmin";
+import AnnouncementByAdmin from "./components/profannouncementbyadmin";
 import { DeleteConfirmationDialog } from "../component/SweetAlert";
 
 const ProfHomePage = () => {

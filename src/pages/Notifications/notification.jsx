@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useLocation } from "react-router";
 import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
 import { FiUsers, FiBell, FiFilter } from "react-icons/fi";
@@ -12,6 +13,7 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 
 const NotificationPage = () => {
+  const location = useLocation();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -19,7 +21,7 @@ const NotificationPage = () => {
   const [ShowPendingSpaceInvitation, setShowPendingSpaceInvitation] =
     useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedFilter, setSelectedFilter] = useState(location.state?.filter || "all");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
 
   const { user, isLoading: userLoading } = useUser();
@@ -819,7 +821,7 @@ const NotificationPage = () => {
             style={{ backgroundColor: currentColors.surface }}
           >
             <div
-              className="p-4 border-b"
+              className="p-4 border-b flex justify-between items-center"
               style={{ borderColor: currentColors.border }}
             >
               <h2
@@ -828,6 +830,13 @@ const NotificationPage = () => {
               >
                 {selectedAnnouncement.title}
               </h2>
+              <button
+                onClick={() => setSelectedAnnouncement(null)}
+                className="text-2xl hover:opacity-80"
+                style={{ color: currentColors.textSecondary }}
+              >
+                ×
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
@@ -867,18 +876,6 @@ const NotificationPage = () => {
                   </p>
                 </div>
               </div>
-            </div>
-
-            <div
-              className="p-4 border-t flex justify-end"
-              style={{ borderColor: currentColors.border }}
-            >
-              <button
-                onClick={() => setSelectedAnnouncement(null)}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-colors"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>

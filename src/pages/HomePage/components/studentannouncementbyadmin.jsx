@@ -7,22 +7,22 @@ import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 const MOCK_ANNOUNCEMENTS = [
   {
     id: 1,
-    title: "System Maintenance Scheduled",
-    message: "The platform will undergo maintenance on Saturday, March 8 from 12:00 AM to 3:00 AM. Please save your work beforehand.",
+    title: "School Holiday Notice",
+    message: "School will be closed on Monday for maintenance.",
     date: "March 2, 2026",
     priority: "high",
   },
   {
     id: 2,
-    title: "New Feature: Collaborative Docs",
-    message: "We've launched real-time collaborative documents inside your spaces. Try it out from your space settings!",
+    title: "Exam Schedule Released",
+    message: "Final exam schedule has been posted. Check your student portal.",
     date: "February 28, 2026",
     priority: "normal",
   },
   {
     id: 3,
-    title: "Reminder: Grade Submission Deadline",
-    message: "Please submit all grades for the current semester no later than March 15, 2026.",
+    title: "New Library Hours",
+    message: "Library will now be open until 9 PM on weekdays for extended study hours.",
     date: "February 25, 2026",
     priority: "normal",
   },
@@ -43,7 +43,7 @@ const priorityStyles = {
   },
 };
 
-const AnnouncementByAdmin = () => {
+const StudentAnnouncementByAdmin = () => {
   const navigate = useNavigate();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
@@ -158,7 +158,7 @@ const AnnouncementByAdmin = () => {
       {/* View All button */}
       <div className="flex justify-end mt-4">
         <button
-          onClick={() => navigate("/prof/notification", { state: { filter: "announcements" } })}
+          onClick={() => navigate("/notifications", { state: { filter: "announcements" } })}
           className="text-sm font-medium hover:underline transition-colors"
           style={{ color: isDarkMode ? "#60A5FA" : "#007AFF" }}
         >
@@ -171,12 +171,7 @@ const AnnouncementByAdmin = () => {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div
             className="rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col"
-            style={{ 
-              backgroundColor: isDarkMode
-                ? "rgba(45, 55, 72, 0.5)"
-                : currentColors.surface,
-              backdropFilter: isDarkMode ? "blur(10px)" : "none",
-            }}
+            style={{ backgroundColor: currentColors.surface }}
           >
             <div
               className="p-4 border-b flex justify-between items-center"
@@ -184,16 +179,14 @@ const AnnouncementByAdmin = () => {
             >
               <h2
                 className="text-lg font-semibold"
-                style={{ color: isDarkMode ? "white" : "black" }}
+                style={{ color: currentColors.text }}
               >
                 {selectedAnnouncement.title}
               </h2>
               <button
                 onClick={() => setSelectedAnnouncement(null)}
-                className="text-2xl"
-                style={{
-                  color: isDarkMode ? currentColors.textSecondary : "black",
-                }}
+                className="text-2xl hover:opacity-80"
+                style={{ color: currentColors.textSecondary }}
               >
                 ×
               </button>
@@ -213,7 +206,7 @@ const AnnouncementByAdmin = () => {
                   </span>
                   <p
                     className="text-sm"
-                    style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                    style={{ color: currentColors.textSecondary }}
                   >
                     {selectedAnnouncement.date}
                   </p>
@@ -233,24 +226,12 @@ const AnnouncementByAdmin = () => {
                 >
                   <p
                     className="text-base leading-relaxed"
-                    style={{ color: isDarkMode ? "white" : "black" }}
+                    style={{ color: currentColors.text }}
                   >
                     {selectedAnnouncement.message}
                   </p>
                 </div>
               </div>
-            </div>
-
-            <div
-              className="p-4 border-t flex justify-end"
-              style={{ borderColor: currentColors.border }}
-            >
-              <button
-                onClick={() => setSelectedAnnouncement(null)}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-colors"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
@@ -259,4 +240,4 @@ const AnnouncementByAdmin = () => {
   );
 };
 
-export default AnnouncementByAdmin;
+export default StudentAnnouncementByAdmin;

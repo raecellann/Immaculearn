@@ -19,6 +19,7 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { SpaceCover } from "../component/spaceCover";
 import ArticlesScrape from "../component/articles_scrape";
 import { DeleteConfirmationDialog } from "../component/SweetAlert";
+import StudentAnnouncementByAdmin from "./components/studentannouncementbyadmin";
 
 const HomePage1 = () => {
   const { user } = useUser();
@@ -433,6 +434,11 @@ const HomePage1 = () => {
               </div>
             </div>
 
+            {/* Announcements by Admin (Mobile/Tablet only) */}
+            <div className="xl:hidden mb-8">
+              <StudentAnnouncementByAdmin />
+            </div>
+
             {/* Your Spaces */}
             <section className="mb-12">
               <div className="flex justify-between items-center mb-4">
@@ -819,6 +825,7 @@ const HomePage1 = () => {
 
           {/* RIGHT SIDEBAR – visible on xl+ */}
           <div className="hidden xl:block w-80 mr-6 flex-shrink-0 self-start sticky top-6 flex flex-col gap-6">
+            {/* Reminders */}
             <div
               className="rounded-xl p-6 flex-1"
               style={{
@@ -850,6 +857,9 @@ const HomePage1 = () => {
                 </div>
               </div>
             </div>
+
+            {/* Announcements by Admin */}
+            <StudentAnnouncementByAdmin />
           </div>
         </div>
 
