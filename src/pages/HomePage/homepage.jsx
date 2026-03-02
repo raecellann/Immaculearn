@@ -46,6 +46,55 @@ const HomePage1 = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
 
+  // Cover photos state
+  const [spaceCoverPhotos, setSpaceCoverPhotos] = useState({});
+
+  // Load cover photos from localStorage for all spaces
+  useEffect(() => {
+    const loadCoverPhotos = () => {
+      const allSpaces = [
+        ...(userSpaces || []),
+        ...(friendSpaces || []),
+        ...(courseSpaces || []),
+      ];
+
+      const coverPhotos = {};
+      allSpaces.forEach((space) => {
+        if (space.space_uuid) {
+          const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space.space_uuid}`);
+          if (savedCoverPhoto) {
+            coverPhotos[space.space_uuid] = savedCoverPhoto;
+          }
+        }
+      });
+
+      setSpaceCoverPhotos(coverPhotos);
+    };
+
+    loadCoverPhotos();
+
+    // Listen for storage changes to update cover photos in real-time
+    const handleStorageChange = (e) => {
+      if (e.key && e.key.startsWith("coverPhoto_")) {
+        loadCoverPhotos();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Also listen for custom events for same-tab updates
+    const handleCoverPhotoUpdate = () => {
+      loadCoverPhotos();
+    };
+
+    window.addEventListener("coverPhotoUpdated", handleCoverPhotoUpdate);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("coverPhotoUpdated", handleCoverPhotoUpdate);
+    };
+  }, [userSpaces, friendSpaces, courseSpaces]);
+
   // Mobile sidebar & logout
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -255,8 +304,11 @@ const HomePage1 = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
-                      className="bg-[#007AFF] hover:bg-blue-700 text-sm py-2 px-4"
-                      style={{ color: "white" }}
+                      className="border bg-[#007AFF] hover:bg-blue-700 text-sm py-2 px-4"
+                      style={{
+                        borderColor: isDarkMode ? "#4a5568" : "black",
+                        color: isDarkMode ? "white" : "black",
+                      }}
                       onClick={() => navigate("/space/create")}
                     >
                       Create Space
@@ -265,7 +317,7 @@ const HomePage1 = () => {
                       className="border text-sm py-2 px-4"
                       style={{
                         borderColor: isDarkMode ? "#4a5568" : "black",
-                        color: isDarkMode ? "black" : "white",
+                        color: isDarkMode ? "white" : "black",
                       }}
                       onClick={() => navigate("/space")}
                     >
@@ -380,7 +432,7 @@ const HomePage1 = () => {
                               className="cursor-pointer"
                             >
                               <SpaceCover
-                                image={space.image}
+                                image={spaceCoverPhotos[space.space_uuid] || space.image}
                                 name={space.space_name}
                                 className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
                               />
@@ -388,6 +440,9 @@ const HomePage1 = () => {
                                 <h3 className="font-medium truncate">
                                   {capitalizeWords(space.space_name)}'s Space
                                 </h3>
+                                <p className="text-gray-400 text-xs mt-1">
+                                  {space.members?.length || 0} Members
+                                </p>
                                 <p className="text-gray-500 text-xs mt-1">
                                   Last active • just now
                                 </p>
@@ -501,7 +556,7 @@ const HomePage1 = () => {
                               className="cursor-pointer"
                             >
                               <SpaceCover
-                                image={course.image}
+                                image={spaceCoverPhotos[course.space_uuid] || course.image}
                                 name={course.space_name}
                                 className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
                               />
@@ -633,7 +688,7 @@ const HomePage1 = () => {
                               className="cursor-pointer"
                             >
                               <SpaceCover
-                                image={space.background_img || space.image}
+                                image={spaceCoverPhotos[space.space_uuid] || space.background_img || space.image}
                                 name={space.space_name}
                                 className="w-full flex-shrink-0 aspect-[3/2] object-cover group-hover:brightness-75 transition duration-300"
                               />
