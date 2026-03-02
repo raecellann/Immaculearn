@@ -295,7 +295,7 @@ const QuizPreview = ({ taskData, currentColors }) => {
               setHoveredOption(null);
             }}
           >
-            Reset Answers
+            Edit Quiz          
           </button>
         </div>
       </div>
