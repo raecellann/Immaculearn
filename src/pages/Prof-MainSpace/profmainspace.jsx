@@ -32,6 +32,7 @@ const ProfSpacePage = () => {
   const [showLogout, setShowLogout] = useState(false);
   const [hoveredSpace, setHoveredSpace] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [spaceCoverPhotos, setSpaceCoverPhotos] = useState({});
 
   // Memoized space descriptions for better performance
   const spaceDescriptions = useMemo(() => {
@@ -99,6 +100,30 @@ const ProfSpacePage = () => {
   const getSpaceDescription = (spaceUuid, spaceName) => {
     return spaceDescriptions[spaceUuid] || "A collaborative workspace for learning and sharing knowledge.";
   };
+
+  // Load cover photos from localStorage
+  useEffect(() => {
+    const loadCoverPhotos = () => {
+      const allSpaces = [...(userSpaces || []), ...(courseSpaces || [])];
+      const coverPhotos = {};
+      allSpaces.forEach((space) => {
+        if (space.space_uuid) {
+          const saved = localStorage.getItem(`coverPhoto_${space.space_uuid}`);
+          if (saved) coverPhotos[space.space_uuid] = saved;
+        }
+      });
+      setSpaceCoverPhotos(coverPhotos);
+    };
+    loadCoverPhotos();
+    const handleStorage = (e) => e.key?.startsWith("coverPhoto_") && loadCoverPhotos();
+    const handleUpdate = () => loadCoverPhotos();
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("coverPhotoUpdated", handleUpdate);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("coverPhotoUpdated", handleUpdate);
+    };
+  }, [userSpaces, courseSpaces]);
 
   // Handle mouse move for tooltip positioning
   useEffect(() => {
@@ -271,7 +296,7 @@ const ProfSpacePage = () => {
                     >
                       <div className="relative h-40 bg-gray-800 overflow-hidden">
                         <SpaceCover
-                          image={space.space_cover}
+                          image={spaceCoverPhotos[space.space_uuid] || space.space_cover}
                           name={space.space_name}
                           className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                         />
@@ -377,6 +402,10 @@ const ProfSpacePage = () => {
                     <div
                       key={id}
                       className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
+                      style={{
+                        backgroundColor: isDarkMode ? '#1E242E' : currentColors.surface,
+                        border: isDarkMode ? '1px solid #3B4457' : '1px solid black'
+                      }}
                     >
                       <div
                         onClick={() =>
@@ -389,7 +418,7 @@ const ProfSpacePage = () => {
                       >
                         <div className="relative h-40 bg-gray-800 overflow-hidden">
                           <SpaceCover
-                            image={space.space_cover}
+                            image={spaceCoverPhotos[space.space_uuid] || space.space_cover}
                             name={space.space_name}
                             className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                           />

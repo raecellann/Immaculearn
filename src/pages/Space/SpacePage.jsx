@@ -31,6 +31,9 @@ const SpacePage = () => {
   const [hoveredSpace, setHoveredSpace] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+  // Cover photos state
+  const [spaceCoverPhotos, setSpaceCoverPhotos] = useState({});
+
   const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -102,6 +105,52 @@ const SpacePage = () => {
   const getSpaceDescription = (spaceUuid, spaceName) => {
     return spaceDescriptions[spaceUuid] || "A collaborative workspace for learning and sharing knowledge.";
   };
+
+  // Load cover photos from localStorage for all spaces
+  useEffect(() => {
+    const loadCoverPhotos = () => {
+      const allSpaces = [
+        ...(userSpaces || []),
+        ...(friendSpaces || []),
+        ...(courseSpaces || []),
+      ];
+
+      const coverPhotos = {};
+      allSpaces.forEach((space) => {
+        if (space.space_uuid) {
+          const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space.space_uuid}`);
+          if (savedCoverPhoto) {
+            coverPhotos[space.space_uuid] = savedCoverPhoto;
+          }
+        }
+      });
+
+      setSpaceCoverPhotos(coverPhotos);
+    };
+
+    loadCoverPhotos();
+
+    // Listen for storage changes to update cover photos in real-time
+    const handleStorageChange = (e) => {
+      if (e.key && e.key.startsWith("coverPhoto_")) {
+        loadCoverPhotos();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Also listen for custom events for same-tab updates
+    const handleCoverPhotoUpdate = () => {
+      loadCoverPhotos();
+    };
+
+    window.addEventListener("coverPhotoUpdated", handleCoverPhotoUpdate);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("coverPhotoUpdated", handleCoverPhotoUpdate);
+    };
+  }, [userSpaces, friendSpaces, courseSpaces]);
 
   // Mobile sidebar
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -400,7 +449,7 @@ const SpacePage = () => {
                         }}
                       >
                         <SpaceCover
-                          image={space.image}
+                          image={spaceCoverPhotos[space.space_uuid] || space.image}
                           name={space.space_name}
                           className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                         />
@@ -512,7 +561,7 @@ const SpacePage = () => {
                         }}
                       >
                         <SpaceCover
-                          image={course.background_img || course.image}
+                          image={spaceCoverPhotos[course.space_uuid] || course.background_img || course.image}
                           name={course.space_name}
                           className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                         />
@@ -643,7 +692,7 @@ const SpacePage = () => {
                         }}
                       >
                         <SpaceCover
-                          image={space.image}
+                          image={spaceCoverPhotos[space.space_uuid] || space.image}
                           name={space.space_name}
                           className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                         />
