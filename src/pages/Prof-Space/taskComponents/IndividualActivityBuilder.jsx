@@ -14,6 +14,12 @@ const IndividualActivityBuilder = ({
   const [instruction, setInstruction] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [selectedLesson, setSelectedLesson] = useState('');
+
+  const getLocalDateTimeMin = () => {
+    const now = new Date();
+    const tzOffsetMs = now.getTimezoneOffset() * 60000;
+    return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 16);
+  };
   
   const [questions, setQuestions] = useState([
     {
@@ -58,7 +64,7 @@ const IndividualActivityBuilder = ({
   const handleSave = (status) => {
     // Format questions for individual activity
     const formattedQuestions = questions.map((question) => ({
-      question_type: 'essay',
+      question_type: 'individual-activity',
       question: question.question,
       point: question.points || 1,
       choices: [
@@ -188,7 +194,7 @@ const IndividualActivityBuilder = ({
                 Due Date: <span className="text-red-500">*</span>
               </label>
               <input
-                type="date"
+                type="datetime-local"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 className="w-full rounded-lg px-4 py-2 outline-none border"
@@ -197,7 +203,7 @@ const IndividualActivityBuilder = ({
                   color: currentColors.text,
                   borderColor: currentColors.border,
                 }}
-                min={new Date().toISOString().split('T')[0]}
+                min={getLocalDateTimeMin()}
               />
             </div>
 
