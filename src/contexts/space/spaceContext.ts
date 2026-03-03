@@ -11,6 +11,7 @@ import {
   CourseSPace,
   QuestionnaireData,
   AnswerData,
+  StudentData,
 } from "../../types/space";
 import { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
@@ -97,6 +98,19 @@ export interface SpaceContextType {
     { taskId: number; newStatus: string },
     unknown
   >;
+
+  updateStudentGrades: UseMutationResult<
+    any,
+    Error,
+    { student_id: number;
+      space_uuid: string;
+      prelim: number;
+      midterm: number;
+      prefinals: number; },
+    unknown
+  >;
+
+  student_remarks: StudentData[];
 }
 
 export const SpaceContext = createContext<SpaceContextType | undefined>(

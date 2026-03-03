@@ -540,7 +540,6 @@ class SpaceService {
     prelim: number | null,
     midterm: number | null,
     prefinals: number | null,
-    finals: number | null,
   ) {
     try {
       const response = await api.post(`/spaces/remarks`, {
@@ -549,8 +548,21 @@ class SpaceService {
         prelim,
         midterm,
         prefinals,
-        finals
       });
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
+  async getStudentRemarks(
+    space_uuid: string
+  ) {
+    try {
+      const response = await api.get(`/spaces/remarks/${space_uuid}`);
       return response.data;
     } catch (err: any) {
       return {

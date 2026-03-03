@@ -439,6 +439,46 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       queryClient.invalidateQueries({ queryKey: ["draftedTasks"] });
     },
   });
+  const updateStudentGrades = useMutation({
+    mutationFn: ({
+      student_id,
+      space_uuid,
+      prelim,
+      midterm,
+      prefinals,
+    }: {
+      student_id: number;
+      space_uuid: string;
+      prelim: number;
+      midterm: number;
+      prefinals: number;
+    }) =>
+      spaceService.updateGrade(
+        student_id,
+        space_uuid,
+        prelim,
+        midterm,
+        prefinals,
+      ),
+    onSuccess: (_, variables) => {
+      // Invalidate both tasks queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ["remarks"] });
+    },
+  });
+
+  const { data: student_remarks = [], isLoading: remarksLoading } = useQuery({
+    queryKey: ["remarks", currentSpace?.space_uuid],
+    queryFn: async () => {
+      const res = await spaceService.getStudentRemarks(
+        currentSpace?.space_uuid || "",
+      );
+      return res.data || [];
+    },
+    enabled: isAuthenticated,
+    staleTime: Infinity, // never becomes stale automatically
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
   const { data: questionnaire = [], isLoading: questionnaireLoading } =
     useQuery({
@@ -555,6 +595,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     setCurrentSpace,
     setTaskId,
     questionnaire,
+
+    student_remarks,
+    updateStudentGrades,
 
     // Server data
     userSpaces,

@@ -162,3 +162,11 @@ export type AnswerData = {
     choice_id: number;
   }[];
 };
+
+
+export type StudentData = {
+    fullname: string,
+    prelim: number,
+    midterm: number,
+    prefinals: number,
+}
