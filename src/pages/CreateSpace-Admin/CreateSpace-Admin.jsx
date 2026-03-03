@@ -118,9 +118,10 @@ const CreateSpaceAdmin = () => {
   };
 
   const handleSpaceNameChange = (e) => {
-    setSpaceName(e.target.value);
+    const value = e.target.value.slice(0, 50);
+    setSpaceName(value);
     // Clear space name error when user starts typing
-    if (e.target.value.trim()) {
+    if (value.trim()) {
       setSpaceNameError(false);
     }
   };
@@ -593,6 +594,7 @@ const CreateSpaceAdmin = () => {
                     placeholder="Enter space name"
                     value={spaceName}
                     onChange={handleSpaceNameChange}
+                    maxLength={50}
                     style={{
                       width: "100%",
                       backgroundColor: "#ffffff",
@@ -608,6 +610,27 @@ const CreateSpaceAdmin = () => {
                       Space name is required
                     </p>
                   )}
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span
+                      className="text-xs lg:text-xs"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Enter a name for your space
+                    </span>
+                    <span
+                      className="text-xs lg:text-xs font-medium"
+                      style={{
+                        color:
+                          spaceName.length >= 50
+                            ? "#ef4444"
+                            : spaceName.length >= 40
+                              ? "#f59e0b"
+                              : currentColors.textSecondary,
+                      }}
+                    >
+                      {spaceName.length}/50 characters
+                    </span>
+                  </div>
                 </div>
               </div>
 
