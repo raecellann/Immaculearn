@@ -3,6 +3,7 @@ import Sidebar from "../component/profsidebar";
 import Logout from "../component/logout";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { toast } from "react-toastify";
 
 const ProfGradeRecordPage = () => {
   const { courseSpaces } = useSpace();
@@ -20,6 +21,8 @@ const ProfGradeRecordPage = () => {
     final: "",
   });
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -34,6 +37,18 @@ const ProfGradeRecordPage = () => {
   };
 
   const handleSaveGrade = () => {
+    // Validate grades before saving
+    const isValid = Object.values(editForm).every(value => {
+      if (value === "") return true; // Allow empty values
+      const numValue = parseInt(value);
+      return numValue >= 30 && numValue <= 100;
+    });
+
+    if (!isValid) {
+      toast.error("Grades must be between 30 and 100");
+      return;
+    }
+
     setStudentGrades((prevGrades) =>
       prevGrades.map((student) =>
         student.accountId === editingStudent
@@ -52,9 +67,33 @@ const ProfGradeRecordPage = () => {
 
   const handleInputChange = (field, value) => {
     if (value === "" || /^\d*$/.test(value)) {
+      // Allow empty value or any number, but validate on save
       setEditForm((prev) => ({ ...prev, [field]: value }));
     }
   };
+
+  // Format name to show surname first
+  const formatName = (fullName) => {
+    if (!fullName) return "";
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length === 1) return fullName;
+    const surname = parts[parts.length - 1];
+    const givenNames = parts.slice(0, -1).join(" ");
+    return `${surname}, ${givenNames}`;
+  };
+
+  // Get grade color based on value
+  const getGradeColor = (grade) => {
+    if (!grade || grade === "-") return currentColors.text;
+    const numGrade = parseInt(grade);
+    if (numGrade >= 75) return "#10b981"; // green
+    return "#ef4444"; // red
+  };
+
+  // Filter students based on search query
+  const filteredStudents = studentGrades.filter(student => 
+    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -238,8 +277,27 @@ const ProfGradeRecordPage = () => {
                 {selectedSubject.space_name}
               </h2>
 
+              {/* Search Bar */}
+              <div className="mb-4">
+                <div className="relative w-64">
+                  <input
+                    type="text"
+                    placeholder="Search student..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      border: `1px solid ${isDarkMode ? "#3B4457" : "black"}`,
+                      color: currentColors.text,
+                    }}
+                  />
+                  <span className="absolute left-3 top-2.5" style={{ color: isDarkMode ? "#9ca3af" : "#6b7280" }}>🔍</span>
+                </div>
+              </div>
+
               {/* No students state */}
-              {studentGrades.length === 0 ? (
+              {filteredStudents.length === 0 ? (
                 <div
                   className="rounded-xl p-10 text-center border border-dashed"
                   style={{
@@ -256,9 +314,9 @@ const ProfGradeRecordPage = () => {
                 </div>
               ) : (
                 <>
-                  {/* Mobile / Tablet Cards */}
-                  <div className="lg:hidden space-y-4">
-                    {studentGrades.map((student, idx) => (
+                  {/* Mobile Cards Only */}
+                  <div className="sm:hidden space-y-4">
+                    {filteredStudents.map((student, idx) => (
                       <div
                         key={idx}
                         className="p-4 rounded-lg border"
@@ -267,7 +325,7 @@ const ProfGradeRecordPage = () => {
                           borderColor: currentColors.border,
                         }}
                       >
-                        <p className="font-semibold mb-1">{student.name}</p>
+                        <p className="font-semibold mb-1">{formatName(student.name)}</p>
                         {editingStudent === student.accountId ? (
                           <div className="space-y-2">
                             {["prelim", "midterm", "preFinal", "final"].map(
@@ -324,10 +382,10 @@ const ProfGradeRecordPage = () => {
                               className="text-sm space-y-1"
                               style={{ color: currentColors.textSecondary }}
                             >
-                              <p>Prelim: {student.prelim || "-"}</p>
-                              <p>Midterm: {student.midterm || "-"}</p>
-                              <p>Pre-Final: {student.preFinal || "-"}</p>
-                              <p>Final: {student.final || "-"}</p>
+                              <p style={{ color: getGradeColor(student.prelim) }}>Prelim: {student.prelim || "-"}</p>
+                              <p style={{ color: getGradeColor(student.midterm) }}>Midterm: {student.midterm || "-"}</p>
+                              <p style={{ color: getGradeColor(student.preFinal) }}>Pre-Final: {student.preFinal || "-"}</p>
+                              <p style={{ color: getGradeColor(student.final) }}>Final: {student.final || "-"}</p>
                             </div>
                             <button
                               onClick={() => handleEditGrade(student)}
@@ -341,109 +399,173 @@ const ProfGradeRecordPage = () => {
                     ))}
                   </div>
 
-                  {/* Desktop Table */}
-                  <div className="hidden lg:block">
-                    <table className="w-full border-collapse text-center text-sm">
-                      <thead>
-                        <tr
-                          className="border-b"
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          <th className="py-3 px-4 text-left">Name</th>
-                          <th className="py-3 px-4">Prelim</th>
-                          <th className="py-3 px-4">Midterm</th>
-                          <th className="py-3 px-4">Pre-Final</th>
-                          <th className="py-3 px-4">Final</th>
-                          <th className="py-3 px-4">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {studentGrades.map((student, index) => (
-                          <tr
-                            key={index}
-                            className="border-b transition"
-                            style={{
-                              borderColor: currentColors.border,
-                            }}
-                          >
-                            <td className="py-2 px-4 text-left">
-                              {student.name}
-                            </td>
-                            {editingStudent === student.accountId ? (
-                              <>
-                                {["prelim", "midterm", "preFinal", "final"].map(
-                                  (field) => (
-                                    <td key={field} className="py-2 px-2">
-                                      <input
-                                        type="text"
-                                        value={editForm[field]}
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            field,
-                                            e.target.value,
-                                          )
-                                        }
-                                        className="w-16 rounded px-2 py-1 text-sm focus:outline-none text-center"
-                                        style={{
-                                          backgroundColor: isDarkMode
-                                            ? "#1F242D"
-                                            : "#f8fafc",
-                                          border: `1px solid ${currentColors.border}`,
-                                          color: currentColors.text,
-                                        }}
-                                        placeholder="0-100"
-                                      />
-                                    </td>
-                                  ),
-                                )}
-                                <td className="py-2 px-4">
-                                  <div className="flex gap-2 justify-center">
-                                    <button
-                                      onClick={handleSaveGrade}
-                                      className="text-sm bg-transparent border-none p-0"
-                                      style={{
-                                        color: isDarkMode
-                                          ? "#10b981"
-                                          : "#059669",
-                                      }}
-                                    >
-                                      Save
-                                    </button>
-                                    <button
-                                      onClick={handleCancelEdit}
-                                      className="text-sm bg-transparent border-none p-0"
-                                      style={{
-                                        color: currentColors.textSecondary,
-                                      }}
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </td>
-                              </>
-                            ) : (
-                              <>
-                                <td>{student.prelim || "-"}</td>
-                                <td>{student.midterm || "-"}</td>
-                                <td>{student.preFinal || "-"}</td>
-                                <td>{student.final || "-"}</td>
-                                <td>
-                                  <button
-                                    onClick={() => handleEditGrade(student)}
-                                    className="text-sm bg-transparent border-none p-0"
-                                    style={{
-                                      color: isDarkMode ? "#60a5fa" : "#2563eb",
-                                    }}
-                                  >
-                                    Edit Grade
-                                  </button>
-                                </td>
-                              </>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  {/* Tablet & Desktop Table */}
+                  <div className="hidden sm:block">
+                    <div className="overflow-x-auto -mx-3 sm:mx-0">
+                      <div className="inline-block min-w-full align-middle">
+                        <div className="overflow-hidden shadow-sm rounded-lg border" style={{ borderColor: currentColors.border }}>
+                          <table className="min-w-full divide-y" style={{ borderColor: currentColors.border }}>
+                            <thead style={{ 
+                              backgroundColor: currentColors.surface,
+                              borderBottom: `2px solid ${currentColors.border}`
+                            }}>
+                              <tr>
+                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold border-r" style={{ 
+                                  color: currentColors.text,
+                                  borderColor: currentColors.border 
+                                }}>
+                                  Name
+                                </th>
+                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r" style={{ 
+                                  color: currentColors.text,
+                                  borderColor: currentColors.border 
+                                }}>
+                                  Prelim
+                                </th>
+                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r" style={{ 
+                                  color: currentColors.text,
+                                  borderColor: currentColors.border 
+                                }}>
+                                  Midterm
+                                </th>
+                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r" style={{ 
+                                  color: currentColors.text,
+                                  borderColor: currentColors.border 
+                                }}>
+                                  Pre-Final
+                                </th>
+                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r" style={{ 
+                                  color: currentColors.text,
+                                  borderColor: currentColors.border 
+                                }}>
+                                  Final
+                                </th>
+                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold" style={{ 
+                                  color: currentColors.text
+                                }}>
+                                  Actions
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y" style={{ borderColor: currentColors.border }}>
+                              {filteredStudents.map((student, index) => (
+                                <tr key={index} style={{ 
+                                  backgroundColor: index % 2 === 0 ? currentColors.background : currentColors.hover,
+                                  transition: 'background-color 0.2s ease'
+                                }}>
+                                  <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm border-r" style={{ 
+                                    color: currentColors.text,
+                                    borderColor: currentColors.border 
+                                  }}>
+                                    {formatName(student.name)}
+                                  </td>
+                                  {editingStudent === student.accountId ? (
+                                    <>
+                                      {["prelim", "midterm", "preFinal", "final"].map(
+                                        (field) => (
+                                          <td key={field} className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap border-r text-center" style={{ 
+                                            borderColor: currentColors.border 
+                                          }}>
+                                            <input
+                                              type="text"
+                                              value={editForm[field]}
+                                              onChange={(e) =>
+                                                handleInputChange(
+                                                  field,
+                                                  e.target.value,
+                                                )
+                                              }
+                                              className="w-16 sm:w-20 rounded px-2 py-1 text-sm focus:outline-none text-center mx-auto"
+                                              style={{
+                                                backgroundColor: isDarkMode
+                                                  ? "#1F242D"
+                                                  : "#f8fafc",
+                                                border: `1px solid ${currentColors.border}`,
+                                                color: currentColors.text,
+                                              }}
+                                              placeholder="30-100"
+                                            />
+                                          </td>
+                                        ),
+                                      )}
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                                        <div className="flex gap-2 justify-center">
+                                          <button
+                                            onClick={handleSaveGrade}
+                                            className="text-xs sm:text-sm bg-transparent border-none p-1 font-medium transition-colors"
+                                            style={{
+                                              color: isDarkMode
+                                                ? "#10b981"
+                                                : "#059669",
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.opacity = "0.8"}
+                                            onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+                                          >
+                                            Save
+                                          </button>
+                                          <span style={{ color: currentColors.textSecondary }}>|</span>
+                                          <button
+                                            onClick={handleCancelEdit}
+                                            className="text-xs sm:text-sm bg-transparent border-none p-1 font-medium transition-colors"
+                                            style={{
+                                              color: currentColors.textSecondary,
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.opacity = "0.8"}
+                                            onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
+                                        borderColor: currentColors.border,
+                                        color: getGradeColor(student.prelim) 
+                                      }}>
+                                        {student.prelim || "-"}
+                                      </td>
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
+                                        borderColor: currentColors.border,
+                                        color: getGradeColor(student.midterm) 
+                                      }}>
+                                        {student.midterm || "-"}
+                                      </td>
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
+                                        borderColor: currentColors.border,
+                                        color: getGradeColor(student.preFinal) 
+                                      }}>
+                                        {student.preFinal || "-"}
+                                      </td>
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
+                                        borderColor: currentColors.border,
+                                        color: getGradeColor(student.final) 
+                                      }}>
+                                        {student.final || "-"}
+                                      </td>
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-center">
+                                        <button
+                                          onClick={() => handleEditGrade(student)}
+                                          className="text-xs sm:text-sm bg-transparent border-none p-1 font-medium transition-colors"
+                                          style={{
+                                            color: isDarkMode ? "#60a5fa" : "#2563eb",
+                                          }}
+                                          onMouseEnter={(e) => e.currentTarget.style.opacity = "0.8"}
+                                          onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+                                        >
+                                          Edit Grade
+                                        </button>
+                                      </td>
+                                    </>
+                                  )}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
