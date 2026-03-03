@@ -77,7 +77,7 @@ const AnnouncementDetail = ({
 
       {attachments.length > 0 && (
         <div className="mb-6">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
+          <h3 className="font-semibold mb-4 flex items-center gap-2 text-gray-900">
             <FileText className="w-5 h-5" />
             Attachments
           </h3>

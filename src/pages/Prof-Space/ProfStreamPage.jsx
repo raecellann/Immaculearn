@@ -98,6 +98,8 @@ const ProfStreamPage = () => {
   // Refs - MUST BE AT THE TOP
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
+  const mobileEditorRef = useRef(null);
+  const desktopEditorRef = useRef(null);
 
   // Custom hooks - MUST BE AT THE TOP
   const { user, isLoading: userLoading } = useUser();
@@ -142,6 +144,29 @@ const ProfStreamPage = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Sync editors when screen size changes
+  useEffect(() => {
+    const syncEditors = () => {
+      const isMobile = window.innerWidth < 1024;
+      
+      // Sync content between editors when switching screen sizes
+      if (isMobile && desktopEditorRef.current && mobileEditorRef.current) {
+        if (mobileEditorRef.current.innerText.trim() === "" && desktopEditorRef.current.innerText.trim() !== "") {
+          mobileEditorRef.current.innerText = desktopEditorRef.current.innerText;
+        }
+      } else if (!isMobile && mobileEditorRef.current && desktopEditorRef.current) {
+        if (desktopEditorRef.current.innerText.trim() === "" && mobileEditorRef.current.innerText.trim() !== "") {
+          desktopEditorRef.current.innerText = mobileEditorRef.current.innerText;
+        }
+      }
+    };
+
+    window.addEventListener("resize", syncEditors);
+    syncEditors(); // Initial sync
+    
+    return () => window.removeEventListener("resize", syncEditors);
   }, []);
 
   // UUID validation
@@ -190,7 +215,11 @@ const ProfStreamPage = () => {
 
   // Text formatting
   const applyFormat = (command) => {
-    editorRef.current?.focus();
+    // Get the appropriate editor based on screen size
+    const isMobile = window.innerWidth < 1024;
+    const activeEditor = isMobile ? mobileEditorRef.current : desktopEditorRef.current;
+    
+    activeEditor?.focus();
     const selection = window.getSelection();
     if (!selection || selection.toString() === "") return;
     document.execCommand(command, false, null);
@@ -293,7 +322,11 @@ const ProfStreamPage = () => {
 
   // Create post
   const handleCreatePost = async () => {
-    const content = editorRef.current?.innerText?.trim();
+    // Get content from the appropriate editor based on screen size
+    const isMobile = window.innerWidth < 1024; // lg breakpoint
+    const activeEditor = isMobile ? mobileEditorRef.current : desktopEditorRef.current;
+    const content = activeEditor?.innerText?.trim();
+    
     if (!content || !currentSpace?.space_id) {
       addNotification({
         type: "error",
@@ -310,8 +343,9 @@ const ProfStreamPage = () => {
       });
 
       if (result.success) {
-        // Clear editor
-        editorRef.current.innerHTML = "";
+        // Clear both editors
+        if (mobileEditorRef.current) mobileEditorRef.current.innerHTML = "";
+        if (desktopEditorRef.current) desktopEditorRef.current.innerHTML = "";
         setIsFocused(false);
         setCharCount(0);
 
@@ -992,7 +1026,7 @@ const ProfStreamPage = () => {
                             ${isFocused ? "border-black" : "border-black"}
                             hover:border-black
                           `}
-                    onClick={() => editorRef.current?.focus()}
+                    onClick={() => mobileEditorRef.current?.focus()}
                   >
                     <div className="relative p-6">
                       {/* AVATAR */}
@@ -1007,26 +1041,26 @@ const ProfStreamPage = () => {
 
                       {/* EDITOR */}
                       <div
-                        ref={editorRef}
+                        ref={mobileEditorRef}
                         contentEditable
                         suppressContentEditableWarning
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => {
-                          if (editorRef.current.innerText.trim() === "") {
+                          if (mobileEditorRef.current.innerText.trim() === "") {
                             setIsFocused(false);
                           }
                         }}
                         onInput={() => {
-                          let text = editorRef.current.innerText;
+                          let text = mobileEditorRef.current.innerText;
 
                           if (text.length > MAX_CHAR) {
                             text = text.substring(0, MAX_CHAR);
-                            editorRef.current.innerText = text;
+                            mobileEditorRef.current.innerText = text;
 
                             // Move cursor to end
                             const range = document.createRange();
                             const sel = window.getSelection();
-                            range.selectNodeContents(editorRef.current);
+                            range.selectNodeContents(mobileEditorRef.current);
                             range.collapse(false);
                             sel.removeAllRanges();
                             sel.addRange(range);
@@ -1075,7 +1109,7 @@ const ProfStreamPage = () => {
                               <button
                                 onClick={() => {
                                   setIsFocused(false);
-                                  editorRef.current.innerHTML = "";
+                                  mobileEditorRef.current.innerHTML = "";
                                 }}
                                 className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
                               >
@@ -1173,7 +1207,7 @@ const ProfStreamPage = () => {
                             ${isFocused ? "border-black" : "border-black"}
                             hover:border-black
                           `}
-                    onClick={() => editorRef.current?.focus()}
+                    onClick={() => desktopEditorRef.current?.focus()}
                   >
                     <div className="relative p-6">
                       {/* AVATAR */}
@@ -1188,26 +1222,26 @@ const ProfStreamPage = () => {
 
                       {/* EDITOR */}
                       <div
-                        ref={editorRef}
+                        ref={desktopEditorRef}
                         contentEditable
                         suppressContentEditableWarning
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => {
-                          if (editorRef.current.innerText.trim() === "") {
+                          if (desktopEditorRef.current.innerText.trim() === "") {
                             setIsFocused(false);
                           }
                         }}
                         onInput={() => {
-                          let text = editorRef.current.innerText;
+                          let text = desktopEditorRef.current.innerText;
 
                           if (text.length > MAX_CHAR) {
                             text = text.substring(0, MAX_CHAR);
-                            editorRef.current.innerText = text;
+                            desktopEditorRef.current.innerText = text;
 
                             // Move cursor to end
                             const range = document.createRange();
                             const sel = window.getSelection();
-                            range.selectNodeContents(editorRef.current);
+                            range.selectNodeContents(desktopEditorRef.current);
                             range.collapse(false);
                             sel.removeAllRanges();
                             sel.addRange(range);
@@ -1253,7 +1287,7 @@ const ProfStreamPage = () => {
                               <button
                                 onClick={() => {
                                   setIsFocused(false);
-                                  editorRef.current.innerHTML = "";
+                                  desktopEditorRef.current.innerHTML = "";
                                 }}
                                 className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
                               >

@@ -94,7 +94,6 @@ const UserPage = () => {
   ];
 
   // Chat states
-  const [showChat, setShowChat] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(false);
   const [isChatMaximized, setIsChatMaximized] = useState(false);
   const [newMessage, setNewMessage] = useState("");
@@ -109,6 +108,8 @@ const UserPage = () => {
   // Refs - MUST BE AT THE TOP
   const lastScrollY = useRef(0);
   const editorRef = useRef(null);
+  const mobileEditorRef = useRef(null);
+  const desktopEditorRef = useRef(null);
   const [charCount, setCharCount] = useState(0);
   const MAX_CHAR = 250;
 
@@ -323,6 +324,29 @@ const UserPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Sync editors when screen size changes
+  useEffect(() => {
+    const syncEditors = () => {
+      const isMobile = window.innerWidth < 1024;
+      
+      // Sync content between editors when switching screen sizes
+      if (isMobile && desktopEditorRef.current && mobileEditorRef.current) {
+        if (mobileEditorRef.current.innerText.trim() === "" && desktopEditorRef.current.innerText.trim() !== "") {
+          mobileEditorRef.current.innerText = desktopEditorRef.current.innerText;
+        }
+      } else if (!isMobile && mobileEditorRef.current && desktopEditorRef.current) {
+        if (desktopEditorRef.current.innerText.trim() === "" && mobileEditorRef.current.innerText.trim() !== "") {
+          desktopEditorRef.current.innerText = mobileEditorRef.current.innerText;
+        }
+      }
+    };
+
+    window.addEventListener("resize", syncEditors);
+    syncEditors(); // Initial sync
+    
+    return () => window.removeEventListener("resize", syncEditors);
+  }, []);
+
   // UUID validation
   const uuidPattern =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -347,7 +371,11 @@ const UserPage = () => {
 
   // Text formatting
   const applyFormat = (command) => {
-    editorRef.current?.focus();
+    // Get the appropriate editor based on screen size
+    const isMobile = window.innerWidth < 1024;
+    const activeEditor = isMobile ? mobileEditorRef.current : desktopEditorRef.current;
+    
+    activeEditor?.focus();
     const selection = window.getSelection();
     if (!selection || selection.toString() === "") return;
     document.execCommand(command, false, null);
@@ -375,7 +403,10 @@ const UserPage = () => {
 
   // Handle post creation
   const handleCreatePost = async () => {
-    const postContent = editorRef.current?.innerText?.trim();
+    // Get content from the appropriate editor based on screen size
+    const isMobile = window.innerWidth < 1024; // lg breakpoint
+    const activeEditor = isMobile ? mobileEditorRef.current : desktopEditorRef.current;
+    const postContent = activeEditor?.innerText?.trim();
 
     if (!postContent || !currentSpace?.space_id) {
       addNotification({
@@ -393,8 +424,9 @@ const UserPage = () => {
       });
 
       if (result.success) {
-        // Clear editor
-        editorRef.current.innerHTML = "";
+        // Clear both editors
+        if (mobileEditorRef.current) mobileEditorRef.current.innerHTML = "";
+        if (desktopEditorRef.current) desktopEditorRef.current.innerHTML = "";
         setIsFocused(false);
 
         // Refetch posts to get the latest data
@@ -1379,7 +1411,7 @@ const UserPage = () => {
                     ${isFocused ? "border-black" : "border-transparent"}
                     hover:border-black
                   `}
-                    onClick={() => editorRef.current?.focus()}
+                    onClick={() => mobileEditorRef.current?.focus()}
                   >
                     <div className="relative p-6">
                       {/* AVATAR */}
@@ -1394,26 +1426,26 @@ const UserPage = () => {
 
                       {/* EDITOR */}
                       <div
-                        ref={editorRef}
+                        ref={mobileEditorRef}
                         contentEditable
                         suppressContentEditableWarning
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => {
-                          if (editorRef.current.innerText.trim() === "") {
+                          if (mobileEditorRef.current.innerText.trim() === "") {
                             setIsFocused(false);
                           }
                         }}
                         onInput={() => {
-                          let text = editorRef.current.innerText;
+                          let text = mobileEditorRef.current.innerText;
 
                           if (text.length > MAX_CHAR) {
                             text = text.substring(0, MAX_CHAR);
-                            editorRef.current.innerText = text;
+                            mobileEditorRef.current.innerText = text;
 
                             // Move cursor to end
                             const range = document.createRange();
                             const sel = window.getSelection();
-                            range.selectNodeContents(editorRef.current);
+                            range.selectNodeContents(mobileEditorRef.current);
                             range.collapse(false);
                             sel.removeAllRanges();
                             sel.addRange(range);
@@ -1459,7 +1491,7 @@ const UserPage = () => {
                               <button
                                 onClick={() => {
                                   setIsFocused(false);
-                                  editorRef.current.innerHTML = "";
+                                  mobileEditorRef.current.innerHTML = "";
                                 }}
                                 className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
                               >
@@ -1516,7 +1548,7 @@ const UserPage = () => {
 
                 {/* CHAT */}
                 <button
-                  onClick={() => setShowChat(true)}
+                  onClick={() => setShowChatPopup(true)}
                   className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
                   style={{
                     backgroundColor: isDarkMode ? "#000000" : "transparent",
@@ -1539,11 +1571,11 @@ const UserPage = () => {
                 </button>
 
                 {/* Chat Popup */}
-                {showChat && (
+                {showChatPopup && (
                   <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0">
                     <div
                       className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-                      onClick={() => !isChatMinimized && setShowChat(false)}
+                      onClick={() => !isChatMinimized && setShowChatPopup(false)}
                     />
                     <div
                       className={`relative w-full ${isChatMaximized ? "h-screen max-w-full" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
@@ -1587,7 +1619,7 @@ const UserPage = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setShowChat(false);
+                              setShowChatPopup(false);
                               setIsChatMinimized(false);
                               setIsChatMaximized(false);
                             }}
@@ -1676,7 +1708,7 @@ const UserPage = () => {
                     ${isFocused ? "border-black" : "border-black"}
                     hover:border-black
                   `}
-                    onClick={() => editorRef.current?.focus()}
+                    onClick={() => desktopEditorRef.current?.focus()}
                   >
                     <div className="relative p-6">
                       {/* AVATAR */}
@@ -1691,26 +1723,26 @@ const UserPage = () => {
 
                       {/* EDITOR */}
                       <div
-                        ref={editorRef}
+                        ref={desktopEditorRef}
                         contentEditable
                         suppressContentEditableWarning
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => {
-                          if (editorRef.current.innerText.trim() === "") {
+                          if (desktopEditorRef.current.innerText.trim() === "") {
                             setIsFocused(false);
                           }
                         }}
                         onInput={() => {
-                          let text = editorRef.current.innerText;
+                          let text = desktopEditorRef.current.innerText;
 
                           if (text.length > MAX_CHAR) {
                             text = text.substring(0, MAX_CHAR);
-                            editorRef.current.innerText = text;
+                            desktopEditorRef.current.innerText = text;
 
                             // Move cursor to end
                             const range = document.createRange();
                             const sel = window.getSelection();
-                            range.selectNodeContents(editorRef.current);
+                            range.selectNodeContents(desktopEditorRef.current);
                             range.collapse(false);
                             sel.removeAllRanges();
                             sel.addRange(range);
@@ -1756,7 +1788,7 @@ const UserPage = () => {
                               <button
                                 onClick={() => {
                                   setIsFocused(false);
-                                  editorRef.current.innerHTML = "";
+                                  desktopEditorRef.current.innerHTML = "";
                                 }}
                                 className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 whitespace-nowrap"
                               >
