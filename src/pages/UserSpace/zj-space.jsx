@@ -2614,13 +2614,22 @@ const UserPage = () => {
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Gradient Options */}
               <div className="mb-6">
-                <p className="text-sm font-medium text-white mb-3">Color & Gradient</p>
+                <p className="text-sm font-medium mb-3" style={{ color: currentColors.text }}>Color & Gradient</p>
                 <div className="grid grid-cols-4 gap-2">
                   {colorOptions.map((color, i) => (
                     <div
                       key={i}
-                      className="h-12 rounded cursor-pointer border-2 border-gray-600 hover:border-blue-500 transition-colors"
-                      style={{ background: color }}
+                      className="h-12 rounded cursor-pointer border-2 transition-colors"
+                      style={{ 
+                        background: color,
+                        borderColor: currentColors.border
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.borderColor = currentColors.accent || '#3B82F6';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                       onClick={() => handleGradientSelection(color)}
                     />
                   ))}
@@ -2629,9 +2638,9 @@ const UserPage = () => {
 
               {/* Separator Line */}
               <div className="relative flex items-center my-4">
-                <div className="flex-1 border-t border-gray-700"></div>
-                <span className="px-3 text-sm text-gray-400">or</span>
-                <div className="flex-1 border-t border-gray-700"></div>
+                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
+                <span className="px-3 text-sm" style={{ color: currentColors.textSecondary }}>or</span>
+                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
               </div>
 
               {/* Upload Option (only show when gradient is selected) */}
@@ -2639,7 +2648,20 @@ const UserPage = () => {
                 <div className="mb-4 flex justify-center">
                   <button
                     onClick={() => coverPhotoInputRef.current?.click()}
-                    className="flex items-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      color: currentColors.text,
+                      border: `1px solid ${currentColors.border}`
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
+                      e.target.style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = currentColors.background;
+                      e.target.style.color = currentColors.text;
+                    }}
                   >
                     <FiUpload size={14} />
                     <span>Upload Photo</span>
