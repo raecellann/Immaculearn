@@ -624,6 +624,26 @@ const ProfPeoplePage = () => {
                 </div>
               </div>
 
+              {/* Separator Line */}
+              <div className="relative flex items-center my-4">
+                <div className="flex-1 border-t border-gray-700"></div>
+                <span className="px-3 text-sm text-gray-400">or</span>
+                <div className="flex-1 border-t border-gray-700"></div>
+              </div>
+
+              {/* Upload Option (only show when gradient is selected) */}
+              {coverPhotoUrl && coverPhotoUrl.includes('gradient') && (
+                <div className="mb-4 flex justify-center">
+                  <button
+                    onClick={() => coverPhotoInputRef.current?.click()}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm"
+                  >
+                    <FiUpload size={14} />
+                    <span>Upload Photo</span>
+                  </button>
+                </div>
+              )}
+
               {/* Image Positioning (only show if it's an image, not gradient) */}
               {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
                 <div className="mb-6">
