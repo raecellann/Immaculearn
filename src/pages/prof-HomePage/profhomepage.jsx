@@ -526,6 +526,7 @@ const ProfHomePage = () => {
                     ›
                   </button>
                   <button
+                    onClick={() => navigate("/prof/spaces")}
                     className="hidden sm:inline hover:underline text-sm ml-2 bg-transparent"
                     style={{ color: isDarkMode ? "#60A5FA" : "black" }}
                   >
@@ -698,6 +699,7 @@ const ProfHomePage = () => {
                     ›
                   </button>
                   <button
+                    onClick={() => navigate("/prof/spaces#course-spaces")}
                     className="hidden sm:inline hover:underline text-sm ml-2 bg-transparent"
                     style={{
                       color: isDarkMode ? currentColors.textSecondary : "black",

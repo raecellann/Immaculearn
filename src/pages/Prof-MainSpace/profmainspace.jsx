@@ -218,6 +218,19 @@ const ProfSpacePage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
 
+  // Handle hash navigation for smooth scrolling
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === "#course-spaces") {
+      const element = document.getElementById("course-spaces");
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
+    }
+  }, []);
+
   // Filter course spaces by year level
   const filterCourseSpacesByYear = (spaces, filter) => {
     if (!spaces || filter === "All") return spaces;
@@ -491,7 +504,7 @@ const ProfSpacePage = () => {
           </div>
 
           {/* Course Spaces */}
-          <div>
+          <div id="course-spaces">
             <div className="mb-4 flex flex-col gap-3">
               <h2
                 className="text-2xl font-bold mb-4"

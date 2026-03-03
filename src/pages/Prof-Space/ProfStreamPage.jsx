@@ -1622,7 +1622,7 @@ const ProfStreamPage = () => {
                     e.target.style.color = currentColors.textSecondary;
                   }}
                 >
-                  <FiX size={20} className="sm:size-24" />
+                  <FiX size={16} />
                 </button>
               </div>
 
