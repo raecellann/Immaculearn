@@ -101,7 +101,24 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
     setQuizStarted(true);
   };
   const handleSubmit = () => setShowSubmitConfirm(true);
-  const confirmSubmit = () => onSubmit(userAnswers);
+  const confirmSubmit = () => {
+    const formattedAnswers = userAnswers.map((answer) => {
+      if (answer.choice_id) {
+        return {
+          question_id: answer.question_id,
+          choice_id: answer.choice_id,
+        };
+      } else if (answer.text_answer) {
+        return {
+          question_id: answer.question_id,
+          answer_text: answer.text_answer,
+        };
+      }
+      return answer;
+    });
+
+    onSubmit(formattedAnswers);
+  };
 
   const questions = getQuestions();
   const answeredQuestions = userAnswers.length;
@@ -144,20 +161,21 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
   const isOptionSelected = (questionId, choiceId) => {
     return userAnswers.some(
-      (answer) => answer.question_id === questionId && answer.choice_id === choiceId
+      (answer) =>
+        answer.question_id === questionId && answer.choice_id === choiceId,
     );
   };
 
   const getTextAnswer = (questionId) => {
     const answer = userAnswers.find(
-      (ans) => ans.question_id === questionId && ans.text_answer
+      (ans) => ans.question_id === questionId && ans.text_answer,
     );
-    return answer ? answer.text_answer : '';
+    return answer ? answer.text_answer : "";
   };
 
   const hasTextAnswer = (questionId) => {
     return userAnswers.some(
-      (ans) => ans.question_id === questionId && ans.text_answer
+      (ans) => ans.question_id === questionId && ans.text_answer,
     );
   };
 
@@ -178,28 +196,43 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
   const renderQuestion = (question) => {
     switch (question.type) {
-      case 'multiple-choice':
+      case "multiple-choice":
         return (
           <div className="space-y-4">
             {question.answers.map((answer, index) => (
-              <div 
+              <div
                 key={index}
-                className={getOptionClass(isOptionSelected(question.question_id, answer.letter_identifier))}
-                onClick={() => handleOptionClick(question.question_id, answer.letter_identifier)}
+                className={getOptionClass(
+                  isOptionSelected(
+                    question.question_id,
+                    answer.letter_identifier,
+                  ),
+                )}
+                onClick={() =>
+                  handleOptionClick(question.question_id, answer.choice_id)
+                }
               >
                 <div className="flex items-center justify-center">
                   <div
-                    className={getLetterBadgeClass(isOptionSelected(question.question_id, answer.letter_identifier))}
+                    className={getLetterBadgeClass(
+                      isOptionSelected(
+                        question.question_id,
+                        answer.letter_identifier,
+                      ),
+                    )}
                   >
                     {answer.letter_identifier}
                   </div>
                 </div>
                 <div className="flex-1">
                   <p className="text-base leading-relaxed">
-                    {answer.answer_text}
+                    {answer.choice_answer}
                   </p>
                 </div>
-                {isOptionSelected(question.question_id, answer.letter_identifier) && (
+                {isOptionSelected(
+                  question.question_id,
+                  answer.letter_identifier,
+                ) && (
                   <div style={{ color: currentColors.accent }}>
                     <FiCheck size={20} />
                   </div>
@@ -209,26 +242,41 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
           </div>
         );
 
-      case 'true-false':
+      case "true-false":
         return (
           <div className="space-y-4">
             {question.answers.map((answer, index) => (
-              <div 
+              <div
                 key={index}
-                className={getOptionClass(isOptionSelected(question.question_id, answer.letter_identifier))}
-                onClick={() => handleOptionClick(question.question_id, answer.letter_identifier)}
+                className={getOptionClass(
+                  isOptionSelected(
+                    question.question_id,
+                    answer.letter_identifier,
+                  ),
+                )}
+                onClick={() =>
+                  handleOptionClick(question.question_id, answer.choice_id)
+                }
               >
                 <div
-                  className={getLetterBadgeClass(isOptionSelected(question.question_id, answer.letter_identifier))}
+                  className={getLetterBadgeClass(
+                    isOptionSelected(
+                      question.question_id,
+                      answer.letter_identifier,
+                    ),
+                  )}
                 >
                   {answer.letter_identifier}
                 </div>
                 <div className="flex-1">
                   <p className="text-base leading-relaxed">
-                    {answer.answer_text}
+                    {answer.choice_answer}
                   </p>
                 </div>
-                {isOptionSelected(question.question_id, answer.letter_identifier) && (
+                {isOptionSelected(
+                  question.question_id,
+                  answer.letter_identifier,
+                ) && (
                   <div style={{ color: currentColors.accent }}>
                     <FiCheck size={20} />
                   </div>
@@ -238,21 +286,30 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
           </div>
         );
 
-      case 'short-answer':
+      case "short-answer":
       default:
         return (
-          <div className="p-4 rounded-lg border-2" style={{ borderColor: currentColors.border }}>
+          <div
+            className="p-4 rounded-lg border-2"
+            style={{ borderColor: currentColors.border }}
+          >
             <textarea
               placeholder="Type your answer here..."
               className="w-full p-4 rounded border resize-none h-32 text-base"
               style={{
                 backgroundColor: currentColors.background,
-                borderColor: hasTextAnswer(question.question_id) ? currentColors.accent : currentColors.border,
-                borderWidth: hasTextAnswer(question.question_id) ? '2px' : '1px',
-                color: currentColors.text
+                borderColor: hasTextAnswer(question.question_id)
+                  ? currentColors.accent
+                  : currentColors.border,
+                borderWidth: hasTextAnswer(question.question_id)
+                  ? "2px"
+                  : "1px",
+                color: currentColors.text,
               }}
               value={getTextAnswer(question.question_id)}
-              onChange={(e) => handleTextAnswer(question.question_id, e.target.value)}
+              onChange={(e) =>
+                handleTextAnswer(question.question_id, e.target.value)
+              }
             />
           </div>
         );
@@ -327,7 +384,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                   >
                     Questions
                   </p>
-                  <p className="text-2xl sm:text-3xl font-bold" style={{ color: currentColors.accent }}>
+                  <p
+                    className="text-2xl sm:text-3xl font-bold"
+                    style={{ color: currentColors.accent }}
+                  >
                     {quizData.question_count}
                   </p>
                 </div>
@@ -344,7 +404,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                   >
                     Total Points
                   </p>
-                  <p className="text-2xl sm:text-3xl font-bold" style={{ color: '#10b981' }}>
+                  <p
+                    className="text-2xl sm:text-3xl font-bold"
+                    style={{ color: "#10b981" }}
+                  >
                     {quizData?.total_score || 0}
                   </p>
                 </div>
@@ -352,11 +415,16 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
             </div>
 
             {/* Warning */}
-            <div className="mb-5 sm:mb-6 p-4 rounded-xl text-left" style={{
-              backgroundColor: isDarkMode ? 'rgba(251, 191, 36, 0.1)' : 'rgba(251, 191, 36, 0.05)',
-              border: `1px solid ${isDarkMode ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 191, 36, 0.2)'}`
-            }}>
-              <p className="text-sm" style={{ color: '#d97706' }}>
+            <div
+              className="mb-5 sm:mb-6 p-4 rounded-xl text-left"
+              style={{
+                backgroundColor: isDarkMode
+                  ? "rgba(251, 191, 36, 0.1)"
+                  : "rgba(251, 191, 36, 0.05)",
+                border: `1px solid ${isDarkMode ? "rgba(251, 191, 36, 0.3)" : "rgba(251, 191, 36, 0.2)"}`,
+              }}
+            >
+              <p className="text-sm" style={{ color: "#d97706" }}>
                 <strong>Important:</strong> Once you start the quiz, you can
                 navigate freely between questions. Make sure you have a stable
                 internet connection and complete all questions before
@@ -465,7 +533,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
               >
                 <div
                   className="h-2 bg-blue-500 rounded-full transition-all duration-500"
-                  style={{ width: `${progress}%`, backgroundColor: currentColors.accent }}
+                  style={{
+                    width: `${progress}%`,
+                    backgroundColor: currentColors.accent,
+                  }}
                 />
               </div>
               <span
@@ -485,9 +556,9 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
         >
           <div
             className="h-1 transition-all duration-500"
-            style={{ 
+            style={{
               width: `${progress}%`,
-              backgroundColor: currentColors.accent
+              backgroundColor: currentColors.accent,
             }}
           />
         </div>
@@ -521,10 +592,13 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 >
                   <div className="mb-5">
                     <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wide" style={{
-                        backgroundColor: `${currentColors.accent}15`,
-                        color: currentColors.accent
-                      }}>
+                      <span
+                        className="px-3 py-1 rounded-full text-xs font-bold tracking-wide"
+                        style={{
+                          backgroundColor: `${currentColors.accent}15`,
+                          color: currentColors.accent,
+                        }}
+                      >
                         Question {question.question_id}
                       </span>
                       <span
@@ -539,10 +613,13 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                       {userAnswers.some(
                         (answer) => answer.question_id === question.question_id,
                       ) && (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1" style={{
-                          backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                          color: '#10b981'
-                        }}>
+                        <span
+                          className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"
+                          style={{
+                            backgroundColor: "rgba(16, 185, 129, 0.15)",
+                            color: "#10b981",
+                          }}
+                        >
                           <FiCheck size={11} /> Answered
                         </span>
                       )}
@@ -668,24 +745,34 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 " Unanswered questions will be marked as incorrect."}
             </p>
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="text-center p-3 rounded-xl" style={{
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.2)'
-              }}>
-                <p className="text-2xl font-bold" style={{ color: '#10b981' }}>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div
+                className="text-center p-3 rounded-xl"
+                style={{
+                  backgroundColor: "rgba(16, 185, 129, 0.1)",
+                  border: "1px solid rgba(16, 185, 129, 0.2)",
+                }}
+              >
+                <p className="text-2xl font-bold" style={{ color: "#10b981" }}>
                   {answeredQuestions}
                 </p>
-                <p className="text-xs" style={{ color: '#059669' }}>Answered</p>
+                <p className="text-xs" style={{ color: "#059669" }}>
+                  Answered
+                </p>
               </div>
-              <div className="text-center p-3 rounded-xl" style={{
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.2)'
-              }}>
-                <p className="text-2xl font-bold" style={{ color: '#ef4444' }}>
+              <div
+                className="text-center p-3 rounded-xl"
+                style={{
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                }}
+              >
+                <p className="text-2xl font-bold" style={{ color: "#ef4444" }}>
                   {questions.length - answeredQuestions}
                 </p>
-                <p className="text-xs" style={{ color: '#dc2626' }}>Unanswered</p>
+                <p className="text-xs" style={{ color: "#dc2626" }}>
+                  Unanswered
+                </p>
               </div>
             </div>
 
