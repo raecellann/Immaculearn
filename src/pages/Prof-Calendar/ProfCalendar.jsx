@@ -524,55 +524,6 @@ const ProfCalendarPage = () => {
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
-          ) : allUploadedTasks?.length === 0 ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <FiCalendar className="mx-auto text-gray-400 mb-4" size={48} />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  No Spaces Available
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  {contextError
-                    ? "SpaceContext is not available. Please check your setup."
-                    : "You need to create spaces to manage activities."}
-                </p>
-                <p className="text-sm text-gray-400 mb-4">
-                  Create spaces for your courses to start adding activities and
-                  tracking deadlines.
-                </p>
-                <button
-                  onClick={() => setShowCreateDropdown(true)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                  disabled={contextError}
-                >
-                  <FiPlus className="inline mr-2" size={16} />
-                  {contextError
-                    ? "SpaceContext Unavailable"
-                    : "Create Your First Space"}
-                </button>
-              </div>
-            </div>
-          ) : allUploadedTasks?.length === 0 ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <FiCalendar className="mx-auto text-gray-400 mb-4" size={48} />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  No Activities Created
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  {contextError
-                    ? "SpaceContext is not available. Please check your setup."
-                    : "You haven't created any activities yet."}
-                </p>
-                <button
-                  onClick={() => setShowCreateDropdown(true)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                >
-                  <FiPlus className="inline mr-2" size={16} />
-                  Create Your First Activity
-                </button>
-              </div>
-            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Activity Statistics - Top */}

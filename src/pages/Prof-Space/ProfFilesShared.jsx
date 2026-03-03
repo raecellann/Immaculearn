@@ -1872,7 +1872,7 @@ const ProfFilesShared = () => {
                 onClick={handleConfirmCoverPhoto}
                 className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
               >
-                Change Cover Photo
+                Apply
               </button>
             </div>
           </div>
