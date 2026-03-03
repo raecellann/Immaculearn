@@ -160,6 +160,7 @@ const validateStep2 = (role, fields) => {
 // ─── Main component ────────────────────────────────────────────────────────────
 const OnBoarding = () => {
   const { createAccount, isLoading } = useUser();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
@@ -265,11 +266,18 @@ const OnBoarding = () => {
           }),
     };
 
-    const success = await createAccount(payload);
-    if (success) {
-      role === "professor" ? navigate("/prof/home") : navigate("/home");
-    } else {
+    try {
+      setIsSubmitting(true);
+      const success = await createAccount(payload);
+      if (success) {
+        role === "professor" ? navigate("/prof/home") : navigate("/home");
+      } else {
+      }
+    } catch (err) {
       alert("Account creation failed. Please try again.");
+      throw err;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -734,6 +742,7 @@ const OnBoarding = () => {
                 </Button>
                 <Button
                   type="submit"
+                  disable={isSubmitting}
                   style={{
                     padding: "10px 20px",
                     borderRadius: "8px",
