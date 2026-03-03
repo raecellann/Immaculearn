@@ -29,6 +29,7 @@ const ProfPeoplePage = () => {
   // Cover photo state
   const [coverPhoto, setCoverPhoto] = useState(null);
   const [coverPhotoUrl, setCoverPhotoUrl] = useState(null);
+  const [previousCoverPhotoUrl, setPreviousCoverPhotoUrl] = useState(null);
   const [showCoverPhotoEditor, setShowCoverPhotoEditor] = useState(false);
   const [coverPhotoPosition, setCoverPhotoPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -37,6 +38,18 @@ const ProfPeoplePage = () => {
   const [showCoverPhotoConfirm, setShowCoverPhotoConfirm] = useState(false);
   const coverPhotoInputRef = useRef(null);
   const coverPhotoEditorRef = useRef(null);
+
+  // Gradient color options for cover photo
+  const colorOptions = [
+    "linear-gradient(45deg, #FFC107, #FF5722)",
+    "linear-gradient(45deg, #3F51B5, #2196F3)",
+    "linear-gradient(45deg, #9C27B0, #673AB7)",
+    "linear-gradient(45deg, #E91E63, #F44336)",
+    "linear-gradient(45deg, #4CAF50, #8BC34A)",
+    "linear-gradient(45deg, #FF9800, #FFC107)",
+    "linear-gradient(45deg, #00BCD4, #009688)",
+    "linear-gradient(45deg, #795548, #607D8B)",
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -114,7 +127,7 @@ const ProfPeoplePage = () => {
 
   // Cover photo handlers
   const handleCoverPhotoClick = () => {
-    if (activeSpace?.creator?.account_id === user?.id) {
+    if (isOwner) {
       coverPhotoInputRef.current?.click();
     }
   };
@@ -156,6 +169,7 @@ const ProfPeoplePage = () => {
       // Create preview and open editor
       const reader = new FileReader();
       reader.onload = (e) => {
+        setPreviousCoverPhotoUrl(coverPhotoUrl); // Save previous URL
         setCoverPhotoUrl(e.target.result);
         setShowCoverPhotoEditor(true);
         setCoverPhotoPosition(50);
@@ -169,53 +183,71 @@ const ProfPeoplePage = () => {
   };
 
   const handleConfirmCoverPhoto = () => {
-    // Create canvas to apply transformations
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-
-    img.onload = () => {
-      // Set canvas size to cover photo dimensions
-      canvas.width = 1200;
-      canvas.height = 400;
-
-      // Calculate scale to cover the entire canvas
-      const scale = Math.max(
-        canvas.width / img.width,
-        canvas.height / img.height,
-      );
-      const scaledWidth = img.width * scale;
-      const scaledHeight = img.height * scale;
-
-      // Calculate position based on user vertical positioning
-      const x = (canvas.width - scaledWidth) / 2;
-      const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-
-      // Draw the image with transformations
-      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-
-      // Convert to data URL and update
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
-      setCoverPhotoUrl(dataUrl);
-
-      // Save to localStorage
-      localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-
-      // Dispatch custom event to notify HomePage
-      window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
-
+    // Check if it's a gradient or an image
+    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+      // For gradients, save directly without canvas transformations
+      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-
+      
+      // Dispatch custom event to notify HomePage
+      window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
+      
       addNotification({
         type: "success",
         title: "Cover Photo Updated",
         message: "Your cover photo has been updated successfully!",
         duration: 3000,
       });
-    };
+    } else {
+      // For images, create canvas to apply transformations
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
 
-    img.src = coverPhotoUrl;
+      img.onload = () => {
+        // Set canvas size to cover photo dimensions
+        canvas.width = 1200;
+        canvas.height = 400;
+
+        // Calculate scale to cover the entire canvas
+        const scale = Math.max(
+          canvas.width / img.width,
+          canvas.height / img.height,
+        );
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+
+        // Calculate position based on user vertical positioning
+        const x = (canvas.width - scaledWidth) / 2;
+        const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
+
+        // Draw the image with transformations
+        ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+        // Convert to data URL and update
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+        setCoverPhotoUrl(dataUrl);
+
+        // Save to localStorage
+        localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
+
+        // Dispatch custom event to notify HomePage
+        window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
+
+        setShowCoverPhotoEditor(false);
+        setShowCoverPhotoConfirm(false);
+
+        addNotification({
+          type: "success",
+          title: "Cover Photo Updated",
+          message: "Your cover photo has been updated successfully!",
+          duration: 3000,
+        });
+      };
+
+      img.src = coverPhotoUrl;
+    }
   };
 
   const handleCancelCoverPhoto = () => {
@@ -225,8 +257,19 @@ const ProfPeoplePage = () => {
   const handleCoverPhotoCancel = () => {
     setShowCoverPhotoEditor(false);
     setCoverPhoto(null);
-    // Don't clear coverPhotoUrl on cancel, keep the existing cover photo
+    // Restore previous cover photo URL
+    setCoverPhotoUrl(previousCoverPhotoUrl);
     setCoverPhotoPosition(50);
+    if (coverPhotoInputRef.current) {
+      coverPhotoInputRef.current.value = "";
+    }
+  };
+
+  // Handle gradient selection for cover photo
+  const handleGradientSelection = (gradient) => {
+    setPreviousCoverPhotoUrl(coverPhotoUrl); // Save previous URL
+    setCoverPhotoUrl(gradient);
+    setShowCoverPhotoConfirm(true); // Show confirmation dialog for gradients
     if (coverPhotoInputRef.current) {
       coverPhotoInputRef.current.value = "";
     }
@@ -367,13 +410,20 @@ const ProfPeoplePage = () => {
         >
           {coverPhotoUrl ? (
             <>
-              <img
-                src={coverPhotoUrl}
-                alt="Space Cover"
-                className="w-full h-full object-cover"
-              />
+              {coverPhotoUrl.includes('gradient') ? (
+                <div
+                  className="w-full h-full"
+                  style={{ background: coverPhotoUrl }}
+                />
+              ) : (
+                <img
+                  src={coverPhotoUrl}
+                  alt="Space Cover"
+                  className="w-full h-full object-cover"
+                />
+              )}
               <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
-              {activeSpace?.creator?.account_id === user?.id && (
+              {isOwner && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
                     <FiUpload size={16} />
@@ -386,7 +436,7 @@ const ProfPeoplePage = () => {
             <>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
               <div className="absolute inset-0 bg-black/30" />
-              {activeSpace?.creator?.account_id === user?.id && (
+              {isOwner && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
                     <FiUpload size={16} />
@@ -396,7 +446,7 @@ const ProfPeoplePage = () => {
               )}
             </>
           )}
-          {activeSpace?.creator?.account_id === user?.id && (
+          {isOwner && (
             <input
               ref={coverPhotoInputRef}
               type="file"
@@ -547,7 +597,7 @@ const ProfPeoplePage = () => {
             {/* Header */}
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">
-                Position Cover Photo
+                Change Cover Photo
               </h2>
               <button
                 onClick={handleCoverPhotoCancel}
@@ -559,31 +609,49 @@ const ProfPeoplePage = () => {
 
             {/* Editor Content */}
             <div className="flex-1 p-6 overflow-y-auto">
-              {/* Preview Area */}
+              {/* Gradient Options */}
               <div className="mb-6">
-                <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
-                  <div
-                    ref={coverPhotoEditorRef}
-                    className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
-                    style={{
-                      backgroundImage: `url(${coverPhotoUrl})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: `center ${coverPhotoPosition}%`,
-                      backgroundRepeat: "no-repeat",
-                    }}
-                    onMouseDown={handleMouseDown}
-                  />
-                  <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
-                  {isDragging && (
-                    <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
-                      Dragging...
-                    </div>
-                  )}
+                <p className="text-sm font-medium text-white mb-3">Color & Gradient</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {colorOptions.map((color, i) => (
+                    <div
+                      key={i}
+                      className="h-12 rounded cursor-pointer border-2 border-gray-600 hover:border-blue-500 transition-colors"
+                      style={{ background: color }}
+                      onClick={() => handleGradientSelection(color)}
+                    />
+                  ))}
                 </div>
-                <p className="text-sm text-gray-400 mt-2">
-                  Click and drag the image up or down to position it
-                </p>
               </div>
+
+              {/* Image Positioning (only show if it's an image, not gradient) */}
+              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+                <div className="mb-6">
+                  <p className="text-sm font-medium text-white mb-3">Position Image</p>
+                  <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
+                    <div
+                      ref={coverPhotoEditorRef}
+                      className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
+                      style={{
+                        backgroundImage: `url(${coverPhotoUrl})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: `center ${coverPhotoPosition}%`,
+                        backgroundRepeat: "no-repeat",
+                      }}
+                      onMouseDown={handleMouseDown}
+                    />
+                    <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
+                    {isDragging && (
+                      <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+                        Dragging...
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-400 mt-2">
+                    Click and drag the image up or down to position it
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
@@ -594,12 +662,14 @@ const ProfPeoplePage = () => {
               >
                 Cancel
               </button>
-              <button
-                onClick={handleCoverPhotoSave}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
-              >
-                Apply
-              </button>
+              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+                <button
+                  onClick={handleCoverPhotoSave}
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+                >
+                  Apply
+                </button>
+              )}
             </div>
           </div>
         </div>
