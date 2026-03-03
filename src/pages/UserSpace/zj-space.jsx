@@ -228,6 +228,7 @@ const UserPage = () => {
       addNotification({
         type: "error",
         message: "Please write something before commenting",
+        duration: 1500,
       });
       return;
     }
@@ -250,17 +251,20 @@ const UserPage = () => {
         addNotification({
           type: "success",
           message: "Comment posted successfully!",
+          duration: 1500,
         });
       } else {
         addNotification({
           type: "error",
           message: result.message || "Failed to post comment",
+          duration: 1500,
         });
       }
     } catch (error) {
       addNotification({
         type: "error",
         message: "Failed to post comment. Please try again.",
+        duration: 1500,
       });
     } finally {
       setIsLoadingComments((prev) => ({ ...prev, [postId]: false }));
@@ -412,6 +416,7 @@ const UserPage = () => {
       addNotification({
         type: "error",
         message: "Please write something before posting",
+        duration: 1500,
       });
       return;
     }
@@ -435,17 +440,20 @@ const UserPage = () => {
         addNotification({
           type: "success",
           message: "Post created successfully!",
+          duration: 1500,
         });
       } else {
         addNotification({
           type: "error",
           message: result.message || "Failed to create post",
+          duration: 1500,
         });
       }
     } catch (error) {
       addNotification({
         type: "error",
         message: "Failed to create post. Please try again.",
+        duration: 1500,
       });
     } finally {
       setIsCreatingPost(false);
