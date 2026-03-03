@@ -1309,13 +1309,31 @@ const UserPage = () => {
               )}
               {isFriendSpace && (
                 <div className="flex flex-col gap-2 mt-2">
-                  <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
-                    <span className="text-xs text-blue-400 break-all">
+                  <div 
+                    className="flex items-center gap-2 p-2 rounded-md"
+                    style={{ backgroundColor: currentColors.surface }}
+                  >
+                    <span 
+                      className="text-xs break-all"
+                      style={{ color: currentColors.accent }}
+                    >
                       {currentSpace?.space_link || "Loading..."}
                     </span>
                     <button
                       onClick={() => handleCopyLink(currentSpace?.space_link)}
-                      className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
+                      className="p-1 rounded transition-colors"
+                      style={{
+                        color: currentColors.textSecondary,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                        e.currentTarget.style.color = currentColors.text;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = currentColors.textSecondary;
+                      }}
                       title="Copy to clipboard"
                     >
                       <FiCopy size={16} />
@@ -1391,13 +1409,31 @@ const UserPage = () => {
           {/* Space Link - Mobile (Non-owners) */}
           {isFriendSpace && (
             <div className="md:hidden flex justify-end mb-6">
-              <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md max-w-full">
-                <span className="text-xs text-blue-400 break-all flex-1">
+              <div 
+                className="flex items-center gap-2 p-2 rounded-md max-w-full"
+                style={{ backgroundColor: currentColors.surface }}
+              >
+                <span 
+                  className="text-xs break-all flex-1"
+                  style={{ color: currentColors.accent }}
+                >
                   {currentSpace?.space_link || "Loading..."}
                 </span>
                 <button
                   onClick={() => handleCopyLink(currentSpace?.space_link)}
-                  className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors flex-shrink-0"
+                  className="p-1 rounded transition-colors flex-shrink-0"
+                  style={{
+                    color: currentColors.textSecondary,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                    e.currentTarget.style.color = currentColors.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = currentColors.textSecondary;
+                  }}
                   title="Copy to clipboard"
                 >
                   <FiCopy size={16} />
@@ -1523,7 +1559,7 @@ const UserPage = () => {
 
               {/* REMINDERS - STICKY */}
               <div
-                className={`sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${isOwnerSpace ? "h-fit max-h-[400px]" : "h-full"}`}
+                className="sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 h-fit max-h-[400px]"
                 style={{
                   backgroundColor: currentColors.surface,
                   borderColor: currentColors.border,
@@ -1557,21 +1593,17 @@ const UserPage = () => {
                 {/* CHAT */}
                 <button
                   onClick={() => setShowChatPopup(true)}
-                  className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
+                  className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
                   style={{
-                    backgroundColor: isDarkMode ? "#000000" : "transparent",
+                    backgroundColor: "transparent",
                     borderColor: currentColors.border,
                     color: currentColors.text,
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = isDarkMode
-                      ? "#1f2937"
-                      : currentColors.hover;
+                    e.target.style.backgroundColor = currentColors.hover;
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = isDarkMode
-                      ? "#000000"
-                      : "transparent";
+                    e.target.style.backgroundColor = "transparent";
                   }}
                 >
                   <FiMessageCircle />
@@ -1589,24 +1621,27 @@ const UserPage = () => {
                       className={`relative w-full ${isChatMaximized ? "h-screen max-w-full" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
                     >
                       {/* Chat Header */}
-                      <div className="flex items-center justify-between bg-[#1E222A] rounded-t-lg p-3 border-b border-gray-700 cursor-pointer">
+                      <div 
+                        className="flex items-center justify-between rounded-t-lg p-3 border-b cursor-pointer"
+                        style={{
+                          backgroundColor: currentColors.surface,
+                          borderColor: currentColors.border,
+                        }}
+                      >
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                          <div 
+                            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: currentColors.accent }}
+                          >
                             <FiUser className="text-white text-sm" />
                           </div>
                           <div>
-                            <h3 className="font-medium text-white text-sm">
+                            <h3 
+                              className="font-medium text-sm"
+                              style={{ color: currentColors.text }}
+                            >
                               {spaceName}
                             </h3>
-                            <div className="flex items-center py-2 text-sm text-gray-400">
-                              <div
-                                className={`w-2 h-2 rounded-full mr-2 ${spaceOnlineUsers[space_uuid]?.length ? "bg-green-500" : "bg-red-500"}`}
-                              />
-                              <span>
-                                {spaceOnlineUsers[space_uuid]?.length || 0}{" "}
-                                online
-                              </span>
-                            </div>
                           </div>
                         </div>
                         <div className="flex items-center space-x-1">
@@ -1615,7 +1650,19 @@ const UserPage = () => {
                               e.stopPropagation();
                               setIsChatMaximized(!isChatMaximized);
                             }}
-                            className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700"
+                            className="p-1.5 rounded-full transition-colors"
+                            style={{
+                              color: currentColors.textSecondary,
+                              backgroundColor: "transparent",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = currentColors.hover;
+                              e.currentTarget.style.color = currentColors.text;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "transparent";
+                              e.currentTarget.style.color = currentColors.textSecondary;
+                            }}
                             title={isChatMaximized ? "Restore" : "Maximize"}
                           >
                             {isChatMaximized ? (
@@ -1631,7 +1678,19 @@ const UserPage = () => {
                               setIsChatMinimized(false);
                               setIsChatMaximized(false);
                             }}
-                            className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700"
+                            className="p-1.5 rounded-full transition-colors"
+                            style={{
+                              color: currentColors.textSecondary,
+                              backgroundColor: "transparent",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = currentColors.hover;
+                              e.currentTarget.style.color = currentColors.text;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "transparent";
+                              e.currentTarget.style.color = currentColors.textSecondary;
+                            }}
                             title="Close"
                           >
                             <FiX size={16} />
@@ -1643,7 +1702,8 @@ const UserPage = () => {
                       {!isChatMinimized && (
                         <>
                           <div
-                            className={`bg-[#141820] overflow-y-auto ${isChatMaximized ? "h-[calc(100vh-120px)]" : "h-96"} p-4 space-y-2`}
+                            className={`overflow-y-auto ${isChatMaximized ? "h-[calc(100vh-120px)]" : "h-96"} p-4 space-y-2`}
+                            style={{ backgroundColor: currentColors.background }}
                           >
                             {messages.map((message) => (
                               <div
@@ -1654,12 +1714,17 @@ const UserPage = () => {
                                   className={`flex flex-col pl-2 ${message.senderId === user?.id ? "items-end" : "items-start"}`}
                                 >
                                   <div
-                                    className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? "bg-blue-500 rounded-tr-none text-white" : "bg-gray-700 rounded-tl-none text-gray-200"}`}
+                                    className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? "rounded-tr-none" : "rounded-tl-none"}`}
+                                    style={{
+                                      backgroundColor: message.senderId === user?.id ? currentColors.accent : currentColors.surface,
+                                      color: message.senderId === user?.id ? "white" : currentColors.text,
+                                    }}
                                   >
                                     {message.content}
                                   </div>
                                   <p
-                                    className={`text-xs mt-2 ${message.senderId === user?.id ? "text-blue-100 text-right" : "text-gray-400 text-left"}`}
+                                    className={`text-xs mt-2 ${message.senderId === user?.id ? "text-right" : "text-left"}`}
+                                    style={{ color: currentColors.textSecondary }}
                                   >
                                     {formatTime(message.timestamp)}
                                   </p>
@@ -1672,12 +1737,28 @@ const UserPage = () => {
                           {/* Chat Input */}
                           <form
                             onSubmit={handleSendMessage}
-                            className="bg-[#1B1F26] p-3 rounded-b-lg border-t border-gray-700"
+                            className="p-3 rounded-b-lg border-t"
+                            style={{
+                              backgroundColor: currentColors.surface,
+                              borderColor: currentColors.border,
+                            }}
                           >
                             <div className="flex items-center space-x-2">
                               <button
                                 type="button"
-                                className="text-gray-400 hover:text-white p-2"
+                                className="p-2 rounded transition-colors"
+                                style={{
+                                  color: currentColors.textSecondary,
+                                  backgroundColor: "transparent",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = currentColors.hover;
+                                  e.currentTarget.style.color = currentColors.text;
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "transparent";
+                                  e.currentTarget.style.color = currentColors.textSecondary;
+                                }}
                               >
                                 <FiPaperclip />
                               </button>
@@ -1686,12 +1767,30 @@ const UserPage = () => {
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
                                 placeholder="Type a message..."
-                                className="flex-1 bg-[#141820] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
+                                style={{
+                                  backgroundColor: currentColors.background,
+                                  borderColor: currentColors.border,
+                                  color: currentColors.text,
+                                  focusRingColor: currentColors.accent,
+                                }}
                               />
                               <button
                                 type="submit"
-                                className="text-blue-400 hover:text-blue-300 p-2"
+                                className="p-2 rounded transition-colors"
                                 disabled={!newMessage.trim()}
+                                style={{
+                                  color: newMessage.trim() ? currentColors.accent : currentColors.textSecondary,
+                                  backgroundColor: "transparent",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (newMessage.trim()) {
+                                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "transparent";
+                                }}
                               >
                                 <FiSend />
                               </button>

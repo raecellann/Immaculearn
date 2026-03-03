@@ -1180,22 +1180,18 @@ const ProfStreamPage = () => {
 
                 {/* CHAT */}
                 <button
-                  onClick={handleEnterChat}
-                  className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
+                  onClick={() => setShowChatPopup(true)}
+                  className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
                   style={{
-                    backgroundColor: isDarkMode ? "#000000" : "transparent",
+                    backgroundColor: "transparent",
                     borderColor: currentColors.border,
                     color: currentColors.text,
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = isDarkMode
-                      ? "#1f2937"
-                      : currentColors.hover;
+                    e.target.style.backgroundColor = currentColors.hover;
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = isDarkMode
-                      ? "#000000"
-                      : "transparent";
+                    e.target.style.backgroundColor = "transparent";
                   }}
                 >
                   <FiMessageCircle />
@@ -1962,24 +1958,74 @@ const ProfStreamPage = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !isChatMinimized && setShowChatPopup(false)} />
           <div className={`relative w-full ${isChatMaximized ? 'h-screen max-w-full' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
             {/* Chat Header */}
-            <div className="flex items-center justify-between bg-[#1E222A] rounded-t-lg p-3 border-b border-gray-700 cursor-pointer">
+            <div 
+              className="flex items-center justify-between rounded-t-lg p-3 border-b cursor-pointer"
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
+            >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <div 
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: currentColors.accent }}
+                >
                   <FiUser className="text-white text-sm" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-white text-sm">{spaceName}</h3>
-                  <div className="flex items-center py-2 text-sm text-gray-400">
-                    <div className={`w-2 h-2 rounded-full mr-2 ${spaceOnlineUsers[space_uuid]?.length ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span>{spaceOnlineUsers[space_uuid]?.length || 0} online</span>
-                  </div>
+                  <h3 
+                    className="font-medium text-sm"
+                    style={{ color: currentColors.text }}
+                  >
+                    {spaceName}
+                  </h3>
                 </div>
               </div>
               <div className="flex items-center space-x-1">
-                <button onClick={(e) => { e.stopPropagation(); setIsChatMaximized(!isChatMaximized); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title={isChatMaximized ? 'Restore' : 'Maximize'}>
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setIsChatMaximized(!isChatMaximized); 
+                  }} 
+                  className="p-1.5 rounded-full transition-colors"
+                  style={{
+                    color: currentColors.textSecondary,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                    e.currentTarget.style.color = currentColors.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = currentColors.textSecondary;
+                  }}
+                  title={isChatMaximized ? 'Restore' : 'Maximize'}
+                >
                   {isChatMaximized ? <FiMinimize2 size={14} /> : <FiMaximize2 size={14} />}
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); setShowChatPopup(false); setIsChatMinimized(false); setIsChatMaximized(false); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title="Close">
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setShowChatPopup(false); 
+                    setIsChatMinimized(false); 
+                    setIsChatMaximized(false); 
+                  }} 
+                  className="p-1.5 rounded-full transition-colors"
+                  style={{
+                    color: currentColors.textSecondary,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                    e.currentTarget.style.color = currentColors.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = currentColors.textSecondary;
+                  }}
+                  title="Close"
+                >
                   <FiX size={16} />
                 </button>
               </div>
@@ -1988,14 +2034,26 @@ const ProfStreamPage = () => {
             {/* Chat Messages */}
             {!isChatMinimized && (
               <>
-                <div className={`bg-[#141820] overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}>
+                <div 
+                  className={`overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}
+                  style={{ backgroundColor: currentColors.background }}
+                >
                   {messages.map((message) => (
                     <div key={message.id} className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
                       <div className={`flex flex-col pl-2 ${message.senderId === user?.id ? 'items-end' : 'items-start'}`}>
-                        <div className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'bg-blue-500 rounded-tr-none text-white' : 'bg-gray-700 rounded-tl-none text-gray-200'}`}>
+                        <div 
+                          className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'rounded-tr-none' : 'rounded-tl-none'}`}
+                          style={{
+                            backgroundColor: message.senderId === user?.id ? currentColors.accent : currentColors.surface,
+                            color: message.senderId === user?.id ? 'white' : currentColors.text,
+                          }}
+                        >
                           {message.content}
                         </div>
-                        <p className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-blue-100 text-right' : 'text-gray-400 text-left'}`}>
+                        <p 
+                          className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-right' : 'text-left'}`}
+                          style={{ color: currentColors.textSecondary }}
+                        >
                           {formatTime(message.timestamp)}
                         </p>
                       </div>
@@ -2005,9 +2063,31 @@ const ProfStreamPage = () => {
                 </div>
 
                 {/* Chat Input */}
-                <form onSubmit={handleSendMessage} className="bg-[#1B1F26] p-3 rounded-b-lg border-t border-gray-700">
+                <form 
+                  onSubmit={handleSendMessage} 
+                  className="p-3 rounded-b-lg border-t"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.border,
+                  }}
+                >
                   <div className="flex items-center space-x-2">
-                    <button type="button" className="text-gray-400 hover:text-white p-2">
+                    <button 
+                      type="button" 
+                      className="p-2 rounded transition-colors"
+                      style={{
+                        color: currentColors.textSecondary,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                        e.currentTarget.style.color = currentColors.text;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = currentColors.textSecondary;
+                      }}
+                    >
                       <FiPaperclip />
                     </button>
                     <input
@@ -2015,9 +2095,31 @@ const ProfStreamPage = () => {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Type a message..."
-                      className="flex-1 bg-[#141820] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        borderColor: currentColors.border,
+                        color: currentColors.text,
+                        focusRingColor: currentColors.accent,
+                      }}
                     />
-                    <button type="submit" className="text-blue-400 hover:text-blue-300 p-2" disabled={!newMessage.trim()}>
+                    <button
+                      type="submit"
+                      className="p-2 rounded transition-colors"
+                      disabled={!newMessage.trim()}
+                      style={{
+                        color: newMessage.trim() ? currentColors.accent : currentColors.textSecondary,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (newMessage.trim()) {
+                          e.currentTarget.style.backgroundColor = currentColors.hover;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
                       <FiSend />
                     </button>
                   </div>
