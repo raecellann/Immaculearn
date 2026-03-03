@@ -9,6 +9,10 @@ import TaskPage from "../pages/Task/task.jsx";
 import ViewAllTaskPage from "../pages/Task/components/ViewAllTaskPage.jsx";
 import TaskViewPage from "../pages/Task/components/TaskViewPage.jsx";
 
+import UserFilesShared from "../pages/UserSpace/UserFilesShared.jsx";
+import { SpaceProvider } from "../contexts/space/spaceContextProvider.js";
+import { FileProvider } from "../contexts/file/fileContextProvider.js";
+
 import NotificationPage from "../pages/Notifications/notification.jsx";
 import FilePage from "../pages/Files/files.jsx";
 import ViewFilePage from "../pages/Files/components/ViewFile.jsx";
@@ -41,6 +45,17 @@ export const StudentRoutes = [
     )
     
   },
+
+  <Route
+        path="/space/:space_uuid/:space_name/files"
+        element={
+          <SpaceProvider>
+            <FileProvider>
+              <UserFilesShared />
+            </FileProvider>
+          </SpaceProvider>
+        }
+      />,
   {
     key: "/accsettings",
     path: "/accsettings",

@@ -82,7 +82,6 @@ class AdminService {
     title: string,
     content: string,
     target_audience: string,
-    scheduled_at?: string,
     publish_option: string = "NOW"
   ): Promise<ApiResponse<AnnouncementData>> {
     try {
@@ -91,7 +90,6 @@ class AdminService {
           title,
           content,
           target_audience,
-          scheduled_at,
           publish_option
         }
       );
@@ -125,7 +123,6 @@ class AdminService {
     title?: string,
     content?: string,
     target_audience?: string,
-    scheduled_at?: string,
     publish_option?: string
   ): Promise<ApiResponse<AnnouncementData>> {
     try {
@@ -134,7 +131,6 @@ class AdminService {
       if (title !== undefined) payload.title = title;
       if (content !== undefined) payload.content = content;
       if (target_audience !== undefined) payload.target_audience = target_audience;
-      if (scheduled_at !== undefined) payload.scheduled_at = scheduled_at;
       if (publish_option !== undefined) payload.publish_option = publish_option;
 
       const response = await adminApi.patch<ApiResponse<AnnouncementData>>(

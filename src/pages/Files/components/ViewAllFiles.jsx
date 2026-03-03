@@ -211,6 +211,8 @@ const ViewAllFilesPage = () => {
                     <tr className="border-b text-left" style={{ borderColor: currentColors.border }}>
                       <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Status</th>
                       <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Name</th>
+                      
+                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Type</th>
                       <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Date</th>
                       <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Action</th>
                     </tr>

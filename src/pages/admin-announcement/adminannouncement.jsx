@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Logout from "../component/logout";
 import {
   Menu,
@@ -32,14 +32,14 @@ const AdminAnnouncement = () => {
     scheduledTime: "",
     attachments: []
   });
-  const [publishOption, setPublishOption] = useState("now"); // "now", "draft", "schedule"
+  const [publishOption, setPublishOption] = useState("NOW"); // "NOW", "DRAFT", "SCHEDULED"
 
   // Fetch announcements on component mount
   useEffect(() => {
     fetchAnnouncements();
   }, []);
 
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await getAllAnnouncements();
@@ -59,30 +59,45 @@ const AdminAnnouncement = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getAllAnnouncements]);
 
   const lastScrollY = useRef(0);
   const [showHeader, setShowHeader] = useState(true);
 
+  // Optimized scheduled announcement checker with proper dependency management
   useEffect(() => {
+    let lastCheckTime = new Date().toISOString();
+    
     const checkScheduledAnnouncements = () => {
       const now = new Date();
       const currentDateTime = now.toISOString();
       
-      setAnnouncements(prevAnnouncements => 
-        prevAnnouncements.map(announcement => {
-          if (announcement.status === "scheduled") {
-            const scheduledDateTime = new Date(`${announcement.date} ${announcement.time}`).toISOString();
-            if (scheduledDateTime <= currentDateTime) {
-              return { ...announcement, status: "published" };
+      // Only check if at least 1 minute has passed since last check
+      if (new Date(currentDateTime).getTime() - new Date(lastCheckTime).getTime() >= 60000) {
+        setAnnouncements(prevAnnouncements => {
+          const updatedAnnouncements = prevAnnouncements.map(announcement => {
+            if (announcement.status === "scheduled") {
+              const scheduledDateTime = new Date(`${announcement.date} ${announcement.time}`).toISOString();
+              if (scheduledDateTime <= currentDateTime) {
+                return { ...announcement, status: "published" };
+              }
             }
-          }
-          return announcement;
-        })
-      );
+            return announcement;
+          });
+          
+          // Only update state if there are actual changes
+          const hasChanges = updatedAnnouncements.some((ann, index) => 
+            ann.status !== prevAnnouncements[index].status
+          );
+          
+          return hasChanges ? updatedAnnouncements : prevAnnouncements;
+        });
+        
+        lastCheckTime = currentDateTime;
+      }
     };
 
-    const interval = setInterval(checkScheduledAnnouncements, 60000); // Check every minute
+    const interval = setInterval(checkScheduledAnnouncements, 30000); // Check every 30 seconds but only update if minute passed
     checkScheduledAnnouncements(); // Check immediately on mount
 
     return () => clearInterval(interval);
@@ -134,7 +149,7 @@ const AdminAnnouncement = () => {
   const handleCreateAnnouncement = async () => {
     let scheduled_at = undefined;
     
-    if (publishOption === "schedule" && formData.scheduledDate && formData.scheduledTime) {
+    if (publishOption === "SCHEDULED" && formData.scheduledDate && formData.scheduledTime) {
       scheduled_at = new Date(`${formData.scheduledDate}T${formData.scheduledTime}`).toISOString();
     }
 
@@ -143,7 +158,7 @@ const AdminAnnouncement = () => {
       content: formData.content,
       target_audience: formData.targetAudience.toUpperCase(),
       scheduled_at,
-      publish_option: publishOption.toUpperCase()
+      publish_option: publishOption
     };
 
     setIsLoading(true);
@@ -161,7 +176,7 @@ const AdminAnnouncement = () => {
           scheduledTime: "",
           attachments: []
         });
-        setPublishOption("now");
+        setPublishOption("NOW"); // Reset publishOption to "NOW"
         setShowCreateModal(false);
       } else {
         toast.error(result.message || "Failed to create announcement");
@@ -216,7 +231,7 @@ const AdminAnnouncement = () => {
       scheduledTime: "",
       attachments: []
     });
-    setPublishOption("now");
+    setPublishOption("NOW");
   };
 
   const formatDate = (dateString) => {
@@ -224,11 +239,16 @@ const AdminAnnouncement = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const filteredAnnouncements = Array.isArray(announcements) ? announcements.filter((a) =>
-    a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    a.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    a.author.toLowerCase().includes(searchQuery.toLowerCase())
-  ) : [];
+  // Memoize filtered announcements to prevent unnecessary re-renders
+  const filteredAnnouncements = useMemo(() => {
+    if (!Array.isArray(announcements)) return [];
+    
+    return announcements.filter((a) =>
+      a.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.author?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [announcements, searchQuery]);
 
   return (
     <div className="flex font-sans min-h-screen bg-gray-50 text-gray-900">

@@ -18,6 +18,7 @@ export interface AdminContextType {
     getAllAnnouncements: () => Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }>;
     updateAnnouncement: (announcement_id: number, announcementData: Partial<AnnouncementCreateData>) => Promise<{ success: boolean; message?: string; data?: AnnouncementData }>;
     deleteAnnouncement: (announcement_id: number) => Promise<{ success: boolean; message?: string }>;
+    refreshAnnouncements: () => Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }>;
 }
 
 export const AdminContext = createContext<AdminContextType | undefined>(

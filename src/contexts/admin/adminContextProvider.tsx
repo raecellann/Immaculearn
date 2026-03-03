@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { adminApi } from "../../lib/api.admin";
 import { AdminContext, AdminContextType } from "./adminContext";
 import { Admin, AdminStats, AnnouncementData, AnnouncementCreateData } from "../../types/admin";
@@ -12,6 +12,12 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  // Cache for announcements to prevent redundant re-renders when data hasn't changed
+  const announcementsCache = useRef<{
+    data: AnnouncementData[] | null;
+    lastFetch: number | null;
+  }>({ data: null, lastFetch: null });
 
   // Check authentication status
   const checkAuth = async (): Promise<boolean> => {
@@ -165,31 +171,62 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   };
 
   // Announcement functions
-  const createAnnouncement = async (announcementData: AnnouncementCreateData): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
-    try {
-      setIsLoading(true);
-      const result = await adminService.create_announcement(
-        announcementData.title,
-        announcementData.content,
-        announcementData.target_audience,
-        announcementData.scheduled_at,
-        announcementData.publish_option
-      );
-      return result;
-    } catch (err) {
-      console.error("Create announcement error:", err);
-      return {
-        success: false,
-        message: "Failed to create announcement"
-      };
-    } finally {
-      setIsLoading(false);
+  const createAnnouncement = async (
+  announcementData: AnnouncementCreateData
+): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
+  try {
+    setIsLoading(true);
+
+    const result = await adminService.create_announcement(
+      announcementData.title,
+      announcementData.content,
+      announcementData.target_audience,
+      announcementData.scheduled_at
+    );
+
+    if (result.success) {
+      // Clear cache to ensure fresh data on next fetch
+      announcementsCache.current = { data: null, lastFetch: null };
+
+      // Fetch fresh announcements immediately
+      await getAllAnnouncements();
     }
-  };
+
+    return result;
+  } catch (err) {
+    console.error("Create announcement error:", err);
+    return {
+      success: false,
+      message: "Failed to create announcement"
+    };
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const getAllAnnouncements = async (): Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }> => {
     try {
+      // Check if we have cached data and return it immediately to prevent API call
+      if (announcementsCache.current.data) {
+        console.log('Returning cached announcements data to prevent API call');
+        return {
+          success: true,
+          data: announcementsCache.current.data
+        };
+      }
+
+      // No cached data, fetch from API
+      console.log('Fetching fresh announcements data from API');
       const result = await adminService.getAllAnnouncements();
+      
+      // Update cache if request was successful
+      if (result.success && result.data) {
+        announcementsCache.current = {
+          data: result.data,
+          lastFetch: Date.now()
+        };
+      }
+      
       return result;
     } catch (err) {
       console.error("Get all announcements error:", err);
@@ -208,9 +245,12 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         announcementData.title,
         announcementData.content,
         announcementData.target_audience,
-        announcementData.scheduled_at,
         announcementData.publish_option
       );
+      
+      // Clear cache to ensure fresh data on next fetch
+      announcementsCache.current = { data: null, lastFetch: null };
+      
       return result;
     } catch (err) {
       console.error("Update announcement error:", err);
@@ -227,6 +267,10 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       const result = await adminService.deleteAnnouncement(announcement_id);
+      
+      // Clear cache to ensure fresh data on next fetch
+      announcementsCache.current = { data: null, lastFetch: null };
+      
       return result;
     } catch (err) {
       console.error("Delete announcement error:", err);
@@ -237,6 +281,15 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Manual cache refresh function
+  const refreshAnnouncements = async (): Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }> => {
+    // Force clear cache to fetch fresh data
+    announcementsCache.current = { data: null, lastFetch: null };
+    
+    // Fetch fresh data
+    return await getAllAnnouncements();
   };
 
   // Initial check on mount - only if we have a token
@@ -265,6 +318,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     getAllAnnouncements,
     updateAnnouncement,
     deleteAnnouncement,
+    refreshAnnouncements,
   };
 
   return (

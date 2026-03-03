@@ -14,5 +14,6 @@ export const useAdminAnnouncement = () => {
     getAllAnnouncements: context.getAllAnnouncements,
     updateAnnouncement: context.updateAnnouncement,
     deleteAnnouncement: context.deleteAnnouncement,
+    refreshAnnouncements: context.refreshAnnouncements,
   };
 };
