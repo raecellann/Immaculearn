@@ -696,7 +696,11 @@ const NotificationPage = () => {
                         onClick={() =>
                           handleDecline(invite.account_id, invite.space_uuid)
                         }
-                        className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md"
+                        className="px-3 py-1.5 text-sm rounded-md"
+                        style={{
+                          backgroundColor: isDarkMode ? "#4B5563" : "#E5E7EB",
+                          color: isDarkMode ? "white" : "black",
+                        }}
                       >
                         Decline
                       </button>
@@ -704,7 +708,10 @@ const NotificationPage = () => {
                         onClick={() =>
                           handleAccept(invite.account_id, invite.space_uuid)
                         }
-                        className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md"
+                        className="px-3 py-1.5 text-sm rounded-md text-white"
+                        style={{
+                          backgroundColor: isDarkMode ? "#2563EB" : "#3B82F6",
+                        }}
                       >
                         Accept
                       </button>
@@ -807,7 +814,11 @@ const NotificationPage = () => {
                             invite.space_uuid || invite.c_space_uuid,
                           )
                         }
-                        className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md"
+                        className="px-3 py-1.5 text-sm rounded-md"
+                        style={{
+                          backgroundColor: isDarkMode ? "#4B5563" : "#E5E7EB",
+                          color: isDarkMode ? "white" : "black",
+                        }}
                       >
                         Decline
                       </button>
@@ -817,7 +828,10 @@ const NotificationPage = () => {
                             invite.space_uuid || invite.c_space_uuid,
                           )
                         }
-                        className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md"
+                        className="px-3 py-1.5 text-sm rounded-md text-white"
+                        style={{
+                          backgroundColor: isDarkMode ? "#2563EB" : "#3B82F6",
+                        }}
                       >
                         Accept
                       </button>
