@@ -8,6 +8,7 @@ import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 
 const UserPeoplePage = () => {
   const { user } = useUser();
@@ -79,12 +80,15 @@ const UserPeoplePage = () => {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    
+
     const deltaY = e.clientY - dragStartY;
     const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
     const positionChange = (deltaY / containerHeight) * 100;
-    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
-    
+    const newPosition = Math.max(
+      0,
+      Math.min(100, dragStartPosition - positionChange),
+    );
+
     setCoverPhotoPosition(newPosition);
   };
 
@@ -97,13 +101,13 @@ const UserPeoplePage = () => {
     if (isDragging) {
       const handleGlobalMouseMove = (e) => handleMouseMove(e);
       const handleGlobalMouseUp = () => handleMouseUp();
-      
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-      
+
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+      document.addEventListener("mouseup", handleGlobalMouseUp);
+
       return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleGlobalMouseUp);
+        document.removeEventListener("mousemove", handleGlobalMouseMove);
+        document.removeEventListener("mouseup", handleGlobalMouseUp);
       };
     }
   }, [isDragging, dragStartY, dragStartPosition]);
@@ -119,7 +123,13 @@ const UserPeoplePage = () => {
     const file = event.target.files[0];
     if (file) {
       // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!validTypes.includes(file.type)) {
         addNotification({
           type: "error",
@@ -160,37 +170,40 @@ const UserPeoplePage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Create canvas to apply transformations
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = new Image();
-    
+
     img.onload = () => {
       // Set canvas size to cover photo dimensions
       canvas.width = 1200;
       canvas.height = 400;
-      
+
       // Calculate scale to cover the entire canvas
-      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scale = Math.max(
+        canvas.width / img.width,
+        canvas.height / img.height,
+      );
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
-      
+
       // Calculate position based on user vertical positioning
       const x = (canvas.width - scaledWidth) / 2;
       const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-      
+
       // Draw the image with transformations
       ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-      
+
       // Convert to data URL and update
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setCoverPhotoUrl(dataUrl);
-      
+
       // Save to localStorage
       localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-      
+
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       addNotification({
         type: "success",
         title: "Cover Photo Updated",
@@ -198,7 +211,7 @@ const UserPeoplePage = () => {
         duration: 3000,
       });
     };
-    
+
     img.src = coverPhotoUrl;
   };
 
@@ -212,7 +225,7 @@ const UserPeoplePage = () => {
     // Don't clear coverPhotoUrl on cancel, keep the existing cover photo
     setCoverPhotoPosition(50);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -223,7 +236,7 @@ const UserPeoplePage = () => {
     // Remove from localStorage
     localStorage.removeItem(`coverPhoto_${space_uuid}`);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -253,7 +266,13 @@ const UserPeoplePage = () => {
   // Handle not found - moved after all hooks
   if (!activeSpace) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
+      <div
+        className="flex items-center justify-center min-h-screen"
+        style={{
+          backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+          color: currentColors.text,
+        }}
+      >
         <p className="text-xl">Space not found.</p>
       </div>
     );
@@ -284,7 +303,13 @@ const UserPeoplePage = () => {
     setMemberToRemove(null);
   };
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
+    <div
+      className="flex min-h-screen font-sans"
+      style={{
+        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -315,7 +340,10 @@ const UserPeoplePage = () => {
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
-          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border,
+          }}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
@@ -333,15 +361,15 @@ const UserPeoplePage = () => {
         <div className="lg:hidden h-16" />
 
         {/* ================= COVER ================= */}
-        <div 
+        <div
           className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
           onClick={handleCoverPhotoClick}
         >
           {coverPhotoUrl ? (
             <>
-              <img 
-                src={coverPhotoUrl} 
-                alt="Space Cover" 
+              <img
+                src={coverPhotoUrl}
+                alt="Space Cover"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
@@ -406,18 +434,21 @@ const UserPeoplePage = () => {
           {creator && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4">
-                {activeSpace?.space_type === "course" ? "Adviser" : "Admin"}
+                {activeSpace?.professor ? "Adviser" : "Admin"}
               </h2>
               <div className="border-t border-gray-600 pt-4">
                 <div className="flex items-center gap-4">
                   <img
                     src={
-                      creator.profile_pic || "/src/assets/default-avatar.jpg"
+                      activeSpace?.professor?.avatar ||
+                      "/src/assets/default-avatar.jpg"
                     }
-                    alt={creator.full_name}
+                    alt={activeSpace?.professor?.name}
                     className="w-10 h-10 rounded-full"
                   />
-                  <span className="font-medium">{creator.full_name}</span>
+                  <span className="font-medium">
+                    {capitalizeWords(activeSpace?.professor?.name)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -494,14 +525,16 @@ const UserPeoplePage = () => {
           </div>
         </div>
       )}
-      
+
       {/* COVER PHOTO EDITOR MODAL */}
       {showCoverPhotoEditor && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Position Cover Photo</h2>
+              <h2 className="text-lg font-semibold text-white">
+                Position Cover Photo
+              </h2>
               <button
                 onClick={handleCoverPhotoCancel}
                 className="text-gray-400 hover:text-white p-1 bg-transparent"
@@ -517,12 +550,12 @@ const UserPeoplePage = () => {
                 <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                   <div
                     ref={coverPhotoEditorRef}
-                    className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                    className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
                     style={{
                       backgroundImage: `url(${coverPhotoUrl})`,
-                      backgroundSize: 'cover',
+                      backgroundSize: "cover",
                       backgroundPosition: `center ${coverPhotoPosition}%`,
-                      backgroundRepeat: 'no-repeat',
+                      backgroundRepeat: "no-repeat",
                     }}
                     onMouseDown={handleMouseDown}
                   />
@@ -564,13 +597,16 @@ const UserPeoplePage = () => {
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-gray-700">
-              <h2 className="text-lg font-semibold text-white">Change Cover Photo?</h2>
+              <h2 className="text-lg font-semibold text-white">
+                Change Cover Photo?
+              </h2>
             </div>
 
             {/* Content */}
             <div className="p-4">
               <p className="text-gray-300">
-                Do you want to change the cover photo for this space with the image you uploaded?
+                Do you want to change the cover photo for this space with the
+                image you uploaded?
               </p>
             </div>
 
