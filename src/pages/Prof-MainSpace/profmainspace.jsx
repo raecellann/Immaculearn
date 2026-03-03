@@ -36,7 +36,64 @@ const ProfSpacePage = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [spaceCoverPhotos, setSpaceCoverPhotos] = useState({});
 
-  // Memoized space descriptions for better performance
+  // Inject CSS animations for SSR compatibility
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes riseUp {
+          from {
+            transform: translateY(0px);
+          }
+          to {
+            transform: translateY(-8px);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .group:hover .transform-hover {
+          transform: scale(1.02);
+          transition: transform 0.3s ease;
+        }
+        
+        .group:hover .shadow-hover {
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+          transition: box-shadow 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+          border-color: #6366F1;
+          transition: transform 0.6s ease-out, box-shadow 0.6s ease-out, border-color 0.6s ease-out;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        // Cleanup style element on unmount
+        if (style.parentNode) {
+          style.parentNode.removeChild(style);
+        }
+      };
+    }
+  }, []);
+
+  // Filter course spaces by year level
   const spaceDescriptions = useMemo(() => {
     const descriptions = {};
 
@@ -261,7 +318,7 @@ const ProfSpacePage = () => {
 
   return (
     <div
-      className="flex min-h-screen"
+      className="flex font-sans min-h-screen"
       style={{
         backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
         color: currentColors.text,
@@ -366,7 +423,7 @@ const ProfSpacePage = () => {
               <div className="flex md:justify-end">
                 <Button
                   onClick={() => navigate("/prof/space/create")}
-                  style={{ border: "1px solid black" }}
+                  style={{ border: isDarkMode ? "1px solid black" : "1px solid white" }}
                 >
                   Create Space
                 </Button>
@@ -384,10 +441,10 @@ const ProfSpacePage = () => {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {userSpaces && userSpaces.length > 0 ? (
-                userSpaces?.map((space) => (
+                userSpaces?.map((space, index) => (
                   <div
                     key={space.space_id}
-                    className="group rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer relative"
+                    className="group rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer relative hover-lift"
                     style={{
                       backgroundColor: isDarkMode
                         ? "#1E242E"
@@ -395,6 +452,8 @@ const ProfSpacePage = () => {
                       border: isDarkMode
                         ? "1px solid #3B4457"
                         : "1px solid black",
+                      animation: `fadeIn 0.6s ease-out ${index * 0.1}s forwards`,
+                      opacity: 0,
                     }}
                   >
                     <div
@@ -411,7 +470,7 @@ const ProfSpacePage = () => {
                       }
                       onMouseLeave={() => setHoveredSpace(null)}
                     >
-                      <div className="relative h-40 bg-gray-800 overflow-hidden">
+                      <div className="relative h-40 bg-gray-800 overflow-hidden transform-hover shadow-hover">
                         <SpaceCover
                           image={
                             spaceCoverPhotos[space.space_uuid] ||
@@ -543,7 +602,7 @@ const ProfSpacePage = () => {
                 <Button
                   onClick={() => navigate("/prof/spaces/classroom/create")}
                   className="px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm"
-                  style={{ border: "1px solid black" }}
+                  style={{ border: isDarkMode ? "1px solid black" : "1px solid white" }}
                 >
                   Create Space
                 </Button>
@@ -555,10 +614,10 @@ const ProfSpacePage = () => {
                 filterCourseSpacesByYear(courseSpaces, yearFilter)?.length >
                 0 ? (
                   filterCourseSpacesByYear(courseSpaces, yearFilter)?.map(
-                    (space, id) => (
+                    (space, index) => (
                       <div
-                        key={id}
-                        className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
+                        key={index}
+                        className="group rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer relative hover-lift"
                         style={{
                           backgroundColor: isDarkMode
                             ? "#1E242E"
@@ -566,6 +625,8 @@ const ProfSpacePage = () => {
                           border: isDarkMode
                             ? "1px solid #3B4457"
                             : "1px solid black",
+                          animation: `fadeIn 0.6s ease-out ${index * 0.1}s forwards`,
+                          opacity: 0,
                         }}
                       >
                         <div
@@ -582,7 +643,7 @@ const ProfSpacePage = () => {
                           }
                           onMouseLeave={() => setHoveredSpace(null)}
                         >
-                          <div className="relative h-40 bg-gray-800 overflow-hidden">
+                          <div className="relative h-40 bg-gray-800 overflow-hidden transform-hover shadow-hover">
                             <SpaceCover
                               image={
                                 spaceCoverPhotos[space.space_uuid] ||

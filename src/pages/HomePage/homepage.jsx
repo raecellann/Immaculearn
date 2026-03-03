@@ -300,6 +300,38 @@ const HomePage1 = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  // Inject CSS animations for staggered transitions
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .hover-lift:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        if (style.parentNode) {
+          style.parentNode.removeChild(style);
+        }
+      };
+    }
+  }, []);
+
   // Handle delete space
   const handleDeleteSpace = async () => {
     try {
@@ -609,15 +641,17 @@ const HomePage1 = () => {
                       >
                         {userSpaces
                           .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
-                          .map((space) => (
+                          .map((space, spaceIndex) => (
                             <div
                               key={space.space_uuid}
-                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative h-full"
+                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative h-full hover-lift"
                               style={{
                                 backgroundColor: isDarkMode
                                   ? "rgb(27, 31, 38)"
                                   : "white",
                                 border: isDarkMode ? "none" : "1px solid black",
+                                animation: `fadeIn 0.6s ease-out ${(idx * cardsPerView + spaceIndex) * 0.1}s forwards`,
+                                opacity: 0,
                               }}
                             >
                               <div
@@ -779,15 +813,17 @@ const HomePage1 = () => {
                       >
                         {courseSpaces
                           ?.slice(idx * cardsPerView, (idx + 1) * cardsPerView)
-                          .map((course, i) => (
+                          .map((course, spaceIndex) => (
                             <div
-                              key={i}
-                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative h-full"
+                              key={course.space_uuid}
+                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative h-full hover-lift"
                               style={{
                                 backgroundColor: isDarkMode
                                   ? "rgb(27, 31, 38)"
                                   : "white",
                                 border: isDarkMode ? "none" : "1px solid black",
+                                animation: `fadeIn 0.6s ease-out ${(idx * cardsPerView + spaceIndex) * 0.1}s forwards`,
+                                opacity: 0,
                               }}
                             >
                               <div
@@ -959,15 +995,17 @@ const HomePage1 = () => {
                       >
                         {sharedSpaces
                           .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
-                          .map((space) => (
+                          .map((space, spaceIndex) => (
                             <div
                               key={space.space_uuid}
-                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative h-full"
+                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative h-full hover-lift"
                               style={{
                                 backgroundColor: isDarkMode
                                   ? "rgb(27, 31, 38)"
                                   : "white",
                                 border: isDarkMode ? "none" : "1px solid black",
+                                animation: `fadeIn 0.6s ease-out ${(idx * cardsPerView + spaceIndex) * 0.1}s forwards`,
+                                opacity: 0,
                               }}
                             >
                               <div

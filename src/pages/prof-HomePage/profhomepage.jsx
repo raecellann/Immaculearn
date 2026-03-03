@@ -278,6 +278,38 @@ const ProfHomePage = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  // Inject CSS animations for staggered transitions
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .hover-lift:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        if (style.parentNode) {
+          style.parentNode.removeChild(style);
+        }
+      };
+    }
+  }, []);
+
   const userSpaceUUIDs = new Set(userSpaces.map((s) => s.space_uuid));
   const sharedSpaces = courseSpaces.filter(
     (s) => !userSpaceUUIDs.has(s.space_uuid),
@@ -561,13 +593,15 @@ const ProfHomePage = () => {
                       >
                         {userSpaces
                           .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
-                          .map((space) => (
+                          .map((space, spaceIndex) => (
                             <div
                               key={space.space_uuid}
-                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
+                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative hover-lift"
                               style={{
                                 backgroundColor: currentColors.surface,
                                 border: isDarkMode ? "none" : "1px solid black",
+                                animation: `fadeIn 0.6s ease-out ${(idx * cardsPerView + spaceIndex) * 0.1}s forwards`,
+                                opacity: 0,
                               }}
                             >
                               <div
@@ -736,13 +770,15 @@ const ProfHomePage = () => {
                       >
                         {sharedSpaces
                           .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
-                          .map((space) => (
+                          .map((space, spaceIndex) => (
                             <div
                               key={space.space_uuid}
-                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
+                              className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative hover-lift"
                               style={{
                                 backgroundColor: currentColors.surface,
                                 border: isDarkMode ? "none" : "1px solid black",
+                                animation: `fadeIn 0.6s ease-out ${(idx * cardsPerView + spaceIndex) * 0.1}s forwards`,
+                                opacity: 0,
                               }}
                             >
                               <div

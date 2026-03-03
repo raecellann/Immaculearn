@@ -297,6 +297,38 @@ const SpacePage = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  // Inject CSS animations for staggered transitions
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .hover-lift:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        if (style.parentNode) {
+          style.parentNode.removeChild(style);
+        }
+      };
+    }
+  }, []);
+
   // Join Space Functionality
   const handleJoinRequestSubmit = async () => {
     if (!joinCode.trim()) {
@@ -494,10 +526,10 @@ const SpacePage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {userSpaces && userSpaces.length > 0 ? (
-                userSpaces.map((space, i) => (
+                userSpaces.map((space, index) => (
                   <div
-                    key={i}
-                    className="group rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer relative"
+                    key={space.space_uuid}
+                    className="group rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer relative hover-lift"
                     style={{
                       backgroundColor: isDarkMode
                         ? "#1E242E"
@@ -505,6 +537,8 @@ const SpacePage = () => {
                       border: isDarkMode
                         ? "1px solid #3B4457"
                         : "1px solid black",
+                      animation: `fadeIn 0.6s ease-out ${index * 0.1}s forwards`,
+                      opacity: 0,
                     }}
                   >
                     <div
@@ -628,10 +662,10 @@ const SpacePage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {courseSpaces && courseSpaces.length > 0 ? (
-                courseSpaces.map((course, i) => (
+                courseSpaces.map((course, index) => (
                   <div
-                    key={i}
-                    className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
+                    key={course.space_uuid}
+                    className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative hover-lift"
                     style={{
                       backgroundColor: isDarkMode
                         ? "#1E242E"
@@ -639,6 +673,8 @@ const SpacePage = () => {
                       border: isDarkMode
                         ? "1px solid #3B4457"
                         : "1px solid black",
+                      animation: `fadeIn 0.6s ease-out ${index * 0.1}s forwards`,
+                      opacity: 0,
                     }}
                   >
                     <div
@@ -776,10 +812,10 @@ const SpacePage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sharedSpaces.length > 0 ? (
-                sharedSpaces.map((space, i) => (
+                sharedSpaces.map((space, index) => (
                   <div
-                    key={i}
-                    className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative"
+                    key={space.space_uuid}
+                    className="group rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer relative hover-lift"
                     style={{
                       backgroundColor: isDarkMode
                         ? "#1E242E"
@@ -787,6 +823,8 @@ const SpacePage = () => {
                       border: isDarkMode
                         ? "1px solid #3B4457"
                         : "1px solid black",
+                      animation: `fadeIn 0.6s ease-out ${index * 0.1}s forwards`,
+                      opacity: 0,
                     }}
                   >
                     <div

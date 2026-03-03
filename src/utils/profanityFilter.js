@@ -6,7 +6,6 @@ const profanityFilter = {
     'fuck', 'fucking', 'fucked', 'fuckers', 'fucker',
     'shit', 'shitting', 'shitted', 'shits', 'shitter',
     'damn', 'damned', 'damning',
-    'hell', 'hells',
     'bitch', 'bitches', 'bitching', 'bitched',
     'bastard', 'bastards',
     'ass', 'asses', 'asshole', 'assholes', 'assholing',
