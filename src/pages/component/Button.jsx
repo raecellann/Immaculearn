@@ -3,6 +3,7 @@ import React, { useState } from "react";
 const Button = ({
   children,
   onClick,
+  disabled = false,
   className = "",
   style = {},
   type = "button",
@@ -46,6 +47,7 @@ const Button = ({
       className={className}
       style={getButtonStyle()}
       onClick={onClick}
+      disabled={disabled}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={() => setIsActive(true)}

@@ -13,6 +13,7 @@ import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 const ProfCreateClassroomSpace = () => {
   const { createCourseSpace } = useSpace();
   const { isDarkMode, colors } = useSpaceTheme();
+  const [isLoading, setIsLoading] = useState(false);
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -125,7 +126,7 @@ const ProfCreateClassroomSpace = () => {
       setShortDescription(text);
       setWordCount(count);
     }
-    
+
     // Clear description error when user starts typing
     if (text.trim()) {
       setDescriptionError(false);
@@ -210,56 +211,57 @@ const ProfCreateClassroomSpace = () => {
     setYearLevelError(false);
     setDayError(false);
     setTimeError(false);
-    
+
     let hasErrors = false;
-    
+
     // Validate space name
     if (!spaceName.trim()) {
       setSpaceNameError(true);
       hasErrors = true;
     }
-    
+
     // Validate description
     if (!shortDescription.trim() || wordCount === 0) {
       setDescriptionError(true);
       hasErrors = true;
     }
-    
+
     if (wordCount > 100) {
       setDescriptionError(true);
       hasErrors = true;
     }
-    
+
     // Validate cover photo
     if (!coverImage || coverImage === "") {
       setCoverPhotoError(true);
       hasErrors = true;
     }
-    
+
     // Validate year level
     if (!yearLevel) {
       setYearLevelError(true);
       hasErrors = true;
     }
-    
+
     // Validate day
     if (!selectedDay) {
       setDayError(true);
       hasErrors = true;
     }
-    
+
     // Validate time
     if (!timeSchedule) {
       setTimeError(true);
       hasErrors = true;
     }
-    
+
     // If there are validation errors, prevent creation
     if (hasErrors) {
       return;
     }
-    
+
     try {
+      setIsLoading(true);
       console.log(timeSchedule);
       // Parse time schedule to get start and end times
       const timeParts = timeSchedule.split(" - ");
@@ -294,7 +296,7 @@ const ProfCreateClassroomSpace = () => {
         space_time_end: timeEnd24,
         space_yr_lvl: parseInt(yearLevel) || 1,
         space_settings: spaceSettings.current,
-        cover_image: coverImage
+        cover_image: coverImage,
       };
 
       // Call the API
@@ -304,14 +306,20 @@ const ProfCreateClassroomSpace = () => {
         const space_uuid = result?.space_uuid;
         console.log(space_uuid);
         toast.success(`Course Space "${spaceName}" created successfully!`);
-        
+
         // Save cover photo to localStorage for immediate display
-        if (coverImage && coverImage !== "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg") {
+        if (
+          coverImage &&
+          coverImage !==
+            "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg"
+        ) {
           localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
           // Dispatch custom event to notify other components of the cover photo update
-          window.dispatchEvent(new CustomEvent('coverPhotoUpdated', { 
-            detail: { space_uuid, coverPhoto: coverImage } 
-          }));
+          window.dispatchEvent(
+            new CustomEvent("coverPhotoUpdated", {
+              detail: { space_uuid, coverPhoto: coverImage },
+            }),
+          );
         }
 
         // Reset form
@@ -319,7 +327,9 @@ const ProfCreateClassroomSpace = () => {
         setShortDescription("");
         setWordCount(0);
         setSectionContent("");
-        setCoverImage("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
+        setCoverImage(
+          "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
+        );
         setYearLevel("");
         setSelectedDay("");
         setTimeSchedule("");
@@ -337,6 +347,8 @@ const ProfCreateClassroomSpace = () => {
     } catch (error) {
       console.error("Create space error:", error);
       alert("An error occurred while creating the space.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -347,16 +359,22 @@ const ProfCreateClassroomSpace = () => {
     e.preventDefault();
   };
 
-  const handleMouseMove = useCallback((e) => {
-    if (!isDragging) return;
-    
-    const deltaY = e.clientY - dragStartY;
-    const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
-    const positionChange = (deltaY / containerHeight) * 100;
-    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
-    
-    setCoverPhotoPosition(newPosition);
-  }, [isDragging, dragStartY, dragStartPosition]);
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (!isDragging) return;
+
+      const deltaY = e.clientY - dragStartY;
+      const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
+      const positionChange = (deltaY / containerHeight) * 100;
+      const newPosition = Math.max(
+        0,
+        Math.min(100, dragStartPosition - positionChange),
+      );
+
+      setCoverPhotoPosition(newPosition);
+    },
+    [isDragging, dragStartY, dragStartPosition],
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -367,13 +385,13 @@ const ProfCreateClassroomSpace = () => {
     const handleGlobalMouseUp = () => handleMouseUp();
 
     if (isDragging) {
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+      document.addEventListener("mouseup", handleGlobalMouseUp);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener("mousemove", handleGlobalMouseMove);
+      document.removeEventListener("mouseup", handleGlobalMouseUp);
     };
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
@@ -382,17 +400,23 @@ const ProfCreateClassroomSpace = () => {
     if (file) {
       // Clear cover photo error when user selects a file
       setCoverPhotoError(false);
-      
+
       // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!validTypes.includes(file.type)) {
-        alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+        alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
+        alert("File size must be less than 5MB");
         return;
       }
 
@@ -412,34 +436,37 @@ const ProfCreateClassroomSpace = () => {
 
   const handleCoverPhotoSave = () => {
     // Create canvas to apply transformations
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = new Image();
-    
+
     img.onload = () => {
       // Set canvas size to cover photo dimensions
       canvas.width = 1200;
       canvas.height = 400;
-      
+
       // Calculate scale to fit
-      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scale = Math.max(
+        canvas.width / img.width,
+        canvas.height / img.height,
+      );
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
-      
+
       // Calculate position based on user vertical positioning
       const x = (canvas.width - scaledWidth) / 2;
       const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-      
+
       // Draw the image with transformations
       ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-      
+
       // Convert to data URL and update
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setCoverImage(dataUrl);
-      
+
       setShowCoverPhotoEditor(false);
     };
-    
+
     img.src = coverImage;
   };
 
@@ -449,7 +476,7 @@ const ProfCreateClassroomSpace = () => {
     // Don't clear coverImage on cancel, keep the existing cover photo
     setCoverPhotoPosition(50);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -531,7 +558,9 @@ const ProfCreateClassroomSpace = () => {
                   <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
                     {/* Header */}
                     <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-                      <h2 className="text-sm lg:text-lg font-semibold text-white">Position Cover Photo</h2>
+                      <h2 className="text-sm lg:text-lg font-semibold text-white">
+                        Position Cover Photo
+                      </h2>
                       <button
                         onClick={handleCoverPhotoCancel}
                         className="text-gray-400 hover:text-white p-1 bg-transparent"
@@ -546,12 +575,12 @@ const ProfCreateClassroomSpace = () => {
                         <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                           <div
                             ref={coverPhotoEditorRef}
-                            className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                            className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
                             style={{
                               backgroundImage: `url(${coverImage})`,
-                              backgroundSize: 'cover',
+                              backgroundSize: "cover",
                               backgroundPosition: `center ${coverPhotoPosition}%`,
-                              backgroundRepeat: 'no-repeat',
+                              backgroundRepeat: "no-repeat",
                             }}
                             onMouseDown={handleMouseDown}
                           />
@@ -592,7 +621,7 @@ const ProfCreateClassroomSpace = () => {
                 <img
                   src={coverImage}
                   alt="Cover"
-                  className={`w-full h-32 sm:h-44 object-cover rounded-lg ${coverPhotoError ? 'border-2 border-red-500' : ''}`}
+                  className={`w-full h-32 sm:h-44 object-cover rounded-lg ${coverPhotoError ? "border-2 border-red-500" : ""}`}
                   style={{
                     background: coverImage.includes("gradient")
                       ? coverImage
@@ -600,7 +629,9 @@ const ProfCreateClassroomSpace = () => {
                   }}
                 />
                 {coverPhotoError && (
-                  <p className="text-red-500 text-xs mt-1">Please select a cover photo</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    Please select a cover photo
+                  </p>
                 )}
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
                   <button
@@ -709,16 +740,20 @@ const ProfCreateClassroomSpace = () => {
                     placeholder="Enter space name"
                     value={spaceName}
                     onChange={handleSpaceNameChange}
-                    style={{ 
-                      width: "100%", 
+                    style={{
+                      width: "100%",
                       backgroundColor: "#ffffff",
-                      border: spaceNameError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                      border: spaceNameError
+                        ? "2px solid #ef4444"
+                        : "1px solid #d1d5db",
                       fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
                     }}
                     className="text-sm sm:text-base"
                   />
                   {spaceNameError && (
-                    <p className="text-red-500 text-xs mt-1">Space name is required</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      Space name is required
+                    </p>
                   )}
                 </div>
 
@@ -735,7 +770,9 @@ const ProfCreateClassroomSpace = () => {
                     }`}
                     style={{
                       backgroundColor: isDarkMode ? "#374151" : "#ffffff",
-                      borderColor: yearLevelError ? "#ef4444" : currentColors.border,
+                      borderColor: yearLevelError
+                        ? "#ef4444"
+                        : currentColors.border,
                       color: currentColors.text,
                     }}
                   >
@@ -746,7 +783,9 @@ const ProfCreateClassroomSpace = () => {
                     <option value="4th Year">4th Year</option>
                   </select>
                   {yearLevelError && (
-                    <p className="text-red-500 text-xs mt-1">Year level is required</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      Year level is required
+                    </p>
                   )}
                 </div>
 
@@ -818,7 +857,9 @@ const ProfCreateClassroomSpace = () => {
                     </p>
                   )}
                   {dayError && (
-                    <p className="text-red-500 text-xs mt-1">Schedule day is required</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      Schedule day is required
+                    </p>
                   )}
                 </div>
 
@@ -861,7 +902,9 @@ const ProfCreateClassroomSpace = () => {
                     </div>
                   </div>
                   {timeError && (
-                    <p className="text-red-500 text-xs mt-1">Time schedule is required</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      Time schedule is required
+                    </p>
                   )}
                 </div>
               </div>
@@ -877,18 +920,20 @@ const ProfCreateClassroomSpace = () => {
                   placeholder="Enter a brief description for this classroom space"
                   value={shortDescription}
                   onChange={handleShortDescriptionChange}
-                  style={{ 
-                    width: "100%", 
+                  style={{
+                    width: "100%",
                     backgroundColor: "#ffffff",
-                    border: descriptionError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                    border: descriptionError
+                      ? "2px solid #ef4444"
+                      : "1px solid #d1d5db",
                     fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
                   }}
                   className="text-sm sm:text-base"
                 />
                 {descriptionError && (
                   <p className="text-red-500 text-xs mt-1">
-                    {!shortDescription.trim() || wordCount === 0 
-                      ? "Short description is required" 
+                    {!shortDescription.trim() || wordCount === 0
+                      ? "Short description is required"
                       : "Short description exceeds 100 words"}
                   </p>
                 )}
@@ -1122,6 +1167,7 @@ const ProfCreateClassroomSpace = () => {
                 </button>
                 <Button
                   onClick={handleCreateCourseSpace}
+                  disabled={isLoading}
                   className="text-xs w-full sm:w-auto"
                   style={{ backgroundColor: "#007AFF", color: "white" }}
                 >

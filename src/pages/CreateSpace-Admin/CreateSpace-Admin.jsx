@@ -11,6 +11,7 @@ import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 const CreateSpaceAdmin = () => {
   const { createSpace } = useSpace();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -109,7 +110,7 @@ const CreateSpaceAdmin = () => {
       setPeople([text, ...people.slice(1)]);
       setWordCount(count);
     }
-    
+
     // Clear description error when user starts typing
     if (text.trim()) {
       setDescriptionError(false);
@@ -129,7 +130,7 @@ const CreateSpaceAdmin = () => {
     if (file) {
       // Clear cover photo error when user selects a file
       setCoverPhotoError(false);
-      
+
       // Validate file type
       const validTypes = [
         "image/jpeg",
@@ -168,38 +169,39 @@ const CreateSpaceAdmin = () => {
     setSpaceNameError(false);
     setDescriptionError(false);
     setCoverPhotoError(false);
-    
+
     let hasErrors = false;
-    
+
     // Validate space name
     if (!spaceName.trim()) {
       setSpaceNameError(true);
       hasErrors = true;
     }
-    
+
     // Validate description
     if (!people[0].trim() || wordCount === 0) {
       setDescriptionError(true);
       hasErrors = true;
     }
-    
+
     if (wordCount > 100) {
       setDescriptionError(true);
       hasErrors = true;
     }
-    
+
     // Validate cover photo
     if (!coverImage || coverImage === "") {
       setCoverPhotoError(true);
       hasErrors = true;
     }
-    
+
     // If there are validation errors, prevent creation
     if (hasErrors) {
       return;
     }
-    
+
     try {
+      setIsLoading(true);
       // Prepare data for API
       const spaceData = {
         space_name: spaceName,
@@ -242,6 +244,8 @@ const CreateSpaceAdmin = () => {
     } catch (error) {
       console.error("Create space error:", error);
       alert("An error occurred while creating the space.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -473,7 +477,7 @@ const CreateSpaceAdmin = () => {
                 <img
                   src={coverImage}
                   alt="Cover"
-                  className={`w-full h-32 sm:h-44 object-cover rounded-lg ${coverPhotoError ? 'border-2 border-red-500' : ''}`}
+                  className={`w-full h-32 sm:h-44 object-cover rounded-lg ${coverPhotoError ? "border-2 border-red-500" : ""}`}
                   style={{
                     background: coverImage.includes("gradient")
                       ? coverImage
@@ -481,7 +485,9 @@ const CreateSpaceAdmin = () => {
                   }}
                 />
                 {coverPhotoError && (
-                  <p className="text-red-500 text-xs mt-1">Please select a cover photo</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    Please select a cover photo
+                  </p>
                 )}
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
                   <button
@@ -587,16 +593,20 @@ const CreateSpaceAdmin = () => {
                     placeholder="Enter space name"
                     value={spaceName}
                     onChange={handleSpaceNameChange}
-                    style={{ 
-                      width: "100%", 
+                    style={{
+                      width: "100%",
                       backgroundColor: "#ffffff",
-                      border: spaceNameError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                      border: spaceNameError
+                        ? "2px solid #ef4444"
+                        : "1px solid #d1d5db",
                       fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
                     }}
                     className="text-sm sm:text-base"
                   />
                   {spaceNameError && (
-                    <p className="text-red-500 text-xs mt-1">Space name is required</p>
+                    <p className="text-red-500 text-xs mt-1">
+                      Space name is required
+                    </p>
                   )}
                 </div>
               </div>
@@ -612,18 +622,20 @@ const CreateSpaceAdmin = () => {
                   placeholder="Brief description for this space"
                   value={people[0]}
                   onChange={handleShortDescriptionChange}
-                  style={{ 
-                    width: "100%", 
+                  style={{
+                    width: "100%",
                     backgroundColor: "#ffffff",
-                    border: descriptionError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                    border: descriptionError
+                      ? "2px solid #ef4444"
+                      : "1px solid #d1d5db",
                     fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
                   }}
                   className="text-sm sm:text-base"
                 />
                 {descriptionError && (
                   <p className="text-red-500 text-xs mt-1">
-                    {!people[0].trim() || wordCount === 0 
-                      ? "Short description is required" 
+                    {!people[0].trim() || wordCount === 0
+                      ? "Short description is required"
                       : "Short description exceeds 100 words"}
                   </p>
                 )}
@@ -664,6 +676,7 @@ const CreateSpaceAdmin = () => {
                 </button>
                 <Button
                   onClick={handleCreateSpace}
+                  disabled={isLoading}
                   className="text-xs lg:text-xs w-full sm:w-auto"
                   style={{ backgroundColor: "#007AFF", color: "white" }}
                 >
