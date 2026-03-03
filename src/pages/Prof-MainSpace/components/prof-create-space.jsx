@@ -25,6 +25,11 @@ const ProfCreateSpace = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [originalImage, setOriginalImage] = useState(null);
 
+  // Error states for validation
+  const [spaceNameError, setSpaceNameError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [coverPhotoError, setCoverPhotoError] = useState(false);
+
   // Cover photo positioning state (same as UserTaskPage)
   const [showCoverPhotoEditor, setShowCoverPhotoEditor] = useState(false);
   const [coverPhotoPosition, setCoverPhotoPosition] = useState(50);
@@ -97,45 +102,93 @@ const ProfCreateSpace = () => {
       setPeople([text, ...people.slice(1)]);
       setWordCount(count);
     }
+    
+    // Clear description error when user starts typing
+    if (text.trim()) {
+      setDescriptionError(false);
+    }
+  };
+
+  const handleSpaceNameChange = (e) => {
+    setSpaceName(e.target.value);
+    // Clear space name error when user starts typing
+    if (e.target.value.trim()) {
+      setSpaceNameError(false);
+    }
   };
 
   const handleCreateSpace = async () => {
-    if (spaceName.trim()) {
-      try {
-        const spaceData = {
-          space_name: spaceName,
-          short_description: people[0] || "",
-          cover_image: coverImage
-        };
-        const result = await createSpace(spaceData);
-        if (result.success) {
-          const space_uuid = result.space_uuid;
-          toast.success(`Course Space "${spaceName}" created successfully!`);
-          
-          // Save cover photo to localStorage for immediate display
-          if (coverImage && coverImage !== "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg") {
-            localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
-            // Dispatch custom event to notify other components of the cover photo update
-            window.dispatchEvent(new CustomEvent('coverPhotoUpdated', { 
-              detail: { space_uuid, coverPhoto: coverImage } 
-            }));
-          }
-          
-          // Reset form
-          setSpaceName("");
-          setPeople(Array(5).fill(""));
-          setWordCount(0);
-          setCoverImage("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
-          navigator(`/prof/space/${space_uuid}/${spaceName}`);
-        } else {
-          alert(result.message || "Failed to create space. Please try again.");
+    // Reset error states
+    setSpaceNameError(false);
+    setDescriptionError(false);
+    setCoverPhotoError(false);
+    
+    let hasErrors = false;
+    
+    // Validate space name
+    if (!spaceName.trim()) {
+      setSpaceNameError(true);
+      hasErrors = true;
+    }
+    
+    // Validate description
+    if (!people[0].trim() || wordCount === 0) {
+      setDescriptionError(true);
+      hasErrors = true;
+    }
+    
+    if (wordCount > 100) {
+      setDescriptionError(true);
+      hasErrors = true;
+    }
+    
+    // Validate cover photo
+    if (!coverImage || coverImage === "") {
+      setCoverPhotoError(true);
+      hasErrors = true;
+    }
+    
+    // If there are validation errors, prevent creation
+    if (hasErrors) {
+      return;
+    }
+    
+    try {
+      const spaceData = {
+        space_name: spaceName,
+        short_description: people[0] || "",
+        cover_image: coverImage
+      };
+      const result = await createSpace(spaceData);
+      if (result.success) {
+        const space_uuid = result.space_uuid;
+        toast.success(`Course Space "${spaceName}" created successfully!`);
+        
+        // Save cover photo to localStorage for immediate display
+        if (coverImage && coverImage !== "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg") {
+          localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
+          // Dispatch custom event to notify other components of the cover photo update
+          window.dispatchEvent(new CustomEvent('coverPhotoUpdated', { 
+            detail: { space_uuid, coverPhoto: coverImage } 
+          }));
         }
-      } catch (error) {
-        console.error("Create space error:", error);
-        alert("An error occurred while creating the space.");
+        
+        // Reset form
+        setSpaceName("");
+        setPeople(Array(5).fill(""));
+        setWordCount(0);
+        setCoverImage("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
+        // Reset error states
+        setSpaceNameError(false);
+        setDescriptionError(false);
+        setCoverPhotoError(false);
+        navigator(`/prof/space/${space_uuid}/${spaceName}`);
+      } else {
+        alert(result.message || "Failed to create space. Please try again.");
       }
-    } else {
-      alert("Please enter a space name.");
+    } catch (error) {
+      console.error("Create space error:", error);
+      alert("An error occurred while creating the space.");
     }
   };
 
@@ -179,6 +232,9 @@ const ProfCreateSpace = () => {
   const handleCoverPhotoChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Clear cover photo error when user selects a file
+      setCoverPhotoError(false);
+      
       // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
@@ -369,9 +425,12 @@ const ProfCreateSpace = () => {
                 <img
                   src={coverImage}
                   alt="Cover"
-                  className="w-full h-32 sm:h-44 object-cover rounded-lg"
+                  className={`w-full h-32 sm:h-44 object-cover rounded-lg ${coverPhotoError ? 'border-2 border-red-500' : ''}`}
                   style={{ background: coverImage.includes("gradient") ? coverImage : "" }}
                 />
+                {coverPhotoError && (
+                  <p className="text-red-500 text-xs mt-1">Please select a cover photo</p>
+                )}
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
                   <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => setIsCoverModalOpen(true)}>Change Cover</button>
                   <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => setCoverImage("")}>Delete Cover</button>
@@ -387,13 +446,13 @@ const ProfCreateSpace = () => {
                     <p className="text-sm mb-2">Color & Gradient</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                       {colorOptions.map((color, i) => (
-                        <div key={i} className="h-12 rounded cursor-pointer" style={{ background: color }} onClick={() => { setCoverImage(color); setIsCoverModalOpen(false); }} />
+                        <div key={i} className="h-12 rounded cursor-pointer" style={{ background: color }} onClick={() => { setCoverImage(color); setIsCoverModalOpen(false); setCoverPhotoError(false); }} />
                       ))}
                     </div>
                     <p className="text-sm mb-2">Gallery</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                       {galleryImages.map((img, i) => (
-                        <img key={i} src={img} className="h-16 w-full object-cover rounded cursor-pointer" onClick={() => { setCoverImage(img); setOriginalImage(img); setIsCoverModalOpen(false); }} />
+                        <img key={i} src={img} className="h-16 w-full object-cover rounded cursor-pointer" onClick={() => { setCoverImage(img); setOriginalImage(img); setIsCoverModalOpen(false); setCoverPhotoError(false); }} />
                       ))}
                     </div>
                     <label className="block text-sm mb-1">Upload from computer (max 5MB)</label>
@@ -414,9 +473,18 @@ const ProfCreateSpace = () => {
                   <InputField
                     placeholder="Enter space name"
                     value={spaceName}
-                    onChange={(e) => setSpaceName(e.target.value)}
-                    style={{ width: "100%", backgroundColor: "#ffffff" }}
+                    onChange={handleSpaceNameChange}
+                    style={{ 
+                      width: "100%", 
+                      backgroundColor: "#ffffff",
+                      border: spaceNameError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                      fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
+                    }}
+                    className="text-sm sm:text-base"
                   />
+                  {spaceNameError && (
+                    <p className="text-red-500 text-xs mt-1">Space name is required</p>
+                  )}
                 </div>
               </div>
 
@@ -429,8 +497,21 @@ const ProfCreateSpace = () => {
                   placeholder="Brief description for this space"
                   value={people[0]}
                   onChange={handleShortDescriptionChange}
-                  style={{ width: "100%", backgroundColor: "#ffffff" }}
+                  style={{ 
+                    width: "100%", 
+                    backgroundColor: "#ffffff",
+                    border: descriptionError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                    fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
+                  }}
+                  className="text-sm sm:text-base"
                 />
+                {descriptionError && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {!people[0].trim() || wordCount === 0 
+                      ? "Short description is required" 
+                      : "Short description exceeds 100 words"}
+                  </p>
+                )}
                 <div className="flex items-center justify-between mt-1.5">
                   <span className="text-xs lg:text-xs" style={{ color: currentColors.textSecondary }}>Describe what this space is about</span>
                   <span

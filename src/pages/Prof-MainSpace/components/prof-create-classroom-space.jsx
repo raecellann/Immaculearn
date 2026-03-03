@@ -20,6 +20,14 @@ const ProfCreateClassroomSpace = () => {
   const [spaceName, setSpaceName] = useState("");
   const spaceSettings = useRef({ space_cover: null, max_member: 50 });
 
+  // Error states for validation
+  const [spaceNameError, setSpaceNameError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [coverPhotoError, setCoverPhotoError] = useState(false);
+  const [yearLevelError, setYearLevelError] = useState(false);
+  const [dayError, setDayError] = useState(false);
+  const [timeError, setTimeError] = useState(false);
+
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
 
   const navigator = useNavigate();
@@ -117,10 +125,49 @@ const ProfCreateClassroomSpace = () => {
       setShortDescription(text);
       setWordCount(count);
     }
+    
+    // Clear description error when user starts typing
+    if (text.trim()) {
+      setDescriptionError(false);
+    }
+  };
+
+  const handleSpaceNameChange = (e) => {
+    setSpaceName(e.target.value);
+    // Clear space name error when user starts typing
+    if (e.target.value.trim()) {
+      setSpaceNameError(false);
+    }
+  };
+
+  const handleYearLevelChange = (e) => {
+    setYearLevel(e.target.value);
+    // Clear year level error when user selects a value
+    if (e.target.value) {
+      setYearLevelError(false);
+    }
+  };
+
+  const handleDayChange = (e) => {
+    setSelectedDay(e.target.value);
+    // Clear day error when user selects a value
+    if (e.target.value) {
+      setDayError(false);
+    }
+  };
+
+  const handleTimeChange = (e) => {
+    setTimeSchedule(e.target.value);
+    // Clear time error when user selects a time
+    if (e.target.value) {
+      setTimeError(false);
+    }
   };
 
   const handleDayToggle = (day) => {
     setSelectedDay((prev) => (prev === day ? "" : day));
+    // Clear day error when user selects a day
+    setDayError(false);
   };
 
   const handleSectionContentChange = (e) => {
@@ -156,81 +203,140 @@ const ProfCreateClassroomSpace = () => {
   const timeOptions = generateTimeOptions();
 
   const handleCreateCourseSpace = async () => {
-    if (spaceName.trim()) {
-      try {
-        console.log(timeSchedule);
-        // Parse time schedule to get start and end times
-        const timeParts = timeSchedule.split(" - ");
-        const timeStart = timeParts[0] || "";
-        const timeEnd = timeParts[1] || "";
+    // Reset error states
+    setSpaceNameError(false);
+    setDescriptionError(false);
+    setCoverPhotoError(false);
+    setYearLevelError(false);
+    setDayError(false);
+    setTimeError(false);
+    
+    let hasErrors = false;
+    
+    // Validate space name
+    if (!spaceName.trim()) {
+      setSpaceNameError(true);
+      hasErrors = true;
+    }
+    
+    // Validate description
+    if (!shortDescription.trim() || wordCount === 0) {
+      setDescriptionError(true);
+      hasErrors = true;
+    }
+    
+    if (wordCount > 100) {
+      setDescriptionError(true);
+      hasErrors = true;
+    }
+    
+    // Validate cover photo
+    if (!coverImage || coverImage === "") {
+      setCoverPhotoError(true);
+      hasErrors = true;
+    }
+    
+    // Validate year level
+    if (!yearLevel) {
+      setYearLevelError(true);
+      hasErrors = true;
+    }
+    
+    // Validate day
+    if (!selectedDay) {
+      setDayError(true);
+      hasErrors = true;
+    }
+    
+    // Validate time
+    if (!timeSchedule) {
+      setTimeError(true);
+      hasErrors = true;
+    }
+    
+    // If there are validation errors, prevent creation
+    if (hasErrors) {
+      return;
+    }
+    
+    try {
+      console.log(timeSchedule);
+      // Parse time schedule to get start and end times
+      const timeParts = timeSchedule.split(" - ");
+      const timeStart = timeParts[0] || "";
+      const timeEnd = timeParts[1] || "";
 
-        // Convert 12-hour format to 24-hour format
-        const convertTo24Hour = (timeStr) => {
-          const [time, period] = timeStr.split(" ");
-          const [hour, minute] = time.split(":");
-          let hour24 = parseInt(hour);
+      // Convert 12-hour format to 24-hour format
+      const convertTo24Hour = (timeStr) => {
+        const [time, period] = timeStr.split(" ");
+        const [hour, minute] = time.split(":");
+        let hour24 = parseInt(hour);
 
-          if (period === "PM" && hour24 !== 12) {
-            hour24 += 12;
-          } else if (period === "AM" && hour24 === 12) {
-            hour24 = 0;
-          }
-
-          return `${hour24.toString().padStart(2, "0")}:${minute}`;
-        };
-
-        const timeStart24 = convertTo24Hour(timeStart);
-        const timeEnd24 = convertTo24Hour(timeEnd);
-
-        // Prepare data for API - align with required body structure
-        const spaceData = {
-          space_name: spaceName,
-          space_description: shortDescription,
-          section_content: sectionContent,
-          space_day: selectedDay,
-          space_time_start: timeStart24,
-          space_time_end: timeEnd24,
-          space_yr_lvl: parseInt(yearLevel) || 1,
-          space_settings: spaceSettings.current,
-          cover_image: coverImage
-        };
-
-        // Call the API
-        const result = await createCourseSpace(spaceData);
-
-        if (result.success) {
-          const space_uuid = result?.space_uuid;
-          console.log(space_uuid);
-          toast.success(`Course Space "${spaceName}" created successfully!`);
-          
-          // Save cover photo to localStorage for immediate display
-          if (coverImage && coverImage !== "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg") {
-            localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
-            // Dispatch custom event to notify other components of the cover photo update
-            window.dispatchEvent(new CustomEvent('coverPhotoUpdated', { 
-              detail: { space_uuid, coverPhoto: coverImage } 
-            }));
-          }
-
-          // Reset form
-          setSpaceName("");
-          setShortDescription("");
-          setWordCount(0);
-          setSectionContent("");
-          setCoverImage("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
-          setYearLevel("");
-          setSelectedDay("");
-          setTimeSchedule("");
-          navigator(`/prof/space/${space_uuid}/${spaceName}`);
-        } else {
-          alert(result.message || "Failed to create space. Please try again.");
+        if (period === "PM" && hour24 !== 12) {
+          hour24 += 12;
+        } else if (period === "AM" && hour24 === 12) {
+          hour24 = 0;
         }
-      } catch (error) {
-        console.error("Create space error:", error);
-        alert("An error occurred while creating the space.");
+
+        return `${hour24.toString().padStart(2, "0")}:${minute}`;
+      };
+
+      const timeStart24 = convertTo24Hour(timeStart);
+      const timeEnd24 = convertTo24Hour(timeEnd);
+
+      // Prepare data for API - align with required body structure
+      const spaceData = {
+        space_name: spaceName,
+        space_description: shortDescription,
+        section_content: sectionContent,
+        space_day: selectedDay,
+        space_time_start: timeStart24,
+        space_time_end: timeEnd24,
+        space_yr_lvl: parseInt(yearLevel) || 1,
+        space_settings: spaceSettings.current,
+        cover_image: coverImage
+      };
+
+      // Call the API
+      const result = await createCourseSpace(spaceData);
+
+      if (result.success) {
+        const space_uuid = result?.space_uuid;
+        console.log(space_uuid);
+        toast.success(`Course Space "${spaceName}" created successfully!`);
+        
+        // Save cover photo to localStorage for immediate display
+        if (coverImage && coverImage !== "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg") {
+          localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
+          // Dispatch custom event to notify other components of the cover photo update
+          window.dispatchEvent(new CustomEvent('coverPhotoUpdated', { 
+            detail: { space_uuid, coverPhoto: coverImage } 
+          }));
+        }
+
+        // Reset form
+        setSpaceName("");
+        setShortDescription("");
+        setWordCount(0);
+        setSectionContent("");
+        setCoverImage("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
+        setYearLevel("");
+        setSelectedDay("");
+        setTimeSchedule("");
+        // Reset error states
+        setSpaceNameError(false);
+        setDescriptionError(false);
+        setCoverPhotoError(false);
+        setYearLevelError(false);
+        setDayError(false);
+        setTimeError(false);
+        navigator(`/prof/space/${space_uuid}/${spaceName}`);
+      } else {
+        alert(result.message || "Failed to create space. Please try again.");
       }
-    } else {
-      alert("Please enter a space name.");
+    } catch (error) {
+      console.error("Create space error:", error);
+      alert("An error occurred while creating the space.");
     }
   };
 
@@ -274,6 +380,9 @@ const ProfCreateClassroomSpace = () => {
   const handleCoverPhotoChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Clear cover photo error when user selects a file
+      setCoverPhotoError(false);
+      
       // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
@@ -483,13 +592,16 @@ const ProfCreateClassroomSpace = () => {
                 <img
                   src={coverImage}
                   alt="Cover"
-                  className="w-full h-32 sm:h-44 object-cover rounded-lg"
+                  className={`w-full h-32 sm:h-44 object-cover rounded-lg ${coverPhotoError ? 'border-2 border-red-500' : ''}`}
                   style={{
                     background: coverImage.includes("gradient")
                       ? coverImage
                       : "",
                   }}
                 />
+                {coverPhotoError && (
+                  <p className="text-red-500 text-xs mt-1">Please select a cover photo</p>
+                )}
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
                   <button
                     className="px-2 py-1 rounded text-xs"
@@ -542,6 +654,7 @@ const ProfCreateClassroomSpace = () => {
                           onClick={() => {
                             setCoverImage(color);
                             setIsCoverModalOpen(false);
+                            setCoverPhotoError(false); // Clear error when gradient is selected
                           }}
                         />
                       ))}
@@ -557,6 +670,7 @@ const ProfCreateClassroomSpace = () => {
                             setCoverImage(img);
                             setOriginalImage(img);
                             setIsCoverModalOpen(false);
+                            setCoverPhotoError(false); // Clear error when gallery image is selected
                           }}
                         />
                       ))}
@@ -594,9 +708,18 @@ const ProfCreateClassroomSpace = () => {
                   <InputField
                     placeholder="Enter space name"
                     value={spaceName}
-                    onChange={(e) => setSpaceName(e.target.value)}
-                    style={{ width: "100%", backgroundColor: "#ffffff" }}
+                    onChange={handleSpaceNameChange}
+                    style={{ 
+                      width: "100%", 
+                      backgroundColor: "#ffffff",
+                      border: spaceNameError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                      fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
+                    }}
+                    className="text-sm sm:text-base"
                   />
+                  {spaceNameError && (
+                    <p className="text-red-500 text-xs mt-1">Space name is required</p>
+                  )}
                 </div>
 
                 {/* Year Level */}
@@ -606,11 +729,13 @@ const ProfCreateClassroomSpace = () => {
                   </label>
                   <select
                     value={yearLevel}
-                    onChange={(e) => setYearLevel(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border focus:outline-none focus:ring-2"
+                    onChange={handleYearLevelChange}
+                    className={`w-full p-2.5 rounded-lg border focus:outline-none focus:ring-2 text-sm sm:text-base ${
+                      yearLevelError ? "border-red-500" : ""
+                    }`}
                     style={{
                       backgroundColor: isDarkMode ? "#374151" : "#ffffff",
-                      borderColor: currentColors.border,
+                      borderColor: yearLevelError ? "#ef4444" : currentColors.border,
                       color: currentColors.text,
                     }}
                   >
@@ -620,6 +745,9 @@ const ProfCreateClassroomSpace = () => {
                     <option value="3rd Year">3rd Year</option>
                     <option value="4th Year">4th Year</option>
                   </select>
+                  {yearLevelError && (
+                    <p className="text-red-500 text-xs mt-1">Year level is required</p>
+                  )}
                 </div>
 
                 {/* Section */}
@@ -689,6 +817,9 @@ const ProfCreateClassroomSpace = () => {
                       Selected: {selectedDay}
                     </p>
                   )}
+                  {dayError && (
+                    <p className="text-red-500 text-xs mt-1">Schedule day is required</p>
+                  )}
                 </div>
 
                 {/* Time Schedule */}
@@ -697,10 +828,12 @@ const ProfCreateClassroomSpace = () => {
                     Time Schedule
                   </label>
                   <div
-                    className="p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.01]"
+                    className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.01] ${
+                      timeError ? "border-red-500" : ""
+                    }`}
                     style={{
                       backgroundColor: isDarkMode ? "#374151" : "#ffffff",
-                      borderColor: currentColors.border,
+                      borderColor: timeError ? "#ef4444" : currentColors.border,
                       color: currentColors.text,
                     }}
                     onClick={() => setShowTimePicker(!showTimePicker)}
@@ -727,6 +860,9 @@ const ProfCreateClassroomSpace = () => {
                       </svg>
                     </div>
                   </div>
+                  {timeError && (
+                    <p className="text-red-500 text-xs mt-1">Time schedule is required</p>
+                  )}
                 </div>
               </div>
 
@@ -741,8 +877,21 @@ const ProfCreateClassroomSpace = () => {
                   placeholder="Enter a brief description for this classroom space"
                   value={shortDescription}
                   onChange={handleShortDescriptionChange}
-                  style={{ width: "100%", backgroundColor: "#ffffff" }}
+                  style={{ 
+                    width: "100%", 
+                    backgroundColor: "#ffffff",
+                    border: descriptionError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                    fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
+                  }}
+                  className="text-sm sm:text-base"
                 />
+                {descriptionError && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {!shortDescription.trim() || wordCount === 0 
+                      ? "Short description is required" 
+                      : "Short description exceeds 100 words"}
+                  </p>
+                )}
                 <div
                   className="text-xs mt-1.5 flex justify-between items-center"
                   style={{ color: currentColors.textSecondary }}
@@ -946,6 +1095,7 @@ const ProfCreateClassroomSpace = () => {
                         onClick={() => {
                           const formattedTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;
                           setTimeSchedule(formattedTime);
+                          setTimeError(false); // Clear time error when time is selected
                           setShowTimePicker(false);
                         }}
                         className="px-4 py-2 rounded-lg transition-colors"

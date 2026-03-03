@@ -25,6 +25,11 @@ const CreateSpaceAdmin = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [originalImage, setOriginalImage] = useState(null);
 
+  // Error states for validation
+  const [spaceNameError, setSpaceNameError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [coverPhotoError, setCoverPhotoError] = useState(false);
+
   // Cover photo positioning state (same as UserTaskPage)
   const [showCoverPhotoEditor, setShowCoverPhotoEditor] = useState(false);
   const [coverPhotoPosition, setCoverPhotoPosition] = useState(50);
@@ -104,56 +109,139 @@ const CreateSpaceAdmin = () => {
       setPeople([text, ...people.slice(1)]);
       setWordCount(count);
     }
+    
+    // Clear description error when user starts typing
+    if (text.trim()) {
+      setDescriptionError(false);
+    }
+  };
+
+  const handleSpaceNameChange = (e) => {
+    setSpaceName(e.target.value);
+    // Clear space name error when user starts typing
+    if (e.target.value.trim()) {
+      setSpaceNameError(false);
+    }
+  };
+
+  const handleCoverPhotoChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Clear cover photo error when user selects a file
+      setCoverPhotoError(false);
+      
+      // Validate file type
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+      if (!validTypes.includes(file.type)) {
+        alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB");
+        return;
+      }
+
+      setUploadedImage(file);
+
+      // Create preview and open editor
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCoverImage(e.target.result);
+        setShowCoverPhotoEditor(true);
+        setCoverPhotoPosition(50);
+        setIsCoverModalOpen(false);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleCreateSpace = async () => {
-    if (spaceName.trim()) {
-      try {
-        // Prepare data for API
-        const spaceData = {
-          space_name: spaceName,
-          max_members: 5,
-          short_description: people[0] || "",
-          cover_image: coverImage,
-        };
+    // Reset error states
+    setSpaceNameError(false);
+    setDescriptionError(false);
+    setCoverPhotoError(false);
+    
+    let hasErrors = false;
+    
+    // Validate space name
+    if (!spaceName.trim()) {
+      setSpaceNameError(true);
+      hasErrors = true;
+    }
+    
+    // Validate description
+    if (!people[0].trim() || wordCount === 0) {
+      setDescriptionError(true);
+      hasErrors = true;
+    }
+    
+    if (wordCount > 100) {
+      setDescriptionError(true);
+      hasErrors = true;
+    }
+    
+    // Validate cover photo
+    if (!coverImage || coverImage === "") {
+      setCoverPhotoError(true);
+      hasErrors = true;
+    }
+    
+    // If there are validation errors, prevent creation
+    if (hasErrors) {
+      return;
+    }
+    
+    try {
+      // Prepare data for API
+      const spaceData = {
+        space_name: spaceName,
+        max_members: 5,
+        short_description: people[0] || "",
+        cover_image: coverImage,
+      };
 
-        // Call the API
-        const result = await createSpace(spaceData);
+      // Call the API
+      const result = await createSpace(spaceData);
 
-        if (result.success) {
-          const space_uuid = result.space_uuid;
-          toast.success(`Space "${spaceName}" created successfully!`);
-          // alert(`Space "${spaceName}" created successfully!`);
+      if (result.success) {
+        const space_uuid = result.space_uuid;
+        toast.success(`Space "${spaceName}" created successfully!`);
+        // alert(`Space "${spaceName}" created successfully!`);
 
-          localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
-          // Save cover photo to localStorage for immediate display
-          window.dispatchEvent(
-            new CustomEvent("coverPhotoUpdated", {
-              detail: { space_uuid, coverPhoto: coverImage },
-            }),
-          );
+        localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
+        // Save cover photo to localStorage for immediate display
+        window.dispatchEvent(
+          new CustomEvent("coverPhotoUpdated", {
+            detail: { space_uuid, coverPhoto: coverImage },
+          }),
+        );
 
-          // Reset form
-          setSpaceName("");
-          setPeople(Array(5).fill(""));
-          setWordCount(0);
-          setCoverImage(
-            "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
-          );
-          navigate(`/space/${space_uuid}/${spaceName}`);
-        } else {
-          alert(result.message || "Failed to create space. Please try again.");
-        }
-      } catch (error) {
-        console.error("Create space error:", error);
-        alert("An error occurred while creating the space.");
+        // Reset form
+        setSpaceName("");
+        setPeople(Array(5).fill(""));
+        setWordCount(0);
+        setCoverImage(
+          "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
+        );
+        // Reset error states
+        setSpaceNameError(false);
+        setDescriptionError(false);
+        setCoverPhotoError(false);
+        navigate(`/space/${space_uuid}/${spaceName}`);
+      } else {
+        alert(result.message || "Failed to create space. Please try again.");
       }
-    } else {
-      if (!spaceName.trim()) {
-        alert("Please enter a space name.");
-      } else if (wordCount > 100) {
-        alert("Short description exceeds 100 words.");
-      }
+    } catch (error) {
+      console.error("Create space error:", error);
+      alert("An error occurred while creating the space.");
     }
   };
 
@@ -199,42 +287,6 @@ const CreateSpaceAdmin = () => {
       document.removeEventListener("mouseup", handleGlobalMouseUp);
     };
   }, [isDragging, handleMouseMove, handleMouseUp]);
-
-  const handleCoverPhotoChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      // Validate file type
-      const validTypes = [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/gif",
-        "image/webp",
-      ];
-      if (!validTypes.includes(file.type)) {
-        alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("File size must be less than 5MB");
-        return;
-      }
-
-      setUploadedImage(file);
-
-      // Create preview and open editor
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setCoverImage(e.target.result);
-        setShowCoverPhotoEditor(true);
-        setCoverPhotoPosition(50);
-        setIsCoverModalOpen(false);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleCoverPhotoSave = () => {
     // Create canvas to apply transformations
@@ -421,13 +473,16 @@ const CreateSpaceAdmin = () => {
                 <img
                   src={coverImage}
                   alt="Cover"
-                  className="w-full h-32 sm:h-44 object-cover rounded-lg"
+                  className={`w-full h-32 sm:h-44 object-cover rounded-lg ${coverPhotoError ? 'border-2 border-red-500' : ''}`}
                   style={{
                     background: coverImage.includes("gradient")
                       ? coverImage
                       : "",
                   }}
                 />
+                {coverPhotoError && (
+                  <p className="text-red-500 text-xs mt-1">Please select a cover photo</p>
+                )}
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
                   <button
                     className="px-2 py-1 rounded text-xs"
@@ -478,6 +533,7 @@ const CreateSpaceAdmin = () => {
                           onClick={() => {
                             setCoverImage(color);
                             setIsCoverModalOpen(false);
+                            setCoverPhotoError(false); // Clear error when gradient is selected
                           }}
                         />
                       ))}
@@ -493,6 +549,7 @@ const CreateSpaceAdmin = () => {
                             setCoverImage(img);
                             setOriginalImage(img);
                             setIsCoverModalOpen(false);
+                            setCoverPhotoError(false); // Clear error when gallery image is selected
                           }}
                         />
                       ))}
@@ -529,9 +586,18 @@ const CreateSpaceAdmin = () => {
                   <InputField
                     placeholder="Enter space name"
                     value={spaceName}
-                    onChange={(e) => setSpaceName(e.target.value)}
-                    style={{ width: "100%", backgroundColor: "#ffffff" }}
+                    onChange={handleSpaceNameChange}
+                    style={{ 
+                      width: "100%", 
+                      backgroundColor: "#ffffff",
+                      border: spaceNameError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                      fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
+                    }}
+                    className="text-sm sm:text-base"
                   />
+                  {spaceNameError && (
+                    <p className="text-red-500 text-xs mt-1">Space name is required</p>
+                  )}
                 </div>
               </div>
 
@@ -546,8 +612,21 @@ const CreateSpaceAdmin = () => {
                   placeholder="Brief description for this space"
                   value={people[0]}
                   onChange={handleShortDescriptionChange}
-                  style={{ width: "100%", backgroundColor: "#ffffff" }}
+                  style={{ 
+                    width: "100%", 
+                    backgroundColor: "#ffffff",
+                    border: descriptionError ? "2px solid #ef4444" : "1px solid #d1d5db",
+                    fontSize: "0.875rem", // 14px on mobile, will be overridden by larger screens
+                  }}
+                  className="text-sm sm:text-base"
                 />
+                {descriptionError && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {!people[0].trim() || wordCount === 0 
+                      ? "Short description is required" 
+                      : "Short description exceeds 100 words"}
+                  </p>
+                )}
                 <div className="flex items-center justify-between mt-1.5">
                   <span
                     className="text-xs lg:text-xs"
