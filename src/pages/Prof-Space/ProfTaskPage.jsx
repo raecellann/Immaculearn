@@ -81,6 +81,7 @@ const ProfTaskPage = () => {
     acceptJoinRequest,
     declineJoinRequest,
     deleteSpace,
+    submitTaskAnswer,
   } = useSpace();
 
   // Join requests
@@ -595,6 +596,14 @@ const ProfTaskPage = () => {
         reject(new Error("Unsupported file type for text extraction"));
       }
     });
+  };
+
+  const handleViewScore = (task) => {
+    // Example: navigate to score page or open modal
+    console.log("Viewing score for task:", task);
+    // You can replace the console.log with your actual logic, e.g.,
+    // navigate(`/quiz/${task.id}/score`);
+    // or open a modal with the score
   };
 
   // Sync instruction state with contentEditable
@@ -1207,67 +1216,68 @@ const ProfTaskPage = () => {
                   </div>
                   <div className="col-span-1">
                     <div className="flex gap-2">
-                      {!isOwnerSpace && task.task_category === "quiz" ? (
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleTakeQuiz(task);
-                          }}
-                          className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                          style={{
-                            backgroundColor: task.has_answered
-                              ? "gray"
-                              : "#10B981",
-                            color: "white",
-                            cursor: task.has_answered
-                              ? "not-allowed"
-                              : "pointer",
-                          }}
-                          disabled={task.has_answered ? true : false}
-                          onMouseEnter={(e) => {
-                            if (!task.has_answered) {
-                              e.target.style.backgroundColor = "#059669";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!task.has_answered) {
-                              e.target.style.backgroundColor = "#10B981";
-                            }
-                          }}
-                        >
-                          {task.has_answered ? "Completed" : "Take Quiz"}
-                        </button>
-                      ) : (
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handlePreviewTask(task);
-                          }}
-                          className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            task.isLocal && task.task_category === "quiz"
-                              ? "flex-1"
-                              : "block w-full"
-                          }`}
-                          style={{
-                            backgroundColor: task.isLocal
-                              ? "#2563eb"
-                              : currentColors.accent,
-                            color: "white",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = task.isLocal
-                              ? "#1d4ed8"
-                              : "#1d4ed8";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = task.isLocal
-                              ? "#2563eb"
-                              : currentColors.accent;
-                          }}
-                        >
-                          View Details
-                        </a>
+                      {task.task_category === "quiz" && (
+                        <>
+                          {!isOwnerSpace ? (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                // Decide what to do based on whether the quiz was answered
+                                task?.has_answered
+                                  ? handleViewScore(task)
+                                  : handleTakeQuiz(task);
+                              }}
+                              className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                              style={{
+                                backgroundColor: task.has_answered
+                                  ? "gray"
+                                  : "#10B981",
+                                color: "white",
+                                cursor: "pointer", // always clickable
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor =
+                                  task.has_answered ? "#6b7280" : "#059669";
+                                // optional: darker gray for answered
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor =
+                                  task.has_answered ? "gray" : "#10B981";
+                              }}
+                            >
+                              {task.has_answered ? "View Score" : "Take Quiz"}
+                            </button>
+                          ) : (
+                            <a
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handlePreviewTask(task);
+                              }}
+                              className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                task.isLocal ? "flex-1" : "block w-full"
+                              }`}
+                              style={{
+                                backgroundColor: task.isLocal
+                                  ? "#2563eb"
+                                  : currentColors.accent,
+                                color: "white",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = task.isLocal
+                                  ? "#1d4ed8"
+                                  : "#1d4ed8";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = task.isLocal
+                                  ? "#2563eb"
+                                  : currentColors.accent;
+                              }}
+                            >
+                              View Details
+                            </a>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -1302,7 +1312,7 @@ const ProfTaskPage = () => {
     setStudentQuizTask(null);
   };
 
-  const handleQuizSubmit = (answers) => {
+  const handleQuizSubmit = async (answers) => {
     // Filter only choice-based answers (exclude text answers for now)
     const choiceAnswers = answers.filter((answer) => answer.choice_id);
 
@@ -1316,6 +1326,9 @@ const ProfTaskPage = () => {
 
     console.log("Quiz submitted with formatted data:", submissionData);
     alert("Quiz submitted successfully!");
+    try {
+      await submitTaskAnswer(submissionData);
+    } catch (err) {}
     handleCloseStudentQuiz();
   };
 

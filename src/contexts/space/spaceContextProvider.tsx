@@ -349,7 +349,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
 
   const submitTaskAnswer = async (answerData: AnswerData) => {
     const result = await spaceService.submitTaskAnswer(answerData);
-    // queryClient.invalidateQueries({ queryKey: ["archivedSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["uploadedTasks"] });
 
     return result;
   };
