@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import InputField from "@/pages/component/InputField";
-import Button from "@/pages/component/Button";
+// import Button from "../../pages/component/Button";
 import { Eye, EyeOff, ChevronDown, CheckCircle2, XCircle } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router";
 import { useUser } from "../../contexts/user/useUser";
@@ -9,6 +9,7 @@ import {
   genderOptions,
   yearLevelOptions,
 } from "../component/enumOptions";
+import Button from "../component/Button";
 
 // ─── Password requirement rules ───────────────────────────────────────────────
 const PASSWORD_RULES = [
@@ -742,7 +743,7 @@ const OnBoarding = () => {
                 </Button>
                 <Button
                   type="submit"
-                  disable={isSubmitting}
+                  disabled={isSubmitting}
                   style={{
                     padding: "10px 20px",
                     borderRadius: "8px",
