@@ -10,7 +10,7 @@ import Logout from "../component/logout";
 
 const IndividualSpaceSettings = () => {
   const { user } = useUser();
-  const { userSpaces } = useSpace();
+  const { userSpaces, courseSpaces } = useSpace();
   const { spaceUuid, spaceName } = useParams();
   const navigate = useNavigate();
   const { isDarkMode, colors } = useSpaceTheme();
@@ -39,12 +39,20 @@ const IndividualSpaceSettings = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Find the current space from userSpaces
-  const currentSpace = userSpaces?.find(space => space.space_uuid === spaceUuid);
+  // Find the current space from userSpaces or courseSpaces
+  const currentSpace = userSpaces?.find(space => space.space_uuid === spaceUuid) || 
+                      courseSpaces?.find(space => space.space_uuid === spaceUuid);
+  
+  // Determine if this is a course space
+  const isCourseSpace = courseSpaces?.some(space => space.space_uuid === spaceUuid);
 
   const [spaceSettings, setSpaceSettings] = useState({
     spaceName: currentSpace?.space_name || "",
-    spaceDescription: currentSpace?.description || "",
+    spaceDescription: isCourseSpace ? (currentSpace?.space_description || "") : (currentSpace?.description || ""),
+    spaceDay: currentSpace?.space_day || "",
+    spaceTimeStart: currentSpace?.space_time_start || "",
+    spaceTimeEnd: currentSpace?.space_time_end || "",
+    spaceYearLevel: currentSpace?.space_yr_lvl || "",
   });
 
   // Update settings when current space changes
@@ -53,10 +61,14 @@ const IndividualSpaceSettings = () => {
       setSpaceSettings(prev => ({
         ...prev,
         spaceName: currentSpace.space_name,
-        spaceDescription: currentSpace.description || "",
+        spaceDescription: isCourseSpace ? (currentSpace.space_description || "") : (currentSpace.description || ""),
+        spaceDay: currentSpace.space_day || "",
+        spaceTimeStart: currentSpace.space_time_start || "",
+        spaceTimeEnd: currentSpace.space_time_end || "",
+        spaceYearLevel: currentSpace.space_yr_lvl || "",
       }));
     }
-  }, [currentSpace]);
+  }, [currentSpace, isCourseSpace]);
 
 
   const handleSettingChange = (field, value) => {
@@ -263,6 +275,130 @@ const IndividualSpaceSettings = () => {
                 </div>
               </div>
 
+              {/* Course Settings - Only for course spaces and professors */}
+              {isCourseSpace && user?.role === "professor" && (
+                <div className="mb-8">
+                  <h2 className="text-lg font-semibold mb-6 flex items-center">
+                    <SettingsIcon size={20} className="mr-2" />
+                    Course Settings
+                  </h2>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Course Day</label>
+                        <select
+                          value={spaceSettings.spaceDay}
+                          onChange={(e) => handleSettingChange('spaceDay', e.target.value)}
+                          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                          style={{
+                            backgroundColor: isDarkMode ? '#2A3142' : '#ffffff',
+                            borderColor: currentColors.border,
+                            color: currentColors.text
+                          }}
+                        >
+                          <option value="">Select Day</option>
+                          <option value="Monday">Monday</option>
+                          <option value="Tuesday">Tuesday</option>
+                          <option value="Wednesday">Wednesday</option>
+                          <option value="Thursday">Thursday</option>
+                          <option value="Friday">Friday</option>
+                          <option value="Saturday">Saturday</option>
+                          <option value="Sunday">Sunday</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Year Level</label>
+                        <select
+                          value={spaceSettings.spaceYearLevel}
+                          onChange={(e) => handleSettingChange('spaceYearLevel', e.target.value)}
+                          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                          style={{
+                            backgroundColor: isDarkMode ? '#2A3142' : '#ffffff',
+                            borderColor: currentColors.border,
+                            color: currentColors.text
+                          }}
+                        >
+                          <option value="">Select Year Level</option>
+                          <option value="1">1st Year</option>
+                          <option value="2">2nd Year</option>
+                          <option value="3">3rd Year</option>
+                          <option value="4">4th Year</option>
+                          <option value="5">5th Year</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Start Time</label>
+                        <input
+                          type="time"
+                          value={spaceSettings.spaceTimeStart}
+                          onChange={(e) => handleSettingChange('spaceTimeStart', e.target.value)}
+                          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                          style={{
+                            backgroundColor: isDarkMode ? '#2A3142' : '#ffffff',
+                            borderColor: currentColors.border,
+                            color: currentColors.text
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2">End Time</label>
+                        <input
+                          type="time"
+                          value={spaceSettings.spaceTimeEnd}
+                          onChange={(e) => handleSettingChange('spaceTimeEnd', e.target.value)}
+                          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                          style={{
+                            backgroundColor: isDarkMode ? '#2A3142' : '#ffffff',
+                            borderColor: currentColors.border,
+                            color: currentColors.text
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Course Info Display - Only for course spaces and students */}
+              {isCourseSpace && user?.role !== "professor" && (
+                <div className="mb-8">
+                  <h2 className="text-lg font-semibold mb-6 flex items-center">
+                    <SettingsIcon size={20} className="mr-2" />
+                    Course Information
+                  </h2>
+                  
+                  <div className="rounded-lg p-4" style={{ backgroundColor: currentColors.input }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium mb-1" style={{ color: currentColors.textSecondary }}>Course Day</p>
+                        <p className="text-sm" style={{ color: currentColors.text }}>{currentSpace?.space_day || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium mb-1" style={{ color: currentColors.textSecondary }}>Schedule</p>
+                        <p className="text-sm" style={{ color: currentColors.text }}>
+                          {currentSpace?.space_time_start && currentSpace?.space_time_end 
+                            ? `${currentSpace.space_time_start} - ${currentSpace.space_time_end}`
+                            : 'Not specified'
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium mb-1" style={{ color: currentColors.textSecondary }}>Year Level</p>
+                        <p className="text-sm" style={{ color: currentColors.text }}>
+                          {currentSpace?.space_yr_lvl ? `${currentSpace.space_yr_lvl}th Year` : 'Not specified'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Space Code */}
               <div className="mb-8">
                 <h2 className="text-lg font-semibold mb-6 flex items-center">
@@ -316,7 +452,7 @@ const IndividualSpaceSettings = () => {
                         </div>
                       </div>
                       
-                      {member.role !== "Professor" && member.account_id !== user?.account_id && (
+                      {(!isCourseSpace || user?.role === "professor") && member.role !== "Professor" && member.account_id !== user?.account_id && (
                         <button
                           onClick={() => handleKickMember(member.account_id, member.full_name)}
                           className="p-2 rounded-lg transition-colors"

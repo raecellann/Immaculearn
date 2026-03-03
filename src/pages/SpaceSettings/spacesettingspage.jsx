@@ -10,7 +10,7 @@ import ProfSidebar from "../component/profsidebar";
 
 const SpaceSettingsPage = () => {
   const { user } = useUser();
-  const { userSpaces, isLoading } = useSpace();
+  const { userSpaces, courseSpaces, isLoading } = useSpace();
   const navigate = useNavigate();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
@@ -40,12 +40,26 @@ const SpaceSettingsPage = () => {
   
   const ActiveSidebar = user?.role === "professor" ? ProfSidebar : Sidebar;
 
+  // Combine regular spaces and course spaces for professors
+  const allSpaces = user?.role === "professor" 
+    ? [
+        ...(userSpaces || []),
+        ...(courseSpaces || []).map(courseSpace => ({
+          ...courseSpace,
+          description: courseSpace.space_description,
+          space_type: 'course'
+        }))
+      ]
+    : userSpaces || [];
+
   // Debug logging
   console.log("Space Settings Debug:", { 
     user: user ? `authenticated (id: ${user.account_id}, role: ${user.role})` : 'not authenticated',
     userSpaces: userSpaces,
+    courseSpaces: courseSpaces,
     isLoading: isLoading,
     userSpacesLength: userSpaces?.length || 0,
+    courseSpacesLength: courseSpaces?.length || 0,
     route: window.location.pathname
   });
 
@@ -149,63 +163,132 @@ const SpaceSettingsPage = () => {
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
               </div>
-            ) : userSpaces && userSpaces.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {userSpaces.map((space) => (
-                  <div
-                    key={space.space_uuid}
-                    onClick={() => handleSpaceSettingsClick(space.space_uuid, space.space_name)}
-                    className="rounded-xl p-6 cursor-pointer transition-all duration-200 border"
-                    style={{
-                      backgroundColor: currentColors.surface,
-                      color: currentColors.text,
-                      borderColor: currentColors.border
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = isDarkMode ? '#2A3142' : '#f8f9fa';
-                      e.currentTarget.style.borderColor = isDarkMode ? '#3b82f6' : '#2563eb';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = currentColors.surface;
-                      e.currentTarget.style.borderColor = currentColors.border;
-                    }}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold mb-2" style={{ color: currentColors.text }}>{space.space_name}</h3>
-                        <p className="text-sm line-clamp-2" style={{ color: currentColors.textSecondary }}>
-                          {space.description || "No description available"}
-                        </p>
-                      </div>
-                      <ChevronRight className="mt-1" size={20} style={{ color: currentColors.textSecondary }} />
+            ) : allSpaces && allSpaces.length > 0 ? (
+              <>
+                {/* Your Spaces Section */}
+                {(userSpaces && userSpaces.length > 0) && (
+                  <>
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold" style={{ color: currentColors.text }}>Your Spaces</h2>
                     </div>
-                    
-                    <div className="flex items-center text-sm" style={{ color: currentColors.textSecondary }}>
-                      <Users size={16} className="mr-1" />
-                      <span>{space.members?.length || 0} members</span>
-                    </div>
-                    
-                    <div className="mt-3 pt-3 border-t" style={{ borderColor: currentColors.border }}>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs" style={{ color: currentColors.textSecondary }}>Configure learning spaces, permissions, and collaboration features</span>
-                        <SettingsIcon size={16} style={{ color: '#3b82f6' }} />
-                      </div>
-                      <div className="mt-2">
-                        <button
-                        key={space.space_uuid}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSpaceSettingsClick(space.space_uuid, space.space_name);
-                        }}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                      {userSpaces.map((space) => (
+                        <div
+                          key={space.space_uuid}
+                          onClick={() => handleSpaceSettingsClick(space.space_uuid, space.space_name)}
+                          className="rounded-xl p-6 cursor-pointer transition-all duration-200 border"
+                          style={{
+                            backgroundColor: currentColors.surface,
+                            color: currentColors.text,
+                            borderColor: currentColors.border
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = isDarkMode ? '#2A3142' : '#f8f9fa';
+                            e.currentTarget.style.borderColor = isDarkMode ? '#3b82f6' : '#2563eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = currentColors.surface;
+                            e.currentTarget.style.borderColor = currentColors.border;
+                          }}
                         >
-                          Configure Spaces →
-                        </button>
-                      </div>
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold mb-2" style={{ color: currentColors.text }}>{space.space_name}</h3>
+                              <p className="text-sm line-clamp-2" style={{ color: currentColors.textSecondary }}>
+                                {space.description || "No description available"}
+                              </p>
+                            </div>
+                            <ChevronRight className="mt-1" size={20} style={{ color: currentColors.textSecondary }} />
+                          </div>
+                          
+                          <div className="flex items-center text-sm" style={{ color: currentColors.textSecondary }}>
+                            <Users size={16} className="mr-1" />
+                            <span>{space.members?.length || 0} members</span>
+                          </div>
+                          
+                          <div className="mt-4">
+                            <button
+                              key={space.space_uuid}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSpaceSettingsClick(space.space_uuid, space.space_name);
+                              }}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                            >
+                              Configure Spaces →
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  </>
+                )}
+
+                {/* Course Spaces Section - Only for Professors */}
+                {user?.role === "professor" && courseSpaces && courseSpaces.length > 0 && (
+                  <>
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold" style={{ color: currentColors.text }}>Course Spaces</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {courseSpaces.map((space) => (
+                        <div
+                          key={space.space_uuid}
+                          onClick={() => handleSpaceSettingsClick(space.space_uuid, space.space_name)}
+                          className="rounded-xl p-6 cursor-pointer transition-all duration-200 border"
+                          style={{
+                            backgroundColor: currentColors.surface,
+                            color: currentColors.text,
+                            borderColor: currentColors.border
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = isDarkMode ? '#2A3142' : '#f8f9fa';
+                            e.currentTarget.style.borderColor = isDarkMode ? '#3b82f6' : '#2563eb';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = currentColors.surface;
+                            e.currentTarget.style.borderColor = currentColors.border;
+                          }}
+                        >
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold mb-2" style={{ color: currentColors.text }}>{space.space_name}</h3>
+                              <p className="text-sm line-clamp-2" style={{ color: currentColors.textSecondary }}>
+                                {space.space_description || "No description available"}
+                              </p>
+                            </div>
+                            <ChevronRight className="mt-1" size={20} style={{ color: currentColors.textSecondary }} />
+                          </div>
+                          
+                          <div className="flex items-center text-sm" style={{ color: currentColors.textSecondary }}>
+                            <Users size={16} className="mr-1" />
+                            <span>{space.members?.length || 0} members</span>
+                            {space.space_day && (
+                              <>
+                                <span className="mx-2">•</span>
+                                <span>{space.space_day} {space.space_time_start}-{space.space_time_end}</span>
+                              </>
+                            )}
+                          </div>
+                          
+                          <div className="mt-4">
+                            <button
+                              key={space.space_uuid}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSpaceSettingsClick(space.space_uuid, space.space_name);
+                              }}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                            >
+                              Configure Spaces →
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
             ) : (
               <div className="text-center py-12">
                 <div className="rounded-xl p-8 max-w-md mx-auto" style={{ backgroundColor: currentColors.surface }}>
