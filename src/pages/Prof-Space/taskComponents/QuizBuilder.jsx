@@ -397,9 +397,13 @@ const QuizBuilder = ({
     const formattedQuestions = questions.map((question) => {
       const questionData = {
         question_type:
-          question.type === "multiple-choice" ? "mcq" : 
-          question.type === "true-false" ? "true-false" : 
-          question.type === "identification" ? "identification" : question.type,
+          question.type === "multiple-choice"
+            ? "mcq"
+            : question.type === "true-false"
+              ? "true-false"
+              : question.type === "identification"
+                ? "identification"
+                : question.type,
         question: question.question,
         point: question.points || 1,
       };
@@ -636,20 +640,13 @@ const QuizBuilder = ({
 
         {/* QUESTIONS */}
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center">
             <h2
               className="text-xl font-semibold"
               style={{ color: currentColors.text }}
             >
               Questions
             </h2>
-            <button
-              type="button"
-              onClick={addQuestion}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
-            >
-              <FiPlus size={16} /> Add Question
-            </button>
           </div>
 
           {questions.map((question, index) => (
@@ -754,41 +751,53 @@ const QuizBuilder = ({
           ))}
         </div>
 
+        {/* ADD QUESTION BUTTON */}
+
         {/* ACTION BUTTONS */}
-        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
+        <div className="flex flex-col items-end gap-4 mt-8">
           <button
-            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-            style={{
-              backgroundColor: currentColors.surface,
-              color: currentColors.text,
-              border: `1px solid ${currentColors.border}`,
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = currentColors.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = currentColors.surface;
-            }}
-            onClick={() => handleSave("draft")}
+            type="button"
+            onClick={addQuestion}
+            className="flex items-center gap-2 sm:px-4 px-4 py-2 bg-blue-600 text-white rounded-lg sm:text-base sm:w-auto hover:bg-blue-700 text-sm"
           >
-            {isLoading ? "Saving..." : "Save as Draft"}
+            <FiPlus size={16} /> Add Question
           </button>
-          <button
-            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-            style={{
-              backgroundColor: "#2563eb",
-              color: "#ffffff",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = "#1d4ed8";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = "#2563eb";
-            }}
-            onClick={() => handleSave("published")}
-          >
-            {isLoading ? "Publishing..." : "Publish Quiz"}
-          </button>
+
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+            <button
+              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+              style={{
+                backgroundColor: currentColors.surface,
+                color: currentColors.text,
+                border: `1px solid ${currentColors.border}`,
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = currentColors.hover;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = currentColors.surface;
+              }}
+              onClick={() => handleSave("draft")}
+            >
+              {isLoading ? "Saving..." : "Save as Draft"}
+            </button>
+            <button
+              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+              style={{
+                backgroundColor: "#2563eb",
+                color: "#ffffff",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = "#1d4ed8";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = "#2563eb";
+              }}
+              onClick={() => handleSave("published")}
+            >
+              {isLoading ? "Publishing..." : "Publish Activity"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
