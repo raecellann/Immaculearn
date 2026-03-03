@@ -3,19 +3,21 @@ import { useState } from "react";
 
 // Delete Button Component using consistent design
 const DeleteButton = ({ onClick }) => {
+  const isDarkMode = document.documentElement.classList.contains('dark');
+  
   const buttonStyle = {
     cursor: "pointer",
     padding: "0.5em 1em",
     fontSize: "0.9em",
     width: "auto",
     height: "auto",
-    color: "#ef4444", // Red for delete
+    color: isDarkMode ? "#ef4444" : "#dc2626", // Red for delete (lighter in light mode)
     background: "transparent",
     borderRadius: "0.25em",
     border: "none",
     boxShadow: "none",
     transition: "all 0.3s ease-in-out",
-    outline: "0.1em solid #cc1515ff",
+    outline: `0.1em solid ${isDarkMode ? "#cc1515ff" : "#b91c1c"}`,
     position: "relative",
     display: "inline-flex",
     alignItems: "center",
@@ -24,7 +26,7 @@ const DeleteButton = ({ onClick }) => {
   };
 
   const iconStyle = {
-    fill: "#ef4444",
+    fill: isDarkMode ? "#ef4444" : "#dc2626",
     width: "1em",
     height: "1em",
     marginRight: "0.5em",
@@ -37,7 +39,8 @@ const DeleteButton = ({ onClick }) => {
       style={buttonStyle}
       onMouseEnter={(e) => {
         const color = "rgba(239, 68, 68, 0.5)"; // Red hover
-        e.target.style.background = `radial-gradient(circle at bottom, ${color} 10%, #212121 70%)`;
+        const bgColor = isDarkMode ? "#212121" : "#f3f4f6";
+        e.target.style.background = `radial-gradient(circle at bottom, ${color} 10%, ${bgColor} 70%)`;
         e.target.style.transform = "scale(1.1)";
         e.target.style.boxShadow = "0 0 1em 0.45em rgba(0, 0, 0, 0.1)";
         e.target.style.margin = "0 0.5em";
@@ -46,13 +49,14 @@ const DeleteButton = ({ onClick }) => {
         if (svg) svg.style.fill = "white";
       }}
       onMouseLeave={(e) => {
-        e.target.style.background = "#212121";
+        const bgColor = isDarkMode ? "#212121" : "#f3f4f6";
+        e.target.style.background = bgColor;
         e.target.style.transform = "scale(1)";
         e.target.style.boxShadow = "0 0 1em 1em rgba(0, 0, 0, 0.1)";
         e.target.style.margin = "0";
-        e.target.style.color = "#ef4444";
+        e.target.style.color = isDarkMode ? "#ef4444" : "#dc2626";
         const svg = e.target.querySelector("svg");
-        if (svg) svg.style.fill = "#ef4444";
+        if (svg) svg.style.fill = isDarkMode ? "#ef4444" : "#dc2626";
       }}
       onClick={onClick}
     >
@@ -68,6 +72,8 @@ const DeleteButton = ({ onClick }) => {
 
 // Cancel Button Component using consistent design
 const CancelButton = ({ onClick }) => {
+  const isDarkMode = document.documentElement.classList.contains('dark');
+  
   const buttonStyle = {
     cursor: "pointer",
     padding: "0.5em 1em",
@@ -102,7 +108,8 @@ const CancelButton = ({ onClick }) => {
       style={buttonStyle}
       onMouseEnter={(e) => {
         const color = "rgba(107, 114, 128, 0.5)"; // Gray hover
-        e.target.style.background = `radial-gradient(circle at bottom, ${color} 10%, #212121 70%)`;
+        const bgColor = isDarkMode ? "#212121" : "#f3f4f6";
+        e.target.style.background = `radial-gradient(circle at bottom, ${color} 10%, ${bgColor} 70%)`;
         e.target.style.transform = "scale(1.1)";
         e.target.style.boxShadow = "0 0 1em 0.45em rgba(0, 0, 0, 0.1)";
         e.target.style.margin = "0 0.5em";
@@ -111,7 +118,8 @@ const CancelButton = ({ onClick }) => {
         if (svg) svg.style.fill = "white";
       }}
       onMouseLeave={(e) => {
-        e.target.style.background = "#212121";
+        const bgColor = isDarkMode ? "#212121" : "#f3f4f6";
+        e.target.style.background = bgColor;
         e.target.style.transform = "scale(1)";
         e.target.style.boxShadow = "0 0 1em 1em rgba(0, 0, 0, 0.1)";
         e.target.style.margin = "0";
@@ -145,6 +153,7 @@ export function DeleteConfirmationDialog({
 }) {
   const [confirmationText, setConfirmationText] = useState("");
   const isValid = confirmationText === space.space_name;
+  const isDarkMode = document.documentElement.classList.contains('dark');
 
   // console.log("DeleteConfirmationDialog received space:", space);
 
@@ -159,30 +168,46 @@ export function DeleteConfirmationDialog({
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-lg bg-gray-900 rounded-2xl shadow-2xl p-6 space-y-6">
+        <DialogPanel className={`w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-6 ${
+          isDarkMode ? 'bg-gray-900' : 'bg-white border border-gray-200'
+        }`}>
           {/* Header */}
           <div className="flex items-start justify-between">
-            <DialogTitle className="text-lg font-semibold text-white">
+            <DialogTitle className={`text-lg font-semibold ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
               Delete Space
             </DialogTitle>
 
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-200 transition"
+              className={`transition ${
+                isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+              }`}
             >
               ✕
             </button>
           </div>
 
-          <p className="text-gray-300 text-base">
+          <p className={`text-base ${
+  isDarkMode ? 'text-gray-300' : 'text-gray-600'
+}`}>
             Are you sure you want to delete the following workspace?
           </p>
 
           {/* Warning Box */}
-          <div className="flex gap-3 bg-red-900/20 border border-red-800/50 rounded-xl p-4">
+          <div className={`flex gap-3 rounded-xl p-4 ${
+            isDarkMode 
+              ? 'bg-red-900/20 border border-red-800/50' 
+              : 'bg-red-50 border border-red-200'
+          }`}>
             <div className="w-1 bg-red-500 rounded-full" />
-            <div className="text-sm text-gray-300">
-              <span className="font-semibold text-white">Warning:</span> This
+            <div className={`text-sm ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              <span className={`font-semibold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>Warning:</span> This
               action <span className="font-semibold">cannot be undone</span>.
               Deleting a space will remove all its associated data. Any files,
               tasks, configurations, and more will be{" "}
@@ -191,31 +216,47 @@ export function DeleteConfirmationDialog({
           </div>
 
           {/* Workspace Card */}
-          <div className="flex items-center justify-between border border-gray-700 rounded-xl p-4 bg-gray-800">
+          <div className={`flex items-center justify-between rounded-xl p-4 ${
+            isDarkMode 
+              ? 'border border-gray-700 bg-gray-800' 
+              : 'border border-gray-200 bg-gray-50'
+          }`}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
                 ✓
               </div>
               <div>
-                <div className="font-medium text-white text-base">
+                <div className={`font-medium text-base ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   {space.space_name}
                 </div>
-                <div className="text-sm text-gray-400">
+                <div className={`text-sm ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   {filesCount} Files, {tasksCount} tasks, {peopleCount} people
                 </div>
               </div>
             </div>
 
-            <button className="text-sm border border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-700 transition text-gray-300">
+            <button className={`text-sm border px-3 py-1.5 rounded-lg hover transition ${
+              isDarkMode 
+                ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+            }`}>
               Go to Home
             </button>
           </div>
 
           {/* Confirmation Input */}
           <div className="space-y-2">
-            <p className="text-sm text-gray-400">
+            <p className={`text-sm ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               To delete, type the workspace name{" "}
-              <span className="font-semibold text-white">
+              <span className={`font-semibold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
                 {space.space_name}
               </span>{" "}
               below
@@ -226,7 +267,11 @@ export function DeleteConfirmationDialog({
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
               placeholder={`Enter ${space.space_name}`}
-              className="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-base text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 placeholder-gray-500"
+              className={`w-full rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:border-red-500 placeholder-gray-500 ${
+                isDarkMode 
+                  ? 'bg-gray-800 border border-gray-600 text-white focus:ring-red-500' 
+                  : 'bg-white border border-gray-300 text-gray-900 focus:ring-red-500'
+              }`}
             />
           </div>
 
@@ -234,7 +279,11 @@ export function DeleteConfirmationDialog({
           <div className="flex justify-end gap-3 pt-4">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-base text-gray-300 hover:bg-gray-800 transition border border-gray-600"
+              className={`px-4 py-2 rounded-lg text-base transition border ${
+                isDarkMode 
+                  ? 'text-gray-300 hover:bg-gray-800 border-gray-600' 
+                  : 'text-gray-700 hover:bg-gray-100 border-gray-300'
+              }`}
             >
               Cancel
             </button>
