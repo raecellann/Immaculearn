@@ -584,13 +584,23 @@ const ProfPeoplePage = () => {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={cancelRemoveMember}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg transition-colors"
+                className="px-4 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: isDarkMode ? '#4B5563' : '#D1D5DB',
+                  color: isDarkMode ? '#FFFFFF' : '#111827',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = isDarkMode ? '#6B7280' : '#9CA3AF';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#D1D5DB';
+                }}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmRemoveMember}
-                className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg transition-colors"
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg transition-colors text-white"
               >
                 Yes, Remove
               </button>

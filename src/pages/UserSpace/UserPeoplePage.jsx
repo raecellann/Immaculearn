@@ -555,10 +555,16 @@ const UserPeoplePage = () => {
       {/* REMOVE MEMBER WARNING MODAL */}
       {showRemoveWarning && memberToRemove && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1E222A] rounded-lg p-6 max-w-md w-full">
-            <p className="text-gray-300 mb-6">
+          <div
+            className="rounded-lg p-6 max-w-md w-full"
+            style={{ backgroundColor: currentColors.surface }}
+          >
+            <p className="mb-6" style={{ color: currentColors.textSecondary }}>
               Are you sure you want to remove{" "}
-              <span className="font-medium text-white">
+              <span
+                className="font-medium"
+                style={{ color: currentColors.text }}
+              >
                 {memberToRemove.full_name}
               </span>{" "}
               from this space? They will lose access to all content and
@@ -567,13 +573,23 @@ const UserPeoplePage = () => {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={cancelRemoveMember}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg transition-colors"
+                className="px-4 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: isDarkMode ? '#4B5563' : '#D1D5DB',
+                  color: isDarkMode ? '#FFFFFF' : '#111827',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = isDarkMode ? '#6B7280' : '#9CA3AF';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#D1D5DB';
+                }}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmRemoveMember}
-                className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg transition-colors"
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg transition-colors text-white"
               >
                 Yes, Remove
               </button>
