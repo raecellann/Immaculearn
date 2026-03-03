@@ -67,6 +67,7 @@ const UserFilesShared = () => {
   // Cover photo state
   const [coverPhoto, setCoverPhoto] = useState(null);
   const [coverPhotoUrl, setCoverPhotoUrl] = useState(null);
+  const [previousCoverPhotoUrl, setPreviousCoverPhotoUrl] = useState(null);
   const [showCoverPhotoEditor, setShowCoverPhotoEditor] = useState(false);
   const [coverPhotoPosition, setCoverPhotoPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -75,6 +76,18 @@ const UserFilesShared = () => {
   const [showCoverPhotoConfirm, setShowCoverPhotoConfirm] = useState(false);
   const coverPhotoInputRef = useRef(null);
   const coverPhotoEditorRef = useRef(null);
+
+  // Gradient color options for cover photo
+  const colorOptions = [
+    "linear-gradient(45deg, #FFC107, #FF5722)",
+    "linear-gradient(45deg, #3F51B5, #2196F3)",
+    "linear-gradient(45deg, #9C27B0, #673AB7)",
+    "linear-gradient(45deg, #E91E63, #F44336)",
+    "linear-gradient(45deg, #4CAF50, #8BC34A)",
+    "linear-gradient(45deg, #FF9800, #FFC107)",
+    "linear-gradient(45deg, #00BCD4, #009688)",
+    "linear-gradient(45deg, #795548, #607D8B)",
+  ];
 
   const navigate = useNavigate();
   const { space_uuid, space_name } = useParams();
@@ -452,6 +465,7 @@ const UserFilesShared = () => {
       // Create preview and open editor
       const reader = new FileReader();
       reader.onload = (e) => {
+        setPreviousCoverPhotoUrl(coverPhotoUrl); // Save previous URL
         setCoverPhotoUrl(e.target.result);
         setShowCoverPhotoEditor(true);
         setCoverPhotoPosition(50);
@@ -515,8 +529,19 @@ const UserFilesShared = () => {
   const handleCoverPhotoCancel = () => {
     setShowCoverPhotoEditor(false);
     setCoverPhoto(null);
-    // Don't clear coverPhotoUrl on cancel, keep the existing cover photo
+    // Restore previous cover photo URL
+    setCoverPhotoUrl(previousCoverPhotoUrl);
     setCoverPhotoPosition(50);
+    if (coverPhotoInputRef.current) {
+      coverPhotoInputRef.current.value = '';
+    }
+  };
+
+  // Handle gradient selection for cover photo
+  const handleGradientSelection = (gradient) => {
+    setPreviousCoverPhotoUrl(coverPhotoUrl); // Save previous URL
+    setCoverPhotoUrl(gradient);
+    setShowCoverPhotoEditor(false); // Close editor since gradients don't need positioning
     if (coverPhotoInputRef.current) {
       coverPhotoInputRef.current.value = '';
     }
@@ -1298,31 +1323,49 @@ const UserFilesShared = () => {
 
             {/* Editor Content */}
             <div className="flex-1 p-6 overflow-y-auto">
-              {/* Preview Area */}
+              {/* Gradient Options */}
               <div className="mb-6">
-                <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
-                  <div
-                    ref={coverPhotoEditorRef}
-                    className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
-                    style={{
-                      backgroundImage: `url(${coverPhotoUrl})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: `center ${coverPhotoPosition}%`,
-                      backgroundRepeat: 'no-repeat',
-                    }}
-                    onMouseDown={handleMouseDown}
-                  />
-                  <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
-                  {isDragging && (
-                    <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
-                      Dragging...
-                    </div>
-                  )}
+                <p className="text-sm font-medium text-white mb-3">Color & Gradient</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {colorOptions.map((color, i) => (
+                    <div
+                      key={i}
+                      className="h-12 rounded cursor-pointer border-2 border-gray-600 hover:border-blue-500 transition-colors"
+                      style={{ background: color }}
+                      onClick={() => handleGradientSelection(color)}
+                    />
+                  ))}
                 </div>
-                <p className="text-sm text-gray-400 mt-2">
-                  Click and drag the image up or down to position it
-                </p>
               </div>
+
+              {/* Image Positioning (only show if it's an image, not gradient) */}
+              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+                <div className="mb-6">
+                  <p className="text-sm font-medium text-white mb-3">Position Image</p>
+                  <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
+                    <div
+                      ref={coverPhotoEditorRef}
+                      className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                      style={{
+                        backgroundImage: `url(${coverPhotoUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: `center ${coverPhotoPosition}%`,
+                        backgroundRepeat: 'no-repeat',
+                      }}
+                      onMouseDown={handleMouseDown}
+                    />
+                    <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
+                    {isDragging && (
+                      <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+                        Dragging...
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-400 mt-2">
+                    Click and drag the image up or down to position it
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Footer */}

@@ -77,7 +77,32 @@ const AdminTaskPage = () => {
   const [showInvitePopup, setShowInvitePopup] = useState(false);
 
   // Pending Invites modal state
-  const [showPendingInvites, setShowPendingInvites] = useState(false);
+  const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+
+  // Cover photo state
+  const [coverPhoto, setCoverPhoto] = useState(null);
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState(null);
+  const [previousCoverPhotoUrl, setPreviousCoverPhotoUrl] = useState(null);
+  const [showCoverPhotoEditor, setShowCoverPhotoEditor] = useState(false);
+  const [coverPhotoPosition, setCoverPhotoPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [dragStartPosition, setDragStartPosition] = useState(50);
+  const [showCoverPhotoConfirm, setShowCoverPhotoConfirm] = useState(false);
+  const coverPhotoInputRef = useRef(null);
+  const coverPhotoEditorRef = useRef(null);
+
+  // Gradient color options for cover photo
+  const colorOptions = [
+    "linear-gradient(45deg, #FFC107, #FF5722)",
+    "linear-gradient(45deg, #3F51B5, #2196F3)",
+    "linear-gradient(45deg, #9C27B0, #673AB7)",
+    "linear-gradient(45deg, #E91E63, #F44336)",
+    "linear-gradient(45deg, #4CAF50, #8BC34A)",
+    "linear-gradient(45deg, #FF9800, #FFC107)",
+    "linear-gradient(45deg, #00BCD4, #009688)",
+    "linear-gradient(45deg, #795548, #607D8B)",
+  ];
 
   // Delete Room modal state
   const [showDeleteRoom, setShowDeleteRoom] = useState(false);
@@ -587,6 +612,165 @@ const AdminTaskPage = () => {
       });
   };
 
+  // Cover photo handlers
+  const handleCoverPhotoClick = () => {
+    if (isOwnerSpace) {
+      coverPhotoInputRef.current?.click();
+    }
+  };
+
+  const handleCoverPhotoChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Please upload an image smaller than 5MB");
+        return;
+      }
+
+      setCoverPhoto(file);
+
+      // Create preview and open editor
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviousCoverPhotoUrl(coverPhotoUrl); // Save previous URL
+        setCoverPhotoUrl(e.target.result);
+        setShowCoverPhotoEditor(true);
+        setCoverPhotoPosition(50);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCoverPhotoSave = () => {
+    setShowCoverPhotoConfirm(true);
+  };
+
+  const handleConfirmCoverPhoto = () => {
+    // Create canvas to apply transformations
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Set canvas size to cover photo dimensions
+      canvas.width = 1200;
+      canvas.height = 400;
+      
+      // Calculate scale to cover the entire canvas
+      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scaledWidth = img.width * scale;
+      const scaledHeight = img.height * scale;
+      
+      // Calculate position based on user vertical positioning
+      const x = (canvas.width - scaledWidth) / 2;
+      const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
+      
+      // Draw the image with transformations
+      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+      
+      // Convert to data URL and update
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      setCoverPhotoUrl(dataUrl);
+      
+      // Save to localStorage
+      localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
+      
+      setShowCoverPhotoEditor(false);
+      setShowCoverPhotoConfirm(false);
+      
+      toast.success("Cover photo updated successfully!");
+    };
+    
+    img.src = coverPhotoUrl;
+  };
+
+  const handleCancelCoverPhoto = () => {
+    setShowCoverPhotoConfirm(false);
+  };
+
+  const handleCoverPhotoCancel = () => {
+    setShowCoverPhotoEditor(false);
+    setCoverPhoto(null);
+    // Restore previous cover photo URL
+    setCoverPhotoUrl(previousCoverPhotoUrl);
+    setCoverPhotoPosition(50);
+    if (coverPhotoInputRef.current) {
+      coverPhotoInputRef.current.value = '';
+    }
+  };
+
+  // Handle gradient selection for cover photo
+  const handleGradientSelection = (gradient) => {
+    setPreviousCoverPhotoUrl(coverPhotoUrl); // Save previous URL
+    setCoverPhotoUrl(gradient);
+    setShowCoverPhotoEditor(false); // Close editor since gradients don't need positioning
+    if (coverPhotoInputRef.current) {
+      coverPhotoInputRef.current.value = '';
+    }
+  };
+
+  // Cover photo drag handlers
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStartY(e.clientY);
+    setDragStartPosition(coverPhotoPosition);
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    
+    const deltaY = e.clientY - dragStartY;
+    const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
+    const positionChange = (deltaY / containerHeight) * 100;
+    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
+    
+    setCoverPhotoPosition(newPosition);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Add global mouse event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      const handleGlobalMouseMove = (e) => handleMouseMove(e);
+      const handleGlobalMouseUp = () => handleMouseUp();
+      
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+      };
+    }
+  }, [isDragging, dragStartY, dragStartPosition]);
+
+  // Load saved cover photo on component mount
+  useEffect(() => {
+    const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space_uuid}`);
+    if (savedCoverPhoto) {
+      setCoverPhotoUrl(savedCoverPhoto);
+    }
+  }, [space_uuid]);
+
+  // Save cover photo to localStorage when it changes
+  useEffect(() => {
+    if (coverPhotoUrl && !showCoverPhotoEditor) {
+      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
+    }
+  }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
+
   return (
     <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
       <div className="hidden lg:block">
@@ -626,11 +810,58 @@ const AdminTaskPage = () => {
           <h1 className="text-xl font-bold">{spaceName}</h1>
         </div>
         <div className="lg:hidden h-16" />
-        <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 h-32 sm:h-40 md:h-48">
-          <div 
-            className="absolute inset-0" 
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
-          />
+        {/* ================= COVER ================= */}
+        <div 
+          className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
+          onClick={handleCoverPhotoClick}
+        >
+          {coverPhotoUrl ? (
+            <>
+              {coverPhotoUrl.includes('gradient') ? (
+                <div
+                  className="w-full h-full"
+                  style={{ background: coverPhotoUrl }}
+                />
+              ) : (
+                <img 
+                  src={coverPhotoUrl} 
+                  alt="Space Cover" 
+                  className="w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
+              {isOwnerSpace && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                    <FiUploadCloud size={16} />
+                    <span className="text-sm">Change Cover Photo</span>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
+              <div className="absolute inset-0 bg-black/30" />
+              {isOwnerSpace && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                    <FiUploadCloud size={16} />
+                    <span className="text-sm">Upload Cover Photo</span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          {isOwnerSpace && (
+            <input
+              ref={coverPhotoInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              onChange={handleCoverPhotoChange}
+              className="hidden"
+            />
+          )}
         </div>
         <div className="p-4 sm:p-6">
           <div className="hidden md:block mb-8">
@@ -1557,6 +1788,128 @@ const AdminTaskPage = () => {
           tasks: uploadedTask || [],
         }}
       />
+
+      {/* COVER PHOTO EDITOR MODAL */}
+      {showCoverPhotoEditor && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">
+                Change Cover Photo
+              </h2>
+              <button
+                onClick={handleCoverPhotoCancel}
+                className="text-gray-400 hover:text-white p-1 bg-transparent"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            {/* Editor Content */}
+            <div className="flex-1 p-6 overflow-y-auto">
+              {/* Gradient Options */}
+              <div className="mb-6">
+                <p className="text-sm font-medium text-white mb-3">Color & Gradient</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {colorOptions.map((color, i) => (
+                    <div
+                      key={i}
+                      className="h-12 rounded cursor-pointer border-2 border-gray-600 hover:border-blue-500 transition-colors"
+                      style={{ background: color }}
+                      onClick={() => handleGradientSelection(color)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Image Positioning (only show if it's an image, not gradient) */}
+              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+                <div className="mb-6">
+                  <p className="text-sm font-medium text-white mb-3">Position Image</p>
+                  <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
+                    <div
+                      ref={coverPhotoEditorRef}
+                      className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                      style={{
+                        backgroundImage: `url(${coverPhotoUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: `center ${coverPhotoPosition}%`,
+                        backgroundRepeat: 'no-repeat',
+                      }}
+                      onMouseDown={handleMouseDown}
+                    />
+                    <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
+                    {isDragging && (
+                      <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+                        Dragging...
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-400 mt-2">
+                    Click and drag the image up or down to position it
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={handleCoverPhotoCancel}
+                className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+              >
+                Cancel
+              </button>
+              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+                <button
+                  onClick={handleCoverPhotoSave}
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+                >
+                  Apply
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* COVER PHOTO CONFIRMATION DIALOG */}
+      {showCoverPhotoConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-hidden">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-700">
+              <h3 className="text-lg font-semibold text-white">
+                Confirm Cover Photo
+              </h3>
+            </div>
+
+            {/* Content */}
+            <div className="p-4">
+              <p className="text-gray-300 mb-4">
+                Are you sure you want to apply this cover photo?
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={handleCancelCoverPhoto}
+                className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmCoverPhoto}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
