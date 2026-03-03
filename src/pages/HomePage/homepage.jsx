@@ -572,6 +572,7 @@ const HomePage1 = () => {
                     ›
                   </button>
                   <button
+                    onClick={() => navigate("/space#your-spaces")}
                     className="hidden sm:block hover:underline text-sm"
                     style={{ color: isDarkMode ? "#60A5FA" : "black" }}
                   >

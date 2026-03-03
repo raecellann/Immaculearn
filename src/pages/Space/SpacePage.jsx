@@ -274,6 +274,19 @@ const SpacePage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
 
+  // Handle hash navigation for smooth scrolling
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === "#your-spaces") {
+      const element = document.getElementById("your-spaces");
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
+    }
+  }, []);
+
   // Handle mouse move for tooltip positioning
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -471,7 +484,7 @@ const SpacePage = () => {
           </div>
 
           {/* YOUR SPACES */}
-          <div className="mb-12">
+          <div id="your-spaces" className="mb-12">
             <h2
               className="text-2xl font-bold mb-4"
               style={{ color: isDarkMode ? "white" : "black" }}
