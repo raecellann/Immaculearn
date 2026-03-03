@@ -88,7 +88,7 @@ const AddMember = ({
 
   const defaultStyles = {
     popupOverlay: "fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4",
-    popupContainer: `rounded-2xl w-full max-w-md mx-auto p-4 sm:p-6 shadow-2xl border ${
+    popupContainer: `rounded-2xl w-full max-w-md md:max-w-lg mx-auto p-4 sm:p-6 shadow-2xl border ${
       isDarkMode 
         ? 'bg-gradient-to-br from-[#2A2F3A] to-[#1E222A] border-gray-700' 
         : 'bg-gradient-to-br from-white to-gray-50 border-gray-200'
@@ -110,8 +110,8 @@ const AddMember = ({
     }`,
     errorContainer: "flex items-center gap-2 text-red-400 text-xs",
     errorIndicator: "w-1 h-1 bg-red-400 rounded-full",
-    buttonContainer: "flex gap-2 flex-col sm:flex-row",
-    sendButton: "px-3 py-2 sm:px-4 sm:py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium w-full sm:w-auto",
+    buttonContainer: "flex gap-2 flex-col sm:flex-row lg:flex-row",
+    sendButton: "px-3 py-2 sm:px-4 sm:py-2 lg:px-4 lg:py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium w-full sm:w-auto lg:w-auto",
     linkContainer: `rounded-lg p-3 border ${
       isDarkMode 
         ? 'bg-gray-800/50 border-gray-600' 
@@ -214,13 +214,12 @@ const AddMember = ({
                   <p className={`text-xs sm:text-sm font-medium mb-1 ${
                     isDarkMode ? 'text-white' : 'text-gray-900'
                   }`}>
-                    How to invite using email
+                    Email Invitation
                   </p>
                   <p className={`text-xs leading-relaxed ${
                     isDarkMode ? 'text-gray-400' : 'text-gray-600'
                   }`}>
-                    Enter the recipient's Gmail address and click "Send Invite". 
-                    You can invite using emails and they will receive a notification.
+                    Enter a Gmail address and click "Send Invite" to notify the user.
                   </p>
                 </div>
               </div>
@@ -270,14 +269,12 @@ const AddMember = ({
               <p className={`text-xs sm:text-sm font-medium mb-1 ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                How to invite members
+                Share Link
               </p>
               <p className={`text-xs leading-relaxed ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>
-                Copy invitation link above and share it with people
-                you want to add to this space. They can join using this
-                link.
+                Copy this link and share it with people you want to invite.
               </p>
             </div>
           </div>

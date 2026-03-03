@@ -1114,7 +1114,7 @@ const HomePage1 = () => {
                     {Array.from({ length: friendSlideCount }).map((_, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full flex-shrink-0 h-full"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 min-w-full"
                       >
                         {sharedSpaces
                           .slice(idx * cardsPerView, (idx + 1) * cardsPerView)
@@ -1166,7 +1166,7 @@ const HomePage1 = () => {
                                     </p>
                                   </div>
                                 </div>
-                                <div className="p-4">
+                                <div className="p-4 flex flex-col justify-between flex-grow">
                                   <h3 className="font-medium truncate">
                                     {capitalizeWords(space.space_name)}'s Space
                                   </h3>

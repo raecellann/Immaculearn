@@ -41,13 +41,9 @@ const ProfListActivityPage = () => {
   }, [lastScrollY]);
 
   const activities = [
-    { id: 1, status: "On Going", name: "Week 8 Personal Reflection", dueDate: "October 30", space: "Operating System", category: "your-space" },
-    { id: 2, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026", category: "your-space" },
     { id: 3, status: "Already Ended", name: "Week 5 Individual Activity", dueDate: "September 12", space: "Businteg", category: "course-space" },
     { id: 4, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026", category: "course-space" },
     { id: 5, status: "Already Ended", name: "Week 5 Individual Activity", dueDate: "September 12", space: "Businteg", category: "course-space" },
-    { id: 6, status: "On Going", name: "Week 8 Personal Reflection", dueDate: "October 30", space: "Operating System", category: "your-space" },
-    { id: 7, status: "To be Deployed", name: "OJT Final Output", dueDate: "N/A", space: "OJT Batch 2025-2026", category: "your-space" },
   ];
 
   const activitiesByCategory = activities.reduce((acc, activity) => {
@@ -57,7 +53,6 @@ const ProfListActivityPage = () => {
     acc[activity.category].push(activity);
     return acc;
   }, {
-    'your-space': [],
     'course-space': []
   });
 
@@ -128,43 +123,6 @@ const ProfListActivityPage = () => {
           <h1 className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10">
             List of Activities
           </h1>
-
-          {/* Your Space Activities */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Your Space</h2>
-            {userSpaces?.length === 0 ? (
-              <div className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto" style={{
-                backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface,
-                color: currentColors.textSecondary,
-                borderColor: isDarkMode ? currentColors.border : "black"
-              }}>
-                <div className="flex items-center justify-center gap-3">
-                  <FiFolder className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
-                  <span>No space list activity yet</span>
-                </div>
-              </div>
-            ) : userSpaces?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {userSpaces?.map((space, index) => (
-                  <div
-                    key={`your-space-${index}`}
-                    onClick={() => navigate(`/prof/list-activity/${space.space_uuid}/${space.space_name}`)}
-                    className="rounded-lg p-4 flex items-center gap-3 transition cursor-pointer"
-                    style={{
-                      backgroundColor: currentColors.surface,
-                      border: `1px solid ${currentColors.border}`
-                    }}
-                  >
-                    <span className="text-xl">📋</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-            <div className="border-b border-gray-700 my-6"></div>
-          </div>
 
           {/* Course Space Activities */}
           <div className="mb-8">
