@@ -584,22 +584,24 @@ const ProfHomePage = () => {
                                 }
                                 onMouseLeave={() => setHoveredSpace(null)}
                               >
-                                <SpaceCover
-                                  image={
-                                    spaceCoverPhotos[space.space_uuid] ||
-                                    space.image
-                                  }
-                                  name={space.space_name}
-                                  className="w-full flex-shrink-0 aspect-[3/2] object-cover transition duration-300"
-                                />
-                                {/* Description Overlay - shown on hover */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                                  <p className="text-white text-sm font-medium leading-relaxed">
-                                    {getSpaceDescription(
-                                      space.space_uuid,
-                                      space.space_name,
-                                    )}
-                                  </p>
+                                <div className="relative overflow-hidden">
+                                  <SpaceCover
+                                    image={
+                                      spaceCoverPhotos[space.space_uuid] ||
+                                      space.image
+                                    }
+                                    name={space.space_name}
+                                    className="w-full flex-shrink-0 aspect-[3/2] object-cover transition duration-300"
+                                  />
+                                  {/* Description Overlay - shown on hover */}
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                                    <p className="text-white text-sm font-medium leading-relaxed">
+                                      {getSpaceDescription(
+                                        space.space_uuid,
+                                        space.space_name,
+                                      )}
+                                    </p>
+                                  </div>
                                 </div>
                                 <div className="p-4 flex flex-col justify-between flex-grow">
                                   <h3 className="font-medium truncate">
@@ -756,23 +758,25 @@ const ProfHomePage = () => {
                                 }
                                 onMouseLeave={() => setHoveredSpace(null)}
                               >
-                                <SpaceCover
-                                  image={
-                                    spaceCoverPhotos[space.space_uuid] ||
-                                    space.background_img ||
-                                    space.image
-                                  }
-                                  name={space.space_name}
-                                  className="w-full flex-shrink-0 aspect-[3/2] object-cover transition duration-300"
-                                />
-                                {/* Description Overlay - shown on hover */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                                  <p className="text-white text-sm font-medium leading-relaxed">
-                                    {getSpaceDescription(
-                                      space.space_uuid,
-                                      space.space_name,
-                                    )}
-                                  </p>
+                                <div className="relative overflow-hidden">
+                                  <SpaceCover
+                                    image={
+                                      spaceCoverPhotos[space.space_uuid] ||
+                                      space.background_img ||
+                                      space.image
+                                    }
+                                    name={space.space_name}
+                                    className="w-full flex-shrink-0 aspect-[3/2] object-cover transition duration-300"
+                                  />
+                                  {/* Description Overlay - shown on hover */}
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                                    <p className="text-white text-sm font-medium leading-relaxed">
+                                      {getSpaceDescription(
+                                        space.space_uuid,
+                                        space.space_name,
+                                      )}
+                                    </p>
+                                  </div>
                                 </div>
                                 <div className="p-4 flex flex-col justify-between flex-grow">
                                   <h3 className="font-medium truncate">
