@@ -479,35 +479,10 @@ const UserFilesShared = () => {
   };
 
   const handleConfirmCoverPhoto = () => {
-    // Create canvas to apply transformations
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    
-    img.onload = () => {
-      // Set canvas size to cover photo dimensions
-      canvas.width = 1200;
-      canvas.height = 400;
-      
-      // Calculate scale to cover the entire canvas
-      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-      const scaledWidth = img.width * scale;
-      const scaledHeight = img.height * scale;
-      
-      // Calculate position based on user vertical positioning
-      const x = (canvas.width - scaledWidth) / 2;
-      const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-      
-      // Draw the image with transformations
-      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-      
-      // Convert to data URL and update
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-      setCoverPhotoUrl(dataUrl);
-      
-      // Save to localStorage
-      localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-      
+    // Check if it's a gradient or an image
+    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+      // For gradients, save directly without canvas transformations
+      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
       
@@ -517,9 +492,49 @@ const UserFilesShared = () => {
         message: "Your cover photo has been updated successfully!",
         duration: 3000,
       });
-    };
-    
-    img.src = coverPhotoUrl;
+    } else {
+      // For images, create canvas to apply transformations
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Set canvas size to cover photo dimensions
+        canvas.width = 1200;
+        canvas.height = 400;
+        
+        // Calculate scale to cover the entire canvas
+        const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+        
+        // Calculate position based on user vertical positioning
+        const x = (canvas.width - scaledWidth) / 2;
+        const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
+        
+        // Draw the image with transformations
+        ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+        
+        // Convert to data URL and update
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        setCoverPhotoUrl(dataUrl);
+        
+        // Save to localStorage
+        localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
+        
+        setShowCoverPhotoEditor(false);
+        setShowCoverPhotoConfirm(false);
+        
+        addNotification({
+          type: "success",
+          title: "Cover Photo Updated",
+          message: "Your cover photo has been updated successfully!",
+          duration: 3000,
+        });
+      };
+      
+      img.src = coverPhotoUrl;
+    }
   };
 
   const handleCancelCoverPhoto = () => {
@@ -541,7 +556,7 @@ const UserFilesShared = () => {
   const handleGradientSelection = (gradient) => {
     setPreviousCoverPhotoUrl(coverPhotoUrl); // Save previous URL
     setCoverPhotoUrl(gradient);
-    setShowCoverPhotoEditor(false); // Close editor since gradients don't need positioning
+    setShowCoverPhotoConfirm(true); // Show confirmation dialog for gradients
     if (coverPhotoInputRef.current) {
       coverPhotoInputRef.current.value = '';
     }
@@ -694,11 +709,18 @@ const UserFilesShared = () => {
         >
           {coverPhotoUrl ? (
             <>
-              <img 
-                src={coverPhotoUrl} 
-                alt="Space Cover" 
-                className="w-full h-full object-cover"
-              />
+              {coverPhotoUrl.includes('gradient') ? (
+                <div
+                  className="w-full h-full"
+                  style={{ background: coverPhotoUrl }}
+                />
+              ) : (
+                <img 
+                  src={coverPhotoUrl} 
+                  alt="Space Cover" 
+                  className="w-full h-full object-cover"
+                />
+              )}
               <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
               {isOwnerSpace && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
