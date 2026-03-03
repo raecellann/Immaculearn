@@ -474,11 +474,27 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       );
       return res.data || [];
     },
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !!currentSpace?.space_uuid,
     staleTime: Infinity, // never becomes stale automatically
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+
+  const { data: one_student_remarks = [], isLoading: oneremarksLoading } =
+    useQuery({
+      queryKey: ["one-remarks", currentSpace?.space_uuid, user?.id],
+      queryFn: async () => {
+        const res = await spaceService.getOneStudentRemarks(
+          currentSpace?.space_uuid || "",
+          user?.id || 0,
+        );
+        return res.data || [];
+      },
+      enabled: isAuthenticated && !!currentSpace?.space_uuid && !!user?.id,
+      staleTime: Infinity, // never becomes stale automatically
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    });
 
   const { data: questionnaire = [], isLoading: questionnaireLoading } =
     useQuery({
@@ -597,6 +613,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     questionnaire,
 
     student_remarks,
+    one_student_remarks,
+    oneremarksLoading,
     updateStudentGrades,
 
     // Server data

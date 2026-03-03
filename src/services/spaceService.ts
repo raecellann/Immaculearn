@@ -572,6 +572,21 @@ class SpaceService {
     }
   }
 
+  async getOneStudentRemarks(
+    space_uuid: string,
+    user_id: number
+  ) {
+    try {
+      const response = await api.get(`/spaces/remarks/${space_uuid}/${user_id}`);
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
   async submitTaskAnswer(answerData: AnswerData) {
     try {
       const response = await api.post(`/tasks/answer`, answerData);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import Sidebar from "../component/sidebar";
 import {
   FiCalendar,
@@ -14,24 +14,35 @@ import {
 } from "react-icons/fi";
 import Logout from "../component/logout";
 import { useSpace } from "../../contexts/space/useSpace";
+import { useTasks } from "../../hooks/useTasks";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import CreateTaskFlowModal from "../component/CreateTaskFlowModal";
 import ErrorBoundary from "../component/ErrorBoundary";
 
 const CalendarPage = () => {
+  const {
+    userSpaces,
+    courseSpaces,
+    friendSpaces,
+    currentSpace,
+    allUploadedTasks,
+    allUploadedTasksLoading,
+  } = useSpace();
+
+  const allSpaces = [...(userSpaces || []), ...(courseSpaces || []), ...(friendSpaces || [])];
+
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedStatistic, setSelectedStatistic] = useState(null);
-  const [selectedSpace, setSelectedSpace] = useState(null);
-  const [showSpaceCategories, setShowSpaceCategories] = useState(false);
-  const [allTasks, setAllTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [contextError, setContextError] = useState(false);
+  const [selectedStatistic, setSelectedStatistic] = useState(null);
   const [showCreateTaskFlow, setShowCreateTaskFlow] = useState(false);
+  const [showCreateDropdown, setShowCreateDropdown] = useState(false);
+  const [selectedSpace, setSelectedSpace] = useState("");
+  const [showSpaceCategories, setShowSpaceCategories] = useState(false);
   const [newActivity, setNewActivity] = useState({
     title: "",
     description: "",
@@ -40,113 +51,10 @@ const CalendarPage = () => {
     priority: "medium",
     type: "Assignment",
   });
-  
-  // Use space context properly at the top level
-  const {
-    userSpaces,
-    courseSpaces,
-    friendSpaces,
-    isLoading: spaceLoading,
-  } = useSpace();
-  
-  // Combine all spaces from context
-  const availableSpaces = useMemo(() => {
-    const allSpaces = [
-      ...(userSpaces || []),
-      ...(courseSpaces || []),
-      ...(friendSpaces || [])
-    ];
-    console.log("Available spaces from context:", allSpaces);
-    return allSpaces;
-  }, [userSpaces, courseSpaces, friendSpaces]);
-  
+  const [contextError, setContextError] = useState(false);
+  const [availableSpaces, setAvailableSpaces] = useState([]);
+  const spacesRef = useRef([]);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // Initialize calendar with spaces from context
-  useEffect(() => {
-    const initializeCalendar = async () => {
-      try {
-        console.log("Initializing calendar with spaces from context...");
-        console.log("Available spaces:", availableSpaces);
-        console.log("userSpaces:", userSpaces);
-        console.log("courseSpaces:", courseSpaces);
-        console.log("friendSpaces:", friendSpaces);
-        
-        // Always show calendar, even if no spaces
-        if (availableSpaces.length === 0) {
-          console.log("No spaces available in context, showing empty calendar");
-          setAllTasks([]);
-          setContextError(true);
-          setLoading(false);
-          return;
-        }
-
-        console.log("Found spaces:", availableSpaces);
-        setContextError(false);
-
-        // Fetch tasks from all spaces
-        const taskPromises = availableSpaces.map((space) =>
-          fetch(`/api/spaces/${space.space_uuid}/tasks`)
-            .then((res) => {
-              if (!res.ok) throw new Error('Failed to fetch tasks');
-              return res.json();
-            })
-            .then((data) => data || [])
-            .catch((error) => {
-              console.warn(`Failed to fetch tasks for space ${space.space_uuid}:`, error);
-              return [];
-            }),
-        );
-
-        const taskResults = await Promise.all(taskPromises);
-        const allFetchedTasks = taskResults.flat().map((task) => ({
-          id: task.id,
-          title: task.task_title,
-          description: task.task_instruction || "",
-          dueDate: task.task_due
-            ? new Date(task.task_due).toISOString().split("T")[0]
-            : "",
-          dueTime: task.task_due
-            ? new Date(task.task_due).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "",
-          priority: "medium",
-          status: task.task_status,
-          assignedBy: "Admin",
-          category: "Academic",
-          spaceId: task.space_id,
-        }));
-
-        console.log("Fetched tasks:", allFetchedTasks);
-        setAllTasks(allFetchedTasks);
-        setContextError(false);
-      } catch (error) {
-        console.error("Error initializing calendar:", error);
-        setContextError(true);
-        // Use mock data as fallback
-        setAllTasks([
-          {
-            id: 1,
-            title: "Sample Task",
-            description: "This is a sample task since no spaces are available",
-            dueDate: new Date().toISOString().split("T")[0],
-            dueTime: "11:59 PM",
-            priority: "medium",
-            status: "pending",
-            assignedBy: "Admin",
-            category: "Academic",
-            spaceId: "fallback",
-          },
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeCalendar();
-  }, [availableSpaces, refreshKey]); // Re-run when availableSpaces or refreshKey changes
 
   // Manual refresh function
   const refreshSpaces = () => {
@@ -154,10 +62,24 @@ const CalendarPage = () => {
     console.log("Manual refresh triggered");
   };
 
-  // Handle task creation
+  // Handler for when a new task is created from the modal
   const handleTaskCreate = (newTask) => {
-    console.log("handleTaskCreate called with:", newTask);
-    setAllTasks([...allTasks, newTask]);
+    // The newTask from CreateTaskFlowModal should already be in the correct format
+    // We just need to trigger a refresh of the tasks
+    refreshSpaces();
+  };
+
+  const handleCancelCreate = () => {
+    setShowCreateTaskFlow(false);
+    setNewActivity({
+      title: "",
+      description: "",
+      dueDate: "",
+      dueTime: "",
+      priority: "medium",
+      type: "Assignment",
+    });
+    setSelectedSpace("");
   };
 
   // Calendar functions
@@ -173,13 +95,42 @@ const CalendarPage = () => {
     return date.toISOString().split("T")[0];
   };
 
-  const getTasksForDate = (date) => {
+  const getActivitiesForDate = (date) => {
     const dateStr = formatDate(date);
-    return allTasks.filter((task) => {
-      const matchesDate = task.dueDate === dateStr;
-      const matchesSpace = !selectedSpace || task.spaceId === selectedSpace;
-      return matchesDate && matchesSpace;
+    return allUploadedTasks?.filter((task) => {
+      if (!task.due_date) return false;
+      // Handle different date formats - ensure consistent comparison
+      const taskDueDate = new Date(task.due_date).toISOString().split("T")[0];
+      return taskDueDate === dateStr;
     });
+  };
+
+  // Map Task data to calendar activity structure
+  const mapTaskToActivity = (task) => {
+    console.log(task.due_date);
+    return {
+      id: task.task_id,
+      title: task.task_title,
+      description: task.task_instruction || "",
+      dueDate: new Date(task.due_date).toISOString().split("T")[0],
+      dueTime: new Date(task.due_date).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      priority: "medium", // Default priority since Task interface doesn't have this field
+      status: task.has_answered ? "completed" : "pending",
+      subject:
+        allSpaces.find((s) => s.space_id === task.space_id)?.space_name ||
+        "Unknown Space",
+      type: "Assignment", // Default type since Task interface doesn't have this field
+      studentsCount:
+        allSpaces.find((s) => s.space_id === task.space_id)?.members?.length -
+          1 || 0,
+      yearLevel:
+        allSpaces.find((s) => s.space_id === task.space_id)?.space_yr_lvl ||
+        "N/A",
+      spaceId: allSpaces.find((s) => s.space_id === task.space_id)?.space_id,
+    };
   };
 
   const getPriorityColor = (priority) => {
@@ -195,35 +146,61 @@ const CalendarPage = () => {
     }
   };
 
-  const getCategoryColor = (category) => {
-    switch (category) {
-      case "Academic":
-        return "bg-blue-500";
-      case "Technical":
-        return "bg-purple-500";
-      case "Research":
-        return "bg-green-500";
-      case "Development":
-        return "bg-orange-500";
+  const getSubjectColor = (subject) => {
+    // Generate colors dynamically based on subject name
+    const colors = [
+      "bg-purple-500",
+      "bg-blue-500",
+      "bg-green-500",
+      "bg-pink-500",
+      "bg-orange-500",
+      "bg-indigo-500",
+      "bg-teal-500",
+      "bg-red-500",
+      "bg-yellow-500",
+      "bg-gray-500",
+    ];
+
+    const index =
+      subject.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+      colors.length;
+    return colors[index];
+  };
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case "Assignment":
+        return "📝";
+      case "Exam":
+        return "📋";
+      case "Lab Activity":
+        return "🔬";
+      case "Paper":
+        return "📄";
+      case "Practical Exam":
+        return "⚽";
+      case "Presentation":
+        return "🎯";
+      case "Project Demo":
+        return "💻";
+      case "Coding Challenge":
+        return "💡";
       default:
-        return "bg-gray-500";
+        return "📚";
     }
   };
 
-  const getTasksByStatistic = (statistic) => {
-    const filteredTasks = selectedSpace 
-      ? allTasks.filter(task => task.spaceId === selectedSpace)
-      : allTasks;
-    
+  const getActivitiesByStatistic = (statistic) => {
+    const allActivities = allUploadedTasks?.map(mapTaskToActivity) || [];
     switch (statistic) {
       case "total":
-        return filteredTasks;
+        return allActivities;
       case "thisweek":
         const today = new Date();
         const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-        return filteredTasks.filter((t) => {
-          const taskDate = new Date(t.dueDate);
-          return taskDate >= today && taskDate <= weekFromNow;
+        return allActivities.filter((a) => {
+          const activityDate = new Date(a.dueDate);
+          return activityDate >= today && activityDate <= weekFromNow;
         });
       default:
         return [];
@@ -233,11 +210,11 @@ const CalendarPage = () => {
   const getStatisticTitle = (statistic) => {
     switch (statistic) {
       case "total":
-        return "All Tasks";
+        return "All Activities";
       case "thisweek":
-        return "This Week's Tasks";
+        return "This Week's Activities";
       default:
-        return "Tasks";
+        return "Activities";
     }
   };
 
@@ -265,7 +242,8 @@ const CalendarPage = () => {
         currentMonth.getMonth(),
         day,
       );
-      const dayTasks = getTasksForDate(date);
+      const dayTasks = getActivitiesForDate(date);
+      const dayActivities = dayTasks.map(mapTaskToActivity);
       const isToday = date.toDateString() === today.toDateString();
       const isSelected = date.toDateString() === selectedDate.toDateString();
 
@@ -296,17 +274,20 @@ const CalendarPage = () => {
         >
           <div className="text-xs font-semibold mb-1" style={{ color: currentColors.text }}>{day}</div>
           <div className="space-y-1">
-            {dayTasks.slice(0, 2).map((task, index) => (
+            {dayActivities.slice(0, 2).map((activity, index) => (
               <div
-                key={`${task.id}-${index}`}
-                className={`text-xs px-1 py-0.5 rounded truncate ${getPriorityColor(task.priority)}`}
+                key={index}
+                className={`text-xs px-1 py-0.5 rounded truncate ${getPriorityColor(activity.priority)}`}
               >
-                {task.title}
+                {activity.title}
               </div>
             ))}
-            {dayTasks.length > 2 && (
-              <div className="text-xs" style={{ color: currentColors.textSecondary }}>
-                +{dayTasks.length - 2} more
+            {dayActivities.length > 2 && (
+              <div
+                className="text-xs"
+                style={{ color: currentColors.textSecondary }}
+              >
+                +{dayActivities.length - 2} more
               </div>
             )}
           </div>
@@ -342,7 +323,8 @@ const CalendarPage = () => {
     );
   };
 
-  const selectedDateTasks = getTasksForDate(selectedDate);
+  const selectedDateTasks = getActivitiesForDate(selectedDate);
+  const selectedDateActivities = selectedDateTasks.map(mapTaskToActivity);
 
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background }}>
@@ -398,7 +380,7 @@ const CalendarPage = () => {
             </p>
           </div>
 
-          {loading ? (
+          {allUploadedTasksLoading ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
@@ -418,10 +400,18 @@ const CalendarPage = () => {
                         <FiCalendar className="text-blue-600" />
                       </div>
                       <div>
-                        <div className="text-2xl font-bold" style={{ color: currentColors.text }}>
-                          {getTasksByStatistic("total").length}
+                        <div
+                          className="text-2xl font-bold"
+                          style={{ color: currentColors.text }}
+                        >
+                          {allUploadedTasks?.length || 0}
                         </div>
-                        <div className="text-xs" style={{ color: currentColors.textSecondary }}>Total Tasks</div>
+                        <div
+                          className="text-xs"
+                          style={{ color: currentColors.textSecondary }}
+                        >
+                          Total Activities
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -436,10 +426,34 @@ const CalendarPage = () => {
                         <FiClock className="text-yellow-600" />
                       </div>
                       <div>
-                        <div className="text-2xl font-bold" style={{ color: currentColors.text }}>
-                          {getTasksByStatistic("thisweek").length}
+                        <div
+                          className="text-2xl font-bold"
+                          style={{ color: currentColors.text }}
+                        >
+                          {(() => {
+                            const today = new Date();
+                            const weekFromNow = new Date(
+                              today.getTime() + 7 * 24 * 60 * 60 * 1000,
+                            );
+                            return (
+                              allUploadedTasks?.filter((task) => {
+                                if (!task.due_date) return false;
+                                const taskDate = new Date(task.due_date)
+                                  .toISOString()
+                                  .split("T")[0];
+                                return (
+                                  taskDate >= today && taskDate <= weekFromNow
+                                );
+                              }).length || 0
+                            );
+                          })()}
                         </div>
-                        <div className="text-xs" style={{ color: currentColors.textSecondary }}>This Week</div>
+                        <div
+                          className="text-xs"
+                          style={{ color: currentColors.textSecondary }}
+                        >
+                          This Week
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -504,73 +518,126 @@ const CalendarPage = () => {
               <div className="lg:col-span-1">
                 <div className="rounded-xl shadow-sm border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
                   <div className="p-4 border-b" style={{ borderColor: currentColors.border }}>
-                    <h3 className="font-semibold" style={{ color: currentColors.text }}>
+                    <h3
+                      className="font-semibold"
+                      style={{ color: currentColors.text }}
+                    >
                       {selectedStatistic
                         ? getStatisticTitle(selectedStatistic)
-                        : `Tasks for ${selectedDate.toLocaleDateString()}`}
+                        : `Activities for ${selectedDate.toLocaleDateString()}`}
                     </h3>
-                    <p className="text-sm mt-1" style={{ color: currentColors.textSecondary }}>
+                    <p
+                      className="text-sm mt-1"
+                      style={{ color: currentColors.textSecondary }}
+                    >
                       {selectedStatistic
-                        ? `${getTasksByStatistic(selectedStatistic).length} task${getTasksByStatistic(selectedStatistic).length !== 1 ? "s" : ""} found`
-                        : `${selectedDateTasks.length} task${selectedDateTasks.length !== 1 ? "s" : ""} assigned`}
+                        ? `${getActivitiesByStatistic(selectedStatistic).length} activit${getActivitiesByStatistic(selectedStatistic).length !== 1 ? "ies" : "y"} found`
+                        : `${selectedDateActivities.length} activit${selectedDateActivities.length !== 1 ? "ies" : "y"} scheduled`}
                     </p>
                   </div>
 
                   <div className="max-h-96 overflow-y-auto">
                     {selectedStatistic ? (
-                      getTasksByStatistic(selectedStatistic).length === 0 ? (
+                      getActivitiesByStatistic(selectedStatistic).length ===
+                      0 ? (
                         <div className="p-8 text-center">
                           <FiCalendar
                             className="mx-auto mb-3"
                             size={32}
                             style={{ color: currentColors.textSecondary }}
                           />
-                          <p style={{ color: currentColors.textSecondary }}>No tasks found</p>
+                          <p style={{ color: currentColors.textSecondary }}>
+                            No activities found
+                          </p>
                         </div>
                       ) : (
                         <div className="p-4 space-y-3">
-                          {getTasksByStatistic(selectedStatistic).map(
-                            (task) => (
+                          {getActivitiesByStatistic(selectedStatistic).map(
+                            (activity) => (
                               <div
-                                key={task.id}
+                                key={activity.id}
                                 className="border rounded-lg p-3 hover:shadow-md transition-shadow"
                                 style={{ borderColor: currentColors.border }}
                               >
                                 <div className="flex items-start gap-3">
                                   <div
-                                    className={`w-2 h-2 rounded-full mt-2 ${getCategoryColor(task.category)}`}
+                                    className={`w-2 h-2 rounded-full mt-2 ${getSubjectColor(activity.subject)}`}
                                   ></div>
                                   <div className="flex-1">
-                                    <h4 className="font-medium text-sm" style={{ color: currentColors.text }}>
-                                      {task.title}
-                                    </h4>
-                                    <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
-                                      {task.description}
-                                    </p>
+                                    <div className="flex items-start gap-2">
+                                      <span className="text-lg">
+                                        {getTypeIcon(activity.type)}
+                                      </span>
+                                      <div className="flex-1">
+                                        <h4
+                                          className="font-medium text-sm"
+                                          style={{ color: currentColors.text }}
+                                        >
+                                          {activity.title}
+                                        </h4>
+                                        <p
+                                          className="text-xs mt-1"
+                                          style={{
+                                            color: currentColors.textSecondary,
+                                          }}
+                                        >
+                                          {activity.description}
+                                        </p>
+                                      </div>
+                                    </div>
                                     <div className="flex items-center gap-2 mt-2">
                                       <span
-                                        className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(task.priority)}`}
+                                        className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(activity.priority)}`}
                                       >
-                                        {task.priority}
+                                        {activity.priority}
                                       </span>
-                                      <span className="text-xs" style={{ color: currentColors.textSecondary }}>
+                                      <span
+                                        className="text-xs"
+                                        style={{
+                                          color: currentColors.textSecondary,
+                                        }}
+                                      >
                                         <FiClock
                                           className="inline mr-1"
                                           size={10}
                                         />
-                                        {task.dueTime}
+                                        {activity.dueTime}
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2 mt-1">
-                                      <p className="text-xs" style={{ color: currentColors.textSecondary }}>
-                                        Assigned by: {task.assignedBy}
+                                      <p
+                                        className="text-xs"
+                                        style={{
+                                          color: currentColors.textSecondary,
+                                        }}
+                                      >
+                                        {activity.subject} • {activity.yearLevel}
                                       </p>
-                                      <span className="text-xs" style={{ color: currentColors.textSecondary }}>
+                                      <span
+                                        className="text-xs"
+                                        style={{
+                                          color: currentColors.textSecondary,
+                                        }}
+                                      >
                                         Due:{" "}
                                         {new Date(
-                                          task.dueDate,
+                                          activity.dueDate,
                                         ).toLocaleDateString()}
                                       </span>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-2">
+                                      <p
+                                        className="text-xs"
+                                        style={{
+                                          color: currentColors.textSecondary,
+                                        }}
+                                      >
+                                        {activity.studentsCount} students
+                                      </p>
+                                      <button className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                        <FiEdit size={10} />
+                                        Edit
+                                      </button>
                                     </div>
                                   </div>
                                 </div>
@@ -579,49 +646,94 @@ const CalendarPage = () => {
                           )}
                         </div>
                       )
-                    ) : selectedDateTasks.length === 0 ? (
+                    ) : selectedDateActivities.length === 0 ? (
                       <div className="p-8 text-center">
                         <FiCalendar
-                          className="mx-auto text-gray-400 mb-3"
+                          className="mx-auto mb-3"
                           size={32}
+                          style={{ color: currentColors.textSecondary }}
                         />
-                        <p className="text-gray-500">No tasks for this date</p>
+                        <p style={{ color: currentColors.textSecondary }}>
+                          No activities for this date
+                        </p>
                       </div>
                     ) : (
                       <div className="p-4 space-y-3">
-                        {selectedDateTasks.map((task) => (
+                        {selectedDateActivities.map((activity) => (
                           <div
-                            key={task.id}
-                            className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow"
+                            key={activity.id}
+                            className="border rounded-lg p-3 hover:shadow-md transition-shadow"
+                            style={{ borderColor: currentColors.border }}
                           >
                             <div className="flex items-start gap-3">
                               <div
-                                className={`w-2 h-2 rounded-full mt-2 ${getCategoryColor(task.category)}`}
+                                className={`w-2 h-2 rounded-full mt-2 ${getSubjectColor(activity.subject)}`}
                               ></div>
                               <div className="flex-1">
-                                <h4 className="font-medium text-gray-900 text-sm">
-                                  {task.title}
-                                </h4>
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {task.description}
-                                </p>
+                                <div className="flex items-start gap-2">
+                                  <span className="text-lg">
+                                    {getTypeIcon(activity.type)}
+                                  </span>
+                                  <div className="flex-1">
+                                    <h4
+                                      className="font-medium text-sm"
+                                      style={{ color: currentColors.text }}
+                                    >
+                                      {activity.title}
+                                    </h4>
+                                    <p
+                                      className="text-xs mt-1"
+                                      style={{
+                                        color: currentColors.textSecondary,
+                                      }}
+                                    >
+                                      {activity.description}
+                                    </p>
+                                  </div>
+                                </div>
                                 <div className="flex items-center gap-2 mt-2">
                                   <span
-                                    className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(task.priority)}`}
+                                    className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(activity.priority)}`}
                                   >
-                                    {task.priority}
+                                    {activity.priority}
                                   </span>
-                                  <span className="text-xs text-gray-500">
+                                  <span
+                                    className="text-xs"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
                                     <FiClock
                                       className="inline mr-1"
                                       size={10}
                                     />
-                                    {task.dueTime}
+                                    {activity.dueTime}
                                   </span>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  Assigned by: {task.assignedBy}
-                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <p
+                                    className="text-xs"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    {activity.subject} • {activity.yearLevel}
+                                  </p>
+                                </div>
+                                <div className="flex items-center justify-between mt-2">
+                                  <p
+                                    className="text-xs"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    {activity.studentsCount} students
+                                  </p>
+                                  <button className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                    <FiEdit size={10} />
+                                    Edit
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -636,20 +748,20 @@ const CalendarPage = () => {
         </div>
       </div>
 
-      {/* LOGOUT MODAL */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
-
       {/* CREATE TASK FLOW MODAL */}
       <ErrorBoundary>
         <CreateTaskFlowModal
           show={showCreateTaskFlow}
           setShow={setShowCreateTaskFlow}
-          availableSpaces={availableSpaces}
+          availableSpaces={allSpaces}
           contextError={contextError}
           refreshSpaces={refreshSpaces}
           onTaskCreate={handleTaskCreate}
         />
       </ErrorBoundary>
+
+      {/* LOGOUT MODAL */}
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
     </div>
   );
 };

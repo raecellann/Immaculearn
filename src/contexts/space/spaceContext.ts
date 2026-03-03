@@ -111,6 +111,9 @@ export interface SpaceContextType {
   >;
 
   student_remarks: StudentData[];
+
+  one_student_remarks: StudentData[];
+  oneremarksLoading: boolean;
 }
 
 export const SpaceContext = createContext<SpaceContextType | undefined>(

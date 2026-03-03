@@ -30,6 +30,8 @@ const HomePage1 = () => {
     friendSpaces = [],
     courseSpaces = [],
     deleteSpace,
+    allUploadedTasks = [],
+    allUploadedTasksLoading = false,
   } = useSpace();
   const navigate = useNavigate();
 
@@ -521,51 +523,172 @@ const HomePage1 = () => {
 
             {/* Reminders (Mobile/Tablet only) */}
             <div className="xl:hidden mb-8">
-              <h2
-                className="text-lg sm:text-xl font-semibold mb-3"
-                style={{ color: isDarkMode ? "white" : "black" }}
-              >
-                Reminders
-              </h2>
               <div
                 className="rounded-xl p-4 sm:p-6"
                 style={{
                   background: isDarkMode
-                    ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                    ? currentColors.surface
                     : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
                   border: isDarkMode ? "none" : "none",
                 }}
               >
-                <div className="text-center py-8">
+                {/* Header */}
+                <div className="flex items-center gap-2 mb-4">
                   <Calendar
-                    className="w-12 h-12 mx-auto mb-4"
-                    style={{
-                      color: isDarkMode ? currentColors.textSecondary : "white",
-                    }}
+                    className="w-5 h-5 flex-shrink-0"
+                    style={{ color: isDarkMode ? "#60A5FA" : "white" }}
                   />
-                  <p
-                    className="text-sm"
-                    style={{
-                      color: "white",
-                    }}
+                  <h2
+                    className="font-semibold text-base sm:text-lg"
+                    style={{ color: "white" }}
                   >
-                    No tasks created yet
-                  </p>
-                  <p
-                    className="text-xs mt-2"
-                    style={{
-                      color: "rgba(255, 255, 255, 0.8)",
-                    }}
-                  >
-                    Go to your calendar to create tasks and set reminders
-                  </p>
-                  <div className="mt-6">
-                    <Button2
-                      text="Go to Calendar"
-                      onClick={() => navigate("/calendar")}
-                    />
-                  </div>
+                    Reminders
+                  </h2>
                 </div>
+
+                {/* Tasks List */}
+                <div className="space-y-3">
+                  {allUploadedTasksLoading ? (
+                    <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        <div>
+                          <p 
+                            className="text-sm font-medium mb-1"
+                            style={{ color: isDarkMode ? "white" : "black" }}
+                          >
+                            Loading tasks...
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : allUploadedTasks.length === 0 ? (
+                    <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                      <div className="flex flex-col items-center gap-3">
+                        <Calendar size={32} style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }} />
+                        <div>
+                          <p 
+                            className="text-sm font-medium mb-1"
+                            style={{ color: isDarkMode ? "white" : "black" }}
+                          >
+                            No tasks created yet
+                          </p>
+                          <p 
+                            className="text-xs"
+                            style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                          >
+                            Go to your calendar to create tasks and set reminders
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <Button2
+                          text="Go to Calendar"
+                          onClick={() => navigate("/calendar")}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {allUploadedTasks.slice(0, 3).map((task) => (
+                        <div
+                          key={task.task_id}
+                          className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                          style={{
+                            backgroundColor: isDarkMode
+                              ? "rgba(30, 36, 46, 0.9)"
+                              : "rgba(255, 255, 255, 0.95)",
+                            borderColor: isDarkMode ? currentColors.border : "rgb(229, 231, 235)",
+                            borderWidth: "1px",
+                          }}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div 
+                                  className={`w-2 h-2 rounded-full ${
+                                    task.task_status === "completed"
+                                      ? "bg-green-500"
+                                      : task.task_status === "in_progress"
+                                      ? "bg-yellow-500"
+                                      : "bg-blue-500"
+                                  }`}
+                                ></div>
+                                <p
+                                  className="text-sm font-semibold"
+                                  style={{ color: currentColors.text }}
+                                >
+                                  {task.task_title || "Untitled Task"}
+                                </p>
+                              </div>
+                              <p
+                                className="text-sm leading-relaxed mb-3"
+                                style={{
+                                  color: currentColors.textSecondary,
+                                  lineHeight: "1.5",
+                                }}
+                              >
+                                {task.task_description || "No description"}
+                              </p>
+                              <div className="flex items-center gap-4">
+                                {task.due_date && (
+                                  <div className="flex items-center gap-2">
+                                    <svg 
+                                      className="w-4 h-4" 
+                                      style={{ color: currentColors.textSecondary }}
+                                      fill="none" 
+                                      stroke="currentColor" 
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        strokeWidth={2} 
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                                      />
+                                    </svg>
+                                    <p
+                                      className="text-xs font-medium"
+                                      style={{
+                                        color: currentColors.textSecondary,
+                                      }}
+                                    >
+                                      {new Date(task.due_date).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                )}
+                                <span
+                                  className={`text-xs px-2 py-1 rounded-full ${
+                                    task.task_status === "completed"
+                                      ? "bg-green-100 text-green-700"
+                                      : task.task_status === "in_progress"
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : "bg-blue-100 text-blue-700"
+                                  }`}
+                                >
+                                  {task.task_status?.replace("_", " ") || "pending"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+
+                {/* View All button */}
+                {allUploadedTasks.length > 0 && (
+                  <div className="flex justify-end mt-4">
+                    <button
+                      onClick={() => navigate("/tasks")}
+                      className="text-sm font-medium hover:underline transition-colors"
+                      style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+                    >
+                      View All Tasks →
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1109,46 +1232,168 @@ const HomePage1 = () => {
               className="rounded-xl p-6 flex-1"
               style={{
                 background: isDarkMode
-                  ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                  ? currentColors.surface
                   : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
                 border: isDarkMode ? "none" : "none",
               }}
             >
-              <div>
-                <h4 className="font-semibold mb-3" style={{ color: "white" }}>
+              {/* Header */}
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar
+                  className="w-5 h-5 flex-shrink-0"
+                  style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+                />
+                <h4
+                  className="font-semibold text-base"
+                  style={{ color: "white" }}
+                >
                   Reminders
                 </h4>
-                <div className="text-center py-8">
-                  <Calendar
-                    className="w-12 h-12 mx-auto mb-4"
-                    style={{
-                      color: isDarkMode ? currentColors.textSecondary : "white",
-                    }}
-                  />
-                  <p
-                    className="text-sm"
-                    style={{
-                      color: "white",
-                    }}
-                  >
-                    No tasks created yet
-                  </p>
-                  <p
-                    className="text-xs mt-2"
-                    style={{
-                      color: "rgba(255, 255, 255, 0.8)",
-                    }}
-                  >
-                    Go to your calendar to create tasks and set reminders
-                  </p>
-                  <div className="mt-6">
-                    <Button2
-                      text="Go to Calendar"
-                      onClick={() => navigate("/calendar")}
-                    />
-                  </div>
-                </div>
               </div>
+
+              {/* Tasks List */}
+              <div className="space-y-3">
+                {allUploadedTasksLoading ? (
+                  <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                      <div>
+                        <p 
+                          className="text-sm font-medium mb-1"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
+                          Loading tasks...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : allUploadedTasks.length === 0 ? (
+                  <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                    <div className="flex flex-col items-center gap-3">
+                      <Calendar size={32} style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }} />
+                      <div>
+                        <p 
+                          className="text-sm font-medium mb-1"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
+                          No tasks created yet
+                        </p>
+                        <p 
+                          className="text-xs"
+                          style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                        >
+                          Go to your calendar to create tasks and set reminders
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <Button2
+                        text="Go to Calendar"
+                        onClick={() => navigate("/calendar")}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {allUploadedTasks.slice(0, 4).map((task) => (
+                      <div
+                        key={task.task_id}
+                        className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                        style={{
+                          backgroundColor: isDarkMode
+                            ? "rgba(30, 36, 46, 0.9)"
+                            : "rgba(255, 255, 255, 0.95)",
+                          borderColor: isDarkMode ? currentColors.border : "rgb(229, 231, 235)",
+                          borderWidth: "1px",
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div 
+                                className={`w-2 h-2 rounded-full ${
+                                  task.task_status === "completed"
+                                    ? "bg-green-500"
+                                    : task.task_status === "in_progress"
+                                    ? "bg-yellow-500"
+                                    : "bg-blue-500"
+                                }`}
+                              ></div>
+                              <p
+                                className="text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                              >
+                                {task.task_title || "Untitled Task"}
+                              </p>
+                            </div>
+                            <p
+                              className="text-sm leading-relaxed mb-3"
+                              style={{
+                                color: currentColors.textSecondary,
+                                lineHeight: "1.5",
+                              }}
+                            >
+                              {task.task_instruction || "No description"}
+                            </p>
+                            <div className="flex items-center gap-4">
+                              {task.due_date && (
+                                <div className="flex items-center gap-2">
+                                  <svg 
+                                    className="w-4 h-4" 
+                                    style={{ color: currentColors.textSecondary }}
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path 
+                                      strokeLinecap="round" 
+                                      strokeLinejoin="round" 
+                                      strokeWidth={2} 
+                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                                    />
+                                  </svg>
+                                  <p
+                                    className="text-xs font-medium"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    {new Date(task.due_date).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              )}
+                              {/* <span
+                                className={`text-xs px-2 py-1 rounded-full ${
+                                  task.task_status === "completed"
+                                    ? "bg-green-100 text-green-700"
+                                    : task.task_status === "in_progress"
+                                    ? "bg-yellow-100 text-yellow-700"
+                                    : "bg-blue-100 text-blue-700"
+                                }`}
+                              >
+                                {task.task_status?.replace("_", " ") || "pending"}
+                              </span> */}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+
+              {/* View All button */}
+              {allUploadedTasks.length > 0 && (
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={() => navigate("/tasks")}
+                    className="text-sm font-medium hover:underline transition-colors"
+                    style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+                  >
+                    View All Tasks →
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Announcements by Admin */}
