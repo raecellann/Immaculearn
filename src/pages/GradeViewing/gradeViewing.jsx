@@ -38,11 +38,33 @@ const GradeViewing = () => {
     // In a real app, this would come from an API
     const mockGrades = {
       prelim: "85",
-      midterm: "88",
-      preFinal: "90",
-      final: "92",
+      midterm: null,
+      preFinal: null,
+      final: null,
     };
     setStudentGrades([mockGrades]);
+  };
+
+  // Get grade color based on value
+  const getGradeColor = (grade) => {
+    if (!grade || grade === "-" || grade === "N/A") return currentColors.text;
+    const numGrade = parseInt(grade);
+    if (numGrade >= 75) return "#10b981"; // green
+    return "#ef4444"; // red
+  };
+
+  // Get display value for grade with N/A logic
+  const getGradeDisplay = (grades, currentPeriod) => {
+    // Check if any period has a grade
+    const hasAnyGrade = grades.prelim || grades.midterm || grades.preFinal || grades.final;
+    
+    if (!hasAnyGrade) return "-";
+    
+    // If current period has a grade, show it
+    if (grades[currentPeriod]) return grades[currentPeriod];
+    
+    // If another period has a grade but current doesn't, show N/A
+    return "N/A";
   };
 
   return (
@@ -203,8 +225,8 @@ const GradeViewing = () => {
               {selectedSubject.space_name}
             </h2>
 
-            {/* Mobile / Tablet Cards */}
-            <div className="lg:hidden space-y-4">
+            {/* Mobile Cards Only */}
+            <div className="sm:hidden space-y-4">
               {studentGrades.map((grades, idx) => (
                 <div
                   key={idx}
@@ -230,9 +252,9 @@ const GradeViewing = () => {
                       </p>
                       <p
                         className="font-bold"
-                        style={{ color: currentColors.text }}
+                        style={{ color: getGradeColor(getGradeDisplay(grades, 'prelim')) }}
                       >
-                        {grades.prelim || "-"}
+                        {getGradeDisplay(grades, 'prelim')}
                       </p>
                     </div>
                     <div
@@ -249,9 +271,9 @@ const GradeViewing = () => {
                       </p>
                       <p
                         className="font-bold"
-                        style={{ color: currentColors.text }}
+                        style={{ color: getGradeColor(getGradeDisplay(grades, 'midterm')) }}
                       >
-                        {grades.midterm || "-"}
+                        {getGradeDisplay(grades, 'midterm')}
                       </p>
                     </div>
                     <div
@@ -268,9 +290,9 @@ const GradeViewing = () => {
                       </p>
                       <p
                         className="font-bold"
-                        style={{ color: currentColors.text }}
+                        style={{ color: getGradeColor(getGradeDisplay(grades, 'preFinal')) }}
                       >
-                        {grades.preFinal || "-"}
+                        {getGradeDisplay(grades, 'preFinal')}
                       </p>
                     </div>
                     <div
@@ -287,9 +309,9 @@ const GradeViewing = () => {
                       </p>
                       <p
                         className="font-bold"
-                        style={{ color: currentColors.text }}
+                        style={{ color: getGradeColor(getGradeDisplay(grades, 'final')) }}
                       >
-                        {grades.final || "-"}
+                        {getGradeDisplay(grades, 'final')}
                       </p>
                     </div>
                   </div>
@@ -297,69 +319,90 @@ const GradeViewing = () => {
               ))}
             </div>
 
-            {/* Desktop Table */}
-            <div className="hidden lg:block">
-              <table className="w-full border-collapse text-center text-sm">
-                <thead>
-                  <tr
-                    className="border-b"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    <th className="py-3 px-4 text-left">Period</th>
-                    <th className="py-3 px-4">Grade</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {studentGrades.map((grades, index) => (
-                    <React.Fragment key={index}>
-                      <tr
-                        className="border-b transition"
-                        style={{
-                          borderColor: currentColors.border,
-                        }}
-                      >
-                        <td className="py-2 px-4 text-left font-semibold">
-                          Prelim
-                        </td>
-                        <td className="py-2 px-4">{grades.prelim || "-"}</td>
-                      </tr>
-                      <tr
-                        className="border-b transition"
-                        style={{
-                          borderColor: currentColors.border,
-                        }}
-                      >
-                        <td className="py-2 px-4 text-left font-semibold">
-                          Midterm
-                        </td>
-                        <td className="py-2 px-4">{grades.midterm || "-"}</td>
-                      </tr>
-                      <tr
-                        className="border-b transition"
-                        style={{
-                          borderColor: currentColors.border,
-                        }}
-                      >
-                        <td className="py-2 px-4 text-left font-semibold">
-                          Pre-Final
-                        </td>
-                        <td className="py-2 px-4">{grades.preFinal || "-"}</td>
-                      </tr>
-                      <tr
-                        className="border-b transition"
-                        style={{
-                          borderColor: currentColors.border,
-                        }}
-                      >
-                        <td className="py-2 px-4 text-left font-semibold">
-                          Final
-                        </td>
-                        <td className="py-2 px-4">{grades.final || "-"}</td>
-                      </tr>
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
+            {/* Tablet & Desktop Table */}
+            <div className="hidden sm:block">
+              <div className="overflow-x-auto -mx-3 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <div className="overflow-hidden shadow-sm rounded-lg border" style={{ borderColor: currentColors.border }}>
+                    <table className="min-w-full divide-y" style={{ borderColor: currentColors.border }}>
+                      <thead style={{ 
+                        backgroundColor: currentColors.surface,
+                        borderBottom: `2px solid ${currentColors.border}`
+                      }}>
+                        <tr>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold border-r" style={{ 
+                            color: currentColors.text,
+                            borderColor: currentColors.border 
+                          }}>
+                            Name
+                          </th>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r" style={{ 
+                            color: currentColors.text,
+                            borderColor: currentColors.border 
+                          }}>
+                            Prelim
+                          </th>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r" style={{ 
+                            color: currentColors.text,
+                            borderColor: currentColors.border 
+                          }}>
+                            Midterm
+                          </th>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r" style={{ 
+                            color: currentColors.text,
+                            borderColor: currentColors.border 
+                          }}>
+                            Pre-Final
+                          </th>
+                          <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold" style={{ 
+                            color: currentColors.text
+                          }}>
+                            Final
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y" style={{ borderColor: currentColors.border }}>
+                        {studentGrades.map((grades, index) => (
+                          <tr key={index} style={{ 
+                            backgroundColor: index % 2 === 0 ? currentColors.background : currentColors.hover,
+                            transition: 'background-color 0.2s ease'
+                          }}>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm border-r font-semibold" style={{ 
+                              color: currentColors.text,
+                              borderColor: currentColors.border 
+                            }}>
+                              Your Grades
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
+                              borderColor: currentColors.border,
+                              color: getGradeColor(getGradeDisplay(grades, 'prelim')) 
+                            }}>
+                              {getGradeDisplay(grades, 'prelim')}
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
+                              borderColor: currentColors.border,
+                              color: getGradeColor(getGradeDisplay(grades, 'midterm')) 
+                            }}>
+                              {getGradeDisplay(grades, 'midterm')}
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
+                              borderColor: currentColors.border,
+                              color: getGradeColor(getGradeDisplay(grades, 'preFinal')) 
+                            }}>
+                              {getGradeDisplay(grades, 'preFinal')}
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center font-medium" style={{ 
+                              color: getGradeColor(getGradeDisplay(grades, 'final')) 
+                            }}>
+                              {getGradeDisplay(grades, 'final')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         )}

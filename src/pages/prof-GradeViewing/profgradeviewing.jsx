@@ -84,10 +84,24 @@ const ProfGradeRecordPage = () => {
 
   // Get grade color based on value
   const getGradeColor = (grade) => {
-    if (!grade || grade === "-") return currentColors.text;
+    if (!grade || grade === "-" || grade === "N/A") return currentColors.text;
     const numGrade = parseInt(grade);
     if (numGrade >= 75) return "#10b981"; // green
     return "#ef4444"; // red
+  };
+
+  // Get display value for grade with N/A logic
+  const getGradeDisplay = (grades, currentPeriod) => {
+    // Check if any period has a grade
+    const hasAnyGrade = grades.prelim || grades.midterm || grades.preFinal || grades.final;
+    
+    if (!hasAnyGrade) return "-";
+    
+    // If current period has a grade, show it
+    if (grades[currentPeriod]) return grades[currentPeriod];
+    
+    // If another period has a grade but current doesn't, show N/A
+    return "N/A";
   };
 
   // Filter students based on search query
@@ -382,10 +396,10 @@ const ProfGradeRecordPage = () => {
                               className="text-sm space-y-1"
                               style={{ color: currentColors.textSecondary }}
                             >
-                              <p style={{ color: getGradeColor(student.prelim) }}>Prelim: {student.prelim || "-"}</p>
-                              <p style={{ color: getGradeColor(student.midterm) }}>Midterm: {student.midterm || "-"}</p>
-                              <p style={{ color: getGradeColor(student.preFinal) }}>Pre-Final: {student.preFinal || "-"}</p>
-                              <p style={{ color: getGradeColor(student.final) }}>Final: {student.final || "-"}</p>
+                              <p style={{ color: getGradeColor(getGradeDisplay(student, 'prelim')) }}>Prelim: {getGradeDisplay(student, 'prelim')}</p>
+                              <p style={{ color: getGradeColor(getGradeDisplay(student, 'midterm')) }}>Midterm: {getGradeDisplay(student, 'midterm')}</p>
+                              <p style={{ color: getGradeColor(getGradeDisplay(student, 'preFinal')) }}>Pre-Final: {getGradeDisplay(student, 'preFinal')}</p>
+                              <p style={{ color: getGradeColor(getGradeDisplay(student, 'final')) }}>Final: {getGradeDisplay(student, 'final')}</p>
                             </div>
                             <button
                               onClick={() => handleEditGrade(student)}
@@ -522,27 +536,27 @@ const ProfGradeRecordPage = () => {
                                     <>
                                       <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
                                         borderColor: currentColors.border,
-                                        color: getGradeColor(student.prelim) 
+                                        color: getGradeColor(getGradeDisplay(student, 'prelim')) 
                                       }}>
-                                        {student.prelim || "-"}
+                                        {getGradeDisplay(student, 'prelim')}
                                       </td>
                                       <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
                                         borderColor: currentColors.border,
-                                        color: getGradeColor(student.midterm) 
+                                        color: getGradeColor(getGradeDisplay(student, 'midterm')) 
                                       }}>
-                                        {student.midterm || "-"}
+                                        {getGradeDisplay(student, 'midterm')}
                                       </td>
                                       <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
                                         borderColor: currentColors.border,
-                                        color: getGradeColor(student.preFinal) 
+                                        color: getGradeColor(getGradeDisplay(student, 'preFinal')) 
                                       }}>
-                                        {student.preFinal || "-"}
+                                        {getGradeDisplay(student, 'preFinal')}
                                       </td>
                                       <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium" style={{ 
                                         borderColor: currentColors.border,
-                                        color: getGradeColor(student.final) 
+                                        color: getGradeColor(getGradeDisplay(student, 'final')) 
                                       }}>
-                                        {student.final || "-"}
+                                        {getGradeDisplay(student, 'final')}
                                       </td>
                                       <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-center">
                                         <button
