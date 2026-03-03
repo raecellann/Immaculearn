@@ -19,7 +19,9 @@ const CreateSpaceAdmin = () => {
   const [people, setPeople] = useState(Array(5).fill(""));
   const [wordCount, setWordCount] = useState(0);
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
-  const [coverImage, setCoverImage] = useState("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
+  const [coverImage, setCoverImage] = useState(
+    "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
+  );
   const [uploadedImage, setUploadedImage] = useState(null);
   const [originalImage, setOriginalImage] = useState(null);
 
@@ -54,7 +56,10 @@ const CreateSpaceAdmin = () => {
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (coverPhotoEditorRef.current && !coverPhotoEditorRef.current.contains(e.target)) {
+      if (
+        coverPhotoEditorRef.current &&
+        !coverPhotoEditorRef.current.contains(e.target)
+      ) {
         setShowCoverPhotoEditor(false);
       }
     };
@@ -89,9 +94,12 @@ const CreateSpaceAdmin = () => {
   // Word count handler
   const handleShortDescriptionChange = (e) => {
     const text = e.target.value;
-    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    const words = text
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
     const count = words.length;
-    
+
     if (count <= 100) {
       setPeople([text, ...people.slice(1)]);
       setWordCount(count);
@@ -106,7 +114,7 @@ const CreateSpaceAdmin = () => {
           space_name: spaceName,
           max_members: 5,
           short_description: people[0] || "",
-          cover_image: coverImage
+          cover_image: coverImage,
         };
 
         // Call the API
@@ -114,24 +122,25 @@ const CreateSpaceAdmin = () => {
 
         if (result.success) {
           const space_uuid = result.space_uuid;
-          toast.success(`Space "${spaceName}" created successfully!`)
+          toast.success(`Space "${spaceName}" created successfully!`);
           // alert(`Space "${spaceName}" created successfully!`);
-          
+
+          localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
           // Save cover photo to localStorage for immediate display
-          if (coverImage && coverImage !== "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg") {
-            localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
-            // Dispatch custom event to notify other components of the cover photo update
-            window.dispatchEvent(new CustomEvent('coverPhotoUpdated', { 
-              detail: { space_uuid, coverPhoto: coverImage } 
-            }));
-          }
-          
+          window.dispatchEvent(
+            new CustomEvent("coverPhotoUpdated", {
+              detail: { space_uuid, coverPhoto: coverImage },
+            }),
+          );
+
           // Reset form
           setSpaceName("");
           setPeople(Array(5).fill(""));
           setWordCount(0);
-          setCoverImage("https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg");
-          navigate(`/space/${space_uuid}/${spaceName}`)
+          setCoverImage(
+            "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
+          );
+          navigate(`/space/${space_uuid}/${spaceName}`);
         } else {
           alert(result.message || "Failed to create space. Please try again.");
         }
@@ -155,16 +164,22 @@ const CreateSpaceAdmin = () => {
     e.preventDefault();
   };
 
-  const handleMouseMove = useCallback((e) => {
-    if (!isDragging) return;
-    
-    const deltaY = e.clientY - dragStartY;
-    const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
-    const positionChange = (deltaY / containerHeight) * 100;
-    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
-    
-    setCoverPhotoPosition(newPosition);
-  }, [isDragging, dragStartY, dragStartPosition]);
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (!isDragging) return;
+
+      const deltaY = e.clientY - dragStartY;
+      const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
+      const positionChange = (deltaY / containerHeight) * 100;
+      const newPosition = Math.max(
+        0,
+        Math.min(100, dragStartPosition - positionChange),
+      );
+
+      setCoverPhotoPosition(newPosition);
+    },
+    [isDragging, dragStartY, dragStartPosition],
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -175,13 +190,13 @@ const CreateSpaceAdmin = () => {
     const handleGlobalMouseUp = () => handleMouseUp();
 
     if (isDragging) {
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+      document.addEventListener("mouseup", handleGlobalMouseUp);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener("mousemove", handleGlobalMouseMove);
+      document.removeEventListener("mouseup", handleGlobalMouseUp);
     };
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
@@ -189,15 +204,21 @@ const CreateSpaceAdmin = () => {
     const file = event.target.files[0];
     if (file) {
       // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!validTypes.includes(file.type)) {
-        alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+        alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
+        alert("File size must be less than 5MB");
         return;
       }
 
@@ -217,34 +238,37 @@ const CreateSpaceAdmin = () => {
 
   const handleCoverPhotoSave = () => {
     // Create canvas to apply transformations
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = new Image();
-    
+
     img.onload = () => {
       // Set canvas size to cover photo dimensions
       canvas.width = 1200;
       canvas.height = 400;
-      
+
       // Calculate scale to fit
-      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scale = Math.max(
+        canvas.width / img.width,
+        canvas.height / img.height,
+      );
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
-      
+
       // Calculate position based on user vertical positioning
       const x = (canvas.width - scaledWidth) / 2;
       const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-      
+
       // Draw the image with transformations
       ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-      
+
       // Convert to data URL and update
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setCoverImage(dataUrl);
-      
+
       setShowCoverPhotoEditor(false);
     };
-    
+
     img.src = coverImage;
   };
 
@@ -254,13 +278,18 @@ const CreateSpaceAdmin = () => {
     // Don't clear coverImage on cancel, keep the existing cover photo
     setCoverPhotoPosition(50);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
   return (
-    <div className="flex min-h-screen font-inter" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
-
+    <div
+      className="flex min-h-screen font-inter"
+      style={{
+        backgroundColor: currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -280,7 +309,7 @@ const CreateSpaceAdmin = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           backgroundColor: currentColors.surface,
-          color: currentColors.text
+          color: currentColors.text,
         }}
       >
         <Sidebar />
@@ -288,7 +317,6 @@ const CreateSpaceAdmin = () => {
 
       {/* ================= MAIN CONTENT ================= */}
       <div className="flex-1 flex flex-col">
-
         {/* MOBILE + TABLET STICKY HEADER */}
         <div
           className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
@@ -297,7 +325,7 @@ const CreateSpaceAdmin = () => {
           style={{
             backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
             borderColor: isDarkMode ? "#374151" : currentColors.border,
-            color: isDarkMode ? "white" : currentColors.text
+            color: isDarkMode ? "white" : currentColors.text,
           }}
         >
           <button
@@ -316,17 +344,23 @@ const CreateSpaceAdmin = () => {
         {/* ================= PAGE CONTENT ================= */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto flex items-center justify-center">
           <div className="w-full max-w-4xl">
-            <h1 className="text-xl lg:text-4xl font-bold text-center mb-4 lg:mb-10">Create New Space, Here!</h1>
+            <h1 className="text-xl lg:text-4xl font-bold text-center mb-4 lg:mb-10">
+              Create New Space, Here!
+            </h1>
 
-            <div className="rounded-xl p-4 lg:p-6 w-full mx-auto" style={{ backgroundColor: currentColors.surface }}>
-
+            <div
+              className="rounded-xl p-4 lg:p-6 w-full mx-auto"
+              style={{ backgroundColor: currentColors.surface }}
+            >
               {/* COVER PHOTO EDITOR MODAL */}
               {showCoverPhotoEditor && (
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
                   <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
                     {/* Header */}
                     <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-                      <h2 className="text-sm lg:text-lg font-semibold text-white">Position Cover Photo</h2>
+                      <h2 className="text-sm lg:text-lg font-semibold text-white">
+                        Position Cover Photo
+                      </h2>
                       <button
                         onClick={handleCoverPhotoCancel}
                         className="text-gray-400 hover:text-white p-1 bg-transparent"
@@ -341,12 +375,12 @@ const CreateSpaceAdmin = () => {
                         <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                           <div
                             ref={coverPhotoEditorRef}
-                            className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                            className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
                             style={{
                               backgroundImage: `url(${coverImage})`,
-                              backgroundSize: 'cover',
+                              backgroundSize: "cover",
                               backgroundPosition: `center ${coverPhotoPosition}%`,
-                              backgroundRepeat: 'no-repeat',
+                              backgroundRepeat: "no-repeat",
                             }}
                             onMouseDown={handleMouseDown}
                           />
@@ -388,34 +422,95 @@ const CreateSpaceAdmin = () => {
                   src={coverImage}
                   alt="Cover"
                   className="w-full h-32 sm:h-44 object-cover rounded-lg"
-                  style={{ background: coverImage.includes("gradient") ? coverImage : "" }}
+                  style={{
+                    background: coverImage.includes("gradient")
+                      ? coverImage
+                      : "",
+                  }}
                 />
                 <div className="absolute top-2 right-3 flex flex-wrap gap-1 sm:gap-2">
-                  <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => setIsCoverModalOpen(true)}>Change Cover</button>
-                  <button className="px-2 py-1 rounded text-xs" style={{ backgroundColor: 'rgba(0,0,0,0.5)', color: 'white' }} onClick={() => setCoverImage("")}>Delete Cover</button>
+                  <button
+                    className="px-2 py-1 rounded text-xs"
+                    style={{
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      color: "white",
+                    }}
+                    onClick={() => setIsCoverModalOpen(true)}
+                  >
+                    Change Cover
+                  </button>
+                  <button
+                    className="px-2 py-1 rounded text-xs"
+                    style={{
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      color: "white",
+                    }}
+                    onClick={() => setCoverImage("")}
+                  >
+                    Delete Cover
+                  </button>
                 </div>
               </div>
 
               {/* Cover Modal */}
               {isCoverModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 p-4">
-                  <div className="rounded-lg p-4 sm:p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto" style={{ backgroundColor: currentColors.surface }}>
-                    <button className="absolute top-2 right-2" onClick={() => setIsCoverModalOpen(false)}><X size={20} /></button>
-                    <h3 className="text-sm lg:text-lg font-semibold mb-4">Edit Cover Photo</h3>
+                  <div
+                    className="rounded-lg p-4 sm:p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto"
+                    style={{ backgroundColor: currentColors.surface }}
+                  >
+                    <button
+                      className="absolute top-2 right-2"
+                      onClick={() => setIsCoverModalOpen(false)}
+                    >
+                      <X size={20} />
+                    </button>
+                    <h3 className="text-sm lg:text-lg font-semibold mb-4">
+                      Edit Cover Photo
+                    </h3>
                     <p className="text-xs lg:text-sm mb-2">Color & Gradient</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                       {colorOptions.map((color, i) => (
-                        <div key={i} className="h-12 rounded cursor-pointer" style={{ background: color }} onClick={() => { setCoverImage(color); setIsCoverModalOpen(false); }} />
+                        <div
+                          key={i}
+                          className="h-12 rounded cursor-pointer"
+                          style={{ background: color }}
+                          onClick={() => {
+                            setCoverImage(color);
+                            setIsCoverModalOpen(false);
+                          }}
+                        />
                       ))}
                     </div>
                     <p className="text-xs lg:text-sm mb-2">Gallery</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                       {galleryImages.map((img, i) => (
-                        <img key={i} src={img} className="h-16 w-full object-cover rounded cursor-pointer" onClick={() => { setCoverImage(img); setOriginalImage(img); setIsCoverModalOpen(false); }} />
+                        <img
+                          key={i}
+                          src={img}
+                          className="h-16 w-full object-cover rounded cursor-pointer"
+                          onClick={() => {
+                            setCoverImage(img);
+                            setOriginalImage(img);
+                            setIsCoverModalOpen(false);
+                          }}
+                        />
                       ))}
                     </div>
-                    <label className="block text-xs lg:text-sm mb-1">Upload from computer (max 5MB)</label>
-                    <input type="file" accept="image/*" onChange={handleCoverPhotoChange} className="w-full text-xs lg:text-sm p-2 rounded" style={{ backgroundColor: isDarkMode ? '#1E1E1E' : '#f8fafc', color: currentColors.text, borderColor: currentColors.border }} />
+                    <label className="block text-xs lg:text-sm mb-1">
+                      Upload from computer (max 5MB)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCoverPhotoChange}
+                      className="w-full text-xs lg:text-sm p-2 rounded"
+                      style={{
+                        backgroundColor: isDarkMode ? "#1E1E1E" : "#f8fafc",
+                        color: currentColors.text,
+                        borderColor: currentColors.border,
+                      }}
+                    />
                   </div>
                 </div>
               )}
@@ -428,7 +523,9 @@ const CreateSpaceAdmin = () => {
               <div className="mt-6">
                 {/* Space Name */}
                 <div>
-                  <label className="block text-xs lg:text-sm font-medium mb-2">Space Name</label>
+                  <label className="block text-xs lg:text-sm font-medium mb-2">
+                    Space Name
+                  </label>
                   <InputField
                     placeholder="Enter space name"
                     value={spaceName}
@@ -442,7 +539,9 @@ const CreateSpaceAdmin = () => {
                   ROW 2: Short Description — full width at bottom
               ───────────────────────────────────────────────── */}
               <div className="mt-5">
-                <label className="block text-xs lg:text-sm font-medium mb-2">Short Description</label>
+                <label className="block text-xs lg:text-sm font-medium mb-2">
+                  Short Description
+                </label>
                 <InputField
                   placeholder="Brief description for this space"
                   value={people[0]}
@@ -450,11 +549,21 @@ const CreateSpaceAdmin = () => {
                   style={{ width: "100%", backgroundColor: "#ffffff" }}
                 />
                 <div className="flex items-center justify-between mt-1.5">
-                  <span className="text-xs lg:text-xs" style={{ color: currentColors.textSecondary }}>Describe what this space is about</span>
+                  <span
+                    className="text-xs lg:text-xs"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    Describe what this space is about
+                  </span>
                   <span
                     className="text-xs lg:text-xs font-medium"
                     style={{
-                      color: wordCount >= 100 ? '#ef4444' : wordCount >= 90 ? '#f59e0b' : currentColors.textSecondary
+                      color:
+                        wordCount >= 100
+                          ? "#ef4444"
+                          : wordCount >= 90
+                            ? "#f59e0b"
+                            : currentColors.textSecondary,
                     }}
                   >
                     {wordCount}/100 words
@@ -466,16 +575,22 @@ const CreateSpaceAdmin = () => {
               <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
                 <button
                   className="px-3 lg:px-6 py-2 rounded-lg text-xs lg:text-xs w-full sm:w-auto transition-colors"
-                  style={{ backgroundColor: isDarkMode ? '#3E3E3E' : '#e5e7eb', color: currentColors.text }}
+                  style={{
+                    backgroundColor: isDarkMode ? "#3E3E3E" : "#e5e7eb",
+                    color: currentColors.text,
+                  }}
                   onClick={() => navigate(-1)}
                 >
                   Cancel
                 </button>
-                <Button onClick={handleCreateSpace} className="text-xs lg:text-xs w-full sm:w-auto" style={{ backgroundColor: '#007AFF', color: 'white' }}>
+                <Button
+                  onClick={handleCreateSpace}
+                  className="text-xs lg:text-xs w-full sm:w-auto"
+                  style={{ backgroundColor: "#007AFF", color: "white" }}
+                >
                   Create Space
                 </Button>
               </div>
-
             </div>
           </div>
         </div>
