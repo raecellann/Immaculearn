@@ -28,11 +28,11 @@ const ViewFilePage = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [fileType, setFileType] = useState("binary"); 
+  const [fileType, setFileType] = useState("binary");
   const [content, setContent] = useState("");
   const [zoomed, setZoomed] = useState(false);
 
-  /* ================= FILE TYPE DETECTION ================= */
+  /* ================= EXTENSIONS ================= */
 
   const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"];
   const textExtensions = [
@@ -46,14 +46,7 @@ const ViewFilePage = () => {
     "php",
     "sql",
   ];
-  const officeExtensions = [
-    "doc",
-    "docx",
-    "ppt",
-    "pptx",
-    "xls",
-    "xlsx",
-  ];
+  const officeExtensions = ["doc", "docx", "ppt", "pptx", "xls", "xlsx"];
 
   /* ================= FETCH LOGIC ================= */
 
@@ -64,10 +57,10 @@ const ViewFilePage = () => {
         return;
       }
 
-
       try {
         setIsLoading(true);
         setError(null);
+        setContent("");
 
         const extension = file.file_name
           ?.split(".")
@@ -95,10 +88,21 @@ const ViewFilePage = () => {
           return;
         }
 
-        /* ================= TEXT ================= */
+        /* ================= TEXT (SAFE MODE) ================= */
         if (textExtensions.includes(extension)) {
-          const response = await fetch(file.file_url);
+          const response = await fetch(file.file_url, {
+            headers: {
+              Accept: "text/plain",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch file.");
+          }
+
           const text = await response.text();
+
+          // IMPORTANT: prevent browser from executing anything
           setContent(text);
           setFileType("text");
           setIsLoading(false);
@@ -109,7 +113,8 @@ const ViewFilePage = () => {
         setFileType("binary");
         setIsLoading(false);
       } catch (err) {
-        setError(err.message || "Failed to load file.");
+        console.error(err);
+        setError("Failed to load file.");
         setIsLoading(false);
       }
     };
@@ -117,13 +122,13 @@ const ViewFilePage = () => {
     handleFile();
   }, [file]);
 
-  /* ================= OFFICE VIEWER URL ================= */
+  /* ================= OFFICE VIEWER ================= */
 
-  const officeViewerUrl = file?.file_url
-  ? `https://docs.google.com/gview?url=${encodeURIComponent(
+  const officeViewerUrl =
+    file?.file_url &&
+    `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(
       file.file_url
-    )}&embedded=true`
-  : "";
+    )}`;
 
   /* ================= UI ================= */
 
@@ -135,12 +140,10 @@ const ViewFilePage = () => {
         color: currentColors.text,
       }}
     >
-      {/* SIDEBAR */}
       <div className="hidden lg:block">
         <ProfSidebar />
       </div>
 
-      {/* MAIN */}
       <div className="flex-1 p-6 max-w-6xl mx-auto w-full">
         <button
           onClick={() => navigate(-1)}
@@ -170,11 +173,7 @@ const ViewFilePage = () => {
           )}
 
           {/* ERROR */}
-          {error && (
-            <div className="text-red-500">
-              <p>{error}</p>
-            </div>
-          )}
+          {error && <div className="text-red-500">{error}</div>}
 
           {/* IMAGE */}
           {!isLoading && !error && fileType === "image" && (
@@ -222,13 +221,12 @@ const ViewFilePage = () => {
                 src={officeViewerUrl}
                 width="100%"
                 height="100%"
-                frameBorder="0"
                 title="Office Viewer"
               />
             </div>
           )}
 
-          {/* TEXT */}
+          {/* TEXT (SAFE DISPLAY) */}
           {!isLoading && !error && fileType === "text" && (
             <div
               className="p-4 rounded font-mono text-sm overflow-x-auto whitespace-pre-wrap"

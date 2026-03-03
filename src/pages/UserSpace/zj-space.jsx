@@ -1311,7 +1311,7 @@ const UserPage = () => {
                   onClick={() =>
                     navigate(`/space/${space_uuid}/${space_name}/files`)
                   }
-                >
+                >     
                   Files
                 </button>
                 <button

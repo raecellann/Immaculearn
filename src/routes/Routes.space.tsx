@@ -3,6 +3,9 @@ import { Route } from "react-router";
 import UserPage from "../pages/UserSpace/zj-space.jsx";
 import UserTaskPage from "../pages/UserSpace/UserTaskPage.jsx";
 import UserFilesShared from "../pages/UserSpace/UserFilesShared.jsx";
+
+import { SpaceProvider } from "../contexts/space/spaceContextProvider.js";
+import { FileProvider } from "../contexts/file/fileContextProvider.js";
 import UserPeoplePage from "../pages/UserSpace/UserPeoplePage.jsx";
 // import AdminTaskPage from "../pages/UserSpace/AdminSpacePages/AdminTaskPage.jsx";
 import FormBuilderPage from "../pages/UserSpace/AdminSpacePages/FormBuilderPage.jsx";
@@ -13,7 +16,6 @@ import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 import TaskBuilder from "../pages/EXAMPLE_PAGE/builder.jsx";
 import TaskPreview from "../pages/EXAMPLE_PAGE/preview.jsx";
-
 export const SpaceRoutes = [
   {
     key: "/space",
@@ -66,14 +68,27 @@ export const SpaceRoutes = [
     element: <FormBuilderPage />,
   },
   {
-    key: "/files",
-    path: "/space/:space_uuid/:space_name/files",
-    element: <UserFilesShared />,
-  },
+  key: "/files",
+  path: "/space/:space_uuid/:space_name/files",
+  element: (
+    <SpaceProvider>
+      <FileProvider>
+        <UserFilesShared />
+      </FileProvider>
+    </SpaceProvider>
+  ),
+},
+,
   {
     key: "/files",
     path: "/space/:space_uuid/:space_name/files/:file_uuid/:file_name",
-    element: <CreateDocumentPage />,
+    element: (
+      <SpaceProvider>
+        <FileProvider>
+          <CreateDocumentPage />
+        </FileProvider>
+      </SpaceProvider>
+    ),
   },
   {
     key: "/people",

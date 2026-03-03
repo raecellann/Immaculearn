@@ -1,68 +1,267 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import ProfSidebar from "../component/profsidebar";
+import Sidebar from "../component/sidebar.jsx";
 import AddMember from "../component/AddMember";
-import { FiCopy, FiFileText, FiMenu, FiX, FiUpload } from "react-icons/fi";
+import { FiFileText, FiMenu, FiX, FiUpload, FiCopy } from "react-icons/fi";
 import Logout from "../component/logout";
-import Sidebar from "../component/sidebar";
-import Button from "../component/button_2";
-import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
-import { useFileManager } from "../../hooks/useFileManager.js";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
-import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
-import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
-import { toast } from "react-toastify";
+import { useFileManager } from "../../hooks/useFileManager.js";
+import { useFile } from "../../contexts/file/useFile";
+import Button from "../component/button_2";
+import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { useNotification } from "../../contexts/notification/notificationContextProvider.js";
 
-// Hardcoded lesson data for demonstration
-export const hardcodedLessons = [
-  { id: 1, name: "Module 1: Introduction to React", description: "Basic React concepts and components" },
-  { id: 2, name: "Module 2: State and Props", description: "Managing component state and passing props" },
-  { id: 3, name: "Module 3: React Hooks", description: "Using useState, useEffect, and custom hooks" },
-  { id: 4, name: "Module 4: Component Lifecycle", description: "Understanding component lifecycle methods" },
-  { id: 5, name: "Module 5: Routing in React", description: "Implementing navigation with React Router" },
-  { id: 6, name: "Module 6: Forms and Validation", description: "Building forms with validation" },
-  { id: 7, name: "Module 7: Redux Integration", description: "State management with Redux" },
-  { id: 8, name: "Module 8: Testing React Apps", description: "Unit and integration testing" }
-];
+// ─── Helper Functions ────────────────────────────────────────────────────────
+
+const FILE_TYPE_ICONS = {
+  jsx: "⚛️",
+  tsx: "🔷",
+  js: "🟨",
+  ts: "🔷",
+  html: "🌐",
+  htm: "🌐",
+  css: "🎨",
+  scss: "💅",
+  sass: "💅",
+  json: "📋",
+  xml: "📄",
+  doc: "📘",
+  docx: "📘",
+  pdf: "📕",
+  txt: "📝",
+  md: "📝",
+  rtf: "📄",
+  xls: "📗",
+  xlsx: "📗",
+  csv: "📗",
+  ppt: "📙",
+  pptx: "📙",
+  jpg: "🖼️",
+  jpeg: "🖼️",
+  png: "🖼️",
+  gif: "🖼️",
+  bmp: "🖼️",
+  svg: "🖼️",
+  webp: "🖼️",
+  mp4: "🎥",
+  avi: "🎥",
+  mov: "🎥",
+  wmv: "🎥",
+  mkv: "🎥",
+  mp3: "🎵",
+  wav: "🎵",
+  flac: "🎵",
+  aac: "🎵",
+  zip: "📦",
+  rar: "📦",
+  "7z": "📦",
+  tar: "📦",
+  gz: "📦",
+  py: "🐍",
+  java: "☕",
+  php: "🐘",
+  rb: "💎",
+  go: "🐹",
+  rs: "🦀",
+  swift: "🍎",
+  vue: "💚",
+  svelte: "🧡",
+  sql: "🗄️",
+  db: "🗄️",
+  sqlite: "🗄️",
+  yml: "⚙️",
+  yaml: "⚙️",
+  env: "🔐",
+  config: "⚙️",
+};
+
+const getFileExt = (name) => name?.split(".").pop()?.toLowerCase() || "";
+const getFileTypeLetter = (name) => FILE_TYPE_ICONS[getFileExt(name)] ?? "📄";
+
+const formatFileTitle = (filename) => {
+  if (!filename) return "";
+  const decoded = decodeURIComponent(filename);
+  return decoded.split(".")[0].split("_")[0];
+};
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const formatSize = (bytes) => {
+  if (!bytes) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
+};
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+const DeleteButton = ({ onClick, title, isDarkMode }) => (
+  <div
+    onClick={onClick}
+    title={title}
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 35,
+      height: 35,
+      borderRadius: 10,
+      backgroundColor: isDarkMode ? "#991b1b" : "#ef4444",
+      cursor: "pointer",
+      transition: "background-color 0.3s",
+      flexShrink: 0,
+    }}
+    onMouseEnter={(e) =>
+      (e.currentTarget.style.backgroundColor = isDarkMode
+        ? "#b91c1c"
+        : "#f87171")
+    }
+    onMouseLeave={(e) =>
+      (e.currentTarget.style.backgroundColor = isDarkMode
+        ? "#991b1b"
+        : "#ef4444")
+    }
+  >
+    <svg viewBox="0 0 39 7" fill="none" width={12} style={{ marginBottom: 1 }}>
+      <line y1={5} x2={39} y2={5} stroke="white" strokeWidth={4} />
+      <line x1={12} y1="1.5" x2={26} y2={1.5} stroke="white" strokeWidth={3} />
+    </svg>
+    <svg viewBox="0 0 33 39" fill="none" width={10}>
+      <mask id="path-1-inside-1_8_19" fill="white">
+        <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
+      </mask>
+      <path
+        d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+        fill="white"
+        mask="url(#path-1-inside-1_8_19)"
+      />
+      <path d="M12 6L12 29" stroke="white" strokeWidth={4} />
+      <path d="M21 6V29" stroke="white" strokeWidth={4} />
+    </svg>
+  </div>
+);
+
+const DownloadButton = ({ onClick, title, isDarkMode }) => (
+  <div
+    onClick={onClick}
+    title={title}
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 35,
+      height: 35,
+      borderRadius: 10,
+      backgroundColor: isDarkMode ? "#14532d" : "#22c55e",
+      cursor: "pointer",
+      transition: "background-color 0.3s",
+      flexShrink: 0,
+    }}
+    onMouseEnter={(e) =>
+      (e.currentTarget.style.backgroundColor = isDarkMode
+        ? "#166534"
+        : "#16a34a")
+    }
+    onMouseLeave={(e) =>
+      (e.currentTarget.style.backgroundColor = isDarkMode
+        ? "#14532d"
+        : "#22c55e")
+    }
+  >
+    <svg viewBox="0 0 24 24" fill="none" width={16} height={16}>
+      <path
+        d="M12 3L12 15M12 15L8 11M12 15L16 11M3 17V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V17"
+        stroke="white"
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </div>
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const UserFilesShared = () => {
+  const navigate = useNavigate();
+  const { space_uuid, space_name } = useParams();
+  const {
+    showGlobalNotification,
+    hideGlobalNotification,
+    updateNotificationData,
+    updateNotificationMessage,
+  } = useNotification();
+  const { user, isLoading: userLoading } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
-  const { addNotification } = useNotification();
   const currentColors = isDarkMode ? colors.dark : colors.light;
-  const [showPendingInvitations, setShowPendingInvitations] = useState(false);
-  const [showInvitePopup, setShowInvitePopup] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [copyFeedback, setCopyFeedback] = useState("");
-  const [joinRequestsData, setJoinRequestsData] = useState([]);
-  const [spaceLoading, setSpaceLoading] = useState(false);
+  const {
+    userSpaces,
+    courseSpaces,
+    friendSpaces,
+    useJoinRequests,
+    isLoading: spaceLoading,
+    acceptJoinRequest,
+    declineJoinRequest,
+    deleteSpace,
+  } = useSpace();
+  const { data: joinRequestsData = [] } = useJoinRequests(space_uuid || "");
+  const {
+    resources,
+    files: contextFiles,
+    uploadResource,
+    isUploading,
+    uploadProgress,
+    refreshFiles,
+  } = useFile();
+
+  // Derived state
+  const isValidUuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(
+      space_uuid,
+    );
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(courseSpaces || []),
+    ...(friendSpaces || []),
+  ];
+  const currentSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
+  const isOwnerSpace = currentSpace?.creator === user?.id;
+  const isFriendSpace = !isOwnerSpace;
+  const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
+
+  // UI state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState("");
+  const [showLogout, setShowLogout] = useState(false);
+  const [showInvitePopup, setShowInvitePopup] = useState(false);
+  const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState("");
   const lastScrollY = useRef(0);
 
-  // File upload states
+  // File/upload state
   const [showCreateUploadModal, setShowCreateUploadModal] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [activeFile, setActiveFile] = useState(null);
-  const [fileName, setFileName] = useState("");
-  const [isCreatingFile, setIsCreatingFile] = useState(false);
-  const [showFileOptions, setShowFileOptions] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-
-  // Prof-style upload states
   const [lastUploadedFile, setLastUploadedFile] = useState(null);
   const [fileAlreadyExists, setFileAlreadyExists] = useState(false);
-  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState(null);
-
-  // Lesson name states (from ProfFilesShared)
   const [lessonName, setLessonName] = useState("");
   const [lessonNameError, setLessonNameError] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
+  const [showUploadConfirmation, setShowUploadConfirmation] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState([]);
+  const [pendingLessonName, setPendingLessonName] = useState("");
 
   // Cover photo state
   const [coverPhoto, setCoverPhoto] = useState(null);
@@ -89,288 +288,15 @@ const UserFilesShared = () => {
     "linear-gradient(45deg, #795548, #607D8B)",
   ];
 
-  const navigate = useNavigate();
-  const { space_uuid, space_name } = useParams();
-
-  const { user, isLoading } = useUser();
-  const {
-    userSpaces,
-    friendSpaces,
-    courseSpaces,
-    deleteSpace,
-    acceptJoinRequest,
-    declineJoinRequest,
-  } = useSpace();
-
-  /* ================= SPACE & OWNER LOGIC ================= */
-  const allSpaces = [
-    ...(userSpaces || []),
-    ...(friendSpaces || []),
-    ...(courseSpaces || []),
-  ];
-  const currentSpace = allSpaces.find(
-    (space) => space.space_uuid === space_uuid,
-  );
-
-  const isOwnerSpace = currentSpace?.creator === user?.id;
-  const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
-  const isFriendSpace = !isOwnerSpace;
-
-  /* ================= FILE TYPE HELPERS ================= */
-  const getFileExtension = (fileName) => {
-    if (!fileName) return "";
-    return fileName.split(".").pop()?.toLowerCase() || "";
-  };
-
-  const getFileTypeLetter = (fileName) => {
-    if (!fileName) return "📄";
-    const extension = fileName.split(".").pop()?.toLowerCase();
-    switch (extension) {
-      case "jsx": return "⚛️";
-      case "tsx": return "🔷";
-      case "js": return "🟨";
-      case "ts": return "🔷";
-      case "html": case "htm": return "🌐";
-      case "css": return "🎨";
-      case "scss": case "sass": return "💅";
-      case "json": return "📋";
-      case "xml": return "📄";
-      case "doc": case "docx": return "📘";
-      case "pdf": return "📕";
-      case "txt": case "md": return "📝";
-      case "rtf": return "📄";
-      case "xls": case "xlsx": case "csv": return "📗";
-      case "ppt": case "pptx": return "📙";
-      case "jpg": case "jpeg": case "png": case "gif":
-      case "bmp": case "svg": case "webp": case "ico": return "🖼️";
-      case "mp4": case "avi": case "mov": case "wmv":
-      case "flv": case "webm": case "mkv": return "🎥";
-      case "mp3": case "wav": case "flac": case "aac":
-      case "ogg": case "m4a": return "🎵";
-      case "zip": case "rar": case "7z": case "tar": case "gz": return "📦";
-      case "yml": case "yaml": case "config": case "conf": case "ini": return "⚙️";
-      case "env": return "🔐";
-      case "sql": case "db": case "sqlite": return "🗄️";
-      case "ttf": case "otf": case "woff": case "woff2": return "🔤";
-      case "py": return "🐍";
-      case "java": return "☕";
-      case "cpp": case "c++": case "c": return "⚙️";
-      case "php": return "🐘";
-      case "rb": return "💎";
-      case "go": return "🐹";
-      case "rs": return "🦀";
-      case "swift": return "🍎";
-      case "kt": case "dart": return "🎯";
-      case "vue": return "💚";
-      case "svelte": return "🧡";
-      case "psd": case "ai": case "fig": case "sketch": return "🎨";
-      default: return "📄";
-    }
-  };
-
-  const checkFileExists = (fileName) => {
-    return files?.some((resource) =>
-      resource.filename?.toLowerCase().includes(fileName.toLowerCase())
-    );
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return date.toLocaleDateString("en-US", options);
-  };
-
-  /* ================= DRAG & DROP ================= */
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const droppedFile = e.dataTransfer.files[0];
-      const fileExists = checkFileExists(droppedFile.name);
-      setFileAlreadyExists(fileExists);
-      setLastUploadedFile(droppedFile);
-      setUploadedFiles([]);
-    }
-  };
-
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFileObj = e.target.files[0];
-      const fileExists = checkFileExists(selectedFileObj.name);
-      setFileAlreadyExists(fileExists);
-      setLastUploadedFile(selectedFileObj);
-      setUploadedFiles([]);
-    }
-  };
-
-  /* ================= RESET MODAL ================= */
-  const resetUploadModal = () => {
-    setShowCreateUploadModal(false);
-    setLastUploadedFile(null);
-    setFileAlreadyExists(false);
-    setUploadedFiles([]);
-    setLessonName("");
-    setLessonNameError("");
-    const fileInput = document.getElementById("file-upload");
-    if (fileInput) fileInput.value = "";
-  };
-
-  /* ================= FILE ACTIONS ================= */
-  const handleFileClick = (file) => {
-    setSelectedFile(file);
-    setShowFileOptions(true);
-  };
-
-  const handleOpenFile = (file) => {
-    const url = `/space/${space_uuid}/${space_name}/files/${file.file_uuid}/${file.filename}`;
-    navigate(url);
-    setShowFileOptions(false);
-  };
-
-  const handleDeleteFile = (file) => {
-    setFileToDelete(file);
-    setShowDeleteWarning(true);
-    setShowFileOptions(false);
-  };
-
-  const confirmDeleteFile = async () => {
-    if (!fileToDelete) return;
-    try {
-      // Add your actual delete API call here
-      // await deleteFile(fileToDelete.file_uuid, space_uuid);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      toast.success(`"${fileToDelete.filename}" deleted successfully!`);
-      setShowDeleteWarning(false);
-      setFileToDelete(null);
-    } catch (error) {
-      console.error("Delete failed:", error);
-      toast.error(`Failed to delete "${fileToDelete.filename}". Please try again.`);
-    }
-  };
-
-  const cancelDeleteFile = () => {
-    setShowDeleteWarning(false);
-    setFileToDelete(null);
-  };
-
-  const handleDownloadFile = async (file) => {
-    try {
-      toast.info(`Downloading "${file.filename}"...`);
-      // Add your actual download logic here
-    } catch (error) {
-      console.error("Download failed:", error);
-      toast.error(`Failed to download "${file.filename}".`);
-    }
-  };
-
-  const handleCreateFile = () => {
-    if (!fileName.trim()) {
-      toast.error("File title is required");
-      return;
-    }
-    create.mutate(
-      {
-        title: fileName,
-        space_id: currentSpace?.space_id ?? null,
-        owner_id: user?.id ?? null,
-        content: "",
-      },
-      {
-        onSuccess: (newFile) => {
-          toast.success(`File "${fileName}" created successfully!`, {
-            duration: 3000,
-            position: "top-center",
-          });
-          const url = `/space/${space_uuid}/${space_name}/files/${newFile.fuuid}/${newFile.title}`;
-          navigate(url);
-          setFileName("");
-          setIsCreatingFile(false);
-          setShowCreateUploadModal(false);
-        },
-        onError: (err) => {
-          console.error(err);
-          toast.error(err?.message || "Failed to create file");
-        },
-      },
-    );
-  };
-
-  /* ================= CUSTOM BUTTON COMPONENTS ================= */
-  const DeleteButton = ({ onClick, title, className = "", style = {} }) => (
-    <div
-      className={`bin-button ${className}`}
-      onClick={onClick}
-      title={title}
-      style={style}
-    >
-      <svg className="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line y1={5} x2={39} y2={5} stroke="white" strokeWidth={4} />
-        <line x1={12} y1="1.5" x2={26.0357} y2={1.5} stroke="white" strokeWidth={3} />
-      </svg>
-      <svg className="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <mask id="path-1-inside-1_8_19" fill="white">
-          <path d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z" />
-        </mask>
-        <path d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z" fill="white" mask="url(#path-1-inside-1_8_19)" />
-        <path d="M12 6L12 29" stroke="white" strokeWidth={4} />
-        <path d="M21 6V29" stroke="white" strokeWidth={4} />
-      </svg>
-    </div>
-  );
-
-  const DownloadButton = ({ onClick, title, className = "" }) => (
-    <button
-      onClick={onClick}
-      title={title}
-      className={`transition-all duration-300 flex items-center justify-center ${className}`}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "35px",
-        height: "35px",
-        borderRadius: "10px",
-        backgroundColor: isDarkMode ? "#1e40af" : "#3b82f6",
-        color: "#ffffff",
-        border: "none",
-        cursor: "pointer",
-      }}
-      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? "#2563eb" : "#60a5fa"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? "#1e40af" : "#3b82f6"; }}
-      onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.9)"; }}
-      onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-    >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L12 14M12 14L8 10M12 14L16 10M3 17V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </button>
-  );
-
-  /* ================= SCROLL HANDLER ================= */
+  // Scroll hide/show header
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-        setShowHeader(false);
-      } else {
-        setShowHeader(true);
-      }
-      lastScrollY.current = currentScrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setShowHeader(!(y > lastScrollY.current && y > 50));
+      lastScrollY.current = y;
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // Load saved cover photo on component mount
@@ -385,6 +311,8 @@ const UserFilesShared = () => {
   useEffect(() => {
     if (coverPhotoUrl && !showCoverPhotoEditor) {
       localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
+      // Dispatch custom event to notify HomePage
+      window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
     }
   }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
 
@@ -486,6 +414,9 @@ const UserFilesShared = () => {
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
       
+      // Dispatch custom event to notify HomePage
+      window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
+      
       addNotification({
         type: "success",
         title: "Cover Photo Updated",
@@ -521,6 +452,9 @@ const UserFilesShared = () => {
         
         // Save to localStorage
         localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
+        
+        // Dispatch custom event to notify HomePage
+        window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
         
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
@@ -573,136 +507,321 @@ const UserFilesShared = () => {
     }
   };
 
-  const { list, create } = useFileManager(currentSpace?.space_id || null);
-  const files = list?.data || [];
+  if (userLoading || spaceLoading)
+    return (
+      <div className="flex h-screen justify-center items-center">
+        Loading...
+      </div>
+    );
+  if (!isValidUuid || !currentSpace)
+    return (
+      <div
+        className="flex h-screen justify-center items-center"
+        style={{ color: currentColors.text }}
+      >
+        Space not found
+      </div>
+    );
 
-  const handleInviteMember = () => setShowInvitePopup(true);
+  // ─── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleDeleteRoom = async () => {
-    if (!currentSpace) return;
-    setDialogMessage(currentSpace.space_name);
-    setShowDeleteDialog(true);
+  const checkFileExists = (name) =>
+    resources?.some((r) =>
+      r.file_name.toLowerCase().includes(name.toLowerCase()),
+    );
+
+  const initiateUpload = (files) => {
+    if (!files?.length) return;
+    if (files.length > 5) {
+      alert("Maximum 5 files allowed");
+      return;
+    }
+    setPendingFiles(Array.from(files));
+    setPendingLessonName(lessonName);
+    setFileAlreadyExists(checkFileExists(files[0].name));
+    setShowUploadConfirmation(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (!currentSpace || !showDeleteDialog) return;
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(e.type === "dragenter" || e.type === "dragover");
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    initiateUpload(e.dataTransfer.files);
+  };
+  const handleFileChange = (e) => initiateUpload(e.target.files);
+
+  const clearPending = () => {
+    setShowUploadConfirmation(false);
+    setPendingFiles([]);
+    setPendingLessonName("");
+    setFileAlreadyExists(false);
+    const inp = document.getElementById("file-upload");
+    if (inp) inp.value = "";
+  };
+
+  const confirmUpload = async () => {
+    if (!pendingLessonName.trim()) {
+      setLessonNameError("Lesson name is required");
+      setShowUploadConfirmation(false);
+      return;
+    }
+    setShowUploadConfirmation(false);
+    setShowCreateUploadModal(false);
+    setLessonName(pendingLessonName);
+    setLessonNameError("");
+    await handleUploadFile(pendingFiles[0]);
+    clearPending();
+  };
+
+  const handleUploadFile = async (file, retryCount = 0) => {
+    const maxRetries = 3;
+    let notifId = null;
+    try {
+      notifId = showGlobalNotification({
+        type: "loading",
+        title: "Uploading File",
+        message: `Uploading please wait`,
+        duration: null,
+        persistent: true,
+      });
+      const result = await uploadResource([file], space_uuid, lessonName);
+      if (currentSpace?.space_id) await refreshFiles(space_uuid);
+      updateNotificationData(notifId, { progress: 100, status: "completed" });
+      showGlobalNotification({
+        type: "success",
+        title: "Upload Complete",
+        message: `"Resources uploaded successfully.`,
+        duration: 3000,
+        actions: [
+          {
+            label: "View File",
+            variant: "primary",
+            onClick: () => {
+              navigate(
+                `/space/${space_uuid}/${space_name}/files/${file.file_name}/${result[0]?.id || "unknown"}`,
+              );
+              hideGlobalNotification();
+            },
+          },
+          {
+            label: "Close",
+            variant: "secondary",
+            onClick: () => hideGlobalNotification(),
+          },
+        ],
+      });
+    } catch (err) {
+      if (retryCount < maxRetries) {
+        await new Promise((r) => setTimeout(r, 2000));
+        return handleUploadFile(file, retryCount + 1);
+      }
+      showGlobalNotification({
+        type: "error",
+        title: "Upload Failed",
+        message: `Failed to upload "${file.file_name}". ${err.message}`,
+        duration: null,
+        persistent: true,
+        actions: [
+          {
+            label: "Retry",
+            variant: "primary",
+            onClick: () => {
+              hideGlobalNotification();
+              handleUploadFile(file, 0);
+            },
+          },
+          {
+            label: "Cancel",
+            variant: "secondary",
+            onClick: () => hideGlobalNotification(),
+          },
+        ],
+      });
+    }
+  };
+
+  const handleOpenFile = (file) =>
+    navigate( 
+      `/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.orig_file_name)}/${file.file_id}`,
+    );
+
+  const handleDeleteFile = (file) => {
+    setFileToDelete(file);
+    setShowDeleteWarning(true);
+  };
+  const cancelDeleteFile = () => {
+    setShowDeleteWarning(false);
+    setFileToDelete(null);
+  };
+
+  const confirmDeleteFile = async () => {
+    if (!fileToDelete) return;
+    showGlobalNotification({
+      type: "loading",
+      title: "Deleting File",
+      message: `Deleting "${fileToDelete.name}"...`,
+      duration: null,
+      persistent: true,
+    });
+    setShowDeleteWarning(false);
+    try {
+      await new Promise((r) => setTimeout(r, 1500)); // replace with real delete call
+      if (currentSpace?.space_id) await refreshFiles(space_uuid);
+      showGlobalNotification({
+        type: "success",
+        title: "File Deleted",
+        message: `"${fileToDelete.name}" removed.`,
+        duration: 4000,
+      });
+    } catch (err) {
+      showGlobalNotification({
+        type: "error",
+        title: "Delete Failed",
+        message: `Failed to delete "${fileToDelete.name}".`,
+        duration: 5000,
+      });
+    }
+    setFileToDelete(null);
+  };
+
+  const handleDownloadFile = async (file) => {
+    showGlobalNotification({
+      type: "loading",
+      title: "Downloading",
+      message: `Downloading "${file.file_name}"...`,
+      duration: null,
+      persistent: true,
+    });
+    try {
+      const a = document.createElement("a");
+      a.href = file.file_url;
+      a.download = file.file_name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showGlobalNotification({
+        type: "success",
+        title: "Download Started",
+        message: `"${file.file_name}" download started.`,
+        duration: 4000,
+      });
+    } catch (err) {
+      showGlobalNotification({
+        type: "error",
+        title: "Download Failed",
+        message: `Failed to download "${file.file_name}".`,
+        duration: 5000,
+      });
+    }
+  };
+
+  const handleDeleteRoom = () => {
+    if (currentSpace) setShowDeleteDialog(true);
+  };
+  const confirmDeleteRoom = async () => {
+    if (!currentSpace) return;
     setShowDeleteDialog(false);
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
       navigate("/space");
-    } catch (error) {
-      console.error("Failed to delete space:", error);
+    } catch (err) {
       alert("Failed to delete space. Please try again.");
     }
   };
 
-  const handleCancelDelete = () => setShowDeleteDialog(false);
+  const handleCopyLink = (link) => {
+    navigator.clipboard
+      .writeText(link)
+      .then(() => {
+        setCopyFeedback("Copied!");
+        setTimeout(() => setCopyFeedback(""), 2000);
+      })
+      .catch(() => {
+        setCopyFeedback("Error!");
+        setTimeout(() => setCopyFeedback(""), 2000);
+      });
+  };
 
   const handleAcceptJoinRequest = async (userId) => {
-    try { await acceptJoinRequest(userId, space_uuid); }
-    catch (error) { console.error("Failed to accept join request:", error); }
+    try {
+      await acceptJoinRequest(userId, space_uuid);
+    } catch (e) {
+      console.error(e);
+    }
   };
-
   const handleDeclineJoinRequest = async (userId) => {
-    try { await declineJoinRequest(userId, space_uuid); }
-    catch (error) { console.error("Failed to decline join request:", error); }
-  };
-
-  const sendInvite = () => {
-    if (inviteEmail.trim()) {
-      alert(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail("");
-      setShowInvitePopup(false);
+    try {
+      await declineJoinRequest(userId, space_uuid);
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const handleCopyLink = (space_link) => {
-    navigator.clipboard.writeText(space_link)
-      .then(() => { setCopyFeedback("Copied!"); setTimeout(() => setCopyFeedback(""), 2000); })
-      .catch((err) => { console.error("Failed to copy: ", err); setCopyFeedback("Error!"); setTimeout(() => setCopyFeedback(""), 2000); });
-  };
+  // ─── Render ─────────────────────────────────────────────────────────────────
 
-  const formatFileTitle = (filename) => {
-    if (!filename) return "";
-    const decodedFileName = decodeURIComponent(filename);
-    const nameWithoutExtension = decodedFileName.split(".")[0];
-    const cleanTitle = nameWithoutExtension.split("_")[0];
-    return cleanTitle;
-  };
+  // Group resources by lesson name (stored in file.name prefix before the last "-filename" segment)
+  // Assumes file name format: "timestamp-lessonname-originalfile.ext"
+  // We'll group by the lesson_name field if available, else show ungrouped
+  const groupedByLesson = (resources || []).reduce((acc, file) => {
+    const lesson = file.lesson_name || "Uncategorized";
+    if (!acc[lesson]) acc[lesson] = [];
+    acc[lesson].push(file);
+    return acc;
+  }, {});
+
+  const c = currentColors; // shorthand
 
   return (
     <div
       className="flex min-h-screen font-sans"
-      style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}
+      style={{ backgroundColor: c.background, color: c.text }}
     >
-      <style>{`
-        .bin-button {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          width: 35px;
-          height: 35px;
-          border-radius: 10px;
-          background-color: ${isDarkMode ? "#991b1b" : "#ef4444"};
-          cursor: pointer;
-          transition-duration: 0.3s;
-          border: none;
-        }
-        .bin-bottom { width: 10px; }
-        .bin-top {
-          width: 12px;
-          transform-origin: right;
-          transition-duration: 0.3s;
-        }
-        .bin-button:hover .bin-top { transform: rotate(45deg); }
-        .bin-button:hover { background-color: ${isDarkMode ? "#b91c1c" : "#f87171"}; }
-        .bin-button:active { transform: scale(0.9); }
-      `}</style>
-
-      {/* ================= DESKTOP SIDEBAR ================= */}
+      {/* SIDEBAR */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* ================= MOBILE OVERLAY ================= */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
-
-      {/* ================= MOBILE/TABLET SIDEBAR ================= */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-[#1E222A] z-50 transform transition-transform duration-300
-        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        md:block lg:hidden`}
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:hidden`}
+        style={{ backgroundColor: c.surface }}
       >
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
-      {/* ================= MAIN ================= */}
-      <div className="flex-1 flex flex-col w-full">
-        {/* ================= HEADER ================= */}
+      {/* MAIN */}
+      <div
+        className="flex-1 flex flex-col w-full"
+        style={{ backgroundColor: c.background }}
+      >
+        {/* MOBILE HEADER */}
         <div
-          className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30
-          transition-transform duration-300 ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
-          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+          className={`lg:hidden p-4 border-b flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
+          style={{ backgroundColor: c.surface, borderColor: c.border }}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
             className="bg-transparent border-none text-2xl p-0"
-            style={{ color: currentColors.text }}
+            style={{ color: c.text }}
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
           <h1 className="text-xl font-bold">{spaceName}</h1>
         </div>
-
         <div className="lg:hidden h-16" />
 
-        {/* ================= COVER ================= */}
+        {/* COVER */}
         <div 
           className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
           onClick={handleCoverPhotoClick}
@@ -757,218 +876,600 @@ const UserFilesShared = () => {
         </div>
 
         <div className="p-4 sm:p-6">
-          {/* ================= DESKTOP TITLE ================= */}
-          <div className="hidden md:block mb-6 sm:mb-8">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">{spaceName}</h1>
+          {/* DESKTOP TITLE */}
+          <div className="hidden md:block mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-400">
-                ({currentSpace?.members?.length || 0} member(s))
+              <span className="text-xs" style={{ color: c.textSecondary }}>
+                (
+                {currentSpace?.space_type === "course"
+                  ? currentSpace?.members?.length - 1 + " student(s)"
+                  : (currentSpace?.members?.length || 0) + " member(s)"}
+                )
               </span>
               {isOwnerSpace && (
-                <div className="flex flex-wrap gap-2">
-                  <div onClick={handleInviteMember}><Button text="Add Member" /></div>
-                  <div onClick={() => setShowPendingInvitations(true)} className="relative">
-                    <Button text="Pending Invites" />
-                    {joinRequestsData.length > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {joinRequestsData.length}
-                      </span>
-                    )}
+                <>
+                  <div onClick={() => setShowInvitePopup(true)}>
+                    <Button text="Add Member" />
                   </div>
-                  <div onClick={handleDeleteRoom}><Button text="Delete Room" /></div>
-                </div>
+                  <div onClick={() => setShowPendingInvitations(true)}>
+                    <Button text="Pending Invites" />
+                  </div>
+                  <div onClick={handleDeleteRoom}>
+                    <Button text="Delete Room" />
+                  </div>
+                </>
               )}
               {isFriendSpace && (
-                <div className="flex flex-col gap-2 mt-2">
-                  <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
-                    <span className="text-xs text-blue-400 break-all">
-                      {currentSpace?.space_link || "Loading..."}
-                    </span>
-                    <button
-                      onClick={() => handleCopyLink(currentSpace?.space_link)}
-                      className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
-                      title="Copy to clipboard"
-                    >
-                      <FiCopy size={16} />
-                    </button>
-                  </div>
+                <div
+                  className="flex items-center gap-2 p-2 rounded-md"
+                  style={{ backgroundColor: c.surface }}
+                >
+                  <span
+                    className="text-xs break-all"
+                    style={{ color: c.accent }}
+                  >
+                    {currentSpace?.space_link || "Loading..."}
+                  </span>
+                  <button
+                    onClick={() => handleCopyLink(currentSpace?.space_link)}
+                    className="p-1 rounded"
+                    style={{
+                      color: c.textSecondary,
+                      backgroundColor: "transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = c.hover;
+                      e.currentTarget.style.color = c.text;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = c.textSecondary;
+                    }}
+                  >
+                    <FiCopy size={16} />
+                  </button>
                 </div>
               )}
             </div>
           </div>
 
-          {/* ================= TABS ================= */}
-          <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
-            <div className="flex justify-center min-w-max mx-auto px-4">
-              <div className="flex justify-center space-x-12">
-                <button onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}>Stream</button>
-                <button onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}>Tasks</button>
-                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
-                  Files
-                </button>
-                <button onClick={() => navigate(`/space/${space_uuid}/${space_name}/people`)}>People</button>
-              </div>
+          {/* TABS */}
+          <div
+            className="w-full overflow-x-auto border-b pb-4 mb-6"
+            style={{ borderColor: c.border }}
+          >
+            <div className="flex justify-center space-x-12 min-w-max mx-auto px-4">
+              {[
+                {
+                  label: "Stream",
+                  path: `/space/${space_uuid}/${space_name}`,
+                },
+                {
+                  label: "Tasks",
+                  path: `/space/${space_uuid}/${space_name}/tasks`,
+                },
+                { label: "Files", path: null },
+                {
+                  label: "People",
+                  path: `/space/${space_uuid}/${space_name}/people`,
+                },
+              ].map(({ label, path }) =>
+                path ? (
+                  <button
+                    key={label}
+                    onClick={() => navigate(path)}
+                    className="transition"
+                    style={{ color: c.textSecondary }}
+                    onMouseEnter={(e) => (e.target.style.color = c.text)}
+                    onMouseLeave={(e) =>
+                      (e.target.style.color = c.textSecondary)
+                    }
+                  >
+                    {label}
+                  </button>
+                ) : (
+                  <button
+                    key={label}
+                    className="font-semibold border-b-2 pb-2"
+                    style={{ borderColor: c.text }}
+                  >
+                    {label}
+                  </button>
+                ),
+              )}
             </div>
           </div>
 
-          {/* Add Member Button - Mobile */}
+          {/* MOBILE OWNER BUTTONS */}
           {isOwnerSpace && (
             <div className="md:hidden flex justify-end gap-2 mb-6">
-              <Button onClick={handleInviteMember} text="Add Member" />
-              <Button onClick={() => setShowPendingInvitations(true)} text="Pending Invites" className="relative">
-                {joinRequestsData.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {joinRequestsData.length}
-                  </span>
-                )}
-              </Button>
-              <Button onClick={handleDeleteRoom} text="Delete Room" />
+              <div onClick={() => setShowInvitePopup(true)}>
+                <Button text="Add Member" />
+              </div>
+              <div onClick={() => setShowPendingInvitations(true)}>
+                <Button text="Pending Invites" />
+              </div>
+              <div onClick={handleDeleteRoom}>
+                <Button text="Delete Room" />
+              </div>
             </div>
           )}
 
-          {/* ================= FILES ================= */}
+          {/* FILES SECTION */}
           <div className="max-w-5xl mx-auto">
-            {/* UPLOAD RESOURCES BUTTON */}
-            {isOwnerSpace && (
-              <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-4">
+              {isOwnerSpace && (
                 <button
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
                   style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#2563eb"; }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#1d4ed8")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#2563eb")
+                  }
                   onClick={() => setShowCreateUploadModal(true)}
                 >
-                  <FiUpload size={16} />
-                  Upload Resources
+                  <FiFileText size={16} /> Upload Resources
                 </button>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* RESPONSIVE TABLE */}
+            {/* FILE CARDS */}
             <div
               className="rounded-xl p-4 sm:p-6 border"
               style={{
-                backgroundColor: currentColors.surface,
-                borderColor: isDarkMode ? currentColors.border : "#000000",
+                backgroundColor: c.surface,
+                borderColor: isDarkMode ? c.border : "#000000",
               }}
             >
-              {/* TABLE HEADER */}
-              <div
-                className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
-                style={{ color: currentColors.textSecondary, borderColor: currentColors.border }}
-              >
-                <div className="col-span-2">File Name</div>
-                <div>Date Posted</div>
-                <div>Posted By</div>
-              </div>
-
-              {/* FILE LIST */}
-              {files.map((file, index) => (
+              {!resources || resources.length === 0 ? (
                 <div
-                  key={index}
-                  className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4 cursor-pointer"
-                  style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}
-                  onClick={() => handleFileClick(file)}
+                  className="text-center py-12"
+                  style={{ color: c.textSecondary }}
                 >
-                  {/* Mobile Layout */}
-                  <div className="sm:hidden">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div
-                          className="p-2 rounded-md flex items-center justify-center w-10 h-10 flex-shrink-0"
-                          style={{ backgroundColor: currentColors.surface, border: `2px solid ${currentColors.border}` }}
-                        >
-                          <FiFileText style={{ color: currentColors.text }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate" style={{ color: currentColors.text }}>
-                            {formatFileTitle(file.filename)}
-                          </p>
-                          <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
-                            {new Date(file.created_at).toLocaleDateString()}
-                          </p>
-                          <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
-                            Posted by:{" "}
-                            {file.owner_id === user.id
-                              ? "You"
-                              : currentSpace?.members?.find((m) => m.account_id === file.owner_id)?.full_name}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Desktop Layout */}
-                  <div className="hidden sm:grid grid-cols-4 items-center">
-                    <div className="flex items-center gap-3 col-span-2">
-                      <div
-                        className="p-2 rounded-md flex items-center justify-center w-8 h-8"
-                        style={{ backgroundColor: currentColors.surface, border: `2px solid ${currentColors.border}` }}
-                      >
-                        <FiFileText style={{ color: currentColors.text }} />
-                      </div>
-                      <span className="truncate" style={{ color: currentColors.text }}>
-                        {formatFileTitle(file.filename)}
-                      </span>
-                    </div>
-                    <div style={{ color: currentColors.text }}>
-                      {new Date(file.created_at).toLocaleDateString()}
-                    </div>
-                    <div style={{ color: currentColors.text }}>
-                      {file.owner_id === user.id
-                        ? "You"
-                        : currentSpace?.members?.find((m) => m.account_id === file.owner_id)?.full_name}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {files.length === 0 && (
-                <div className="text-center py-12" style={{ color: currentColors.textSecondary }}>
                   <FiFileText size={40} className="mx-auto mb-3 opacity-40" />
                   <p className="text-sm">No files uploaded yet.</p>
                 </div>
+              ) : (
+                (() => {
+                  // Flatten all files, limit to 5 for preview
+                  const allFiles = resources || [];
+                  const previewFiles = allFiles.slice(0, 5);
+                  // Re-group only the preview files by lesson
+                  const previewGrouped = previewFiles.reduce((acc, file) => {
+                    const lesson = file.lesson_name || "Uncategorized";
+                    if (!acc[lesson]) acc[lesson] = [];
+                    acc[lesson].push(file);
+                    return acc;
+                  }, {});
+
+                  return (
+                    <>
+                      {Object.entries(previewGrouped).map(
+                        ([lesson, lessonFiles]) => (
+                          <div key={lesson}>
+                            {/* ── File Cards ── */}
+                            {lessonFiles.map((file, idx) => {
+                              const displayName =
+                                formatFileTitle(file.file_name) ||
+                                file.file_name;
+                              const ext = getFileExt(
+                                file.file_name,
+                              ).toUpperCase();
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className="border rounded-lg mb-2 overflow-hidden"
+                                  style={{
+                                    backgroundColor: c.background,
+                                    borderColor: c.border,
+                                  }}
+                                >
+                                  {/* ── Lesson Name — top left of every card ── */}
+                                  <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1">
+                                    <span
+                                      className="text-xs font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded flex-shrink-0"
+                                      style={{
+                                        backgroundColor: isDarkMode
+                                          ? "#1e3a8a"
+                                          : "#dbeafe",
+                                        color: isDarkMode
+                                          ? "#93c5fd"
+                                          : "#1d4ed8",
+                                      }}
+                                    >
+                                      Lesson
+                                    </span>
+                                    <span
+                                      className="text-xs font-semibold"
+                                      style={{
+                                        color: isDarkMode
+                                          ? "#93c5fd"
+                                          : "#1d4ed8",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                        maxWidth: "70%",
+                                      }}
+                                      title={lesson}
+                                    >
+                                      {lesson}
+                                    </span>
+                                  </div>
+
+                                  {/* thin divider */}
+                                  <div
+                                    style={{
+                                      height: 1,
+                                      backgroundColor: c.border,
+                                      margin: "0 12px",
+                                    }}
+                                  />
+
+                                  {/* ── MOBILE layout ── */}
+                                  <div className="sm:hidden p-3 pt-2">
+                                    {/* File icon + name */}
+                                    <div
+                                      className="flex items-center gap-3 mb-3 cursor-pointer"
+                                      onClick={() => handleOpenFile(file)}
+                                    >
+                                      <div
+                                        className="flex items-center justify-center rounded-md flex-shrink-0"
+                                        style={{
+                                          width: 40,
+                                          height: 40,
+                                          backgroundColor: c.surface,
+                                          border: `2px solid ${c.border}`,
+                                        }}
+                                      >
+                                        <span className="text-base">
+                                          {getFileTypeLetter(file.file_name)}
+                                        </span>
+                                      </div>
+                                      <span
+                                        className="text-sm font-semibold"
+                                        style={{
+                                          color: c.text,
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "nowrap",
+                                          flex: 1,
+                                          minWidth: 0,
+                                        }}
+                                        title={displayName}
+                                      >
+                                        {displayName}
+                                      </span>
+                                    </div>
+
+                                    {/* meta + actions pinned to bottom-right */}
+                                    <div className="flex items-end justify-between">
+                                      <div className="flex flex-col gap-0.5">
+                                        <span
+                                          className="text-xs"
+                                          style={{ color: c.textSecondary }}
+                                        >
+                                          {ext} · {formatSize(file.file_size)}
+                                        </span>
+                                        <span
+                                          className="text-xs"
+                                          style={{ color: c.textSecondary }}
+                                        >
+                                          {formatDate(file.created_at)}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <DownloadButton
+                                          isDarkMode={isDarkMode}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDownloadFile(file);
+                                          }}
+                                          title="Download"
+                                        />
+                                        {isOwnerSpace && (
+                                          <DeleteButton
+                                            isDarkMode={isDarkMode}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleDeleteFile(file);
+                                            }}
+                                            title="Delete"
+                                          />
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* ── DESKTOP layout ── */}
+                                  <div className="hidden sm:flex items-center px-3 py-2.5 gap-2">
+                                    {/* File Name */}
+                                    <div
+                                      className="flex items-center gap-2 cursor-pointer min-w-0"
+                                      style={{ flex: "3 1 0%" }}
+                                      onClick={() => handleOpenFile(file)}
+                                    >
+                                      <div
+                                        className="flex items-center justify-center rounded-md flex-shrink-0"
+                                        style={{
+                                          width: 32,
+                                          height: 32,
+                                          backgroundColor: c.surface,
+                                          border: `2px solid ${c.border}`,
+                                        }}
+                                      >
+                                        <span className="text-xs">
+                                          {getFileTypeLetter(file.file_name)}
+                                        </span>
+                                      </div>
+                                      <span
+                                        className="text-sm font-medium"
+                                        style={{
+                                          color: c.text,
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                        title={displayName}
+                                      >
+                                        {displayName}
+                                      </span>
+                                    </div>
+                                    {/* Type */}
+                                    <div
+                                      className="text-sm"
+                                      style={{
+                                        flex: "1 1 0%",
+                                        minWidth: 60,
+                                        color: c.textSecondary,
+                                      }}
+                                    >
+                                      {ext}
+                                    </div>
+                                    {/* Date Posted */}
+                                    <div
+                                      className="text-sm"
+                                      style={{
+                                        flex: "2 1 0%",
+                                        minWidth: 120,
+                                        color: c.textSecondary,
+                                      }}
+                                    >
+                                      {formatDate(file.created_at)}
+                                    </div>
+                                    {/* Size */}
+                                    <div
+                                      className="text-sm"
+                                      style={{
+                                        flex: "1 1 0%",
+                                        minWidth: 60,
+                                        color: c.textSecondary,
+                                      }}
+                                    >
+                                      {file.file_size ? `${(file.file_size / 1024).toFixed(2)} KB` : 'Unknown size'}
+                                    </div>
+                                    {/* Actions */}
+                                    <div
+                                      className="flex items-center gap-2 justify-end"
+                                      style={{ flex: "1 1 0%", minWidth: 90 }}
+                                    >
+                                      <DownloadButton
+                                        isDarkMode={isDarkMode}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDownloadFile(file);
+                                        }}
+                                        title="Download"
+                                      />
+                                      {isOwnerSpace && (
+                                        <DeleteButton
+                                          isDarkMode={isDarkMode}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteFile(file);
+                                          }}
+                                          title="Delete"
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ),
+                      )}
+
+                      {/* View All Files button — only shown when there are more than 5 files */}
+                      {allFiles.length > 5 && (
+                        <div className="flex justify-end mt-3">
+                          <button
+                            onClick={() =>
+                              navigate(
+                                `/files/${space_name}/${space_uuid}`,
+                              )
+                            }
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            style={{
+                              backgroundColor: "transparent",
+                              color: isDarkMode ? "#93c5fd" : "#2563eb",
+                              border: `1px solid ${isDarkMode ? "#1e40af" : "#bfdbfe"}`,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = isDarkMode
+                                ? "#1e3a8a"
+                                : "#eff6ff";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor =
+                                "transparent";
+                            }}
+                          >
+                            View All Files
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              style={{ pointerEvents: "none" }}
+                            >
+                              <path d="M5 12h14" />
+                              <path d="M13 6l6 6-6 6" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ================= CREATE/UPLOAD MODAL (Prof style) ================= */}
+      {/* ─── MODALS ─────────────────────────────────────────────────────────── */}
+
+      {/* PENDING INVITATIONS */}
+      {showPendingInvitations && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div
+            className="rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col"
+            style={{ backgroundColor: c.surface }}
+          >
+            <div
+              className="p-4 border-b flex items-center justify-between"
+              style={{ borderColor: c.border }}
+            >
+              <h2 className="text-lg font-semibold" style={{ color: c.text }}>
+                Pending Invitations
+              </h2>
+              <button
+                onClick={() => setShowPendingInvitations(false)}
+                style={{
+                  color: c.textSecondary,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <FiX size={24} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {joinRequestsData.length === 0 ? (
+                <p
+                  className="text-center py-4"
+                  style={{ color: c.textSecondary }}
+                >
+                  No pending invitations
+                </p>
+              ) : (
+                joinRequestsData.map((inv) => (
+                  <div
+                    key={inv.account_id}
+                    className="rounded-lg p-4"
+                    style={{ backgroundColor: c.background }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={inv.profile_pic}
+                        alt={inv.fullname}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium">{inv.fullname}</h3>
+                        <p
+                          className="text-sm"
+                          style={{ color: c.textSecondary }}
+                        >
+                          {inv.email}
+                        </p>
+                        <p className="text-sm mt-1">
+                          {inv.message || "Hello world"}
+                        </p>
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: c.textSecondary }}
+                        >
+                          {inv.added_at}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-3">
+                      <button
+                        onClick={() => handleDeclineJoinRequest(inv.account_id)}
+                        className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+                      >
+                        Decline
+                      </button>
+                      <button
+                        onClick={() => handleAcceptJoinRequest(inv.account_id)}
+                        className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADD MEMBER */}
+      <AddMember
+        currentSpace={currentSpace}
+        onInviteMember={() => {}}
+        showInvitePopup={showInvitePopup}
+        setShowInvitePopup={setShowInvitePopup}
+      />
+
+      {/* UPLOAD MODAL */}
       {showCreateUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div
-            className="rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative sm:max-w-lg md:max-w-2xl lg:max-w-3xl"
-            style={{ backgroundColor: currentColors.surface }}
+            className="rounded-lg w-full max-w-lg relative max-h-[90vh] overflow-y-auto"
+            style={{ backgroundColor: c.surface }}
           >
-            {/* CLOSE BUTTON */}
             <button
-              onClick={resetUploadModal}
-              className="absolute top-4 right-4 z-10 rounded-full p-1 transition-colors"
-              style={{ backgroundColor: currentColors.background, color: currentColors.textSecondary }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = currentColors.hover; e.currentTarget.style.color = currentColors.text; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = currentColors.background; e.currentTarget.style.color = currentColors.textSecondary; }}
+              onClick={() => {
+                setShowCreateUploadModal(false);
+                setLastUploadedFile(null);
+                setLessonName("");
+                setLessonNameError("");
+              }}
+              className="absolute top-4 right-4 rounded-full p-1"
+              style={{
+                backgroundColor: c.background,
+                color: c.textSecondary,
+                border: "none",
+                cursor: "pointer",
+              }}
             >
               <FiX size={24} />
             </button>
+            <div className="p-6 pt-12">
+              <h2
+                className="text-xl font-semibold mb-6"
+                style={{ color: c.text }}
+              >
+                Upload Lesson
+              </h2>
 
-            {/* CONTENT */}
-            <div className="p-4 sm:p-6 lg:p-8 pt-8 sm:pt-10 lg:pt-12">
-              {/* MODAL TITLE */}
-              <div className="mb-6">
-                <h2
-                  className="text-xl font-semibold"
-                  style={{ color: currentColors.text }}
-                >
-                  Upload Lesson
-                </h2>
-              </div>
-
-              {/* LESSON NAME INPUT */}
+              {/* Lesson Name Input */}
               <div className="mb-4">
                 <label
                   className="block text-sm font-medium mb-1"
-                  style={{ color: currentColors.text }}
+                  style={{ color: c.text }}
                 >
                   Lesson Name <span style={{ color: "#ef4444" }}>*</span>
                 </label>
@@ -982,16 +1483,16 @@ const UserFilesShared = () => {
                   placeholder="Enter lesson name"
                   className="w-full rounded-lg px-3 py-2 text-sm outline-none border transition-colors"
                   style={{
-                    backgroundColor: currentColors.background,
-                    color: currentColors.text,
-                    borderColor: lessonNameError ? "#ef4444" : currentColors.border,
+                    backgroundColor: c.background,
+                    color: c.text,
+                    borderColor: lessonNameError ? "#ef4444" : c.border,
                   }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = lessonNameError ? "#ef4444" : "#3b82f6";
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = lessonNameError ? "#ef4444" : currentColors.border;
-                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = lessonNameError
+                      ? "#ef4444"
+                      : c.border)
+                  }
                 />
                 {lessonNameError && (
                   <p className="text-xs mt-1" style={{ color: "#ef4444" }}>
@@ -1000,20 +1501,21 @@ const UserFilesShared = () => {
                 )}
               </div>
 
-              {/* DRAG & DROP ZONE */}
+              {/* Drop Zone */}
               <div
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-4 sm:p-6 lg:p-8 text-center mb-4 cursor-pointer transition relative ${
-                  dragActive ? "border-blue-500 bg-blue-50" : ""
-                }`}
+                className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition"
                 style={{
-                  borderColor: dragActive ? "#3b82f6" : currentColors.border,
-                  backgroundColor: dragActive ? "#eff6ff" : currentColors.background,
+                  borderColor: dragActive ? "#3b82f6" : c.border,
+                  backgroundColor: dragActive ? "#eff6ff" : c.background,
                 }}
-                onClick={() => !lastUploadedFile && document.getElementById("file-upload").click()}
+                onClick={() =>
+                  !lastUploadedFile &&
+                  document.getElementById("file-upload").click()
+                }
               >
                 <input
                   type="file"
@@ -1022,311 +1524,241 @@ const UserFilesShared = () => {
                   multiple
                   className="hidden"
                 />
-
                 {lastUploadedFile ? (
-                  // SUCCESS / FILE ALREADY EXISTS STATE
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <div
-                        className="inline-flex items-center justify-center w-16 h-16 rounded-lg mb-4"
-                        style={{
-                          backgroundColor: currentColors.surface,
-                          border: `2px solid ${currentColors.border}`,
-                        }}
-                      >
-                        <span className="text-2xl font-bold" style={{ color: currentColors.text }}>
-                          {getFileTypeLetter(lastUploadedFile.name)}
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2" style={{ color: currentColors.text }}>
-                        {fileAlreadyExists ? "File Already Exists" : "File Uploaded Successfully!"}
-                      </h3>
-                      <p className="text-sm mb-4" style={{ color: currentColors.text }}>
-                        {lastUploadedFile.name}
-                      </p>
-                      <p className="text-xs mb-6" style={{ color: currentColors.textSecondary }}>
-                        Size: {(lastUploadedFile.size / 1024).toFixed(0)}KB • Type:{" "}
-                        {lastUploadedFile.name.split(".").pop()?.toUpperCase() || "Unknown"}
-                      </p>
-                      {fileAlreadyExists && (
-                        <p className="text-sm mb-4" style={{ color: "#ef4444" }}>
-                          This file has already been uploaded to the space.
+                  <div className="text-center">
+                    <span className="text-4xl">
+                      {getFileTypeLetter(lastUploadedFile.name)}
+                    </span>
+                    <h3
+                      className="text-lg font-semibold mt-3 mb-1"
+                      style={{ color: c.text }}
+                    >
+                      {fileAlreadyExists
+                        ? "File Already Exists"
+                        : "File Ready!"}
+                    </h3>
+                    <p className="text-sm" style={{ color: c.text }}>
+                      {lastUploadedFile.name}
+                    </p>
+                    {fileAlreadyExists && (
+                      <>
+                        <p
+                          className="text-sm mt-2"
+                          style={{ color: "#ef4444" }}
+                        >
+                          This file already exists in the space.
                         </p>
-                      )}
-                    </div>
+                        <button
+                          className="mt-3 px-4 py-2 rounded-lg text-sm flex items-center gap-2 mx-auto"
+                          style={{
+                            backgroundColor: "#2563eb",
+                            color: "#fff",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLastUploadedFile(null);
+                            setFileAlreadyExists(false);
+                          }}
+                        >
+                          <FiUpload size={16} /> Upload Different File
+                        </button>
+                      </>
+                    )}
                   </div>
-                ) : uploadedFiles.length === 0 ? (
-                  // INITIAL UPLOAD STATE
+                ) : (
                   <>
                     <FiUpload
                       size={32}
-                      className="mx-auto mb-3 sm:mb-4"
-                      style={{ color: currentColors.textSecondary }}
+                      className="mx-auto mb-3"
+                      style={{ color: c.textSecondary }}
                     />
-                    <p className="font-medium text-sm sm:text-base" style={{ color: currentColors.text }}>
+                    <p className="font-medium" style={{ color: c.text }}>
                       Choose a file or drag & drop it here.
                     </p>
-                    <p className="text-xs sm:text-sm mt-1" style={{ color: currentColors.textSecondary }}>
+                    <p
+                      className="text-sm mt-1"
+                      style={{ color: c.textSecondary }}
+                    >
                       DOCS, PDF, PPT AND EXCEL, UP TO 50 MB
                     </p>
                   </>
-                ) : (
-                  // FILES SELECTED STATE
-                  <div className="space-y-2 sm:space-y-3">
-                    {uploadedFiles.map((file) => (
-                      <div
-                        key={file.id}
-                        className="p-3 sm:p-4 rounded-lg border"
-                        style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
-                      >
-                        <div className="flex items-start space-x-2 sm:space-x-3 flex-1">
-                          <span className="text-xl sm:text-2xl">{getFileTypeLetter(file.name)}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs sm:text-sm font-semibold truncate" style={{ color: currentColors.text }}>
-                              {file.name.toUpperCase()}
-                            </p>
-                            <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
-                              {(file.size / 1024).toFixed(0)}KB
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 )}
               </div>
-
-              {/* BOTTOM-RIGHT ACTIONS — shown after file is uploaded */}
-              {lastUploadedFile && (
-                <div className="flex justify-end gap-3 mt-4">
-                  <button
-                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                    style={{
-                      backgroundColor: currentColors.background,
-                      color: currentColors.text,
-                      border: `1px solid ${currentColors.border}`,
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = currentColors.hover; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = currentColors.background; }}
-                    onClick={() => {
-                      setLastUploadedFile(null);
-                      setFileAlreadyExists(false);
-                      const fileInput = document.getElementById("file-upload");
-                      if (fileInput) fileInput.value = "";
-                    }}
-                  >
-                    <FiUpload size={14} />
-                    Reupload File
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                    style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#2563eb"; }}
-                    onClick={() => {
-                      if (!lessonName.trim()) {
-                        setLessonNameError("Lesson name is required");
-                        return;
-                      }
-                      resetUploadModal();
-                    }}
-                  >
-                    Confirm
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= FILE TITLE MODAL ================= */}
-      {isCreatingFile && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md shadow-xl">
-            <div className="p-6 border-b border-gray-700">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">File Title</h2>
-                <button onClick={() => { setFileName(""); setIsCreatingFile(false); }} className="text-gray-400 hover:text-white p-1">
-                  <FiX size={20} />
-                </button>
-              </div>
-            </div>
-            <div className="p-6">
-              <label className="font-semibold text-white mb-3 block">
-                File Title <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={fileName}
-                onChange={(e) => setFileName(e.target.value)}
-                className="w-full bg-[#23272F] text-white rounded-lg px-4 py-2 mb-6 outline-none border border-[#23272F] focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter file title"
-                autoFocus
-              />
-              <div className="flex justify-end gap-3">
-                <button
-                  className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
-                  onClick={() => { setFileName(""); setIsCreatingFile(false); }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCreateFile}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
-                >
-                  Create
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= DELETE WARNING MODAL ================= */}
+      {/* DELETE FILE WARNING */}
       {showDeleteWarning && fileToDelete && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="rounded-lg p-4 sm:p-6 max-w-md w-full" style={{ backgroundColor: currentColors.surface }}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold" style={{ color: currentColors.text }}>
-                Delete File
-              </h3>
-              <button
-                onClick={cancelDeleteFile}
-                className="p-1 bg-transparent transition-colors rounded-md"
-                style={{ color: currentColors.textSecondary }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = currentColors.text; e.currentTarget.style.backgroundColor = currentColors.background; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = currentColors.textSecondary; e.currentTarget.style.backgroundColor = "transparent"; }}
-              >
-                <FiX size={20} />
-              </button>
-            </div>
-
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="p-2 rounded-md flex items-center justify-center w-10 h-10"
-                  style={{ backgroundColor: currentColors.background, border: `2px solid ${currentColors.border}` }}
-                >
-                  <span className="text-sm font-bold" style={{ color: currentColors.text }}>
-                    {getFileTypeLetter(fileToDelete.filename)}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold" style={{ color: currentColors.text }}>
-                    {formatFileTitle(fileToDelete.filename)}
-                  </p>
-                  <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                    {formatDate(fileToDelete.created_at)}
-                  </p>
-                </div>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: currentColors.textSecondary }}>
-                Are you sure you want to delete{" "}
-                <span className="font-medium" style={{ color: currentColors.text }}>
-                  "{formatFileTitle(fileToDelete.filename)}"
-                </span>{" "}
-                from this space?
-              </p>
-              <p className="text-sm mt-2 font-medium" style={{ color: "#ef4444" }}>
-                ⚠️ This action cannot be undone. The file will be permanently removed.
-              </p>
-            </div>
-
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div
+            className="rounded-lg p-6 max-w-sm w-full"
+            style={{ backgroundColor: c.surface }}
+          >
+            <h3
+              className="text-lg font-semibold mb-2"
+              style={{ color: c.text }}
+            >
+              Delete File
+            </h3>
+            <p className="text-sm mb-6" style={{ color: c.textSecondary }}>
+              Are you sure you want to delete{" "}
+              <strong style={{ color: c.text }}>"{fileToDelete.name}"</strong>?
+              This action cannot be undone.
+            </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={cancelDeleteFile}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                style={{ backgroundColor: currentColors.background, color: currentColors.text, border: `1px solid ${currentColors.border}` }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = currentColors.hover; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = currentColors.background; }}
+                className="px-4 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  backgroundColor: c.background,
+                  color: c.text,
+                  border: `1px solid ${c.border}`,
+                }}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDeleteFile}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                style={{ backgroundColor: isDarkMode ? "#991b1b" : "#ef4444", color: "#ffffff" }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? "#b91c1c" : "#f87171"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isDarkMode ? "#991b1b" : "#ef4444"; }}
+                className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                style={{ backgroundColor: "#ef4444", color: "#fff" }}
               >
-                <FiX size={16} />
-                Delete
+                <FiX size={16} /> Delete
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= PENDING INVITATIONS ================= */}
-      {showPendingInvitations && (
+      {/* UPLOAD CONFIRMATION */}
+      {showUploadConfirmation && pendingFiles.length > 0 && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Pending Invitations</h2>
-              <button onClick={() => setShowPendingInvitations(false)} className="text-gray-400 hover:text-white p-1 bg-transparent">
-                <FiX size={24} />
+          <div
+            className="rounded-lg p-6 max-w-md w-full"
+            style={{ backgroundColor: c.surface }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold" style={{ color: c.text }}>
+                {fileAlreadyExists ? "File Already Exists" : "Confirm Upload"}
+              </h3>
+              <button
+                onClick={clearPending}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: c.textSecondary,
+                }}
+              >
+                <FiX size={20} />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {joinRequestsData.length === 0 ? (
-                <p className="text-gray-400 text-center py-4">No pending invitations</p>
-              ) : (
-                joinRequestsData.map((invitation) => (
-                  <div key={invitation.account_id} className="bg-[#2A2F3A] rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <img src={invitation.profile_pic} alt={invitation.fullname} className="w-12 h-12 rounded-full object-cover" />
-                      <div className="flex-1">
-                        <h3 className="font-medium">{invitation.fullname}</h3>
-                        <p className="text-sm text-gray-400">{invitation.email}</p>
-                        <p className="text-sm mt-1">{invitation.message || "Hello world"}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-gray-500">{invitation.added_at}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-3 mt-3">
-                      <button
-                        disabled={spaceLoading}
-                        onClick={() => handleDeclineJoinRequest(invitation.account_id)}
-                        className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition"
-                      >
-                        Decline
-                      </button>
-                      <button
-                        disabled={spaceLoading}
-                        onClick={() => handleAcceptJoinRequest(invitation.account_id)}
-                        className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition"
-                      >
-                        Accept
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-2xl">
+                {getFileTypeLetter(pendingFiles[0].name)}
+              </span>
+              <div>
+                <p className="font-semibold" style={{ color: c.text }}>
+                  {pendingFiles[0].name}
+                </p>
+                <p className="text-sm" style={{ color: c.textSecondary }}>
+                  {(pendingFiles[0].size / 1024).toFixed(0)} KB ·{" "}
+                  {getFileExt(pendingFiles[0].name).toUpperCase()}
+                </p>
+              </div>
+            </div>
+
+            {fileAlreadyExists && (
+              <div
+                className="p-3 rounded-lg mb-4"
+                style={{
+                  backgroundColor: "#fef2f2",
+                  border: "1px solid #fecaca",
+                }}
+              >
+                <p className="text-sm" style={{ color: "#dc2626" }}>
+                  ⚠️ This file already exists. Uploading will create a
+                  duplicate.
+                </p>
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label
+                className="block text-sm font-medium mb-1"
+                style={{ color: c.text }}
+              >
+                Lesson Name <span style={{ color: "#ef4444" }}>*</span>
+              </label>
+              <input
+                type="text"
+                value={pendingLessonName}
+                onChange={(e) => setPendingLessonName(e.target.value)}
+                placeholder="Enter lesson name"
+                className="w-full rounded-lg px-3 py-2 text-sm outline-none border"
+                style={{
+                  backgroundColor: c.background,
+                  color: c.text,
+                  borderColor: c.border,
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
+                onBlur={(e) => (e.target.style.borderColor = c.border)}
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={clearPending}
+                className="px-4 py-2 rounded-lg text-sm font-medium"
+                style={{
+                  backgroundColor: c.background,
+                  color: c.text,
+                  border: `1px solid ${c.border}`,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmUpload}
+                disabled={!pendingLessonName.trim()}
+                className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                style={{
+                  backgroundColor: pendingLessonName.trim()
+                    ? "#2563eb"
+                    : "#9ca3af",
+                  color: "#fff",
+                  border: "none",
+                  cursor: pendingLessonName.trim() ? "pointer" : "not-allowed",
+                }}
+              >
+                <FiUpload size={16} />{" "}
+                {fileAlreadyExists ? "Upload Anyway" : "Confirm Upload"}
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ADD MEMBER POPUP */}
-      <AddMember
-        currentSpace={currentSpace}
-        onInviteMember={sendInvite}
-        showInvitePopup={showInvitePopup}
-        setShowInvitePopup={setShowInvitePopup}
-      />
-
-      {/* LOGOUT MODAL */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
-
-      {/* DELETE CONFIRMATION DIALOG */}
+      {/* DELETE SPACE DIALOG */}
       <DeleteConfirmationDialog
         isOpen={showDeleteDialog}
-        onClose={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-        itemName={dialogMessage}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={confirmDeleteRoom}
+        space={
+          currentSpace || {
+            space_name: "Unknown Space",
+            members: [],
+            files: [],
+            tasks: [],
+          }
+        }
       />
+
+      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
 
       {/* COVER PHOTO EDITOR MODAL */}
       {showCoverPhotoEditor && (
@@ -1334,7 +1766,7 @@ const UserFilesShared = () => {
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Position Cover Photo</h2>
+              <h2 className="text-lg font-semibold text-white">Change Cover Photo</h2>
               <button
                 onClick={handleCoverPhotoCancel}
                 className="text-gray-400 hover:text-white p-1 bg-transparent"
@@ -1398,12 +1830,14 @@ const UserFilesShared = () => {
               >
                 Cancel
               </button>
-              <button
-                onClick={handleCoverPhotoSave}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
-              >
-                Apply
-              </button>
+              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+                <button
+                  onClick={handleCoverPhotoSave}
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+                >
+                  Apply
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1437,7 +1871,7 @@ const UserFilesShared = () => {
                 onClick={handleConfirmCoverPhoto}
                 className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
               >
-                Change Cover Photo
+                Apply
               </button>
             </div>
           </div>

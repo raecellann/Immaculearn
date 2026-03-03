@@ -40,8 +40,8 @@ const ViewAllFilesPage = () => {
 
 
 
-  const { list } = useFileManager(currentSpace?.space_id);
-  const files = list.data || [];
+  const { list } = useFileManager(currentSpace?.space_id || null);
+    const files = list?.data || [];
 
   console.log(files)
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import Sidebar from "../component/profsidebar";
+import ProfSidebar from "../component/profsidebar";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useUser } from "../../contexts/user/useUser";
 import { useFileManager } from "../../hooks/useFileManager";
@@ -118,7 +118,7 @@ const ProfFilePage = () => {
     <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
-        <Sidebar />
+        <ProfSidebar />
       </div>
 
       {/* Mobile + Tablet Overlay */}
@@ -138,7 +138,7 @@ const ProfFilePage = () => {
           color: currentColors.text
         }}
       >
-        <Sidebar />
+        <ProfSidebar />
       </div>
 
       {/* Main Content */}

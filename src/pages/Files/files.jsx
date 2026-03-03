@@ -211,6 +211,7 @@ const FilePage = () => {
                     key={`course-space-${index}`}
                     className="border rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 transition cursor-pointer"
                     style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                    
                     onClick={() => navigate(`/files/${space.name}/${space.space_uuid || ''}`)}
                   >
                     <span className="text-xl">📁</span>

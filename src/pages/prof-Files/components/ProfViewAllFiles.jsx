@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import Sidebar from "../../component/profsidebar";
+import ProfSidebar from "../../component/profsidebar";
 import Logout from "../../component/logout";
 import { useNavigate, useParams } from "react-router";
 import { useUser } from "../../../contexts/user/useUser";
@@ -104,7 +104,7 @@ const ProfViewFiles = () => {
     <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -124,7 +124,7 @@ const ProfViewFiles = () => {
           color: currentColors.text
         }}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN CONTENT */}
