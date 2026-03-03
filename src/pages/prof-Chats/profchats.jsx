@@ -18,7 +18,7 @@ import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import profanityFilter from "../../utils/profanityFilter";
 
 const ProfChatPage = () => {
-  const { userSpaces, friendSpaces } = useSpace();
+  const { userSpaces, courseSpaces, friendSpaces } = useSpace();
   const { user } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
@@ -37,6 +37,9 @@ const ProfChatPage = () => {
 
   // Color theme state
   const [showColorPicker, setShowColorPicker] = useState(false);
+
+  // State to force re-render when cover photos change in localStorage
+  const [coverPhotoUpdateTrigger, setCoverPhotoUpdateTrigger] = useState(0);
 
   // Color options for chat bubbles
   const colorOptions = [
@@ -61,13 +64,13 @@ const ProfChatPage = () => {
   const currentConversationColor =
     conversationColors[activeSpaceUuid] || colorOptions[0];
 
-  const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [...(userSpaces || []),...(courseSpaces || []), ...(friendSpaces || [])];
 
   const uniqueSpaces = useMemo(() => {
     const map = new Map();
     allSpaces.forEach((s) => map.set(s.space_uuid, s));
     return Array.from(map.values());
-  }, [allSpaces]);
+  }, [allSpaces, coverPhotoUpdateTrigger]);
 
   const uniqueMembers = useMemo(() => {
     const map = new Map();
@@ -198,6 +201,16 @@ const ProfChatPage = () => {
 
   const getPrivateSpaceUuid = (a, b) => [a, b].sort().join("-");
 
+  // Helper function to get space cover photo from localStorage or server data
+  const getSpaceCoverPhoto = (space) => {
+    if (!space) return null;
+    // First check localStorage for updated cover photo
+    const localCover = localStorage.getItem(`coverPhoto_${space.space_uuid}`);
+    if (localCover) return localCover;
+    // Fall back to server data
+    return space.settings?.space_cover;
+  };
+
   const getOnlineCountForSpace = (space) => {
     return (
       spaceOnlineUsers[space.space_uuid]?.filter((id) => id !== user.id)
@@ -317,6 +330,20 @@ const ProfChatPage = () => {
     );
     setConversationColors(savedColors);
   }, [activeSpaceUuid]);
+
+  // Listen for localStorage changes to update cover photos in real-time
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      // Check if the changed key is a cover photo
+      if (e.key && e.key.startsWith('coverPhoto_')) {
+        // Force re-render by incrementing the trigger
+        setCoverPhotoUpdateTrigger(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Message status icon
   const getStatusIcon = (status) => {
@@ -499,7 +526,7 @@ const ProfChatPage = () => {
                 >
                   <div className="relative">
                     <GroupCover
-                      image={space.image}
+                      image={getSpaceCoverPhoto(space)}
                       name={space.space_name}
                       members={space.members.filter(
                         (m) => m.account_id !== user.id,
@@ -566,10 +593,10 @@ const ProfChatPage = () => {
                                 getPrivateSpaceUuid(user.id, m.account_id) ===
                                 activeSpaceUuid,
                             )?.profile_pic ||
-                            // For group chat, show group cover
-                            uniqueSpaces.find(
+                            // For group chat, show group cover from localStorage or server data
+                            getSpaceCoverPhoto(uniqueSpaces.find(
                               (s) => s.space_uuid === activeSpaceUuid,
-                            )?.image ||
+                            )) ||
                             "/default-avatar.png"
                           }
                           className="w-10 h-10 rounded-full"
