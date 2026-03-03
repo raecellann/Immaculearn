@@ -317,6 +317,10 @@ const ProfPeoplePage = () => {
   // Check if current user is the creator/owner of the space
   const isOwner = creator.account_id === user.id;
 
+  // Determine if this is a classroom space and who should be displayed as adviser/admin
+  const isClassroomSpace = activeSpace.space_type === "course";
+  const adviserInfo = isClassroomSpace ? activeSpace?.professor : creator;
+
   console.log(activeSpace);
 
   const handleRemoveMember = (member) => {
@@ -480,10 +484,12 @@ const ProfPeoplePage = () => {
             </button>
           </div>
 
-          {/* CREATOR / ADMIN SECTION */}
-          {activeSpace?.professor && (
+          {/* CREATOR / ADVISER SECTION */}
+          {adviserInfo && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4">Adviser</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                {isClassroomSpace ? "Advisor" : "Advisor"}
+              </h2>
               <div
                 className="border-t pt-4"
                 style={{ borderColor: currentColors.border }}
@@ -491,14 +497,17 @@ const ProfPeoplePage = () => {
                 <div className="flex items-center gap-4">
                   <img
                     src={
-                      activeSpace?.professor?.avatar ||
+                      adviserInfo.profile_pic ||
+                      adviserInfo?.avatar ||
                       "/src/assets/default-avatar.jpg"
                     }
-                    alt={activeSpace?.professor?.name}
+                    alt={adviserInfo.name || adviserInfo.full_name}
                     className="w-10 h-10 rounded-full"
                   />
                   <span className="font-medium">
-                    {activeSpace?.professor?.name}
+                    {adviserInfo.account_id === user.id
+                      ? `${user?.name?.split(' ')[0] || 'You'} ${user?.name?.split(' ')[1]?.[0] ? user.name.split(' ')[1][0] + '.' : ''}`
+                      : (adviserInfo.name || adviserInfo.full_name)}
                   </span>
                 </div>
               </div>
