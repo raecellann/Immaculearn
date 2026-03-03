@@ -13,11 +13,12 @@ import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { SpaceCover } from "../component/spaceCover";
+import { DeleteConfirmationDialog } from "../component/SweetAlert";
 import { toast } from "react-toastify";
 
 const ProfSpacePage = () => {
   const { user } = useUser();
-  const { userSpaces, courseSpaces, setArchive } = useSpace();
+  const { userSpaces, courseSpaces, deleteSpace, setArchive } = useSpace();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -223,9 +224,18 @@ const ProfSpacePage = () => {
     return spaces.filter((space) => space.space_yr_lvl === parseInt(filter));
   };
 
+  const handleDeleteSpace = async () => {
+    try {
+      const spaceUuid = showDeleteConfirm;
+      await deleteSpace(spaceUuid);
+      setShowDeleteConfirm(null);
+      setShowMenu(null);
+    } catch (error) {
+      console.error("Failed to delete space:", error);
+    }
+  };
+
   const handleArchiveSpace = async (space_uuid) => {
-    // TODO: Add API call to archive space
-    // console.log("Archive space:", space_uuid);
     try {
       await setArchive(space_uuid);
       toast.success("Successfully Archive ");
@@ -450,11 +460,11 @@ const ProfSpacePage = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setShowArchiveConfirm(space.space_uuid);
+                              setShowDeleteConfirm(space.space_uuid);
                             }}
-                            className="w-full text-left px-3 py-2 text-sm text-[#60A5FA] hover:bg-[#3B4457] rounded-lg"
+                            className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-lg"
                           >
-                            Archive Space
+                            Delete Space
                           </button>
                         </div>
                       )}
@@ -676,53 +686,13 @@ const ProfSpacePage = () => {
             </div>
           </div>
 
-          {/* Delete Space Confirmation Dialog */}
-          {showDeleteConfirm && (
-            <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-              <div
-                className="rounded-xl p-6 max-w-sm w-full"
-                style={{
-                  backgroundColor: currentColors.surface,
-                  border: `1px solid ${currentColors.border}`,
-                }}
-              >
-                <h3
-                  className="text-lg font-semibold mb-3"
-                  style={{ color: isDarkMode ? "white" : "black" }}
-                >
-                  Delete Space
-                </h3>
-                <p
-                  className="text-sm mb-6"
-                  style={{
-                    color: isDarkMode ? currentColors.textSecondary : "black",
-                  }}
-                >
-                  Are you sure you want to delete this space? This action cannot
-                  be undone.
-                </p>
-                <div className="flex gap-3 justify-end">
-                  <button
-                    onClick={() => setShowDeleteConfirm(null)}
-                    className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Handle delete action here
-                      console.log("Space deleted:", showDeleteConfirm);
-                      setShowDeleteConfirm(null);
-                      setShowMenu(null);
-                    }}
-                    className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Delete Confirmation Dialog */}
+          <DeleteConfirmationDialog
+            isOpen={!!showDeleteConfirm}
+            onClose={() => setShowDeleteConfirm(null)}
+            onConfirm={handleDeleteSpace}
+            space={userSpaces.find(s => s.space_uuid === showDeleteConfirm) || { space_name: "Unknown Space", members: [], files: [], tasks: [] }}
+          />
 
           {/* Leave Space Confirmation Dialog */}
           {showLeaveConfirm && (

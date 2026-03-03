@@ -636,11 +636,11 @@ const ProfHomePage = () => {
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        setShowArchiveConfirm(space.space_uuid);
+                                        setShowDeleteConfirm(space.space_uuid);
                                       }}
-                                      className="w-full text-left px-3 py-2 text-sm text-[#60A5FA] hover:bg-[#3B4457] rounded-t-lg"
+                                      className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
                                     >
-                                      Archive Space
+                                      Delete Space
                                     </button>
                                   </div>
                                 )}
@@ -906,15 +906,12 @@ const ProfHomePage = () => {
             <AnnouncementByAdmin />
           </div>
 
-          {/* Delete Space Confirmation Dialog */}
+          {/* Delete Confirmation Dialog */}
           <DeleteConfirmationDialog
             isOpen={!!showDeleteConfirm}
             onClose={() => setShowDeleteConfirm(null)}
             onConfirm={handleDeleteSpace}
-            space={
-              userSpaces.find((s) => s.space_uuid === showDeleteConfirm) ||
-              courseSpaces.find((s) => s.space_uuid === showDeleteConfirm)
-            }
+            space={userSpaces.find(s => s.space_uuid === showDeleteConfirm) || { space_name: "Unknown Space", members: [], files: [], tasks: [] }}
           />
 
           {/* Leave Space Confirmation Dialog */}
