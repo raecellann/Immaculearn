@@ -793,8 +793,11 @@ const ProfHomePage = () => {
                                       color: isDarkMode ? "#9ca3af" : "#666666",
                                     }}
                                   >
-                                    Prof. {user?.name || "Unknown"} •{" "}
-                                    {space.members?.length - 1 || 0} Students
+                                    Prof.{" "}
+                                    {capitalizeWords(
+                                      space.professor?.name.split(" ")[0],
+                                    ) || "Unknown"}{" "}
+                                    • {space.members?.length - 1 || 0} Students
                                   </p>
                                   <p
                                     className="text-xs mt-1"
