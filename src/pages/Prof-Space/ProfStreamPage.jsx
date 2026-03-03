@@ -1634,28 +1634,16 @@ const ProfStreamPage = () => {
 
         {/* PENDING INVITATIONS POPUP */}
         {showPendingInvitations && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div 
-              className="rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col shadow-2xl border"
-              style={{
-                backgroundColor: currentColors.surface,
-                borderColor: currentColors.border,
-              }}
-            >
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="rounded-xl shadow-2xl max-w-md w-full border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
               {/* Header */}
-              <div 
-                className="p-4 sm:p-6 border-b flex items-center justify-between"
-                style={{ borderColor: currentColors.border }}
-              >
-                <h2 
-                  className="text-base sm:text-lg font-semibold"
-                  style={{ color: currentColors.text }}
-                >
-                  Pending Invitations
-                </h2>
+              <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
+                <h3 className="text-xl font-semibold" style={{ color: currentColors.text }}>
+                  Pending Invites
+                </h3>
                 <button
                   onClick={() => setShowPendingInvitations(false)}
-                  className="p-1 bg-transparent transition-colors rounded-lg hover:bg-gray-700"
+                  className="transition-colors p-1 rounded-lg"
                   style={{ color: currentColors.textSecondary }}
                   onMouseEnter={(e) => {
                     e.target.style.color = currentColors.text;
@@ -1664,19 +1652,21 @@ const ProfStreamPage = () => {
                     e.target.style.color = currentColors.textSecondary;
                   }}
                 >
-                  <FiX size={16} />
+                  <FiX size={20} />
                 </button>
               </div>
 
               {/* Invitations List */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+              <div className="p-6">
                 {joinRequestsData.length === 0 ? (
-                  <p 
-                    className="text-center py-4 text-sm sm:text-base"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    No pending invitations
-                  </p>
+                  <>
+                    <p className="mb-4" style={{ color: currentColors.text }}>
+                      No pending invitations at the moment.
+                    </p>
+                    <div className="text-sm" style={{ color: currentColors.textSecondary }}>
+                      Invited members will appear here once they have not yet accepted your invitation.
+                    </div>
+                  </>
                 ) : (
                   joinRequestsData.map((invitation) => (
                     <div
@@ -1765,6 +1755,21 @@ const ProfStreamPage = () => {
                     </div>
                   ))
                 )}
+              </div>
+              <div className="flex justify-end p-6 border-t" style={{ borderColor: currentColors.border }}>
+                <button
+                  onClick={() => setShowPendingInvitations(false)}
+                  className="px-4 py-2 rounded-lg font-medium transition-colors"
+                  style={{ backgroundColor: currentColors.accent || '#3B82F6', color: '#ffffff' }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = currentColors.accentHover || '#2563EB';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
+                  }}
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
