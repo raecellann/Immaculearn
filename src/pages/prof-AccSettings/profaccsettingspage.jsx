@@ -192,7 +192,7 @@ const ProfProfilePage = () => {
                       <label className="block text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>First Name</label>
                       <input
                         type="text"
-                        value={(user?.name?.split(' ')[0] || '')}
+                        value={(user?.name?.split(' ').length === 2 ? user?.name?.split(' ')[0] : user?.name?.split(' ').slice(0, -1).join(' ')) || ''}
                         placeholder="First Name"
                         readOnly
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"
@@ -207,7 +207,7 @@ const ProfProfilePage = () => {
                       <label className="block text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>Last Name</label>
                       <input
                         type="text"
-                        value={(user?.name?.split(' ')[1] || '')}
+                        value={(user?.name?.split(' ').length === 2 ? user?.name?.split(' ')[1] : user?.name?.split(' ').slice(-1).join(' ')) || ''}
                         placeholder="Last Name"
                         readOnly
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"
