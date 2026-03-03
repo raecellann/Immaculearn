@@ -53,7 +53,6 @@ const ProfStreamPage = () => {
   const [inviteButtonClicked, setInviteButtonClicked] = useState(false);
   const [pendingButtonClicked, setPendingButtonClicked] = useState(false);
   const [deleteButtonClicked, setDeleteButtonClicked] = useState(false);
-  const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [charCount, setCharCount] = useState(0);
@@ -113,6 +112,9 @@ const ProfStreamPage = () => {
   // Join requests - MUST BE AT THE TOP (unconditionally)
   const { data: joinRequestsData = [], isLoading: joinRequestsLoading } =
     useJoinRequests(space_uuid || "");
+
+  // Calculate pending invites count
+  const pendingInvitesCount = joinRequestsData?.length || 0;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -930,7 +932,7 @@ const ProfStreamPage = () => {
           {/* MAIN CONTENT GRID */}
           <div className="flex flex-col lg:flex-row gap-4 md:gap-6 mt-4">
             {/* LEFT SIDEBAR - 30% */}
-            <div className="w-full lg:w-[30%]">
+            <div className="w-full lg:w-[30%] order-1 lg:order-1">
               {/* MOBILE CREATE POST - Only visible on mobile */}
               {isOwnerSpace && (
                 <div className="lg:hidden mb-6">
@@ -1111,7 +1113,7 @@ const ProfStreamPage = () => {
             </div>
 
             {/* RIGHT CONTENT - 70% */}
-            <div className="w-full lg:w-[70%] space-y-6">
+            <div className="w-full lg:w-[70%] space-y-6 order-2 lg:order-2">
               {/* CREATE POST - Desktop/Laptop Only */}
               {isOwnerSpace && (
                 <div className="hidden lg:block mb-6">
@@ -1231,28 +1233,31 @@ const ProfStreamPage = () => {
                   borderColor: currentColors.border,
                 }}
               >
-                <h2 className="font-bold mb-4">Announcement Feed</h2>
+                <h2 className="font-bold mb-4 text-sm sm:text-base">Announcement Feed</h2>
 
                 {isLoadingPosts ? (
                   <div className="text-center py-8">
-                    <p style={{ color: currentColors.textSecondary }}>
+                    <p 
+                      className="text-sm sm:text-base"
+                      style={{ color: currentColors.textSecondary }}
+                    >
                       Loading posts...
                     </p>
                   </div>
                 ) : postsError ? (
                   <div className="text-center py-8">
-                    <p className="text-red-400">Error loading posts</p>
+                    <p className="text-red-400 text-sm sm:text-base">Error loading posts</p>
                   </div>
                 ) : posts.length === 0 ? (
                   <div className="text-center py-8">
-                    <p
+                    <p 
+                      className="text-base sm:text-lg"
                       style={{ color: currentColors.textSecondary }}
-                      className="text-lg"
                     >
                       No posts yet
                     </p>
                     <p
-                      className="text-sm mt-1"
+                      className="text-xs sm:text-sm mt-1"
                       style={{ color: currentColors.textSecondary }}
                     >
                       Posts will appear here when created
@@ -1270,11 +1275,11 @@ const ProfStreamPage = () => {
                           borderWidth: isDarkMode ? '1px' : '1px 0 1px 0',
                         }}
                       >
-                        <div className="flex items-start space-x-3">
+                        <div className="flex items-start space-x-2 sm:space-x-3">
                           {/* Avatar */}
                           {post.profile_pic ? (
                             <div
-                              className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center"
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
                               style={{
                                 backgroundColor: currentColors.surface,
                                 borderColor: currentColors.border,
@@ -1287,30 +1292,34 @@ const ProfStreamPage = () => {
                               />
                             </div>
                           ) : (
-                            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            <div 
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-xs sm:text-sm"
+                              style={{
+                                backgroundColor: currentColors.surface,
+                                color: currentColors.text,
+                              }}
+                            >
                               {post.user_full_name?.charAt(0)?.toUpperCase() ||
                                 "U"}
                             </div>
                           )}
-
-                          {/* Post Content */}
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2">
                               <span
-                                className="font-semibold text-sm"
+                                className="font-semibold text-xs sm:text-sm truncate"
                                 style={{ color: currentColors.text }}
                               >
                                 {post.user_full_name || "Unknown User"}
                               </span>
                               <span
-                                className="text-sm"
+                                className="text-xs"
                                 style={{ color: currentColors.textSecondary }}
                               >
                                 {timeAgo(post?.created_at)}
                               </span>
                             </div>
                             <p
-                              className="whitespace-pre-wrap mb-3"
+                              className="whitespace-pre-wrap mb-3 text-sm break-words"
                               style={{ color: currentColors.text }}
                             >
                               {post.post_content}
@@ -1319,17 +1328,16 @@ const ProfStreamPage = () => {
                             {/* Comment Button */}
                             <button
                               onClick={() => toggleComments(post.post_id)}
-                              className="flex items-center space-x-2 transition-colors text-sm"
+                              className="flex items-center space-x-2 transition-colors text-xs sm:text-sm"
                               style={{ color: currentColors.textSecondary }}
                               onMouseEnter={(e) => {
                                 e.target.style.color = currentColors.text;
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.color =
-                                  currentColors.textSecondary;
+                                e.target.style.color = currentColors.textSecondary;
                               }}
                             >
-                              <FiMessageCircle size={16} />
+                              <FiMessageCircle size={12} className="sm:size-4" />
                               <span>Comments</span>
                               {post.reply_count > 0 && (
                                 <span
@@ -1370,12 +1378,11 @@ const ProfStreamPage = () => {
                                                       ?.toUpperCase() || "U"}
                                                   </div> */}
 
-                                          {post.profile_pic ? (
+                                          {comment.profile_pic ? (
                                             <div
-                                              className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center"
+                                              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
                                               style={{
-                                                backgroundColor:
-                                                  currentColors.surface,
+                                                backgroundColor: currentColors.surface,
                                               }}
                                             >
                                               <img
@@ -1389,22 +1396,21 @@ const ProfStreamPage = () => {
                                             </div>
                                           ) : (
                                             <div
-                                              className="w-10 h-10 rounded-full flex items-center justify-center font-semibold"
+                                              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-xs sm:text-sm"
                                               style={{
-                                                backgroundColor:
-                                                  currentColors.surface,
+                                                backgroundColor: currentColors.surface,
                                                 color: currentColors.text,
                                               }}
                                             >
-                                              {post.user_full_name
+                                              {comment.user_full_name
                                                 ?.charAt(0)
                                                 ?.toUpperCase() || "U"}
                                             </div>
                                           )}
-                                          <div className="flex-1">
-                                            <div className="flex items-center space-x-2 mb-1">
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-1">
                                               <span
-                                                className="font-medium text-sm"
+                                                className="font-medium text-xs sm:text-sm truncate"
                                                 style={{
                                                   color: currentColors.text,
                                                 }}
@@ -1423,7 +1429,7 @@ const ProfStreamPage = () => {
                                               </span>
                                             </div>
                                             <p
-                                              className="text-sm whitespace-pre-wrap"
+                                              className="text-xs sm:text-sm whitespace-pre-wrap break-words"
                                               style={{
                                                 color: currentColors.text,
                                               }}
@@ -1440,7 +1446,7 @@ const ProfStreamPage = () => {
                                 {isLoadingComments[post.post_id] && (
                                   <div className="text-center py-2">
                                     <p
-                                      className="text-sm"
+                                      className="text-xs sm:text-sm"
                                       style={{
                                         color: currentColors.textSecondary,
                                       }}
@@ -1457,7 +1463,12 @@ const ProfStreamPage = () => {
                                               "Y"}
                                           </div> */}
                                   {user?.profile_pic ? (
-                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+                                    <div
+                                      className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                                      style={{
+                                        backgroundColor: currentColors.surface,
+                                      }}
+                                    >
                                       <img
                                         src={user?.profile_pic}
                                         alt={user?.full_name || "User"}
@@ -1465,13 +1476,19 @@ const ProfStreamPage = () => {
                                       />
                                     </div>
                                   ) : (
-                                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                      {post.user_full_name
+                                    <div
+                                      className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-xs sm:text-sm"
+                                      style={{
+                                        backgroundColor: currentColors.surface,
+                                        color: currentColors.text,
+                                      }}
+                                    >
+                                      {user?.full_name
                                         ?.charAt(0)
                                         ?.toUpperCase() || "Y"}
                                     </div>
                                   )}
-                                  <div className="flex-1">
+                                  <div className="flex-1 min-w-0">
                                     <textarea
                                       value={commentInputs[post.post_id] || ""}
                                       onChange={(e) =>
@@ -1481,7 +1498,7 @@ const ProfStreamPage = () => {
                                         )
                                       }
                                       placeholder="Write a comment..."
-                                      className="w-full rounded-lg p-2 resize-none focus:outline-none focus:ring-2"
+                                      className="w-full rounded-lg p-2 resize-none focus:outline-none focus:ring-2 text-xs sm:text-sm"
                                       style={{
                                         backgroundColor:
                                           currentColors.background,
@@ -1522,6 +1539,144 @@ const ProfStreamPage = () => {
             </div>
           </div>
         </div>
+
+        {/* PENDING INVITATIONS POPUP */}
+        {showPendingInvitations && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div 
+              className="rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col shadow-2xl border"
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
+            >
+              {/* Header */}
+              <div 
+                className="p-4 sm:p-6 border-b flex items-center justify-between"
+                style={{ borderColor: currentColors.border }}
+              >
+                <h2 
+                  className="text-base sm:text-lg font-semibold"
+                  style={{ color: currentColors.text }}
+                >
+                  Pending Invitations
+                </h2>
+                <button
+                  onClick={() => setShowPendingInvitations(false)}
+                  className="p-1 bg-transparent transition-colors rounded-lg hover:bg-gray-700"
+                  style={{ color: currentColors.textSecondary }}
+                  onMouseEnter={(e) => {
+                    e.target.style.color = currentColors.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.color = currentColors.textSecondary;
+                  }}
+                >
+                  <FiX size={20} className="sm:size-24" />
+                </button>
+              </div>
+
+              {/* Invitations List */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                {joinRequestsData.length === 0 ? (
+                  <p 
+                    className="text-center py-4 text-sm sm:text-base"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    No pending invitations
+                  </p>
+                ) : (
+                  joinRequestsData.map((invitation) => (
+                    <div
+                      key={invitation.account_id}
+                      className="rounded-lg p-4 border"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        borderColor: currentColors.border,
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={invitation.profile_pic}
+                          alt={invitation.fullname}
+                          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 
+                            className="font-medium text-sm sm:text-base truncate"
+                            style={{ color: currentColors.text }}
+                          >
+                            {invitation.fullname}
+                          </h3>
+                          <p 
+                            className="text-xs sm:text-sm truncate"
+                            style={{ color: currentColors.textSecondary }}
+                          >
+                            {invitation.email}
+                          </p>
+                          <p 
+                            className="text-xs sm:text-sm mt-1"
+                            style={{ color: currentColors.textSecondary }}
+                          >
+                            {invitation.message || "Hello world"}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span 
+                              className="text-xs"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              {invitation.added_at}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 sm:gap-3 mt-3">
+                        <button
+                          disabled={spaceLoading}
+                          onClick={() =>
+                            handleDeclineJoinRequest(invitation.account_id)
+                          }
+                          className="px-3 py-1.5 text-xs sm:text-sm rounded-md transition disabled:opacity-50"
+                          style={{
+                            backgroundColor: '#6B7280',
+                            color: 'white',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#4B5563';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#6B7280';
+                          }}
+                        >
+                          Decline
+                        </button>
+                        <button
+                          disabled={spaceLoading}
+                          onClick={() =>
+                            handleAcceptJoinRequest(invitation.account_id)
+                          }
+                          className="px-3 py-1.5 text-xs sm:text-sm rounded-md transition disabled:opacity-50"
+                          style={{
+                            backgroundColor: '#2563EB',
+                            color: 'white',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#1D4ED8';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#2563EB';
+                          }}
+                        >
+                          Accept
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ADD MEMBER COMPONENT */}
         <AddMember
