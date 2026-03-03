@@ -20,14 +20,21 @@ export const SpaceCover = ({ image, name, description, className = "" }) => {
     >
       {/* Background */}
       {image ? (
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover transition duration-300 group-hover:brightness-75"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
+        image.includes('gradient') ? (
+          <div 
+            className="absolute inset-0 w-full h-full transition duration-300 group-hover:brightness-75"
+            style={{ background: image }}
+          />
+        ) : (
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full object-cover transition duration-300 group-hover:brightness-75"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        )
       ) : (
         <div className={`absolute inset-0 bg-gradient-to-br ${color}`} />
       )}
