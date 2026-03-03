@@ -111,6 +111,16 @@ const IndividualSpaceSettings = () => {
   const ActiveSidebar =
     user?.role === "professor" ? ProfSidebar : Sidebar;
 
+  // Helper function to convert 24-hour time to 12-hour format
+  const formatTime = (time24) => {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
 
   if (!currentSpace) {
     return (
@@ -383,7 +393,7 @@ const IndividualSpaceSettings = () => {
                         <p className="text-sm font-medium mb-1" style={{ color: currentColors.textSecondary }}>Schedule</p>
                         <p className="text-sm" style={{ color: currentColors.text }}>
                           {currentSpace?.space_time_start && currentSpace?.space_time_end 
-                            ? `${currentSpace.space_time_start} - ${currentSpace.space_time_end}`
+                            ? `${formatTime(currentSpace.space_time_start)} - ${formatTime(currentSpace.space_time_end)}`
                             : 'Not specified'
                           }
                         </p>

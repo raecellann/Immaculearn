@@ -39,6 +39,16 @@ const SpacePage = () => {
 
   const navigate = useNavigate();
 
+  // Helper function to convert 24-hour time to 12-hour format
+  const formatTime = (time24) => {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
   // Memoized space descriptions for better performance
   const spaceDescriptions = useMemo(() => {
     const descriptions = {};
@@ -682,7 +692,7 @@ const SpacePage = () => {
                           style={{ color: isDarkMode ? "#6b7280" : "#4b5563" }}
                         >
                           {course.space_day} (
-                          {`${course.space_time_start} - ${course.space_time_end}`}
+                          {`${formatTime(course.space_time_start)} - ${formatTime(course.space_time_end)}`}
                           )
                         </p>
                       </div>

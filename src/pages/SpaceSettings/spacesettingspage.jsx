@@ -40,6 +40,16 @@ const SpaceSettingsPage = () => {
   
   const ActiveSidebar = user?.role === "professor" ? ProfSidebar : Sidebar;
 
+  // Helper function to convert 24-hour time to 12-hour format
+  const formatTime = (time24) => {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
   // Combine regular spaces and course spaces for professors
   const allSpaces = user?.role === "professor" 
     ? [
@@ -266,7 +276,7 @@ const SpaceSettingsPage = () => {
                             {space.space_day && (
                               <>
                                 <span className="mx-2">•</span>
-                                <span>{space.space_day} {space.space_time_start}-{space.space_time_end}</span>
+                                <span>{space.space_day} {formatTime(space.space_time_start)}-{formatTime(space.space_time_end)}</span>
                               </>
                             )}
                           </div>
