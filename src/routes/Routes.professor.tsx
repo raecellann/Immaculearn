@@ -106,9 +106,14 @@ export const ProfRoutes = () => {
       <Route
         path="files/:space_name/:space_uuid"
         element={
-          <ProtectedRoute>
-            <ProfViewFiles />
-          </ProtectedRoute>
+          <SpaceProvider>
+          <FileProvider>
+            <ProtectedRoute>
+              <ProfViewFiles />
+            </ProtectedRoute>
+          </FileProvider>
+          </SpaceProvider>
+
         }
       />
 

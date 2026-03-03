@@ -16,6 +16,7 @@ import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 import TaskBuilder from "../pages/EXAMPLE_PAGE/builder.jsx";
 import TaskPreview from "../pages/EXAMPLE_PAGE/preview.jsx";
+import { ThemeProvider } from "../pages/Create-Document/contexts/ThemeContext.jsx";
 export const SpaceRoutes = [
   {
     key: "/space",
@@ -81,13 +82,12 @@ export const SpaceRoutes = [
 ,
   {
     key: "/files",
-    path: "/space/:space_uuid/:space_name/files/:file_uuid/:file_name",
+    path: "/FILES_WANT",
     element: (
-      <SpaceProvider>
-        <FileProvider>
-          <CreateDocumentPage />
-        </FileProvider>
-      </SpaceProvider>
+      <ThemeProvider>
+            <CreateDocumentPage />
+            </ThemeProvider>
+          
     ),
   },
   {

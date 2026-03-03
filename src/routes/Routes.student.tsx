@@ -97,7 +97,13 @@ export const StudentRoutes = [
   {
     key: "/files/:space_name/:space_uuid",
     path: "/files/:space_name/:space_uuid",
-    element: <ViewAllFilesPage />,
+    element: (
+              <SpaceProvider>
+                <FileProvider>
+                  <ViewAllFilesPage />
+                </FileProvider>
+              </SpaceProvider>
+    )
   },
   {
     key: "/files/:space_name/:space_uuid/:orig_file_name/:file_id",
@@ -108,8 +114,8 @@ export const StudentRoutes = [
                   <ViewFilePage />
                 </FileProvider>
               </SpaceProvider>
-      )
-    },
+    )
+  },
   
   {
     key: "/settings",

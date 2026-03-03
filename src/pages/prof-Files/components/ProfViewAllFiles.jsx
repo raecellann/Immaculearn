@@ -4,7 +4,7 @@ import Logout from "../../component/logout";
 import { useNavigate, useParams } from "react-router";
 import { useUser } from "../../../contexts/user/useUser";
 import { useSpace } from "../../../contexts/space/useSpace";
-import { useFileManager } from "../../../hooks/useFileManager";
+import { useFile } from "../../../contexts/file/fileContextProvider";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 
 const ProfViewFiles = () => {
@@ -23,23 +23,19 @@ const ProfViewFiles = () => {
 
   const { space_uuid, space_name } = useParams();
 
-  /* ================= AUTH CHECK ================= */
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, navigate]);
-
-  /* ================= GET REAL SPACE ================= */
-
   const allSpaces = [
     ...(userSpaces || []),
     ...(courseSpaces || []),
     ...(friendSpaces || []),
   ];
-
-  const currentSpace = allSpaces.find(
+  
+  // Remove duplicates by space_id
+  const uniqueSpaces = allSpaces.filter(
+    (space, index, self) =>
+      index === self.findIndex(s => s.space_id === space.space_id)
+  );
+  
+  const currentSpace = uniqueSpaces.find(
     (space) => space.space_uuid === space_uuid
   );
 
@@ -48,10 +44,16 @@ const ProfViewFiles = () => {
     currentSpace?.space_name ||
     decodeURIComponent(space_name || "");
 
-  /* ================= FETCH FILES ================= */
+  const { resources } = useFile();
+  const files = resources || [];
+  
+  console.log(files)
 
-  const { list } = useFileManager(currentSpace?.space_id || null);
-  const files = list?.data || [];
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
 
   /* ================= STICKY HEADER ================= */
 
@@ -89,15 +91,17 @@ const ProfViewFiles = () => {
       </div>
     );
   }
-    const formatFileTitle = (orig_file_name) => {
-  if (!orig_file_name) return "";
 
-  const decodedFileName = decodeURIComponent(orig_file_name);
-  const nameWithoutExtension = decodedFileName.split(".")[0];
-  const cleanTitle = nameWithoutExtension.split("_")[0];
+  const formatFileTitle = (file_name) => {
+    if (!file_name) return "";
 
-  return cleanTitle;
-};
+    const decodedFileName = decodeURIComponent(file_name);
+    const nameWithoutExtension = decodedFileName.split(".")[0];
+    const cleanTitle = nameWithoutExtension.split("_")[0];
+
+    return cleanTitle;
+  };
+
   /* ================= UI ================= */
 
   return (
@@ -154,16 +158,18 @@ const ProfViewFiles = () => {
 
         {/* PAGE CONTENT */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto pt-20 sm:pt-24 lg:pt-10">
-          <h1 className="hidden lg:block text-4xl font-bold text-center mb-10">
-            {displayName} Files
+          <h1 className="hidden lg:block text-4xl font-bold text-center mb-10" style={{ color: currentColors.text }}>
+            {space_name} Files
           </h1>
 
           <div className="max-w-6xl mx-auto">
-            <div className="mb-4">
+            <div className="mb-4 flex items-center">
               <button
                 onClick={() => navigate(-1)}
-                className="bg-transparent border-none p-0 transition-colors"
+                className="bg-transparent border-none p-2 text-lg font-medium transition-colors"
                 style={{ color: currentColors.textSecondary }}
+                onMouseEnter={(e) => e.currentTarget.style.color = currentColors.text}
+                onMouseLeave={(e) => e.currentTarget.style.color = currentColors.textSecondary}
               >
                 ← Back
               </button>
@@ -189,31 +195,34 @@ const ProfViewFiles = () => {
                     borderColor: currentColors.border
                   }}
                 >
-                  <p className="text-sm font-medium" style={{ color: '#10b981' }}>
-                    ● {file.status}
+                  <p className="text-sm font-medium" style={{ color: '#10B981' }}>
+                    ● {file.lesson_name || 'No Lesson'}
                   </p>
 
-                  <p className="font-medium break-words" style={{ color: '#3b82f6' }}>
-                    {formatFileTitle(file.orig_file_name)}
+                  <p className="font-medium break-words" style={{ color: '#3B82F6' }}>
+                    {formatFileTitle(file.file_name)}
                   </p>
 
-                  <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                    <span>Date Posted:</span>{" "}
+                  <p className="text-sm">
+                    <span style={{ color: currentColors.textSecondary }}>Date Posted:</span>{" "}
                     {file.created_at}
                   </p>
 
+                  
                   <div className="flex items-center justify-between">
                     <span 
                       onClick={() =>
                         navigate(
-                          `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.orig_file_name)}/${file.file_id}`
+                          `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}`
                         )
                       }
-                      className="px-3 py-1 text-xs rounded-md cursor-pointer transition-colors"
+                      className="px-3 py-1 text-xs rounded-md cursor-pointer transition"
                       style={{
-                        backgroundColor: '#3b82f6',
+                        backgroundColor: '#3B82F6',
                         color: 'white'
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}
                     >
                       View File
                     </span>
@@ -229,18 +238,20 @@ const ProfViewFiles = () => {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[500px] border-collapse">
                   <thead>
-                    <tr className="border-b" style={{ borderColor: currentColors.border }}>
-                      <th className="px-4 py-3 text-xs uppercase text-left" style={{ color: currentColors.textSecondary }}>Status</th>
-                      <th className="px-4 py-3 text-xs uppercase text-left" style={{ color: currentColors.textSecondary }}>File Name</th>
-                      <th className="px-4 py-3 text-xs uppercase text-left" style={{ color: currentColors.textSecondary }}>Date</th>
-                      <th className="px-4 py-3 text-xs uppercase text-left" style={{ color: currentColors.textSecondary }}>Action</th>
+                    <tr className="border-b text-left" style={{ borderColor: currentColors.border }}>
+                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Lesson Name</th>
+                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Name</th>
+                      
+                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Type</th>
+                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Date</th>
+                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y" style={{ borderColor: currentColors.border }}>
                     {files.length === 0 && (
                       <tr>
                         <td
-                          colSpan={4}
+                          colSpan={5}
                           className="px-4 py-6 text-center"
                           style={{ color: currentColors.textSecondary }}
                         >
@@ -261,17 +272,15 @@ const ProfViewFiles = () => {
                         }}
                       >
                         <td className="px-4 py-3">
-                          <span className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full`} style={{
-                              backgroundColor: file.status === "uploaded" ? '#10b981' : '#6b7280'
-                            }} />
-                            <span className="text-xs" style={{ color: currentColors.text }}>{file.status}</span>
-                          </span>
+                          <span className="text-xs" style={{ color: currentColors.text }}>{file.lesson_name || 'No Lesson'}</span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-medium text-sm truncate max-w-[200px]" title={formatFileTitle(file.orig_file_name)} style={{ color: currentColors.text }}>
-                            {formatFileTitle(file.orig_file_name)}
+                          <div className="font-medium text-sm truncate max-w-[200px]" title={formatFileTitle(file.file_name)} style={{ color: currentColors.text }}>
+                            {formatFileTitle(file.file_name)}
                           </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm" style={{ color: currentColors.textSecondary }}>
+                          {file.file_name?.split('.').pop()?.toUpperCase() || 'Unknown'}
                         </td>
                         <td className="px-4 py-3 text-sm" style={{ color: currentColors.textSecondary }}>
                           {new Date(file.created_at).toLocaleDateString()}
@@ -280,15 +289,13 @@ const ProfViewFiles = () => {
                           <span 
                             onClick={() =>
                               navigate(
-                                `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.orig_file_name)}/${file.file_id}`
+                                `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}` 
                               )
                             }
-                            className="px-2 py-1 text-xs rounded-md cursor-pointer transition-colors"
-                            style={{
-                              backgroundColor: '#3b82f6',
+                            className="px-2 py-1 text-xs rounded-md cursor-pointer transition" style={{
+                              backgroundColor: '#3B82F6',
                               color: 'white'
-                            }}
-                          >
+                            }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}>
                             View
                           </span>
                         </td>
@@ -305,13 +312,11 @@ const ProfViewFiles = () => {
             }}>
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b" style={{ borderColor: currentColors.border }}>
-                    <th className="px-6 py-4 text-xs uppercase text-left" style={{ color: currentColors.textSecondary }}>Status</th>
-                    <th className="px-6 py-4 text-xs uppercase text-left" style={{ color: currentColors.textSecondary }}>File Name</th>
-                    <th className="px-6 py-4 text-xs uppercase text-left" style={{ color: currentColors.textSecondary }}>
-                      Date Posted
-                    </th>
-                    <th className="px-6 py-4 text-xs uppercase text-left" style={{ color: currentColors.textSecondary }}>Action</th>
+                  <tr className="border-b text-left" style={{ borderColor: currentColors.border }}>
+                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Lesson Name</th>
+                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Name</th>
+                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Date Posted</th>
+                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Action</th>
                   </tr>
                 </thead>
 
@@ -340,39 +345,24 @@ const ProfViewFiles = () => {
                         e.currentTarget.style.backgroundColor = 'transparent';
                       }}
                     >
-                      <td className="px-6 py-4">
-                        <span className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full`} style={{
-                            backgroundColor: file.status === "uploaded" ? '#10b981' : '#6b7280'
-                          }} />
-                          <span style={{ color: currentColors.text }}>{file.status}</span>
-                        </span>
+                      <td className="px-6 py-4 font-medium" style={{ color: currentColors.text }}>{file.lesson_name || 'No Lesson'}</td>
+                      
+                      <td className="px-6 py-4 font-medium" style={{ color: currentColors.text }}>{formatFileTitle(file.file_name)}</td>
+                      <td className="px-6 py-4 text-sm" style={{ color: currentColors.textSecondary }}>
+                        {new Date(file.created_at).toLocaleDateString()}
                       </td>
-
-                      <td className="px-6 py-4 font-medium" style={{ color: currentColors.text }}>
-                        {formatFileTitle(file.orig_file_name)}
-                      </td>
-
-                      <td className="px-6 py-4" style={{ color: currentColors.textSecondary }}>
-                        {file.created_at
-                          ? new Date(file.created_at).toLocaleDateString()
-                          : "—"}
-                      </td>
-
                       <td className="px-6 py-4">
                         <span 
                           onClick={() =>
                             navigate(
-                              `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.orig_file_name)}/${file.file_id}`
+                              `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}` 
                             )
                           }
-                          className="px-3 py-1 text-xs rounded-md cursor-pointer transition-colors"
-                          style={{
-                            backgroundColor: '#3b82f6',
+                          className="px-2 py-1 text-xs rounded-md cursor-pointer transition" style={{
+                            backgroundColor: '#3B82F6',
                             color: 'white'
-                          }}
-                        >
-                          View File
+                          }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}>
+                          View
                         </span>
                       </td>
 
