@@ -84,7 +84,7 @@ const UserPage = () => {
   const [showChat, setShowChat] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(false);
   const [isChatMaximized, setIsChatMaximized] = useState(false);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
 
   // State for dialog management
@@ -116,7 +116,8 @@ const UserPage = () => {
   } = useSpace();
 
   // Chat hook
-  const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } = useSpaceChat(space_uuid, user);
+  const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } =
+    useSpaceChat(space_uuid, user);
 
   // Find current space
   const allSpaces = [
@@ -282,13 +283,13 @@ const UserPage = () => {
     if (isDragging) {
       const handleGlobalMouseMove = (e) => handleMouseMove(e);
       const handleGlobalMouseUp = () => handleMouseUp();
-      
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-      
+
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+      document.addEventListener("mouseup", handleGlobalMouseUp);
+
       return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleGlobalMouseUp);
+        document.removeEventListener("mousemove", handleGlobalMouseMove);
+        document.removeEventListener("mouseup", handleGlobalMouseUp);
       };
     }
   }, [isDragging, dragStartY, dragStartPosition]);
@@ -345,18 +346,18 @@ const UserPage = () => {
     if (!newMessage.trim()) return;
 
     sendMessage(newMessage.trim());
-    setNewMessage('');
+    setNewMessage("");
 
     // Auto-scroll
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
   };
 
   const formatTime = (timestamp) => {
-    if (!timestamp) return '';
+    if (!timestamp) return "";
     const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   // Handle post creation
@@ -579,12 +580,15 @@ const UserPage = () => {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    
+
     const deltaY = e.clientY - dragStartY;
     const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
     const positionChange = (deltaY / containerHeight) * 100;
-    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
-    
+    const newPosition = Math.max(
+      0,
+      Math.min(100, dragStartPosition - positionChange),
+    );
+
     setCoverPhotoPosition(newPosition);
   };
 
@@ -603,7 +607,13 @@ const UserPage = () => {
     const file = event.target.files[0];
     if (file) {
       // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!validTypes.includes(file.type)) {
         addNotification({
           type: "error",
@@ -644,37 +654,40 @@ const UserPage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Create canvas to apply transformations
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = new Image();
-    
+
     img.onload = () => {
       // Set canvas size to cover photo dimensions
       canvas.width = 1200;
       canvas.height = 400;
-      
+
       // Calculate scale to cover the entire canvas
-      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scale = Math.max(
+        canvas.width / img.width,
+        canvas.height / img.height,
+      );
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
-      
+
       // Calculate position based on user vertical positioning
       const x = (canvas.width - scaledWidth) / 2;
       const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-      
+
       // Draw the image with transformations
       ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-      
+
       // Convert to data URL and update
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setCoverPhotoUrl(dataUrl);
-      
+
       // Save to localStorage
       localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-      
+
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       addNotification({
         type: "success",
         title: "Cover Photo Updated",
@@ -682,7 +695,7 @@ const UserPage = () => {
         duration: 3000,
       });
     };
-    
+
     img.src = coverPhotoUrl;
   };
 
@@ -696,7 +709,7 @@ const UserPage = () => {
     // Don't clear coverPhotoUrl on cancel, keep the existing cover photo
     setCoverPhotoPosition(50);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -707,7 +720,7 @@ const UserPage = () => {
     // Remove from localStorage
     localStorage.removeItem(`coverPhoto_${space_uuid}`);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -1113,7 +1126,10 @@ const UserPage = () => {
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
-          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border,
+          }}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
@@ -1129,15 +1145,15 @@ const UserPage = () => {
         <div className="lg:hidden h-16" />
 
         {/* ================= COVER ================= */}
-        <div 
+        <div
           className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
           onClick={handleCoverPhotoClick}
         >
           {coverPhotoUrl ? (
             <>
-              <img 
-                src={coverPhotoUrl} 
-                alt="Space Cover" 
+              <img
+                src={coverPhotoUrl}
+                alt="Space Cover"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
@@ -1420,7 +1436,7 @@ const UserPage = () => {
 
               {/* REMINDERS - STICKY */}
               <div
-                className={`sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${isOwnerSpace && "h-full"}`}
+                className={`sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 ${isOwnerSpace ? "h-fit max-h-[400px]" : "h-full"}`}
                 style={{
                   backgroundColor: currentColors.surface,
                   borderColor: currentColors.border,
@@ -1478,8 +1494,13 @@ const UserPage = () => {
                 {/* Chat Popup */}
                 {showChat && (
                   <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0">
-                    <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !isChatMinimized && setShowChat(false)} />
-                    <div className={`relative w-full ${isChatMaximized ? 'h-screen max-w-full' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
+                    <div
+                      className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                      onClick={() => !isChatMinimized && setShowChat(false)}
+                    />
+                    <div
+                      className={`relative w-full ${isChatMaximized ? "h-screen max-w-full" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
+                    >
                       {/* Chat Header */}
                       <div className="flex items-center justify-between bg-[#1E222A] rounded-t-lg p-3 border-b border-gray-700 cursor-pointer">
                         <div className="flex items-center space-x-3">
@@ -1487,18 +1508,45 @@ const UserPage = () => {
                             <FiUser className="text-white text-sm" />
                           </div>
                           <div>
-                            <h3 className="font-medium text-white text-sm">{spaceName}</h3>
+                            <h3 className="font-medium text-white text-sm">
+                              {spaceName}
+                            </h3>
                             <div className="flex items-center py-2 text-sm text-gray-400">
-                              <div className={`w-2 h-2 rounded-full mr-2 ${spaceOnlineUsers[space_uuid]?.length ? 'bg-green-500' : 'bg-red-500'}`} />
-                              <span>{spaceOnlineUsers[space_uuid]?.length || 0} online</span>
+                              <div
+                                className={`w-2 h-2 rounded-full mr-2 ${spaceOnlineUsers[space_uuid]?.length ? "bg-green-500" : "bg-red-500"}`}
+                              />
+                              <span>
+                                {spaceOnlineUsers[space_uuid]?.length || 0}{" "}
+                                online
+                              </span>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <button onClick={(e) => { e.stopPropagation(); setIsChatMaximized(!isChatMaximized); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title={isChatMaximized ? 'Restore' : 'Maximize'}>
-                            {isChatMaximized ? <FiMinimize2 size={14} /> : <FiMaximize2 size={14} />}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsChatMaximized(!isChatMaximized);
+                            }}
+                            className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700"
+                            title={isChatMaximized ? "Restore" : "Maximize"}
+                          >
+                            {isChatMaximized ? (
+                              <FiMinimize2 size={14} />
+                            ) : (
+                              <FiMaximize2 size={14} />
+                            )}
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); setShowChat(false); setIsChatMinimized(false); setIsChatMaximized(false); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title="Close">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowChat(false);
+                              setIsChatMinimized(false);
+                              setIsChatMaximized(false);
+                            }}
+                            className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700"
+                            title="Close"
+                          >
                             <FiX size={16} />
                           </button>
                         </div>
@@ -1507,14 +1555,25 @@ const UserPage = () => {
                       {/* Chat Messages */}
                       {!isChatMinimized && (
                         <>
-                          <div className={`bg-[#141820] overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}>
+                          <div
+                            className={`bg-[#141820] overflow-y-auto ${isChatMaximized ? "h-[calc(100vh-120px)]" : "h-96"} p-4 space-y-2`}
+                          >
                             {messages.map((message) => (
-                              <div key={message.id} className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`flex flex-col pl-2 ${message.senderId === user?.id ? 'items-end' : 'items-start'}`}>
-                                  <div className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'bg-blue-500 rounded-tr-none text-white' : 'bg-gray-700 rounded-tl-none text-gray-200'}`}>
+                              <div
+                                key={message.id}
+                                className={`flex ${message.senderId === user?.id ? "justify-end" : "justify-start"}`}
+                              >
+                                <div
+                                  className={`flex flex-col pl-2 ${message.senderId === user?.id ? "items-end" : "items-start"}`}
+                                >
+                                  <div
+                                    className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? "bg-blue-500 rounded-tr-none text-white" : "bg-gray-700 rounded-tl-none text-gray-200"}`}
+                                  >
                                     {message.content}
                                   </div>
-                                  <p className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-blue-100 text-right' : 'text-gray-400 text-left'}`}>
+                                  <p
+                                    className={`text-xs mt-2 ${message.senderId === user?.id ? "text-blue-100 text-right" : "text-gray-400 text-left"}`}
+                                  >
                                     {formatTime(message.timestamp)}
                                   </p>
                                 </div>
@@ -1524,9 +1583,15 @@ const UserPage = () => {
                           </div>
 
                           {/* Chat Input */}
-                          <form onSubmit={handleSendMessage} className="bg-[#1B1F26] p-3 rounded-b-lg border-t border-gray-700">
+                          <form
+                            onSubmit={handleSendMessage}
+                            className="bg-[#1B1F26] p-3 rounded-b-lg border-t border-gray-700"
+                          >
                             <div className="flex items-center space-x-2">
-                              <button type="button" className="text-gray-400 hover:text-white p-2">
+                              <button
+                                type="button"
+                                className="text-gray-400 hover:text-white p-2"
+                              >
                                 <FiPaperclip />
                               </button>
                               <input
@@ -1536,7 +1601,11 @@ const UserPage = () => {
                                 placeholder="Type a message..."
                                 className="flex-1 bg-[#141820] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                               />
-                              <button type="submit" className="text-blue-400 hover:text-blue-300 p-2" disabled={!newMessage.trim()}>
+                              <button
+                                type="submit"
+                                className="text-blue-400 hover:text-blue-300 p-2"
+                                disabled={!newMessage.trim()}
+                              >
                                 <FiSend />
                               </button>
                             </div>
@@ -1670,11 +1739,13 @@ const UserPage = () => {
                   borderColor: currentColors.border,
                 }}
               >
-                <h2 className="font-bold mb-4 text-sm sm:text-base">Announcement Feed</h2>
+                <h2 className="font-bold mb-4 text-sm sm:text-base">
+                  Announcement Feed
+                </h2>
 
                 {isLoadingPosts ? (
                   <div className="text-center py-8">
-                    <p 
+                    <p
                       className="text-sm sm:text-base"
                       style={{ color: currentColors.textSecondary }}
                     >
@@ -1683,11 +1754,13 @@ const UserPage = () => {
                   </div>
                 ) : postsError ? (
                   <div className="text-center py-8">
-                    <p className="text-red-400 text-sm sm:text-base">Error loading posts</p>
+                    <p className="text-red-400 text-sm sm:text-base">
+                      Error loading posts
+                    </p>
                   </div>
                 ) : posts.length === 0 ? (
                   <div className="text-center py-8">
-                    <p 
+                    <p
                       className="text-base sm:text-lg"
                       style={{ color: currentColors.textSecondary }}
                     >
@@ -1708,8 +1781,10 @@ const UserPage = () => {
                         className="rounded-lg p-4 border"
                         style={{
                           backgroundColor: currentColors.background,
-                          borderColor: isDarkMode ? currentColors.border : '#e5e7eb',
-                          borderWidth: isDarkMode ? '1px' : '1px 0 1px 0',
+                          borderColor: isDarkMode
+                            ? currentColors.border
+                            : "#e5e7eb",
+                          borderWidth: isDarkMode ? "1px" : "1px 0 1px 0",
                         }}
                       >
                         <div className="flex items-start space-x-2 sm:space-x-3">
@@ -1729,7 +1804,7 @@ const UserPage = () => {
                               />
                             </div>
                           ) : (
-                            <div 
+                            <div
                               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-xs sm:text-sm"
                               style={{
                                 backgroundColor: currentColors.surface,
@@ -1773,10 +1848,14 @@ const UserPage = () => {
                                 e.target.style.color = currentColors.text;
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.color = currentColors.textSecondary;
+                                e.target.style.color =
+                                  currentColors.textSecondary;
                               }}
                             >
-                              <FiMessageCircle size={12} className="sm:size-4" />
+                              <FiMessageCircle
+                                size={12}
+                                className="sm:size-4"
+                              />
                               <span>Comments</span>
                               {post.reply_count > 0 && (
                                 <span
@@ -1795,8 +1874,10 @@ const UserPage = () => {
                             {expandedPosts.has(post.post_id) && (
                               <div
                                 className="mt-4 pt-4 border-t"
-                                style={{ 
-                                  borderColor: isDarkMode ? currentColors.border : '#d1d5db'
+                                style={{
+                                  borderColor: isDarkMode
+                                    ? currentColors.border
+                                    : "#d1d5db",
                                 }}
                               >
                                 {/* Existing Comments */}
@@ -1808,7 +1889,9 @@ const UserPage = () => {
                                           key={comment.post_id}
                                           className="flex items-start space-x-2 py-3 border-b last:border-b-0"
                                           style={{
-                                            borderColor: isDarkMode ? currentColors.border : '#e5e7eb'
+                                            borderColor: isDarkMode
+                                              ? currentColors.border
+                                              : "#e5e7eb",
                                           }}
                                         >
                                           {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
@@ -1821,7 +1904,8 @@ const UserPage = () => {
                                             <div
                                               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
                                               style={{
-                                                backgroundColor: currentColors.surface,
+                                                backgroundColor:
+                                                  currentColors.surface,
                                               }}
                                             >
                                               <img
@@ -1837,7 +1921,8 @@ const UserPage = () => {
                                             <div
                                               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-sm sm:text-sm"
                                               style={{
-                                                backgroundColor: currentColors.surface,
+                                                backgroundColor:
+                                                  currentColors.surface,
                                                 color: currentColors.text,
                                               }}
                                             >
@@ -1859,14 +1944,19 @@ const UserPage = () => {
                                               </span>
                                               <span
                                                 className="text-xs sm:text-xs"
-                                                style={{ color: currentColors.textSecondary }}
+                                                style={{
+                                                  color:
+                                                    currentColors.textSecondary,
+                                                }}
                                               >
                                                 {timeAgo(comment?.created_at)}
                                               </span>
                                             </div>
-                                            <p 
+                                            <p
                                               className="text-sm sm:text-sm whitespace-pre-wrap break-words"
-                                              style={{ color: currentColors.text }}
+                                              style={{
+                                                color: currentColors.text,
+                                              }}
                                             >
                                               {comment.post_content}
                                             </p>
@@ -1879,9 +1969,11 @@ const UserPage = () => {
                                 {/* Comment Loading */}
                                 {isLoadingComments[post.post_id] && (
                                   <div className="text-center py-2">
-                                    <p 
+                                    <p
                                       className="text-sm"
-                                      style={{ color: currentColors.textSecondary }}
+                                      style={{
+                                        color: currentColors.textSecondary,
+                                      }}
                                     >
                                       Loading comments...
                                     </p>
@@ -1932,7 +2024,8 @@ const UserPage = () => {
                                       placeholder="Write a comment..."
                                       className="w-full rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-sm"
                                       style={{
-                                        backgroundColor: currentColors.background,
+                                        backgroundColor:
+                                          currentColors.background,
                                         color: currentColors.text,
                                         border: `1px solid ${currentColors.border}`,
                                       }}
@@ -2390,7 +2483,9 @@ const UserPage = () => {
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Position Cover Photo</h2>
+              <h2 className="text-lg font-semibold text-white">
+                Position Cover Photo
+              </h2>
               <button
                 onClick={handleCoverPhotoCancel}
                 className="text-gray-400 hover:text-white p-1 bg-transparent"
@@ -2406,12 +2501,12 @@ const UserPage = () => {
                 <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                   <div
                     ref={coverPhotoEditorRef}
-                    className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                    className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
                     style={{
                       backgroundImage: `url(${coverPhotoUrl})`,
-                      backgroundSize: 'cover',
+                      backgroundSize: "cover",
                       backgroundPosition: `center ${coverPhotoPosition}%`,
-                      backgroundRepeat: 'no-repeat',
+                      backgroundRepeat: "no-repeat",
                     }}
                     onMouseDown={handleMouseDown}
                   />
@@ -2453,13 +2548,16 @@ const UserPage = () => {
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-gray-700">
-              <h2 className="text-lg font-semibold text-white">Change Cover Photo?</h2>
+              <h2 className="text-lg font-semibold text-white">
+                Change Cover Photo?
+              </h2>
             </div>
 
             {/* Content */}
             <div className="p-4">
               <p className="text-gray-300">
-                Do you want to change the cover photo for this space with the image you uploaded?
+                Do you want to change the cover photo for this space with the
+                image you uploaded?
               </p>
             </div>
 
@@ -2481,8 +2579,6 @@ const UserPage = () => {
           </div>
         </div>
       )}
-
-      
     </div>
   );
 };
