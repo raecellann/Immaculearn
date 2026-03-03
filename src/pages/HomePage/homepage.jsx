@@ -507,7 +507,9 @@ const HomePage1 = () => {
                 <div className="text-center py-8">
                   <Calendar
                     className="w-12 h-12 mx-auto mb-4"
-                    style={{ color: isDarkMode ? currentColors.textSecondary : "white" }}
+                    style={{
+                      color: isDarkMode ? currentColors.textSecondary : "white",
+                    }}
                   />
                   <p
                     className="text-sm"
@@ -645,7 +647,10 @@ const HomePage1 = () => {
                                   {/* Description Overlay - shown on hover */}
                                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                                     <p className="text-white text-sm font-medium leading-relaxed">
-                                      {getSpaceDescription(space.space_uuid, space.space_name)}
+                                      {getSpaceDescription(
+                                        space.space_uuid,
+                                        space.space_name,
+                                      )}
                                     </p>
                                   </div>
                                 </div>
@@ -812,7 +817,10 @@ const HomePage1 = () => {
                                   {/* Description Overlay - shown on hover */}
                                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                                     <p className="text-white text-sm font-medium leading-relaxed">
-                                      {getSpaceDescription(course.space_uuid, course.space_name)}
+                                      {getSpaceDescription(
+                                        course.space_uuid,
+                                        course.space_name,
+                                      )}
                                     </p>
                                   </div>
                                 </div>
@@ -821,19 +829,15 @@ const HomePage1 = () => {
                                     {capitalizeWords(course.space_name)}'s Space
                                   </h3>
                                   <p className="text-gray-400 text-xs mt-1">
-                                    {course.members
-                                      ?.filter((m) => m.role === "creator")
-                                      .map((m) => (
-                                        <span key={m.account_id}>
-                                          {m.account_id === user?.id
-                                            ? `You • ` +
-                                              (course.members?.length - 1) +
-                                              " Students"
-                                            : `Prof. ${capitalizeWords(m.full_name?.split(" ")[0])} • ` +
-                                              (course.members?.length - 1) +
-                                              " Students"}
-                                        </span>
-                                      ))}
+                                    <span>
+                                      {course.professor_name &&
+                                        `Prof. ${capitalizeWords(course.professor_name.split(" ")[0])}`}
+                                    </span>
+                                    <br></br>•{" "}
+                                    {course.space_type === "course"
+                                      ? course.members?.length - 1
+                                      : course.members?.length || 0}{" "}
+                                    Students
                                   </p>
                                   <p className="text-gray-500 text-xs mt-1">
                                     {course.space_day} (
@@ -993,7 +997,10 @@ const HomePage1 = () => {
                                   {/* Description Overlay - shown on hover */}
                                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                                     <p className="text-white text-sm font-medium leading-relaxed">
-                                      {getSpaceDescription(space.space_uuid, space.space_name)}
+                                      {getSpaceDescription(
+                                        space.space_uuid,
+                                        space.space_name,
+                                      )}
                                     </p>
                                   </div>
                                 </div>
@@ -1069,16 +1076,15 @@ const HomePage1 = () => {
               }}
             >
               <div>
-                <h4
-                  className="font-semibold mb-3"
-                  style={{ color: "white" }}
-                >
+                <h4 className="font-semibold mb-3" style={{ color: "white" }}>
                   Reminders
                 </h4>
                 <div className="text-center py-8">
                   <Calendar
                     className="w-12 h-12 mx-auto mb-4"
-                    style={{ color: isDarkMode ? currentColors.textSecondary : "white" }}
+                    style={{
+                      color: isDarkMode ? currentColors.textSecondary : "white",
+                    }}
                   />
                   <p
                     className="text-sm"

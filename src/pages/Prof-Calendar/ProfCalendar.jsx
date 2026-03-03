@@ -218,11 +218,12 @@ const ProfCalendarPage = () => {
 
   // Map Task data to calendar activity structure
   const mapTaskToActivity = (task) => {
+    console.log(task.due_date);
     return {
       id: task.task_id,
       title: task.task_title,
       description: task.task_instruction || "",
-      dueDate: task.due_date,
+      dueDate: new Date(task.due_date).toISOString().split("T")[0],
       dueTime: new Date(task.due_date).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -878,7 +879,9 @@ const ProfCalendarPage = () => {
                             return (
                               allUploadedTasks?.filter((task) => {
                                 if (!task.due_date) return false;
-                                const taskDate = new Date(task.due_date);
+                                const taskDate = new Date(task.due_date)
+                                  .toISOString()
+                                  .split("T")[0];
                                 return (
                                   taskDate >= today && taskDate <= weekFromNow
                                 );

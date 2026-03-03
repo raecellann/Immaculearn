@@ -90,7 +90,11 @@ export const ProfRoutes = () => {
       <Route path="list-activity" element={<ProfListActivityPage />} />
       <Route
         path="list-activity/:space_uuid/:space_name"
-        element={<ProfViewAllActivityPage />}
+        element={
+          <SpaceProvider>
+            <ProfViewAllActivityPage />
+          </SpaceProvider>
+        }
       />
       <Route
         path="list-activity/:space_uuid/:space_name/:task_id/:task_name"
