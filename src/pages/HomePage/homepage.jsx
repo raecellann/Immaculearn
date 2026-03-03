@@ -830,8 +830,8 @@ const HomePage1 = () => {
                                   </h3>
                                   <p className="text-gray-400 text-xs mt-1">
                                     <span>
-                                      {course.professor_name &&
-                                        `Prof. ${capitalizeWords(course.professor_name.split(" ")[0])}`}
+                                      {course.professor?.name &&
+                                        `Prof. ${capitalizeWords(course.professor?.name.split(" ")[0])}`}
                                     </span>
                                     <br></br>•{" "}
                                     {course.space_type === "course"

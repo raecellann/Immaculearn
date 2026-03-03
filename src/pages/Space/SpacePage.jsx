@@ -668,8 +668,8 @@ const SpacePage = () => {
                           style={{ color: isDarkMode ? "#9ca3af" : "#666666" }}
                         >
                           <span>
-                            {course.professor_name &&
-                              `Prof. ${capitalizeWords(course.professor_name.split(" ")[0])}`}
+                            {course.professor &&
+                              `Prof. ${capitalizeWords(course.professor?.name.split(" ")[0])}`}
                           </span>
                           <br></br>•{" "}
                           {course.space_type === "course"
