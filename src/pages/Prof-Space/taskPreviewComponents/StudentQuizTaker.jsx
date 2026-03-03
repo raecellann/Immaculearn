@@ -30,9 +30,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
           question?.question_type,
         ),
         answers: question?.choices || [],
-        points: Math.floor(
-          (quizData?.total_score || 100) / (quizData?.questions?.length || 1),
-        ),
+        point: questionnaire?.point,
       };
     });
   };
@@ -58,12 +56,17 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
   const handleOptionClick = (questionId, choice_id) => {
     setUserAnswers((prev) => {
-      const existingAnswerIndex = prev.findIndex(answer => answer.question_id === questionId);
-      
+      const existingAnswerIndex = prev.findIndex(
+        (answer) => answer.question_id === questionId,
+      );
+
       if (existingAnswerIndex !== -1) {
         // Update existing answer
         const updatedAnswers = [...prev];
-        updatedAnswers[existingAnswerIndex] = { question_id: questionId, choice_id: choice_id };
+        updatedAnswers[existingAnswerIndex] = {
+          question_id: questionId,
+          choice_id: choice_id,
+        };
         return updatedAnswers;
       } else {
         // Add new answer
@@ -74,12 +77,17 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
   const handleTextAnswer = (questionId, answer) => {
     setUserAnswers((prev) => {
-      const existingAnswerIndex = prev.findIndex(ans => ans.question_id === questionId);
-      
+      const existingAnswerIndex = prev.findIndex(
+        (ans) => ans.question_id === questionId,
+      );
+
       if (existingAnswerIndex !== -1) {
         // Update existing answer
         const updatedAnswers = [...prev];
-        updatedAnswers[existingAnswerIndex] = { question_id: questionId, text_answer: answer };
+        updatedAnswers[existingAnswerIndex] = {
+          question_id: questionId,
+          text_answer: answer,
+        };
         return updatedAnswers;
       } else {
         // Add new answer
@@ -134,11 +142,30 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
     }
   };
 
+  const isOptionSelected = (questionId, choiceId) => {
+    return userAnswers.some(
+      (answer) => answer.question_id === questionId && answer.choice_id === choiceId
+    );
+  };
+
+  const getTextAnswer = (questionId) => {
+    const answer = userAnswers.find(
+      (ans) => ans.question_id === questionId && ans.text_answer
+    );
+    return answer ? answer.text_answer : '';
+  };
+
+  const hasTextAnswer = (questionId) => {
+    return userAnswers.some(
+      (ans) => ans.question_id === questionId && ans.text_answer
+    );
+  };
+
   const getOptionClass = (selected) => {
     const base =
       "flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200";
     if (selected)
-      return `${base} border-blue-500 ${isDarkMode ? "bg-blue-900/30" : "bg-blue-50"}`;
+      return `${base} border-blue-500 shadow-lg shadow-blue-500/25 ${isDarkMode ? "bg-blue-900/40 ring-2 ring-blue-400/50" : "bg-blue-50 ring-2 ring-blue-200"}`;
     return `${base} ${isDarkMode ? "border-gray-600 hover:border-gray-400 hover:bg-gray-700/40" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`;
   };
 
@@ -151,72 +178,84 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
   const renderQuestion = (question) => {
     switch (question.type) {
-      case "multiple-choice":
-      case "true-false":
+      case 'multiple-choice':
         return (
-          <div className="space-y-3">
-            {question.answers.map((answer, index) => {
-              const selected = userAnswers.some(
-                userAnswer => userAnswer.question_id === question.question_id && userAnswer.choice_id === answer.choice_id
-              );
-              return (
-                <div
-                  key={index}
-                  className={getOptionClass(selected)}
-                  onClick={() =>
-                    handleOptionClick(question.question_id, answer.choice_id)
-                  }
-                >
-                  <div className={getLetterBadgeClass(selected)}>
+          <div className="space-y-4">
+            {question.answers.map((answer, index) => (
+              <div 
+                key={index}
+                className={getOptionClass(isOptionSelected(question.question_id, answer.letter_identifier))}
+                onClick={() => handleOptionClick(question.question_id, answer.letter_identifier)}
+              >
+                <div className="flex items-center justify-center">
+                  <div
+                    className={getLetterBadgeClass(isOptionSelected(question.question_id, answer.letter_identifier))}
+                  >
                     {answer.letter_identifier}
                   </div>
-                  <div className="flex-1">
-                    <p
-                      className="text-base leading-relaxed"
-                      style={{ color: currentColors.text }}
-                    >
-                      {answer.choice_answer}
-                    </p>
-                  </div>
-                  {selected && (
-                    <FiCheck
-                      size={20}
-                      className="text-blue-500 flex-shrink-0 mt-1"
-                    />
-                  )}
                 </div>
-              );
-            })}
+                <div className="flex-1">
+                  <p className="text-base leading-relaxed">
+                    {answer.answer_text}
+                  </p>
+                </div>
+                {isOptionSelected(question.question_id, answer.letter_identifier) && (
+                  <div style={{ color: currentColors.accent }}>
+                    <FiCheck size={20} />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         );
 
-      case "short-answer":
-      default:
-        const userAnswer = userAnswers.find(answer => answer.question_id === question.question_id);
-              const answerValue = userAnswer?.text_answer || "";
-              
-              return (
+      case 'true-false':
+        return (
+          <div className="space-y-4">
+            {question.answers.map((answer, index) => (
+              <div 
+                key={index}
+                className={getOptionClass(isOptionSelected(question.question_id, answer.letter_identifier))}
+                onClick={() => handleOptionClick(question.question_id, answer.letter_identifier)}
+              >
                 <div
-                  className={`rounded-xl border-2 overflow-hidden transition-colors ${isDarkMode ? "border-gray-600" : "border-gray-200"}`}
+                  className={getLetterBadgeClass(isOptionSelected(question.question_id, answer.letter_identifier))}
                 >
-                  <textarea
-                    placeholder="Type your answer here..."
-                    className="w-full p-4 resize-none h-36 text-base outline-none transition-colors"
-                    style={{
-                      backgroundColor: isDarkMode ? "#1B1F26" : "#ffffff",
-                      color: currentColors.text,
-                      borderColor: answerValue
-                        ? "#2563eb"
-                        : "transparent",
-                      borderWidth: "2px",
-                    }}
-                    value={answerValue}
-                    onChange={(e) =>
-                      handleTextAnswer(question.question_id, e.target.value)
-                    }
-                  />
+                  {answer.letter_identifier}
                 </div>
-              );
+                <div className="flex-1">
+                  <p className="text-base leading-relaxed">
+                    {answer.answer_text}
+                  </p>
+                </div>
+                {isOptionSelected(question.question_id, answer.letter_identifier) && (
+                  <div style={{ color: currentColors.accent }}>
+                    <FiCheck size={20} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'short-answer':
+      default:
+        return (
+          <div className="p-4 rounded-lg border-2" style={{ borderColor: currentColors.border }}>
+            <textarea
+              placeholder="Type your answer here..."
+              className="w-full p-4 rounded border resize-none h-32 text-base"
+              style={{
+                backgroundColor: currentColors.background,
+                borderColor: hasTextAnswer(question.question_id) ? currentColors.accent : currentColors.border,
+                borderWidth: hasTextAnswer(question.question_id) ? '2px' : '1px',
+                color: currentColors.text
+              }}
+              value={getTextAnswer(question.question_id)}
+              onChange={(e) => handleTextAnswer(question.question_id, e.target.value)}
+            />
+          </div>
+        );
     }
   };
 
@@ -288,7 +327,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                   >
                     Questions
                   </p>
-                  <p className="text-2xl sm:text-3xl font-bold text-blue-500">
+                  <p className="text-2xl sm:text-3xl font-bold" style={{ color: currentColors.accent }}>
                     {quizData.question_count}
                   </p>
                 </div>
@@ -305,7 +344,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                   >
                     Total Points
                   </p>
-                  <p className="text-2xl sm:text-3xl font-bold text-green-500">
+                  <p className="text-2xl sm:text-3xl font-bold" style={{ color: '#10b981' }}>
                     {quizData?.total_score || 0}
                   </p>
                 </div>
@@ -313,8 +352,11 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
             </div>
 
             {/* Warning */}
-            <div className="mb-5 sm:mb-6 p-4 rounded-xl text-left bg-amber-500/10 border border-amber-500/30">
-              <p className="text-sm text-amber-600">
+            <div className="mb-5 sm:mb-6 p-4 rounded-xl text-left" style={{
+              backgroundColor: isDarkMode ? 'rgba(251, 191, 36, 0.1)' : 'rgba(251, 191, 36, 0.05)',
+              border: `1px solid ${isDarkMode ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 191, 36, 0.2)'}`
+            }}>
+              <p className="text-sm" style={{ color: '#d97706' }}>
                 <strong>Important:</strong> Once you start the quiz, you can
                 navigate freely between questions. Make sure you have a stable
                 internet connection and complete all questions before
@@ -419,11 +461,11 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
               </span>
               <div
                 className="w-24 lg:w-36 h-2 rounded-full"
-                style={{ backgroundColor: isDarkMode ? "#374151" : "#e2e8f0" }}
+                style={{ backgroundColor: currentColors.surfaceSecondary }}
               >
                 <div
                   className="h-2 bg-blue-500 rounded-full transition-all duration-500"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${progress}%`, backgroundColor: currentColors.accent }}
                 />
               </div>
               <span
@@ -439,11 +481,14 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
         {/* Mobile progress bar */}
         <div
           className="sm:hidden w-full h-1"
-          style={{ backgroundColor: isDarkMode ? "#374151" : "#e2e8f0" }}
+          style={{ backgroundColor: currentColors.surfaceSecondary }}
         >
           <div
-            className="h-1 bg-blue-500 transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            className="h-1 transition-all duration-500"
+            style={{ 
+              width: `${progress}%`,
+              backgroundColor: currentColors.accent
+            }}
           />
         </div>
       </div>
@@ -476,7 +521,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 >
                   <div className="mb-5">
                     <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span className="px-3 py-1 bg-blue-500/15 text-blue-500 rounded-full text-xs font-bold tracking-wide">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wide" style={{
+                        backgroundColor: `${currentColors.accent}15`,
+                        color: currentColors.accent
+                      }}>
                         Question {question.question_id}
                       </span>
                       <span
@@ -486,10 +534,15 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                           color: currentColors.textSecondary,
                         }}
                       >
-                        {question.points} pts
+                        {questionnaire[index].point} pts
                       </span>
-                      {userAnswers.some(answer => answer.question_id === question.question_id) && (
-                        <span className="px-3 py-1 bg-green-500/15 text-green-500 rounded-full text-xs font-bold flex items-center gap-1">
+                      {userAnswers.some(
+                        (answer) => answer.question_id === question.question_id,
+                      ) && (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1" style={{
+                          backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                          color: '#10b981'
+                        }}>
                           <FiCheck size={11} /> Answered
                         </span>
                       )}
@@ -615,18 +668,24 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 " Unanswered questions will be marked as incorrect."}
             </p>
 
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="text-center p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-                <p className="text-2xl font-bold text-green-500">
+              <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="text-center p-3 rounded-xl" style={{
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.2)'
+              }}>
+                <p className="text-2xl font-bold" style={{ color: '#10b981' }}>
                   {answeredQuestions}
                 </p>
-                <p className="text-xs text-green-600">Answered</p>
+                <p className="text-xs" style={{ color: '#059669' }}>Answered</p>
               </div>
-              <div className="text-center p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                <p className="text-2xl font-bold text-red-500">
+              <div className="text-center p-3 rounded-xl" style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)'
+              }}>
+                <p className="text-2xl font-bold" style={{ color: '#ef4444' }}>
                   {questions.length - answeredQuestions}
                 </p>
-                <p className="text-xs text-red-500">Unanswered</p>
+                <p className="text-xs" style={{ color: '#dc2626' }}>Unanswered</p>
               </div>
             </div>
 

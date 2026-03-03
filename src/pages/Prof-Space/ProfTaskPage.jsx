@@ -1313,15 +1313,30 @@ const ProfTaskPage = () => {
   };
 
   const handleQuizSubmit = async (answers) => {
-    // Filter only choice-based answers (exclude text answers for now)
-    const choiceAnswers = answers.filter((answer) => answer.choice_id);
-
     const submissionData = {
       task_id: studentQuizTask.task_id || studentQuizTask.rawData?.task_id,
-      answers: choiceAnswers.map((answer) => ({
-        question_id: answer.question_id,
-        choice_id: answer.choice_id,
-      })),
+      answers: answers.map((answer) => {
+        // For choice-based questions
+        if (answer.choice_id) {
+          return {
+            question_id: answer.question_id,
+            choice_id: answer.choice_id,
+          };
+        }
+        // For text-based questions (short answers)
+        else if (answer.answer_text) {
+          return {
+            question_id: answer.question_id,
+            answer_text: answer.answer_text,
+          };
+        }
+        // Fallback for any other type
+        else {
+          return {
+            question_id: answer.question_id,
+          };
+        }
+      }),
     };
 
     console.log("Quiz submitted with formatted data:", submissionData);

@@ -11,6 +11,7 @@ import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { prefixName } from "../../utils/prefixNameFormat";
 import { SpaceCover } from "../component/spaceCover";
 import { DeleteConfirmationDialog } from "../component/SweetAlert";
+import { toast } from "react-toastify";
 
 const SpacePage = () => {
   const { user } = useUser();
@@ -41,10 +42,10 @@ const SpacePage = () => {
 
   // Helper function to convert 24-hour time to 12-hour format
   const formatTime = (time24) => {
-    if (!time24) return '';
-    const [hours, minutes] = time24.split(':');
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(":");
     const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const ampm = hour >= 12 ? "PM" : "AM";
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
   };
@@ -296,10 +297,12 @@ const SpacePage = () => {
       const result = await joinSpace(joinCode);
 
       if (result.success) {
-        alert("Successfully joined the space!");
+        // alert("Successfully joined the space!");
+        toast.success("Successfully joined the space!");
         setJoinCode("");
       } else {
-        alert(result.message || "Failed to join space");
+        // alert(result.message || "Failed to join space");
+        toast.error(result.message || "Failed to join space");
       }
     } catch (error) {
       console.error("Error joining space:", error);

@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { FiArrowLeft, FiUploadCloud, FiBold, FiItalic, FiUnderline } from 'react-icons/fi';
+import React, { useState } from 'react';
+import { FiArrowLeft, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { useFile } from '../../../contexts/file/fileContextProvider';
 
 const IndividualActivityBuilder = ({ 
   currentColors, 
@@ -8,143 +9,97 @@ const IndividualActivityBuilder = ({
   onPublish,
   isLoading = false 
 }) => {
+  const { resources } = useFile();
   const [activityTitle, setActivityTitle] = useState('');
   const [instruction, setInstruction] = useState('');
-  const [score, setScore] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [activityType, setActivityType] = useState('assignment');
-  const [estimatedTime, setEstimatedTime] = useState('');
-  const [allowLateSubmission, setAllowLateSubmission] = useState(true);
-  const [latePenalty, setLatePenalty] = useState('10');
+  const [selectedLesson, setSelectedLesson] = useState('');
   
-  const instructionRef = useRef(null);
-  const fileInputRef = useRef(null);
+  const [questions, setQuestions] = useState([
+    {
+      id: 1,
+      question: '',
+      answer: '',
+      points: 5,
+    },
+  ]);
 
-  const activityTypes = [
-    { value: 'assignment', label: 'Assignment', emoji: '📝' },
-    { value: 'homework', label: 'Homework', emoji: '📚' },
-    { value: 'project', label: 'Project', emoji: '🎯' },
-    { value: 'lab', label: 'Lab Activity', emoji: '🔬' },
-    { value: 'reading', label: 'Reading Assignment', emoji: '📖' },
-    { value: 'presentation', label: 'Presentation', emoji: '📊' }
-  ];
+  // Calculate total score from all questions
+  const totalScore = questions.reduce(
+    (sum, question) => sum + (question.points || 0),
+    0,
+  );
 
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
+
+
+
+  const addQuestion = () => {
+    const newQuestion = {
+      id: questions.length + 1,
+      question: '',
+      answer: '',
+      points: 5,
+    };
+    setQuestions([...questions, newQuestion]);
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    setSelectedFile(file);
-    console.log("File selected:", file);
-
-    // Extract text from document and populate instruction field
-    if (file) {
-      try {
-        const extractedText = await extractTextFromFile(file);
-        if (extractedText) {
-          setInstruction(extractedText);
-          // Update the contentEditable div if it exists
-          if (instructionRef.current) {
-            instructionRef.current.innerHTML = extractedText;
-          }
-          console.log("Text extracted from document:", extractedText);
-        }
-      } catch (error) {
-        console.error("Error extracting text from file:", error);
-      }
+  const removeQuestion = (id) => {
+    if (questions.length > 1) {
+      setQuestions(questions.filter((q) => q.id !== id));
     }
   };
 
-  const extractTextFromFile = (file) => {
-    return new Promise((resolve, reject) => {
-      const fileType = file.type;
-      const fileName = file.name.toLowerCase();
-
-      // PDF file extraction
-      if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-        resolve(`[PDF Document: ${file.name}]\n\nContent extraction from PDF requires additional library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
-      }
-      // Word document extraction
-      else if (fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
-        resolve(`[Word Document: ${file.name}]\n\nContent extraction from DOCX requires mammoth.js library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
-      }
-      // PowerPoint extraction
-      else if (fileType.includes('presentation') || fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) {
-        resolve(`[PowerPoint Presentation: ${file.name}]\n\nContent extraction from PPTX requires additional library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
-      }
-      // Excel extraction
-      else if (fileType.includes('sheet') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-        resolve(`[Excel Spreadsheet: ${file.name}]\n\nContent extraction from Excel requires xlsx library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
-      }
-      // Plain text file
-      else if (fileType.startsWith('text/') || fileName.endsWith('.txt')) {
-        const fileReader = new FileReader();
-        fileReader.onload = function() {
-          resolve(this.result);
-        };
-        fileReader.onerror = reject;
-        fileReader.readAsText(file);
-      }
-      else {
-        reject(new Error('Unsupported file type for text extraction'));
-      }
-    });
-  };
-
-  // Sync instruction state with contentEditable
-  React.useEffect(() => {
-    if (instructionRef.current) {
-      const handleInput = () => {
-        setInstruction(instructionRef.current.innerHTML);
-      };
-      instructionRef.current.addEventListener('input', handleInput);
-      return () => {
-        instructionRef.current?.removeEventListener('input', handleInput);
-      };
-    }
-  }, []);
-
-  const applyFormat = (format) => {
-    document.execCommand(format, false, null);
-    instructionRef.current?.focus();
+  const updateQuestion = (id, field, value) => {
+    setQuestions(
+      questions.map((q) => (q.id === id ? { ...q, [field]: value } : q)),
+    );
   };
 
   const handleSave = (status) => {
-    const activityData = {
-      title: activityTitle,
-      instruction,
-      score: Number(score),
-      dueDate,
-      activityType,
-      estimatedTime,
-      allowLateSubmission,
-      latePenalty: Number(latePenalty),
-      selectedFile,
-      category: 'individual-activity'
+    // Format questions for individual activity
+    const formattedQuestions = questions.map((question) => ({
+      question_type: 'essay',
+      question: question.question,
+      point: question.points || 1,
+      choices: [
+        {
+          letter_identifier: 'A',
+          choice_answer: question.answer || '',
+          isRightAnswer: true,
+        },
+      ],
+    }));
+
+    const taskData = {
+      task_category: 'individual-activity',
+      task_title: activityTitle,
+      due_date: new Date(dueDate).toISOString(),
+      task_instruction: instruction,
+      total_score: totalScore,
+      lesson_id: selectedLesson ? parseInt(selectedLesson) : null,
+      questions: formattedQuestions,
     };
 
     if (status === 'published') {
-      onPublish(activityData);
+      onPublish(taskData);
     } else {
-      onSave(activityData);
+      onSave(taskData);
     }
   };
 
   const resetForm = () => {
     setActivityTitle('');
     setInstruction('');
-    setScore('');
     setDueDate('');
-    setSelectedFile(null);
-    setActivityType('assignment');
-    setEstimatedTime('');
-    setAllowLateSubmission(true);
-    setLatePenalty('10');
-    if (instructionRef.current) {
-      instructionRef.current.innerHTML = "";
-    }
+    setSelectedLesson('');
+    setQuestions([
+      {
+        id: 1,
+        question: '',
+        answer: '',
+        points: 1,
+      },
+    ]);
   };
 
   return (
@@ -179,314 +134,285 @@ const IndividualActivityBuilder = ({
           <h1 className="text-2xl font-bold" style={{ color: currentColors.text }}>Individual Activity Builder</h1>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* LEFT SECTION */}
-          <div className="flex-1 flex flex-col gap-4">
-            <label className="font-semibold text-lg" style={{ color: currentColors.text }}>
-              Activity Title: <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={activityTitle}
-              onChange={(e) => setActivityTitle(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = currentColors.accent;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = currentColors.border;
-              }}
-              placeholder="Enter activity title"
-            />
-
-            <label className="font-semibold" style={{ color: currentColors.text }}>
-              Activity Type: <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={activityType}
-              onChange={(e) => setActivityType(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = currentColors.accent;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = currentColors.border;
-              }}
-            >
-              {activityTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.emoji} {type.label}
-                </option>
-              ))}
-            </select>
-
-            {/* INSTRUCTION */}
-            <label className="font-semibold" style={{ color: currentColors.text }}>
-              Instructions (optional)
-            </label>
-
-            <div className="rounded-lg border transition-colors" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
-              {/* Editable Instruction Area */}
-              <div
-                ref={instructionRef}
-                contentEditable
-                className="min-h-[140px] px-4 py-3 outline-none"
+        {/* BASIC INFO */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="space-y-4">
+            <div>
+              <label
+                className="block font-semibold mb-2"
+                style={{ color: currentColors.text }}
+              >
+                Activity Title: <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={activityTitle}
+                onChange={(e) => setActivityTitle(e.target.value)}
+                className="w-full rounded-lg px-4 py-2 outline-none border"
                 style={{
                   backgroundColor: currentColors.background,
-                  color: currentColors.text
+                  color: currentColors.text,
+                  borderColor: currentColors.border,
                 }}
-                suppressContentEditableWarning
+                placeholder="Enter activity title"
               />
-
-              {/* Divider */}
-              <div className="border-t" style={{ borderColor: currentColors.border }} />
-
-              {/* Formatting Toolbar (BOTTOM) */}
-              <div className="flex gap-4 px-4 py-2" style={{ color: currentColors.textSecondary }}>
-                <button
-                  type="button"
-                  onClick={() => applyFormat("bold")}
-                  className="hover:text-white"
-                >
-                  <FiBold />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyFormat("italic")}
-                  className="hover:text-white"
-                >
-                  <FiItalic />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyFormat("underline")}
-                  className="hover:text-white"
-                >
-                  <FiUnderline />
-                </button>
-              </div>
             </div>
 
-            {/* FILE UPLOAD */}
-            <div className="mt-6">
-              <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
-                Attach Files (optional)
+            <div>
+              <label
+                className="block font-semibold mb-2"
+                style={{ color: currentColors.text }}
+              >
+                Total Score:{" "}
+                <span className="text-blue-500">(Auto-calculated)</span>
               </label>
-
               <div
-                onClick={handleFileClick}
-                className="border border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition-colors"
+                className="w-full rounded-lg px-4 py-2 outline-none border bg-gray-50"
                 style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
                   borderColor: currentColors.border,
-                  backgroundColor: currentColors.background
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.borderColor = currentColors.accent;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.borderColor = currentColors.border;
                 }}
               >
-                <FiUploadCloud
-                  size={36}
-                  className="mb-3" style={{ color: currentColors.textSecondary }}
-                />
-
-                <p className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
-                  Choose a file or drag & drop it here.
-                </p>
-
-                <p className="text-xs mb-4" style={{ color: currentColors.textSecondary }}>
-                  DOCS, PDF, PPT AND EXCEL, UP TO 10 MB
-                </p>
-
-                {selectedFile && (
-                  <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: currentColors.surface }}>
-                    <p className="text-sm" style={{ color: currentColors.text }}>
-                      Selected: {selectedFile.name}
-                    </p>
-                    <p className="text-xs" style={{ color: currentColors.textSecondary }}>
-                      Size: {(selectedFile.size / 1024).toFixed(2)} KB
-                    </p>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  className="px-4 py-1.5 border rounded-md text-sm transition-colors mt-4"
-                  style={{
-                    borderColor: currentColors.border,
-                    backgroundColor: currentColors.background,
-                    color: currentColors.text
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = currentColors.hover;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = currentColors.background;
-                  }}
-                >
-                  Browse Files
-                </button>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
+                {totalScore} points
               </div>
             </div>
           </div>
 
-          {/* RIGHT SECTION */}
-          <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
-            <label className="font-semibold" style={{ color: currentColors.text }}>
-              Score: <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={score}
-              onChange={(e) => setScore(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = currentColors.accent;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = currentColors.border;
-              }}
-              placeholder="Enter score (e.g., 100)"
-              min="0"
-            />
+          <div className="space-y-4">
+            <div>
+              <label
+                className="block font-semibold mb-2"
+                style={{ color: currentColors.text }}
+              >
+                Due Date: <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full rounded-lg px-4 py-2 outline-none border"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: currentColors.border,
+                }}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
 
-            <label className="font-semibold" style={{ color: currentColors.text }}>
-              Due Date: <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = currentColors.accent;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = currentColors.border;
-              }}
-              min={new Date().toISOString().split('T')[0]}
-            />
-
-            <label className="font-semibold" style={{ color: currentColors.text }}>
-              Estimated Time (minutes):
-            </label>
-            <input
-              type="text"
-              value={estimatedTime}
-              onChange={(e) => setEstimatedTime(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border
-              }}
-              placeholder="e.g., 30 minutes"
-            />
-
-            {/* SUBMISSION SETTINGS */}
-            <div className="p-4 rounded-lg" style={{ backgroundColor: currentColors.background }}>
-              <h3 className="font-semibold mb-4" style={{ color: currentColors.text }}>Submission Settings</h3>
-              
-              <div className="space-y-3">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={allowLateSubmission}
-                    onChange={(e) => setAllowLateSubmission(e.target.checked)}
-                    className="w-4 h-4 mr-3"
-                  />
-                  <span style={{ color: currentColors.text }}>Allow late submission</span>
-                </label>
-
-                {allowLateSubmission && (
-                  <div className="ml-7">
-                    <label className="block text-sm mb-2" style={{ color: currentColors.textSecondary }}>
-                      Late submission penalty (%):
-                    </label>
-                    <input
-                      type="number"
-                      value={latePenalty}
-                      onChange={(e) => setLatePenalty(e.target.value)}
-                      className="w-24 rounded px-2 py-1 outline-none border text-sm"
-                      style={{
-                        backgroundColor: currentColors.surface,
-                        color: currentColors.text,
-                        borderColor: currentColors.border
-                      }}
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                )}
-              </div>
+            <div>
+              <label
+                className="block font-semibold mb-2"
+                style={{ color: currentColors.text }}
+              >
+                Connect to Lesson: <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedLesson}
+                onChange={(e) => setSelectedLesson(e.target.value)}
+                className="w-full rounded-lg px-4 py-2 outline-none border"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: currentColors.border,
+                }}
+                required
+              >
+                <option value="">Select a lesson...</option>
+                {resources.map((lesson) => (
+                  <option key={lesson.lesson_id} value={lesson.lesson_id}>
+                    {lesson.lesson_name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
 
-        {/* ACTION BUTTONS */}
-        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
-          <button
-            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+        {/* INSTRUCTION */}
+        <div className="mb-8">
+          <label
+            className="block font-semibold mb-2"
+            style={{ color: currentColors.text }}
+          >
+            Instructions (optional):
+          </label>
+          <textarea
+            value={instruction}
+            onChange={(e) => setInstruction(e.target.value)}
+            placeholder="Add instructions for students..."
+            className="w-full rounded-lg px-4 py-3 outline-none border h-24"
             style={{
-              backgroundColor: currentColors.surface,
+              backgroundColor: currentColors.background,
               color: currentColors.text,
-              border: `1px solid ${currentColors.border}`
+              borderColor: currentColors.border,
             }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = currentColors.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = currentColors.surface;
-            }}
-            onClick={() => handleSave('draft')}
-          >
-            {isLoading ? 'Saving...' : 'Save as Draft'}
-          </button>
+          />
+        </div>
+
+        {/* QUESTIONS */}
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2
+              className="text-xl font-semibold"
+              style={{ color: currentColors.text }}
+            >
+              Questions
+            </h2>
+            
+          </div>
+
+          {questions.map((question, index) => (
+            <div
+              key={question.id}
+              className="border rounded-lg p-6"
+              style={{
+                borderColor: currentColors.border,
+                backgroundColor: currentColors.background,
+              }}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-4">
+                  <span
+                    className="font-semibold"
+                    style={{ color: currentColors.text }}
+                  >
+                    Question {index + 1}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <label
+                      className="text-sm"
+                      style={{ color: currentColors.text }}
+                    >
+                      Points:
+                    </label>
+                    <input
+                      type="number"
+                      value={question.points}
+                      onChange={(e) =>
+                        updateQuestion(
+                          question.id,
+                          "points",
+                          Number(e.target.value),
+                        )
+                      }
+                      className="w-16 rounded px-2 py-1 outline-none border text-sm text-center"
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        color: currentColors.text,
+                        borderColor: currentColors.border,
+                      }}
+                      min="1"
+                    />
+                  </div>
+                </div>
+                {questions.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeQuestion(question.id)}
+                    className="text-red-500 hover:text-red-400"
+                  >
+                    <FiTrash2 size={18} />
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label
+                    className="block font-medium mb-2 text-sm"
+                    style={{ color: currentColors.text }}
+                  >
+                    Question:
+                  </label>
+                  <textarea
+                    value={question.question}
+                    onChange={(e) =>
+                      updateQuestion(question.id, "question", e.target.value)
+                    }
+                    placeholder="Enter your question..."
+                    className="w-full rounded-lg px-4 py-3 outline-none border h-20"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      color: currentColors.text,
+                      borderColor: currentColors.border,
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    className="block font-medium mb-2 text-sm"
+                    style={{ color: currentColors.text }}
+                  >
+                    Answer (for grading reference):
+                  </label>
+                  <textarea
+                    value={question.answer}
+                    onChange={(e) =>
+                      updateQuestion(question.id, "answer", e.target.value)
+                    }
+                    placeholder="Enter the expected answer or key points..."
+                    className="w-full rounded-lg px-4 py-3 outline-none border h-20"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      color: currentColors.text,
+                      borderColor: currentColors.border,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+
+        {/* ACTION BUTTONS */}
+        <div className="flex flex-col items-end gap-4 mt-8">
           <button
-            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-            style={{
-              backgroundColor: '#2563eb',
-              color: '#ffffff'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#1d4ed8';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#2563eb';
-            }}
-            onClick={() => handleSave('published')}
+            type="button"
+            onClick={addQuestion}
+            className="flex items-center gap-2 sm:px-4 px-4 py-2 bg-blue-600 text-white rounded-lg sm:text-base sm:w-auto hover:bg-blue-700 text-sm"
           >
-            {isLoading ? 'Publishing...' : 'Publish Activity'}
+            <FiPlus size={16} /> Add Question
           </button>
+          
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+            <button
+              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+              style={{
+                backgroundColor: currentColors.surface,
+                color: currentColors.text,
+                border: `1px solid ${currentColors.border}`
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = currentColors.hover;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = currentColors.surface;
+              }}
+              onClick={() => handleSave('draft')}
+            >
+              {isLoading ? 'Saving...' : 'Save as Draft'}
+            </button>
+            <button
+              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+              style={{
+                backgroundColor: '#2563eb',
+                color: '#ffffff'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#1d4ed8';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#2563eb';
+              }}
+              onClick={() => handleSave('published')}
+            >
+              {isLoading ? 'Publishing...' : 'Publish Activity'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

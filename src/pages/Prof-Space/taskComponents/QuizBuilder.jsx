@@ -394,46 +394,38 @@ const QuizBuilder = ({
     }
 
     // Format questions according to the specified structure
-    const formattedQuestions = questions.map((question, index) => {
+    const formattedQuestions = questions.map((question) => {
       const questionData = {
         question_type:
-          question.type === "multiple-choice" ? "mcq" : question.type,
+          question.type === "multiple-choice" ? "mcq" : 
+          question.type === "true-false" ? "true-false" : 
+          question.type === "identification" ? "identification" : question.type,
         question: question.question,
         point: question.points || 1,
-        choices: [],
       };
 
       // Handle different question types
       if (question.type === "multiple-choice") {
-        question.options.forEach((option, optIndex) => {
-          questionData.choices.push({
-            letter_identifier: String.fromCharCode(65 + optIndex), // A, B, C, D
-            choice_answer: option,
-            isRightAnswer: question.correctAnswer === optIndex,
-          });
-        });
+        questionData.choices = question.options.map((option, optIndex) => ({
+          letter_identifier: String.fromCharCode(65 + optIndex), // A, B, C, D
+          choice_answer: option,
+          isRightAnswer: question.correctAnswer === optIndex,
+        }));
       } else if (question.type === "true-false") {
         questionData.choices = [
           {
-            letter_identifier: "A",
+            letter_identifier: "T",
             choice_answer: "True",
             isRightAnswer: question.correctAnswer === "true",
           },
           {
-            letter_identifier: "B",
+            letter_identifier: "F",
             choice_answer: "False",
             isRightAnswer: question.correctAnswer === "false",
           },
         ];
-      } else {
-        // For identification, enumeration, short-answer
-        questionData.choices = [
-          {
-            letter_identifier: "A",
-            choice_answer: question.correctAnswer || "",
-            isRightAnswer: true,
-          },
-        ];
+      } else if (question.type === "identification") {
+        questionData.identification_answer = question.correctAnswer || "";
       }
 
       return questionData;
@@ -443,38 +435,24 @@ const QuizBuilder = ({
     const taskData = {
       task_category: "quiz",
       task_title: quizTitle,
-      due_date: combinedDueDate,
       task_instruction: instruction,
       total_score: totalScore,
       lesson_id: selectedLesson ? parseInt(selectedLesson) : null,
+      due_date: combinedDueDate,
       questions: formattedQuestions,
     };
 
     // Store in localStorage
-    try {
-      localStorage.setItem("quizTask", JSON.stringify(taskData));
-      console.log("Task saved to localStorage:", taskData);
-    } catch (error) {
-      console.error("Error saving to localStorage:", error);
-    }
-
-    // const quizData = {
-    //   title: quizTitle,
-    //   instruction,
-    //   score: totalScore,
-    //   dueDate: combinedDueDate,
-    //   timeLimit,
-    //   attempts: Number(attempts),
-    //   showCorrectAnswers,
-    //   questions,
-    //   category: "quiz",
-    //   lessonId: selectedLesson ? parseInt(selectedLesson) : null,
-    //   lessonName: selectedLesson
-    //     ? resources.find(
-    //         (lesson) => lesson.lesson_id === parseInt(selectedLesson),
-    //       )?.lesson_name
-    //     : null,
-    // };
+    // try {
+    //   const completeData = {
+    //     space_uuid: "12334c11-0d45-11f1-88ce-c03532821bd5", // This should come from context/props
+    //     taskData: taskData
+    //   };
+    //   localStorage.setItem("quizTask", JSON.stringify(completeData));
+    //   console.log("Task saved to localStorage:", completeData);
+    // } catch (error) {
+    //   console.error("Error saving to localStorage:", error);
+    // }
 
     if (status === "published") {
       onPublish(taskData);

@@ -457,7 +457,9 @@ const ProfPeoplePage = () => {
 
           {/* MEMBERS SECTION */}
           <div>
-            <h2 className="text-xl font-semibold mb-4">Students</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              {!activeSpace?.professor ? "Members" : "Students"}
+            </h2>
             <div
               className="border-t pt-4 space-y-4"
               style={{ borderColor: currentColors.border }}
