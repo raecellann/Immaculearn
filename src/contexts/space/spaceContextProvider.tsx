@@ -77,13 +77,33 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   // Task API functions
   const fetchUploadedTasks = async (space_uuid: string): Promise<Task[]> => {
     try {
-      const res = await spaceService.getUploadedTasks(space_uuid);
+      const res = await spaceService.getUploadedTasksBySpaceUUID(space_uuid);
       return Array.isArray(res.data) ? res.data : [];
     } catch (error) {
       console.error("Error fetching uploaded tasks:", error);
       return [];
     }
   };
+
+  const fetchAllUploadedTasks = async (): Promise<Task[]> => {
+    try {
+      const res = await spaceService.getAllUploadedTasks();
+      return Array.isArray(res.data) ? res.data : [];
+    } catch (error) {
+      console.error("Error fetching uploaded tasks:", error);
+      return [];
+    }
+  };
+
+  const { data: allUploadedTasks = [], isLoading: allUploadedTasksLoading } =
+    useQuery({
+      queryKey: ["allUploadedtasks"],
+      queryFn: fetchAllUploadedTasks,
+      enabled: isAuthenticated,
+      staleTime: Infinity, // never becomes stale automatically
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    });
 
   const fetchDraftedTasks = async (spaceId: string): Promise<DraftTask[]> => {
     try {
@@ -543,6 +563,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     archivedSpaces,
     archivedSpacesLoading,
     isLoading,
+
+    allUploadedTasks,
+    allUploadedTasksLoading,
 
     joinRequestsByLink,
     joinRequestsByLinkLoading,

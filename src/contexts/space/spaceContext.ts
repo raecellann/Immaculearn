@@ -27,6 +27,9 @@ export interface SpaceContextType {
   friendSpaces: Space[];
   isLoading: boolean;
 
+  allUploadedTasks: Task[];
+  allUploadedTasksLoading: boolean;
+
   archivedSpaces: CourseSPace[];
   archivedSpacesLoading: boolean;
 

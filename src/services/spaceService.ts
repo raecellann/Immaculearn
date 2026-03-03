@@ -468,7 +468,21 @@ class SpaceService {
     }
   }
 
-  async getUploadedTasks(space_uuid: string) {
+  async getAllUploadedTasks() {
+    try {
+      // const response = await api.get(`/tasks/upload/${space_uuid}`);
+      const response = await api.get(`/tasks`);
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message:
+          err.response?.data?.message || "Failed to fetch uploaded tasks",
+      };
+    }
+  }
+
+  async getUploadedTasksBySpaceUUID(space_uuid: string) {
     try {
       // const response = await api.get(`/tasks/upload/${space_uuid}`);
       const response = await api.get(`/tasks/${space_uuid}`);

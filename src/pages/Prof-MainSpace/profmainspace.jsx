@@ -591,7 +591,7 @@ const ProfSpacePage = () => {
                                 color: isDarkMode ? "#9ca3af" : "#666666",
                               }}
                             >
-                              {space.members?.length - 1 || 0} Students
+                              {space.members?.length - 1 || 0} {space.members?.length - 1 > 1 ? "Students" : "Student"}
                             </p>
                           </div>
                         </div>
