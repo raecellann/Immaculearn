@@ -450,11 +450,11 @@ const ProfSpacePage = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setShowDeleteConfirm(`your-${space.space_id}`);
+                              setShowArchiveConfirm(space.space_uuid);
                             }}
-                            className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-t-lg"
+                            className="w-full text-left px-3 py-2 text-sm text-[#60A5FA] hover:bg-[#3B4457] rounded-lg"
                           >
-                            Delete Space
+                            Archive Space
                           </button>
                         </div>
                       )}
@@ -631,15 +631,6 @@ const ProfSpacePage = () => {
                                 className="w-full text-left px-3 py-2 text-sm text-[#60A5FA] hover:bg-[#3B4457] rounded-t-lg"
                               >
                                 Archive Space
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowLeaveConfirm(space.space_id);
-                                }}
-                                className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#3B4457] rounded-b-lg border-t border-[#3B4457]"
-                              >
-                                Delete Space
                               </button>
                             </div>
                           )}
