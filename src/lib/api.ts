@@ -1,8 +1,13 @@
 import axios from "axios";
 import config from "../config";
 
+const baseUrl =
+      config.VITE_ENV === "production"
+        ? config.API_URL
+        : "http://localhost:3000/v1";
+
 export const api = axios.create({
-  baseURL: "http://localhost:3000/v1",
+  baseURL: baseUrl,
   withCredentials: true,
   headers: {
     Authorization: `Bearer ${config.APIKEY}`, // remove if using only httpOnly cookies
@@ -21,6 +26,18 @@ const subscribeTokenRefresh = (callback: any) => {
 const onRefreshed = () => {
   refreshSubscribers.forEach((callback) => callback());
   refreshSubscribers = [];
+};
+
+// Global navigation function for auth redirects
+let navigateFunction: ((to: string) => void) | null = null;
+let authRefreshCallback: (() => void) | null = null;
+
+export const setAuthNavigate = (navigate: (to: string) => void) => {
+  navigateFunction = navigate;
+};
+
+export const setAuthRefreshCallback = (callback: () => void) => {
+  authRefreshCallback = callback;
 };
 
 api.interceptors.response.use(
@@ -65,13 +82,22 @@ api.interceptors.response.use(
         isRefreshing = false;
         onRefreshed();
 
+        // Notify UserProvider that auth was refreshed
+        if (authRefreshCallback) {
+          authRefreshCallback();
+        }
+
         return api(originalRequest);
       } catch (refreshError) {
         isRefreshing = false;
         refreshSubscribers = [];
 
         // 🔐 Redirect to login if refresh fails
-        window.location.href = "/login";
+        if (navigateFunction) {
+          navigateFunction("/login");
+        } else {
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }

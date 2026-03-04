@@ -1,8 +1,14 @@
 import axios from "axios";
 import config from "../config";
 
+const baseUrl =
+      config.VITE_ENV === "production"
+        ? config.API_URL
+        : "http://localhost:3000/v1";
+
+
 export const adminApi = axios.create({
-  baseURL: "http://localhost:3000/v1",
+  baseURL: baseUrl,
   withCredentials: true,
   headers: {
     Authorization: `Bearer ${config.APIKEY}`,

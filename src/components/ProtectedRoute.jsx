@@ -1,24 +1,36 @@
 import { useEffect } from "react";
-import { Navigate } from "react-router";
+import { Navigate, useLocation } from "react-router";
 import { useUser } from "../contexts/user/useUser";
 import MainLoading from "./LoadingComponents/mainLoading";
 // import { useUser } from "../contexts/user/userContextProvider";
 
 const ProtectedRoute = ({ children }) => {
-  const { isLoading, isAuthenticated } = useUser();
+  const { isLoading, isAuthenticated, checkAuth } = useUser();
+  const location = useLocation();
 
-  // No need for separate auth check here since UserProvider already does it
-  // The UserProvider will have already checked auth on mount
+  // Prevent redirect loops and ensure auth state is stable
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      // Double-check auth before redirecting
+      checkAuth();
+    }
+  }, [isLoading, isAuthenticated, checkAuth]);
 
-  // console.log(isLoading, isAuthenticated)
-
-  if (isLoading)
+  // Show loading during initial auth check or token refresh
+  if (isLoading) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
       </div>
     );
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  }
+
+  // Only redirect if definitively not authenticated after all checks
+  if (!isAuthenticated) {
+    // Preserve the intended destination for after login
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
   return children;
 };
 

@@ -306,22 +306,14 @@ const ProfFilesShared = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Load saved cover photo on component mount
+  // Load saved cover photo from backend on component mount
   useEffect(() => {
-    const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space_uuid}`);
+    const savedCoverPhoto = currentSpace?.space_cover;
+    console.log("Loading cover photo:", savedCoverPhoto);
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }
-  }, [space_uuid]);
-
-  // Save cover photo to localStorage when it changes
-  useEffect(() => {
-    if (coverPhotoUrl && !showCoverPhotoEditor) {
-      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
-      // Dispatch custom event to notify HomePage
-      window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
-    }
-  }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
+  }, [currentSpace]);
 
   // Cover photo drag handlers
   const handleMouseDown = (e) => {
@@ -407,14 +399,16 @@ const ProfFilesShared = () => {
     // Check if it's a gradient or an image
     if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
       // For gradients, save directly without canvas transformations
-      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
+      // Backend will handle saving the space_cover
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
       
-      // Dispatch custom event to notify HomePage
-      window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
-      
-      toast.success("Your cover photo has been updated successfully!");
+      addNotification({
+        type: "success",
+        title: "Cover Photo Updated",
+        message: "Your cover photo has been updated successfully!",
+        duration: 3000,
+      });
     } else {
       // For images, create canvas to apply transformations
       const canvas = document.createElement('canvas');
@@ -442,16 +436,17 @@ const ProfFilesShared = () => {
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
         setCoverPhotoUrl(dataUrl);
         
-        // Save to localStorage
-        localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-        
-        // Dispatch custom event to notify HomePage
-        window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
+        // Backend will handle saving the space_cover
         
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
         
-        toast.success("Your cover photo has been updated successfully!");
+        addNotification({
+          type: "success",
+          title: "Cover Photo Updated",
+          message: "Your cover photo has been updated successfully!",
+          duration: 3000,
+        });
       };
       
       img.src = coverPhotoUrl;
@@ -487,8 +482,7 @@ const ProfFilesShared = () => {
     setCoverPhoto(null);
     setCoverPhotoUrl(null);
     setCoverPhotoPosition(50);
-    // Remove from localStorage
-    localStorage.removeItem(`coverPhoto_${space_uuid}`);
+    // Backend will handle removing the space_cover
     if (coverPhotoInputRef.current) {
       coverPhotoInputRef.current.value = '';
     }

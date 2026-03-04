@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en">
 
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,23 +12,23 @@
   <meta name="author" content="Your Company">
   <meta name="robots" content="index, follow">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="64x64" href="/src/assets/book.png" />
+  <!-- Favicon (Move image to public/assets/) -->
+  <link rel="icon" type="image/png" sizes="64x64" href="/assets/book.png" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="ImmacuLearn - Learn, Share, and Grow">
   <meta property="og:description"
     content="Join ImmacuLearn to explore interactive educational content and online courses.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://localhost:5173">
-  <meta property="og:image" content="https://localhost:5173/assets/book.png">
+  <meta property="og:url" content="%VITE_APP_URL%">
+  <meta property="og:image" content="%VITE_APP_URL%/assets/book.png">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ImmacuLearn - Learn, Share, and Grow">
   <meta name="twitter:description"
     content="Join ImmacuLearn to explore interactive educational content and online courses.">
-  <meta name="twitter:image" content="https://localhost:5173/assets/book.png">
+  <meta name="twitter:image" content="%VITE_APP_URL%/assets/book.png">
 
   <!-- Structured Data -->
   <script type="application/ld+json">
@@ -37,8 +36,8 @@
     "@context": "https://schema.org",
     "@type": "EducationalOrganization",
     "name": "ImmacuLearn",
-    "url": "https://localhost:5173",
-    "logo": "https://localhost:5173/assets/book.png",
+    "url": "%VITE_APP_URL%",
+    "logo": "%VITE_APP_URL%/assets/book.png",
     "sameAs": [
       "https://www.facebook.com/yourpage",
       "https://twitter.com/yourhandle",
@@ -48,7 +47,6 @@
   </script>
 
 </head>
-
 
 <body>
   <div id="root"><!-- ssr --></div>

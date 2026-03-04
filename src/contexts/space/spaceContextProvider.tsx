@@ -23,6 +23,7 @@ export interface SpaceProviderProps {
 }
 
 import { toast } from "react-toastify";
+import config from "../../config";
 
 export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   const { isAuthenticated, user } = useUser();
@@ -39,8 +40,13 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       const res = await spaceService.getUserSpaces();
       const spaces = res.data || [];
       return spaces;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching user spaces:", error);
+      // Don't return empty array immediately on auth errors
+      if (error?.response?.status === 401) {
+        // Let auth interceptor handle token refresh
+        throw error;
+      }
       return [];
     }
   };
@@ -50,8 +56,11 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       const res = await spaceService.getCourseSpaces();
       const spaces = res.data || [];
       return spaces;
-    } catch (error) {
-      console.error("Error fetching user spaces:", error);
+    } catch (error: any) {
+      console.error("Error fetching course spaces:", error);
+      if (error?.response?.status === 401) {
+        throw error;
+      }
       return [];
     }
   };
@@ -61,8 +70,11 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       const res = await spaceService.getAllFriendSpaces();
       const spaces = res.data || [];
       return spaces;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching friend spaces:", error);
+      if (error?.response?.status === 401) {
+        throw error;
+      }
       return [];
     }
   };
@@ -99,7 +111,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     useQuery({
       queryKey: ["allUploadedtasks"],
       queryFn: fetchAllUploadedTasks,
-      enabled: isAuthenticated,
+      enabled: !!isAuthenticated,
       staleTime: Infinity, // never becomes stale automatically
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
@@ -118,25 +130,56 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   // ----------------------------
   // QUERIES
   // ----------------------------
-  const { data: userSpaces = [], isLoading: userSpacesLoading } = useQuery({
+  const {
+    data: userSpaces = [],
+    isLoading: userSpacesLoading,
+    error: userSpacesError,
+  } = useQuery({
     queryKey: ["userSpaces"],
     queryFn: fetchUserSpaces,
     enabled: isAuthenticated,
     staleTime: 60_000,
+    retry: (failureCount, error: any) => {
+      // Retry on auth errors to allow token refresh
+      if (error?.response?.status === 401 && failureCount < 2) {
+        return true;
+      }
+      return false;
+    },
   });
 
-  const { data: courseSpaces = [], isLoading: courseSpacesLoading } = useQuery({
+  const {
+    data: courseSpaces = [],
+    isLoading: courseSpacesLoading,
+    error: courseSpacesError,
+  } = useQuery({
     queryKey: ["courseSpaces"],
     queryFn: fetchCourseSpaces,
     enabled: isAuthenticated,
     staleTime: 60_000,
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401 && failureCount < 2) {
+        return true;
+      }
+      return false;
+    },
   });
 
-  const { data: friendSpaces = [], isLoading: friendSpacesLoading } = useQuery({
+  const {
+    data: friendSpaces = [],
+    isLoading: friendSpacesLoading,
+    error: friendSpacesError,
+  } = useQuery({
     queryKey: ["friendSpaces"],
     queryFn: fetchFriendSpaces,
     enabled: isAuthenticated,
     staleTime: 60_000,
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401 && failureCount < 2) {
+        return true;
+      }
+      return false;
+    },
   });
 
   const { data: archivedSpaces = [], isLoading: archivedSpacesLoading } =
@@ -486,7 +529,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       queryFn: async () => {
         const res = await spaceService.getOneStudentRemarks(
           currentSpace?.space_uuid || "",
-          user?.id || 0,
+          user?.id,
         );
         return res.data || [];
       },
@@ -513,7 +556,12 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const socket = io("http://localhost:3000", {
+    const baseUrl =
+      config.VITE_ENV === "production"
+        ? config.SOCKET_URL
+        : "http://localhost:3000";
+
+    const socket = io(baseUrl, {
       transports: ["websocket"],
     });
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Sidebar from "../component/sidebar";
-import { FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCheck, FiCheckCircle, FiTrash2, FiSettings } from "react-icons/fi";
+import { FiSend, FiMoreVertical, FiSearch, FiPaperclip, FiCheck, FiCheckCircle, FiSettings } from "react-icons/fi";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
 import { useUser } from "../../contexts/user/useUser";
@@ -548,23 +548,6 @@ const ChatList = () => {
                       >
                         <FiSettings className="text-sm" />
                         Change Color Theme
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          // Handle delete conversation
-                          if (window.confirm('Are you sure you want to delete this conversation?')) {
-                            console.log('Delete conversation:', activeSpaceUuid);
-                            // Add delete conversation logic here
-                          }
-                        }}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm rounded-b-lg flex items-center gap-3 transition-colors"
-                        style={{ color: currentColors.textSecondary }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentColors.hover}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        <FiTrash2 className="text-sm" />
-                        Delete Conversation
                       </button>
                     </div>
                   )}

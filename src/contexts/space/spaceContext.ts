@@ -24,8 +24,11 @@ export interface SpaceContextType {
 
   // Server data
   userSpaces: Space[];
+  userSpacesLoading: boolean;
   courseSpaces: CourseSPace[];
+  courseSpacesLoading: boolean;
   friendSpaces: Space[];
+  friendSpacesLoading: boolean;
   isLoading: boolean;
 
   allUploadedTasks: Task[];

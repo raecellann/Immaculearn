@@ -126,6 +126,9 @@ const UserPage = () => {
     friendSpaces,
     joinRequestsByLink,
     isLoading: spaceLoading,
+    userSpacesLoading,
+    courseSpacesLoading,
+    friendSpacesLoading,
     acceptJoinRequest,
     declineJoinRequest,
     deleteSpace,
@@ -176,9 +179,9 @@ const UserPage = () => {
     error: postsError,
     refetch: refetchPosts,
   } = useQuery({
-    queryKey: ["posts", currentSpace?.space_id],
-    queryFn: () => getPosts(currentSpace?.space_id || ""),
-    enabled: !!currentSpace?.space_id,
+    queryKey: ["posts", currentSpace?.space_uuid],
+    queryFn: () => getPosts(currentSpace?.space_uuid || ""),
+    enabled: !!currentSpace?.space_uuid,
     staleTime: 15 * 60 * 1000, // 15 minutes
     cacheTime: 20 * 60 * 1000, // 20 minutes
   });
@@ -235,7 +238,7 @@ const UserPage = () => {
     setIsLoadingComments((prev) => ({ ...prev, [postId]: true }));
     try {
       const result = await createComment({
-        space_id: currentSpace?.space_id,
+        space_uuid: currentSpace?.space_uuid,
         post_id: postId,
         post_content: commentContent,
       });
@@ -270,7 +273,9 @@ const UserPage = () => {
 
   // Load saved cover photo on component mount
   useEffect(() => {
-    const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space_uuid}`);
+    const savedCoverPhoto = currentSpace?.space_cover;
+
+    console.log(savedCoverPhoto);
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }
@@ -319,22 +324,34 @@ const UserPage = () => {
   useEffect(() => {
     const syncEditors = () => {
       const isMobile = window.innerWidth < 1024;
-      
+
       // Sync content between editors when switching screen sizes
       if (isMobile && desktopEditorRef.current && mobileEditorRef.current) {
-        if (mobileEditorRef.current.innerText.trim() === "" && desktopEditorRef.current.innerText.trim() !== "") {
-          mobileEditorRef.current.innerText = desktopEditorRef.current.innerText;
+        if (
+          mobileEditorRef.current.innerText.trim() === "" &&
+          desktopEditorRef.current.innerText.trim() !== ""
+        ) {
+          mobileEditorRef.current.innerText =
+            desktopEditorRef.current.innerText;
         }
-      } else if (!isMobile && mobileEditorRef.current && desktopEditorRef.current) {
-        if (desktopEditorRef.current.innerText.trim() === "" && mobileEditorRef.current.innerText.trim() !== "") {
-          desktopEditorRef.current.innerText = mobileEditorRef.current.innerText;
+      } else if (
+        !isMobile &&
+        mobileEditorRef.current &&
+        desktopEditorRef.current
+      ) {
+        if (
+          desktopEditorRef.current.innerText.trim() === "" &&
+          mobileEditorRef.current.innerText.trim() !== ""
+        ) {
+          desktopEditorRef.current.innerText =
+            mobileEditorRef.current.innerText;
         }
       }
     };
 
     window.addEventListener("resize", syncEditors);
     syncEditors(); // Initial sync
-    
+
     return () => window.removeEventListener("resize", syncEditors);
   }, []);
 
@@ -353,6 +370,15 @@ const UserPage = () => {
   }
 
   // Invalid space or not found
+
+  if (!userSpacesLoading || !courseSpacesLoading || !friendSpacesLoading) {
+    return (
+      <div className="flex h-screen justify-center items-center">
+        <MainLoading />
+      </div>
+    );
+  }
+
   if (!isValidUuid || !currentSpace) {
     return <PageNotFound />;
   }
@@ -364,8 +390,10 @@ const UserPage = () => {
   const applyFormat = (command) => {
     // Get the appropriate editor based on screen size
     const isMobile = window.innerWidth < 1024;
-    const activeEditor = isMobile ? mobileEditorRef.current : desktopEditorRef.current;
-    
+    const activeEditor = isMobile
+      ? mobileEditorRef.current
+      : desktopEditorRef.current;
+
     activeEditor?.focus();
     const selection = window.getSelection();
     if (!selection || selection.toString() === "") return;
@@ -379,8 +407,10 @@ const UserPage = () => {
 
     try {
       // Check for profanity and censor if found
-      const censoredMessage = profanityFilter ? profanityFilter.censorText(newMessage.trim()) : newMessage.trim();
-      
+      const censoredMessage = profanityFilter
+        ? profanityFilter.censorText(newMessage.trim())
+        : newMessage.trim();
+
       sendMessage(censoredMessage);
       setNewMessage("");
       setHasProfanity(false); // Reset profanity warning
@@ -398,7 +428,9 @@ const UserPage = () => {
   // Handle input change with profanity detection
   const handleInputChange = (value) => {
     setNewMessage(value);
-    setHasProfanity(profanityFilter && profanityFilter.containsProfanity(value));
+    setHasProfanity(
+      profanityFilter && profanityFilter.containsProfanity(value),
+    );
   };
 
   const formatTime = (timestamp) => {
@@ -411,7 +443,9 @@ const UserPage = () => {
   const handleCreatePost = async () => {
     // Get content from the appropriate editor based on screen size
     const isMobile = window.innerWidth < 1024; // lg breakpoint
-    const activeEditor = isMobile ? mobileEditorRef.current : desktopEditorRef.current;
+    const activeEditor = isMobile
+      ? mobileEditorRef.current
+      : desktopEditorRef.current;
     const postContent = activeEditor?.innerText?.trim();
 
     if (!postContent || !currentSpace?.space_id) {
@@ -422,7 +456,7 @@ const UserPage = () => {
     setIsCreatingPost(true);
     try {
       const result = await createPost({
-        space_id: currentSpace.space_id,
+        space_uuid: currentSpace.space_uuid,
         post_content: postContent,
       });
 
@@ -634,7 +668,7 @@ const UserPage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Check if it's a gradient or an image
-    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+    if (coverPhotoUrl && coverPhotoUrl.includes("gradient")) {
       // For gradients, save directly without canvas transformations
       localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
       setShowCoverPhotoEditor(false);
@@ -1116,7 +1150,7 @@ const UserPage = () => {
         >
           {coverPhotoUrl ? (
             <>
-              {coverPhotoUrl.includes('gradient') ? (
+              {coverPhotoUrl.includes("gradient") ? (
                 <div
                   className="w-full h-full"
                   style={{ background: coverPhotoUrl }}
@@ -1194,11 +1228,11 @@ const UserPage = () => {
               )}
               {isFriendSpace && (
                 <div className="flex flex-col gap-2 mt-2">
-                  <div 
+                  <div
                     className="flex items-center gap-2 p-2 rounded-md"
                     style={{ backgroundColor: currentColors.surface }}
                   >
-                    <span 
+                    <span
                       className="text-xs break-all"
                       style={{ color: currentColors.accent }}
                     >
@@ -1212,12 +1246,14 @@ const UserPage = () => {
                         backgroundColor: "transparent",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                        e.currentTarget.style.backgroundColor =
+                          currentColors.hover;
                         e.currentTarget.style.color = currentColors.text;
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color = currentColors.textSecondary;
+                        e.currentTarget.style.color =
+                          currentColors.textSecondary;
                       }}
                       title="Copy to clipboard"
                     >
@@ -1254,7 +1290,7 @@ const UserPage = () => {
                   onClick={() =>
                     navigate(`/space/${space_uuid}/${space_name}/files`)
                   }
-                >     
+                >
                   Files
                 </button>
                 <button
@@ -1294,11 +1330,11 @@ const UserPage = () => {
           {/* Space Link - Mobile (Non-owners) */}
           {isFriendSpace && (
             <div className="md:hidden flex justify-end mb-6">
-              <div 
+              <div
                 className="flex items-center gap-2 p-2 rounded-md max-w-full"
                 style={{ backgroundColor: currentColors.surface }}
               >
-                <span 
+                <span
                   className="text-xs break-all flex-1"
                   style={{ color: currentColors.accent }}
                 >
@@ -1500,10 +1536,17 @@ const UserPage = () => {
                 {/* Chat Popup */}
                 {showChatPopup && (
                   <div className="fixed inset-0 z-[60] flex items-end justify-center p-4 sm:items-center sm:p-0">
-                    <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !isChatMinimized && setShowChatPopup(false)} />
-                    <div className={`relative z-[999] ${isChatMinimized ? 'w-64 max-w-64' : 'w-full'} ${isChatMaximized ? 'max-w-4xl h-[90vh]' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
+                    <div
+                      className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                      onClick={() =>
+                        !isChatMinimized && setShowChatPopup(false)
+                      }
+                    />
+                    <div
+                      className={`relative z-[999] ${isChatMinimized ? "w-64 max-w-64" : "w-full"} ${isChatMaximized ? "max-w-4xl h-[90vh]" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
+                    >
                       {/* Chat Header */}
-                      <div 
+                      <div
                         className="flex items-center justify-between rounded-t-lg p-3 border-b"
                         style={{
                           backgroundColor: currentColors.surface,
@@ -1511,14 +1554,14 @@ const UserPage = () => {
                         }}
                       >
                         <div className="flex items-center space-x-3">
-                          <div 
+                          <div
                             className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
                             style={{ backgroundColor: currentColors.accent }}
                           >
                             <FiUser className="text-white text-sm" />
                           </div>
                           <div>
-                            <h3 
+                            <h3
                               className="font-medium text-sm"
                               style={{ color: currentColors.text }}
                             >
@@ -1527,47 +1570,57 @@ const UserPage = () => {
                           </div>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <button 
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              setIsChatMaximized(!isChatMaximized); 
-                            }} 
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsChatMaximized(!isChatMaximized);
+                            }}
                             className="p-1.5 rounded-full transition-colors"
                             style={{
                               color: currentColors.textSecondary,
                               backgroundColor: "transparent",
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = currentColors.hover;
+                              e.currentTarget.style.backgroundColor =
+                                currentColors.hover;
                               e.currentTarget.style.color = currentColors.text;
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = "transparent";
-                              e.currentTarget.style.color = currentColors.textSecondary;
+                              e.currentTarget.style.backgroundColor =
+                                "transparent";
+                              e.currentTarget.style.color =
+                                currentColors.textSecondary;
                             }}
-                            title={isChatMaximized ? 'Restore' : 'Maximize'}
+                            title={isChatMaximized ? "Restore" : "Maximize"}
                           >
-                            {isChatMaximized ? <FiMinimize2 size={14} /> : <FiMaximize2 size={14} />}
+                            {isChatMaximized ? (
+                              <FiMinimize2 size={14} />
+                            ) : (
+                              <FiMaximize2 size={14} />
+                            )}
                           </button>
-                          <button 
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              setShowChatPopup(false); 
-                              setIsChatMinimized(false); 
-                              setIsChatMaximized(false); 
-                            }} 
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowChatPopup(false);
+                              setIsChatMinimized(false);
+                              setIsChatMaximized(false);
+                            }}
                             className="p-1.5 rounded-full transition-colors"
                             style={{
                               color: currentColors.textSecondary,
                               backgroundColor: "transparent",
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = currentColors.hover;
+                              e.currentTarget.style.backgroundColor =
+                                currentColors.hover;
                               e.currentTarget.style.color = currentColors.text;
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = "transparent";
-                              e.currentTarget.style.color = currentColors.textSecondary;
+                              e.currentTarget.style.backgroundColor =
+                                "transparent";
+                              e.currentTarget.style.color =
+                                currentColors.textSecondary;
                             }}
                             title="Close"
                           >
@@ -1579,25 +1632,40 @@ const UserPage = () => {
                       {/* Chat Messages */}
                       {!isChatMinimized && (
                         <>
-                          <div 
+                          <div
                             className={`overflow-y-auto sm:overflow-y-hidden h-[calc(100vh-180px)] sm:h-96 p-4 space-y-2`}
-                            style={{ backgroundColor: currentColors.background }}
+                            style={{
+                              backgroundColor: currentColors.background,
+                            }}
                           >
                             {messages.map((message) => (
-                              <div key={message.id} className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`flex flex-col pl-2 ${message.senderId === user?.id ? 'items-end' : 'items-start'}`}>
-                                  <div 
-                                    className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'rounded-tr-none' : 'rounded-tl-none'}`}
+                              <div
+                                key={message.id}
+                                className={`flex ${message.senderId === user?.id ? "justify-end" : "justify-start"}`}
+                              >
+                                <div
+                                  className={`flex flex-col pl-2 ${message.senderId === user?.id ? "items-end" : "items-start"}`}
+                                >
+                                  <div
+                                    className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? "rounded-tr-none" : "rounded-tl-none"}`}
                                     style={{
-                                      backgroundColor: message.senderId === user?.id ? currentColors.accent : currentColors.surface,
-                                      color: message.senderId === user?.id ? 'white' : currentColors.text,
+                                      backgroundColor:
+                                        message.senderId === user?.id
+                                          ? currentColors.accent
+                                          : currentColors.surface,
+                                      color:
+                                        message.senderId === user?.id
+                                          ? "white"
+                                          : currentColors.text,
                                     }}
                                   >
                                     {message.content}
                                   </div>
-                                  <p 
-                                    className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-right' : 'text-left'}`}
-                                    style={{ color: currentColors.textSecondary }}
+                                  <p
+                                    className={`text-xs mt-2 ${message.senderId === user?.id ? "text-right" : "text-left"}`}
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
                                   >
                                     {formatTime(message.timestamp)}
                                   </p>
@@ -1608,8 +1676,8 @@ const UserPage = () => {
                           </div>
 
                           {/* Chat Input */}
-                          <form 
-                            onSubmit={handleSendMessage} 
+                          <form
+                            onSubmit={handleSendMessage}
                             className="p-3 rounded-b-lg border-t"
                             style={{
                               backgroundColor: currentColors.surface,
@@ -1617,64 +1685,79 @@ const UserPage = () => {
                             }}
                           >
                             <div className="relative w-full">
-  
-                            {/* Profanity Warning - Above Input Field */}
-                            {hasProfanity && (
-                              <div
-                                className="absolute -top-12 left-0 right-0 px-3 py-2 rounded-lg text-xs flex items-center gap-2 animate-pulse"
-                                style={{
-                                  backgroundColor: isDarkMode ? '#dc2626' : '#ef4444',
-                                  color: 'white',
-                                  zIndex: 10
-                                }}
-                              >
-                                <span>🚫</span>
-                                <span className="hidden sm:inline">
-                                  <strong>Content Warning:</strong> Your message contains inappropriate language and will be automatically censored to maintain a respectful chat environment.
-                                </span>
-                                <span className="sm:hidden">
-                                  <strong>Warning:</strong> Message contains inappropriate language and will be censored.
-                                </span>
-                              </div>
-                            )}
+                              {/* Profanity Warning - Above Input Field */}
+                              {hasProfanity && (
+                                <div
+                                  className="absolute -top-12 left-0 right-0 px-3 py-2 rounded-lg text-xs flex items-center gap-2 animate-pulse"
+                                  style={{
+                                    backgroundColor: isDarkMode
+                                      ? "#dc2626"
+                                      : "#ef4444",
+                                    color: "white",
+                                    zIndex: 10,
+                                  }}
+                                >
+                                  <span>🚫</span>
+                                  <span className="hidden sm:inline">
+                                    <strong>Content Warning:</strong> Your
+                                    message contains inappropriate language and
+                                    will be automatically censored to maintain a
+                                    respectful chat environment.
+                                  </span>
+                                  <span className="sm:hidden">
+                                    <strong>Warning:</strong> Message contains
+                                    inappropriate language and will be censored.
+                                  </span>
+                                </div>
+                              )}
 
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="text"
-                                value={newMessage}
-                                onChange={(e) => handleInputChange(e.target.value)}
-                                placeholder="Type a message..."
-                                className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
-                                style={{
-                                  backgroundColor: currentColors.background,
-                                  borderColor: currentColors.border,
-                                  color: currentColors.text,
-                                  focusRingColor: currentColors.accent,
-                                }}
-                              />
-                              <button
-                                type="submit"
-                                className={`p-2 rounded transition-colors ${hasProfanity ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                disabled={!newMessage.trim() || hasProfanity}
-                                style={{
-                                  color: (!newMessage.trim() || hasProfanity) ? currentColors.textSecondary : currentColors.accent,
-                                  backgroundColor: "transparent",
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (newMessage.trim() && !hasProfanity) {
-                                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="text"
+                                  value={newMessage}
+                                  onChange={(e) =>
+                                    handleInputChange(e.target.value)
                                   }
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = "transparent";
-                                  e.currentTarget.style.color = (!newMessage.trim() || hasProfanity) ? currentColors.textSecondary : currentColors.accent;
-                                }}
-                              >
-                                <FiSend />
-                              </button>
+                                  placeholder="Type a message..."
+                                  className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
+                                  style={{
+                                    backgroundColor: currentColors.background,
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                    focusRingColor: currentColors.accent,
+                                  }}
+                                />
+                                <button
+                                  type="submit"
+                                  className={`p-2 rounded transition-colors ${hasProfanity ? "opacity-50 cursor-not-allowed" : ""}`}
+                                  disabled={!newMessage.trim() || hasProfanity}
+                                  style={{
+                                    color:
+                                      !newMessage.trim() || hasProfanity
+                                        ? currentColors.textSecondary
+                                        : currentColors.accent,
+                                    backgroundColor: "transparent",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (newMessage.trim() && !hasProfanity) {
+                                      e.currentTarget.style.backgroundColor =
+                                        currentColors.hover;
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                      "transparent";
+                                    e.currentTarget.style.color =
+                                      !newMessage.trim() || hasProfanity
+                                        ? currentColors.textSecondary
+                                        : currentColors.accent;
+                                  }}
+                                >
+                                  <FiSend />
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        </form>
+                          </form>
                         </>
                       )}
                     </div>
@@ -1685,7 +1768,6 @@ const UserPage = () => {
 
             {/* RIGHT CONTENT - 70% */}
             <div className="w-full lg:w-[70%] space-y-6 order-2 lg:order-2">
-              
               {/* DESKTOP CREATE POST - Only visible on desktop/laptop */}
               {isOwnerSpace && (
                 <div className="hidden lg:block">
@@ -1715,7 +1797,9 @@ const UserPage = () => {
                         suppressContentEditableWarning
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => {
-                          if (desktopEditorRef.current.innerText.trim() === "") {
+                          if (
+                            desktopEditorRef.current.innerText.trim() === ""
+                          ) {
                             setIsFocused(false);
                           }
                         }}
@@ -2133,10 +2217,22 @@ const UserPage = () => {
         {/* PENDING INVITATIONS POPUP */}
         {showPendingInvitations && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="rounded-xl shadow-2xl max-w-md w-full border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+            <div
+              className="rounded-xl shadow-2xl max-w-md w-full border"
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
+            >
               {/* Header */}
-              <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
-                <h3 className="text-xl font-semibold" style={{ color: currentColors.text }}>
+              <div
+                className="p-4 border-b flex items-center justify-between"
+                style={{ borderColor: currentColors.border }}
+              >
+                <h3
+                  className="text-xl font-semibold"
+                  style={{ color: currentColors.text }}
+                >
                   Pending Invites
                 </h3>
                 <button
@@ -2161,8 +2257,12 @@ const UserPage = () => {
                     <p className="mb-4" style={{ color: currentColors.text }}>
                       No pending invitations at the moment.
                     </p>
-                    <div className="text-sm" style={{ color: currentColors.textSecondary }}>
-                      Invited members will appear here once they have not yet accepted your invitation.
+                    <div
+                      className="text-sm"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Invited members will appear here once they have not yet
+                      accepted your invitation.
                     </div>
                   </>
                 ) : (
@@ -2216,16 +2316,24 @@ const UserPage = () => {
                   ))
                 )}
               </div>
-              <div className="flex justify-end p-6 border-t" style={{ borderColor: currentColors.border }}>
+              <div
+                className="flex justify-end p-6 border-t"
+                style={{ borderColor: currentColors.border }}
+              >
                 <button
                   onClick={() => setShowPendingInvitations(false)}
                   className="px-4 py-2 rounded-lg font-medium transition-colors"
-                  style={{ backgroundColor: currentColors.accent || '#3B82F6', color: '#ffffff' }}
+                  style={{
+                    backgroundColor: currentColors.accent || "#3B82F6",
+                    color: "#ffffff",
+                  }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = currentColors.accentHover || '#2563EB';
+                    e.target.style.backgroundColor =
+                      currentColors.accentHover || "#2563EB";
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
+                    e.target.style.backgroundColor =
+                      currentColors.accent || "#3B82F6";
                   }}
                 >
                   Close
@@ -2593,18 +2701,24 @@ const UserPage = () => {
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Gradient Options */}
               <div className="mb-6">
-                <p className="text-sm font-medium mb-3" style={{ color: currentColors.text }}>Color & Gradient</p>
+                <p
+                  className="text-sm font-medium mb-3"
+                  style={{ color: currentColors.text }}
+                >
+                  Color & Gradient
+                </p>
                 <div className="grid grid-cols-4 gap-2">
                   {colorOptions.map((color, i) => (
                     <div
                       key={i}
                       className="h-12 rounded cursor-pointer border-2 transition-colors"
-                      style={{ 
+                      style={{
                         background: color,
-                        borderColor: currentColors.border
+                        borderColor: currentColors.border,
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.borderColor = currentColors.accent || '#3B82F6';
+                        e.target.style.borderColor =
+                          currentColors.accent || "#3B82F6";
                       }}
                       onMouseLeave={(e) => {
                         e.target.style.borderColor = currentColors.border;
@@ -2617,13 +2731,24 @@ const UserPage = () => {
 
               {/* Separator Line */}
               <div className="relative flex items-center my-4">
-                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
-                <span className="px-3 text-sm" style={{ color: currentColors.textSecondary }}>or</span>
-                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
+                <div
+                  className="flex-1 border-t"
+                  style={{ borderColor: currentColors.border }}
+                ></div>
+                <span
+                  className="px-3 text-sm"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  or
+                </span>
+                <div
+                  className="flex-1 border-t"
+                  style={{ borderColor: currentColors.border }}
+                ></div>
               </div>
 
               {/* Upload Option (only show when gradient is selected) */}
-              {coverPhotoUrl && coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && coverPhotoUrl.includes("gradient") && (
                 <div className="mb-4 flex justify-center">
                   <button
                     onClick={() => coverPhotoInputRef.current?.click()}
@@ -2631,11 +2756,12 @@ const UserPage = () => {
                     style={{
                       backgroundColor: currentColors.background,
                       color: currentColors.text,
-                      border: `1px solid ${currentColors.border}`
+                      border: `1px solid ${currentColors.border}`,
                     }}
                     onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
-                      e.target.style.color = '#ffffff';
+                      e.target.style.backgroundColor =
+                        currentColors.accent || "#3B82F6";
+                      e.target.style.color = "#ffffff";
                     }}
                     onMouseLeave={(e) => {
                       e.target.style.backgroundColor = currentColors.background;
@@ -2649,9 +2775,11 @@ const UserPage = () => {
               )}
 
               {/* Image Positioning (only show if it's an image, not gradient) */}
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <div className="mb-6">
-                  <p className="text-sm font-medium text-white mb-3">Position Image</p>
+                  <p className="text-sm font-medium text-white mb-3">
+                    Position Image
+                  </p>
                   <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                     <div
                       ref={coverPhotoEditorRef}
@@ -2686,7 +2814,7 @@ const UserPage = () => {
               >
                 Cancel
               </button>
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <button
                   onClick={handleCoverPhotoSave}
                   className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"

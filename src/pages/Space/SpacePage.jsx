@@ -299,8 +299,8 @@ const SpacePage = () => {
 
   // Inject CSS animations for staggered transitions
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const style = document.createElement('style');
+    if (typeof window !== "undefined") {
+      const style = document.createElement("style");
       style.textContent = `
         @keyframes fadeIn {
           from {
@@ -320,7 +320,7 @@ const SpacePage = () => {
         }
       `;
       document.head.appendChild(style);
-      
+
       return () => {
         if (style.parentNode) {
           style.parentNode.removeChild(style);
@@ -457,7 +457,7 @@ const SpacePage = () => {
                   className="text-2xl font-bold mb-2"
                   style={{ color: "white" }}
                 >
-                  Good Morning, {user && user.first_name}
+                  Good Morning, {user && capitalizeWords(user.first_name)}
                 </h2>
                 <p className="text-sm mb-4" style={{ color: "white" }}>
                   Join space or create your own.

@@ -412,20 +412,14 @@ const ProfTaskPage = () => {
     }
   };
 
-  // Load saved cover photo on component mount
+  // Load saved cover photo from backend on component mount
   useEffect(() => {
-    const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space_uuid}`);
+    const savedCoverPhoto = currentSpace?.space_cover;
+    console.log("Loading cover photo:", savedCoverPhoto);
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }
-  }, [space_uuid]);
-
-  // Save cover photo to localStorage when it changes
-  useEffect(() => {
-    if (coverPhotoUrl && !showCoverPhotoEditor) {
-      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
-    }
-  }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
+  }, [currentSpace]);
 
   // Cover photo drag handlers
   const handleMouseDown = (e) => {
@@ -528,11 +522,16 @@ const ProfTaskPage = () => {
     // Check if it's a gradient or an image
     if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
       // For gradients, save directly without canvas transformations
-      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
+      // Backend will handle saving the space_cover
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
       
-      toast.success("Your cover photo has been updated successfully!");
+      addNotification({
+        type: "success",
+        title: "Cover Photo Updated",
+        message: "Your cover photo has been updated successfully!",
+        duration: 3000,
+      });
     } else {
       // For images, create canvas to apply transformations
       const canvas = document.createElement("canvas");
@@ -563,16 +562,25 @@ const ProfTaskPage = () => {
         const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
         setCoverPhotoUrl(dataUrl);
 
-        // Save to localStorage
-        localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
+        // Backend will handle saving the space_cover
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
 
-        toast.success("Your cover photo has been updated successfully!");
+        addNotification({
+          type: "success",
+          title: "Cover Photo Updated",
+          message: "Your cover photo has been updated successfully!",
+          duration: 3000,
+        });
       };
 
       img.onerror = () => {
-        toast.error("Failed to load image. Please try again.");
+        addNotification({
+          type: "error",
+          title: "Image Load Failed",
+          message: "Failed to load image. Please try again.",
+          duration: 3000,
+        });
         setShowCoverPhotoConfirm(false);
       };
 
@@ -598,8 +606,7 @@ const ProfTaskPage = () => {
     setCoverPhoto(null);
     setCoverPhotoUrl(null);
     setCoverPhotoPosition(50);
-    // Remove from localStorage
-    localStorage.removeItem(`coverPhoto_${space_uuid}`);
+    // Backend will handle removing the space_cover
     if (coverPhotoInputRef.current) {
       coverPhotoInputRef.current.value = "";
     }
