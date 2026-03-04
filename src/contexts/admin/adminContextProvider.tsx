@@ -15,7 +15,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hasCheckedAuth = useRef(false);
+  const isCheckingRef = useRef(false);
 
   // Register navigation function with API interceptor
   useEffect(() => {
@@ -31,9 +31,17 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Auth state update function
   const updateAuthState = useCallback((authenticated: boolean, adminData: Admin | null) => {
-    setIsAuthenticated(authenticated);
-    setAdmin(adminData);
-    setIsLoading(false);
+    // Clear any pending timeout
+    if (authTimeoutRef.current) {
+      clearTimeout(authTimeoutRef.current);
+    }
+
+    // Debounce the state update to prevent rapid changes
+    authTimeoutRef.current = setTimeout(() => {
+      setIsAuthenticated(authenticated);
+      setAdmin(adminData);
+      setIsLoading(false);
+    }, 100); // Small delay to prevent rapid state changes
   }, []);
 
   // Cache for announcements to prevent redundant re-renders when data hasn't changed
@@ -44,11 +52,16 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Check authentication status
   const checkAuth = async (): Promise<boolean> => {
+    if (isCheckingRef.current) return isAuthenticated;
+    isCheckingRef.current = true;
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
       console.log("Checking admin auth...");
+      console.log("Current cookies:", document.cookie);
       const response = await adminApi.get("/admin/profile");
 
+      console.log("Admin profile response:", response.data);
       if (response.data?.success && response.data?.admin) {
         console.log("Admin auth successful:", response.data.admin);
         updateAuthState(true, response.data.admin);
@@ -57,15 +70,17 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
       throw new Error("No admin profile");
     } catch (error: any) {
-      console.log("Admin auth failed:", error.response?.status);
+      console.log("Admin auth failed:", error.response?.status, error.response?.data);
       const status = error?.response?.status;
 
       // Try refresh if unauthorized
       if (status === 401) {
         try {
           console.log("Trying to refresh admin token...");
+          console.log("Cookies during refresh:", document.cookie);
           const refreshRes = await adminApi.get("/admin/refresh");
 
+          console.log("Admin refresh response:", refreshRes.data);
           if (refreshRes.data?.success) {
             console.log("Admin refresh successful, retrying profile...");
             const retryProfile = await adminApi.get("/admin/profile");
@@ -75,7 +90,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
             }
           }
         } catch (refreshError) {
-          console.log("Admin refresh failed:", (refreshError as any).response?.status);
+          console.log("Admin refresh failed:", (refreshError as any).response?.status, (refreshError as any).response?.data);
         }
       }
 
@@ -83,6 +98,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       updateAuthState(false, null);
       return false;
     } finally {
+      isCheckingRef.current = false;
       setIsLoading(false);
     }
   };
@@ -94,6 +110,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       const response = await adminApi.post("/admin/login", { email, password });
 
       if (response.data?.success) {
+        console.log("Admin login successful, cookies after login:", document.cookie);
         // Use updateAuthState for consistent state management
         updateAuthState(true, {
           id: response.data.admin?.id,
@@ -335,11 +352,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Initial check on mount
   useEffect(() => {
-    if (!hasCheckedAuth.current) {
-      hasCheckedAuth.current = true;
-      console.log("Initial admin auth check...");
-      checkAuth();
-    }
+    checkAuth();
   }, []);
 
   const contextValue: AdminContextType = {
