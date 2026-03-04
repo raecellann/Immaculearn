@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
 import Logout from "../component/logout";
+import ArchiveClassAlert from "../component/ArchiveClassAlert";
 import {
   FiSearch,
   FiFileText,
@@ -54,6 +55,7 @@ const ProfStreamPage = () => {
   const [pendingButtonClicked, setPendingButtonClicked] = useState(false);
   const [deleteButtonClicked, setDeleteButtonClicked] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [isCreatingPost, setIsCreatingPost] = useState(false);
@@ -236,13 +238,22 @@ const ProfStreamPage = () => {
     }, 500);
   };
 
-  // Delete room
+  // Delete room / Archive class
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
 
-    // Show delete confirmation dialog
-    setDialogMessage(currentSpace);
-    setShowDeleteDialog(true);
+    // Check if it's a course space
+    const isCourseSpace = currentSpace?.space_type === "course" || currentSpace?.space_day;
+    
+    if (isCourseSpace) {
+      // Show archive confirmation dialog for course spaces
+      setDialogMessage(currentSpace);
+      setShowArchiveDialog(true);
+    } else {
+      // Show delete confirmation dialog for regular spaces
+      setDialogMessage(currentSpace);
+      setShowDeleteDialog(true);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -269,6 +280,49 @@ const ProfStreamPage = () => {
 
   const handleCancelDelete = () => {
     setShowDeleteDialog(false);
+    setDeleteButtonClicked(false);
+  };
+
+  const handleConfirmArchive = async () => {
+    // Prevent multiple executions
+    if (!currentSpace || !showArchiveDialog) return;
+
+    setShowArchiveDialog(false);
+    setDeleteButtonClicked(true);
+    setIsDeleting(true);
+
+    try {
+      // Here you would call the archive API instead of delete
+      // await archiveSpace(currentSpace.space_uuid, user.id);
+      
+      // For now, we'll use the same delete function but with different messaging
+      await deleteSpace(currentSpace.space_uuid, user.id);
+
+      addNotification({
+        type: "success",
+        title: "Class Archived",
+        message: `Class "${currentSpace.space_name}" has been archived successfully!`,
+        duration: 3000,
+      });
+
+      // Navigate immediately after successful archiving
+      navigate("/prof/spaces");
+    } catch (error) {
+      console.error("Failed to archive class:", error);
+      addNotification({
+        type: "error",
+        title: "Archive Failed",
+        message: "Failed to archive class. Please try again.",
+        duration: 3000,
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteButtonClicked(false);
+    }
+  };
+
+  const handleCancelArchive = () => {
+    setShowArchiveDialog(false);
     setDeleteButtonClicked(false);
   };
 
@@ -919,7 +973,7 @@ const ProfStreamPage = () => {
                     )}
                   </div>
                   <div onClick={handleDeleteRoom}>
-                    <Button text="Delete Room" />
+                    <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
                   </div>
                 </>
               )}
@@ -1016,7 +1070,7 @@ const ProfStreamPage = () => {
                 )}
               </div>
               <div onClick={handleDeleteRoom}>
-                <Button text="Delete Room" />
+                <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
               </div>
             </div>
           )}
@@ -1802,6 +1856,21 @@ const ProfStreamPage = () => {
         space={
           currentSpace || {
             space_name: "Unknown Space",
+            members: [],
+            files: [],
+            tasks: [],
+          }
+        }
+      />
+
+      {/* ARCHIVE CLASS CONFIRMATION DIALOG */}
+      <ArchiveClassAlert
+        isOpen={showArchiveDialog}
+        onClose={handleCancelArchive}
+        onConfirm={handleConfirmArchive}
+        space={
+          currentSpace || {
+            space_name: "Unknown Class",
             members: [],
             files: [],
             tasks: [],

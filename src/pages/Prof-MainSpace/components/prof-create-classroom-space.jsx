@@ -298,6 +298,7 @@ const ProfCreateClassroomSpace = () => {
         space_yr_lvl: parseInt(yearLevel) || 1,
         space_settings: spaceSettings.current,
         cover_image: coverImage,
+        space_type: "course",
       };
 
       // Call the API
