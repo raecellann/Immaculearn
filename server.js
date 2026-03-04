@@ -9,7 +9,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 // import { Server } from 'socket.io';
 
-const IS_PRODUCTION = process.env.VITE_ENV === "production";
+const IS_PRODUCTION = process.env.ENV === "production";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function createCustomServer() {

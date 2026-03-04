@@ -62,7 +62,7 @@ const ProfStreamPage = () => {
   const [showChatPopup, setShowChatPopup] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(false);
   const [isChatMaximized, setIsChatMaximized] = useState(false);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
   const MAX_CHAR = 250;
 
@@ -124,7 +124,8 @@ const ProfStreamPage = () => {
   const { createPost, createComment, getPosts, getComments } = useUserPosts();
 
   // Chat hook
-  const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } = useSpaceChat(space_uuid, user);
+  const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } =
+    useSpaceChat(space_uuid, user);
 
   // Join requests - MUST BE AT THE TOP (unconditionally)
   const { data: joinRequestsData = [], isLoading: joinRequestsLoading } =
@@ -152,22 +153,34 @@ const ProfStreamPage = () => {
   useEffect(() => {
     const syncEditors = () => {
       const isMobile = window.innerWidth < 1024;
-      
+
       // Sync content between editors when switching screen sizes
       if (isMobile && desktopEditorRef.current && mobileEditorRef.current) {
-        if (mobileEditorRef.current.innerText.trim() === "" && desktopEditorRef.current.innerText.trim() !== "") {
-          mobileEditorRef.current.innerText = desktopEditorRef.current.innerText;
+        if (
+          mobileEditorRef.current.innerText.trim() === "" &&
+          desktopEditorRef.current.innerText.trim() !== ""
+        ) {
+          mobileEditorRef.current.innerText =
+            desktopEditorRef.current.innerText;
         }
-      } else if (!isMobile && mobileEditorRef.current && desktopEditorRef.current) {
-        if (desktopEditorRef.current.innerText.trim() === "" && mobileEditorRef.current.innerText.trim() !== "") {
-          desktopEditorRef.current.innerText = mobileEditorRef.current.innerText;
+      } else if (
+        !isMobile &&
+        mobileEditorRef.current &&
+        desktopEditorRef.current
+      ) {
+        if (
+          desktopEditorRef.current.innerText.trim() === "" &&
+          mobileEditorRef.current.innerText.trim() !== ""
+        ) {
+          desktopEditorRef.current.innerText =
+            mobileEditorRef.current.innerText;
         }
       }
     };
 
     window.addEventListener("resize", syncEditors);
     syncEditors(); // Initial sync
-    
+
     return () => window.removeEventListener("resize", syncEditors);
   }, []);
 
@@ -206,9 +219,9 @@ const ProfStreamPage = () => {
     error: postsError,
     refetch: refetchPosts,
   } = useQuery({
-    queryKey: ["posts", currentSpace?.space_id],
-    queryFn: () => getPosts(currentSpace?.space_id || ""),
-    enabled: !!currentSpace?.space_id,
+    queryKey: ["posts", currentSpace?.space_uuid],
+    queryFn: () => getPosts(currentSpace?.space_uuid || ""),
+    enabled: !!currentSpace?.space_uuid,
     staleTime: 15 * 60 * 1000, // 15 minutes
     cacheTime: 20 * 60 * 1000, // 20 minutes
   });
@@ -219,8 +232,10 @@ const ProfStreamPage = () => {
   const applyFormat = (command) => {
     // Get the appropriate editor based on screen size
     const isMobile = window.innerWidth < 1024;
-    const activeEditor = isMobile ? mobileEditorRef.current : desktopEditorRef.current;
-    
+    const activeEditor = isMobile
+      ? mobileEditorRef.current
+      : desktopEditorRef.current;
+
     activeEditor?.focus();
     const selection = window.getSelection();
     if (!selection || selection.toString() === "") return;
@@ -243,8 +258,9 @@ const ProfStreamPage = () => {
     if (!currentSpace) return;
 
     // Check if it's a course space
-    const isCourseSpace = currentSpace?.space_type === "course" || currentSpace?.space_day;
-    
+    const isCourseSpace =
+      currentSpace?.space_type === "course" || currentSpace?.space_day;
+
     if (isCourseSpace) {
       // Show archive confirmation dialog for course spaces
       setDialogMessage(currentSpace);
@@ -294,7 +310,7 @@ const ProfStreamPage = () => {
     try {
       // Here you would call the archive API instead of delete
       // await archiveSpace(currentSpace.space_uuid, user.id);
-      
+
       // For now, we'll use the same delete function but with different messaging
       await deleteSpace(currentSpace.space_uuid, user.id);
 
@@ -378,9 +394,11 @@ const ProfStreamPage = () => {
   const handleCreatePost = async () => {
     // Get content from the appropriate editor based on screen size
     const isMobile = window.innerWidth < 1024; // lg breakpoint
-    const activeEditor = isMobile ? mobileEditorRef.current : desktopEditorRef.current;
+    const activeEditor = isMobile
+      ? mobileEditorRef.current
+      : desktopEditorRef.current;
     const content = activeEditor?.innerText?.trim();
-    
+
     if (!content || !currentSpace?.space_id) {
       addNotification({
         type: "error",
@@ -393,7 +411,7 @@ const ProfStreamPage = () => {
     setIsCreatingPost(true);
     try {
       const result = await createPost({
-        space_id: currentSpace.space_id,
+        space_uuid: currentSpace.space_uuid,
         post_content: content,
       });
 
@@ -445,18 +463,18 @@ const ProfStreamPage = () => {
     if (!newMessage.trim()) return;
 
     sendMessage(newMessage.trim());
-    setNewMessage('');
+    setNewMessage("");
 
     // Auto-scroll
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
   };
 
   const formatTime = (timestamp) => {
-    if (!timestamp) return '';
+    if (!timestamp) return "";
     const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   // Load saved cover photo on component mount
@@ -554,15 +572,15 @@ const ProfStreamPage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Check if it's a gradient or an image
-    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+    if (coverPhotoUrl && coverPhotoUrl.includes("gradient")) {
       // For gradients, save directly without canvas transformations
       localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       // Dispatch custom event to notify ProfStreamPage
       window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
-      
+
       addNotification({
         type: "success",
         title: "Cover Photo Updated",
@@ -736,7 +754,7 @@ const ProfStreamPage = () => {
   // Create comment
   const handleCreateComment = async (postId) => {
     const content = commentInputs[postId]?.trim();
-    if (!content || !currentSpace?.space_id) {
+    if (!content || !currentSpace?.space_uuid) {
       addNotification({
         type: "error",
         message: "Please write something before commenting",
@@ -752,7 +770,7 @@ const ProfStreamPage = () => {
 
     try {
       const result = await createComment({
-        space_id: currentSpace?.space_id,
+        space_uuid: currentSpace?.space_uuid,
         post_id: postId,
         post_content: content,
       });
@@ -897,7 +915,7 @@ const ProfStreamPage = () => {
         >
           {coverPhotoUrl ? (
             <>
-              {coverPhotoUrl.includes('gradient') ? (
+              {coverPhotoUrl.includes("gradient") ? (
                 <div
                   className="w-full h-full"
                   style={{ background: coverPhotoUrl }}
@@ -973,7 +991,14 @@ const ProfStreamPage = () => {
                     )}
                   </div>
                   <div onClick={handleDeleteRoom}>
-                    <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
+                    <Button
+                      text={
+                        currentSpace?.space_type === "course" ||
+                        currentSpace?.space_day
+                          ? "Archive Class"
+                          : "Delete Room"
+                      }
+                    />
                   </div>
                 </>
               )}
@@ -1070,7 +1095,14 @@ const ProfStreamPage = () => {
                 )}
               </div>
               <div onClick={handleDeleteRoom}>
-                <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
+                <Button
+                  text={
+                    currentSpace?.space_type === "course" ||
+                    currentSpace?.space_day
+                      ? "Archive Class"
+                      : "Delete Room"
+                  }
+                />
               </div>
             </div>
           )}
@@ -1285,7 +1317,9 @@ const ProfStreamPage = () => {
                         suppressContentEditableWarning
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => {
-                          if (desktopEditorRef.current.innerText.trim() === "") {
+                          if (
+                            desktopEditorRef.current.innerText.trim() === ""
+                          ) {
                             setIsFocused(false);
                           }
                         }}
@@ -1375,11 +1409,13 @@ const ProfStreamPage = () => {
                   borderColor: currentColors.border,
                 }}
               >
-                <h2 className="font-bold mb-4 text-sm sm:text-base">Announcement Feed</h2>
+                <h2 className="font-bold mb-4 text-sm sm:text-base">
+                  Announcement Feed
+                </h2>
 
                 {isLoadingPosts ? (
                   <div className="text-center py-8">
-                    <p 
+                    <p
                       className="text-sm sm:text-base"
                       style={{ color: currentColors.textSecondary }}
                     >
@@ -1388,11 +1424,13 @@ const ProfStreamPage = () => {
                   </div>
                 ) : postsError ? (
                   <div className="text-center py-8">
-                    <p className="text-red-400 text-sm sm:text-base">Error loading posts</p>
+                    <p className="text-red-400 text-sm sm:text-base">
+                      Error loading posts
+                    </p>
                   </div>
                 ) : posts.length === 0 ? (
                   <div className="text-center py-8">
-                    <p 
+                    <p
                       className="text-base sm:text-lg"
                       style={{ color: currentColors.textSecondary }}
                     >
@@ -1413,8 +1451,10 @@ const ProfStreamPage = () => {
                         className="rounded-lg p-4 border"
                         style={{
                           backgroundColor: currentColors.background,
-                          borderColor: isDarkMode ? currentColors.border : '#e5e7eb',
-                          borderWidth: isDarkMode ? '1px' : '1px 0 1px 0',
+                          borderColor: isDarkMode
+                            ? currentColors.border
+                            : "#e5e7eb",
+                          borderWidth: isDarkMode ? "1px" : "1px 0 1px 0",
                         }}
                       >
                         <div className="flex items-start space-x-2 sm:space-x-3">
@@ -1434,7 +1474,7 @@ const ProfStreamPage = () => {
                               />
                             </div>
                           ) : (
-                            <div 
+                            <div
                               className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-xs sm:text-sm"
                               style={{
                                 backgroundColor: currentColors.surface,
@@ -1476,10 +1516,14 @@ const ProfStreamPage = () => {
                                 e.target.style.color = currentColors.text;
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.color = currentColors.textSecondary;
+                                e.target.style.color =
+                                  currentColors.textSecondary;
                               }}
                             >
-                              <FiMessageCircle size={12} className="sm:size-4" />
+                              <FiMessageCircle
+                                size={12}
+                                className="sm:size-4"
+                              />
                               <span>Comments</span>
                               {post.reply_count > 0 && (
                                 <span
@@ -1498,8 +1542,10 @@ const ProfStreamPage = () => {
                             {expandedPosts.has(post.post_id) && (
                               <div
                                 className="mt-4 pt-4 border-t"
-                                style={{ 
-                                  borderColor: isDarkMode ? currentColors.border : '#d1d5db'
+                                style={{
+                                  borderColor: isDarkMode
+                                    ? currentColors.border
+                                    : "#d1d5db",
                                 }}
                               >
                                 {/* Existing Comments */}
@@ -1511,7 +1557,9 @@ const ProfStreamPage = () => {
                                           key={comment.post_id}
                                           className="flex items-start space-x-2 py-3 border-b last:border-b-0"
                                           style={{
-                                            borderColor: isDarkMode ? currentColors.border : '#e5e7eb'
+                                            borderColor: isDarkMode
+                                              ? currentColors.border
+                                              : "#e5e7eb",
                                           }}
                                         >
                                           {/* <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
@@ -1524,7 +1572,8 @@ const ProfStreamPage = () => {
                                             <div
                                               className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
                                               style={{
-                                                backgroundColor: currentColors.surface,
+                                                backgroundColor:
+                                                  currentColors.surface,
                                               }}
                                             >
                                               <img
@@ -1540,7 +1589,8 @@ const ProfStreamPage = () => {
                                             <div
                                               className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-semibold flex-shrink-0 text-xs sm:text-sm"
                                               style={{
-                                                backgroundColor: currentColors.surface,
+                                                backgroundColor:
+                                                  currentColors.surface,
                                                 color: currentColors.text,
                                               }}
                                             >
@@ -1685,10 +1735,22 @@ const ProfStreamPage = () => {
         {/* PENDING INVITATIONS POPUP */}
         {showPendingInvitations && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="rounded-xl shadow-2xl max-w-md w-full border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+            <div
+              className="rounded-xl shadow-2xl max-w-md w-full border"
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
+            >
               {/* Header */}
-              <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
-                <h3 className="text-xl font-semibold" style={{ color: currentColors.text }}>
+              <div
+                className="p-4 border-b flex items-center justify-between"
+                style={{ borderColor: currentColors.border }}
+              >
+                <h3
+                  className="text-xl font-semibold"
+                  style={{ color: currentColors.text }}
+                >
                   Pending Invites
                 </h3>
                 <button
@@ -1713,8 +1775,12 @@ const ProfStreamPage = () => {
                     <p className="mb-4" style={{ color: currentColors.text }}>
                       No pending invitations at the moment.
                     </p>
-                    <div className="text-sm" style={{ color: currentColors.textSecondary }}>
-                      Invited members will appear here once they have not yet accepted your invitation.
+                    <div
+                      className="text-sm"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Invited members will appear here once they have not yet
+                      accepted your invitation.
                     </div>
                   </>
                 ) : (
@@ -1734,26 +1800,26 @@ const ProfStreamPage = () => {
                           className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
                         />
                         <div className="flex-1 min-w-0">
-                          <h3 
+                          <h3
                             className="font-medium text-sm sm:text-base truncate"
                             style={{ color: currentColors.text }}
                           >
                             {invitation.fullname}
                           </h3>
-                          <p 
+                          <p
                             className="text-xs sm:text-sm truncate"
                             style={{ color: currentColors.textSecondary }}
                           >
                             {invitation.email}
                           </p>
-                          <p 
+                          <p
                             className="text-xs sm:text-sm mt-1"
                             style={{ color: currentColors.textSecondary }}
                           >
                             {invitation.message || "Hello world"}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
-                            <span 
+                            <span
                               className="text-xs"
                               style={{ color: currentColors.textSecondary }}
                             >
@@ -1770,14 +1836,14 @@ const ProfStreamPage = () => {
                           }
                           className="px-3 py-1.5 text-xs sm:text-sm rounded-md transition disabled:opacity-50"
                           style={{
-                            backgroundColor: '#6B7280',
-                            color: 'white',
+                            backgroundColor: "#6B7280",
+                            color: "white",
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#4B5563';
+                            e.target.style.backgroundColor = "#4B5563";
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#6B7280';
+                            e.target.style.backgroundColor = "#6B7280";
                           }}
                         >
                           Decline
@@ -1789,14 +1855,14 @@ const ProfStreamPage = () => {
                           }
                           className="px-3 py-1.5 text-xs sm:text-sm rounded-md transition disabled:opacity-50"
                           style={{
-                            backgroundColor: '#2563EB',
-                            color: 'white',
+                            backgroundColor: "#2563EB",
+                            color: "white",
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#1D4ED8';
+                            e.target.style.backgroundColor = "#1D4ED8";
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#2563EB';
+                            e.target.style.backgroundColor = "#2563EB";
                           }}
                         >
                           Accept
@@ -1806,16 +1872,24 @@ const ProfStreamPage = () => {
                   ))
                 )}
               </div>
-              <div className="flex justify-end p-6 border-t" style={{ borderColor: currentColors.border }}>
+              <div
+                className="flex justify-end p-6 border-t"
+                style={{ borderColor: currentColors.border }}
+              >
                 <button
                   onClick={() => setShowPendingInvitations(false)}
                   className="px-4 py-2 rounded-lg font-medium transition-colors"
-                  style={{ backgroundColor: currentColors.accent || '#3B82F6', color: '#ffffff' }}
+                  style={{
+                    backgroundColor: currentColors.accent || "#3B82F6",
+                    color: "#ffffff",
+                  }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = currentColors.accentHover || '#2563EB';
+                    e.target.style.backgroundColor =
+                      currentColors.accentHover || "#2563EB";
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
+                    e.target.style.backgroundColor =
+                      currentColors.accent || "#3B82F6";
                   }}
                 >
                   Close
@@ -1899,7 +1973,9 @@ const ProfStreamPage = () => {
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Gradient Options */}
               <div className="mb-6">
-                <p className="text-sm font-medium text-white mb-3">Color & Gradient</p>
+                <p className="text-sm font-medium text-white mb-3">
+                  Color & Gradient
+                </p>
                 <div className="grid grid-cols-4 gap-2">
                   {colorOptions.map((color, i) => (
                     <div
@@ -1920,7 +1996,7 @@ const ProfStreamPage = () => {
               </div>
 
               {/* Upload Option (only show when gradient is selected) */}
-              {coverPhotoUrl && coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && coverPhotoUrl.includes("gradient") && (
                 <div className="mb-4 flex justify-center">
                   <button
                     onClick={() => coverPhotoInputRef.current?.click()}
@@ -1933,9 +2009,11 @@ const ProfStreamPage = () => {
               )}
 
               {/* Image Positioning (only show if it's an image, not gradient) */}
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <div className="mb-6">
-                  <p className="text-sm font-medium text-white mb-3">Position Image</p>
+                  <p className="text-sm font-medium text-white mb-3">
+                    Position Image
+                  </p>
                   <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                     <div
                       ref={coverPhotoEditorRef}
@@ -1970,7 +2048,7 @@ const ProfStreamPage = () => {
               >
                 Cancel
               </button>
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <button
                   onClick={handleCoverPhotoSave}
                   className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
@@ -2024,10 +2102,15 @@ const ProfStreamPage = () => {
       {/* CHAT POPUP */}
       {showChatPopup && (
         <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0">
-          <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !isChatMinimized && setShowChatPopup(false)} />
-          <div className={`relative w-full ${isChatMaximized ? 'h-screen max-w-full' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => !isChatMinimized && setShowChatPopup(false)}
+          />
+          <div
+            className={`relative w-full ${isChatMaximized ? "h-screen max-w-full" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
+          >
             {/* Chat Header */}
-            <div 
+            <div
               className="flex items-center justify-between rounded-t-lg p-3 border-b cursor-pointer"
               style={{
                 backgroundColor: currentColors.surface,
@@ -2035,14 +2118,14 @@ const ProfStreamPage = () => {
               }}
             >
               <div className="flex items-center space-x-3">
-                <div 
+                <div
                   className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: currentColors.accent }}
                 >
                   <FiUser className="text-white text-sm" />
                 </div>
                 <div>
-                  <h3 
+                  <h3
                     className="font-medium text-sm"
                     style={{ color: currentColors.text }}
                   >
@@ -2051,11 +2134,11 @@ const ProfStreamPage = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-1">
-                <button 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    setIsChatMaximized(!isChatMaximized); 
-                  }} 
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsChatMaximized(!isChatMaximized);
+                  }}
                   className="p-1.5 rounded-full transition-colors"
                   style={{
                     color: currentColors.textSecondary,
@@ -2069,17 +2152,21 @@ const ProfStreamPage = () => {
                     e.currentTarget.style.backgroundColor = "transparent";
                     e.currentTarget.style.color = currentColors.textSecondary;
                   }}
-                  title={isChatMaximized ? 'Restore' : 'Maximize'}
+                  title={isChatMaximized ? "Restore" : "Maximize"}
                 >
-                  {isChatMaximized ? <FiMinimize2 size={14} /> : <FiMaximize2 size={14} />}
+                  {isChatMaximized ? (
+                    <FiMinimize2 size={14} />
+                  ) : (
+                    <FiMaximize2 size={14} />
+                  )}
                 </button>
-                <button 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    setShowChatPopup(false); 
-                    setIsChatMinimized(false); 
-                    setIsChatMaximized(false); 
-                  }} 
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowChatPopup(false);
+                    setIsChatMinimized(false);
+                    setIsChatMaximized(false);
+                  }}
                   className="p-1.5 rounded-full transition-colors"
                   style={{
                     color: currentColors.textSecondary,
@@ -2103,24 +2190,35 @@ const ProfStreamPage = () => {
             {/* Chat Messages */}
             {!isChatMinimized && (
               <>
-                <div 
-                  className={`overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}
+                <div
+                  className={`overflow-y-auto ${isChatMaximized ? "h-[calc(100vh-120px)]" : "h-96"} p-4 space-y-2`}
                   style={{ backgroundColor: currentColors.background }}
                 >
                   {messages.map((message) => (
-                    <div key={message.id} className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`flex flex-col pl-2 ${message.senderId === user?.id ? 'items-end' : 'items-start'}`}>
-                        <div 
-                          className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'rounded-tr-none' : 'rounded-tl-none'}`}
+                    <div
+                      key={message.id}
+                      className={`flex ${message.senderId === user?.id ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`flex flex-col pl-2 ${message.senderId === user?.id ? "items-end" : "items-start"}`}
+                      >
+                        <div
+                          className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? "rounded-tr-none" : "rounded-tl-none"}`}
                           style={{
-                            backgroundColor: message.senderId === user?.id ? currentColors.accent : currentColors.surface,
-                            color: message.senderId === user?.id ? 'white' : currentColors.text,
+                            backgroundColor:
+                              message.senderId === user?.id
+                                ? currentColors.accent
+                                : currentColors.surface,
+                            color:
+                              message.senderId === user?.id
+                                ? "white"
+                                : currentColors.text,
                           }}
                         >
                           {message.content}
                         </div>
-                        <p 
-                          className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-right' : 'text-left'}`}
+                        <p
+                          className={`text-xs mt-2 ${message.senderId === user?.id ? "text-right" : "text-left"}`}
                           style={{ color: currentColors.textSecondary }}
                         >
                           {formatTime(message.timestamp)}
@@ -2132,8 +2230,8 @@ const ProfStreamPage = () => {
                 </div>
 
                 {/* Chat Input */}
-                <form 
-                  onSubmit={handleSendMessage} 
+                <form
+                  onSubmit={handleSendMessage}
                   className="p-3 rounded-b-lg border-t"
                   style={{
                     backgroundColor: currentColors.surface,
@@ -2141,20 +2239,22 @@ const ProfStreamPage = () => {
                   }}
                 >
                   <div className="flex items-center space-x-2">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="p-2 rounded transition-colors"
                       style={{
                         color: currentColors.textSecondary,
                         backgroundColor: "transparent",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                        e.currentTarget.style.backgroundColor =
+                          currentColors.hover;
                         e.currentTarget.style.color = currentColors.text;
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color = currentColors.textSecondary;
+                        e.currentTarget.style.color =
+                          currentColors.textSecondary;
                       }}
                     >
                       <FiPaperclip />
@@ -2177,12 +2277,15 @@ const ProfStreamPage = () => {
                       className="p-2 rounded transition-colors"
                       disabled={!newMessage.trim()}
                       style={{
-                        color: newMessage.trim() ? currentColors.accent : currentColors.textSecondary,
+                        color: newMessage.trim()
+                          ? currentColors.accent
+                          : currentColors.textSecondary,
                         backgroundColor: "transparent",
                       }}
                       onMouseEnter={(e) => {
                         if (newMessage.trim()) {
-                          e.currentTarget.style.backgroundColor = currentColors.hover;
+                          e.currentTarget.style.backgroundColor =
+                            currentColors.hover;
                         }
                       }}
                       onMouseLeave={(e) => {

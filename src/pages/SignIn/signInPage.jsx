@@ -160,7 +160,11 @@ const LoginPage = () => {
     if (!isAuthenticated) return;
 
     const handleMessage = (event) => {
-      if (event.origin !== "https://localhost:5173") return;
+      if (
+        event.origin !== "https://localhost:5173" &&
+        event.origin !== config.APP_URL
+      )
+        return;
 
       if (!event.data.success) {
         setError(event.data.error);

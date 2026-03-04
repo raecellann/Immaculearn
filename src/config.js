@@ -1,5 +1,6 @@
 const config = {
   APIKEY: import.meta.env.VITE_APIKEY,
+  APP_URL: import.meta.env.VITE_APP_URL,
   VITE_ENV: import.meta.env.VITE_ENV,
   SOCKET_URL: import.meta.env.VITE_SOCKET_URL,
   API_URL:

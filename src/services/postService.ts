@@ -6,7 +6,7 @@ class PostService {
     async createPost(postData: PostCreateData): Promise<ApiResponse<Post>> {
         try {
             const response = await api.post<ApiResponse<Post>>("/post/", {
-                space_id: postData.space_id,
+                space_id: postData.space_uuid,
                 post_content: postData.post_content,
             });
 
@@ -36,10 +36,10 @@ class PostService {
         }
     }
 
-    async getPosts(spaceId: string): Promise<ApiResponse<Post[]>> {
+    async getPosts(space_uuid: string): Promise<ApiResponse<Post[]>> {
         try {
             const response = await api.get<ApiResponse<Post[]>>(
-                `/post/${spaceId}`
+                `/post/${space_uuid}`
             );
             return response.data;
         } catch (error: any) {

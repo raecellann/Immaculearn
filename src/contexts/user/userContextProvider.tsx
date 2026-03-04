@@ -161,9 +161,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   };
 
-  const getPosts = async (spaceId: string) => {
+  const getPosts = async (space_uuid: string) => {
     try {
-      const response = await api.get(`/post/${spaceId}`);
+      const response = await api.get(`/post/${space_uuid}`);
 
       console.log(response.data);
       return response.data;

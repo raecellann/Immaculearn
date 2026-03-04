@@ -25,12 +25,12 @@ export interface Comment {
 }
 
 export interface PostCreateData {
-    space_id: string;
+    space_uuid: string;
     post_content: string;
 }
 
 export interface CommentCreateData {
-    space_id: string;
+    space_uuid: string;
     post_id: string;
     post_content: string;
     parent_id?: string;
