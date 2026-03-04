@@ -15,6 +15,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasCheckedAuth = useRef(false);
 
   // Register navigation function with API interceptor
   useEffect(() => {
@@ -45,23 +46,28 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const checkAuth = async (): Promise<boolean> => {
     try {
       setIsLoading(true);
+      console.log("Checking admin auth...");
       const response = await adminApi.get("/admin/profile");
 
       if (response.data?.success && response.data?.admin) {
+        console.log("Admin auth successful:", response.data.admin);
         updateAuthState(true, response.data.admin);
         return true;
       }
 
       throw new Error("No admin profile");
     } catch (error: any) {
+      console.log("Admin auth failed:", error.response?.status);
       const status = error?.response?.status;
 
       // Try refresh if unauthorized
       if (status === 401) {
         try {
+          console.log("Trying to refresh admin token...");
           const refreshRes = await adminApi.get("/admin/refresh");
 
           if (refreshRes.data?.success) {
+            console.log("Admin refresh successful, retrying profile...");
             const retryProfile = await adminApi.get("/admin/profile");
             if (retryProfile.data?.success && retryProfile.data?.admin) {
               updateAuthState(true, retryProfile.data.admin);
@@ -69,10 +75,11 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
             }
           }
         } catch (refreshError) {
-          console.error("Refresh failed:", refreshError);
+          console.log("Admin refresh failed:", (refreshError as any).response?.status);
         }
       }
 
+      console.log("Setting admin auth to false");
       updateAuthState(false, null);
       return false;
     } finally {
@@ -111,7 +118,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const logout = async (admin_id?: number): Promise<void> => {
     try {
       await adminApi.post("/auth/logout", { admin_id }); // API should clear refresh token cookie
-      await checkAuth();
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
@@ -329,13 +335,10 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Initial check on mount
   useEffect(() => {
-    // Only check auth if we haven't checked yet
-    const token = localStorage.getItem("adminToken") || sessionStorage.getItem("adminToken");
-    if (token) {
+    if (!hasCheckedAuth.current) {
+      hasCheckedAuth.current = true;
+      console.log("Initial admin auth check...");
       checkAuth();
-    } else {
-      // No token, set auth state to false immediately
-      updateAuthState(false, null);
     }
   }, []);
 
