@@ -1861,9 +1861,9 @@ const ProfStreamPage = () => {
       {/* PLACEHOLDER STYLE */}
       <style>
         {`
-          .editor:empty:before {
-            content: "Post something to your space";
-                                  color: ${currentColors.textSecondary};
+          .hidden.lg\\:block .bg-white .editor:empty:before {
+            content: "Post something to your space with a maximum of 250 letters";
+            color: #9ca3af;
             pointer-events: none;
           }
         `}
@@ -2049,7 +2049,7 @@ const ProfStreamPage = () => {
       {showChatPopup && (
         <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0">
           <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !isChatMinimized && setShowChatPopup(false)} />
-          <div className={`relative w-full ${isChatMaximized ? 'h-screen max-w-full' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
+          <div className={`relative ${isChatMinimized ? 'w-64 max-w-64' : 'w-full'} ${isChatMaximized ? 'max-w-4xl h-[90vh]' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
             {/* Chat Header */}
             <div 
               className="flex items-center justify-between rounded-t-lg p-3 border-b"

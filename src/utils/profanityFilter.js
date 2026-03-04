@@ -62,7 +62,7 @@ const profanityFilter = {
     'pangit', 'pangit ka', 'panget', 'p4ng1t', 'p4ng3t',
     'itlog', 'itlog mo', 'itlog', '1tl0g',
     'puke', 'puki', 'puking', 'puki mo', 'puk1', 'puk1ng',
-    'titi', 'titi mo', 'titing', 't1t1', 't1t1ng',
+    'titi', 'tite', 'tite mo', 'titing', 't1t1', 't1t1ng', 't1t3',
     'kantot', 'kantot mo', 'kantutan', 'k4nt0t', 'k4nt0t4n',
     'burat', 'burat mo', 'burating', 'bur4t', 'bur4t1ng',
     'pekpek', 'pekpek mo', 'pekpeking', 'p3kp3k', 'p3kp3k1ng',
