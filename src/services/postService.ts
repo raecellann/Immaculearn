@@ -22,7 +22,7 @@ class PostService {
     async createComment(commentData: CommentCreateData): Promise<ApiResponse<Comment>> {
         try {
             const response = await api.post<ApiResponse<Comment>>("/post/comment", {
-                space_id: commentData.space_id,
+                space_uuid: commentData.space_uuid,
                 post_content: commentData.post_content,
                 parent_id: commentData.parent_id,
             });

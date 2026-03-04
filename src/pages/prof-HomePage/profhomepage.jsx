@@ -513,13 +513,13 @@ const ProfHomePage = () => {
                     style={{ color: isDarkMode ? "#9ca3af" : "white" }}
                   />
                   <p className="text-sm" style={{ color: "white" }}>
-                    No tasks created yet
+                    No student activities
                   </p>
                   <p
                     className="text-xs mt-2"
                     style={{ color: "rgba(255, 255, 255, 0.8)" }}
                   >
-                    Go to your calendar to create tasks and set reminders
+                    Check your calendar to monitor student task submissions and progress
                   </p>
                   <div className="mt-6">
                     <Button2
@@ -948,13 +948,13 @@ const ProfHomePage = () => {
                   style={{ color: isDarkMode ? "#9ca3af" : "white" }}
                 />
                 <p className="text-sm" style={{ color: "white" }}>
-                  No tasks created yet
+                  No student activities
                 </p>
                 <p
                   className="text-xs mt-2"
                   style={{ color: "rgba(255, 255, 255, 0.8)" }}
                 >
-                  Go to your calendar to create tasks and set reminders
+                  Check your calendar to monitor student task submissions and progress
                 </p>
                 <div className="mt-6">
                   <Button2

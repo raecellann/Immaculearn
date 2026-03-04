@@ -125,6 +125,9 @@ const UserPage = () => {
     friendSpaces,
     joinRequestsByLink,
     isLoading: spaceLoading,
+    userSpacesLoading,
+    courseSpacesLoading,
+    friendSpacesLoading,
     acceptJoinRequest,
     declineJoinRequest,
     deleteSpace,
@@ -380,6 +383,15 @@ const UserPage = () => {
   }
 
   // Invalid space or not found
+
+  if (!userSpacesLoading || !courseSpacesLoading || !friendSpacesLoading) {
+    return (
+      <div className="flex h-screen justify-center items-center">
+        <MainLoading />
+      </div>
+    );
+  }
+
   if (!isValidUuid || !currentSpace) {
     return <PageNotFound />;
   }

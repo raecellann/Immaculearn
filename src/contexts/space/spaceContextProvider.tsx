@@ -111,7 +111,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     useQuery({
       queryKey: ["allUploadedtasks"],
       queryFn: fetchAllUploadedTasks,
-      enabled: isAuthenticated,
+      enabled: !!isAuthenticated,
       staleTime: Infinity, // never becomes stale automatically
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
@@ -130,7 +130,11 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   // ----------------------------
   // QUERIES
   // ----------------------------
-  const { data: userSpaces = [], isLoading: userSpacesLoading, error: userSpacesError } = useQuery({
+  const {
+    data: userSpaces = [],
+    isLoading: userSpacesLoading,
+    error: userSpacesError,
+  } = useQuery({
     queryKey: ["userSpaces"],
     queryFn: fetchUserSpaces,
     enabled: isAuthenticated,
@@ -144,7 +148,11 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     },
   });
 
-  const { data: courseSpaces = [], isLoading: courseSpacesLoading, error: courseSpacesError } = useQuery({
+  const {
+    data: courseSpaces = [],
+    isLoading: courseSpacesLoading,
+    error: courseSpacesError,
+  } = useQuery({
     queryKey: ["courseSpaces"],
     queryFn: fetchCourseSpaces,
     enabled: isAuthenticated,
@@ -157,7 +165,11 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     },
   });
 
-  const { data: friendSpaces = [], isLoading: friendSpacesLoading, error: friendSpacesError } = useQuery({
+  const {
+    data: friendSpaces = [],
+    isLoading: friendSpacesLoading,
+    error: friendSpacesError,
+  } = useQuery({
     queryKey: ["friendSpaces"],
     queryFn: fetchFriendSpaces,
     enabled: isAuthenticated,

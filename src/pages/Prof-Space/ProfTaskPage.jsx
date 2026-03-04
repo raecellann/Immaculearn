@@ -279,7 +279,7 @@ const ProfTaskPage = () => {
       await deleteSpace(currentSpace.space_uuid, user.id);
 
       // Navigate immediately after successful deletion
-      navigate("/space");
+      navigate("/prof/spaces");
     } catch (error) {
       console.error("Failed to delete space:", error);
       alert("Failed to delete space. Please try again.");
