@@ -371,7 +371,7 @@ const UserPage = () => {
 
   // Invalid space or not found
 
-  if (!userSpacesLoading || !courseSpacesLoading || !friendSpacesLoading) {
+  if (userSpacesLoading || courseSpacesLoading || friendSpacesLoading) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
