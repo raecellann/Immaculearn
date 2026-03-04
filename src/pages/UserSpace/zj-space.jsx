@@ -288,7 +288,9 @@ const UserPage = () => {
 
   // Load saved cover photo on component mount
   useEffect(() => {
-    const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space_uuid}`);
+    const savedCoverPhoto = currentSpace?.space_cover;
+
+    console.log(savedCoverPhoto);
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }

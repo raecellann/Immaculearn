@@ -23,10 +23,12 @@ export interface SpaceCreateData {
     space_name: string;
     description?: string;
     settings?: SpaceSettings;
+    space_cover?: string;
 }
 export interface CourseSpaceCreateData {
     space_name: string;
     space_description: string;
+    space_cover: string;
     space_day: string;
     space_time_start: string;
     space_time_end: string;

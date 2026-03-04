@@ -120,16 +120,16 @@ const ProfCreateClassroomSpace = () => {
   const handleShortDescriptionChange = (e) => {
     const text = e.target.value;
     setShortDescription(text);
-    
+
     // Count characters
     const count = text.length;
-    
+
     // Limit to 100 characters
     if (count <= 100) {
       setShortDescription(text);
       setCharCount(count);
     }
-    
+
     // Clear description error when user starts typing
     if (text.trim()) {
       setDescriptionError(false);
@@ -316,7 +316,7 @@ const ProfCreateClassroomSpace = () => {
         space_yr_lvl: parseInt(yearLevel) || 1,
         space_course: selectedCourse,
         space_settings: spaceSettings.current,
-        cover_image: coverImage,
+        space_cover: coverImage,
         space_type: "course",
       };
 

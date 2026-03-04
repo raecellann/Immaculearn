@@ -168,7 +168,7 @@ const ProfCreateSpace = () => {
       const spaceData = {
         space_name: spaceName,
         short_description: people[0] || "",
-        cover_image: coverImage,
+        space_cover: coverImage,
       };
       const result = await createSpace(spaceData);
       if (result.success) {

@@ -203,9 +203,9 @@ const ProfStreamPage = () => {
     (space) => space.space_uuid === space_uuid,
   );
 
-  console.log(userSpaces);
-  console.log(courseSpaces);
-  console.log(friendSpaces);
+  // console.log(userSpaces);
+  // console.log(courseSpaces);
+  // console.log(friendSpaces);
 
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
@@ -505,7 +505,7 @@ const ProfStreamPage = () => {
 
   // Load saved cover photo on component mount
   useEffect(() => {
-    const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space_uuid}`);
+    const savedCoverPhoto = currentSpace?.space_cover;
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }

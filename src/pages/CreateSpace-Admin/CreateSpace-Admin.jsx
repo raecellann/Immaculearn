@@ -101,16 +101,16 @@ const CreateSpaceAdmin = () => {
   const handleShortDescriptionChange = (e) => {
     const text = e.target.value;
     setPeople([text, ...people.slice(1)]);
-    
+
     // Count characters
     const count = text.length;
-    
+
     // Limit to 100 characters
     if (count <= 100) {
       setPeople([text, ...people.slice(1)]);
       setCharCount(count);
     }
-    
+
     // Clear description error when user starts typing
     if (text.trim()) {
       setDescriptionError(false);
@@ -208,7 +208,7 @@ const CreateSpaceAdmin = () => {
         space_name: spaceName,
         max_members: 5,
         short_description: people[0] || "",
-        cover_image: coverImage,
+        space_cover: coverImage,
       };
 
       // Call the API
