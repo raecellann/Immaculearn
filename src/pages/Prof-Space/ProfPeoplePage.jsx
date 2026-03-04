@@ -552,7 +552,7 @@ const ProfPeoplePage = () => {
                 ))
               ) : (
                 <p style={{ color: currentColors.textSecondary }}>
-                  No members yet.
+                  No students yet.
                 </p>
               )}
             </div>
