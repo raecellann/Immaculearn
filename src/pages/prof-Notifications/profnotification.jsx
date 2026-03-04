@@ -13,6 +13,7 @@ import { GroupCover } from "../component/groupCover";
 import { SpaceCover } from "../component/spaceCover";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
+import { announcementService } from "../../services/userAnnounceservice";
 
 const ProfNotificationPage = () => {
   const location = useLocation();
@@ -26,6 +27,14 @@ const ProfNotificationPage = () => {
   const [selectedFilter, setSelectedFilter] = useState(location.state?.filter || "all");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [viewedAnnouncements, setViewedAnnouncements] = useState(new Set());
+  
+  // State for real announcements
+  const [schoolAnnouncements, setSchoolAnnouncements] = useState([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
+  const [announcementsError, setAnnouncementsError] = useState(null);
+  
+  // Prevent duplicate fetches
+  const hasFetchedAnnouncements = useRef(false);
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -120,61 +129,44 @@ const ProfNotificationPage = () => {
       });
   }, [joinRequestsByLink, ownedSpaces]);
 
+  // Fetch professor announcements on component mount
+  useEffect(() => {
+    const fetchProfessorAnnouncements = async () => {
+      // Prevent duplicate fetches
+      if (hasFetchedAnnouncements.current) return;
+      hasFetchedAnnouncements.current = true;
+      
+      try {
+        setAnnouncementsLoading(true);
+        setAnnouncementsError(null);
+        
+        // Get announcements for professors (target_audience = "PROFESSORS" or "ALL")
+        const response = await announcementService.getAnnouncementsByAudience("PROFESSORS");
+        
+        if (response.success && response.data) {
+          setSchoolAnnouncements(response.data);
+        } else {
+          setAnnouncementsError(response.message || "Failed to load announcements");
+        }
+      } catch (err) {
+        setAnnouncementsError("Failed to load announcements");
+        console.error("Error fetching announcements:", err);
+      } finally {
+        setAnnouncementsLoading(false);
+      }
+    };
+
+    fetchProfessorAnnouncements();
+  }, []); // Empty dependency array - only runs once on mount
+
   const handleAnnouncementClick = (announcement) => {
     setSelectedAnnouncement(announcement);
-    if (!viewedAnnouncements.has(announcement.id)) {
-      setViewedAnnouncements(prev => new Set(prev).add(announcement.id));
+    if (!viewedAnnouncements.has(announcement.announce_id)) {
+      setViewedAnnouncements(prev => new Set(prev).add(announcement.announce_id));
     }
   };
 
   const pendingInvitesCount = joinRequestsByLink?.length;
-
-  // Mock school announcements data - replace with actual data source
-  const schoolAnnouncements = [
-    {
-      id: 1,
-      title: "Faculty Meeting Notice",
-      message: "Monthly faculty meeting scheduled for Friday at 3 PM.",
-      date: "2024-02-20",
-    },
-    {
-      id: 2,
-      title: "New Course Materials",
-      message:
-        "Updated course materials are now available in the faculty portal.",
-      date: "2024-02-19",
-    },
-    {
-      id: 3,
-      title: "Research Grant Deadline",
-      message: "Reminder: Research grant applications are due next Monday. Submit your proposals early.",
-      date: "2024-02-18",
-    },
-    {
-      id: 4,
-      title: "Professional Development Workshop",
-      message: "Free workshop on innovative teaching methods will be held this Thursday.",
-      date: "2024-02-17",
-    },
-    {
-      id: 5,
-      title: "Faculty Lounge Renovation",
-      message: "Faculty lounge will be renovated next week. Temporary lounge available in Room 205.",
-      date: "2024-02-16",
-    },
-    {
-      id: 6,
-      title: "New Academic Calendar",
-      message: "Updated academic calendar for next semester has been published. Please review important dates.",
-      date: "2024-02-15",
-    },
-    {
-      id: 7,
-      title: "Student Advisory Meeting",
-      message: "Monthly student advisory committee meeting scheduled for next Tuesday at 2 PM.",
-      date: "2024-02-14",
-    },
-  ];
 
   const announcementsCount = schoolAnnouncements.length;
 
@@ -631,7 +623,41 @@ const ProfNotificationPage = () => {
                 </div>
 
                 {/* Display announcements */}
-                {schoolAnnouncements.length === 0 ? (
+                {announcementsLoading ? (
+                  <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                    <div className="flex flex-col items-center gap-3">
+                      <FiBell size={40} className="text-gray-400" />
+                      <div>
+                        <p 
+                          className="text-sm font-medium mb-1"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
+                          Loading announcements...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : announcementsError ? (
+                  <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                    <div className="flex flex-col items-center gap-3">
+                      <FiBell size={40} className="text-gray-400" />
+                      <div>
+                        <p 
+                          className="text-sm font-medium mb-1"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
+                          Failed to load announcements
+                        </p>
+                        <p 
+                          className="text-xs"
+                          style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                        >
+                          {announcementsError}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : schoolAnnouncements.length === 0 ? (
                   <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
                     <div className="flex flex-col items-center gap-3">
                       <FiBell size={40} className="text-gray-400" />
@@ -655,7 +681,7 @@ const ProfNotificationPage = () => {
                   <>
                     {schoolAnnouncements.slice(0, selectedFilter === "announcements" ? schoolAnnouncements.length : 3).map((announcement) => (
                       <div
-                        key={announcement.id}
+                        key={announcement.announce_id}
                         className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
                         style={{
                           backgroundColor: isDarkMode
@@ -672,7 +698,7 @@ const ProfNotificationPage = () => {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              {!viewedAnnouncements.has(announcement.id) && (
+                              {!viewedAnnouncements.has(announcement.announce_id) && (
                                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: isDarkMode ? "#3B82F6" : "#2563EB" }}></div>
                               )}
                               <p
@@ -691,7 +717,7 @@ const ProfNotificationPage = () => {
                                 lineHeight: "1.5",
                               }}
                             >
-                              {announcement.message}
+                              {announcement.content}
                             </p>
                             <div className="flex items-center gap-2">
                               <svg 
@@ -716,7 +742,11 @@ const ProfNotificationPage = () => {
                                     : "#6B7280",
                                 }}
                               >
-                                {announcement.date}
+                                {new Date(announcement.created_at).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
                               </p>
                             </div>
                           </div>
@@ -917,7 +947,11 @@ const ProfNotificationPage = () => {
                     className="text-sm font-medium"
                     style={{ color: isDarkMode ? "#9CA3AF" : "#6B7280" }}
                   >
-                    {selectedAnnouncement.date}
+                    {new Date(selectedAnnouncement.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
                   </p>
                 </div>
               </div>
@@ -948,7 +982,7 @@ const ProfNotificationPage = () => {
                   className="text-base"
                   style={{ color: isDarkMode ? "rgba(229, 231, 235, 0.95)" : "#374151" }}
                 >
-                  {selectedAnnouncement.message}
+                  {selectedAnnouncement.content}
                 </p>
               </div>
             </div>

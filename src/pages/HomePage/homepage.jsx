@@ -819,9 +819,7 @@ const HomePage1 = () => {
                                   <p className="text-gray-400 text-xs mt-1">
                                     {space.members?.length || 0} Members
                                   </p>
-                                  <p className="text-gray-500 text-xs mt-1">
-                                    Last active • just now
-                                  </p>
+                                  
                                 </div>
                               </div>
 
@@ -1000,9 +998,22 @@ const HomePage1 = () => {
                                     Students
                                   </p>
                                   <p className="text-gray-500 text-xs mt-1">
-                                    {course.space_day} (
-                                    {`${course.space_time_start} - ${course.space_time_end}`}
-                                    )
+                                    {course.space_day || "TBD"} (
+                                    {new Date(
+                                      `2000-01-01T${course.space_time_start}`,
+                                    ).toLocaleTimeString([], {
+                                      hour: "numeric",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}{" "}
+                                    -{" "}
+                                    {new Date(
+                                      `2000-01-01T${course.space_time_end}`,
+                                    ).toLocaleTimeString([], {
+                                      hour: "numeric",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}
                                   </p>
                                 </div>
                               </div>

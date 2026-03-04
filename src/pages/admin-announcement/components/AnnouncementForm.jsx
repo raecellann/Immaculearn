@@ -69,7 +69,7 @@ const AnnouncementForm = ({
             className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
           >
             <option value="all">All Users</option>
-            <option value="faculty">Professors Only</option>
+            <option value="TEACHERS">Professors Only</option>
             <option value="students">Students Only</option>
           </select>
         </div>

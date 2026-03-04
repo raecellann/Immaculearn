@@ -1,32 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { Megaphone } from "lucide-react";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
-
-// Mock announcements — replace with real API data as needed
-const MOCK_ANNOUNCEMENTS = [
-  {
-    id: 1,
-    title: "School Holiday Notice",
-    message: "School will be closed on Monday for maintenance.",
-    date: "March 2, 2026",
-    priority: "high",
-  },
-  {
-    id: 2,
-    title: "Exam Schedule Released",
-    message: "Final exam schedule has been posted. Check your student portal.",
-    date: "February 28, 2026",
-    priority: "normal",
-  },
-  {
-    id: 3,
-    title: "New Library Hours",
-    message: "Library will now be open until 9 PM on weekdays for extended study hours.",
-    date: "February 25, 2026",
-    priority: "normal",
-  },
-];
+import { announcementService } from "../../../services/userAnnounceservice";
 
 const priorityStyles = {
   high: {
@@ -49,13 +25,52 @@ const StudentAnnouncementByAdmin = () => {
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [viewedAnnouncements, setViewedAnnouncements] = useState(new Set());
+  
+  // State for announcements
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Prevent duplicate fetches
+  const hasFetched = useRef(false);
 
-  const visible = MOCK_ANNOUNCEMENTS.slice(0, 3);
+  // Fetch student announcements on component mount (only once)
+  useEffect(() => {
+    const fetchStudentAnnouncements = async () => {
+      // Prevent duplicate fetches
+      if (hasFetched.current) return;
+      hasFetched.current = true;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Get announcements for students (target_audience = "STUDENTS" or "ALL")
+        const response = await announcementService.getAnnouncementsByAudience("STUDENTS");
+        
+        if (response.success && response.data) {
+          setAnnouncements(response.data);
+        } else {
+          setError(response.message || "Failed to load announcements");
+        }
+      } catch (err) {
+        setError("Failed to load announcements");
+        console.error("Error fetching announcements:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentAnnouncements();
+  }, []); // Empty dependency array - only runs once on mount
+
+  // Get visible announcements (limit to 3 most recent)
+  const visible = announcements.slice(0, 3);
 
   const handleAnnouncementClick = (announcement) => {
     setSelectedAnnouncement(announcement);
-    if (!viewedAnnouncements.has(announcement.id)) {
-      setViewedAnnouncements(prev => new Set(prev).add(announcement.id));
+    if (!viewedAnnouncements.has(announcement.announce_id)) {
+      setViewedAnnouncements(prev => new Set(prev).add(announcement.announce_id));
     }
   };
 
@@ -83,105 +98,127 @@ const StudentAnnouncementByAdmin = () => {
         </h4>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-4">
+          <p style={{ color: "white" }}>Loading announcements...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <div className="text-center py-4">
+          <p style={{ color: "white" }}>{error}</p>
+        </div>
+      )}
+
       {/* Announcements List */}
-      <div className="space-y-3">
-        {visible.length === 0 ? (
-          <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
-            <div className="flex flex-col items-center gap-3">
-              <Megaphone size={32} className="text-gray-400" />
-              <div>
-                <p 
-                  className="text-sm font-medium mb-1"
-                  style={{ color: isDarkMode ? "white" : "black" }}
-                >
-                  No announcements yet
-                </p>
-                <p 
-                  className="text-xs"
-                  style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
-                >
-                  Admin hasn't posted any announcements at the moment
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          visible.map((announcement) => (
-            <div
-              key={announcement.id}
-              className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-              style={{
-                backgroundColor: isDarkMode
-                  ? "rgba(30, 36, 46, 0.9)"
-                  : "rgba(255, 255, 255, 0.95)",
-                borderColor: isDarkMode ? currentColors.border : "rgb(229, 231, 235)",
-                borderWidth: "1px",
-              }}
-              onClick={() => handleAnnouncementClick(announcement)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    {!viewedAnnouncements.has(announcement.id) && (
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#3B82F6" }}></div>
-                    )}
-                    <p
-                      className="text-sm font-semibold"
-                      style={{ color: currentColors.text }}
-                    >
-                      {announcement.title}
-                    </p>
-                  </div>
-                  <p
-                    className="text-sm leading-relaxed mb-3"
-                    style={{
-                      color: currentColors.textSecondary,
-                      lineHeight: "1.5",
-                    }}
+      {!loading && !error && (
+        <div className="space-y-3">
+          {visible.length === 0 ? (
+            <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+              <div className="flex flex-col items-center gap-3">
+                <Megaphone size={32} className="text-gray-400" />
+                <div>
+                  <p 
+                    className="text-sm font-medium mb-1"
+                    style={{ color: isDarkMode ? "white" : "black" }}
                   >
-                    {announcement.message}
+                    No announcements yet
                   </p>
-                  <div className="flex items-center gap-2">
-                    <svg 
-                      className="w-4 h-4" 
-                      style={{ color: currentColors.textSecondary }}
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
-                      />
-                    </svg>
-                    <p
-                      className="text-xs font-medium"
-                      style={{
-                        color: currentColors.textSecondary,
-                      }}
-                    >
-                      {announcement.date}
-                    </p>
-                  </div>
+                  <p 
+                    className="text-xs"
+                    style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                  >
+                    Admin hasn't posted any announcements at the moment
+                  </p>
                 </div>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ) : (
+            visible.map((announcement) => (
+              <div
+                key={announcement.announce_id}
+                className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                style={{
+                  backgroundColor: isDarkMode
+                    ? "rgba(30, 36, 46, 0.9)"
+                    : "rgba(255, 255, 255, 0.95)",
+                  borderColor: isDarkMode ? currentColors.border : "rgb(229, 231, 235)",
+                  borderWidth: "1px",
+                }}
+                onClick={() => handleAnnouncementClick(announcement)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      {!viewedAnnouncements.has(announcement.announce_id) && (
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#3B82F6" }}></div>
+                      )}
+                      <p
+                        className="text-sm font-semibold"
+                        style={{ color: currentColors.text }}
+                      >
+                        {announcement.title}
+                      </p>
+                    </div>
+                    <p
+                      className="text-sm leading-relaxed mb-3"
+                      style={{
+                        color: currentColors.textSecondary,
+                        lineHeight: "1.5",
+                      }}
+                    >
+                      {announcement.content}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <svg 
+                        className="w-4 h-4" 
+                        style={{ color: currentColors.textSecondary }}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                        />
+                      </svg>
+                      <p
+                        className="text-xs font-medium"
+                        style={{
+                          color: currentColors.textSecondary,
+                        }}
+                      >
+                        {new Date(announcement.created_at).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* View All button */}
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={() => navigate("/notifications", { state: { filter: "announcements" } })}
-          className="text-sm font-medium hover:underline transition-colors"
-          style={{ color: isDarkMode ? "#60A5FA" : "white" }}
-        >
-          View All Announcements →
-        </button>
-      </div>
+      {!loading && !error && (
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={() => navigate("/notifications", { state: { filter: "announcements" } })}
+            className="text-sm font-medium hover:underline transition-colors"
+            style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+          >
+            View All Announcements →
+          </button>
+        </div>
+      )}
 
       {/* Announcement Detail Modal */}
       {selectedAnnouncement && (
@@ -229,7 +266,11 @@ const StudentAnnouncementByAdmin = () => {
                     className="text-sm font-medium"
                     style={{ color: currentColors.textSecondary }}
                   >
-                    {selectedAnnouncement.date}
+                    {new Date(selectedAnnouncement.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
                   </p>
                 </div>
               </div>
@@ -260,7 +301,7 @@ const StudentAnnouncementByAdmin = () => {
                   className="text-base"
                   style={{ color: currentColors.text }}
                 >
-                  {selectedAnnouncement.message}
+                  {selectedAnnouncement.content}
                 </p>
               </div>
             </div>
