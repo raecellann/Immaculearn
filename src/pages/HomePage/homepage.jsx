@@ -468,7 +468,7 @@ const HomePage1 = () => {
                     className="text-lg sm:text-xl font-semibold mb-2"
                     style={{ color: "white" }}
                   >
-                    {greeting}, {user?.name || "Student"}
+                    {greeting}, {user?.first_name || "Student"}
                   </h1>
                   <p
                     className="mb-1"
@@ -681,7 +681,7 @@ const HomePage1 = () => {
                 {allUploadedTasks.length > 0 && (
                   <div className="flex justify-end mt-4">
                     <button
-                      onClick={() => navigate("/tasks")}
+                      onClick={() => navigate("/task")}
                       className="text-sm font-medium hover:underline transition-colors"
                       style={{ color: isDarkMode ? "#60A5FA" : "white" }}
                     >
@@ -1386,7 +1386,7 @@ const HomePage1 = () => {
               {allUploadedTasks.length > 0 && (
                 <div className="flex justify-end mt-4">
                   <button
-                    onClick={() => navigate("/tasks")}
+                    onClick={() => navigate("/task")}
                     className="text-sm font-medium hover:underline transition-colors"
                     style={{ color: isDarkMode ? "#60A5FA" : "white" }}
                   >

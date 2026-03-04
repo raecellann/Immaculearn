@@ -141,7 +141,7 @@ const GradeViewing = () => {
 
           {/* Folder View */}
           {!selectedSubject && (
-            <div className="mb-12 mt-8">
+            <div className="mb-8 mt-16 sm:mt-20 lg:mt-24">
               <h2 className="text-xl font-semibold mb-4">Course Space</h2>
 
               {courseSpaces.filter((space) =>

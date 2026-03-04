@@ -125,7 +125,7 @@ const ProfListActivityPage = () => {
           </h1>
 
           {/* Course Space Activities */}
-          <div className="mb-8">
+          <div className="mb-8 mt-16 sm:mt-20 lg:mt-24">
             <h2 className="text-xl font-semibold mb-4">Course Space</h2>
             {courseSpaces?.length === 0 ? (
               <div className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto" style={{

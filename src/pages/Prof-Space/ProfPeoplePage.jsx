@@ -488,7 +488,7 @@ const ProfPeoplePage = () => {
           {adviserInfo && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4">
-                {isClassroomSpace ? "Advisor" : "Advisor"}
+                {isClassroomSpace ? "Owner" : "Professor"}
               </h2>
               <div
                 className="border-t pt-4"
@@ -552,7 +552,7 @@ const ProfPeoplePage = () => {
                 ))
               ) : (
                 <p style={{ color: currentColors.textSecondary }}>
-                  No members yet.
+                  No students yet.
                 </p>
               )}
             </div>

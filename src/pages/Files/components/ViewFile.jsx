@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from "react";
 import ProfSidebar from "../../component/profsidebar";
 import { useNavigate, useParams } from "react-router";
@@ -11,8 +12,7 @@ const ViewFilePage = () => {
   const navigate = useNavigate();
   const { resources } = useFile();
 
-  /* ================= ROUTE PARAMS ================= */
-
+  /* ROUTE PARAMS */
   const { file_name, file_uuid, orig_file_name, file_id } = useParams();
   const fileName = file_name || orig_file_name;
   const fileUuid = file_uuid || file_id;
@@ -20,118 +20,64 @@ const ViewFilePage = () => {
 
   const file = useMemo(() => {
     return resources?.find(
-      (resource) => resource.file_id === parseInt(fileUuid)
+      (resource) => resource.file_id === Number(fileUuid)
     );
   }, [resources, fileUuid]);
 
-  /* ================= STATES ================= */
-
+  /* STATES */
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [fileType, setFileType] = useState("binary");
   const [content, setContent] = useState("");
   const [zoomed, setZoomed] = useState(false);
 
-  /* ================= EXTENSIONS ================= */
+  /* EXTENSIONS */
+  const imageExt = ["jpg","jpeg","png","gif","webp","bmp","svg"];
+  const textExt = ["txt","js","json","md","html","css","py","php","sql"];
+  const docExt = ["doc","docx","ppt","pptx"];
+  const excelExt = ["xls","xlsx"];
 
-  const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"];
-  const textExtensions = [
-    "txt",
-    "js",
-    "json",
-    "md",
-    "html",
-    "css",
-    "py",
-    "php",
-    "sql",
-  ];
-  const officeExtensions = ["doc", "docx", "ppt", "pptx", "xls", "xlsx"];
-
-  /* ================= FETCH LOGIC ================= */
-
+  /* DETECT FILE TYPE */
   useEffect(() => {
-    const handleFile = async () => {
-      if (!file) {
-        setIsLoading(false);
-        return;
-      }
+    if (!file) {
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        setIsLoading(true);
-        setError(null);
-        setContent("");
+    const extension = file.file_name?.split(".").pop()?.toLowerCase();
 
-        const extension = file.file_name
-          ?.split(".")
-          .pop()
-          ?.toLowerCase();
+    if (imageExt.includes(extension)) {
+      setFileType("image");
+    } else if (extension === "pdf") {
+      setFileType("pdf");
+    } else if (excelExt.includes(extension)) {
+      setFileType("excel");
+    } else if (docExt.includes(extension)) {
+      setFileType("office");
+    } else if (textExt.includes(extension)) {
+      setFileType("text");
 
-        /* ================= IMAGE ================= */
-        if (imageExtensions.includes(extension)) {
-          setFileType("image");
-          setIsLoading(false);
-          return;
-        }
+      fetch(file.file_url)
+        .then((r) => r.text())
+        .then((t) => setContent(t))
+        .catch(() => setError("Failed to load text file."));
+    } else {
+      setFileType("binary");
+    }
 
-        /* ================= PDF ================= */
-        if (extension === "pdf") {
-          setFileType("pdf");
-          setIsLoading(false);
-          return;
-        }
-
-        /* ================= OFFICE ================= */
-        if (officeExtensions.includes(extension)) {
-          setFileType("office");
-          setIsLoading(false);
-          return;
-        }
-
-        /* ================= TEXT (SAFE MODE) ================= */
-        if (textExtensions.includes(extension)) {
-          const response = await fetch(file.file_url, {
-            headers: {
-              Accept: "text/plain",
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch file.");
-          }
-
-          const text = await response.text();
-
-          // IMPORTANT: prevent browser from executing anything
-          setContent(text);
-          setFileType("text");
-          setIsLoading(false);
-          return;
-        }
-
-        /* ================= DEFAULT ================= */
-        setFileType("binary");
-        setIsLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load file.");
-        setIsLoading(false);
-      }
-    };
-
-    handleFile();
+    setIsLoading(false);
   }, [file]);
 
-  /* ================= OFFICE VIEWER ================= */
+  /* VIEWER URLS */
+  const googleViewerUrl = file?.file_url
+    ? `https://docs.google.com/viewer?url=${encodeURIComponent(file.file_url)}&embedded=true`
+    : "";
 
-  const officeViewerUrl =
-    file?.file_url &&
-    `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(
-      file.file_url
-    )}`;
+  const excelViewerUrl = file?.file_url
+    ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(file.file_url)}`
+    : "";
 
-  /* ================= UI ================= */
-
+  /* UI */
   return (
     <div
       className="flex min-h-screen font-sans"
@@ -145,6 +91,7 @@ const ViewFilePage = () => {
       </div>
 
       <div className="flex-1 p-6 max-w-6xl mx-auto w-full">
+
         <button
           onClick={() => navigate(-1)}
           className="mb-4 text-sm underline"
@@ -162,40 +109,34 @@ const ViewFilePage = () => {
         >
           <h1 className="text-2xl font-bold mb-4">{decodedFileName}</h1>
 
-          {/* LOADING */}
           {isLoading && (
             <div className="text-center p-10">
-              <div className="animate-spin h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4 rounded-full"></div>
-              <p style={{ color: currentColors.textSecondary }}>
-                Loading file...
-              </p>
+              <p>Loading file...</p>
             </div>
           )}
 
-          {/* ERROR */}
-          {error && <div className="text-red-500">{error}</div>}
+          {error && <p className="text-red-500">{error}</p>}
 
           {/* IMAGE */}
-          {!isLoading && !error && fileType === "image" && (
+          {!isLoading && fileType === "image" && file?.file_url && (
             <>
               <div className="flex justify-center">
                 <img
                   src={file.file_url}
                   alt={decodedFileName}
+                  className="max-h-[70vh] cursor-zoom-in"
                   onClick={() => setZoomed(true)}
-                  className="max-w-full max-h-[70vh] rounded shadow-lg cursor-zoom-in transition hover:scale-105"
                 />
               </div>
 
               {zoomed && (
                 <div
-                  className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+                  className="fixed inset-0 bg-black/90 flex items-center justify-center"
                   onClick={() => setZoomed(false)}
                 >
                   <img
                     src={file.file_url}
-                    alt={decodedFileName}
-                    className="max-w-[90%] max-h-[90%] rounded"
+                    className="max-w-[90%] max-h-[90%]"
                   />
                 </div>
               )}
@@ -203,62 +144,50 @@ const ViewFilePage = () => {
           )}
 
           {/* PDF */}
-          {!isLoading && !error && fileType === "pdf" && (
-            <div className="w-full h-[80vh]">
-              <iframe
-                src={file.file_url}
-                width="100%"
-                height="100%"
-                title="PDF Viewer"
-              />
-            </div>
+          {!isLoading && fileType === "pdf" && file?.file_url && (
+            <iframe
+              src={file.file_url}
+              width="100%"
+              height="800"
+              title="PDF Viewer"
+            />
           )}
 
-          {/* OFFICE */}
-          {!isLoading && !error && fileType === "office" && (
-            <div className="w-full h-[80vh]">
-              <iframe
-                src={officeViewerUrl}
-                width="100%"
-                height="100%"
-                title="Office Viewer"
-              />
-            </div>
+          {/* EXCEL */}
+          {!isLoading && fileType === "excel" && (
+            <iframe
+              src={excelViewerUrl}
+              width="100%"
+              height="800"
+              title="Excel Viewer"
+            />
           )}
 
-          {/* TEXT (SAFE DISPLAY) */}
-          {!isLoading && !error && fileType === "text" && (
-            <div
-              className="p-4 rounded font-mono text-sm overflow-x-auto whitespace-pre-wrap"
-              style={{
-                backgroundColor: currentColors.background,
-                border: `1px solid ${currentColors.border}`,
-                minHeight: "200px",
-              }}
+          {/* DOC / PPT */}
+          {!isLoading && fileType === "office" && (
+            <iframe
+              src={googleViewerUrl}
+              width="100%"
+              height="800"
+              title="Office Viewer"
+            />
+          )}
+
+          {/* TEXT */}
+          {!isLoading && fileType === "text" && (
+            <pre className="p-4 overflow-x-auto">{content}</pre>
+          )}
+
+          {/* OTHER */}
+          {!isLoading && fileType === "binary" && file?.file_url && (
+            <button
+              onClick={() => window.open(file.file_url)}
+              className="underline"
             >
-              {content || "Empty file."}
-            </div>
+              Download / Open File
+            </button>
           )}
 
-          {/* BINARY */}
-          {!isLoading && !error && fileType === "binary" && (
-            <div
-              className="p-4 rounded"
-              style={{
-                backgroundColor: currentColors.background,
-                border: `1px solid ${currentColors.border}`,
-              }}
-            >
-              <p>This file cannot be previewed.</p>
-              <button
-                onClick={() => window.open(file.file_url, "_blank")}
-                className="mt-3 underline text-sm"
-                style={{ color: currentColors.primary }}
-              >
-                Download / Open File
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

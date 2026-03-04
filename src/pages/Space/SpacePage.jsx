@@ -457,7 +457,7 @@ const SpacePage = () => {
                   className="text-2xl font-bold mb-2"
                   style={{ color: "white" }}
                 >
-                  Good Morning, {user && user.name}
+                  Good Morning, {user && user.first_name}
                 </h2>
                 <p className="text-sm mb-4" style={{ color: "white" }}>
                   Join space or create your own.

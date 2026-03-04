@@ -157,83 +157,107 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
       {/* Overlay */}
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className={`w-full max-w-2xl rounded-2xl shadow-2xl p-6 space-y-6 ${
-          isDarkMode ? 'bg-gray-900' : 'bg-white border border-gray-200'
-        }`}>
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <DialogTitle className={`text-lg font-semibold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              Archive Class
-            </DialogTitle>
+        <div className="fixed inset-0 flex items-start sm:items-center justify-center p-4 sm:p-8 overflow-y-auto sm:overflow-hidden pt-8 sm:pt-auto">      
+          <DialogPanel
+            className={`w-full max-w-2xl rounded-2xl shadow-2xl px-6 py-5 space-y-4 ${
+              isDarkMode
+                ? "bg-gray-900"
+                : "bg-white border border-gray-200"
+            }`}
+          >
+            {/* Header */}
+            <div className="relative flex items-center justify-center">
+              <DialogTitle
+                className={`text-lg font-semibold text-center ${
+                  isDarkMode ? "text-white" : "text-gray-900"
+                }`}
+              >
+                Archive Class
+              </DialogTitle>
 
-            <button
-              onClick={onClose}
-              className={`transition ${
-                isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              ✕
-            </button>
-          </div>
+              <button
+                onClick={onClose}
+                className={`absolute right-0 text-xl transition ${
+                  isDarkMode
+                    ? "text-gray-400 hover:text-gray-200"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                ✕
+              </button>
+            </div>
 
-          <p className={`text-base ${
+          <p className={`text-sm sm:text-base ${
             isDarkMode ? 'text-gray-300' : 'text-gray-600'
           }`}>
             Are you sure you want to archive the following class?
           </p>
 
           {/* Warning Box */}
-          <div className={`flex gap-3 rounded-xl p-4 ${
-            isDarkMode ? 'bg-orange-900/20 border border-orange-800' : 'bg-orange-50 border border-orange-200'
-          }`}>
-            <div className="flex-shrink-0">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                isDarkMode ? 'bg-orange-800' : 'bg-orange-200'
-              }`}>
-                <svg viewBox="0 0 24 24" className={`w-6 h-6 ${
-                  isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                }`} fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                </svg>
-              </div>
-            </div>
-            <div className="flex-1">
-              <p className={`text-sm font-medium ${
-                isDarkMode ? 'text-orange-300' : 'text-orange-800'
-              }`}>
-                Archiving this class will:
-              </p>
-              <ul className={`text-sm mt-2 space-y-1 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                <li>• Remove the class from your active classes list</li>
-                <li>• Preserve all student data and assignments</li>
-                <li>• Allow you to restore the class later if needed</li>
-                <li>• Students will no longer be able to access this class</li>
-              </ul>
+        <div
+          className={`flex gap-3 sm:gap-4 rounded-xl px-3 sm:px-4 lg:px-5 py-3 sm:py-4 ${
+            isDarkMode
+              ? "bg-orange-900/20 border border-orange-800"
+              : "bg-orange-50 border border-orange-200"
+          }`}
+        >
+          <div className="flex-shrink-0">
+            <div
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${
+                isDarkMode ? "bg-orange-800" : "bg-orange-200"
+              }`}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                  isDarkMode ? "text-orange-300" : "text-orange-600"
+                }`}
+                fill="currentColor"
+              >
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+              </svg>
             </div>
           </div>
 
+          <div className="flex-1">
+            <p
+              className={`text-xs sm:text-sm font-semibold ${
+                isDarkMode ? "text-orange-300" : "text-orange-800"
+              }`}
+            >
+              Archiving this class will:
+            </p>
+
+            <ul
+              className={`text-xs sm:text-sm mt-2 space-y-1 ${
+                isDarkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              <li>• Remove the class from your active classes list</li>
+              <li>• Preserve all student data and assignments</li>
+              <li>• Allow you to restore the class later if needed</li>
+              <li>• Students will no longer be able to access this class</li>
+            </ul>
+          </div>
+        </div>
+
           {/* Class Info Card */}
-          <div className={`flex items-center justify-between rounded-xl p-4 ${
+          <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-xl p-3 sm:p-4 ${
             isDarkMode 
               ? 'border border-gray-700 bg-gray-800' 
               : 'border border-gray-200 bg-gray-50'
           }`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm sm:text-base">
                 ✓
               </div>
               <div>
-                <div className={`font-medium text-base ${
+                <div className={`font-medium text-sm sm:text-base ${
                   isDarkMode ? 'text-white' : 'text-gray-900'
                 }`}>
                   {space.space_name}
                 </div>
-                <div className={`text-sm ${
+                <div className={`text-xs sm:text-sm ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
                   {filesCount} Files, {tasksCount} tasks, {peopleCount - 1} students
@@ -241,7 +265,7 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
               </div>
             </div>
 
-            <button className={`text-sm border px-3 py-1.5 rounded-lg hover transition ${
+            <button className={`text-xs sm:text-sm border px-2 sm:px-3 py-1.5 rounded-lg hover transition mt-3 sm:mt-0 ${
               isDarkMode 
                 ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
                 : 'border-gray-300 text-gray-700 hover:bg-gray-100'
@@ -251,8 +275,8 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
           </div>
 
           {/* Confirmation Input */}
-          <div className="space-y-2">
-            <p className={`text-sm ${
+          <div className="space-y-1">
+            <p className={`text-xs sm:text-sm ${
               isDarkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
               To archive, type the class name{" "}
@@ -269,7 +293,7 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
               placeholder={`Enter ${space.space_name}`}
-              className={`w-full rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 placeholder-gray-500 ${
+              className={`w-full rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 placeholder-gray-500 ${
                 isDarkMode 
                   ? 'bg-gray-800 border border-gray-600 text-white focus:ring-orange-500' 
                   : 'bg-white border border-gray-300 text-gray-900 focus:ring-orange-500'
@@ -278,10 +302,10 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-2">
             <button
               onClick={onClose}
-              className={`px-4 py-2 rounded-lg text-base transition border ${
+              className={`px-4 py-2 rounded-lg text-sm sm:text-base transition border order-2 sm:order-1 ${
                 isDarkMode 
                   ? 'text-gray-300 hover:bg-gray-800 border-gray-600' 
                   : 'text-gray-700 hover:bg-gray-100 border-gray-300'
@@ -293,7 +317,7 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
             <button
               onClick={() => isValid && onConfirm()}
               disabled={!isValid}
-              className={`px-4 py-2 rounded-lg text-base text-white transition ${
+              className={`px-4 py-2 rounded-lg text-sm sm:text-base text-white transition order-1 sm:order-2 ${
                 isValid
                   ? "bg-orange-600 hover:bg-orange-700"
                   : "bg-orange-800 cursor-not-allowed"

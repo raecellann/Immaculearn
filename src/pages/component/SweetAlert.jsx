@@ -167,13 +167,13 @@ export function DeleteConfirmationDialog({
       {/* Overlay */}
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className={`w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-6 ${
+      <div className="fixed inset-0 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto sm:overflow-hidden pt-8 sm:pt-auto">
+        <DialogPanel className={`w-full max-w-lg sm:max-w-2xl rounded-2xl shadow-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 space-y-4 sm:space-y-6 my-4 sm:my-8 ${
           isDarkMode ? 'bg-gray-900' : 'bg-white border border-gray-200'
         }`}>
           {/* Header */}
           <div className="flex items-start justify-between">
-            <DialogTitle className={`text-lg font-semibold ${
+            <DialogTitle className={`text-base sm:text-lg font-semibold ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
               Delete Space
@@ -181,7 +181,7 @@ export function DeleteConfirmationDialog({
 
             <button
               onClick={onClose}
-              className={`transition ${
+              className={`transition text-lg sm:text-xl ${
                 isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -189,20 +189,20 @@ export function DeleteConfirmationDialog({
             </button>
           </div>
 
-          <p className={`text-base ${
+          <p className={`text-sm sm:text-base ${
   isDarkMode ? 'text-gray-300' : 'text-gray-600'
 }`}>
             Are you sure you want to delete the following workspace?
           </p>
 
           {/* Warning Box */}
-          <div className={`flex gap-3 rounded-xl p-4 ${
+          <div className={`flex gap-3 sm:gap-4 rounded-xl p-3 sm:p-4 ${
             isDarkMode 
               ? 'bg-red-900/20 border border-red-800/50' 
               : 'bg-red-50 border border-red-200'
           }`}>
             <div className="w-1 bg-red-500 rounded-full" />
-            <div className={`text-sm ${
+            <div className={`text-xs sm:text-sm ${
               isDarkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
               <span className={`font-semibold ${
@@ -216,22 +216,22 @@ export function DeleteConfirmationDialog({
           </div>
 
           {/* Workspace Card */}
-          <div className={`flex items-center justify-between rounded-xl p-4 ${
+          <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-xl p-3 sm:p-4 ${
             isDarkMode 
               ? 'border border-gray-700 bg-gray-800' 
               : 'border border-gray-200 bg-gray-50'
           }`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm sm:text-base">
                 ✓
               </div>
               <div>
-                <div className={`font-medium text-base ${
+                <div className={`font-medium text-sm sm:text-base ${
                   isDarkMode ? 'text-white' : 'text-gray-900'
                 }`}>
                   {space.space_name}
                 </div>
-                <div className={`text-sm ${
+                <div className={`text-xs sm:text-sm ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
                   {filesCount} Files, {tasksCount} tasks, {peopleCount} people
@@ -239,7 +239,7 @@ export function DeleteConfirmationDialog({
               </div>
             </div>
 
-            <button className={`text-sm border px-3 py-1.5 rounded-lg hover transition ${
+            <button className={`text-xs sm:text-sm border px-2 sm:px-3 py-1.5 rounded-lg hover transition mt-3 sm:mt-0 ${
               isDarkMode 
                 ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
                 : 'border-gray-300 text-gray-700 hover:bg-gray-100'
@@ -250,7 +250,7 @@ export function DeleteConfirmationDialog({
 
           {/* Confirmation Input */}
           <div className="space-y-2">
-            <p className={`text-sm ${
+            <p className={`text-xs sm:text-sm ${
               isDarkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
               To delete, type the workspace name{" "}
@@ -267,7 +267,7 @@ export function DeleteConfirmationDialog({
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
               placeholder={`Enter ${space.space_name}`}
-              className={`w-full rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:border-red-500 placeholder-gray-500 ${
+              className={`w-full rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 placeholder-gray-500 ${
                 isDarkMode 
                   ? 'bg-gray-800 border border-gray-600 text-white focus:ring-red-500' 
                   : 'bg-white border border-gray-300 text-gray-900 focus:ring-red-500'
@@ -276,10 +276,10 @@ export function DeleteConfirmationDialog({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-4">
             <button
               onClick={onClose}
-              className={`px-4 py-2 rounded-lg text-base transition border ${
+              className={`px-4 py-2 rounded-lg text-sm sm:text-base transition border order-2 sm:order-1 ${
                 isDarkMode 
                   ? 'text-gray-300 hover:bg-gray-800 border-gray-600' 
                   : 'text-gray-700 hover:bg-gray-100 border-gray-300'
@@ -291,7 +291,7 @@ export function DeleteConfirmationDialog({
             <button
               onClick={onConfirm}
               disabled={!isValid}
-              className={`px-4 py-2 rounded-lg text-base text-white transition ${
+              className={`px-4 py-2 rounded-lg text-sm sm:text-base text-white transition order-1 sm:order-2 ${
                 isValid
                   ? "bg-red-600 hover:bg-red-700"
                   : "bg-red-800 cursor-not-allowed"
