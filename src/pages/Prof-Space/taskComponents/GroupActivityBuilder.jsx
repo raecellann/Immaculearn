@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { FiArrowLeft, FiUploadCloud, FiUsers, FiPlus, FiTrash2, FiBold, FiItalic, FiUnderline } from 'react-icons/fi';
+import { FiArrowLeft, FiUsers } from 'react-icons/fi';
 
 const GroupActivityBuilder = ({ 
   currentColors, 
@@ -12,15 +12,18 @@ const GroupActivityBuilder = ({
   const [instruction, setInstruction] = useState('');
   const [score, setScore] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [activityType, setActivityType] = useState('collaborative');
+  const getLocalDateTimeMin = () => {
+    const now = new Date();
+    const tzOffsetMs = now.getTimezoneOffset() * 60000;
+    return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 16);
+  };
+
   const [estimatedTime, setEstimatedTime] = useState('');
   const [groupSize, setGroupSize] = useState('3');
   const [allowSelfGrouping, setAllowSelfGrouping] = useState(false);
   const [peerEvaluation, setPeerEvaluation] = useState(false);
   
   const instructionRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   // Group management state
   const [showManualGroups, setShowManualGroups] = useState(false);
@@ -39,70 +42,7 @@ const GroupActivityBuilder = ({
     "David Martinez", "Jennifer Lopez"
   ];
 
-  const activityTypes = [
-    { value: 'collaborative', label: 'Collaborative Project', emoji: '🤝' },
-    { value: 'discussion', label: 'Group Discussion', emoji: '💬' },
-    { value: 'presentation', label: 'Group Presentation', emoji: '📊' },
-    { value: 'case-study', label: 'Case Study Analysis', emoji: '📋' },
-    { value: 'lab-group', label: 'Lab Group Work', emoji: '🔬' },
-    { value: 'debate', label: 'Group Debate', emoji: '🗣️' }
-  ];
 
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    setSelectedFile(file);
-    console.log("File selected:", file);
-
-    if (file) {
-      try {
-        const extractedText = await extractTextFromFile(file);
-        if (extractedText) {
-          setInstruction(extractedText);
-          if (instructionRef.current) {
-            instructionRef.current.innerHTML = extractedText;
-          }
-          console.log("Text extracted from document:", extractedText);
-        }
-      } catch (error) {
-        console.error("Error extracting text from file:", error);
-      }
-    }
-  };
-
-  const extractTextFromFile = (file) => {
-    return new Promise((resolve, reject) => {
-      const fileType = file.type;
-      const fileName = file.name.toLowerCase();
-
-      if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-        resolve(`[PDF Document: ${file.name}]\n\nContent extraction from PDF requires additional library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
-      }
-      else if (fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
-        resolve(`[Word Document: ${file.name}]\n\nContent extraction from DOCX requires mammoth.js library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
-      }
-      else if (fileType.includes('presentation') || fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) {
-        resolve(`[PowerPoint Presentation: ${file.name}]\n\nContent extraction from PPTX requires additional library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
-      }
-      else if (fileType.includes('sheet') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-        resolve(`[Excel Spreadsheet: ${file.name}]\n\nContent extraction from Excel requires xlsx library integration.\n\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
-      }
-      else if (fileType.startsWith('text/') || fileName.endsWith('.txt')) {
-        const fileReader = new FileReader();
-        fileReader.onload = function() {
-          resolve(this.result);
-        };
-        fileReader.onerror = reject;
-        fileReader.readAsText(file);
-      }
-      else {
-        reject(new Error('Unsupported file type for text extraction'));
-      }
-    });
-  };
 
   React.useEffect(() => {
     if (instructionRef.current) {
@@ -116,11 +56,7 @@ const GroupActivityBuilder = ({
     }
   }, []);
 
-  const applyFormat = (format) => {
-    document.execCommand(format, false, null);
-    instructionRef.current?.focus();
-  };
-
+  
   // Group management functions
   const handleManualGroups = () => {
     if (groupsConfigured) {
@@ -272,12 +208,10 @@ const GroupActivityBuilder = ({
       instruction,
       score: Number(score),
       dueDate,
-      activityType,
       estimatedTime,
       groupSize: Number(groupSize),
       allowSelfGrouping,
       peerEvaluation,
-      selectedFile,
       groupsConfigured,
       groupsData: groupsConfigured && groups.length > 0 ? groups.filter(g => g.leader?.trim() || g.members?.some(m => m?.trim())).map((group, index) => ({
         group_name: `Group_${index + 1}`,
@@ -345,25 +279,62 @@ const GroupActivityBuilder = ({
               placeholder="Enter activity title"
             />
 
-            <label className="font-semibold" style={{ color: currentColors.text }}>
-              Activity Type: <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={activityType}
-              onChange={(e) => setActivityType(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border
-              }}
-            >
-              {activityTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.emoji} {type.label}
-                </option>
-              ))}
-            </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="font-semibold" style={{ color: currentColors.text }}>
+                  Score: <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={score}
+                  onChange={(e) => setScore(e.target.value)}
+                  className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
+                  style={{
+                    backgroundColor: currentColors.background,
+                    color: currentColors.text,
+                    borderColor: currentColors.border
+                  }}
+                  placeholder="Enter score"
+                  min="0"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold" style={{ color: currentColors.text }}>
+                  Est. Time (min):
+                </label>
+                <input
+                  type="text"
+                  value={estimatedTime}
+                  onChange={(e) => setEstimatedTime(e.target.value)}
+                  className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
+                  style={{
+                    backgroundColor: currentColors.background,
+                    color: currentColors.text,
+                    borderColor: currentColors.border
+                  }}
+                  placeholder="e.g., 45"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="font-semibold" style={{ color: currentColors.text }}>
+                Due Date: <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: currentColors.border
+                }}
+                min={getLocalDateTimeMin()}
+              />
+            </div>
 
             {/* INSTRUCTION */}
             <label className="font-semibold" style={{ color: currentColors.text }}>
@@ -382,150 +353,12 @@ const GroupActivityBuilder = ({
                 suppressContentEditableWarning
               />
 
-              <div className="border-t" style={{ borderColor: currentColors.border }} />
-
-              <div className="flex gap-4 px-4 py-2" style={{ color: currentColors.textSecondary }}>
-                <button
-                  type="button"
-                  onClick={() => applyFormat("bold")}
-                  className="hover:text-white"
-                >
-                  <FiBold />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyFormat("italic")}
-                  className="hover:text-white"
-                >
-                  <FiItalic />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyFormat("underline")}
-                  className="hover:text-white"
-                >
-                  <FiUnderline />
-                </button>
               </div>
-            </div>
 
-            {/* FILE UPLOAD */}
-            <div className="mt-6">
-              <label className="block font-semibold mb-2" style={{ color: currentColors.text }}>
-                Attach Files (optional)
-              </label>
-
-              <div
-                onClick={handleFileClick}
-                className="border border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition-colors"
-                style={{
-                  borderColor: currentColors.border,
-                  backgroundColor: currentColors.background
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.borderColor = currentColors.accent;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.borderColor = currentColors.border;
-                }}
-              >
-                <FiUploadCloud
-                  size={36}
-                  className="mb-3" style={{ color: currentColors.textSecondary }}
-                />
-
-                <p className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
-                  Choose a file or drag & drop it here.
-                </p>
-
-                <p className="text-xs mb-4" style={{ color: currentColors.textSecondary }}>
-                  DOCS, PDF, PPT AND EXCEL, UP TO 10 MB
-                </p>
-
-                {selectedFile && (
-                  <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: currentColors.surface }}>
-                    <p className="text-sm" style={{ color: currentColors.text }}>
-                      Selected: {selectedFile.name}
-                    </p>
-                    <p className="text-xs" style={{ color: currentColors.textSecondary }}>
-                      Size: {(selectedFile.size / 1024).toFixed(2)} KB
-                    </p>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  className="px-4 py-1.5 border rounded-md text-sm transition-colors mt-4"
-                  style={{
-                    borderColor: currentColors.border,
-                    backgroundColor: currentColors.background,
-                    color: currentColors.text
-                  }}
-                >
-                  Browse Files
-                </button>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </div>
-            </div>
           </div>
 
           {/* RIGHT SECTION */}
           <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
-            <label className="font-semibold" style={{ color: currentColors.text }}>
-              Score: <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={score}
-              onChange={(e) => setScore(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border
-              }}
-              placeholder="Enter score (e.g., 100)"
-              min="0"
-            />
-
-            <label className="font-semibold" style={{ color: currentColors.text }}>
-              Due Date: <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border
-              }}
-              min={new Date().toISOString().split('T')[0]}
-            />
-
-            <label className="font-semibold" style={{ color: currentColors.text }}>
-              Estimated Time (minutes):
-            </label>
-            <input
-              type="text"
-              value={estimatedTime}
-              onChange={(e) => setEstimatedTime(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border
-              }}
-              placeholder="e.g., 45 minutes"
-            />
-
             {/* GROUP SETTINGS */}
             <div className="p-4 rounded-lg" style={{ backgroundColor: currentColors.background }}>
               <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: currentColors.text }}>
