@@ -18,7 +18,7 @@ const CreateSpaceAdmin = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [spaceName, setSpaceName] = useState("");
   const [people, setPeople] = useState(Array(5).fill(""));
-  const [wordCount, setWordCount] = useState(0);
+  const [charCount, setCharCount] = useState(0);
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
   const [coverImage, setCoverImage] = useState(
     "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
@@ -100,17 +100,17 @@ const CreateSpaceAdmin = () => {
   // Word count handler
   const handleShortDescriptionChange = (e) => {
     const text = e.target.value;
-    const words = text
-      .trim()
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
-    const count = words.length;
-
+    setPeople([text, ...people.slice(1)]);
+    
+    // Count characters
+    const count = text.length;
+    
+    // Limit to 100 characters
     if (count <= 100) {
       setPeople([text, ...people.slice(1)]);
-      setWordCount(count);
+      setCharCount(count);
     }
-
+    
     // Clear description error when user starts typing
     if (text.trim()) {
       setDescriptionError(false);
@@ -180,12 +180,12 @@ const CreateSpaceAdmin = () => {
     }
 
     // Validate description
-    if (!people[0].trim() || wordCount === 0) {
+    if (!people[0].trim() || charCount === 0) {
       setDescriptionError(true);
       hasErrors = true;
     }
 
-    if (wordCount > 100) {
+    if (charCount > 100) {
       setDescriptionError(true);
       hasErrors = true;
     }
@@ -230,7 +230,7 @@ const CreateSpaceAdmin = () => {
         // Reset form
         setSpaceName("");
         setPeople(Array(5).fill(""));
-        setWordCount(0);
+        setCharCount(0);
         setCoverImage(
           "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
         );
@@ -659,7 +659,7 @@ const CreateSpaceAdmin = () => {
                   <p className="text-red-500 text-xs mt-1">
                     {!people[0].trim() || wordCount === 0
                       ? "Short description is required"
-                      : "Short description exceeds 100 words"}
+                      : "Short description exceeds 100 characters"}
                   </p>
                 )}
                 <div className="flex items-center justify-between mt-1.5">
@@ -673,14 +673,14 @@ const CreateSpaceAdmin = () => {
                     className="text-xs lg:text-xs font-medium"
                     style={{
                       color:
-                        wordCount >= 100
+                        charCount >= 100
                           ? "#ef4444"
-                          : wordCount >= 90
+                          : charCount >= 90
                             ? "#f59e0b"
                             : currentColors.textSecondary,
                     }}
                   >
-                    {wordCount}/100 words
+                    {charCount}/100 characters
                   </span>
                 </div>
               </div>
