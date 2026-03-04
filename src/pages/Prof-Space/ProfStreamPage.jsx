@@ -64,6 +64,7 @@ const ProfStreamPage = () => {
   const [isChatMinimized, setIsChatMinimized] = useState(false);
   const [isChatMaximized, setIsChatMaximized] = useState(false);
   const [newMessage, setNewMessage] = useState('');
+  const [hasProfanity, setHasProfanity] = useState(false);
   const messagesEndRef = useRef(null);
   const MAX_CHAR = 250;
 
@@ -446,25 +447,24 @@ const ProfStreamPage = () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Handle input change with profanity detection
+  const handleInputChange = (value) => {
+    setNewMessage(value);
+    setHasProfanity(profanityFilter && profanityFilter.containsProfanity(value));
+  };
+
   // Handle send message
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || hasProfanity) return;
 
     try {
-      // Check for profanity
-      if (profanityFilter && profanityFilter.containsProfanity(newMessage.trim())) {
-        addNotification({
-          type: "error",
-          title: "Message Blocked",
-          message: "Your message contains inappropriate language and cannot be sent.",
-          duration: 3000,
-        });
-        return;
-      }
-
-      sendMessage(newMessage.trim());
+      // Check for profanity and censor if found
+      const censoredMessage = profanityFilter ? profanityFilter.censorText(newMessage.trim()) : newMessage.trim();
+      
+      sendMessage(censoredMessage);
       setNewMessage('');
+      setHasProfanity(false); // Reset profanity warning
 
       // Auto-scroll
       setTimeout(() => {
@@ -2052,7 +2052,7 @@ const ProfStreamPage = () => {
           <div className={`relative w-full ${isChatMaximized ? 'h-screen max-w-full' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
             {/* Chat Header */}
             <div 
-              className="flex items-center justify-between rounded-t-lg p-3 border-b cursor-pointer"
+              className="flex items-center justify-between rounded-t-lg p-3 border-b"
               style={{
                 backgroundColor: currentColors.surface,
                 borderColor: currentColors.border,
@@ -2128,7 +2128,7 @@ const ProfStreamPage = () => {
             {!isChatMinimized && (
               <>
                 <div 
-                  className={`overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}
+                  className={`overflow-y-auto sm:overflow-y-hidden h-[calc(100vh-180px)] sm:h-96 p-4 space-y-2`}
                   style={{ backgroundColor: currentColors.background }}
                 >
                   {messages.map((message) => (
@@ -2164,29 +2164,33 @@ const ProfStreamPage = () => {
                     borderColor: currentColors.border,
                   }}
                 >
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      type="button" 
-                      className="p-2 rounded transition-colors"
+                  <div className="relative w-full">
+  
+                  {/* Profanity Warning - Above Input Field */}
+                  {hasProfanity && (
+                    <div
+                      className="absolute -top-12 left-0 right-0 px-3 py-2 rounded-lg text-xs flex items-center gap-2 animate-pulse"
                       style={{
-                        color: currentColors.textSecondary,
-                        backgroundColor: "transparent",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = currentColors.hover;
-                        e.currentTarget.style.color = currentColors.text;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color = currentColors.textSecondary;
+                        backgroundColor: isDarkMode ? '#dc2626' : '#ef4444',
+                        color: 'white',
+                        zIndex: 10
                       }}
                     >
-                      <FiPaperclip />
-                    </button>
+                      <span>🚫</span>
+                      <span className="hidden sm:inline">
+                        <strong>Content Warning:</strong> Your message contains inappropriate language and will be automatically censored to maintain a respectful chat environment.
+                      </span>
+                      <span className="sm:hidden">
+                        <strong>Warning:</strong> Message contains inappropriate language and will be censored.
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center space-x-2">
                     <input
                       type="text"
                       value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
+                      onChange={(e) => handleInputChange(e.target.value)}
                       placeholder="Type a message..."
                       className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
                       style={{
@@ -2198,24 +2202,26 @@ const ProfStreamPage = () => {
                     />
                     <button
                       type="submit"
-                      className="p-2 rounded transition-colors"
-                      disabled={!newMessage.trim()}
+                      className={`p-2 rounded transition-colors ${hasProfanity ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={!newMessage.trim() || hasProfanity}
                       style={{
-                        color: newMessage.trim() ? currentColors.accent : currentColors.textSecondary,
+                        color: (!newMessage.trim() || hasProfanity) ? currentColors.textSecondary : currentColors.accent,
                         backgroundColor: "transparent",
                       }}
                       onMouseEnter={(e) => {
-                        if (newMessage.trim()) {
+                        if (newMessage.trim() && !hasProfanity) {
                           e.currentTarget.style.backgroundColor = currentColors.hover;
                         }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = (!newMessage.trim() || hasProfanity) ? currentColors.textSecondary : currentColors.accent;
                       }}
                     >
                       <FiSend />
                     </button>
                   </div>
+                </div>
                 </form>
               </>
             )}
