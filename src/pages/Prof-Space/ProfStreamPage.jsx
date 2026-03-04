@@ -35,6 +35,7 @@ import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import profanityFilter from "../../utils/profanityFilter";
 
 const ProfStreamPage = () => {
   const { space_uuid, space_name } = useParams();
@@ -118,6 +119,7 @@ const ProfStreamPage = () => {
     acceptJoinRequest,
     declineJoinRequest,
     deleteSpace,
+    setArchive,
   } = useSpace();
 
   // Posts hook with React Query for 15-minute auto-render
@@ -292,11 +294,8 @@ const ProfStreamPage = () => {
     setIsDeleting(true);
 
     try {
-      // Here you would call the archive API instead of delete
-      // await archiveSpace(currentSpace.space_uuid, user.id);
-      
-      // For now, we'll use the same delete function but with different messaging
-      await deleteSpace(currentSpace.space_uuid, user.id);
+      // Use the archive function instead of delete
+      await setArchive(currentSpace.space_uuid);
 
       addNotification({
         type: "success",
@@ -305,8 +304,8 @@ const ProfStreamPage = () => {
         duration: 3000,
       });
 
-      // Navigate immediately after successful archiving
-      navigate("/prof/spaces");
+      // Navigate to archive page after successful archiving
+      navigate("/prof/archive");
     } catch (error) {
       console.error("Failed to archive class:", error);
       addNotification({
@@ -439,24 +438,47 @@ const ProfStreamPage = () => {
     setShowChatPopup(false);
   };
 
+  // Format time for chat messages
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   // Handle send message
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
-    sendMessage(newMessage.trim());
-    setNewMessage('');
+    try {
+      // Check for profanity
+      if (profanityFilter && profanityFilter.containsProfanity(newMessage.trim())) {
+        addNotification({
+          type: "error",
+          title: "Message Blocked",
+          message: "Your message contains inappropriate language and cannot be sent.",
+          duration: 3000,
+        });
+        return;
+      }
 
-    // Auto-scroll
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 50);
-  };
+      sendMessage(newMessage.trim());
+      setNewMessage('');
 
-  const formatTime = (timestamp) => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      // Auto-scroll
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      addNotification({
+        type: "error",
+        title: "Send Error",
+        message: "Failed to send message. Please try again.",
+        duration: 3000,
+      });
+    }
   };
 
   // Load saved cover photo on component mount
@@ -1233,24 +1255,26 @@ const ProfStreamPage = () => {
                 </div>
 
                 {/* CHAT */}
-                <button
-                  onClick={() => setShowChatPopup(true)}
-                  className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
-                  style={{
-                    backgroundColor: "transparent",
-                    borderColor: currentColors.border,
-                    color: currentColors.text,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = currentColors.hover;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                  }}
-                >
-                  <FiMessageCircle />
-                  Enter Chat
-                </button>
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setShowChatPopup(true)}
+                    className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
+                    style={{
+                      backgroundColor: "transparent",
+                      borderColor: currentColors.border,
+                      color: currentColors.text,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = currentColors.hover;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = "transparent";
+                    }}
+                  >
+                    <FiMessageCircle />
+                    Enter Chat
+                  </button>
+                </div>
               </div>
             </div>
 
