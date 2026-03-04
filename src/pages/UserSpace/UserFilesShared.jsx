@@ -13,6 +13,7 @@ import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { useNotification } from "../../contexts/notification/notificationContextProvider.js";
+import { toast } from "react-toastify";
 
 // ─── Helper Functions ────────────────────────────────────────────────────────
 
@@ -368,23 +369,13 @@ const UserFilesShared = () => {
       // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
-        addNotification({
-          type: "error",
-          title: "Invalid File",
-          message: "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
-          duration: 3000,
-        });
+        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        addNotification({
-          type: "error",
-          title: "File Too Large",
-          message: "Please upload an image smaller than 5MB",
-          duration: 3000,
-        });
+        toast.error("Please upload an image smaller than 5MB");
         return;
       }
 
@@ -417,12 +408,7 @@ const UserFilesShared = () => {
       // Dispatch custom event to notify HomePage
       window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
       
-      addNotification({
-        type: "success",
-        title: "Cover Photo Updated",
-        message: "Your cover photo has been updated successfully!",
-        duration: 3000,
-      });
+      toast.success("Your cover photo has been updated successfully!");
     } else {
       // For images, create canvas to apply transformations
       const canvas = document.createElement('canvas');

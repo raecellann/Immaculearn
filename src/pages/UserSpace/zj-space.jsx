@@ -32,6 +32,7 @@ import * as XLSX from "xlsx";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
+import { toast } from "react-toastify";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useUserPosts } from "../../hooks/useUserPosts";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
@@ -227,11 +228,7 @@ const UserPage = () => {
     const commentContent = commentInputs[postId]?.trim();
 
     if (!commentContent || !currentSpace?.space_id) {
-      addNotification({
-        type: "error",
-        message: "Please write something before commenting",
-        duration: 1500,
-      });
+      toast.error("Please write something before commenting");
       return;
     }
 
@@ -250,24 +247,12 @@ const UserPage = () => {
         // Reload comments
         await loadComments(postId);
 
-        addNotification({
-          type: "success",
-          message: "Comment posted successfully!",
-          duration: 1500,
-        });
+        toast.success("Comment posted successfully!");
       } else {
-        addNotification({
-          type: "error",
-          message: result.message || "Failed to post comment",
-          duration: 1500,
-        });
+        toast.error(result.message || "Failed to post comment");
       }
     } catch (error) {
-      addNotification({
-        type: "error",
-        message: "Failed to post comment. Please try again.",
-        duration: 1500,
-      });
+      toast.error("Failed to post comment. Please try again.");
     } finally {
       setIsLoadingComments((prev) => ({ ...prev, [postId]: false }));
     }
@@ -406,12 +391,7 @@ const UserPage = () => {
       }, 50);
     } catch (error) {
       console.error("Error sending message:", error);
-      addNotification({
-        type: "error",
-        title: "Send Error",
-        message: "Failed to send message. Please try again.",
-        duration: 3000,
-      });
+      toast.error("Failed to send message. Please try again.");
     }
   };
 
@@ -435,11 +415,7 @@ const UserPage = () => {
     const postContent = activeEditor?.innerText?.trim();
 
     if (!postContent || !currentSpace?.space_id) {
-      addNotification({
-        type: "error",
-        message: "Please write something before posting",
-        duration: 1500,
-      });
+      toast.error("Please write something before posting");
       return;
     }
 
@@ -459,24 +435,12 @@ const UserPage = () => {
         // Refetch posts to get the latest data
         refetchPosts();
 
-        addNotification({
-          type: "success",
-          message: "Post created successfully!",
-          duration: 1500,
-        });
+        toast.success("Post created successfully!");
       } else {
-        addNotification({
-          type: "error",
-          message: result.message || "Failed to create post",
-          duration: 1500,
-        });
+        toast.error(result.message || "Failed to create post");
       }
     } catch (error) {
-      addNotification({
-        type: "error",
-        message: "Failed to create post. Please try again.",
-        duration: 1500,
-      });
+      toast.error("Failed to create post. Please try again.");
     } finally {
       setIsCreatingPost(false);
     }
@@ -509,12 +473,7 @@ const UserPage = () => {
       navigate("/space");
     } catch (error) {
       console.error("Failed to delete space:", error);
-      addNotification({
-        type: "error",
-        title: "Delete Failed",
-        message: "Failed to delete space. Please try again.",
-        duration: 5000,
-      });
+      toast.error("Failed to delete space. Please try again.");
     }
   };
 
@@ -535,44 +494,24 @@ const UserPage = () => {
     try {
       console.log(userId);
       await acceptJoinRequest(userId, currentSpace?.space_uuid);
-      addNotification({
-        type: "success",
-        title: "Request Accepted",
-        message: "Member has been added to the space successfully.",
-        duration: 3000,
-      });
+      toast.success("Member has been added to the space successfully.");
       // Immediately refetch to update the UI
       refetchJoinRequests();
     } catch (error) {
       console.error("Failed to accept join request:", error);
-      addNotification({
-        type: "error",
-        title: "Accept Failed",
-        message: "Failed to accept join request. Please try again.",
-        duration: 5000,
-      });
+      toast.error("Failed to accept join request. Please try again.");
     }
   };
 
   const handleDeclineJoinRequest = async (userId) => {
     try {
       await declineJoinRequest(userId, space_uuid);
-      addNotification({
-        type: "info",
-        title: "Request Declined",
-        message: "Join request has been declined.",
-        duration: 3000,
-      });
+      toast.info("Join request has been declined.");
       // Immediately refetch to update the UI
       // refetchJoinRequests();
     } catch (error) {
       console.error("Failed to decline join request:", error);
-      addNotification({
-        type: "error",
-        title: "Decline Failed",
-        message: "Failed to decline join request. Please try again.",
-        duration: 5000,
-      });
+      toast.error("Failed to decline join request. Please try again.");
     }
   };
 
@@ -581,22 +520,12 @@ const UserPage = () => {
     const email = inviteEmail.trim();
 
     if (!email) {
-      addNotification({
-        type: "error",
-        title: "Invalid Email",
-        message: "Please enter an email address",
-        duration: 3000,
-      });
+      toast.error("Please enter an email address");
       return;
     }
 
     if (!isValidEmail(email)) {
-      addNotification({
-        type: "error",
-        title: "Invalid Email",
-        message: "Please enter a valid Gmail address",
-        duration: 3000,
-      });
+      toast.error("Please enter a valid Gmail address");
       return;
     }
 
@@ -604,29 +533,14 @@ const UserPage = () => {
       const result = await inviteUser(space_uuid, email);
 
       if (result.success) {
-        addNotification({
-          type: "success",
-          title: "Invitation Sent",
-          message: `Invitation has been sent to ${email}`,
-          duration: 3000,
-        });
+        toast.success(`Invitation has been sent to ${email}`);
         setInviteEmail("");
         setShowInvitePopup(false);
       } else {
-        addNotification({
-          type: "error",
-          title: "Invitation Failed",
-          message: result.message || "Failed to send invitation",
-          duration: 3000,
-        });
+        toast.error(result.message || "Failed to send invitation");
       }
     } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Invitation Failed",
-        message: "Failed to send invitation. Please try again.",
-        duration: 3000,
-      });
+      toast.error("Failed to send invitation. Please try again.");
     }
   };
 
@@ -690,23 +604,13 @@ const UserPage = () => {
         "image/webp",
       ];
       if (!validTypes.includes(file.type)) {
-        addNotification({
-          type: "error",
-          title: "Invalid File",
-          message: "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
-          duration: 3000,
-        });
+        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        addNotification({
-          type: "error",
-          title: "File Too Large",
-          message: "Please upload an image smaller than 5MB",
-          duration: 3000,
-        });
+        toast.error("Please upload an image smaller than 5MB");
         return;
       }
 
@@ -736,12 +640,7 @@ const UserPage = () => {
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
       
-      addNotification({
-        type: "success",
-        title: "Cover Photo Updated",
-        message: "Your cover photo has been updated successfully!",
-        duration: 3000,
-      });
+      toast.success("Your cover photo has been updated successfully!");
     } else {
       // For images, create canvas to apply transformations
       const canvas = document.createElement("canvas");
@@ -778,12 +677,7 @@ const UserPage = () => {
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
 
-        addNotification({
-          type: "success",
-          title: "Cover Photo Updated",
-          message: "Your cover photo has been updated successfully!",
-          duration: 3000,
-        });
+        toast.success("Your cover photo has been updated successfully!");
       };
 
       img.src = coverPhotoUrl;
@@ -1062,12 +956,7 @@ const UserPage = () => {
     // Show completion notification
     setTimeout(() => {
       if (!hasErrors) {
-        addNotification({
-          type: "success",
-          title: "All Invitations Sent",
-          message: `Successfully invited ${updatedQueue.length} members!`,
-          duration: 5000,
-        });
+        toast.success(`Successfully invited ${updatedQueue.length} members!`);
         resetUploadState();
       } else {
         const successCount = updatedQueue.filter(
@@ -1076,28 +965,17 @@ const UserPage = () => {
         const errorCount = updatedQueue.filter(
           (m) => m.status === "error",
         ).length;
-        addNotification({
-          type: "warning",
-          title: "Upload Completed with Issues",
-          message: `${successCount} successful, ${errorCount} failed. Check upload status for details.`,
-          duration: 7000,
-        });
+        toast.warn(`${successCount} successful, ${errorCount} failed. Check upload status for details.`);
       }
-    }, 500);
+    }, 1000);
   };
 
-  // Handle file upload
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     if (!validateFile(file)) {
-      addNotification({
-        type: "error",
-        title: "Invalid File",
-        message: "Please upload a valid CSV or Excel file",
-        duration: 5000,
-      });
+      toast.error("Please upload a valid CSV or Excel file");
       return;
     }
 
@@ -1105,23 +983,13 @@ const UserPage = () => {
       const members = await parseFile(file);
 
       if (members.length === 0) {
-        addNotification({
-          type: "warning",
-          title: "No Members Found",
-          message: "No valid members found in file",
-          duration: 5000,
-        });
+        toast.warn("No valid members found in file");
         return;
       }
 
       // Show info about Gmail filtering
       const totalParsed = members.length;
-      addNotification({
-        type: "info",
-        title: "File Processed",
-        message: `Found ${totalParsed} valid Gmail address(es). Non-Gmail addresses have been filtered out.`,
-        duration: 5000,
-      });
+      toast.info(`Found ${totalParsed} valid Gmail address(es). Non-Gmail addresses have been filtered out.`);
 
       setUploadQueue(members);
       setShowUploadModal(true);
@@ -1130,12 +998,7 @@ const UserPage = () => {
       // Reset file input
       event.target.value = "";
     } catch (error) {
-      addNotification({
-        type: "error",
-        title: "Parse Error",
-        message: "Error parsing file: " + error.message,
-        duration: 5000,
-      });
+      toast.error("Error parsing file: " + error.message);
     }
   };
 

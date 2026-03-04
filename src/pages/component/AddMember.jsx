@@ -3,6 +3,7 @@ import { FiLink, FiCopy, FiX } from "react-icons/fi";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { toast } from "react-toastify";
 import isValidEmail from "../../utils/isValidEmail.js";
 
 const AddMember = ({ 
@@ -54,12 +55,7 @@ const AddMember = ({
       const result = await inviteUser(currentSpace?.space_uuid, email);
       
       if (result.success) {
-        addNotification({
-          type: "success",
-          title: "Invitation Sent",
-          message: `Invitation has been sent to ${email}`,
-          duration: 3000,
-        });
+        toast.success(`Invitation has been sent to ${email}`);
         setInviteEmail("");
         setEmailError("");
         setShowInvitePopup(false);

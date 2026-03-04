@@ -23,6 +23,7 @@ import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
+import { toast } from "react-toastify";
 import GroupActivityBuilder from "../Prof-Space/taskComponents/GroupActivityBuilder.jsx";
 import QuizPreview from "../Prof-Space/taskPreviewComponents/QuizPreview.jsx";
 import StudentQuizTaker from "../Prof-Space/taskPreviewComponents/StudentQuizTaker.jsx";
@@ -439,23 +440,13 @@ const UserTaskPage = () => {
         "image/webp",
       ];
       if (!validTypes.includes(file.type)) {
-        addNotification({
-          type: "error",
-          title: "Invalid File",
-          message: "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
-          duration: 3000,
-        });
+        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        addNotification({
-          type: "error",
-          title: "File Too Large",
-          message: "Please upload an image smaller than 5MB",
-          duration: 3000,
-        });
+        toast.error("Please upload an image smaller than 5MB");
         return;
       }
 
@@ -493,12 +484,7 @@ const UserTaskPage = () => {
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
       
-      addNotification({
-        type: "success",
-        title: "Cover Photo Updated",
-        message: "Your cover photo has been updated successfully!",
-        duration: 3000,
-      });
+      toast.success("Your cover photo has been updated successfully!");
     } else {
       // For images, create canvas to apply transformations
       const canvas = document.createElement("canvas");
@@ -534,21 +520,11 @@ const UserTaskPage = () => {
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
 
-        addNotification({
-          type: "success",
-          title: "Cover Photo Updated",
-          message: "Your cover photo has been updated successfully!",
-          duration: 3000,
-        });
+        toast.success("Your cover photo has been updated successfully!");
       };
 
       img.onerror = () => {
-        addNotification({
-          type: "error",
-          title: "Error",
-          message: "Failed to load image. Please try again.",
-          duration: 3000,
-        });
+        toast.error("Failed to load image. Please try again.");
         setShowCoverPhotoConfirm(false);
       };
 
