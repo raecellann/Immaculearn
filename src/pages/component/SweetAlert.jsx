@@ -215,64 +215,42 @@ export function DeleteConfirmationDialog({
             </div>
           </div>
 
-          {/* Workspace Card */}
-          <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-xl p-3 sm:p-4 ${
-            isDarkMode 
-              ? 'border border-gray-700 bg-gray-800' 
-              : 'border border-gray-200 bg-gray-50'
-          }`}>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                ✓
-              </div>
-              <div>
-                <div className={`font-medium text-sm sm:text-base ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {space.space_name}
-                </div>
-                <div className={`text-xs sm:text-sm ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  {filesCount} Files, {tasksCount} tasks, {peopleCount} people
-                </div>
-              </div>
-            </div>
-
-            <button className={`text-xs sm:text-sm border px-2 sm:px-3 py-1.5 rounded-lg hover transition mt-3 sm:mt-0 ${
-              isDarkMode 
-                ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-            }`}>
-              Go to Home
-            </button>
-          </div>
 
           {/* Confirmation Input */}
           <div className="space-y-2">
             <p className={`text-xs sm:text-sm ${
               isDarkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              To delete, type the workspace name{" "}
+              To delete, type the workspace name {""}
               <span className={`font-semibold ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                {space.space_name}
+                "{space.space_name}"
               </span>{" "}
-              below
+              below:
             </p>
 
             <input
               type="text"
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
-              placeholder={`Enter ${space.space_name}`}
+              placeholder={`Enter "${space.space_name}"`}
               className={`w-full rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 placeholder-gray-500 ${
                 isDarkMode 
                   ? 'bg-gray-800 border border-gray-600 text-white focus:ring-red-500' 
                   : 'bg-white border border-gray-300 text-gray-900 focus:ring-red-500'
+              } ${
+                confirmationText && !isValid 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : ''
               }`}
             />
+            
+            {confirmationText && !isValid && (
+              <p className="text-xs sm:text-sm text-red-500">
+                Space Name do not match
+              </p>
+            )}
           </div>
 
           {/* Actions */}

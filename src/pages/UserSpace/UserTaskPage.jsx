@@ -1556,11 +1556,18 @@ const UserTaskPage = () => {
         >
           {coverPhotoUrl ? (
             <>
-              <img
-                src={coverPhotoUrl}
-                alt="Space Cover"
-                className="w-full h-full object-cover"
-              />
+              {coverPhotoUrl.includes('gradient') ? (
+                <div
+                  className="w-full h-full"
+                  style={{ background: coverPhotoUrl }}
+                />
+              ) : (
+                <img
+                  src={coverPhotoUrl}
+                  alt="Space Cover"
+                  className="w-full h-full object-cover"
+                />
+              )}
               <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
               {isOwnerSpace && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

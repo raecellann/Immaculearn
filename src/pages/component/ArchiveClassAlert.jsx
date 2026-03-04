@@ -166,9 +166,9 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
             }`}
           >
             {/* Header */}
-            <div className="relative flex items-center justify-center">
+            <div className="relative flex items-start justify-between">
               <DialogTitle
-                className={`text-lg font-semibold text-center ${
+                className={`text-lg font-semibold text-left ${
                   isDarkMode ? "text-white" : "text-gray-900"
                 }`}
               >
@@ -177,7 +177,7 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
 
               <button
                 onClick={onClose}
-                className={`absolute right-0 text-xl transition ${
+                className={`text-xl transition ${
                   isDarkMode
                     ? "text-gray-400 hover:text-gray-200"
                     : "text-gray-500 hover:text-gray-700"
@@ -197,20 +197,20 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
         <div
           className={`flex gap-3 sm:gap-4 rounded-xl px-3 sm:px-4 lg:px-5 py-3 sm:py-4 ${
             isDarkMode
-              ? "bg-orange-900/20 border border-orange-800"
-              : "bg-orange-50 border border-orange-200"
+              ? "bg-blue-900/20 border border-blue-800"
+              : "bg-blue-50 border border-blue-200"
           }`}
         >
           <div className="flex-shrink-0">
             <div
               className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${
-                isDarkMode ? "bg-orange-800" : "bg-orange-200"
+                isDarkMode ? "bg-blue-800" : "bg-blue-200"
               }`}
             >
               <svg
                 viewBox="0 0 24 24"
                 className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                  isDarkMode ? "text-orange-300" : "text-orange-600"
+                  isDarkMode ? "text-blue-300" : "text-blue-600"
                 }`}
                 fill="currentColor"
               >
@@ -222,7 +222,7 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
           <div className="flex-1">
             <p
               className={`text-xs sm:text-sm font-semibold ${
-                isDarkMode ? "text-orange-300" : "text-orange-800"
+                isDarkMode ? "text-blue-300" : "text-blue-800"
               }`}
             >
               Archiving this class will:
@@ -241,38 +241,6 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
           </div>
         </div>
 
-          {/* Class Info Card */}
-          <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-xl p-3 sm:p-4 ${
-            isDarkMode 
-              ? 'border border-gray-700 bg-gray-800' 
-              : 'border border-gray-200 bg-gray-50'
-          }`}>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                ✓
-              </div>
-              <div>
-                <div className={`font-medium text-sm sm:text-base ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {space.space_name}
-                </div>
-                <div className={`text-xs sm:text-sm ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  {filesCount} Files, {tasksCount} tasks, {peopleCount - 1} students
-                </div>
-              </div>
-            </div>
-
-            <button className={`text-xs sm:text-sm border px-2 sm:px-3 py-1.5 rounded-lg hover transition mt-3 sm:mt-0 ${
-              isDarkMode 
-                ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-            }`}>
-              Go to Home
-            </button>
-          </div>
 
           {/* Confirmation Input */}
           <div className="space-y-1">
@@ -283,22 +251,32 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
               <span className={`font-semibold ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                {space.space_name}
+                "{space.space_name}"
               </span>{" "}
-              below
+              below:
             </p>
 
             <input
               type="text"
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
-              placeholder={`Enter ${space.space_name}`}
+              placeholder={`Enter "${space.space_name}"`}
               className={`w-full rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 placeholder-gray-500 ${
                 isDarkMode 
-                  ? 'bg-gray-800 border border-gray-600 text-white focus:ring-orange-500' 
-                  : 'bg-white border border-gray-300 text-gray-900 focus:ring-orange-500'
+                  ? 'bg-gray-800 border border-gray-600 text-white focus:ring-blue-500' 
+                  : 'bg-white border border-gray-300 text-gray-900 focus:ring-blue-500'
+              } ${
+                confirmationText && !isValid 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : ''
               }`}
             />
+            
+            {confirmationText && !isValid && (
+              <p className="text-xs sm:text-sm text-red-500">
+                Space Name do not match
+              </p>
+            )}
           </div>
 
           {/* Actions */}
@@ -319,8 +297,8 @@ const ArchiveClassAlert = ({ isOpen, onClose, onConfirm, space }) => {
               disabled={!isValid}
               className={`px-4 py-2 rounded-lg text-sm sm:text-base text-white transition order-1 sm:order-2 ${
                 isValid
-                  ? "bg-orange-600 hover:bg-orange-700"
-                  : "bg-orange-800 cursor-not-allowed"
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-blue-800 cursor-not-allowed"
               }`}
             >
               Yes, Archive Class
