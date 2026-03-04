@@ -16,11 +16,11 @@ export const postKeys = {
 // Custom hooks for post queries
 export const usePostQueries = {
   // Get all posts for a space
-  useGetPosts: (spaceId: string) => {
+  useGetPosts: (space_uuid: string) => {
     return useQuery({
-      queryKey: postKeys.list(spaceId),
-      queryFn: () => postService.getPosts(spaceId),
-      enabled: !!spaceId,
+      queryKey: postKeys.list(space_uuid),
+      queryFn: () => postService.getPosts(space_uuid),
+      enabled: !!space_uuid,
       staleTime: 5 * 60 * 1000, // 5 minutes
     });
   },
@@ -47,7 +47,7 @@ export const usePostMutations = {
       onSuccess: (data, variables) => {
         // Invalidate and refetch posts for the space
         queryClient.invalidateQueries({
-          queryKey: postKeys.list(variables.space_id),
+          queryKey: postKeys.list(variables.space_uuid),
         });
       },
       onError: (error) => {
@@ -76,8 +76,8 @@ export const usePostMutations = {
 };
 
 // Combined hook for convenience
-export const usePosts = (spaceId: string) => {
-  const getPosts = usePostQueries.useGetPosts(spaceId);
+export const usePosts = (space_uuid: string) => {
+  const getPosts = usePostQueries.useGetPosts(space_uuid);
   const createPost = usePostMutations.useCreatePost();
   const createComment = usePostMutations.useCreateComment();
 

@@ -293,7 +293,7 @@ const ProfCreateClassroomSpace = () => {
         space_time_end: timeEnd24,
         space_yr_lvl: parseInt(yearLevel) || 1,
         space_settings: spaceSettings.current,
-        cover_image: coverImage,
+        space_cover: coverImage,
         space_type: "course",
       };
 
