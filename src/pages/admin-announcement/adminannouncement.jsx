@@ -3,7 +3,6 @@ import Logout from "../component/logout";
 import {
   Menu,
 } from "lucide-react";
-import { useUser } from "../../contexts/user/useUser";
 import { useAdminAnnouncement } from "../../hooks/useAdminAnnouncement";
 import AdminSidebar from "../component/adminsidebar";
 import AnnouncementList from "./components/AnnouncementList";
@@ -13,7 +12,6 @@ import { useAdmin } from "../../contexts/admin/useAdmin";
 import { toast } from "react-toastify";
 
 const AdminAnnouncement = () => {
-  const { user } = useUser();
   const { createAnnouncement, getAllAnnouncements, updateAnnouncement, deleteAnnouncement } = useAdminAnnouncement();
   const [showLogout, setShowLogout] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);

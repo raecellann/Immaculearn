@@ -1,21 +1,23 @@
-import { Route } from "react-router";
+import React from "react";
 import AdminDashboard from "../pages/admin-dashboard/admindashboard.jsx";
 import AdminStudents from "../pages/admin-students/adminstudents.jsx";
 import AdminTeachers from "../pages/admin-teachers/adminteachers.jsx";
-import AdminLogin from "../pages/admin-login/adminlogin.jsx";
 import AdminAnnouncement from "../pages/admin-announcement/adminannouncement.jsx";
 import AdminAcademicTerm from "../pages/admin-academic-term/adminaccademicterm.jsx";
 import { AdminProvider } from "../contexts/admin/adminContextProvider.tsx";
-import { UserProvider } from "../contexts/user/userContextProvider.tsx";
+import AdminProtectedRoute from "../components/AdminProtectedRoute.jsx";
+import AdminLogin from "../pages/admin-login/adminlogin.jsx";
 
 export const AdminDataRoutes = [
   {
     key: "/admin-dashboard",
     path: "/admin/dashboard",
     element: (
-      <UserProvider>
-        <AdminDashboard />
-      </UserProvider>
+      <AdminProvider>
+        <AdminProtectedRoute>
+          <AdminDashboard />
+        </AdminProtectedRoute>
+      </AdminProvider>
     ),
   },
 
@@ -23,9 +25,11 @@ export const AdminDataRoutes = [
     key: "/admin-students",
     path: "/admin/students",
     element: (
-      <UserProvider>
-        <AdminStudents />
-      </UserProvider>
+      <AdminProvider>
+        <AdminProtectedRoute>
+          <AdminStudents />
+        </AdminProtectedRoute>
+      </AdminProvider>
     ),
   },
 
@@ -33,18 +37,22 @@ export const AdminDataRoutes = [
     key: "/admin-teachers",
     path: "/admin/teachers",
     element: (
-      <UserProvider>
-        <AdminTeachers />
-      </UserProvider>
+      <AdminProvider>
+        <AdminProtectedRoute>
+          <AdminTeachers />
+        </AdminProtectedRoute>
+      </AdminProvider>
     ),
   },
   {
     key: "/admin-announcement",
     path: "/admin/announcement",
     element: (
-      <UserProvider>
-        <AdminAnnouncement />
-      </UserProvider>
+      <AdminProvider>
+        <AdminProtectedRoute>
+          <AdminAnnouncement />
+        </AdminProtectedRoute>
+      </AdminProvider>
     ),
   },
   {
@@ -52,14 +60,20 @@ export const AdminDataRoutes = [
     path: "/admin/academic-term",
     // element: <AdminAcademicTerm />,
     element: (
-      <UserProvider>
-        <AdminAcademicTerm />
-      </UserProvider>
+      <AdminProvider>
+        <AdminProtectedRoute>
+          <AdminAcademicTerm />
+        </AdminProtectedRoute>
+      </AdminProvider>
     ),
   },
   {
     key: "/admin-login",
     path: "/admin/login",
-    element: <AdminLogin />,
+    element:( 
+    <AdminProvider>
+      <AdminLogin />
+      </AdminProvider>
+    ),
   },
 ];

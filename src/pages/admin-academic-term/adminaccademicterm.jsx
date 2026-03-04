@@ -21,13 +21,11 @@ import {
   Info,
   Edit2Icon, // Add this missing import
 } from "lucide-react";
-import { useUser } from "../../contexts/user/useUser";
 import AdminSidebar from "../component/adminsidebar";
 import { useAcademicMutations } from "../../hooks/useAcademicMutation";
 import { toast } from "react-toastify";
 
 const AdminAcademicTerm = () => {
-  const { user } = useUser();
   const { academicTerms, updateAcademic, createAcademic } =
     useAcademicMutations();
 
