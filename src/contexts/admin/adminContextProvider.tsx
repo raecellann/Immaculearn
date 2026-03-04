@@ -329,7 +329,14 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Initial check on mount
   useEffect(() => {
-    checkAuth();
+    // Only check auth if we haven't checked yet
+    const token = localStorage.getItem("adminToken") || sessionStorage.getItem("adminToken");
+    if (token) {
+      checkAuth();
+    } else {
+      // No token, set auth state to false immediately
+      updateAuthState(false, null);
+    }
   }, []);
 
   const contextValue: AdminContextType = {
