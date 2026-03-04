@@ -173,7 +173,7 @@ const ProfFilePage = () => {
           </h1>
 
           {/* Your Space Files */}
-          <div className="mb-8">
+          <div className="mb-8 mt-16 sm:mt-20 lg:mt-24">
             <h2 className="text-xl font-semibold mb-4">
               Your Space
             </h2>
