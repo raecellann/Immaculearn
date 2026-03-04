@@ -72,7 +72,7 @@ const ProfProfilePage = () => {
   }, [isAuthenticated, navigate]);
 
   return (
-    <div className="flex font-grotesque min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+    <div className="flex font-grotesque min-h-screen leading-[1.2] font-semibold" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -198,7 +198,7 @@ const ProfProfilePage = () => {
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"
                         style={{
                           backgroundColor: isDarkMode ? '#2A2E36' : '#f8fafc',
-                          borderColor: currentColors.border,
+                          borderColor: isDarkMode ? 'white' : currentColors.border,
                           color: currentColors.text
                         }}
                       />
@@ -213,7 +213,7 @@ const ProfProfilePage = () => {
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"
                         style={{
                           backgroundColor: isDarkMode ? '#2A2E36' : '#f8fafc',
-                          borderColor: currentColors.border,
+                          borderColor: isDarkMode ? 'white' : currentColors.border,
                           color: currentColors.text
                         }}
                       />
@@ -230,7 +230,7 @@ const ProfProfilePage = () => {
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"
                         style={{
                           backgroundColor: isDarkMode ? '#2A2E36' : '#f8fafc',
-                          borderColor: currentColors.border,
+                          borderColor: isDarkMode ? 'white' : currentColors.border,
                           color: currentColors.text
                         }}
                       />
@@ -244,7 +244,7 @@ const ProfProfilePage = () => {
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"
                         style={{
                           backgroundColor: isDarkMode ? '#2A2E36' : '#f8fafc',
-                          borderColor: currentColors.border,
+                          borderColor: isDarkMode ? 'white' : currentColors.border,
                           color: currentColors.text,
                           opacity: 0.6
                         }}
@@ -263,7 +263,7 @@ const ProfProfilePage = () => {
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"
                         style={{
                           backgroundColor: isDarkMode ? '#2A2E36' : '#f8fafc',
-                          borderColor: currentColors.border,
+                          borderColor: isDarkMode ? 'white' : currentColors.border,
                           color: currentColors.text
                         }}
                       />
@@ -279,7 +279,7 @@ const ProfProfilePage = () => {
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"
                         style={{
                           backgroundColor: isDarkMode ? '#2A2E36' : '#f8fafc',
-                          borderColor: currentColors.border,
+                          borderColor: isDarkMode ? 'white' : currentColors.border,
                           color: currentColors.text
                         }}
                       />

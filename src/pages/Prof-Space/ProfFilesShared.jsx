@@ -730,7 +730,7 @@ const ProfFilesShared = () => {
     setShowDeleteDialog(false);
     try {
       await deleteSpace(currentSpace.space_uuid, user.id);
-      navigate("/space");
+      navigate("/prof/spaces");
     } catch (err) {
       alert("Failed to delete space. Please try again.");
     }
@@ -1693,22 +1693,18 @@ const ProfFilesShared = () => {
                 className="block text-sm font-medium mb-1"
                 style={{ color: c.text }}
               >
-                Lesson Name <span style={{ color: "#ef4444" }}>*</span>
+                Lesson Name
               </label>
-              <input
-                type="text"
-                value={pendingLessonName}
-                onChange={(e) => setPendingLessonName(e.target.value)}
-                placeholder="Enter lesson name"
-                className="w-full rounded-lg px-3 py-2 text-sm outline-none border"
+              <div
+                className="w-full rounded-lg px-3 py-2 text-sm border"
                 style={{
                   backgroundColor: c.background,
                   color: c.text,
                   borderColor: c.border,
                 }}
-                onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                onBlur={(e) => (e.target.style.borderColor = c.border)}
-              />
+              >
+                {pendingLessonName || "No lesson name provided"}
+              </div>
             </div>
 
             <div className="flex gap-3 justify-end">
@@ -1725,15 +1721,12 @@ const ProfFilesShared = () => {
               </button>
               <button
                 onClick={confirmUpload}
-                disabled={!pendingLessonName.trim()}
                 className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
                 style={{
-                  backgroundColor: pendingLessonName.trim()
-                    ? "#2563eb"
-                    : "#9ca3af",
+                  backgroundColor: "#2563eb",
                   color: "#fff",
                   border: "none",
-                  cursor: pendingLessonName.trim() ? "pointer" : "not-allowed",
+                  cursor: "pointer",
                 }}
               >
                 <FiUpload size={16} />{" "}
