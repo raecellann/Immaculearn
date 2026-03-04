@@ -83,6 +83,7 @@ export interface CourseSPace {
     space_time_start: string;
     space_time_end: string;
     space_yr_lvl: string;
+    space_course: string;
     // space_type: string;
     members: SpaceMemberProfile[];
     // description: string | null;

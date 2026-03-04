@@ -320,12 +320,16 @@ const ProfCreateClassroomSpace = () => {
         space_type: "course",
       };
 
+      console.log("Sending course space data:", spaceData);
+
       // Call the API
       const result = await createCourseSpace(spaceData);
 
+      console.log("API response:", result);
+
       if (result.success) {
         const space_uuid = result?.space_uuid;
-        console.log(space_uuid);
+        console.log("Created space UUID:", space_uuid);
         toast.success(`Course Space "${spaceName}" created successfully!`);
 
         // Save cover photo to localStorage for immediate display
