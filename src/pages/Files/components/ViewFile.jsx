@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from "react";
-import ProfSidebar from "../../component/profsidebar";
+import Sidebar from "../../component/sidebar";
 import { useNavigate, useParams } from "react-router";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 import { useFile } from "../../../contexts/file/fileContextProvider";
@@ -87,7 +87,7 @@ const ViewFilePage = () => {
       }}
     >
       <div className="hidden lg:block">
-        <ProfSidebar />
+        <Sidebar />
       </div>
 
       <div className="flex-1 p-6 max-w-6xl mx-auto w-full">
