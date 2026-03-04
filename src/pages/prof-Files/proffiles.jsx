@@ -173,7 +173,7 @@ const ProfFilePage = () => {
           </h1>
 
           {/* Your Space Files */}
-          <div className="mb-8 mt-16 sm:mt-20 lg:mt-24">
+          <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">
               Your Space
             </h2>
@@ -262,31 +262,7 @@ const ProfFilePage = () => {
             <div className="border-b border-gray-700 my-6"></div>
           </div>
 
-          {/* Friends Space Files */}
-          {/* <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-white">Friends Space</h2>
-            {sharedSpaces?.length === 0 ? (
-              <div className="bg-[#1E242E] rounded-xl p-10 text-center text-gray-400 border border-dashed border-gray-600">
-                No friends space files yet
-              </div>
-            ) : sharedSpaces?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto">
-                {sharedSpaces.map((space, index) => (
-                  <div
-                    key={`friends-space-${index}`}
-                    className="bg-[#1F242D] border border-gray-600 rounded-lg px-4 py-3 lg:px-5 lg:py-4 flex items-center gap-3 hover:bg-[#252B34] transition cursor-pointer"
-                    onClick={() => navigate(`/prof/files/${encodeURIComponent(space.name)}/${space.space_uuid || ''}`)}
-                  >
-                    <span className="text-xl">📁</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-lg truncate overflow-hidden whitespace-nowrap">{space.space_name}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-            <div className="border-b border-gray-700 my-6"></div>
-          </div> */}
+          
         </div>
       </div>
     </div>

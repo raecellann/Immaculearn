@@ -439,7 +439,7 @@ const ProfHomePage = () => {
                   >
                     {getGreeting()},{" "}
                     {prefixName(
-                      capitalizeWords(user?.name?.split(" ")[0]),
+                      capitalizeWords(user?.first_name),
                       user?.gender,
                     ) || "Professor"}
                   </h1>
