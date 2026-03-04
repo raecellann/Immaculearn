@@ -81,6 +81,7 @@ export interface CourseSPace {
     space_uuid: string;
     space_name: string;
     space_description: string;
+    space_cover: string;
     space_day: string;
     space_time_start: string;
     space_time_end: string;

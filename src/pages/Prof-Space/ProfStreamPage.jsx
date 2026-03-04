@@ -35,6 +35,7 @@ import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { toast } from "react-toastify";
 import profanityFilter from "../../utils/profanityFilter";
 
 const ProfStreamPage = () => {
@@ -115,6 +116,9 @@ const ProfStreamPage = () => {
     userSpaces,
     courseSpaces,
     friendSpaces,
+    userSpacesLoading,
+    courseSpacesLoading,
+    friendSpacesLoading,
     useJoinRequests,
     isLoading: spaceLoading,
     acceptJoinRequest,
@@ -193,15 +197,13 @@ const ProfStreamPage = () => {
   const isValidUuid = uuidPattern.test(space_uuid);
 
   // Find current space
-  const allSpaces = [
-    ...(userSpaces || []),
-    ...(courseSpaces || []),
-    ...(friendSpaces || []),
-  ];
+  const allSpaces = [...(userSpaces || []), ...(courseSpaces || [])];
 
   const currentSpace = allSpaces.find(
     (space) => space.space_uuid === space_uuid,
   );
+
+  console.log("CORRENT", currentSpace);
 
   // console.log(userSpaces);
   // console.log(courseSpaces);
@@ -314,23 +316,15 @@ const ProfStreamPage = () => {
       // Use the archive function instead of delete
       await setArchive(currentSpace.space_uuid);
 
-      addNotification({
-        type: "success",
-        title: "Class Archived",
-        message: `Class "${currentSpace.space_name}" has been archived successfully!`,
-        duration: 3000,
-      });
+      toast.success(
+        `Class "${currentSpace.space_name}" has been archived successfully!`,
+      );
 
       // Navigate to archive page after successful archiving
       navigate("/prof/archive");
     } catch (error) {
       console.error("Failed to archive class:", error);
-      addNotification({
-        type: "error",
-        title: "Archive Failed",
-        message: "Failed to archive class. Please try again.",
-        duration: 3000,
-      });
+      toast.error("Failed to archive class. Please try again.");
     } finally {
       setIsDeleting(false);
       setDeleteButtonClicked(false);
@@ -400,11 +394,7 @@ const ProfStreamPage = () => {
     const content = activeEditor?.innerText?.trim();
 
     if (!content || !currentSpace?.space_id) {
-      addNotification({
-        type: "error",
-        message: "Please write something before posting",
-        duration: 1500,
-      });
+      toast.error("Please write something before posting");
       return;
     }
 
@@ -425,24 +415,12 @@ const ProfStreamPage = () => {
         // Refetch posts to get the latest data
         refetchPosts();
 
-        addNotification({
-          type: "success",
-          message: "Post created successfully!",
-          duration: 1500,
-        });
+        toast.success("Post created successfully!");
       } else {
-        addNotification({
-          type: "error",
-          message: result.message || "Failed to create post",
-          duration: 1500,
-        });
+        toast.error(result.message || "Failed to create post");
       }
     } catch (error) {
-      addNotification({
-        type: "error",
-        message: "Failed to create post. Please try again.",
-        duration: 1500,
-      });
+      toast.error("Failed to create post. Please try again.");
     } finally {
       setIsCreatingPost(false);
     }
@@ -494,24 +472,18 @@ const ProfStreamPage = () => {
       }, 100);
     } catch (error) {
       console.error("Error sending message:", error);
-      addNotification({
-        type: "error",
-        title: "Send Error",
-        message: "Failed to send message. Please try again.",
-        duration: 3000,
-      });
+      toast.error("Failed to send message. Please try again.");
     }
   };
 
-  // Load saved cover photo on component mount
+  // Load saved cover photo from backend on component mount
   useEffect(() => {
     const savedCoverPhoto = currentSpace?.space_cover;
+    console.log("Loading cover photo:", savedCoverPhoto);
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }
-  }, [space_uuid]);
-
-  // Save cover photo to localStorage when it changes
+  }, [currentSpace]);
 
   // Cover photo drag handlers
   const handleMouseDown = (e) => {
@@ -558,23 +530,15 @@ const ProfStreamPage = () => {
         "image/webp",
       ];
       if (!validTypes.includes(file.type)) {
-        addNotification({
-          type: "error",
-          title: "Invalid File",
-          message: "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
-          duration: 3000,
-        });
+        toast.error(
+          "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        );
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        addNotification({
-          type: "error",
-          title: "File Too Large",
-          message: "Please upload an image smaller than 5MB",
-          duration: 3000,
-        });
+        toast.error("Please upload an image smaller than 5MB");
         return;
       }
 
@@ -600,12 +564,9 @@ const ProfStreamPage = () => {
     // Check if it's a gradient or an image
     if (coverPhotoUrl && coverPhotoUrl.includes("gradient")) {
       // For gradients, save directly without canvas transformations
-      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
+      // Backend will handle saving the space_cover
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-
-      // Dispatch custom event to notify ProfStreamPage
-      window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
 
       addNotification({
         type: "success",
@@ -643,11 +604,7 @@ const ProfStreamPage = () => {
         const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
         setCoverPhotoUrl(dataUrl);
 
-        // Save to localStorage
-        localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-
-        // Dispatch custom event to notify ProfStreamPage
-        window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
+        // Backend will handle saving the space_cover
 
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
@@ -693,8 +650,7 @@ const ProfStreamPage = () => {
     setCoverPhoto(null);
     setCoverPhotoUrl(null);
     setCoverPhotoPosition(50);
-    // Remove from localStorage
-    localStorage.removeItem(`coverPhoto_${space_uuid}`);
+    // Backend will handle removing the space_cover
     if (coverPhotoInputRef.current) {
       coverPhotoInputRef.current.value = "";
     }
@@ -780,12 +736,8 @@ const ProfStreamPage = () => {
   // Create comment
   const handleCreateComment = async (postId) => {
     const content = commentInputs[postId]?.trim();
-    if (!content || !currentSpace?.space_uuid) {
-      addNotification({
-        type: "error",
-        message: "Please write something before commenting",
-        duration: 1500,
-      });
+    if (!content || !currentSpace?.space_id) {
+      toast.error("Please write something before commenting");
       return;
     }
 
@@ -811,24 +763,12 @@ const ProfStreamPage = () => {
         // Reload comments
         await loadComments(postId);
 
-        addNotification({
-          type: "success",
-          message: "Comment posted successfully!",
-          duration: 1500,
-        });
+        toast.success("Comment posted successfully!");
       } else {
-        addNotification({
-          type: "error",
-          message: result.message || "Failed to post comment",
-          duration: 1500,
-        });
+        toast.error(result.message || "Failed to post comment");
       }
     } catch (error) {
-      addNotification({
-        type: "error",
-        message: "Failed to post comment. Please try again.",
-        duration: 1500,
-      });
+      toast.error("Failed to post comment. Please try again.");
     } finally {
       setIsLoadingComments((prev) => ({
         ...prev,
@@ -853,16 +793,17 @@ const ProfStreamPage = () => {
     }
   }, [isDragging, dragStartY, dragStartPosition]);
 
-  useEffect(() => {
-    if (coverPhotoUrl && !showCoverPhotoEditor) {
-      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
-      // Dispatch custom event to notify HomePage
-      window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
-    }
-  }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
 
   // Loading state
   if (userLoading || spaceLoading) {
+    return (
+      <div className="flex h-screen justify-center items-center">
+        <MainLoading />
+      </div>
+    );
+  }
+
+  if (userSpacesLoading || courseSpacesLoading) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />

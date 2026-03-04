@@ -9,7 +9,6 @@ import { useUser } from "../../../contexts/user/useUser";
 import { useSpace } from "../../../contexts/space/useSpace";
 import { toast } from "react-toastify";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
-import { departmentOptions } from "../../component/enumOptions";
 
 const ProfCreateClassroomSpace = () => {
   const { createCourseSpace } = useSpace();
@@ -27,7 +26,6 @@ const ProfCreateClassroomSpace = () => {
   const [descriptionError, setDescriptionError] = useState(false);
   const [coverPhotoError, setCoverPhotoError] = useState(false);
   const [yearLevelError, setYearLevelError] = useState(false);
-  const [courseError, setCourseError] = useState(false);
   const [dayError, setDayError] = useState(false);
   const [timeError, setTimeError] = useState(false);
 
@@ -56,8 +54,7 @@ const ProfCreateClassroomSpace = () => {
   const [selectedDay, setSelectedDay] = useState("");
   const [timeSchedule, setTimeSchedule] = useState("");
   const [shortDescription, setShortDescription] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState("");
-  const [charCount, setCharCount] = useState(0);
+  const [wordCount, setWordCount] = useState(0);
   const [sectionContent, setSectionContent] = useState("");
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [startTime, setStartTime] = useState({
@@ -116,18 +113,14 @@ const ProfCreateClassroomSpace = () => {
     { label: "SUN", value: "Sunday" },
   ];
 
-  // Word count handler
+  // Character count handler
   const handleShortDescriptionChange = (e) => {
     const text = e.target.value;
-    setShortDescription(text);
-
-    // Count characters
     const count = text.length;
 
-    // Limit to 100 characters
     if (count <= 100) {
       setShortDescription(text);
-      setCharCount(count);
+      setWordCount(count);
     }
 
     // Clear description error when user starts typing
@@ -150,14 +143,6 @@ const ProfCreateClassroomSpace = () => {
     // Clear year level error when user selects a value
     if (e.target.value) {
       setYearLevelError(false);
-    }
-  };
-
-  const handleCourseChange = (e) => {
-    setSelectedCourse(e.target.value);
-    // Clear course error when user selects a value
-    if (e.target.value) {
-      setCourseError(false);
     }
   };
 
@@ -221,7 +206,6 @@ const ProfCreateClassroomSpace = () => {
     setDescriptionError(false);
     setCoverPhotoError(false);
     setYearLevelError(false);
-    setCourseError(false);
     setDayError(false);
     setTimeError(false);
 
@@ -234,12 +218,12 @@ const ProfCreateClassroomSpace = () => {
     }
 
     // Validate description
-    if (!shortDescription.trim() || charCount === 0) {
+    if (!shortDescription.trim() || wordCount === 0) {
       setDescriptionError(true);
       hasErrors = true;
     }
 
-    if (charCount > 100) {
+    if (wordCount > 100) {
       setDescriptionError(true);
       hasErrors = true;
     }
@@ -253,12 +237,6 @@ const ProfCreateClassroomSpace = () => {
     // Validate year level
     if (!yearLevel) {
       setYearLevelError(true);
-      hasErrors = true;
-    }
-
-    // Validate course
-    if (!selectedCourse) {
-      setCourseError(true);
       hasErrors = true;
     }
 
@@ -314,22 +292,17 @@ const ProfCreateClassroomSpace = () => {
         space_time_start: timeStart24,
         space_time_end: timeEnd24,
         space_yr_lvl: parseInt(yearLevel) || 1,
-        space_course: selectedCourse,
         space_settings: spaceSettings.current,
         space_cover: coverImage,
         space_type: "course",
       };
 
-      console.log("Sending course space data:", spaceData);
-
       // Call the API
       const result = await createCourseSpace(spaceData);
 
-      console.log("API response:", result);
-
       if (result.success) {
         const space_uuid = result?.space_uuid;
-        console.log("Created space UUID:", space_uuid);
+        console.log(space_uuid);
         toast.success(`Course Space "${spaceName}" created successfully!`);
 
         // Save cover photo to localStorage for immediate display
@@ -350,13 +323,12 @@ const ProfCreateClassroomSpace = () => {
         // Reset form
         setSpaceName("");
         setShortDescription("");
-        setCharCount(0);
+        setWordCount(0);
         setSectionContent("");
         setCoverImage(
           "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
         );
         setYearLevel("");
-        setSelectedCourse("");
         setSelectedDay("");
         setTimeSchedule("");
         // Reset error states
@@ -364,7 +336,6 @@ const ProfCreateClassroomSpace = () => {
         setDescriptionError(false);
         setCoverPhotoError(false);
         setYearLevelError(false);
-        setCourseError(false);
         setDayError(false);
         setTimeError(false);
         navigator(`/prof/space/${space_uuid}/${spaceName}`);
@@ -752,14 +723,14 @@ const ProfCreateClassroomSpace = () => {
               )}
 
               {/* ─────────────────────────────────────────────────
-                  ROW 1: Space Name (Full Width)
+                  ROW 1: Space Name | Year Level | Section
                   Mobile: stacked full-width
-                  Tablet (sm): Space Name full-width
-                  Desktop (lg): Space Name full-width
+                  Tablet (sm): Space Name full-row, then Year + Section side-by-side
+                  Desktop (lg): all three in one row
               ───────────────────────────────────────────────── */}
-              <div className="mt-6">
-                {/* Space Name — takes full width */}
-                <div>
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_180px_100px] gap-4">
+                {/* Space Name — takes full width on mobile, full row on sm, flex-1 on lg */}
+                <div className="sm:col-span-2 lg:col-span-1">
                   <label className="block text-sm font-medium mb-2">
                     Space Name
                   </label>
@@ -804,47 +775,6 @@ const ProfCreateClassroomSpace = () => {
                       {spaceName.length}/50 characters
                     </span>
                   </div>
-                </div>
-              </div>
-
-              {/* ─────────────────────────────────────────────────
-                  ROW 2: Course | Year Level | Section
-                  Mobile: stacked full-width
-                  Tablet (sm): Course full-row, then Year + Section side-by-side
-                  Desktop (lg): all three in one row
-              ───────────────────────────────────────────────── */}
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_180px_100px] gap-4">
-                {/* Course */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Course
-                  </label>
-                  <select
-                    value={selectedCourse}
-                    onChange={handleCourseChange}
-                    className={`w-full p-2.5 rounded-lg border focus:outline-none focus:ring-2 text-sm sm:text-base ${
-                      courseError ? "border-red-500" : ""
-                    }`}
-                    style={{
-                      backgroundColor: isDarkMode ? "#374151" : "#ffffff",
-                      borderColor: courseError
-                        ? "#ef4444"
-                        : currentColors.border,
-                      color: currentColors.text,
-                    }}
-                  >
-                    <option value="">Select course</option>
-                    {departmentOptions.map((course) => (
-                      <option key={course.code} value={course.code}>
-                        {course.name}
-                      </option>
-                    ))}
-                  </select>
-                  {courseError && (
-                    <p className="text-red-500 text-xs mt-1">
-                      Course is required
-                    </p>
-                  )}
                 </div>
 
                 {/* Year Level */}
@@ -1022,7 +952,7 @@ const ProfCreateClassroomSpace = () => {
                 />
                 {descriptionError && (
                   <p className="text-red-500 text-xs mt-1">
-                    {!shortDescription.trim() || charCount === 0
+                    {!shortDescription.trim() || wordCount === 0
                       ? "Short description is required"
                       : "Short description exceeds 100 characters"}
                   </p>
@@ -1035,14 +965,14 @@ const ProfCreateClassroomSpace = () => {
                   <span
                     style={{
                       color:
-                        charCount >= 90
+                        wordCount >= 90
                           ? "#f59e0b"
-                          : charCount >= 100
+                          : wordCount >= 100
                             ? "#ef4444"
                             : currentColors.textSecondary,
                     }}
                   >
-                    {charCount}/100 characters
+                    {wordCount}/100 characters
                   </span>
                 </div>
               </div>
