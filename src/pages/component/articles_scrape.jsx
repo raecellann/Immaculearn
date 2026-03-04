@@ -145,10 +145,12 @@ const ArticlesInner = () => {
         {articles.slice(0, 12).map((article, index) => (
           <div 
             key={index} 
-            className="rounded-xl overflow-hidden transition-colors hover:opacity-90" 
+            className="rounded-xl overflow-hidden transition-colors hover:opacity-90 hover-lift" 
             style={{ 
               backgroundColor: currentColors.surface,
-              border: isDarkMode ? 'none' : '1px solid black'
+              border: isDarkMode ? 'none' : '1px solid black',
+              animation: `fadeIn 0.6s ease-out ${index * 0.1}s forwards`,
+              opacity: 0,
             }}
           >
             <a href={article.url} target="_blank" rel="noopener noreferrer">

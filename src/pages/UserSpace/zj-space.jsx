@@ -1635,28 +1635,30 @@ const UserPage = () => {
                 </div>
 
                 {/* CHAT */}
-                <button
-                  onClick={() => setShowChatPopup(true)}
-                  className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
-                  style={{
-                    backgroundColor: "transparent",
-                    borderColor: currentColors.border,
-                    color: currentColors.text,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = currentColors.hover;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "transparent";
-                  }}
-                >
-                  <FiMessageCircle />
-                  Enter Chat
-                </button>
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setShowChatPopup(true)}
+                    className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
+                    style={{
+                      backgroundColor: "transparent",
+                      borderColor: currentColors.border,
+                      color: currentColors.text,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = currentColors.hover;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = "transparent";
+                    }}
+                  >
+                    <FiMessageCircle />
+                    Enter Chat
+                  </button>
+                </div>
 
                 {/* Chat Popup */}
                 {showChatPopup && (
-                  <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0">
+                  <div className="fixed inset-0 z-[60] flex items-end justify-center p-4 sm:items-center sm:p-0">
                     <div
                       className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
                       onClick={() =>
@@ -1664,11 +1666,11 @@ const UserPage = () => {
                       }
                     />
                     <div
-                      className={`relative w-full ${isChatMaximized ? "h-screen max-w-full" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
+                      className={`relative z-[999] ${isChatMinimized ? "w-64 max-w-64" : "w-full"} ${isChatMaximized ? "max-w-4xl h-[90vh]" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
                     >
                       {/* Chat Header */}
                       <div
-                        className="flex items-center justify-between rounded-t-lg p-3 border-b cursor-pointer"
+                        className="flex items-center justify-between rounded-t-lg p-3 border-b"
                         style={{
                           backgroundColor: currentColors.surface,
                           borderColor: currentColors.border,
@@ -1805,104 +1807,77 @@ const UserPage = () => {
                               borderColor: currentColors.border,
                             }}
                           >
-                            <div className="flex items-center space-x-2">
-                              <button
-                                type="button"
-                                className="p-2 rounded transition-colors"
-                                style={{
-                                  color: currentColors.textSecondary,
-                                  backgroundColor: "transparent",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor =
-                                    currentColors.hover;
-                                  e.currentTarget.style.color =
-                                    currentColors.text;
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor =
-                                    "transparent";
-                                  e.currentTarget.style.color =
-                                    currentColors.textSecondary;
-                                }}
-                              >
-                                <FiPaperclip />
-                              </button>
-                              <div className="relative w-full">
-                                {/* Profanity Warning - Positioned at Top of Input Field */}
-                                {hasProfanity && (
-                                  <div
-                                    className="absolute -top-14 left-0 w-full px-2 py-2 rounded-lg text-xs flex items-start gap-2 animate-pulse"
-                                    style={{
-                                      backgroundColor: isDarkMode
-                                        ? "#dc2626"
-                                        : "#ef4444",
-                                      color: "white",
-                                      zIndex: 20,
-                                    }}
-                                  >
-                                    <span>🚫</span>
-                                    <span className="hidden sm:inline">
-                                      <strong>Content Warning:</strong> Your
-                                      message contains inappropriate language
-                                      and will be automatically censored to
-                                      maintain a respectful chat environment.
-                                    </span>
-                                    <span className="sm:hidden">
-                                      <strong>Warning:</strong> Message contains
-                                      inappropriate language and will be
-                                      censored.
-                                    </span>
-                                  </div>
-                                )}
-
-                                <div className="flex items-center space-x-2">
-                                  <input
-                                    type="text"
-                                    value={newMessage}
-                                    onChange={(e) =>
-                                      handleInputChange(e.target.value)
-                                    }
-                                    placeholder="Type a message..."
-                                    className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
-                                    style={{
-                                      backgroundColor: currentColors.background,
-                                      borderColor: currentColors.border,
-                                      color: currentColors.text,
-                                      focusRingColor: currentColors.accent,
-                                    }}
-                                  />
-                                  <button
-                                    type="submit"
-                                    className={`p-2 rounded transition-colors ${hasProfanity ? "opacity-50 cursor-not-allowed" : ""}`}
-                                    disabled={
-                                      !newMessage.trim() || hasProfanity
-                                    }
-                                    style={{
-                                      color:
-                                        !newMessage.trim() || hasProfanity
-                                          ? currentColors.textSecondary
-                                          : currentColors.accent,
-                                      backgroundColor: "transparent",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      if (newMessage.trim() && !hasProfanity) {
-                                        e.currentTarget.style.backgroundColor =
-                                          currentColors.hover;
-                                      }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.backgroundColor =
-                                        "transparent";
-                                      e.currentTarget.style.color =
-                                        !newMessage.trim() || hasProfanity
-                                          ? currentColors.textSecondary
-                                          : currentColors.accent;
-                                    }}
-                                  >
-                                    <FiSend />
-                                  </button>
+                            <div className="relative w-full">
+                              {/* Profanity Warning - Above Input Field */}
+                              {hasProfanity && (
+                                <div
+                                  className="absolute -top-12 left-0 right-0 px-3 py-2 rounded-lg text-xs flex items-center gap-2 animate-pulse"
+                                  style={{
+                                    backgroundColor: isDarkMode
+                                      ? "#dc2626"
+                                      : "#ef4444",
+                                    color: "white",
+                                    zIndex: 10,
+                                  }}
+                                >
+                                  <span>🚫</span>
+                                  <span className="hidden sm:inline">
+                                    <strong>Content Warning:</strong> Your
+                                    message contains inappropriate language and
+                                    will be automatically censored to maintain a
+                                    respectful chat environment.
+                                  </span>
+                                  <span className="sm:hidden">
+                                    <strong>Warning:</strong> Message contains
+                                    inappropriate language and will be censored.
+                                  </span>
                                 </div>
+                              )}
+
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="text"
+                                  value={newMessage}
+                                  onChange={(e) =>
+                                    handleInputChange(e.target.value)
+                                  }
+                                  placeholder="Type a message..."
+                                  className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
+                                  style={{
+                                    backgroundColor: currentColors.background,
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                    focusRingColor: currentColors.accent,
+                                  }}
+                                />
+                                <button
+                                  type="submit"
+                                  className={`p-2 rounded transition-colors ${hasProfanity ? "opacity-50 cursor-not-allowed" : ""}`}
+                                  disabled={!newMessage.trim() || hasProfanity}
+                                  style={{
+                                    color:
+                                      !newMessage.trim() || hasProfanity
+                                        ? currentColors.textSecondary
+                                        : currentColors.accent,
+                                    backgroundColor: "transparent",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (newMessage.trim() && !hasProfanity) {
+                                      e.currentTarget.style.backgroundColor =
+                                        currentColors.hover;
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                      "transparent";
+                                    e.currentTarget.style.color =
+                                      !newMessage.trim() || hasProfanity
+                                        ? currentColors.textSecondary
+                                        : currentColors.accent;
+                                  }}
+                                >
+                                  <FiSend />
+                                </button>
                               </div>
                             </div>
                           </form>
@@ -2788,7 +2763,7 @@ const UserPage = () => {
       {/* PLACEHOLDER STYLE */}
       <style>
         {`
-          .editor:empty:before {
+          .hidden.lg\\:block .bg-white .editor:empty:before {
             content: "Post something to your space with a maximum of 250 letters";
             color: #9ca3af;
             pointer-events: none;

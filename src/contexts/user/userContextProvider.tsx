@@ -1,18 +1,50 @@
-import React, { useState, useEffect, ReactNode, useRef } from "react";
-import { api } from "../../lib/api"; // Axios instance with withCredentials
+import React, { useState, useEffect, ReactNode, useRef, useCallback } from "react";
+import { useNavigate } from "react-router";
+import { api, setAuthNavigate, setAuthRefreshCallback } from "../../lib/api"; // Axios instance with withCredentials
 
 import { UserContext, User } from "./userContext";
 import { PostCreateData, CommentCreateData } from "../../types/post";
+
+
 
 interface UserProviderProps {
   children: ReactNode;
 }
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const isCheckingRef = useRef(false);
+  const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Register navigation function with API interceptor
+  useEffect(() => {
+    setAuthNavigate((to: string) => {
+      navigate(to, { replace: true });
+    });
+
+    // Register auth refresh callback
+    setAuthRefreshCallback(() => {
+      checkAuth(); // Re-check authentication when tokens are refreshed
+    });
+  }, [navigate]);
+
+  // Debounced auth state update to prevent rapid changes
+  const updateAuthState = useCallback((authenticated: boolean, userData: User | null) => {
+    // Clear any pending timeout
+    if (authTimeoutRef.current) {
+      clearTimeout(authTimeoutRef.current);
+    }
+
+    // Debounce the state update to prevent rapid changes
+    authTimeoutRef.current = setTimeout(() => {
+      setIsAuthenticated(authenticated);
+      setUser(userData);
+      setIsLoading(false);
+    }, 100); // Small delay to prevent rapid state changes
+  }, []);
 
   // Core authentication check
   const checkAuth = async (): Promise<boolean> => {
@@ -25,8 +57,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       const profileRes = await api.get("/auth/profile");
       // console.log(profileRes.data?.data)
       if (profileRes.data?.data) {
-        setUser(profileRes.data.data);
-        setIsAuthenticated(true);
+        updateAuthState(true, profileRes.data.data);
         return true;
       }
 
@@ -42,19 +73,16 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           if (refreshRes.data?.success) {
             const retryProfile = await api.get("/auth/profile");
             if (retryProfile.data?.data) {
-              setUser(retryProfile.data.data);
-              setIsAuthenticated(true);
+              updateAuthState(true, retryProfile.data.data);
               return true;
             }
           }
         } catch {}
       }
 
-      setUser(null);
-      setIsAuthenticated(false);
+      updateAuthState(false, null);
       return false;
     } finally {
-      setIsLoading(false);
       isCheckingRef.current = false;
     }
   };
@@ -124,8 +152,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
-      setUser(null);
-      setIsAuthenticated(false);
+      updateAuthState(false, null);
     }
   };
 
@@ -133,6 +160,15 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const refreshUser = async (): Promise<void> => {
     await checkAuth();
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (authTimeoutRef.current) {
+        clearTimeout(authTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Post functions
   const createPost = async (postData: PostCreateData) => {

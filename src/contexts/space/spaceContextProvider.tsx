@@ -40,8 +40,13 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       const res = await spaceService.getUserSpaces();
       const spaces = res.data || [];
       return spaces;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching user spaces:", error);
+      // Don't return empty array immediately on auth errors
+      if (error?.response?.status === 401) {
+        // Let auth interceptor handle token refresh
+        throw error;
+      }
       return [];
     }
   };
@@ -51,8 +56,11 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       const res = await spaceService.getCourseSpaces();
       const spaces = res.data || [];
       return spaces;
-    } catch (error) {
-      console.error("Error fetching user spaces:", error);
+    } catch (error: any) {
+      console.error("Error fetching course spaces:", error);
+      if (error?.response?.status === 401) {
+        throw error;
+      }
       return [];
     }
   };
@@ -62,8 +70,11 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       const res = await spaceService.getAllFriendSpaces();
       const spaces = res.data || [];
       return spaces;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching friend spaces:", error);
+      if (error?.response?.status === 401) {
+        throw error;
+      }
       return [];
     }
   };
@@ -119,25 +130,44 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   // ----------------------------
   // QUERIES
   // ----------------------------
-  const { data: userSpaces = [], isLoading: userSpacesLoading } = useQuery({
+  const { data: userSpaces = [], isLoading: userSpacesLoading, error: userSpacesError } = useQuery({
     queryKey: ["userSpaces"],
     queryFn: fetchUserSpaces,
     enabled: isAuthenticated,
     staleTime: 60_000,
+    retry: (failureCount, error: any) => {
+      // Retry on auth errors to allow token refresh
+      if (error?.response?.status === 401 && failureCount < 2) {
+        return true;
+      }
+      return false;
+    },
   });
 
-  const { data: courseSpaces = [], isLoading: courseSpacesLoading } = useQuery({
+  const { data: courseSpaces = [], isLoading: courseSpacesLoading, error: courseSpacesError } = useQuery({
     queryKey: ["courseSpaces"],
     queryFn: fetchCourseSpaces,
     enabled: isAuthenticated,
     staleTime: 60_000,
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401 && failureCount < 2) {
+        return true;
+      }
+      return false;
+    },
   });
 
-  const { data: friendSpaces = [], isLoading: friendSpacesLoading } = useQuery({
+  const { data: friendSpaces = [], isLoading: friendSpacesLoading, error: friendSpacesError } = useQuery({
     queryKey: ["friendSpaces"],
     queryFn: fetchFriendSpaces,
     enabled: isAuthenticated,
     staleTime: 60_000,
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401 && failureCount < 2) {
+        return true;
+      }
+      return false;
+    },
   });
 
   const { data: archivedSpaces = [], isLoading: archivedSpacesLoading } =

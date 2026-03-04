@@ -20,7 +20,6 @@ const QuizBuilder = ({
   const [quizTitle, setQuizTitle] = useState("");
   const [instruction, setInstruction] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [dueTime, setDueTime] = useState("");
   const [timeLimit, setTimeLimit] = useState("");
   const [attempts, setAttempts] = useState("1");
   const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
@@ -69,6 +68,12 @@ const QuizBuilder = ({
   //     created_at: "2024-01-19T10:00:00Z"
   //   }
   // ]);
+
+  const getLocalDateTimeMin = () => {
+    const now = new Date();
+    const tzOffsetMs = now.getTimezoneOffset() * 60000;
+    return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 16);
+  };
 
   const [questions, setQuestions] = useState([
     {
@@ -385,11 +390,9 @@ const QuizBuilder = ({
   };
 
   const handleSave = (status) => {
-    // Combine date and time into ISO string if both are provided
+    // Convert datetime-local to ISO string
     let combinedDueDate = dueDate;
-    if (dueDate && dueTime) {
-      combinedDueDate = new Date(`${dueDate}T${dueTime}`).toISOString();
-    } else if (dueDate) {
+    if (dueDate) {
       combinedDueDate = new Date(dueDate).toISOString();
     }
 
@@ -561,31 +564,18 @@ const QuizBuilder = ({
               >
                 Due Date: <span className="text-red-500">*</span>
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="time"
-                  value={dueTime}
-                  onChange={(e) => setDueTime(e.target.value)}
-                  className="rounded-lg px-4 py-2 outline-none border"
-                  style={{
-                    backgroundColor: currentColors.background,
-                    color: currentColors.text,
-                    borderColor: currentColors.border,
-                  }}
-                />
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="flex-1 rounded-lg px-4 py-2 outline-none border"
-                  style={{
-                    backgroundColor: currentColors.background,
-                    color: currentColors.text,
-                    borderColor: currentColors.border,
-                  }}
-                  min={new Date().toISOString().split("T")[0]}
-                />
-              </div>
+              <input
+                type="datetime-local"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full rounded-lg px-4 py-2 outline-none border"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: currentColors.border,
+                }}
+                min={getLocalDateTimeMin()}
+              />
             </div>
 
             <div>
@@ -664,7 +654,7 @@ const QuizBuilder = ({
                     className="font-semibold"
                     style={{ color: currentColors.text }}
                   >
-                    Question {index + 1}
+                    Q{index + 1}
                   </span>
                   <select
                     value={question.type}

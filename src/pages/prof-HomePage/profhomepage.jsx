@@ -24,6 +24,16 @@ import ArticlesScrape from "../component/articles_scrape";
 import AnnouncementByAdmin from "./components/profannouncementbyadmin";
 import { DeleteConfirmationDialog } from "../component/SweetAlert";
 import { toast } from "react-toastify";
+import { departmentOptions } from "../component/enumOptions";
+
+// Helper function to get course name from code
+const getCourseName = (courseCode) => {
+  if (!courseCode || courseCode === undefined || courseCode === null) {
+    return "No Course";
+  }
+  const course = departmentOptions.find(option => option.code === courseCode);
+  return course ? course.name : courseCode; // Return the code itself if not found in options
+};
 
 const ProfHomePage = () => {
   const { user } = useUser();
@@ -162,15 +172,19 @@ const ProfHomePage = () => {
   useEffect(() => {
     const loadCoverPhotos = () => {
       const allSpaces = [...(userSpaces || []), ...(courseSpaces || [])];
+      
+      // Debug: Log course spaces data structure
+      if (courseSpaces && courseSpaces.length > 0) {
+        console.log("Course space structure:", Object.keys(courseSpaces[0]));
+        console.log("Course space data:", courseSpaces[0]);
+      }
 
       const coverPhotos = {};
       allSpaces.forEach((space) => {
-        if (space.space_uuid) {
-          const savedCoverPhoto = localStorage.getItem(
-            `coverPhoto_${space.space_uuid}`,
-          );
-          if (savedCoverPhoto) {
-            coverPhotos[space.space_uuid] = savedCoverPhoto;
+        if (space && space.space_uuid) {
+          const storedCover = localStorage.getItem(`coverPhoto_${space.space_uuid}`);
+          if (storedCover) {
+            coverPhotos[space.space_uuid] = storedCover;
           }
         }
       });
@@ -180,20 +194,19 @@ const ProfHomePage = () => {
 
     loadCoverPhotos();
 
-    // Listen for storage changes to update cover photos in real-time
-    const handleStorageChange = (e) => {
-      if (e.key && e.key.startsWith("coverPhoto_")) {
-        loadCoverPhotos();
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    // Also listen for custom events for same-tab updates
-    const handleCoverPhotoUpdate = () => {
+    const handleStorageChange = () => {
       loadCoverPhotos();
     };
 
+    const handleCoverPhotoUpdate = (event) => {
+      const { space_uuid, coverPhoto } = event.detail;
+      setSpaceCoverPhotos((prev) => ({
+        ...prev,
+        [space_uuid]: coverPhoto,
+      }));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
     window.addEventListener("coverPhotoUpdated", handleCoverPhotoUpdate);
 
     return () => {
@@ -830,7 +843,7 @@ const ProfHomePage = () => {
                                     {capitalizeWords(
                                       space.professor?.name.split(" ")[0],
                                     ) || "Unknown"}{" "}
-                                    • {space.members?.length - 1 || 0} Students
+                                    • {space.members?.length > 0 ? space.members.length - 1 : 0} Students
                                   </p>
                                   <p
                                     className="text-xs mt-1"
@@ -855,6 +868,14 @@ const ProfHomePage = () => {
                                       hour12: true,
                                     })}
                                     )
+                                  </p>
+                                  <p
+                                    className="text-xs mt-1"
+                                    style={{
+                                      color: isDarkMode ? "#9ca3af" : "#666666",
+                                    }}
+                                  >
+                                    {space.space_course ? getCourseName(space.space_course) : (space.course || space.department || space.space_department || "No Course")}
                                   </p>
                                 </div>
                               </div>

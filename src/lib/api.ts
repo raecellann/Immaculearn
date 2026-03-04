@@ -28,6 +28,18 @@ const onRefreshed = () => {
   refreshSubscribers = [];
 };
 
+// Global navigation function for auth redirects
+let navigateFunction: ((to: string) => void) | null = null;
+let authRefreshCallback: (() => void) | null = null;
+
+export const setAuthNavigate = (navigate: (to: string) => void) => {
+  navigateFunction = navigate;
+};
+
+export const setAuthRefreshCallback = (callback: () => void) => {
+  authRefreshCallback = callback;
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -70,13 +82,22 @@ api.interceptors.response.use(
         isRefreshing = false;
         onRefreshed();
 
+        // Notify UserProvider that auth was refreshed
+        if (authRefreshCallback) {
+          authRefreshCallback();
+        }
+
         return api(originalRequest);
       } catch (refreshError) {
         isRefreshing = false;
         refreshSubscribers = [];
 
         // 🔐 Redirect to login if refresh fails
-        window.location.href = "/login";
+        if (navigateFunction) {
+          navigateFunction("/login");
+        } else {
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }
