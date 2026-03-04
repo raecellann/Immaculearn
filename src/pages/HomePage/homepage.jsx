@@ -555,7 +555,7 @@ const HomePage1 = () => {
                         <div>
                           <p 
                             className="text-sm font-medium mb-1"
-                            style={{ color: isDarkMode ? "white" : "black" }}
+                            style={{ color: "white" }}
                           >
                             Loading tasks...
                           </p>
@@ -563,21 +563,21 @@ const HomePage1 = () => {
                       </div>
                     </div>
                   ) : allUploadedTasks.length === 0 ? (
-                    <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                    <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "transparent" }}>
                       <div className="flex flex-col items-center gap-3">
-                        <Calendar size={32} style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }} />
+                        <Calendar size={32} style={{ color: "white" }} />
                         <div>
-                          <p 
-                            className="text-sm font-medium mb-1"
-                            style={{ color: isDarkMode ? "white" : "black" }}
+                          <p
+                            className="text-sm "
+                            style={{  color: "white" }}
                           >
-                            No tasks created yet
+                            No upcoming tasks
                           </p>
                           <p 
-                            className="text-xs"
-                            style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                            className="text-xs mt-2"
+                            style={{ color: "rgba(255, 255, 255, 0.8)"  }}
                           >
-                            Go to your calendar to create tasks and set reminders
+                            Check your calendar to view upcoming tasks and deadlines
                           </p>
                         </div>
                       </div>
@@ -1260,7 +1260,7 @@ const HomePage1 = () => {
                       <div>
                         <p 
                           className="text-sm font-medium mb-1"
-                          style={{ color: isDarkMode ? "white" : "black" }}
+                          style={{ color: "white" }}
                         >
                           Loading tasks...
                         </p>
@@ -1268,21 +1268,21 @@ const HomePage1 = () => {
                     </div>
                   </div>
                 ) : allUploadedTasks.length === 0 ? (
-                  <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                  <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "transparent" }}>
                     <div className="flex flex-col items-center gap-3">
-                      <Calendar size={32} style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }} />
+                      <Calendar size={32} style={{ color: "white" }} />
                       <div>
-                        <p 
+                        <p
                           className="text-sm font-medium mb-1"
-                          style={{ color: isDarkMode ? "white" : "black" }}
+                          style={{ color: "white" }}
                         >
-                          No tasks created yet
+                          No upcoming tasks
                         </p>
                         <p 
                           className="text-xs"
-                          style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                          style={{ color: "rgba(255, 255, 255, 0.8)" }}
                         >
-                          Go to your calendar to create tasks and set reminders
+                          Check your calendar to view upcoming tasks and deadlines
                         </p>
                       </div>
                     </div>
