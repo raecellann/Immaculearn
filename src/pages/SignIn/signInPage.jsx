@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { useUser } from "../../contexts/user/useUser";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
+import config from "../../config";
 
 // ─── Validation helpers ────────────────────────────────────────────────────────
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,15 +36,15 @@ const FieldError = ({ message }) =>
 // ─── Main component ────────────────────────────────────────────────────────────
 const LoginPage = () => {
   const { isAuthenticated, user, isLoading, checkAuth, login } = useUser();
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError]       = useState("");
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   // Field-level errors
   const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   // Track whether a field has been touched (blurred) for eager validation
-  const [touched, setTouched]         = useState({ email: false, password: false });
+  const [touched, setTouched] = useState({ email: false, password: false });
 
   const navigate = useNavigate();
 
@@ -51,7 +52,8 @@ const LoginPage = () => {
   const getFieldError = (name, val) => {
     if (name === "email") {
       if (!val.trim()) return "Email address is required";
-      if (!EMAIL_REGEX.test(val.trim())) return "Please enter a valid email address";
+      if (!EMAIL_REGEX.test(val.trim()))
+        return "Please enter a valid email address";
     }
     if (name === "password") {
       if (!val) return "Password is required";
@@ -106,8 +108,13 @@ const LoginPage = () => {
 
   // ── Gmail OAuth ──
   const handleGmailLogin = async () => {
+    const baseUrl =
+      config.VITE_ENV === "production"
+        ? `${config.API_URL}/account/oauth/google/redirect`
+        : "http://localhost:3000/v1/account/oauth/google/redirect";
+
     const popup = window.open(
-      `http://localhost:3000/v1/account/oauth/google/redirect`,
+      baseUrl,
       "oauthPopup",
       `width=500,height=600,top=${(screen.height - 600) / 2},left=${(screen.width - 500) / 2},resizable=yes,scrollbars=yes`,
     );
@@ -238,7 +245,11 @@ const LoginPage = () => {
         </div>
 
         {/* Form */}
-        <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit} noValidate>
+        <form
+          className="flex flex-col gap-4 w-full"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           {/* Email field */}
           <div>
             <InputField

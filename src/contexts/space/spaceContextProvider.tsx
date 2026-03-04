@@ -23,6 +23,7 @@ export interface SpaceProviderProps {
 }
 
 import { toast } from "react-toastify";
+import config from "../../config";
 
 export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   const { isAuthenticated, user } = useUser();
@@ -486,7 +487,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       queryFn: async () => {
         const res = await spaceService.getOneStudentRemarks(
           currentSpace?.space_uuid || "",
-          user?.id || 0,
+          user?.id,
         );
         return res.data || [];
       },
@@ -513,7 +514,12 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const socket = io("http://localhost:3000", {
+    const baseUrl =
+      config.VITE_ENV === "production"
+        ? config.SOCKET_URL
+        : "http://localhost:3000";
+
+    const socket = io(baseUrl, {
       transports: ["websocket"],
     });
 
