@@ -289,6 +289,7 @@ const ProfViewFiles = () => {
                           <span 
                             onClick={() =>
                               navigate(
+                                // /files/:space_name/:space_uuid/:orig_file_name/:file_id
                                 `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}` 
                               )
                             }
