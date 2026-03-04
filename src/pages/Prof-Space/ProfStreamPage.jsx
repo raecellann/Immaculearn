@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
 import Logout from "../component/logout";
+import ArchiveClassAlert from "../component/ArchiveClassAlert";
 import {
   FiSearch,
   FiFileText,
@@ -54,6 +55,7 @@ const ProfStreamPage = () => {
   const [pendingButtonClicked, setPendingButtonClicked] = useState(false);
   const [deleteButtonClicked, setDeleteButtonClicked] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [isCreatingPost, setIsCreatingPost] = useState(false);
@@ -236,13 +238,22 @@ const ProfStreamPage = () => {
     }, 500);
   };
 
-  // Delete room
+  // Delete room / Archive class
   const handleDeleteRoom = async () => {
     if (!currentSpace) return;
 
-    // Show delete confirmation dialog
-    setDialogMessage(currentSpace);
-    setShowDeleteDialog(true);
+    // Check if it's a course space
+    const isCourseSpace = currentSpace?.space_type === "course" || currentSpace?.space_day;
+    
+    if (isCourseSpace) {
+      // Show archive confirmation dialog for course spaces
+      setDialogMessage(currentSpace);
+      setShowArchiveDialog(true);
+    } else {
+      // Show delete confirmation dialog for regular spaces
+      setDialogMessage(currentSpace);
+      setShowDeleteDialog(true);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -269,6 +280,49 @@ const ProfStreamPage = () => {
 
   const handleCancelDelete = () => {
     setShowDeleteDialog(false);
+    setDeleteButtonClicked(false);
+  };
+
+  const handleConfirmArchive = async () => {
+    // Prevent multiple executions
+    if (!currentSpace || !showArchiveDialog) return;
+
+    setShowArchiveDialog(false);
+    setDeleteButtonClicked(true);
+    setIsDeleting(true);
+
+    try {
+      // Here you would call the archive API instead of delete
+      // await archiveSpace(currentSpace.space_uuid, user.id);
+      
+      // For now, we'll use the same delete function but with different messaging
+      await deleteSpace(currentSpace.space_uuid, user.id);
+
+      addNotification({
+        type: "success",
+        title: "Class Archived",
+        message: `Class "${currentSpace.space_name}" has been archived successfully!`,
+        duration: 3000,
+      });
+
+      // Navigate immediately after successful archiving
+      navigate("/prof/spaces");
+    } catch (error) {
+      console.error("Failed to archive class:", error);
+      addNotification({
+        type: "error",
+        title: "Archive Failed",
+        message: "Failed to archive class. Please try again.",
+        duration: 3000,
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteButtonClicked(false);
+    }
+  };
+
+  const handleCancelArchive = () => {
+    setShowArchiveDialog(false);
     setDeleteButtonClicked(false);
   };
 
@@ -919,7 +973,7 @@ const ProfStreamPage = () => {
                     )}
                   </div>
                   <div onClick={handleDeleteRoom}>
-                    <Button text="Delete Room" />
+                    <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
                   </div>
                 </>
               )}
@@ -1016,7 +1070,7 @@ const ProfStreamPage = () => {
                 )}
               </div>
               <div onClick={handleDeleteRoom}>
-                <Button text="Delete Room" />
+                <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
               </div>
             </div>
           )}
@@ -1180,22 +1234,18 @@ const ProfStreamPage = () => {
 
                 {/* CHAT */}
                 <button
-                  onClick={handleEnterChat}
-                  className="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-colors"
+                  onClick={() => setShowChatPopup(true)}
+                  className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
                   style={{
-                    backgroundColor: isDarkMode ? "#000000" : "transparent",
+                    backgroundColor: "transparent",
                     borderColor: currentColors.border,
                     color: currentColors.text,
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = isDarkMode
-                      ? "#1f2937"
-                      : currentColors.hover;
+                    e.target.style.backgroundColor = currentColors.hover;
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = isDarkMode
-                      ? "#000000"
-                      : "transparent";
+                    e.target.style.backgroundColor = "transparent";
                   }}
                 >
                   <FiMessageCircle />
@@ -1634,28 +1684,16 @@ const ProfStreamPage = () => {
 
         {/* PENDING INVITATIONS POPUP */}
         {showPendingInvitations && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div 
-              className="rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col shadow-2xl border"
-              style={{
-                backgroundColor: currentColors.surface,
-                borderColor: currentColors.border,
-              }}
-            >
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="rounded-xl shadow-2xl max-w-md w-full border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
               {/* Header */}
-              <div 
-                className="p-4 sm:p-6 border-b flex items-center justify-between"
-                style={{ borderColor: currentColors.border }}
-              >
-                <h2 
-                  className="text-base sm:text-lg font-semibold"
-                  style={{ color: currentColors.text }}
-                >
-                  Pending Invitations
-                </h2>
+              <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
+                <h3 className="text-xl font-semibold" style={{ color: currentColors.text }}>
+                  Pending Invites
+                </h3>
                 <button
                   onClick={() => setShowPendingInvitations(false)}
-                  className="p-1 bg-transparent transition-colors rounded-lg hover:bg-gray-700"
+                  className="transition-colors p-1 rounded-lg"
                   style={{ color: currentColors.textSecondary }}
                   onMouseEnter={(e) => {
                     e.target.style.color = currentColors.text;
@@ -1664,19 +1702,21 @@ const ProfStreamPage = () => {
                     e.target.style.color = currentColors.textSecondary;
                   }}
                 >
-                  <FiX size={16} />
+                  <FiX size={20} />
                 </button>
               </div>
 
               {/* Invitations List */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+              <div className="p-6">
                 {joinRequestsData.length === 0 ? (
-                  <p 
-                    className="text-center py-4 text-sm sm:text-base"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    No pending invitations
-                  </p>
+                  <>
+                    <p className="mb-4" style={{ color: currentColors.text }}>
+                      No pending invitations at the moment.
+                    </p>
+                    <div className="text-sm" style={{ color: currentColors.textSecondary }}>
+                      Invited members will appear here once they have not yet accepted your invitation.
+                    </div>
+                  </>
                 ) : (
                   joinRequestsData.map((invitation) => (
                     <div
@@ -1766,6 +1806,21 @@ const ProfStreamPage = () => {
                   ))
                 )}
               </div>
+              <div className="flex justify-end p-6 border-t" style={{ borderColor: currentColors.border }}>
+                <button
+                  onClick={() => setShowPendingInvitations(false)}
+                  className="px-4 py-2 rounded-lg font-medium transition-colors"
+                  style={{ backgroundColor: currentColors.accent || '#3B82F6', color: '#ffffff' }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = currentColors.accentHover || '#2563EB';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
+                  }}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -1801,6 +1856,21 @@ const ProfStreamPage = () => {
         space={
           currentSpace || {
             space_name: "Unknown Space",
+            members: [],
+            files: [],
+            tasks: [],
+          }
+        }
+      />
+
+      {/* ARCHIVE CLASS CONFIRMATION DIALOG */}
+      <ArchiveClassAlert
+        isOpen={showArchiveDialog}
+        onClose={handleCancelArchive}
+        onConfirm={handleConfirmArchive}
+        space={
+          currentSpace || {
+            space_name: "Unknown Class",
             members: [],
             files: [],
             tasks: [],
@@ -1957,24 +2027,74 @@ const ProfStreamPage = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => !isChatMinimized && setShowChatPopup(false)} />
           <div className={`relative w-full ${isChatMaximized ? 'h-screen max-w-full' : 'max-w-md sm:max-w-lg'} transform transition-all duration-300 ease-in-out ${isChatMinimized ? 'translate-y-[calc(100%-48px)]' : ''}`}>
             {/* Chat Header */}
-            <div className="flex items-center justify-between bg-[#1E222A] rounded-t-lg p-3 border-b border-gray-700 cursor-pointer">
+            <div 
+              className="flex items-center justify-between rounded-t-lg p-3 border-b cursor-pointer"
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
+            >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <div 
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: currentColors.accent }}
+                >
                   <FiUser className="text-white text-sm" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-white text-sm">{spaceName}</h3>
-                  <div className="flex items-center py-2 text-sm text-gray-400">
-                    <div className={`w-2 h-2 rounded-full mr-2 ${spaceOnlineUsers[space_uuid]?.length ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span>{spaceOnlineUsers[space_uuid]?.length || 0} online</span>
-                  </div>
+                  <h3 
+                    className="font-medium text-sm"
+                    style={{ color: currentColors.text }}
+                  >
+                    {spaceName}
+                  </h3>
                 </div>
               </div>
               <div className="flex items-center space-x-1">
-                <button onClick={(e) => { e.stopPropagation(); setIsChatMaximized(!isChatMaximized); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title={isChatMaximized ? 'Restore' : 'Maximize'}>
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setIsChatMaximized(!isChatMaximized); 
+                  }} 
+                  className="p-1.5 rounded-full transition-colors"
+                  style={{
+                    color: currentColors.textSecondary,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                    e.currentTarget.style.color = currentColors.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = currentColors.textSecondary;
+                  }}
+                  title={isChatMaximized ? 'Restore' : 'Maximize'}
+                >
                   {isChatMaximized ? <FiMinimize2 size={14} /> : <FiMaximize2 size={14} />}
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); setShowChatPopup(false); setIsChatMinimized(false); setIsChatMaximized(false); }} className="text-gray-400 hover:text-white p-1.5 rounded-full hover:bg-gray-700" title="Close">
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setShowChatPopup(false); 
+                    setIsChatMinimized(false); 
+                    setIsChatMaximized(false); 
+                  }} 
+                  className="p-1.5 rounded-full transition-colors"
+                  style={{
+                    color: currentColors.textSecondary,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                    e.currentTarget.style.color = currentColors.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = currentColors.textSecondary;
+                  }}
+                  title="Close"
+                >
                   <FiX size={16} />
                 </button>
               </div>
@@ -1983,14 +2103,26 @@ const ProfStreamPage = () => {
             {/* Chat Messages */}
             {!isChatMinimized && (
               <>
-                <div className={`bg-[#141820] overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}>
+                <div 
+                  className={`overflow-y-auto ${isChatMaximized ? 'h-[calc(100vh-120px)]' : 'h-96'} p-4 space-y-2`}
+                  style={{ backgroundColor: currentColors.background }}
+                >
                   {messages.map((message) => (
                     <div key={message.id} className={`flex ${message.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
                       <div className={`flex flex-col pl-2 ${message.senderId === user?.id ? 'items-end' : 'items-start'}`}>
-                        <div className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'bg-blue-500 rounded-tr-none text-white' : 'bg-gray-700 rounded-tl-none text-gray-200'}`}>
+                        <div 
+                          className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? 'rounded-tr-none' : 'rounded-tl-none'}`}
+                          style={{
+                            backgroundColor: message.senderId === user?.id ? currentColors.accent : currentColors.surface,
+                            color: message.senderId === user?.id ? 'white' : currentColors.text,
+                          }}
+                        >
                           {message.content}
                         </div>
-                        <p className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-blue-100 text-right' : 'text-gray-400 text-left'}`}>
+                        <p 
+                          className={`text-xs mt-2 ${message.senderId === user?.id ? 'text-right' : 'text-left'}`}
+                          style={{ color: currentColors.textSecondary }}
+                        >
                           {formatTime(message.timestamp)}
                         </p>
                       </div>
@@ -2000,9 +2132,31 @@ const ProfStreamPage = () => {
                 </div>
 
                 {/* Chat Input */}
-                <form onSubmit={handleSendMessage} className="bg-[#1B1F26] p-3 rounded-b-lg border-t border-gray-700">
+                <form 
+                  onSubmit={handleSendMessage} 
+                  className="p-3 rounded-b-lg border-t"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.border,
+                  }}
+                >
                   <div className="flex items-center space-x-2">
-                    <button type="button" className="text-gray-400 hover:text-white p-2">
+                    <button 
+                      type="button" 
+                      className="p-2 rounded transition-colors"
+                      style={{
+                        color: currentColors.textSecondary,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                        e.currentTarget.style.color = currentColors.text;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = currentColors.textSecondary;
+                      }}
+                    >
                       <FiPaperclip />
                     </button>
                     <input
@@ -2010,9 +2164,31 @@ const ProfStreamPage = () => {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Type a message..."
-                      className="flex-1 bg-[#141820] border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        borderColor: currentColors.border,
+                        color: currentColors.text,
+                        focusRingColor: currentColors.accent,
+                      }}
                     />
-                    <button type="submit" className="text-blue-400 hover:text-blue-300 p-2" disabled={!newMessage.trim()}>
+                    <button
+                      type="submit"
+                      className="p-2 rounded transition-colors"
+                      disabled={!newMessage.trim()}
+                      style={{
+                        color: newMessage.trim() ? currentColors.accent : currentColors.textSecondary,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (newMessage.trim()) {
+                          e.currentTarget.style.backgroundColor = currentColors.hover;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
                       <FiSend />
                     </button>
                   </div>

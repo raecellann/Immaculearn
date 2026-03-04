@@ -21,6 +21,8 @@ const ProfNotificationPage = () => {
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+  const [ShowPendingSpaceInvitation, setShowPendingSpaceInvitation] =
+    useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState(
     location.state?.filter || "all",
@@ -44,6 +46,8 @@ const ProfNotificationPage = () => {
 
     acceptJoinRequest,
     declineJoinRequest,
+    acceptSpaceInvitation,
+    declineSpaceInvitation,
     isLoading: spaceLoading,
   } = useSpace();
 
@@ -256,6 +260,22 @@ const ProfNotificationPage = () => {
   const handleDecline = async (accountId, spaceUuid) => {
     try {
       await declineJoinRequest(accountId, spaceUuid);
+    } catch (err) {
+      console.error("Decline failed:", err);
+    }
+  };
+
+  const handleSpaceAccept = async (spaceUuid) => {
+    try {
+      await acceptSpaceInvitation(spaceUuid);
+    } catch (err) {
+      console.error("Accept failed:", err);
+    }
+  };
+
+  const handleSpaceDecline = async (spaceUuid) => {
+    try {
+      await declineSpaceInvitation(spaceUuid);
     } catch (err) {
       console.error("Decline failed:", err);
     }
@@ -487,37 +507,103 @@ const ProfNotificationPage = () => {
                     : "black",
                 }}
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <FiUsers size={22} className="text-green-500" />
-                  <div>
-                    <p
-                      className="font-semibold"
-                      style={{ color: isDarkMode ? "white" : "black" }}
-                    >
-                      Space Invitations
-                    </p>
-                    <p
-                      className="text-sm"
-                      style={{
-                        color: isDarkMode
-                          ? currentColors.textSecondary
-                          : "#666666",
-                      }}
-                    >
-                      No space invitations available
-                    </p>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <FiUsers size={22} className="text-green-500" />
+                    <div>
+                      <p
+                        className="font-semibold"
+                        style={{ color: isDarkMode ? "white" : "black" }}
+                      >
+                        Space Invitations
+                      </p>
+                      <p
+                        className="text-sm"
+                        style={{
+                          color: isDarkMode
+                            ? currentColors.textSecondary
+                            : "#666666",
+                        }}
+                      >
+                        {pendingSpaceInvitation?.length || 0} invitation(s)
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => setShowPendingSpaceInvitation(true)}
+                    className="text-blue-400 hover:underline"
+                    style={{ color: isDarkMode ? "#60A5FA" : "#007AFF" }}
+                  >
+                    View
+                  </button>
                 </div>
 
-                <p
-                  className="text-sm text-center py-4"
-                  style={{
-                    color: isDarkMode ? currentColors.textSecondary : "#666666",
-                  }}
-                >
-                  Professors typically create their own spaces rather than
-                  receiving invitations.
-                </p>
+                {/* Preview of recent space invitations */}
+                {pendingSpaceInvitation?.slice(0, 2).map((invite) => (
+                  <div
+                    key={`${invite.space_uuid || invite.c_space_uuid}-${invite.account_id}`}
+                    className="mt-3 p-3 rounded-lg"
+                    style={{
+                      backgroundColor: isDarkMode
+                        ? "rgba(55, 65, 81, 0.5)"
+                        : currentColors.surface,
+                      backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <SpaceCover
+                          image={invite.image}
+                          name={invite.space_name || invite.c_space_name}
+                          members={invite.members || []}
+                          className="rounded-lg border-2 border-white h-8 w-8"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <p
+                          className="text-sm font-medium"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
+                          {capitalizeWords(
+                            invite.space_name || invite.c_space_name,
+                          )}
+                        </p>
+                        <p
+                          className="text-xs"
+                          style={{
+                            color: isDarkMode
+                              ? currentColors.textSecondary
+                              : "#666666",
+                          }}
+                        >
+                          from {capitalizeWords(invite.owner_fullname)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {pendingSpaceInvitation?.length > 2 && (
+                  <p
+                    className="text-xs mt-2 text-center"
+                    style={{
+                      color: isDarkMode
+                        ? currentColors.textSecondary
+                        : "#666666",
+                    }}
+                  >
+                    And {pendingSpaceInvitation?.length - 2} more...
+                  </p>
+                )}
+                {(!pendingSpaceInvitation || pendingSpaceInvitation.length === 0) && (
+                  <p
+                    className="text-sm text-center py-4"
+                    style={{
+                      color: isDarkMode ? currentColors.textSecondary : "#666666",
+                    }}
+                  >
+                    No space invitations available
+                  </p>
+                )}
               </div>
             )}
 
@@ -710,7 +796,7 @@ const ProfNotificationPage = () => {
             }}
           >
             <div
-              className="p-4 border-b"
+              className="p-4 border-b flex items-center justify-between"
               style={{ borderColor: currentColors.border }}
             >
               <h2
@@ -721,7 +807,7 @@ const ProfNotificationPage = () => {
               </h2>
               <button
                 onClick={() => setShowPendingInvitations(false)}
-                className="text-2xl"
+                className="text-2xl hover:opacity-80"
                 style={{
                   color: isDarkMode ? currentColors.textSecondary : "black",
                 }}
@@ -932,6 +1018,124 @@ const ProfNotificationPage = () => {
                   : "rgb(229, 231, 235)",
               }}
             ></div>
+          </div>
+        </div>
+      )}
+
+      {ShowPendingSpaceInvitation && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div
+            className="rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col"
+            style={{
+              backgroundColor: isDarkMode
+                ? "rgba(45, 55, 72, 0.5)"
+                : currentColors.surface,
+              backdropFilter: isDarkMode ? "blur(10px)" : "none",
+            }}
+          >
+            <div
+              className="p-4 border-b flex items-center justify-between"
+              style={{ borderColor: currentColors.border }}
+            >
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: isDarkMode ? "white" : "black" }}
+              >
+                Pending Space Invitation(s)
+              </h2>
+              <button
+                onClick={() => setShowPendingSpaceInvitation(false)}
+                className="text-2xl hover:opacity-80"
+                style={{ color: currentColors.textSecondary }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {pendingSpaceInvitation?.length === 0 ? (
+                <p
+                  className="text-center py-4"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  No pending invitations
+                </p>
+              ) : (
+                pendingSpaceInvitation?.map((invite) => (
+                  <div
+                    key={`${invite.space_uuid || invite.c_space_uuid}-${invite.account_id}`}
+                    className="rounded-lg p-4 border"
+                    style={{
+                      backgroundColor: isDarkMode
+                        ? "rgba(45, 55, 72, 0.3)"
+                        : currentColors.surface,
+                      backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                      borderColor: isDarkMode
+                        ? "rgb(55 65 81 / var(--tw-border-opacity, 1))"
+                        : "black",
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="relative">
+                        <SpaceCover
+                          image={invite.image}
+                          name={invite.space_name || invite.c_space_name}
+                          members={invite.members || []}
+                          className="rounded-lg border-2 border-white h-10 w-10"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h3
+                          className="font-medium"
+                          style={{ color: isDarkMode ? "white" : "black" }}
+                        >
+                          {capitalizeWords(
+                            invite.space_name || invite.c_space_name,
+                          )}
+                          's space
+                        </h3>
+                        <p
+                          className="text-sm"
+                          style={{ color: currentColors.textSecondary }}
+                        >
+                          Space Owner: {capitalizeWords(invite.owner_fullname)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 mt-3">
+                      <button
+                        onClick={() =>
+                          handleSpaceDecline(
+                            invite.space_uuid || invite.c_space_uuid,
+                          )
+                        }
+                        className="px-3 py-1.5 text-sm rounded-md"
+                        style={{
+                          backgroundColor: isDarkMode ? "#4B5563" : "#E5E7EB",
+                          color: isDarkMode ? "white" : "black",
+                        }}
+                      >
+                        Decline
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleSpaceAccept(
+                            invite.space_uuid || invite.c_space_uuid,
+                          )
+                        }
+                        className="px-3 py-1.5 text-sm rounded-md text-white"
+                        style={{
+                          backgroundColor: isDarkMode ? "#2563EB" : "#3B82F6",
+                        }}
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

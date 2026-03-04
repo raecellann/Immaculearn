@@ -167,6 +167,18 @@ const ProfTaskPage = () => {
   const coverPhotoInputRef = useRef(null);
   const coverPhotoEditorRef = useRef(null);
 
+  // Gradient color options for cover photo
+  const colorOptions = [
+    "linear-gradient(45deg, #FFC107, #FF5722)",
+    "linear-gradient(45deg, #3F51B5, #2196F3)",
+    "linear-gradient(45deg, #9C27B0, #673AB7)",
+    "linear-gradient(45deg, #E91E63, #F44336)",
+    "linear-gradient(45deg, #4CAF50, #8BC34A)",
+    "linear-gradient(45deg, #FF9800, #FFC107)",
+    "linear-gradient(45deg, #00BCD4, #009688)",
+    "linear-gradient(45deg, #795548, #607D8B)",
+  ];
+
   /* ================= CREATE TASK MODE ================= */
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [showTaskTypeSelection, setShowTaskTypeSelection] = useState(false);
@@ -470,51 +482,84 @@ const ProfTaskPage = () => {
     setShowCoverPhotoConfirm(true);
   };
 
+  // Handle gradient selection for cover photo
+  const handleGradientSelection = (gradient) => {
+    setCoverPhotoUrl(gradient);
+    setShowCoverPhotoConfirm(true); // Show confirmation dialog for gradients
+    if (coverPhotoInputRef.current) {
+      coverPhotoInputRef.current.value = "";
+    }
+  };
+
   const handleConfirmCoverPhoto = () => {
-    // Create canvas to apply transformations
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-
-    img.onload = () => {
-      // Set canvas size to cover photo dimensions
-      canvas.width = 1200;
-      canvas.height = 400;
-
-      // Calculate scale to cover the entire canvas
-      const scale = Math.max(
-        canvas.width / img.width,
-        canvas.height / img.height,
-      );
-      const scaledWidth = img.width * scale;
-      const scaledHeight = img.height * scale;
-
-      // Calculate position based on user vertical positioning
-      const x = (canvas.width - scaledWidth) / 2;
-      const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-
-      // Draw the image with transformations
-      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-
-      // Convert to data URL and update
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
-      setCoverPhotoUrl(dataUrl);
-
-      // Save to localStorage
-      localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-
+    // Check if it's a gradient or an image
+    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+      // For gradients, save directly without canvas transformations
+      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-
+      
       addNotification({
         type: "success",
         title: "Cover Photo Updated",
         message: "Your cover photo has been updated successfully!",
         duration: 3000,
       });
-    };
+    } else {
+      // For images, create canvas to apply transformations
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
 
-    img.src = coverPhotoUrl;
+      img.onload = () => {
+        // Set canvas size to cover photo dimensions
+        canvas.width = 1200;
+        canvas.height = 400;
+
+        // Calculate scale to cover the entire canvas
+        const scale = Math.max(
+          canvas.width / img.width,
+          canvas.height / img.height,
+        );
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+
+        // Calculate position based on user vertical positioning
+        const x = (canvas.width - scaledWidth) / 2;
+        const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
+
+        // Draw the image with transformations
+        ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+        // Convert to data URL and update
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+        setCoverPhotoUrl(dataUrl);
+
+        // Save to localStorage
+        localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
+        setShowCoverPhotoEditor(false);
+        setShowCoverPhotoConfirm(false);
+
+        addNotification({
+          type: "success",
+          title: "Cover Photo Updated",
+          message: "Your cover photo has been updated successfully!",
+          duration: 3000,
+        });
+      };
+
+      img.onerror = () => {
+        addNotification({
+          type: "error",
+          title: "Error",
+          message: "Failed to load image. Please try again.",
+          duration: 3000,
+        });
+        setShowCoverPhotoConfirm(false);
+      };
+
+      img.src = coverPhotoUrl;
+    }
   };
 
   const handleCancelCoverPhoto = () => {
@@ -2735,31 +2780,90 @@ const ProfTaskPage = () => {
 
             {/* Editor Content */}
             <div className="flex-1 p-6 overflow-y-auto">
-              {/* Preview Area */}
+              {/* Gradient Options */}
               <div className="mb-6">
-                <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
-                  <div
-                    ref={coverPhotoEditorRef}
-                    className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
-                    style={{
-                      backgroundImage: `url(${coverPhotoUrl})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: `center ${coverPhotoPosition}%`,
-                      backgroundRepeat: "no-repeat",
-                    }}
-                    onMouseDown={handleMouseDown}
-                  />
-                  <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
-                  {isDragging && (
-                    <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
-                      Dragging...
-                    </div>
-                  )}
+                <p className="text-sm font-medium mb-3" style={{ color: currentColors.text }}>Color & Gradient</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {colorOptions.map((color, i) => (
+                    <div
+                      key={i}
+                      className="h-12 rounded cursor-pointer border-2 transition-colors"
+                      style={{ 
+                        background: color,
+                        borderColor: currentColors.border
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.borderColor = currentColors.accent || '#3B82F6';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.borderColor = currentColors.border;
+                      }}
+                      onClick={() => handleGradientSelection(color)}
+                    />
+                  ))}
                 </div>
-                <p className="text-sm text-gray-400 mt-2">
-                  Click and drag the image up or down to position it
-                </p>
               </div>
+
+              {/* Separator Line */}
+              <div className="relative flex items-center my-4">
+                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
+                <span className="px-3 text-sm" style={{ color: currentColors.textSecondary }}>or</span>
+                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
+              </div>
+
+              {/* Upload Option (only show when gradient is selected) */}
+              {coverPhotoUrl && coverPhotoUrl.includes('gradient') && (
+                <div className="mb-4 flex justify-center">
+                  <button
+                    onClick={() => coverPhotoInputRef.current?.click()}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      color: currentColors.text,
+                      border: `1px solid ${currentColors.border}`
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
+                      e.target.style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = currentColors.background;
+                      e.target.style.color = currentColors.text;
+                    }}
+                  >
+                    <FiUpload size={14} />
+                    <span>Upload Photo</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Preview Area (only show if it's an image, not gradient) */}
+              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+                <div className="mb-6">
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden" style={{ backgroundColor: currentColors.background }}>
+                    <div
+                      ref={coverPhotoEditorRef}
+                      className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
+                      style={{
+                        backgroundImage: `url(${coverPhotoUrl})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: `center ${coverPhotoPosition}%`,
+                        backgroundRepeat: "no-repeat",
+                      }}
+                      onMouseDown={handleMouseDown}
+                    />
+                    <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
+                    {isDragging && (
+                      <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+                        Dragging...
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm mt-2" style={{ color: currentColors.textSecondary }}>
+                    Click and drag the image up or down to position it
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
@@ -2813,6 +2917,137 @@ const ProfTaskPage = () => {
                 className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
               >
                 Change Cover Photo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PENDING INVITATIONS POPUP */}
+      {showPendingInvitations && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="rounded-xl shadow-2xl max-w-md w-full border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+            {/* Header */}
+            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
+              <h3 className="text-xl font-semibold" style={{ color: currentColors.text }}>
+                Pending Invites
+              </h3>
+              <button
+                onClick={() => setShowPendingInvitations(false)}
+                className="transition-colors p-1 rounded-lg"
+                style={{ color: currentColors.textSecondary }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = currentColors.text;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = currentColors.textSecondary;
+                }}
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            {/* Invitations List */}
+            <div className="p-6">
+              {joinRequestsData.length === 0 ? (
+                <>
+                  <p className="mb-4" style={{ color: currentColors.text }}>
+                    No pending invitations at the moment.
+                  </p>
+                  <div className="text-sm" style={{ color: currentColors.textSecondary }}>
+                    Invited members will appear here once they have not yet accepted your invitation.
+                  </div>
+                </>
+              ) : (
+                joinRequestsData.map((invitation) => (
+                  <div
+                    key={invitation.account_id}
+                    className="rounded-lg p-4 border"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      borderColor: currentColors.border,
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={invitation.profile_pic}
+                        alt={invitation.fullname}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium" style={{ color: currentColors.text }}>
+                          {invitation.fullname}
+                        </h3>
+                        <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                          {invitation.email}
+                        </p>
+                        <p className="text-sm mt-1" style={{ color: currentColors.textSecondary }}>
+                          {invitation.message || "Hello world"}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-xs" style={{ color: currentColors.textSecondary }}>
+                            {invitation.added_at}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-3">
+                      <button
+                        disabled={spaceLoading}
+                        onClick={() =>
+                          declineJoinRequest(invitation.account_id)
+                        }
+                        className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
+                        style={{
+                          backgroundColor: '#6B7280',
+                          color: 'white',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#4B5563';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '#6B7280';
+                        }}
+                      >
+                        Decline
+                      </button>
+                      <button
+                        disabled={spaceLoading}
+                        onClick={() =>
+                          acceptJoinRequest(invitation.account_id)
+                        }
+                        className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
+                        style={{
+                          backgroundColor: '#2563EB',
+                          color: 'white',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#1D4ED8';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '#2563EB';
+                        }}
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex justify-end p-6 border-t" style={{ borderColor: currentColors.border }}>
+              <button
+                onClick={() => setShowPendingInvitations(false)}
+                className="px-4 py-2 rounded-lg font-medium transition-colors"
+                style={{ backgroundColor: currentColors.accent || '#3B82F6', color: '#ffffff' }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = currentColors.accentHover || '#2563EB';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
+                }}
+              >
+                Close
               </button>
             </div>
           </div>

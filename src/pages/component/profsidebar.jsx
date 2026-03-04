@@ -179,7 +179,7 @@ const ProfSidebar = ({ isMinimized = false, onToggleMinimize }) => {
           {/* Text Container */}
           <div className={`flex flex-col ${localMinimized ? "hidden lg:hidden" : ""}`}>
             <span className="text-sm font-medium">
-              {user?.name || "User"}
+              {user?.first_name || "User"}
             </span>
             <span className="text-xs text-gray-400">
               {user?.role || "Role"}

@@ -199,7 +199,7 @@ const ProfilePage = () => {
                       <label className="block text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>First Name</label>
                       <input
                         type="text"
-                        value={(user?.name?.split(' ')[0] || '')}
+                        value={(user?.first_name)}
                         placeholder="First Name"
                         readOnly
                         className="p-1.5 sm:p-2 rounded-md border outline-none w-full text-sm"
@@ -214,7 +214,7 @@ const ProfilePage = () => {
                       <label className="block text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>Last Name</label>
                       <input
                         type="text"
-                        value={(user?.name?.split(' ')[1] || '')}
+                        value={(user?.last_name)}
                         placeholder="Last Name"
                         readOnly
                         className="p-1.5 sm:p-2 rounded-md border outline-none w-full text-sm"

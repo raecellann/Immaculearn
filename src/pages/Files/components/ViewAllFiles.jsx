@@ -5,7 +5,7 @@ import Logout from "../../component/logout";
 import { useNavigate, useParams } from "react-router";
 import { useSpace } from "../../../contexts/space/useSpace";
 import { useUser } from "../../../contexts/user/useUser";
-import { useFileManager } from "../../../hooks/useFileManager";
+import { useFile } from "../../../contexts/file/fileContextProvider";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 
 const ViewAllFilesPage = () => {
@@ -40,8 +40,8 @@ const ViewAllFilesPage = () => {
 
 
 
-  const { list } = useFileManager(currentSpace?.space_id || null);
-    const files = list?.data || [];
+  const { resources } = useFile();
+  const files = resources || [];
 
   console.log(files)
 
@@ -167,11 +167,11 @@ const ViewAllFilesPage = () => {
                   }}
                 >
                   <p className="text-sm font-medium" style={{ color: '#10B981' }}>
-                    ● {file.status}
+                    ● {file.lesson_name || 'No Lesson'}
                   </p>
 
                   <p className="font-medium break-words" style={{ color: '#3B82F6' }}>
-                    {formatFileTitle(file.filename)}
+                    {formatFileTitle(file.file_name)}
                   </p>
 
                   <p className="text-sm">
@@ -185,7 +185,7 @@ const ViewAllFilesPage = () => {
                       
                       onClick={() =>
                         navigate(
-                          `/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.filename)}/${file.file_uuid}`
+                          `/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}`
                         )
                       }
                       className="px-3 py-1 text-xs rounded-md cursor-pointer transition"
@@ -209,7 +209,7 @@ const ViewAllFilesPage = () => {
                 <table className="w-full min-w-[500px] border-collapse">
                   <thead>
                     <tr className="border-b text-left" style={{ borderColor: currentColors.border }}>
-                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Status</th>
+                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Lesson Name</th>
                       <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Name</th>
                       
                       <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Type</th>
@@ -236,26 +236,27 @@ const ViewAllFilesPage = () => {
                         style={{ ':hover': { backgroundColor: currentColors.hover } }}
                       >
                         <td className="px-4 py-3">
-                          <span className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full`} style={{
-                              backgroundColor: file.status === "uploaded" ? '#10B981' : '#6B7280'
-                            }} />
-                            <span className="text-xs" style={{ color: currentColors.text }}>{file.status}</span>
-                          </span>
+                          <span className="text-xs" style={{ color: currentColors.text }}>{file.lesson_name || 'No Lesson'}</span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-medium text-sm truncate max-w-[200px]" title={formatFileTitle(file.filename)} style={{ color: currentColors.text }}>
-                            {formatFileTitle(file.filename)}
+                          <div className="font-medium text-sm truncate max-w-[200px]" title={formatFileTitle(file.file_name)} style={{ color: currentColors.text }}>
+                            {formatFileTitle(file.file_name)}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm" style={{ color: currentColors.textSecondary }}>
                           {new Date(file.created_at).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-3">
-                          <span className="px-2 py-1 text-xs rounded-md cursor-pointer transition" style={{
-                            backgroundColor: '#3B82F6',
-                            color: 'white'
-                          }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}>
+                          <span 
+                            onClick={() =>
+                              navigate(
+                                `/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}` 
+                              )
+                            }
+                            className="px-2 py-1 text-xs rounded-md cursor-pointer transition" style={{
+                              backgroundColor: '#3B82F6',
+                              color: 'white'
+                            }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}>
                             View
                           </span>
                         </td>
@@ -271,7 +272,7 @@ const ViewAllFilesPage = () => {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b text-left" style={{ borderColor: currentColors.border }}>
-                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Status</th>
+                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Lesson Name</th>
                     <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Name</th>
                     <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Date Posted</th>
                     {/* <th className="px-6 py-4 text-xs uppercase">Space Name</th> */}
@@ -296,23 +297,23 @@ const ViewAllFilesPage = () => {
                       className="transition"
                       style={{ ':hover': { backgroundColor: currentColors.hover } }}
                     >
-                      <td className="px-6 py-4">
-                        <span className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full`} style={{
-                            backgroundColor: file.status === "uploaded" ? '#10B981' : '#6B7280'
-                          }} />
-                          <span className="text-xs" style={{ color: currentColors.text }}>{file.status}</span>
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 font-medium" style={{ color: currentColors.text }}>{formatFileTitle(file.filename)}</td>
+                      <td className="px-6 py-4 font-medium" style={{ color: currentColors.text }}>{file.lesson_name || 'No Lesson'}</td>
+                      
+                      <td className="px-6 py-4 font-medium" style={{ color: currentColors.text }}>{formatFileTitle(file.file_name)}</td>
                       <td className="px-6 py-4 text-sm" style={{ color: currentColors.textSecondary }}>
                         {new Date(file.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="px-2 py-1 text-xs rounded-md cursor-pointer transition" style={{
-                          backgroundColor: '#3B82F6',
-                          color: 'white'
-                        }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}>
+                        <span 
+                          onClick={() =>
+                            navigate(
+                              `/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}` 
+                            )
+                          }
+                          className="px-2 py-1 text-xs rounded-md cursor-pointer transition" style={{
+                            backgroundColor: '#3B82F6',
+                            color: 'white'
+                          }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}>
                           View
                         </span>
                       </td>
