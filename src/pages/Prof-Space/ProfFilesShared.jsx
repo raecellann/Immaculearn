@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
 import AddMember from "../component/AddMember";
+import ArchiveClassAlert from "../component/ArchiveClassAlert";
 import { FiFileText, FiMenu, FiX, FiUpload, FiCopy } from "react-icons/fi";
 import Logout from "../component/logout";
 import { useUser } from "../../contexts/user/useUser";
@@ -13,6 +14,7 @@ import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { useNotification } from "../../contexts/notification/notificationContextProvider.js";
+import { toast } from "react-toastify";
 
 // ─── Helper Functions ────────────────────────────────────────────────────────
 
@@ -214,6 +216,7 @@ const ProfFilesShared = () => {
     acceptJoinRequest,
     declineJoinRequest,
     deleteSpace,
+    setArchive,
   } = useSpace();
   const { data: joinRequestsData = [] } = useJoinRequests(space_uuid || "");
   const {
@@ -257,6 +260,10 @@ const ProfFilesShared = () => {
   const [lessonName, setLessonName] = useState("");
   const [lessonNameError, setLessonNameError] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteButtonClicked, setDeleteButtonClicked] = useState(false);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [showUploadConfirmation, setShowUploadConfirmation] = useState(false);
@@ -368,23 +375,13 @@ const ProfFilesShared = () => {
       // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
-        addNotification({
-          type: "error",
-          title: "Invalid File",
-          message: "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
-          duration: 3000,
-        });
+        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        addNotification({
-          type: "error",
-          title: "File Too Large",
-          message: "Please upload an image smaller than 5MB",
-          duration: 3000,
-        });
+        toast.error("Please upload an image smaller than 5MB");
         return;
       }
 
@@ -417,12 +414,7 @@ const ProfFilesShared = () => {
       // Dispatch custom event to notify HomePage
       window.dispatchEvent(new CustomEvent('coverPhotoUpdated'));
       
-      addNotification({
-        type: "success",
-        title: "Cover Photo Updated",
-        message: "Your cover photo has been updated successfully!",
-        duration: 3000,
-      });
+      toast.success("Your cover photo has been updated successfully!");
     } else {
       // For images, create canvas to apply transformations
       const canvas = document.createElement('canvas');
@@ -459,12 +451,7 @@ const ProfFilesShared = () => {
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
         
-        addNotification({
-          type: "success",
-          title: "Cover Photo Updated",
-          message: "Your cover photo has been updated successfully!",
-          duration: 3000,
-        });
+        toast.success("Your cover photo has been updated successfully!");
       };
       
       img.src = coverPhotoUrl;
@@ -722,9 +709,23 @@ const ProfFilesShared = () => {
     }
   };
 
+  // Delete room / Archive class
   const handleDeleteRoom = () => {
-    if (currentSpace) setShowDeleteDialog(true);
+    if (!currentSpace) return;
+
+    // Check if it's a course space
+    const isCourseSpace = currentSpace?.space_type === "course" || currentSpace?.space_day;
+    
+    if (isCourseSpace) {
+      // Show archive confirmation dialog for course spaces
+      setDialogMessage(currentSpace);
+      setShowArchiveDialog(true);
+    } else {
+      // Show delete confirmation dialog for regular spaces
+      setShowDeleteDialog(true);
+    }
   };
+
   const confirmDeleteRoom = async () => {
     if (!currentSpace) return;
     setShowDeleteDialog(false);
@@ -734,6 +735,36 @@ const ProfFilesShared = () => {
     } catch (err) {
       alert("Failed to delete space. Please try again.");
     }
+  };
+
+  const handleConfirmArchive = async () => {
+    // Prevent multiple executions
+    if (!currentSpace || !showArchiveDialog) return;
+
+    setShowArchiveDialog(false);
+    setDeleteButtonClicked(true);
+    setIsDeleting(true);
+
+    try {
+      // Use the archive function instead of delete
+      await setArchive(currentSpace.space_uuid);
+
+      toast.success(`Class "${currentSpace.space_name}" has been archived successfully!`);
+
+      // Navigate to archive page after successful archiving
+      navigate("/prof/archive");
+    } catch (error) {
+      console.error("Failed to archive class:", error);
+      toast.error("Failed to archive class. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setDeleteButtonClicked(false);
+    }
+  };
+
+  const handleCancelArchive = () => {
+    setShowArchiveDialog(false);
+    setDeleteButtonClicked(false);
   };
 
   const handleCopyLink = (link) => {
@@ -897,7 +928,7 @@ const ProfFilesShared = () => {
                     <Button text="Pending Invites" />
                   </div>
                   <div onClick={handleDeleteRoom}>
-                    <Button text="Delete Room" />
+                    <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
                   </div>
                 </>
               )}
@@ -992,7 +1023,7 @@ const ProfFilesShared = () => {
                 <Button text="Pending Invites" />
               </div>
               <div onClick={handleDeleteRoom}>
-                <Button text="Delete Room" />
+                <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
               </div>
             </div>
           )}
@@ -1745,6 +1776,21 @@ const ProfFilesShared = () => {
         space={
           currentSpace || {
             space_name: "Unknown Space",
+            members: [],
+            files: [],
+            tasks: [],
+          }
+        }
+      />
+
+      {/* ARCHIVE CLASS CONFIRMATION DIALOG */}
+      <ArchiveClassAlert
+        isOpen={showArchiveDialog}
+        onClose={handleCancelArchive}
+        onConfirm={handleConfirmArchive}
+        space={
+          currentSpace || {
+            space_name: "Unknown Class",
             members: [],
             files: [],
             tasks: [],

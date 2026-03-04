@@ -35,6 +35,7 @@ import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { toast } from "react-toastify";
 import profanityFilter from "../../utils/profanityFilter";
 
 const ProfStreamPage = () => {
@@ -298,23 +299,13 @@ const ProfStreamPage = () => {
       // Use the archive function instead of delete
       await setArchive(currentSpace.space_uuid);
 
-      addNotification({
-        type: "success",
-        title: "Class Archived",
-        message: `Class "${currentSpace.space_name}" has been archived successfully!`,
-        duration: 3000,
-      });
+      toast.success(`Class "${currentSpace.space_name}" has been archived successfully!`);
 
       // Navigate to archive page after successful archiving
       navigate("/prof/archive");
     } catch (error) {
       console.error("Failed to archive class:", error);
-      addNotification({
-        type: "error",
-        title: "Archive Failed",
-        message: "Failed to archive class. Please try again.",
-        duration: 3000,
-      });
+      toast.error("Failed to archive class. Please try again.");
     } finally {
       setIsDeleting(false);
       setDeleteButtonClicked(false);
@@ -382,11 +373,7 @@ const ProfStreamPage = () => {
     const content = activeEditor?.innerText?.trim();
     
     if (!content || !currentSpace?.space_id) {
-      addNotification({
-        type: "error",
-        message: "Please write something before posting",
-        duration: 1500,
-      });
+      toast.error("Please write something before posting");
       return;
     }
 
@@ -407,24 +394,12 @@ const ProfStreamPage = () => {
         // Refetch posts to get the latest data
         refetchPosts();
 
-        addNotification({
-          type: "success",
-          message: "Post created successfully!",
-          duration: 1500,
-        });
+        toast.success("Post created successfully!");
       } else {
-        addNotification({
-          type: "error",
-          message: result.message || "Failed to create post",
-          duration: 1500,
-        });
+        toast.error(result.message || "Failed to create post");
       }
     } catch (error) {
-      addNotification({
-        type: "error",
-        message: "Failed to create post. Please try again.",
-        duration: 1500,
-      });
+      toast.error("Failed to create post. Please try again.");
     } finally {
       setIsCreatingPost(false);
     }
@@ -472,12 +447,7 @@ const ProfStreamPage = () => {
       }, 100);
     } catch (error) {
       console.error("Error sending message:", error);
-      addNotification({
-        type: "error",
-        title: "Send Error",
-        message: "Failed to send message. Please try again.",
-        duration: 3000,
-      });
+      toast.error("Failed to send message. Please try again.");
     }
   };
 
@@ -536,23 +506,13 @@ const ProfStreamPage = () => {
         "image/webp",
       ];
       if (!validTypes.includes(file.type)) {
-        addNotification({
-          type: "error",
-          title: "Invalid File",
-          message: "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
-          duration: 3000,
-        });
+        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        addNotification({
-          type: "error",
-          title: "File Too Large",
-          message: "Please upload an image smaller than 5MB",
-          duration: 3000,
-        });
+        toast.error("Please upload an image smaller than 5MB");
         return;
       }
 
@@ -585,12 +545,7 @@ const ProfStreamPage = () => {
       // Dispatch custom event to notify ProfStreamPage
       window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
       
-      addNotification({
-        type: "success",
-        title: "Cover Photo Updated",
-        message: "Your cover photo has been updated successfully!",
-        duration: 3000,
-      });
+      toast.success("Your cover photo has been updated successfully!");
     } else {
       // For images, create canvas to apply transformations
       const canvas = document.createElement("canvas");
@@ -630,12 +585,7 @@ const ProfStreamPage = () => {
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
 
-        addNotification({
-          type: "success",
-          title: "Cover Photo Updated",
-          message: "Your cover photo has been updated successfully!",
-          duration: 3000,
-        });
+        toast.success("Your cover photo has been updated successfully!");
       };
 
       img.src = coverPhotoUrl;
@@ -759,11 +709,7 @@ const ProfStreamPage = () => {
   const handleCreateComment = async (postId) => {
     const content = commentInputs[postId]?.trim();
     if (!content || !currentSpace?.space_id) {
-      addNotification({
-        type: "error",
-        message: "Please write something before commenting",
-        duration: 1500,
-      });
+      toast.error("Please write something before commenting");
       return;
     }
 
@@ -789,24 +735,12 @@ const ProfStreamPage = () => {
         // Reload comments
         await loadComments(postId);
 
-        addNotification({
-          type: "success",
-          message: "Comment posted successfully!",
-          duration: 1500,
-        });
+        toast.success("Comment posted successfully!");
       } else {
-        addNotification({
-          type: "error",
-          message: result.message || "Failed to post comment",
-          duration: 1500,
-        });
+        toast.error(result.message || "Failed to post comment");
       }
     } catch (error) {
-      addNotification({
-        type: "error",
-        message: "Failed to post comment. Please try again.",
-        duration: 1500,
-      });
+      toast.error("Failed to post comment. Please try again.");
     } finally {
       setIsLoadingComments((prev) => ({
         ...prev,
