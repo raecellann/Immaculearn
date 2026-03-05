@@ -182,7 +182,6 @@ const ProfCreateSpace = () => {
             "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg"
         ) {
           localStorage.setItem(`coverPhoto_${space_uuid}`, coverImage);
-          // Dispatch custom event to notify other components of the cover photo update
           window.dispatchEvent(
             new CustomEvent("coverPhotoUpdated", {
               detail: { space_uuid, coverPhoto: coverImage },
