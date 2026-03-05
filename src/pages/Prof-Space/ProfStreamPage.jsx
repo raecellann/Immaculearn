@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
 import Logout from "../component/logout";
@@ -112,6 +112,7 @@ const ProfStreamPage = () => {
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const queryClient = useQueryClient();
+  const [activeChatSpaceUuid, setActiveChatSpaceUuid] = useState(null);
   const {
     userSpaces,
     courseSpaces,
@@ -132,7 +133,59 @@ const ProfStreamPage = () => {
 
   // Chat hook
   const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } =
-    useSpaceChat(space_uuid, user);
+    useSpaceChat(activeChatSpaceUuid, user);
+
+  // Map messages to render-friendly format with date grouping
+  const chatMessages = useMemo(() => {
+    return messages.map((m) => ({
+      id: m.id || Math.random().toString(36).substr(2, 9),
+      from: m.senderId === user.id ? "me" : "them",
+      senderId: m.senderId,
+      text: m.content,
+      type: m.type || "text",
+      imageUrl:
+        m.type === "image" && m.imageUrl
+          ? `data:image/jpeg;base64,${m.imageUrl}`
+          : m.imageUrl,
+      avatar: m.senderAvatar,
+      timestamp: new Date(m.timestamp),
+      time: new Date(m.timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      date: new Date(m.timestamp).toLocaleDateString(),
+      status: m.status || "sent", // sent, delivered, read
+      seen: m.seen || false,
+    }));
+  }, [messages, user.id]);
+
+  // Group messages by date
+  const messagesByDate = useMemo(() => {
+    const groups = {};
+    chatMessages.forEach((message) => {
+      const today = new Date().toLocaleDateString();
+      const yesterday = new Date(Date.now() - 86400000).toLocaleDateString();
+
+      let dateLabel = message.date;
+      if (message.date === today) {
+        dateLabel = "Today";
+      } else if (message.date === yesterday) {
+        dateLabel = "Yesterday";
+      } else {
+        dateLabel = new Date(message.timestamp).toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "short",
+          day: "numeric",
+        });
+      }
+
+      if (!groups[dateLabel]) {
+        groups[dateLabel] = [];
+      }
+      groups[dateLabel].push(message);
+    });
+    return groups;
+  }, [chatMessages]);
 
   // Join requests - MUST BE AT THE TOP (unconditionally)
   const { data: joinRequestsData = [], isLoading: joinRequestsLoading } =
@@ -155,6 +208,24 @@ const ProfStreamPage = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Scroll to bottom when chat popup opens
+  useEffect(() => {
+    if (showChatPopup && messagesEndRef.current) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [showChatPopup]);
+
+  // Scroll to bottom when new messages are received
+  useEffect(() => {
+    if (showChatPopup && messagesEndRef.current && messages.length > 0) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    }
+  }, [messages, showChatPopup]);
 
   // Sync editors when screen size changes
   useEffect(() => {
@@ -793,7 +864,6 @@ const ProfStreamPage = () => {
     }
   }, [isDragging, dragStartY, dragStartPosition]);
 
-
   // Loading state
   if (userLoading || spaceLoading) {
     return (
@@ -1234,7 +1304,10 @@ const ProfStreamPage = () => {
                 {/* CHAT */}
                 <div className="flex justify-center">
                   <button
-                    onClick={() => setShowChatPopup(true)}
+                    onClick={() => {
+                      setShowChatPopup(true);
+                      setActiveChatSpaceUuid(space_uuid);
+                    }}
                     className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
                     style={{
                       backgroundColor: "transparent",
@@ -2076,7 +2149,7 @@ const ProfStreamPage = () => {
             onClick={() => !isChatMinimized && setShowChatPopup(false)}
           />
           <div
-            className={`relative ${isChatMinimized ? "w-64 max-w-64" : "w-full"} ${isChatMaximized ? "max-w-4xl h-[90vh]" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
+            className={`relative ${isChatMinimized ? "w-64 max-w-64" : "w-full"} ${isChatMaximized ? "max-w-4xl h-[90vh]" : "max-w-md sm:max-w-lg h-[80vh] sm:h-[70vh]"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
           >
             {/* Chat Header */}
             <div
@@ -2158,43 +2231,101 @@ const ProfStreamPage = () => {
 
             {/* Chat Messages */}
             {!isChatMinimized && (
-              <>
+              <div className="flex flex-col h-full">
                 <div
-                  className={`overflow-y-auto sm:overflow-y-hidden h-[calc(100vh-180px)] sm:h-96 p-4 space-y-2`}
-                  style={{ backgroundColor: currentColors.background }}
+                  className={`overflow-y-auto ${isChatMaximized ? "h-[calc(90vh-140px)]" : "h-[calc(100vh-180px)] sm:h-96"} p-4 space-y-2`}
+                  style={{
+                    backgroundColor: currentColors.background,
+                  }}
                 >
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.senderId === user?.id ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`flex flex-col pl-2 ${message.senderId === user?.id ? "items-end" : "items-start"}`}
-                      >
-                        <div
-                          className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? "rounded-tr-none" : "rounded-tl-none"}`}
-                          style={{
-                            backgroundColor:
-                              message.senderId === user?.id
-                                ? currentColors.accent
-                                : currentColors.surface,
-                            color:
-                              message.senderId === user?.id
-                                ? "white"
-                                : currentColors.text,
-                          }}
-                        >
-                          {message.content}
+                  {Object.entries(messagesByDate).map(
+                    ([dateLabel, dateMessages]) => (
+                      <div key={dateLabel + 1}>
+                        {/* Date Separator */}
+                        <div className="flex items-center justify-center py-2">
+                          <div className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
+                            {dateLabel}
+                          </div>
                         </div>
-                        <p
-                          className={`text-xs mt-2 ${message.senderId === user?.id ? "text-right" : "text-left"}`}
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          {formatTime(message.timestamp)}
-                        </p>
+
+                        {/* Messages for this date */}
+                        {dateMessages.map((m, i) => {
+                          const nextMessage = dateMessages[i + 1];
+                          const shouldShowTime =
+                            m.from === "me" &&
+                            (!nextMessage || nextMessage.from !== "me");
+                          const prevMessage = dateMessages[i - 1];
+                          const shouldShowAvatar =
+                            m.from === "them" &&
+                            (!nextMessage || nextMessage.from !== "them");
+
+                          return (
+                            <div
+                              key={m.id}
+                              className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} mb-3`}
+                            >
+                              {shouldShowAvatar && (
+                                <img
+                                  src={m.avatar || "/default-avatar.png"}
+                                  className="w-8 h-8 rounded-full mr-2 mt-1"
+                                />
+                              )}
+                              {!shouldShowAvatar && m.from === "them" && (
+                                <div className="w-8 h-8 mr-2 mt-1"></div>
+                              )}
+                              <div
+                                className={`flex flex-col ${m.from === "me" ? "items-end" : "items-start"}`}
+                              >
+                                <div
+                                  className={`p-3 rounded-lg max-w-xs break-words ${m.from === "me" ? "rounded-tr-none" : "rounded-tl-none"}`}
+                                  style={{
+                                    backgroundColor:
+                                      m.from === "me"
+                                        ? currentColors.accent
+                                        : currentColors.surface,
+                                    color:
+                                      m.from === "me"
+                                        ? "white"
+                                        : currentColors.text,
+                                  }}
+                                >
+                                  {m.type === "image" ? (
+                                    <div className="space-y-2">
+                                      <img
+                                        src={m.imageUrl}
+                                        alt={m.text}
+                                        className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() =>
+                                          window.open(m.imageUrl, "_blank")
+                                        }
+                                      />
+                                      <p className="text-xs opacity-70">
+                                        {m.text}
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <p>{m.text}</p>
+                                  )}
+                                </div>
+
+                                {/* Time display */}
+                                {shouldShowTime && (
+                                  <p
+                                    className={`text-xs mt-2 ${m.from === "me" ? "text-right" : "text-left"}`}
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    {m.time}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 
@@ -2276,7 +2407,7 @@ const ProfStreamPage = () => {
                     </div>
                   </div>
                 </form>
-              </>
+              </div>
             )}
           </div>
         </div>

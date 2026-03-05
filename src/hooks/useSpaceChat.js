@@ -18,10 +18,38 @@ export function useSpaceChat(spaceUuid, user) {
 
     // Receive messages (single or array)
     const handleMessage = (msgOrArray) => {
+      console.log("message", msgOrArray);
+
       if (Array.isArray(msgOrArray)) {
         setMessages(msgOrArray);
       } else {
-        setMessages((prev) => [...prev, msgOrArray]);
+        // Check if this is our own message (avoid duplication)
+        const isOwnMessage = msgOrArray.senderId === user.id;
+        
+        if (isOwnMessage) {
+          // This is our own message coming back from server
+          // Find and replace the optimistic message by matching content and timestamp
+          setMessages((prev) => {
+            const existingIndex = prev.findIndex((msg) => 
+              msg.content === msgOrArray.content && 
+              msg.senderId === user.id && 
+              Math.abs(new Date(msg.timestamp).getTime() - new Date(msgOrArray.timestamp).getTime()) < 1000
+            );
+            
+            if (existingIndex !== -1) {
+              // Replace the optimistic message
+              const newMessages = [...prev];
+              newMessages[existingIndex] = msgOrArray;
+              return newMessages;
+            } else {
+              // Add as new message (shouldn't happen but fallback)
+              return [...prev, msgOrArray];
+            }
+          });
+        } else {
+          // This is someone else's message or a history message
+          setMessages((prev) => [...prev, msgOrArray]);
+        }
       }
     };
     socket.on("receive_message", handleMessage);

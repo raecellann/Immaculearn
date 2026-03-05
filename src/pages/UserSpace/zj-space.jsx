@@ -136,67 +136,6 @@ const UserPage = () => {
     inviteUser,
   } = useSpace();
 
-  // Chat hook
-  const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } =
-    useSpaceChat(activeChatSpaceUuid, user);
-
-  // Sync active chat space UUID with URL params (only when it changes)
-  useEffect(() => {
-    if (space_uuid && space_uuid !== activeChatSpaceUuid) {
-      setActiveChatSpaceUuid(space_uuid);
-    }
-  }, [space_uuid, activeChatSpaceUuid]);
-
-  // Map messages to render-friendly format with date grouping
-  const chatMessages = useMemo(() => {
-    return messages.map((m) => ({
-      id: m.id || Math.random().toString(36).substr(2, 9),
-      from: m.senderId === user.id ? "me" : "them",
-      senderId: m.senderId,
-      text: m.content,
-      type: m.type || 'text',
-      imageUrl: m.type === 'image' && m.imageUrl ? 
-        `data:image/jpeg;base64,${m.imageUrl}` : m.imageUrl,
-      avatar: m.senderAvatar,
-      timestamp: new Date(m.timestamp),
-      time: new Date(m.timestamp).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      date: new Date(m.timestamp).toLocaleDateString(),
-      status: m.status || 'sent', // sent, delivered, read
-      seen: m.seen || false,
-    }));
-  }, [messages, user.id]);
-
-  // Group messages by date
-  const messagesByDate = useMemo(() => {
-    const groups = {};
-    chatMessages.forEach((message) => {
-      const today = new Date().toLocaleDateString();
-      const yesterday = new Date(Date.now() - 86400000).toLocaleDateString();
-      
-      let dateLabel = message.date;
-      if (message.date === today) {
-        dateLabel = "Today";
-      } else if (message.date === yesterday) {
-        dateLabel = "Yesterday";
-      } else {
-        dateLabel = new Date(message.timestamp).toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          month: 'short', 
-          day: 'numeric' 
-        });
-      }
-      
-      if (!groups[dateLabel]) {
-        groups[dateLabel] = [];
-      }
-      groups[dateLabel].push(message);
-    });
-    return groups;
-  }, [chatMessages]);
-
   // Find current space
   const allSpaces = [
     ...(userSpaces || []),
@@ -225,6 +164,70 @@ const UserPage = () => {
     space_uuid,
     space_name,
   });
+  // Sync active chat space UUID with URL params (only when it changes)
+  // useEffect(() => {
+  //   if (space_uuid && space_uuid !== activeChatSpaceUuid) {
+  //     setActiveChatSpaceUuid(space_uuid);
+  //   }
+  // }, [space_uuid, activeChatSpaceUuid]);
+
+  // Chat hook
+  const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } =
+    useSpaceChat(activeChatSpaceUuid, user);
+
+  console.log("NEED FOR MESSAGE", activeChatSpaceUuid, user.id, messages);
+
+  // Map messages to render-friendly format with date grouping
+  const chatMessages = useMemo(() => {
+    return messages.map((m) => ({
+      id: m.id || Math.random().toString(36).substr(2, 9),
+      from: m.senderId === user.id ? "me" : "them",
+      senderId: m.senderId,
+      text: m.content,
+      type: m.type || "text",
+      imageUrl:
+        m.type === "image" && m.imageUrl
+          ? `data:image/jpeg;base64,${m.imageUrl}`
+          : m.imageUrl,
+      avatar: m.senderAvatar,
+      timestamp: new Date(m.timestamp),
+      time: new Date(m.timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      date: new Date(m.timestamp).toLocaleDateString(),
+      status: m.status || "sent", // sent, delivered, read
+      seen: m.seen || false,
+    }));
+  }, [messages, user.id]);
+
+  // Group messages by date
+  const messagesByDate = useMemo(() => {
+    const groups = {};
+    chatMessages.forEach((message) => {
+      const today = new Date().toLocaleDateString();
+      const yesterday = new Date(Date.now() - 86400000).toLocaleDateString();
+
+      let dateLabel = message.date;
+      if (message.date === today) {
+        dateLabel = "Today";
+      } else if (message.date === yesterday) {
+        dateLabel = "Yesterday";
+      } else {
+        dateLabel = new Date(message.timestamp).toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "short",
+          day: "numeric",
+        });
+      }
+
+      if (!groups[dateLabel]) {
+        groups[dateLabel] = [];
+      }
+      groups[dateLabel].push(message);
+    });
+    return groups;
+  }, [chatMessages]);
 
   const isFriendSpace = !isOwnerSpace;
 
@@ -363,6 +366,24 @@ const UserPage = () => {
       };
     }
   }, [isDragging, dragStartY, dragStartPosition]);
+
+  // Scroll to bottom when chat popup opens
+  useEffect(() => {
+    if (showChatPopup && messagesEndRef.current) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [showChatPopup]);
+
+  // Scroll to bottom when new messages are received
+  useEffect(() => {
+    if (showChatPopup && messagesEndRef.current && messages.length > 0) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    }
+  }, [messages, showChatPopup]);
 
   // Scroll handler
   useEffect(() => {
@@ -698,7 +719,9 @@ const UserPage = () => {
         "image/webp",
       ];
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
+        toast.error(
+          "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        );
         return;
       }
 
@@ -733,7 +756,7 @@ const UserPage = () => {
       localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       toast.success("Your cover photo has been updated successfully!");
     } else {
       // For images, create canvas to apply transformations
@@ -1059,7 +1082,9 @@ const UserPage = () => {
         const errorCount = updatedQueue.filter(
           (m) => m.status === "error",
         ).length;
-        toast.warn(`${successCount} successful, ${errorCount} failed. Check upload status for details.`);
+        toast.warn(
+          `${successCount} successful, ${errorCount} failed. Check upload status for details.`,
+        );
       }
     }, 1000);
   };
@@ -1083,7 +1108,9 @@ const UserPage = () => {
 
       // Show info about Gmail filtering
       const totalParsed = members.length;
-      toast.info(`Found ${totalParsed} valid Gmail address(es). Non-Gmail addresses have been filtered out.`);
+      toast.info(
+        `Found ${totalParsed} valid Gmail address(es). Non-Gmail addresses have been filtered out.`,
+      );
 
       setUploadQueue(members);
       setShowUploadModal(true);
@@ -1575,7 +1602,10 @@ const UserPage = () => {
                 {/* CHAT */}
                 <div className="flex justify-center">
                   <button
-                    onClick={() => setShowChatPopup(true)}
+                    onClick={() => {
+                      setActiveChatSpaceUuid(space_uuid);
+                      setShowChatPopup(true);
+                    }}
                     className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
                     style={{
                       backgroundColor: "transparent",
@@ -2794,84 +2824,99 @@ const UserPage = () => {
             {!isChatMinimized && (
               <>
                 <div
-                  className={`overflow-y-auto sm:overflow-y-hidden h-[calc(100vh-180px)] sm:h-96 p-4 space-y-2`}
+                  className={`overflow-y-auto ${isChatMaximized ? 'h-[calc(90vh-140px)]' : 'h-[calc(100vh-180px)] sm:h-96'} p-4 space-y-2`}
                   style={{
                     backgroundColor: currentColors.background,
                   }}
                 >
-                  {Object.entries(messagesByDate).map(([dateLabel, dateMessages]) => (
-                    <div key={dateLabel}>
-                      {/* Date Separator */}
-                      <div className="flex items-center justify-center py-2">
-                        <div className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
-                          {dateLabel}
+                  {Object.entries(messagesByDate).map(
+                    ([dateLabel, dateMessages]) => (
+                      <div key={dateLabel}>
+                        {/* Date Separator */}
+                        <div className="flex items-center justify-center py-2">
+                          <div className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
+                            {dateLabel}
+                          </div>
                         </div>
-                      </div>
-                      
-                      {/* Messages for this date */}
-                      {dateMessages.map((m, i) => {
-                        const nextMessage = dateMessages[i + 1];
-                        const shouldShowTime = m.from === "me" && (!nextMessage || nextMessage.from !== "me");
-                        const prevMessage = dateMessages[i - 1];
-                        const shouldShowAvatar = m.from === "them" && (!prevMessage || prevMessage.from !== "them");
-                        
-                        return (
-                          <div
-                            key={m.id}
-                            className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} mb-3`}
-                          >
-                            {shouldShowAvatar && (
-                              <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2 mt-1" />
-                            )}
-                            {!shouldShowAvatar && m.from === "them" && (
-                              <div className="w-8 h-8 mr-2 mt-1"></div>
-                            )}
-                            <div className={`flex flex-col ${m.from === "me" ? "items-end" : "items-start"}`}>
+
+                        {/* Messages for this date */}
+                        {dateMessages.map((m, i) => {
+                          const nextMessage = dateMessages[i + 1];
+                          const shouldShowTime =
+                            m.from === "me" &&
+                            (!nextMessage || nextMessage.from !== "me");
+                          const prevMessage = dateMessages[i - 1];
+                          const shouldShowAvatar =
+                            m.from === "them" &&
+                            (!nextMessage || nextMessage.from !== "them");
+
+                          return (
+                            <div
+                              key={m.id}
+                              className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} mb-3`}
+                            >
+                              {shouldShowAvatar && (
+                                <img
+                                  src={m.avatar || "/default-avatar.png"}
+                                  className="w-8 h-8 rounded-full mr-2 mt-1"
+                                />
+                              )}
+                              {!shouldShowAvatar && m.from === "them" && (
+                                <div className="w-8 h-8 mr-2 mt-1"></div>
+                              )}
                               <div
-                                className={`p-3 rounded-lg max-w-xs break-words ${m.from === "me" ? "rounded-tr-none" : "rounded-tl-none"}`}
-                                style={{
-                                  backgroundColor:
-                                    m.from === "me"
-                                      ? currentColors.accent
-                                      : currentColors.surface,
-                                  color:
-                                    m.from === "me"
-                                      ? "white"
-                                      : currentColors.text,
-                                }}
+                                className={`flex flex-col ${m.from === "me" ? "items-end" : "items-start"}`}
                               >
-                                {m.type === 'image' ? (
-                                  <div className="space-y-2">
-                                    <img 
-                                      src={m.imageUrl} 
-                                      alt={m.text} 
-                                      className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
-                                      onClick={() => window.open(m.imageUrl, '_blank')}
-                                    />
-                                    <p className="text-xs opacity-70">{m.text}</p>
-                                  </div>
-                                ) : (
-                                  <p>{m.text}</p>
-                                )}
-                              </div>
-                              
-                              {/* Time display */}
-                              {shouldShowTime && (
-                                <p
-                                  className={`text-xs mt-2 ${m.from === "me" ? "text-right" : "text-left"}`}
+                                <div
+                                  className={`p-3 rounded-lg max-w-xs break-words ${m.from === "me" ? "rounded-tr-none" : "rounded-tl-none"}`}
                                   style={{
-                                    color: currentColors.textSecondary,
+                                    backgroundColor:
+                                      m.from === "me"
+                                        ? currentColors.accent
+                                        : currentColors.surface,
+                                    color:
+                                      m.from === "me"
+                                        ? "white"
+                                        : currentColors.text,
                                   }}
                                 >
-                                  {m.time}
-                                </p>
-                              )}
+                                  {m.type === "image" ? (
+                                    <div className="space-y-2">
+                                      <img
+                                        src={m.imageUrl}
+                                        alt={m.text}
+                                        className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() =>
+                                          window.open(m.imageUrl, "_blank")
+                                        }
+                                      />
+                                      <p className="text-xs opacity-70">
+                                        {m.text}
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <p>{m.text}</p>
+                                  )}
+                                </div>
+
+                                {/* Time display */}
+                                {shouldShowTime && (
+                                  <p
+                                    className={`text-xs mt-2 ${m.from === "me" ? "text-right" : "text-left"}`}
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    {m.time}
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
+                          );
+                        })}
+                      </div>
+                    ),
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 
