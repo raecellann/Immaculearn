@@ -227,6 +227,9 @@ const ProfHomePage = () => {
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+  
+  // Sidebar minimization state
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
 
   // Hide-on-scroll state
   const [showHeader, setShowHeader] = useState(true);
@@ -359,7 +362,11 @@ const ProfHomePage = () => {
     >
       {/* ================= Desktop Sidebar (Laptop+) ================= */}
       <div className="hidden lg:block">
-        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar 
+          isMinimized={isSidebarMinimized} 
+          onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
+          onLogoutClick={() => setShowLogout(true)} 
+        />
       </div>
 
       {/* ================= Mobile + Tablet Overlay ================= */}
@@ -380,7 +387,11 @@ const ProfHomePage = () => {
           color: currentColors.text,
         }}
       >
-        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar 
+          isMinimized={isSidebarMinimized} 
+          onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
+          onLogoutClick={() => setShowLogout(true)} 
+        />
       </div>
 
       {/* ================= Main Content ================= */}

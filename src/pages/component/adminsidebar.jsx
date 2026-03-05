@@ -21,13 +21,20 @@ const AdminSidebar = ({ isMinimized = false, onToggleMinimize }) => {
   const location = useLocation();
 
   // Load minimize state from localStorage on mount
-  const [localMinimized, setLocalMinimized] = useState(false);
+  const [localMinimized, setLocalMinimized] = useState(() => {
+    try {
+      const saved = localStorage.getItem('adminSidebarMinimized');
+      return saved ? JSON.parse(saved) : false;
+    } catch {
+      return false;
+    }
+  });
 
   // Update localStorage when minimize state changes
   const handleToggleMinimize = () => {
     const newState = !localMinimized;
     setLocalMinimized(newState);
-    // localStorage.setItem('adminSidebarMinimized', JSON.stringify(newState));
+    localStorage.setItem('adminSidebarMinimized', JSON.stringify(newState));
     if (onToggleMinimize) {
       onToggleMinimize();
     }
