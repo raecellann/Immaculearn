@@ -238,6 +238,9 @@ const HomePage1 = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
 
+  // Sidebar minimization state
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+
   // Hide header on scroll down
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
@@ -381,7 +384,11 @@ const HomePage1 = () => {
     >
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar 
+          isMinimized={isSidebarMinimized} 
+          onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
+          onLogoutClick={() => setShowLogout(true)} 
+        />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -401,7 +408,11 @@ const HomePage1 = () => {
           color: currentColors.text,
         }}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar 
+          isMinimized={isSidebarMinimized} 
+          onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
+          onLogoutClick={() => setShowLogout(true)} 
+        />
       </div>
 
       {/* Main Content */}

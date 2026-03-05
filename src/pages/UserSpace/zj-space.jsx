@@ -61,6 +61,9 @@ const UserPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+  
+  // Sidebar minimization state
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadQueue, setUploadQueue] = useState([]);
@@ -1184,7 +1187,11 @@ const UserPage = () => {
     >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar 
+          isMinimized={isSidebarMinimized} 
+          onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
+          onLogoutClick={() => setShowLogout(true)} 
+        />
       </div>
 
       {/* ================= MOBILE OVERLAY ================= */}
@@ -1201,7 +1208,11 @@ const UserPage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar 
+          isMinimized={isSidebarMinimized} 
+          onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
+          onLogoutClick={() => setShowLogout(true)} 
+        />
       </div>
 
       {/* ================= MAIN ================= */}

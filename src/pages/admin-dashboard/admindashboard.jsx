@@ -9,11 +9,13 @@ import { toast } from "react-toastify";
 import DashboardCharts from "./components/DashboardCharts";
 import DashboardStyles from "./components/DashboardStyles";
 import { useAdminAnnouncement } from "../../hooks/useAdminAnnouncement";
+import { useAdmin } from "../../contexts/admin/useAdmin";
 
 
 
 const AdminDashboard = () => {
   const { getAllAnnouncements } = useAdminAnnouncement();
+  const { isAuthenticated, admin } = useAdmin();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const navigate = useNavigate();
@@ -149,10 +151,13 @@ const AdminDashboard = () => {
 
 
   useEffect(() => {
-  fetchStudents();
-  fetchTeachers();
-  fetchAnnouncements();
-}, []);
+  // Only fetch data if authenticated
+  if (isAuthenticated && admin) {
+    fetchStudents();
+    fetchTeachers();
+    fetchAnnouncements();
+  }
+}, [isAuthenticated, admin]);
 
   /* NAVIGATION FUNCTIONS */
   const navigateToTeachers = () => {

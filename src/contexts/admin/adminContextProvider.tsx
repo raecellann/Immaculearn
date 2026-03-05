@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
-import { adminApi, setAuthNavigate, setAuthRefreshCallback } from "../../lib/api.admin";
+import { adminApi } from "../../lib/api.admin";
 import { AdminContext, AdminContextType } from "./adminContext";
 import { Admin, AdminStats, AnnouncementData, AnnouncementCreateData } from "../../types/admin";
 import { adminService } from "../../services/adminService";
@@ -12,95 +12,101 @@ interface AdminProviderProps {
 export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState<Admin | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const isCheckingRef = useRef(false);
   const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Register navigation function with API interceptor
-  useEffect(() => {
-    setAuthNavigate((to: string) => {
-      navigate(to, { replace: true });
-    });
-
-    // Register auth refresh callback
-    setAuthRefreshCallback(() => {
-      checkAuth(); // Re-check authentication when tokens are refreshed
-    });
-  }, [navigate]);
-
-  // Auth state update function
+  // Debounced auth state update to prevent rapid changes
   const updateAuthState = useCallback((authenticated: boolean, adminData: Admin | null) => {
-    setIsAuthenticated(authenticated);
-    setAdmin(adminData);
-    setIsLoading(false);
-  }, []);
+    try {
+      // Clear any pending timeout
+      if (authTimeoutRef.current) {
+        clearTimeout(authTimeoutRef.current);
+      }
 
-  // Cache for announcements to prevent redundant re-renders when data hasn't changed
-  const announcementsCache = useRef<{
-    data: AnnouncementData[] | null;
-    lastFetch: number | null;
-  }>({ data: null, lastFetch: null });
+      // Debounce the state update to prevent rapid changes
+      authTimeoutRef.current = setTimeout(() => {
+        setIsAuthenticated(authenticated);
+        setAdmin(adminData);
+        setIsLoading(false);
+      }, 100); // Small delay to prevent rapid state changes
+    } catch (error) {
+      console.error('Error in updateAuthState:', error);
+    }
+  }, []);
 
   // Check authentication status
   const checkAuth = async (): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      const response = await adminApi.get("/admin/profile");
+    
+    if (isCheckingRef.current) return isAuthenticated;
+    isCheckingRef.current = true;
+    setIsLoading(true);
 
-      if (response.data?.success && response.data?.admin) {
-        updateAuthState(true, response.data.admin);
+    try {
+      
+      // Try profile
+      const profileRes = await adminApi.get("/admin/profile");
+      
+      
+      
+      if (profileRes.data?.success && profileRes.data?.data) {
+        console.log('Profile successful, updating auth state');
+        updateAuthState(true, profileRes.data.data);
         return true;
       }
 
-      throw new Error("No admin profile");
+      throw new Error("No profile");
     } catch (error: any) {
       const status = error?.response?.status;
 
-      // Try refresh if unauthorized
+      // Try refresh if unauthorized (401)
       if (status === 401) {
         try {
           const refreshRes = await adminApi.get("/admin/refresh");
+     
 
           if (refreshRes.data?.success) {
             const retryProfile = await adminApi.get("/admin/profile");
-            if (retryProfile.data?.success && retryProfile.data?.admin) {
-              updateAuthState(true, retryProfile.data.admin);
+           
+            
+            if (retryProfile.data?.success && retryProfile.data?.data) {
+              updateAuthState(true, retryProfile.data.data);
               return true;
             }
           }
         } catch (refreshError) {
-          console.error("Refresh failed:", refreshError);
         }
       }
 
       updateAuthState(false, null);
       return false;
     } finally {
-      setIsLoading(false);
+      isCheckingRef.current = false;
     }
   };
 
   // Login function
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<any> => {
     try {
       setIsLoading(true);
-      const response = await adminApi.post("/admin/login", { email, password });
+      
+      const response = await adminApi.post(
+        "/admin/login",
+        { email, password },
+        { withCredentials: true },
+      );
+
 
       if (response.data?.success) {
-        // Use updateAuthState for consistent state management
-        updateAuthState(true, {
-          id: response.data.admin?.id,
-          email: email,
-          fullname: response.data.admin?.fullname || email.split("@")[0],
-          role: response.data.admin?.role,
-        });
-
-        return true;
+        // Fetch admin profile after login
+        await checkAuth();
+        // Return the response data which contains role and other info
+        return response.data;
       }
 
       return false;
-    } catch (err) {
-      console.error("Login error:", err);
+    } catch (err: unknown) {
       return false;
     } finally {
       setIsLoading(false);
@@ -108,20 +114,14 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   };
 
   // Logout function
-  const logout = async (admin_id?: number): Promise<void> => {
+  const logout = async (account_id: number): Promise<void> => {
     try {
-      await adminApi.post("/auth/logout", { admin_id }); // API should clear refresh token cookie
+      await adminApi.post("/auth/logout", { user_id: account_id }); // API should clear refresh token cookie
       await checkAuth();
     } catch (err) {
-      console.error("Logout error:", err);
     } finally {
       updateAuthState(false, null);
     }
-  };
-
-  // Refresh admin data
-  const refreshAdmin = async (): Promise<void> => {
-    await checkAuth();
   };
 
   // Create new admin
@@ -139,50 +139,116 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   };
 
   // Get admin statistics
-  const getAdminStats = async (): Promise<{
-    success: boolean;
-    data?: AdminStats;
-    message?: string;
-  }> => {
+  const getAdminStats = async (): Promise<{ success: boolean; data?: AdminStats | undefined; message?: string }> => {
     try {
       const response = await adminApi.get("/admin/stats");
-      return response.data;
-    } catch (error) {
-      console.error("Get admin stats error:", error);
+      return {
+        success: true,
+        data: response.data?.data
+      };
+    } catch (err) {
+      console.error("Get admin stats error:", err);
       return {
         success: false,
-        message: "Failed to fetch admin statistics",
+        message: "Failed to get admin stats"
       };
     }
   };
 
-  // Get all admins
-  const getAllAdmins = async (): Promise<{
-    success: boolean;
-    data?: Admin[];
-    message?: string;
-  }> => {
+  // Announcement functions
+  const createAnnouncement = async (announcementData: AnnouncementCreateData): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
     try {
-      const response = await adminApi.get("/admin/all");
-      return response.data;
-    } catch (error) {
-      console.error("Get all admins error:", error);
+      setIsLoading(true);
+      const result = await adminService.create_announcement(
+        announcementData.title,
+        announcementData.content,
+        announcementData.target_audience,
+        announcementData.publish_option
+      );
+      return result;
+    } catch (err) {
+      console.error("Create announcement error:", err);
       return {
         success: false,
-        message: "Failed to fetch admins",
+        message: "Failed to create announcement"
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getAllAnnouncements = async (): Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }> => {
+    try {
+      const result = await adminService.getAllAnnouncements();
+      return result;
+    } catch (err) {
+      console.error("Get all announcements error:", err);
+      return {
+        success: false,
+        message: "Failed to fetch announcements"
       };
     }
+  };
+
+  const updateAnnouncement = async (
+    announcement_id: number,
+    announcementData: Partial<AnnouncementCreateData>
+  ): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
+    try {
+      setIsLoading(true);
+      const result = await adminService.updateAnnouncement(
+        announcement_id,
+        announcementData.title,
+        announcementData.content,
+        announcementData.target_audience,
+        announcementData.publish_option
+      );
+      return result;
+    } catch (err) {
+      console.error("Update announcement error:", err);
+      return {
+        success: false,
+        message: "Failed to update announcement"
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteAnnouncement = async (
+    announcement_id: number
+  ): Promise<{ success: boolean; message?: string }> => {
+    try {
+      setIsLoading(true);
+      const result = await adminService.deleteAnnouncement(announcement_id);
+      return result;
+    } catch (err) {
+      console.error("Delete announcement error:", err);
+      return {
+        success: false,
+        message: "Failed to delete announcement"
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Refresh admin data
+  const refreshAdmin = async (): Promise<void> => {
+    await checkAuth();
   };
 
   // Update admin
-  const updateAdmin = async (
-    adminId: string,
-    payload: any,
-  ): Promise<boolean> => {
+  const updateAdmin = async (adminId: string, payload: any): Promise<boolean> => {
     try {
       setIsLoading(true);
       const response = await adminApi.put(`/admin/${adminId}`, payload);
-      return response.data?.success || false;
+      if (response.data?.success) {
+        // Refresh admin data after update
+        await checkAuth();
+        return true;
+      }
+      return false;
     } catch (err) {
       console.error("Update admin error:", err);
       return false;
@@ -205,138 +271,18 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     }
   };
 
-  // Announcement functions
-  const createAnnouncement = async (
-  announcementData: AnnouncementCreateData
-): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
-  try {
-    setIsLoading(true);
-
-    const result = await adminService.create_announcement(
-      announcementData.title,
-      announcementData.content,
-      announcementData.target_audience,
-      announcementData.scheduled_at
-    );
-
-    if (result.success) {
-      // Clear cache to ensure fresh data on next fetch
-      announcementsCache.current = { data: null, lastFetch: null };
-
-      // Fetch fresh announcements immediately
-      await getAllAnnouncements();
-    }
-
-    return result;
-  } catch (err) {
-    console.error("Create announcement error:", err);
-    return {
-      success: false,
-      message: "Failed to create announcement"
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (authTimeoutRef.current) {
+        clearTimeout(authTimeoutRef.current);
+      }
     };
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-  const getAllAnnouncements = async (): Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }> => {
-    try {
-      // Check if we have cached data and return it immediately to prevent API call
-      if (announcementsCache.current.data) {
-        console.log('Returning cached announcements data to prevent API call');
-        return {
-          success: true,
-          data: announcementsCache.current.data
-        };
-      }
-
-      // No cached data, fetch from API
-      console.log('Fetching fresh announcements data from API');
-      const result = await adminService.getAllAnnouncements();
-      
-      // Update cache if request was successful
-      if (result.success && result.data) {
-        announcementsCache.current = {
-          data: result.data,
-          lastFetch: Date.now()
-        };
-      }
-      
-      return result;
-    } catch (err) {
-      console.error("Get all announcements error:", err);
-      return {
-        success: false,
-        message: "Failed to fetch announcements"
-      };
-    }
-  };
-
-  const updateAnnouncement = async (announcement_id: number, announcementData: Partial<AnnouncementCreateData>): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
-    try {
-      setIsLoading(true);
-      const result = await adminService.updateAnnouncement(
-        announcement_id,
-        announcementData.title,
-        announcementData.content,
-        announcementData.target_audience,
-        announcementData.publish_option
-      );
-      
-      // Clear cache to ensure fresh data on next fetch
-      announcementsCache.current = { data: null, lastFetch: null };
-      
-      return result;
-    } catch (err) {
-      console.error("Update announcement error:", err);
-      return {
-        success: false,
-        message: "Failed to update announcement"
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const deleteAnnouncement = async (announcement_id: number): Promise<{ success: boolean; message?: string }> => {
-    try {
-      setIsLoading(true);
-      const result = await adminService.deleteAnnouncement(announcement_id);
-      
-      // Clear cache to ensure fresh data on next fetch
-      announcementsCache.current = { data: null, lastFetch: null };
-      
-      return result;
-    } catch (err) {
-      console.error("Delete announcement error:", err);
-      return {
-        success: false,
-        message: "Failed to delete announcement"
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Manual cache refresh function
-  const refreshAnnouncements = async (): Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }> => {
-    // Force clear cache to fetch fresh data
-    announcementsCache.current = { data: null, lastFetch: null };
-    
-    // Fetch fresh data
-    return await getAllAnnouncements();
-  };
+  }, []);
 
   // Initial check on mount
   useEffect(() => {
-    // Only check auth if we haven't checked yet
-    const token = localStorage.getItem("adminToken") || sessionStorage.getItem("adminToken");
-    if (token) {
-      checkAuth();
-    } else {
-      // No token, set auth state to false immediately
-      updateAuthState(false, null);
-    }
+    checkAuth();
   }, []);
 
   const contextValue: AdminContextType = {
@@ -345,17 +291,17 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     isAuthenticated,
     login,
     logout,
-    refreshAdmin,
     checkAuth,
     createAdmin,
     getAdminStats,
-    updateAdmin,
-    deleteAdmin,
     createAnnouncement,
     getAllAnnouncements,
     updateAnnouncement,
     deleteAnnouncement,
-    refreshAnnouncements,
+    refreshAnnouncements: getAllAnnouncements, // Using getAllAnnouncements as refresh
+    refreshAdmin,
+    updateAdmin,
+    deleteAdmin,
   };
 
   return (

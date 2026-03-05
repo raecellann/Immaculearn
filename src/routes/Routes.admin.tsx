@@ -58,7 +58,6 @@ export const AdminDataRoutes = [
   {
     key: "/admin-academic-term",
     path: "/admin/academic-term",
-    // element: <AdminAcademicTerm />,
     element: (
       <AdminProvider>
         <AdminProtectedRoute>
@@ -73,7 +72,7 @@ export const AdminDataRoutes = [
     element:( 
     <AdminProvider>
       <AdminLogin />
-      </AdminProvider>
+    </AdminProvider>
     ),
   },
 ];

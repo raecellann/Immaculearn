@@ -28,13 +28,20 @@ const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
   const location = useLocation();
 
   // Load minimize state from localStorage on mount
-  const [localMinimized, setLocalMinimized] = useState(false);
+  const [localMinimized, setLocalMinimized] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sidebarMinimized');
+      return saved ? JSON.parse(saved) : false;
+    } catch {
+      return false;
+    }
+  });
 
   // Update localStorage when minimize state changes
   const handleToggleMinimize = () => {
     const newState = !localMinimized;
     setLocalMinimized(newState);
-    // localStorage.setItem('sidebarMinimized', JSON.stringify(newState));
+    localStorage.setItem('sidebarMinimized', JSON.stringify(newState));
     if (onToggleMinimize) {
       onToggleMinimize();
     }

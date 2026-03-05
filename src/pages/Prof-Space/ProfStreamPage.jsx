@@ -50,6 +50,9 @@ const ProfStreamPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+  
+  // Sidebar minimization state
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
@@ -887,7 +890,11 @@ const ProfStreamPage = () => {
     >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar 
+          isMinimized={isSidebarMinimized} 
+          onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
+          onLogoutClick={() => setShowLogout(true)} 
+        />
       </div>
 
       {/* ================= MOBILE OVERLAY ================= */}
@@ -907,7 +914,11 @@ const ProfStreamPage = () => {
           backgroundColor: currentColors.surface,
         }}
       >
-        <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
+        <ProfSidebar 
+          isMinimized={isSidebarMinimized} 
+          onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
+          onLogoutClick={() => setShowLogout(true)} 
+        />
       </div>
 
       {/* ================= MAIN ================= */}

@@ -6,7 +6,7 @@ export interface AdminContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<boolean>;
-    logout: () => Promise<void>;
+    logout: (account_id: number) => Promise<void>;
     refreshAdmin: () => Promise<void>;
     checkAuth: () => Promise<boolean>;
     createAdmin: (payload: any) => Promise<boolean>;
