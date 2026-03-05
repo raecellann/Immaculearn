@@ -295,7 +295,6 @@ const ProfTaskPage = () => {
       navigate("/prof/spaces");
     } catch (error) {
       console.error("Failed to delete space:", error);
-      alert("Failed to delete space. Please try again.");
     } finally {
       setIsDeleting(false);
       setDeleteButtonClicked(false);
@@ -366,7 +365,7 @@ const ProfTaskPage = () => {
   // Send invite
   const sendInvite = () => {
     if (inviteEmail.trim()) {
-      alert(`Invitation sent to ${inviteEmail}`);
+      toast.success(`Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
       setShowInvitePopup(false);
     }
@@ -377,11 +376,13 @@ const ProfTaskPage = () => {
     navigator.clipboard
       .writeText(space_link)
       .then(() => {
+        toast.success("Link copied to clipboard!");
         setCopyFeedback("Copied!");
         setTimeout(() => setCopyFeedback(""), 2000);
       })
       .catch((err) => {
         console.error("Failed to copy: ", err);
+        toast.error("Failed to copy link. Please try again.");
       });
   };
 
@@ -708,13 +709,13 @@ const ProfTaskPage = () => {
           space_uuid: currentSpace?.space_uuid,
           taskData: taskData,
         });
-        alert("Task published successfully!");
+        // Toast notifications are now handled by individual builders
       } else {
         await draftTaskMutation.mutateAsync({
           spaceId: Number(currentSpace?.space_id),
           taskData: payload,
         });
-        alert("Task saved as draft!");
+        toast.success("Task saved as draft!");
       }
 
       // Reset form and close
@@ -724,7 +725,7 @@ const ProfTaskPage = () => {
       setShowTaskTypeSelection(false);
     } catch (error) {
       console.error("Failed to save task:", error);
-      alert("Failed to save task. Please try again.");
+      toast.error("Failed to save task. Please try again.");
     }
   };
 
@@ -1349,6 +1350,36 @@ const ProfTaskPage = () => {
                           )}
                         </>
                       )}
+                      {task.task_category === "individual-activity" && (
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePreviewTask(task);
+                          }}
+                          className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            task.isLocal ? "flex-1" : "block w-full"
+                          }`}
+                          style={{
+                            backgroundColor: task.isLocal
+                              ? "#2563eb"
+                              : currentColors.accent,
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = task.isLocal
+                              ? "#1d4ed8"
+                              : "#1d4ed8";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = task.isLocal
+                              ? "#2563eb"
+                              : currentColors.accent;
+                          }}
+                        >
+                          View Details
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1360,10 +1391,12 @@ const ProfTaskPage = () => {
     );
   };
 
-  // Handle preview for local tasks
+  // Handle preview for local tasks - Navigate to ProfViewActivity page
   const handlePreviewTask = (task) => {
-    setPreviewTask(task);
-    setShowPreview(true);
+    // Navigate to ProfViewActivity page with required parameters
+    const taskTitle = task.task_title || task.title || 'Untitled Task';
+    const encodedTaskTitle = encodeURIComponent(taskTitle);
+    navigate(`/prof/list-activity/${space_uuid}/${encodeURIComponent(space_name)}/${task.task_id || task.id}/${encodedTaskTitle}`);
   };
 
   const handleClosePreview = () => {
@@ -1410,10 +1443,12 @@ const ProfTaskPage = () => {
     };
 
     console.log("Quiz submitted with formatted data:", submissionData);
-    alert("Quiz submitted successfully!");
+    toast.success("Quiz submitted successfully!");
     try {
       await submitTaskAnswer(submissionData);
-    } catch (err) {}
+    } catch (err) {
+      toast.error("Failed to submit quiz. Please try again.");
+    }
     handleCloseStudentQuiz();
   };
 
@@ -1628,11 +1663,18 @@ const ProfTaskPage = () => {
         >
           {coverPhotoUrl ? (
             <>
-              <img
-                src={coverPhotoUrl}
-                alt="Space Cover"
-                className="w-full h-full object-cover"
-              />
+              {coverPhotoUrl.includes('gradient') ? (
+                <div
+                  className="w-full h-full"
+                  style={{ background: coverPhotoUrl }}
+                />
+              ) : (
+                <img
+                  src={coverPhotoUrl}
+                  alt="Space Cover"
+                  className="w-full h-full object-cover"
+                />
+              )}
               <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
               {isOwnerSpace && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1645,7 +1687,12 @@ const ProfTaskPage = () => {
             </>
           ) : (
             <>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
+              <div 
+                className="absolute inset-0" 
+                style={{
+                  background: `linear-gradient(135deg, ${currentColors.accent}, ${currentColors.hover})`
+                }}
+              />
               <div className="absolute inset-0 bg-black/30" />
               {isOwnerSpace && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

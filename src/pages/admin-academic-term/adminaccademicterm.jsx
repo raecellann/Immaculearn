@@ -57,8 +57,13 @@ const AdminAcademicTerm = () => {
   //   setTempStatus("");
   // };
 
-  // Form state for creating/editing academic term
-  const [formData, setFormData] = useState(null);
+  // Initialize formData
+  const [formData, setFormData] = useState({
+    academic_semester: "1st Semester",
+    academic_period: "PRELIM",
+    academic_year: new Date().getFullYear(),
+    academic_status: "active",
+  });
 
   const lastScrollY = useRef(0);
   const [showHeader, setShowHeader] = useState(true);
@@ -88,7 +93,7 @@ const AdminAcademicTerm = () => {
     (term) => term.academic_status === "active",
   );
 
-  const handleCreateAcademicTerm = () => {
+  const handleCreateAcademicTerm = async () => {
     // Check if there's an active term
     if (hasActiveTerm) {
       setErrorMessage(
@@ -97,22 +102,30 @@ const AdminAcademicTerm = () => {
       return;
     }
 
-    const academicYear = `${formData.startYear}-${formData.startYear + 1}`;
+    try {
+      const academicYear = `${formData.academic_year}-${formData.academic_year + 1}`;
 
-    // Create new academic term (always active by default when creating)
-    const newTerm = {
-      id: `${formData.semester.toLowerCase().replace(" ", "-")}-${formData.startYear}-${formData.period.toLowerCase()}-${Date.now()}`,
-      name: formData.semester,
-      period: formData.period,
-      schoolYear: academicYear,
-      status: "active", // Always active when created
-      createdAt: new Date().toISOString(),
-    };
+      // Create payload for API (only 3 parameters expected)
+      const payload = {
+        academic_period: formData.academic_period,
+        academic_semester: parseInt(formData.academic_semester),
+        academic_year: academicYear,
+      };
 
-    setAcademicTerms([...academicTerms, newTerm]);
-    resetForm();
-    setShowCreateModal(false);
-    setErrorMessage("");
+      const response = await createAcademic.mutateAsync(payload);
+
+      if (response?.success) {
+        toast.success(response.message || "Academic term created successfully");
+        resetForm();
+        setShowCreateModal(false);
+        setErrorMessage("");
+      } else {
+        toast.error(response?.message || "Failed to create academic term");
+      }
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to create academic term.");
+      toast.error(err.message || "Failed to create academic term");
+    }
   };
 
   const handleEditTerm = async () => {
@@ -130,9 +143,8 @@ const AdminAcademicTerm = () => {
         // academic_status is NOT included here
       };
 
-      if (selectedTerm.academic_status !== "active") {
-        payload.academic_status = formData.academic_status;
-      }
+      // Always include academic_status in payload when it's being changed
+      payload.academic_status = formData.academic_status;
 
       const response = await updateAcademic.mutateAsync(payload);
 
@@ -210,10 +222,10 @@ const AdminAcademicTerm = () => {
 
   const resetForm = () => {
     setFormData({
-      semester: "1st Semester",
-      period: "PRELIM",
-      startYear: new Date().getFullYear(),
-      status: "active",
+      academic_semester: "1st Semester",
+      academic_period: "PRELIM",
+      academic_year: new Date().getFullYear(),
+      academic_status: "active",
     });
     setErrorMessage("");
   };
@@ -499,8 +511,8 @@ const AdminAcademicTerm = () => {
                       }
                       className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none"
                     >
-                      <option value="1st Semester">1st Semester</option>
-                      <option value="2nd Semester">2nd Semester</option>
+                      <option value="1">1st Semester</option>
+                      <option value="2">2nd Semester</option>
                     </select>
                   </div>
 

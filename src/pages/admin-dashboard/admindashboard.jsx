@@ -9,12 +9,14 @@ import { toast } from "react-toastify";
 import DashboardCharts from "./components/DashboardCharts";
 import DashboardStyles from "./components/DashboardStyles";
 import { useAdminAnnouncement } from "../../hooks/useAdminAnnouncement";
+import { useAcademicMutations } from "../../hooks/useAcademicMutation";
 import { useAdmin } from "../../contexts/admin/useAdmin";
 
 
 
 const AdminDashboard = () => {
   const { getAllAnnouncements } = useAdminAnnouncement();
+  const { academicTerms } = useAcademicMutations();
   const { isAuthenticated, admin } = useAdmin();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -29,6 +31,14 @@ const AdminDashboard = () => {
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+
+  // Get active academic term
+  const getActiveAcademicTerm = () => {
+    const activeTerm = academicTerms.find(term => term.academic_status === 'active');
+    return activeTerm;
+  };
+
+  const activeTerm = getActiveAcademicTerm();
 
   // Helper functions to get display names
   const getGenderName = (code) => {
@@ -288,10 +298,10 @@ const AdminDashboard = () => {
             <StatCard 
               icon={Calendar} 
               label="Academic Term" 
-              value="2024-2025" 
+              value={activeTerm ? `${activeTerm.academic_semester}${activeTerm.academic_semester === 1 ? 'st' : 'nd'} Semester` : 'No Active Term'}
               color="indigo" 
               onClick={() => navigate('/admin/academic-term')}
-              trend="Active"
+              trend={activeTerm ? `${activeTerm.academic_period} • ${activeTerm.academic_year}` : 'None'}
               iconBg={TrendingUp}
             />
           </div>
@@ -419,26 +429,35 @@ const AdminDashboard = () => {
 const StatCard = ({ icon: Icon, label, value, color, onClick, trend, iconBg: IconBg }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [displayValue, setDisplayValue] = useState(0);
+  const [displayText, setDisplayText] = useState('');
+  
+  // Check if value is a number or text
+  const isNumeric = typeof value === 'number';
   
   // Animate number counting
   useEffect(() => {
-    const duration = 1500;
-    const steps = 30;
-    const increment = value / steps;
-    let current = 0;
-    
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= value) {
-        setDisplayValue(value);
-        clearInterval(timer);
-      } else {
-        setDisplayValue(Math.floor(current));
-      }
-    }, duration / steps);
-    
-    return () => clearInterval(timer);
-  }, [value]);
+    if (isNumeric) {
+      const duration = 1500;
+      const steps = 30;
+      const increment = value / steps;
+      let current = 0;
+      
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= value) {
+          setDisplayValue(value);
+          clearInterval(timer);
+        } else {
+          setDisplayValue(Math.floor(current));
+        }
+      }, duration / steps);
+      
+      return () => clearInterval(timer);
+    } else {
+      // For text values, just set the text directly
+      setDisplayText(value);
+    }
+  }, [value, isNumeric]);
 
   const colorGradients = {
     blue: 'from-blue-600 via-blue-500 to-indigo-600',
@@ -492,7 +511,7 @@ const StatCard = ({ icon: Icon, label, value, color, onClick, trend, iconBg: Ico
       <div className="text-white relative z-10">
         <p className="text-white/80 text-xs sm:text-sm font-medium mb-1">{label}</p>
         <h2 className="text-xl sm:text-3xl font-bold tracking-tight tabular-nums">
-          {displayValue.toLocaleString()}
+          {isNumeric ? displayValue.toLocaleString() : displayText}
         </h2>
       </div>
       
