@@ -3,30 +3,16 @@ import useSocket from "./useSocket"; // import your hook
 
 export function useSpaceChat(spaceUuid, user) {
   const { socket, isConnected } = useSocket(); // ✅ reuse singleton socket
-  const [messages, setMessages] = useState(() => {
-    // Load messages from localStorage for this specific space
-    if (spaceUuid) {
-      const savedMessages = localStorage.getItem(`chatMessages_${spaceUuid}`);
-      return savedMessages ? JSON.parse(savedMessages) : [];
-    }
-    return [];
-  });
+  const [messages, setMessages] = useState([]);
   const [spaceOnlineUsers, setSpaceOnlineUsers] = useState({}); // { spaceUuid: [userIds] }
   const previousSpaceRef = useRef(null);
 
-  // Save messages to localStorage whenever they change
+  // 1️⃣ Handle socket events once connected AND spaceUuid is available
   useEffect(() => {
-    if (spaceUuid && messages.length > 0) {
-      localStorage.setItem(`chatMessages_${spaceUuid}`, JSON.stringify(messages));
-    }
-  }, [messages, spaceUuid]);
-
-  // 1️⃣ Handle socket events once connected
-  useEffect(() => {
-    if (!socket || !user || !isConnected) return;
-
+    if (!socket || !user || !isConnected || !spaceUuid) return;
 
     // Join globally
+    console.log("Setting up chat for space:", spaceUuid, "user:", user.id);
     socket.emit("user:join", user.id);
     socket.emit("get_online_users");
 
@@ -43,7 +29,6 @@ export function useSpaceChat(spaceUuid, user) {
     // Receive online users per space
     const handleOnlineUsers = (data) => {
       setSpaceOnlineUsers(data);
-      console.log("Online users per space:", data);
     };
     socket.on("space_online_users_all", handleOnlineUsers);
 
@@ -51,7 +36,7 @@ export function useSpaceChat(spaceUuid, user) {
       socket.off("receive_message", handleMessage);
       socket.off("space_online_users_all", handleOnlineUsers);
     };
-  }, [socket, user, isConnected]);
+  }, [socket, user, isConnected, spaceUuid]);
 
   // 2️⃣ Join new space & leave previous
   useEffect(() => {
@@ -64,18 +49,16 @@ export function useSpaceChat(spaceUuid, user) {
     socket.emit("join_chat", { spaceUuid });
     previousSpaceRef.current = spaceUuid;
 
-    // Don't clear messages here - they're loaded from localStorage
+    setMessages([]); // clear while fetching messages
   }, [spaceUuid, socket]);
 
   // 3️⃣ Send a message
-  const sendMessage = (content, type = 'text', imageUrl = null) => {
+  const sendMessage = (content) => {
     if (!socket || !user || !spaceUuid) return;
 
     const message = {
       id: window.crypto.randomUUID(),
       content,
-      type,
-      imageUrl,
       senderId: user.id,
       senderName: user.name,
       senderAvatar: user.profile_pic,
@@ -89,34 +72,12 @@ export function useSpaceChat(spaceUuid, user) {
     socket.emit("send_message", message);
   };
 
-  // 5️⃣ Send image message
-  const sendImageMessage = (file) => {
-    if (!file || !file.type.startsWith('image/')) return;
-
-    // Convert image to binary data
-    const reader = new FileReader();
-    
-    reader.onload = (event) => {
-      // Get binary data as ArrayBuffer
-      const arrayBuffer = event.target.result;
-      
-      // Convert to base64 for socket transmission
-      const base64String = btoa(
-        new Uint8Array(arrayBuffer)
-          .reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
-      
-      // Send message with binary data
-      sendMessage(file.name, 'image', base64String);
-    };
-    
-    reader.readAsArrayBuffer(file);
-  };
-
   // 4️⃣ Helper: online count in current space
   const getOnlineCount = () => {
-    return spaceOnlineUsers[spaceUuid]?.filter((id) => id !== user.id).length || 0;
+    return (
+      spaceOnlineUsers[spaceUuid]?.filter((id) => id !== user.id).length || 0
+    );
   };
 
-  return { messages, sendMessage, sendImageMessage, spaceOnlineUsers, getOnlineCount };
+  return { messages, sendMessage, spaceOnlineUsers, getOnlineCount };
 }

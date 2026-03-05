@@ -1,11 +1,15 @@
-import React, { useState, useEffect, ReactNode, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  ReactNode,
+  useRef,
+  useCallback,
+} from "react";
 import { useNavigate } from "react-router";
-import { api, setAuthNavigate, setAuthRefreshCallback } from "../../lib/api"; // Axios instance with withCredentials
+import { api } from "../../lib/api"; // Axios instance with withCredentials
 
 import { UserContext, User } from "./userContext";
 import { PostCreateData, CommentCreateData } from "../../types/post";
-
-
 
 interface UserProviderProps {
   children: ReactNode;
@@ -20,31 +24,34 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Register navigation function with API interceptor
-  useEffect(() => {
-    setAuthNavigate((to: string) => {
-      navigate(to, { replace: true });
-    });
+  // useEffect(() => {
+  //   setAuthNavigate((to: string) => {
+  //     navigate(to, { replace: true });
+  //   });
 
-    // Register auth refresh callback
-    setAuthRefreshCallback(() => {
-      checkAuth(); // Re-check authentication when tokens are refreshed
-    });
-  }, [navigate]);
+  //   // Register auth refresh callback
+  //   setAuthRefreshCallback(() => {
+  //     checkAuth(); // Re-check authentication when tokens are refreshed
+  //   });
+  // }, [navigate]);
 
   // Debounced auth state update to prevent rapid changes
-  const updateAuthState = useCallback((authenticated: boolean, userData: User | null) => {
-    // Clear any pending timeout
-    if (authTimeoutRef.current) {
-      clearTimeout(authTimeoutRef.current);
-    }
+  const updateAuthState = useCallback(
+    (authenticated: boolean, userData: User | null) => {
+      // Clear any pending timeout
+      if (authTimeoutRef.current) {
+        clearTimeout(authTimeoutRef.current);
+      }
 
-    // Debounce the state update to prevent rapid changes
-    authTimeoutRef.current = setTimeout(() => {
-      setIsAuthenticated(authenticated);
-      setUser(userData);
-      setIsLoading(false);
-    }, 100); // Small delay to prevent rapid state changes
-  }, []);
+      // Debounce the state update to prevent rapid changes
+      authTimeoutRef.current = setTimeout(() => {
+        setIsAuthenticated(authenticated);
+        setUser(userData);
+        setIsLoading(false);
+      }, 100); // Small delay to prevent rapid state changes
+    },
+    [],
+  );
 
   // Core authentication check
   const checkAuth = async (): Promise<boolean> => {

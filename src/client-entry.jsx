@@ -13,20 +13,20 @@ import "./index.css";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <SpaceThemeProvider>
-      <BrowserRouter>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-        <Routes />
-      </BrowserRouter>
+        <BrowserRouter>
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+          <Routes />
+        </BrowserRouter>
     </SpaceThemeProvider>
   </StrictMode>
 );

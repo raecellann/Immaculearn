@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
@@ -99,6 +99,7 @@ const UserPage = () => {
   const [isChatMaximized, setIsChatMaximized] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [hasProfanity, setHasProfanity] = useState(false);
+  const [activeChatSpaceUuid, setActiveChatSpaceUuid] = useState(null);
   const messagesEndRef = useRef(null);
 
   // State for dialog management
@@ -136,7 +137,64 @@ const UserPage = () => {
 
   // Chat hook
   const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } =
-    useSpaceChat(space_uuid, user);
+    useSpaceChat(activeChatSpaceUuid, user);
+
+  // Sync active chat space UUID with URL params (only when it changes)
+  useEffect(() => {
+    if (space_uuid && space_uuid !== activeChatSpaceUuid) {
+      setActiveChatSpaceUuid(space_uuid);
+    }
+  }, [space_uuid, activeChatSpaceUuid]);
+
+  // Map messages to render-friendly format with date grouping
+  const chatMessages = useMemo(() => {
+    return messages.map((m) => ({
+      id: m.id || Math.random().toString(36).substr(2, 9),
+      from: m.senderId === user.id ? "me" : "them",
+      senderId: m.senderId,
+      text: m.content,
+      type: m.type || 'text',
+      imageUrl: m.type === 'image' && m.imageUrl ? 
+        `data:image/jpeg;base64,${m.imageUrl}` : m.imageUrl,
+      avatar: m.senderAvatar,
+      timestamp: new Date(m.timestamp),
+      time: new Date(m.timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      date: new Date(m.timestamp).toLocaleDateString(),
+      status: m.status || 'sent', // sent, delivered, read
+      seen: m.seen || false,
+    }));
+  }, [messages, user.id]);
+
+  // Group messages by date
+  const messagesByDate = useMemo(() => {
+    const groups = {};
+    chatMessages.forEach((message) => {
+      const today = new Date().toLocaleDateString();
+      const yesterday = new Date(Date.now() - 86400000).toLocaleDateString();
+      
+      let dateLabel = message.date;
+      if (message.date === today) {
+        dateLabel = "Today";
+      } else if (message.date === yesterday) {
+        dateLabel = "Yesterday";
+      } else {
+        dateLabel = new Date(message.timestamp).toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      }
+      
+      if (!groups[dateLabel]) {
+        groups[dateLabel] = [];
+      }
+      groups[dateLabel].push(message);
+    });
+    return groups;
+  }, [chatMessages]);
 
   // Find current space
   const allSpaces = [
@@ -284,7 +342,9 @@ const UserPage = () => {
   // } = useJoinRequests(space_uuid || "");
 
   // Calculate pending invites count
-  const pendingInvitesCount = joinRequestsByLink?.length || 0;
+  const pendingInvitesCount =
+    joinRequestsByLink?.filter((s) => s.space_id === currentSpace?.space_id)
+      .length || 0;
 
   // Load saved cover photo on component mount
   useEffect(() => {
@@ -386,7 +446,7 @@ const UserPage = () => {
 
   // Invalid space or not found
 
-  if (!userSpacesLoading || !courseSpacesLoading || !friendSpacesLoading) {
+  if (userSpacesLoading || courseSpacesLoading || friendSpacesLoading) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
@@ -488,7 +548,7 @@ const UserPage = () => {
         // Clear both editors
         if (mobileEditorRef.current) mobileEditorRef.current.innerHTML = "";
         if (desktopEditorRef.current) desktopEditorRef.current.innerHTML = "";
-        setIsFocused(false);
+        setIsFocused(true);
 
         // Refetch posts to get the latest data
         refetchPosts();
@@ -1510,7 +1570,7 @@ const UserPage = () => {
                   <div
                     className={`
                     bg-white rounded-xl border cursor-text transition
-                    ${isFocused ? "border-black" : "border-transparent"}
+                    border-black
                     hover:border-black
                   `}
                     onClick={() => mobileEditorRef.current?.focus()}
@@ -1530,6 +1590,7 @@ const UserPage = () => {
                       <div
                         ref={mobileEditorRef}
                         contentEditable
+                        data-placeholder="Post something..."
                         suppressContentEditableWarning
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => {
@@ -1669,237 +1730,6 @@ const UserPage = () => {
                     Enter Chat
                   </button>
                 </div>
-
-                {/* Chat Popup */}
-                {showChatPopup && (
-                  <div className="fixed inset-0 z-[60] flex items-end justify-center p-4 sm:items-center sm:p-0">
-                    <div
-                      className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-                      onClick={() =>
-                        !isChatMinimized && setShowChatPopup(false)
-                      }
-                    />
-                    <div
-                      className={`relative z-[999] ${isChatMinimized ? "w-64 max-w-64" : "w-full"} ${isChatMaximized ? "max-w-4xl h-[90vh]" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
-                    >
-                      {/* Chat Header */}
-                      <div
-                        className="flex items-center justify-between rounded-t-lg p-3 border-b"
-                        style={{
-                          backgroundColor: currentColors.surface,
-                          borderColor: currentColors.border,
-                        }}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: currentColors.accent }}
-                          >
-                            <FiUser className="text-white text-sm" />
-                          </div>
-                          <div>
-                            <h3
-                              className="font-medium text-sm"
-                              style={{ color: currentColors.text }}
-                            >
-                              {spaceName}
-                            </h3>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsChatMaximized(!isChatMaximized);
-                            }}
-                            className="p-1.5 rounded-full transition-colors"
-                            style={{
-                              color: currentColors.textSecondary,
-                              backgroundColor: "transparent",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor =
-                                currentColors.hover;
-                              e.currentTarget.style.color = currentColors.text;
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor =
-                                "transparent";
-                              e.currentTarget.style.color =
-                                currentColors.textSecondary;
-                            }}
-                            title={isChatMaximized ? "Restore" : "Maximize"}
-                          >
-                            {isChatMaximized ? (
-                              <FiMinimize2 size={14} />
-                            ) : (
-                              <FiMaximize2 size={14} />
-                            )}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowChatPopup(false);
-                              setIsChatMinimized(false);
-                              setIsChatMaximized(false);
-                            }}
-                            className="p-1.5 rounded-full transition-colors"
-                            style={{
-                              color: currentColors.textSecondary,
-                              backgroundColor: "transparent",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor =
-                                currentColors.hover;
-                              e.currentTarget.style.color = currentColors.text;
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor =
-                                "transparent";
-                              e.currentTarget.style.color =
-                                currentColors.textSecondary;
-                            }}
-                            title="Close"
-                          >
-                            <FiX size={16} />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Chat Messages */}
-                      {!isChatMinimized && (
-                        <>
-                          <div
-                            className={`overflow-y-auto sm:overflow-y-hidden h-[calc(100vh-180px)] sm:h-96 p-4 space-y-2`}
-                            style={{
-                              backgroundColor: currentColors.background,
-                            }}
-                          >
-                            {messages.map((message) => (
-                              <div
-                                key={message.id}
-                                className={`flex ${message.senderId === user?.id ? "justify-end" : "justify-start"}`}
-                              >
-                                <div
-                                  className={`flex flex-col pl-2 ${message.senderId === user?.id ? "items-end" : "items-start"}`}
-                                >
-                                  <div
-                                    className={`p-3 rounded-lg max-w-xs break-words ${message.senderId === user?.id ? "rounded-tr-none" : "rounded-tl-none"}`}
-                                    style={{
-                                      backgroundColor:
-                                        message.senderId === user?.id
-                                          ? currentColors.accent
-                                          : currentColors.surface,
-                                      color:
-                                        message.senderId === user?.id
-                                          ? "white"
-                                          : currentColors.text,
-                                    }}
-                                  >
-                                    {message.content}
-                                  </div>
-                                  <p
-                                    className={`text-xs mt-2 ${message.senderId === user?.id ? "text-right" : "text-left"}`}
-                                    style={{
-                                      color: currentColors.textSecondary,
-                                    }}
-                                  >
-                                    {formatTime(message.timestamp)}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                            <div ref={messagesEndRef} />
-                          </div>
-
-                          {/* Chat Input */}
-                          <form
-                            onSubmit={handleSendMessage}
-                            className="p-3 rounded-b-lg border-t"
-                            style={{
-                              backgroundColor: currentColors.surface,
-                              borderColor: currentColors.border,
-                            }}
-                          >
-                            <div className="relative w-full">
-                              {/* Profanity Warning - Above Input Field */}
-                              {hasProfanity && (
-                                <div
-                                  className="absolute -top-12 left-0 right-0 px-3 py-2 rounded-lg text-xs flex items-center gap-2 animate-pulse"
-                                  style={{
-                                    backgroundColor: isDarkMode
-                                      ? "#dc2626"
-                                      : "#ef4444",
-                                    color: "white",
-                                    zIndex: 10,
-                                  }}
-                                >
-                                  <span>🚫</span>
-                                  <span className="hidden sm:inline">
-                                    <strong>Content Warning:</strong> Your
-                                    message contains inappropriate language and
-                                    will be automatically censored to maintain a
-                                    respectful chat environment.
-                                  </span>
-                                  <span className="sm:hidden">
-                                    <strong>Warning:</strong> Message contains
-                                    inappropriate language and will be censored.
-                                  </span>
-                                </div>
-                              )}
-
-                              <div className="flex items-center space-x-2">
-                                <input
-                                  type="text"
-                                  value={newMessage}
-                                  onChange={(e) =>
-                                    handleInputChange(e.target.value)
-                                  }
-                                  placeholder="Type a message..."
-                                  className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
-                                  style={{
-                                    backgroundColor: currentColors.background,
-                                    borderColor: currentColors.border,
-                                    color: currentColors.text,
-                                    focusRingColor: currentColors.accent,
-                                  }}
-                                />
-                                <button
-                                  type="submit"
-                                  className={`p-2 rounded transition-colors ${hasProfanity ? "opacity-50 cursor-not-allowed" : ""}`}
-                                  disabled={!newMessage.trim() || hasProfanity}
-                                  style={{
-                                    color:
-                                      !newMessage.trim() || hasProfanity
-                                        ? currentColors.textSecondary
-                                        : currentColors.accent,
-                                    backgroundColor: "transparent",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (newMessage.trim() && !hasProfanity) {
-                                      e.currentTarget.style.backgroundColor =
-                                        currentColors.hover;
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor =
-                                      "transparent";
-                                    e.currentTarget.style.color =
-                                      !newMessage.trim() || hasProfanity
-                                        ? currentColors.textSecondary
-                                        : currentColors.accent;
-                                  }}
-                                >
-                                  <FiSend />
-                                </button>
-                              </div>
-                            </div>
-                          </form>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -2389,7 +2219,9 @@ const UserPage = () => {
 
               {/* Invitations List */}
               <div className="p-6">
-                {joinRequestsByLink.length === 0 ? (
+                {joinRequestsByLink.filter(
+                  (s) => s.space_id === currentSpace?.space_id,
+                ).length === 0 ? (
                   <>
                     <p className="mb-4" style={{ color: currentColors.text }}>
                       No pending invitations at the moment.
@@ -2782,6 +2614,11 @@ const UserPage = () => {
             color: #9ca3af;
             pointer-events: none;
           }
+          .editor[data-placeholder="Post something..."]:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+          }
         `}
       </style>
 
@@ -2998,6 +2835,263 @@ const UserPage = () => {
                 Apply
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Chat Popup */}
+      {showChatPopup && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center p-4 sm:items-center sm:p-0">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => !isChatMinimized && setShowChatPopup(false)}
+          />
+          <div
+            className={`relative z-[999] ${isChatMinimized ? "w-64 max-w-64" : "w-full"} ${isChatMaximized ? "max-w-4xl h-[90vh]" : "max-w-md sm:max-w-lg"} transform transition-all duration-300 ease-in-out ${isChatMinimized ? "translate-y-[calc(100%-48px)]" : ""}`}
+          >
+            {/* Chat Header */}
+            <div
+              className="flex items-center justify-between rounded-t-lg p-3 border-b"
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
+            >
+              <div className="flex items-center space-x-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: currentColors.accent }}
+                >
+                  <FiUser className="text-white text-sm" />
+                </div>
+                <div>
+                  <h3
+                    className="font-medium text-sm"
+                    style={{ color: currentColors.text }}
+                  >
+                    {spaceName}
+                  </h3>
+                </div>
+              </div>
+              <div className="flex items-center space-x-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsChatMaximized(!isChatMaximized);
+                  }}
+                  className="p-1.5 rounded-full transition-colors"
+                  style={{
+                    color: currentColors.textSecondary,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                    e.currentTarget.style.color = currentColors.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = currentColors.textSecondary;
+                  }}
+                  title={isChatMaximized ? "Restore" : "Maximize"}
+                >
+                  {isChatMaximized ? (
+                    <FiMinimize2 size={14} />
+                  ) : (
+                    <FiMaximize2 size={14} />
+                  )}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowChatPopup(false);
+                    setIsChatMinimized(false);
+                    setIsChatMaximized(false);
+                  }}
+                  className="p-1.5 rounded-full transition-colors"
+                  style={{
+                    color: currentColors.textSecondary,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = currentColors.hover;
+                    e.currentTarget.style.color = currentColors.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = currentColors.textSecondary;
+                  }}
+                  title="Close"
+                >
+                  <FiX size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Chat Messages */}
+            {!isChatMinimized && (
+              <>
+                <div
+                  className={`overflow-y-auto sm:overflow-y-hidden h-[calc(100vh-180px)] sm:h-96 p-4 space-y-2`}
+                  style={{
+                    backgroundColor: currentColors.background,
+                  }}
+                >
+                  {Object.entries(messagesByDate).map(([dateLabel, dateMessages]) => (
+                    <div key={dateLabel}>
+                      {/* Date Separator */}
+                      <div className="flex items-center justify-center py-2">
+                        <div className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
+                          {dateLabel}
+                        </div>
+                      </div>
+                      
+                      {/* Messages for this date */}
+                      {dateMessages.map((m, i) => {
+                        const nextMessage = dateMessages[i + 1];
+                        const shouldShowTime = m.from === "me" && (!nextMessage || nextMessage.from !== "me");
+                        const prevMessage = dateMessages[i - 1];
+                        const shouldShowAvatar = m.from === "them" && (!prevMessage || prevMessage.from !== "them");
+                        
+                        return (
+                          <div
+                            key={m.id}
+                            className={`flex ${m.from === "me" ? "justify-end" : "justify-start"} mb-3`}
+                          >
+                            {shouldShowAvatar && (
+                              <img src={m.avatar || "/default-avatar.png"} className="w-8 h-8 rounded-full mr-2 mt-1" />
+                            )}
+                            {!shouldShowAvatar && m.from === "them" && (
+                              <div className="w-8 h-8 mr-2 mt-1"></div>
+                            )}
+                            <div className={`flex flex-col ${m.from === "me" ? "items-end" : "items-start"}`}>
+                              <div
+                                className={`p-3 rounded-lg max-w-xs break-words ${m.from === "me" ? "rounded-tr-none" : "rounded-tl-none"}`}
+                                style={{
+                                  backgroundColor:
+                                    m.from === "me"
+                                      ? currentColors.accent
+                                      : currentColors.surface,
+                                  color:
+                                    m.from === "me"
+                                      ? "white"
+                                      : currentColors.text,
+                                }}
+                              >
+                                {m.type === 'image' ? (
+                                  <div className="space-y-2">
+                                    <img 
+                                      src={m.imageUrl} 
+                                      alt={m.text} 
+                                      className="rounded-lg max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                                      onClick={() => window.open(m.imageUrl, '_blank')}
+                                    />
+                                    <p className="text-xs opacity-70">{m.text}</p>
+                                  </div>
+                                ) : (
+                                  <p>{m.text}</p>
+                                )}
+                              </div>
+                              
+                              {/* Time display */}
+                              {shouldShowTime && (
+                                <p
+                                  className={`text-xs mt-2 ${m.from === "me" ? "text-right" : "text-left"}`}
+                                  style={{
+                                    color: currentColors.textSecondary,
+                                  }}
+                                >
+                                  {m.time}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Chat Input */}
+                <form
+                  onSubmit={handleSendMessage}
+                  className="p-3 rounded-b-lg border-t"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.border,
+                  }}
+                >
+                  <div className="relative w-full">
+                    {/* Profanity Warning - Above Input Field */}
+                    {hasProfanity && (
+                      <div
+                        className="absolute -top-12 left-0 right-0 px-3 py-2 rounded-lg text-xs flex items-center gap-2 animate-pulse"
+                        style={{
+                          backgroundColor: isDarkMode ? "#dc2626" : "#ef4444",
+                          color: "white",
+                          zIndex: 10,
+                        }}
+                      >
+                        <span>🚫</span>
+                        <span className="hidden sm:inline">
+                          <strong>Content Warning:</strong> Your message
+                          contains inappropriate language and will be
+                          automatically censored to maintain a respectful chat
+                          environment.
+                        </span>
+                        <span className="sm:hidden">
+                          <strong>Warning:</strong> Message contains
+                          inappropriate language and will be censored.
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => handleInputChange(e.target.value)}
+                        placeholder="Type a message..."
+                        className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1"
+                        style={{
+                          backgroundColor: currentColors.background,
+                          borderColor: currentColors.border,
+                          color: currentColors.text,
+                          focusRingColor: currentColors.accent,
+                        }}
+                      />
+                      <button
+                        type="submit"
+                        className={`p-2 rounded transition-colors ${hasProfanity ? "opacity-50 cursor-not-allowed" : ""}`}
+                        disabled={!newMessage.trim() || hasProfanity}
+                        style={{
+                          color:
+                            !newMessage.trim() || hasProfanity
+                              ? currentColors.textSecondary
+                              : currentColors.accent,
+                          backgroundColor: "transparent",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (newMessage.trim() && !hasProfanity) {
+                            e.currentTarget.style.backgroundColor =
+                              currentColors.hover;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                          e.currentTarget.style.color =
+                            !newMessage.trim() || hasProfanity
+                              ? currentColors.textSecondary
+                              : currentColors.accent;
+                        }}
+                      >
+                        <FiSend />
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
