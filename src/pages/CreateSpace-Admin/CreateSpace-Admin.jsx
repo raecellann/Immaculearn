@@ -238,6 +238,7 @@ const CreateSpaceAdmin = () => {
         setSpaceNameError(false);
         setDescriptionError(false);
         setCoverPhotoError(false);
+        navigate(`/space/${space_uuid}/${spaceName}`);
       } else {
         alert(result.message || "Failed to create space. Please try again.");
       }
@@ -246,7 +247,6 @@ const CreateSpaceAdmin = () => {
       alert("An error occurred while creating the space.");
     } finally {
       setIsLoading(false);
-      navigate(`/space/${space_uuid}/${spaceName}`);
     }
   };
 

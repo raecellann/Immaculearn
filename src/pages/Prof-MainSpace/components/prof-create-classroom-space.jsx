@@ -338,6 +338,7 @@ const ProfCreateClassroomSpace = () => {
         setYearLevelError(false);
         setDayError(false);
         setTimeError(false);
+        navigator(`/prof/space/${space_uuid}/${spaceName}`);
       } else {
         alert(result.message || "Failed to create space. Please try again.");
       }
@@ -346,7 +347,6 @@ const ProfCreateClassroomSpace = () => {
       alert("An error occurred while creating the space.");
     } finally {
       setIsLoading(false);
-      navigator(`/prof/space/${space_uuid}/${spaceName}`);
     }
   };
 
