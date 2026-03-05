@@ -1,33 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { Megaphone } from "lucide-react";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
+import { announcementService } from "../../../services/userAnnounceservice";
 
 // Mock announcements — replace with real API data as needed
-const MOCK_ANNOUNCEMENTS = [
-  {
-    id: 1,
-    title: "System Maintenance Scheduled",
-    message: "The platform will undergo maintenance on Saturday, March 8 from 12:00 AM to 3:00 AM. Please save your work beforehand.",
-    date: "March 2, 2026",
-    priority: "high",
-  },
-  {
-    id: 2,
-    title: "New Feature: Collaborative Docs",
-    message: "We've launched real-time collaborative documents inside your spaces. Try it out from your space settings!",
-    date: "February 28, 2026",
-    priority: "normal",
-  },
-  {
-    id: 3,
-    title: "Reminder: Grade Submission Deadline",
-    message: "Please submit all grades for the current semester no later than March 15, 2026.",
-    date: "February 25, 2026",
-    priority: "normal",
-  },
-];
-
 const priorityStyles = {
   high: {
     dot: "bg-red-500",
@@ -49,13 +26,52 @@ const AnnouncementByAdmin = () => {
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [viewedAnnouncements, setViewedAnnouncements] = useState(new Set());
+  
+  // State for announcements
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Prevent duplicate fetches
+  const hasFetched = useRef(false);
 
-  const visible = MOCK_ANNOUNCEMENTS.slice(0, 3);
+  // Fetch professor announcements on component mount
+  useEffect(() => {
+    const fetchProfessorAnnouncements = async () => {
+      // Prevent duplicate fetches
+      if (hasFetched.current) return;
+      hasFetched.current = true;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Get announcements for professors (target_audience = "PROFESSORS" or "ALL")
+        const response = await announcementService.getAnnouncementsByAudience("PROFESSORS");
+        
+        if (response.success && response.data) {
+          setAnnouncements(response.data);
+        } else {
+          setError(response.message || "Failed to load announcements");
+        }
+      } catch (err) {
+        setError("Failed to load announcements");
+        console.error("Error fetching announcements:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfessorAnnouncements();
+  }, []); // Empty dependency array - only runs once on mount
+
+  // Get visible announcements (limit to 3 most recent)
+  const visible = announcements.slice(0, 3);
 
   const handleAnnouncementClick = (announcement) => {
     setSelectedAnnouncement(announcement);
-    if (!viewedAnnouncements.has(announcement.id)) {
-      setViewedAnnouncements(prev => new Set(prev).add(announcement.id));
+    if (!viewedAnnouncements.has(announcement.announce_id)) {
+      setViewedAnnouncements(prev => new Set(prev).add(announcement.announce_id));
     }
   };
 
@@ -85,7 +101,41 @@ const AnnouncementByAdmin = () => {
 
       {/* Announcements List */}
       <div className="space-y-3">
-        {visible.length === 0 ? (
+        {loading ? (
+          <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+            <div className="flex flex-col items-center gap-3">
+              <Megaphone size={32} className="text-gray-400" />
+              <div>
+                <p 
+                  className="text-sm font-medium mb-1"
+                  style={{ color: isDarkMode ? "white" : "black" }}
+                >
+                  Loading announcements...
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+            <div className="flex flex-col items-center gap-3">
+              <Megaphone size={32} className="text-gray-400" />
+              <div>
+                <p 
+                  className="text-sm font-medium mb-1"
+                  style={{ color: isDarkMode ? "white" : "black" }}
+                >
+                  Failed to load announcements
+                </p>
+                <p 
+                  className="text-xs"
+                  style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                >
+                  {error}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : visible.length === 0 ? (
           <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
             <div className="flex flex-col items-center gap-3">
               <Megaphone size={32} className="text-gray-400" />
@@ -108,7 +158,7 @@ const AnnouncementByAdmin = () => {
         ) : (
           visible.map((announcement) => (
             <div
-              key={announcement.id}
+              key={announcement.announce_id}
               className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
               style={{
                 backgroundColor: isDarkMode
@@ -125,7 +175,7 @@ const AnnouncementByAdmin = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    {!viewedAnnouncements.has(announcement.id) && (
+                    {!viewedAnnouncements.has(announcement.announce_id) && (
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: isDarkMode ? "#3B82F6" : "#2563EB" }}></div>
                     )}
                     <p
@@ -144,7 +194,7 @@ const AnnouncementByAdmin = () => {
                       lineHeight: "1.5",
                     }}
                   >
-                    {announcement.message}
+                    {announcement.content}
                   </p>
                   <div className="flex items-center gap-2">
                     <svg 
@@ -169,7 +219,11 @@ const AnnouncementByAdmin = () => {
                           : "#6B7280",
                       }}
                     >
-                      {announcement.date}
+                      {new Date(announcement.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
                     </p>
                   </div>
                 </div>
@@ -236,7 +290,11 @@ const AnnouncementByAdmin = () => {
                     className="text-sm font-medium"
                     style={{ color: currentColors.textSecondary }}
                   >
-                    {selectedAnnouncement.date}
+                    {new Date(selectedAnnouncement.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
                   </p>
                 </div>
               </div>
@@ -267,7 +325,7 @@ const AnnouncementByAdmin = () => {
                   className="text-base"
                   style={{ color: currentColors.text }}
                 >
-                  {selectedAnnouncement.message}
+                  {selectedAnnouncement.content}
                 </p>
               </div>
             </div>

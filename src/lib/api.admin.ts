@@ -6,7 +6,6 @@ const baseUrl =
         ? config.API_URL
         : "http://localhost:3000/v1";
 
-
 export const adminApi = axios.create({
   baseURL: baseUrl,
   withCredentials: true,
@@ -19,6 +18,18 @@ export const adminApi = axios.create({
 // 🔐 Refresh state management
 let isRefreshing = false;
 let refreshSubscribers: any[] = [];
+
+// Global navigation function for auth redirects
+let navigateFunction: ((to: string) => void) | null = null;
+let authRefreshCallback: (() => void) | null = null;
+
+export const setAuthNavigate = (navigate: (to: string) => void) => {
+  navigateFunction = navigate;
+};
+
+export const setAuthRefreshCallback = (callback: () => void) => {
+  authRefreshCallback = callback;
+};
 
 const subscribeTokenRefresh = (callback: any) => {
   refreshSubscribers.push(callback);
@@ -77,7 +88,11 @@ adminApi.interceptors.response.use(
         refreshSubscribers = [];
 
         // 🔐 Redirect to login if refresh fails
-        window.location.href = "/admin/login";
+        if (navigateFunction) {
+          navigateFunction("/admin/login");
+        } else {
+          window.location.href = "/admin/login";
+        }
         return Promise.reject(refreshError);
       }
     }

@@ -304,8 +304,8 @@ const HomePage1 = () => {
 
   // Inject CSS animations for staggered transitions
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const style = document.createElement("style");
+    if (typeof window !== 'undefined') {
+      const style = document.createElement('style');
       style.textContent = `
         @keyframes fadeIn {
           from {
@@ -325,7 +325,7 @@ const HomePage1 = () => {
         }
       `;
       document.head.appendChild(style);
-
+      
       return () => {
         if (style.parentNode) {
           style.parentNode.removeChild(style);
@@ -468,7 +468,7 @@ const HomePage1 = () => {
                     className="text-lg sm:text-xl font-semibold mb-2"
                     style={{ color: "white" }}
                   >
-                    {greeting}, {capitalizeWords(user?.first_name) || "Student"}
+                    {greeting}, {user?.first_name || "Student"}
                   </h1>
                   <p
                     className="mb-1"
@@ -549,18 +549,11 @@ const HomePage1 = () => {
                 {/* Tasks List */}
                 <div className="space-y-3">
                   {allUploadedTasksLoading ? (
-                    <div
-                      className="p-6 rounded-lg border text-center"
-                      style={{
-                        borderColor: isDarkMode
-                          ? currentColors.border
-                          : "black",
-                      }}
-                    >
+                    <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
                       <div className="flex flex-col items-center gap-3">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                         <div>
-                          <p
+                          <p 
                             className="text-sm font-medium mb-1"
                             style={{ color: "white" }}
                           >
@@ -570,26 +563,21 @@ const HomePage1 = () => {
                       </div>
                     </div>
                   ) : allUploadedTasks.length === 0 ? (
-                    <div
-                      className="p-6 rounded-lg border text-center"
-                      style={{
-                        borderColor: isDarkMode
-                          ? currentColors.border
-                          : "transparent",
-                      }}
-                    >
+                    <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "transparent" }}>
                       <div className="flex flex-col items-center gap-3">
                         <Calendar size={32} style={{ color: "white" }} />
                         <div>
-                          <p className="text-sm " style={{ color: "white" }}>
+                          <p
+                            className="text-sm "
+                            style={{  color: "white" }}
+                          >
                             No upcoming tasks
                           </p>
-                          <p
+                          <p 
                             className="text-xs mt-2"
-                            style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                            style={{ color: "rgba(255, 255, 255, 0.8)"  }}
                           >
-                            Check your calendar to view upcoming tasks and
-                            deadlines
+                            Check your calendar to view upcoming tasks and deadlines
                           </p>
                         </div>
                       </div>
@@ -610,22 +598,20 @@ const HomePage1 = () => {
                             backgroundColor: isDarkMode
                               ? "rgba(30, 36, 46, 0.9)"
                               : "rgba(255, 255, 255, 0.95)",
-                            borderColor: isDarkMode
-                              ? currentColors.border
-                              : "rgb(229, 231, 235)",
+                            borderColor: isDarkMode ? currentColors.border : "rgb(229, 231, 235)",
                             borderWidth: "1px",
                           }}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
-                                <div
+                                <div 
                                   className={`w-2 h-2 rounded-full ${
                                     task.task_status === "completed"
                                       ? "bg-green-500"
                                       : task.task_status === "in_progress"
-                                        ? "bg-yellow-500"
-                                        : "bg-blue-500"
+                                      ? "bg-yellow-500"
+                                      : "bg-blue-500"
                                   }`}
                                 ></div>
                                 <p
@@ -647,20 +633,18 @@ const HomePage1 = () => {
                               <div className="flex items-center gap-4">
                                 {task.due_date && (
                                   <div className="flex items-center gap-2">
-                                    <svg
-                                      className="w-4 h-4"
-                                      style={{
-                                        color: currentColors.textSecondary,
-                                      }}
-                                      fill="none"
-                                      stroke="currentColor"
+                                    <svg 
+                                      className="w-4 h-4" 
+                                      style={{ color: currentColors.textSecondary }}
+                                      fill="none" 
+                                      stroke="currentColor" 
                                       viewBox="0 0 24 24"
                                     >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                      <path 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        strokeWidth={2} 
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
                                       />
                                     </svg>
                                     <p
@@ -669,9 +653,7 @@ const HomePage1 = () => {
                                         color: currentColors.textSecondary,
                                       }}
                                     >
-                                      {new Date(
-                                        task.due_date,
-                                      ).toLocaleDateString()}
+                                      {new Date(task.due_date).toLocaleDateString()}
                                     </p>
                                   </div>
                                 )}
@@ -680,12 +662,11 @@ const HomePage1 = () => {
                                     task.task_status === "completed"
                                       ? "bg-green-100 text-green-700"
                                       : task.task_status === "in_progress"
-                                        ? "bg-yellow-100 text-yellow-700"
-                                        : "bg-blue-100 text-blue-700"
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : "bg-blue-100 text-blue-700"
                                   }`}
                                 >
-                                  {task.task_status?.replace("_", " ") ||
-                                    "pending"}
+                                  {task.task_status?.replace("_", " ") || "pending"}
                                 </span>
                               </div>
                             </div>
@@ -838,9 +819,7 @@ const HomePage1 = () => {
                                   <p className="text-gray-400 text-xs mt-1">
                                     {space.members?.length || 0} Members
                                   </p>
-                                  <p className="text-gray-500 text-xs mt-1">
-                                    Last active • just now
-                                  </p>
+                                  
                                 </div>
                               </div>
 
@@ -1019,9 +998,22 @@ const HomePage1 = () => {
                                     Students
                                   </p>
                                   <p className="text-gray-500 text-xs mt-1">
-                                    {course.space_day} (
-                                    {`${course.space_time_start} - ${course.space_time_end}`}
-                                    )
+                                    {course.space_day || "TBD"} (
+                                    {new Date(
+                                      `2000-01-01T${course.space_time_start}`,
+                                    ).toLocaleTimeString([], {
+                                      hour: "numeric",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}{" "}
+                                    -{" "}
+                                    {new Date(
+                                      `2000-01-01T${course.space_time_end}`,
+                                    ).toLocaleTimeString([], {
+                                      hour: "numeric",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}
                                   </p>
                                 </div>
                               </div>
@@ -1273,16 +1265,11 @@ const HomePage1 = () => {
               {/* Tasks List */}
               <div className="space-y-3">
                 {allUploadedTasksLoading ? (
-                  <div
-                    className="p-6 rounded-lg border text-center"
-                    style={{
-                      borderColor: isDarkMode ? currentColors.border : "black",
-                    }}
-                  >
+                  <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
                     <div className="flex flex-col items-center gap-3">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                       <div>
-                        <p
+                        <p 
                           className="text-sm font-medium mb-1"
                           style={{ color: "white" }}
                         >
@@ -1292,14 +1279,7 @@ const HomePage1 = () => {
                     </div>
                   </div>
                 ) : allUploadedTasks.length === 0 ? (
-                  <div
-                    className="p-6 rounded-lg border text-center"
-                    style={{
-                      borderColor: isDarkMode
-                        ? currentColors.border
-                        : "transparent",
-                    }}
-                  >
+                  <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "transparent" }}>
                     <div className="flex flex-col items-center gap-3">
                       <Calendar size={32} style={{ color: "white" }} />
                       <div>
@@ -1309,12 +1289,11 @@ const HomePage1 = () => {
                         >
                           No upcoming tasks
                         </p>
-                        <p
+                        <p 
                           className="text-xs"
                           style={{ color: "rgba(255, 255, 255, 0.8)" }}
                         >
-                          Check your calendar to view upcoming tasks and
-                          deadlines
+                          Check your calendar to view upcoming tasks and deadlines
                         </p>
                       </div>
                     </div>
@@ -1335,22 +1314,20 @@ const HomePage1 = () => {
                           backgroundColor: isDarkMode
                             ? "rgba(30, 36, 46, 0.9)"
                             : "rgba(255, 255, 255, 0.95)",
-                          borderColor: isDarkMode
-                            ? currentColors.border
-                            : "rgb(229, 231, 235)",
+                          borderColor: isDarkMode ? currentColors.border : "rgb(229, 231, 235)",
                           borderWidth: "1px",
                         }}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <div
+                              <div 
                                 className={`w-2 h-2 rounded-full ${
                                   task.task_status === "completed"
                                     ? "bg-green-500"
                                     : task.task_status === "in_progress"
-                                      ? "bg-yellow-500"
-                                      : "bg-blue-500"
+                                    ? "bg-yellow-500"
+                                    : "bg-blue-500"
                                 }`}
                               ></div>
                               <p
@@ -1372,20 +1349,18 @@ const HomePage1 = () => {
                             <div className="flex items-center gap-4">
                               {task.due_date && (
                                 <div className="flex items-center gap-2">
-                                  <svg
-                                    className="w-4 h-4"
-                                    style={{
-                                      color: currentColors.textSecondary,
-                                    }}
-                                    fill="none"
-                                    stroke="currentColor"
+                                  <svg 
+                                    className="w-4 h-4" 
+                                    style={{ color: currentColors.textSecondary }}
+                                    fill="none" 
+                                    stroke="currentColor" 
                                     viewBox="0 0 24 24"
                                   >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    <path 
+                                      strokeLinecap="round" 
+                                      strokeLinejoin="round" 
+                                      strokeWidth={2} 
+                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
                                     />
                                   </svg>
                                   <p
@@ -1394,9 +1369,7 @@ const HomePage1 = () => {
                                       color: currentColors.textSecondary,
                                     }}
                                   >
-                                    {new Date(
-                                      task.due_date,
-                                    ).toLocaleDateString()}
+                                    {new Date(task.due_date).toLocaleDateString()}
                                   </p>
                                 </div>
                               )}
@@ -1506,3 +1479,4 @@ const HomePage1 = () => {
 };
 
 export default HomePage1;
+ 

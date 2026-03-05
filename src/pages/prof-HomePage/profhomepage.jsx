@@ -655,9 +655,7 @@ const ProfHomePage = () => {
                                   <h3 className="font-medium truncate">
                                     {capitalizeWords(space.space_name)}'s Space
                                   </h3>
-                                  <p className="text-gray-500 text-xs mt-1">
-                                    Last active • just now
-                                  </p>
+                                  
                                 </div>
                               </div>
                               {/* Three dots menu */}

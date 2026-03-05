@@ -7,7 +7,6 @@ import {
   FiCheck,
   FiCheckCircle,
   FiSettings,
-  FiTrash2,
 } from "react-icons/fi";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
@@ -65,6 +64,13 @@ const ProfChatPage = () => {
     conversationColors[activeSpaceUuid] || colorOptions[0];
 
   const allSpaces = [...(userSpaces || []),...(courseSpaces || []), ...(friendSpaces || [])];
+
+  // Filter only course spaces for the Courses section
+  const courseSpacesOnly = useMemo(() => {
+    const map = new Map();
+    (courseSpaces || []).forEach((s) => map.set(s.space_uuid, s));
+    return Array.from(map.values());
+  }, [courseSpaces, coverPhotoUpdateTrigger]);
 
   const uniqueSpaces = useMemo(() => {
     const map = new Map();
@@ -505,7 +511,7 @@ const ProfChatPage = () => {
               <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>
                 Courses
               </h2>
-              {uniqueSpaces.map((space) => (
+              {courseSpacesOnly.map((space) => (
                 <div
                   key={space.space_uuid}
                   onClick={() => {
@@ -647,27 +653,6 @@ const ProfChatPage = () => {
                           <FiSettings className="text-sm" />
                           Change Color Theme
                         </button>
-                        <button
-                          onClick={() => {
-                            setShowDropdown(false);
-                            // Handle delete conversation
-                            if (
-                              window.confirm(
-                                "Are you sure you want to delete this conversation?",
-                              )
-                            ) {
-                              console.log(
-                                "Delete conversation:",
-                                activeSpaceUuid,
-                              );
-                              // Add delete conversation logic here
-                            }
-                          }}
-                          className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-300 hover:bg-[#3A3F4E] hover:text-white transition-colors rounded-b-lg flex items-center gap-3"
-                        >
-                          <FiTrash2 className="text-sm" />
-                          Delete Conversation
-                        </button>
                       </div>
                     )}
                   </div>
@@ -688,8 +673,7 @@ const ProfChatPage = () => {
                       <div key={dateLabel}>
                         {/* Date Separator */}
                         <div className="flex items-center justify-center py-2">
-                          <div className="text-xs px-3 py-1 rounded-full" style={{
-                            backgroundColor: isDarkMode ? '#374151' : '#e5e7eb',
+                          <div className="text-xs px-3 py-1" style={{
                             color: currentColors.textSecondary
                           }}>
                             {dateLabel}
@@ -703,21 +687,40 @@ const ProfChatPage = () => {
                           const isLastUserMessage =
                             m.from === "me" && i === dateMessages.length - 1;
                           const nextMessage = dateMessages[i + 1];
-                          const shouldShowTime =
-                            m.from === "me" &&
-                            (!nextMessage || nextMessage.from !== "me");
                           const prevMessage = dateMessages[i - 1];
-                          const shouldShowAvatar =
-                            m.from === "them" &&
-                            (!nextMessage || nextMessage.from !== "them");
+                          
+                          // Optimized avatar logic for large group chats (10+ participants)
+                          let shouldShowAvatar = false;
+                          if (m.from === "them") {
+                            // Always show avatar for first message
+                            if (!prevMessage) {
+                              shouldShowAvatar = true;
+                            } else {
+                              // Show avatar only if previous message was from different sender
+                              // This works for any number of participants
+                              shouldShowAvatar = prevMessage.senderId !== m.senderId;
+                            }
+                          }
+                          
+                          // Optimized time logic for large group chats
+                          let shouldShowTime = false;
+                          if (m.from === "me") {
+                            // Always show time for last message
+                            if (!nextMessage) {
+                              shouldShowTime = true;
+                            } else {
+                              // Show time only if next message is from different sender
+                              // This works for any number of participants
+                              shouldShowTime = nextMessage.senderId !== m.senderId;
+                            }
+                          }
 
                           return (
                             <React.Fragment key={m.id}>
                               {showUnreadSeparator && (
                                 <div className="flex items-center justify-center py-2">
-                                  <div className="text-xs px-3 py-1 rounded-full" style={{
-                                    backgroundColor: '#3b82f6',
-                                    color: 'white'
+                                  <div className="text-xs px-3 py-1" style={{
+                                    color: currentColors.textSecondary
                                   }}>
                                     Unread messages
                                   </div>

@@ -1,11 +1,9 @@
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { adminService } from "../services/adminService";
-import { useUser } from "../contexts/user/useUser";
-
-// import { useAdmin } from "../contexts/admin/useAdmin";
+import { useAdmin } from "../contexts/admin/useAdmin";
 
 export const useAcademicMutations = () => {
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated } = useAdmin();
   const queryClient = useQueryClient();
 
   // ------------------- Create Academic Term -------------------
