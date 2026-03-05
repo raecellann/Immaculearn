@@ -8,6 +8,7 @@ import {
   FiUnderline,
 } from "react-icons/fi";
 import { useFile } from "../../../contexts/file/fileContextProvider";
+import { toast } from "react-toastify";
 
 const QuizBuilder = ({
   currentColors,
@@ -24,6 +25,7 @@ const QuizBuilder = ({
   const [attempts, setAttempts] = useState("1");
   const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
 
   // Mock lessons data
   // const [resources] = useState([
@@ -142,11 +144,14 @@ const QuizBuilder = ({
       case "multiple-choice":
         return (
           <div className="space-y-3">
+            {validationErrors[`options_${question.id}`] && (
+              <p className="text-red-500 text-xs sm:text-sm">Please fill in all option fields</p>
+            )}
             {question.options.map((option, index) => {
               const letter = String.fromCharCode(65 + index); // A, B, C, D, etc.
               return (
-                <div key={index} className="flex items-center gap-2">
-                  <label className="relative flex items-center justify-center cursor-pointer">
+                <div key={index} className="flex items-center gap-2 sm:gap-3">
+                  <label className="relative flex items-center justify-center cursor-pointer flex-shrink-0">
                     <input
                       type="radio"
                       name={`correct-${question.id}`}
@@ -157,7 +162,7 @@ const QuizBuilder = ({
                       className="sr-only hidden"
                     />
                     <div
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-semibold transition-colors ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-xs sm:text-sm font-semibold transition-colors ${
                         question.correctAnswer === index
                           ? "bg-blue-600 border-blue-600 text-white"
                           : "border-gray-300 text-gray-500 hover:border-blue-400"
@@ -183,15 +188,20 @@ const QuizBuilder = ({
                   <input
                     type="text"
                     value={option}
-                    onChange={(e) =>
-                      updateOption(question.id, index, e.target.value)
-                    }
+                    onChange={(e) => {
+                      updateOption(question.id, index, e.target.value);
+                      if (validationErrors[`options_${question.id}`]) {
+                        setValidationErrors(prev => ({ ...prev, [`options_${question.id}`]: false }));
+                      }
+                    }}
                     placeholder={`Option ${index + 1}`}
-                    className="flex-1 rounded-lg px-3 py-2 outline-none border text-sm"
+                    className={`flex-1 rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm min-w-0 ${
+                      validationErrors[`options_${question.id}`] && !option.trim() ? 'border-red-500' : ''
+                    }`}
                     style={{
                       backgroundColor: currentColors.background,
                       color: currentColors.text,
-                      borderColor: currentColors.border,
+                      borderColor: validationErrors[`options_${question.id}`] && !option.trim() ? '#ef4444' : currentColors.border,
                     }}
                   />
                   <button
@@ -202,9 +212,9 @@ const QuizBuilder = ({
                       );
                       updateQuestion(question.id, "options", newOptions);
                     }}
-                    className="text-red-500 hover:text-red-400"
+                    className="text-red-500 hover:text-red-400 p-1 flex-shrink-0"
                   >
-                    <FiTrash2 size={16} />
+                    <FiTrash2 size={14} />
                   </button>
                 </div>
               );
@@ -218,9 +228,9 @@ const QuizBuilder = ({
                     "",
                   ])
                 }
-                className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                className="text-blue-400 hover:text-blue-300 text-xs sm:text-sm flex items-center gap-1 py-1"
               >
-                <FiPlus size={16} /> Add Option
+                <FiPlus size={14} /> Add Option
               </button>
             )}
           </div>
@@ -229,6 +239,9 @@ const QuizBuilder = ({
       case "true-false":
         return (
           <div className="space-y-2">
+            {validationErrors[`correctAnswer_${question.id}`] && (
+              <p className="text-red-500 text-xs sm:text-sm">Please select True or False</p>
+            )}
             <label className="flex items-center gap-2">
               <input
                 type="radio"
@@ -310,27 +323,40 @@ const QuizBuilder = ({
 
       case "identification":
         return (
-          <input
-            type="text"
-            value={question.correctAnswer || ""}
-            onChange={(e) =>
-              updateQuestion(question.id, "correctAnswer", e.target.value)
-            }
-            placeholder="Correct answer"
-            className="w-full rounded-lg px-3 py-2 outline-none border text-sm"
-            style={{
-              backgroundColor: currentColors.background,
-              color: currentColors.text,
-              borderColor: currentColors.border,
-            }}
-          />
+          <div>
+            {validationErrors[`correctAnswer_${question.id}`] && (
+              <p className="text-red-500 text-xs sm:text-sm mb-2">Please provide the correct answer</p>
+            )}
+            <input
+              type="text"
+              value={question.correctAnswer || ""}
+              onChange={(e) => {
+                updateQuestion(question.id, "correctAnswer", e.target.value);
+                if (validationErrors[`correctAnswer_${question.id}`]) {
+                  setValidationErrors(prev => ({ ...prev, [`correctAnswer_${question.id}`]: false }));
+                }
+              }}
+              placeholder="Correct answer"
+              className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm ${
+                validationErrors[`correctAnswer_${question.id}`] ? 'border-red-500' : ''
+              }`}
+              style={{
+                backgroundColor: currentColors.background,
+                color: currentColors.text,
+                borderColor: validationErrors[`correctAnswer_${question.id}`] ? '#ef4444' : currentColors.border,
+              }}
+            />
+          </div>
         );
 
       case "enumeration":
         return (
           <div className="space-y-2">
+            {validationErrors[`correctAnswer_${question.id}`] && (
+              <p className="text-red-500 text-xs sm:text-sm mb-2">Please provide at least one answer</p>
+            )}
             <div
-              className="text-sm"
+              className="text-xs sm:text-sm"
               style={{ color: currentColors.textSecondary }}
             >
               Correct answers (comma-separated):
@@ -341,19 +367,24 @@ const QuizBuilder = ({
                   ? question.correctAnswer.join(", ")
                   : question.correctAnswer || ""
               }
-              onChange={(e) =>
+              onChange={(e) => {
                 updateQuestion(
                   question.id,
                   "correctAnswer",
                   e.target.value.split(",").map((a) => a.trim()),
-                )
-              }
+                );
+                if (validationErrors[`correctAnswer_${question.id}`]) {
+                  setValidationErrors(prev => ({ ...prev, [`correctAnswer_${question.id}`]: false }));
+                }
+              }}
               placeholder="Answer 1, Answer 2, Answer 3..."
-              className="w-full rounded-lg px-3 py-2 outline-none border text-sm h-20"
+              className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm h-16 sm:h-20 resize-none ${
+                validationErrors[`correctAnswer_${question.id}`] ? 'border-red-500' : ''
+              }`}
               style={{
                 backgroundColor: currentColors.background,
                 color: currentColors.text,
-                borderColor: currentColors.border,
+                borderColor: validationErrors[`correctAnswer_${question.id}`] ? '#ef4444' : currentColors.border,
               }}
             />
           </div>
@@ -362,23 +393,31 @@ const QuizBuilder = ({
       case "short-answer":
         return (
           <div className="space-y-2">
+            {validationErrors[`correctAnswer_${question.id}`] && (
+              <p className="text-red-500 text-xs sm:text-sm mb-2">Please provide a sample answer</p>
+            )}
             <div
-              className="text-sm"
+              className="text-xs sm:text-sm"
               style={{ color: currentColors.textSecondary }}
             >
               Sample correct answer (for grading reference):
             </div>
             <textarea
               value={question.correctAnswer || ""}
-              onChange={(e) =>
-                updateQuestion(question.id, "correctAnswer", e.target.value)
-              }
+              onChange={(e) => {
+                updateQuestion(question.id, "correctAnswer", e.target.value);
+                if (validationErrors[`correctAnswer_${question.id}`]) {
+                  setValidationErrors(prev => ({ ...prev, [`correctAnswer_${question.id}`]: false }));
+                }
+              }}
               placeholder="Enter sample answer or key points..."
-              className="w-full rounded-lg px-3 py-2 outline-none border text-sm h-20"
+              className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm h-16 sm:h-20 resize-none ${
+                validationErrors[`correctAnswer_${question.id}`] ? 'border-red-500' : ''
+              }`}
               style={{
                 backgroundColor: currentColors.background,
                 color: currentColors.text,
-                borderColor: currentColors.border,
+                borderColor: validationErrors[`correctAnswer_${question.id}`] ? '#ef4444' : currentColors.border,
               }}
             />
           </div>
@@ -389,7 +428,52 @@ const QuizBuilder = ({
     }
   };
 
+  const validateFields = () => {
+    const errors = {};
+    
+    if (!quizTitle.trim()) {
+      errors.quizTitle = true;
+    }
+    
+    if (!dueDate) {
+      errors.dueDate = true;
+    }
+    
+    if (!selectedLesson) {
+      errors.selectedLesson = true;
+    }
+    
+    // Validate questions
+    questions.forEach((question, index) => {
+      if (!question.question.trim()) {
+        errors[`question_${question.id}`] = true;
+      }
+      
+      // Validate based on question type
+      if (question.type === "multiple-choice") {
+        if (question.options.some(option => !option.trim())) {
+          errors[`options_${question.id}`] = true;
+        }
+      } else if (question.type === "true-false" && (!question.correctAnswer || (question.correctAnswer !== "true" && question.correctAnswer !== "false"))) {
+        errors[`correctAnswer_${question.id}`] = true;
+      } else if (question.type === "identification" && !question.correctAnswer?.trim()) {
+        errors[`correctAnswer_${question.id}`] = true;
+      } else if (question.type === "enumeration" && (!question.correctAnswer || question.correctAnswer.length === 0 || question.correctAnswer.every(ans => !ans.trim()))) {
+        errors[`correctAnswer_${question.id}`] = true;
+      } else if (question.type === "short-answer" && !question.correctAnswer?.trim()) {
+        errors[`correctAnswer_${question.id}`] = true;
+      }
+    });
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSave = (status) => {
+    if (!validateFields()) {
+      return;
+    }
+    
     // Convert datetime-local to ISO string
     let combinedDueDate = dueDate;
     if (dueDate) {
@@ -462,6 +546,7 @@ const QuizBuilder = ({
     // }
 
     if (status === "published") {
+      toast.success("Quiz published successfully!");
       onPublish(taskData);
     } else {
       onSave(taskData);
@@ -469,7 +554,7 @@ const QuizBuilder = ({
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-0">
       {/* BACK BUTTON */}
       <div className="flex justify-end mb-6">
         <button
@@ -512,8 +597,8 @@ const QuizBuilder = ({
         </div>
 
         {/* BASIC INFO */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <label
                 className="block font-semibold mb-2"
@@ -521,15 +606,25 @@ const QuizBuilder = ({
               >
                 Quiz Title: <span className="text-red-500">*</span>
               </label>
+              {validationErrors.quizTitle && (
+                <p className="text-red-500 text-xs sm:text-sm mb-1">Please enter a quiz title</p>
+              )}
               <input
                 type="text"
                 value={quizTitle}
-                onChange={(e) => setQuizTitle(e.target.value)}
-                className="w-full rounded-lg px-4 py-2 outline-none border"
+                onChange={(e) => {
+                  setQuizTitle(e.target.value);
+                  if (validationErrors.quizTitle) {
+                    setValidationErrors(prev => ({ ...prev, quizTitle: false }));
+                  }
+                }}
+                className={`w-full rounded-lg px-4 py-2 outline-none border ${
+                  validationErrors.quizTitle ? 'border-red-500' : ''
+                }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: currentColors.border,
+                  borderColor: validationErrors.quizTitle ? '#ef4444' : currentColors.border,
                 }}
                 placeholder="Enter quiz title"
               />
@@ -556,7 +651,7 @@ const QuizBuilder = ({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <label
                 className="block font-semibold mb-2"
@@ -564,15 +659,25 @@ const QuizBuilder = ({
               >
                 Due Date: <span className="text-red-500">*</span>
               </label>
+              {validationErrors.dueDate && (
+                <p className="text-red-500 text-xs sm:text-sm mb-1">Please select a due date</p>
+              )}
               <input
                 type="datetime-local"
                 value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="w-full rounded-lg px-4 py-2 outline-none border"
+                onChange={(e) => {
+                  setDueDate(e.target.value);
+                  if (validationErrors.dueDate) {
+                    setValidationErrors(prev => ({ ...prev, dueDate: false }));
+                  }
+                }}
+                className={`w-full rounded-lg px-4 py-2 outline-none border ${
+                  validationErrors.dueDate ? 'border-red-500' : ''
+                }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: currentColors.border,
+                  borderColor: validationErrors.dueDate ? '#ef4444' : currentColors.border,
                 }}
                 min={getLocalDateTimeMin()}
               />
@@ -585,14 +690,24 @@ const QuizBuilder = ({
               >
                 Connect to Lesson: <span className="text-red-500">*</span>
               </label>
+              {validationErrors.selectedLesson && (
+                <p className="text-red-500 text-xs sm:text-sm mb-1">Please select a lesson</p>
+              )}
               <select
                 value={selectedLesson}
-                onChange={(e) => setSelectedLesson(e.target.value)}
-                className="w-full rounded-lg px-4 py-2 outline-none border"
+                onChange={(e) => {
+                  setSelectedLesson(e.target.value);
+                  if (validationErrors.selectedLesson) {
+                    setValidationErrors(prev => ({ ...prev, selectedLesson: false }));
+                  }
+                }}
+                className={`w-full rounded-lg px-4 py-2 outline-none border ${
+                  validationErrors.selectedLesson ? 'border-red-500' : ''
+                }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: currentColors.border,
+                  borderColor: validationErrors.selectedLesson ? '#ef4444' : currentColors.border,
                 }}
                 required
               >
@@ -608,7 +723,7 @@ const QuizBuilder = ({
         </div>
 
         {/* INSTRUCTION */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <label
             className="block font-semibold mb-2"
             style={{ color: currentColors.text }}
@@ -642,16 +757,16 @@ const QuizBuilder = ({
           {questions.map((question, index) => (
             <div
               key={question.id}
-              className="border rounded-lg p-6"
+              className="border rounded-lg p-4 sm:p-6"
               style={{
                 borderColor: currentColors.border,
                 backgroundColor: currentColors.background,
               }}
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                   <span
-                    className="font-semibold"
+                    className="font-semibold text-sm sm:text-base"
                     style={{ color: currentColors.text }}
                   >
                     Q{index + 1}
@@ -661,7 +776,7 @@ const QuizBuilder = ({
                     onChange={(e) =>
                       updateQuestion(question.id, "type", e.target.value)
                     }
-                    className="rounded-lg px-3 py-1 outline-none border text-sm"
+                    className="rounded-lg px-3 py-1.5 outline-none border text-xs sm:text-sm w-full sm:w-auto"
                     style={{
                       backgroundColor: currentColors.surface,
                       color: currentColors.text,
@@ -676,7 +791,7 @@ const QuizBuilder = ({
                   </select>
                   <div className="flex items-center gap-2">
                     <label
-                      className="text-sm"
+                      className="text-xs sm:text-sm"
                       style={{ color: currentColors.text }}
                     >
                       Points:
@@ -691,7 +806,7 @@ const QuizBuilder = ({
                           Number(e.target.value),
                         )
                       }
-                      className="w-16 rounded px-2 py-1 outline-none border text-sm text-center"
+                      className="w-14 sm:w-16 rounded px-2 py-1.5 outline-none border text-xs sm:text-sm text-center"
                       style={{
                         backgroundColor: currentColors.surface,
                         color: currentColors.text,
@@ -705,31 +820,39 @@ const QuizBuilder = ({
                   <button
                     type="button"
                     onClick={() => removeQuestion(question.id)}
-                    className="text-red-500 hover:text-red-400"
+                    className="text-red-500 hover:text-red-400 p-1 sm:p-0 self-start sm:self-auto"
                   >
-                    <FiTrash2 size={18} />
+                    <FiTrash2 size={16} />
                   </button>
                 )}
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
+                {validationErrors[`question_${question.id}`] && (
+                  <p className="text-red-500 text-xs sm:text-sm mb-1">Please enter a question</p>
+                )}
                 <textarea
                   value={question.question}
-                  onChange={(e) =>
-                    updateQuestion(question.id, "question", e.target.value)
-                  }
+                  onChange={(e) => {
+                    updateQuestion(question.id, "question", e.target.value);
+                    if (validationErrors[`question_${question.id}`]) {
+                      setValidationErrors(prev => ({ ...prev, [`question_${question.id}`]: false }));
+                    }
+                  }}
                   placeholder="Enter your question..."
-                  className="w-full rounded-lg px-4 py-3 outline-none border h-20"
+                  className={`w-full rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 outline-none border h-16 sm:h-20 text-sm resize-none ${
+                    validationErrors[`question_${question.id}`] ? 'border-red-500' : ''
+                  }`}
                   style={{
                     backgroundColor: currentColors.surface,
                     color: currentColors.text,
-                    borderColor: currentColors.border,
+                    borderColor: validationErrors[`question_${question.id}`] ? '#ef4444' : currentColors.border,
                   }}
                 />
 
                 <div>
                   <label
-                    className="block font-medium mb-3 text-sm"
+                    className="block font-medium mb-2 sm:mb-3 text-xs sm:text-sm"
                     style={{ color: currentColors.text }}
                   >
                     Correct Answer:
@@ -744,18 +867,18 @@ const QuizBuilder = ({
         {/* ADD QUESTION BUTTON */}
 
         {/* ACTION BUTTONS */}
-        <div className="flex flex-col items-end gap-4 mt-8">
+        <div className="flex flex-col items-stretch sm:items-end gap-4 mt-6 sm:mt-8">
           <button
             type="button"
             onClick={addQuestion}
-            className="flex items-center gap-2 sm:px-4 px-4 py-2 bg-blue-600 text-white rounded-lg sm:text-base sm:w-auto hover:bg-blue-700 text-sm"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm sm:text-base hover:bg-blue-700 transition-colors w-full sm:w-auto"
           >
             <FiPlus size={16} /> Add Question
           </button>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
             <button
-              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+              className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
               style={{
                 backgroundColor: currentColors.surface,
                 color: currentColors.text,
@@ -772,7 +895,7 @@ const QuizBuilder = ({
               {isLoading ? "Saving..." : "Save as Draft"}
             </button>
             <button
-              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+              className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
               style={{
                 backgroundColor: "#2563eb",
                 color: "#ffffff",

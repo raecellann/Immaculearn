@@ -1,17 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useUser } from "../../../contexts/user/useUser";
+import { useTasks } from "../../../hooks/useTasks";
 import ProfSidebar from "../../component/profsidebar";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 
 const ProfViewActivityPage = () => {
-  const { space_uuid, space_name, task_name } = useParams();
+  const { space_uuid, space_name, task_name, task_id } = useParams();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [quizData, setQuizData] = useState(null);
   const navigate = useNavigate();
   const { isAuthenticated } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
+  
+  // Use useTasks hook to fetch tasks
+  const { uploadedTasksQuery, draftedTasksQuery } = useTasks(space_uuid);
+  
+  // Filter tasks to find current task
+  const uploadedTaskData = uploadedTasksQuery?.data || [];
+  const draftedTaskData = draftedTasksQuery?.data || [];
+  
+  // Handle API response structure
+  const uploadedTasks = Array.isArray(uploadedTaskData) 
+    ? uploadedTaskData 
+    : uploadedTaskData?.data || [];
+  const draftedTasks = Array.isArray(draftedTaskData) 
+    ? draftedTaskData 
+    : draftedTaskData?.data || [];
+    
+  // Find current task by task_id
+  const currentTask = [...uploadedTasks, ...draftedTasks].find(t => t.task_id === task_id || t.task_id === task_id);
+  
+  console.log(currentTask)
+  // Decode URL parameters
+  const decodedSpaceName = decodeURIComponent(space_name || '');
+  const decodedTaskName = decodeURIComponent(task_name || '');
   
   // sticky header scroll state
   const [showHeader, setShowHeader] = useState(true);
@@ -41,17 +65,39 @@ const ProfViewActivityPage = () => {
   }, [lastScrollY]);
 
   useEffect(() => {
-    // Fetch quiz data from localStorage
+    // Fetch quiz data based on currentTask from useTasks
+    console.log("Fetching quiz data for task_id:", task_id, "space_uuid:", space_uuid);
+    console.log("Current task found:", currentTask);
+    
     try {
-      const savedQuiz = localStorage.getItem("quizTask");
-      if (savedQuiz) {
-        const parsedQuiz = JSON.parse(savedQuiz);
-        setQuizData(parsedQuiz);
+      // Use currentTask data if found
+      if (currentTask) {
+        console.log("Setting quiz data from currentTask:", currentTask);
+        setQuizData(currentTask);
+      } else {
+        // Fallback to localStorage for local tasks
+        const savedQuiz = localStorage.getItem("quizTask");
+        if (savedQuiz) {
+          const parsedQuiz = JSON.parse(savedQuiz);
+          console.log("Found saved quiz data:", parsedQuiz);
+          
+          // Check if this quiz matches the current task_id
+          if (parsedQuiz.task_id === task_id || parsedQuiz.id === task_id) {
+            setQuizData(parsedQuiz);
+            console.log("Set quiz data from localStorage");
+          } else {
+            console.log("Saved quiz doesn't match current task_id");
+          }
+        }
       }
+      
+      // TODO: Add API call to fetch task data from backend using task_id if not found
+      // Example: fetchTaskData(task_id, space_uuid)
+      
     } catch (error) {
       console.error("Error fetching quiz data:", error);
     }
-  }, []);
+  }, [task_id, space_uuid, currentTask]);
 
   const formatDueDate = (dueDate) => {
     if (!dueDate) return "No due date set";
@@ -119,7 +165,7 @@ const ProfViewActivityPage = () => {
             >
               ☰
             </button>
-            <h1 className="text-sm sm:text-base md:text-lg font-bold truncate">{task_name ? task_name : 'Task View'}</h1>
+            <h1 className="text-sm sm:text-base md:text-lg font-bold truncate">{decodedTaskName || 'Task View'}</h1>
           </div>
         </div>
 
@@ -150,15 +196,25 @@ const ProfViewActivityPage = () => {
               
               <div className="space-y-2 sm:space-y-3">
                 <p className="font-semibold font-inter text-lg sm:text-xl md:text-2xl lg:text-3xl leading-tight">
-                  {quizData?.task_title || task_name || 'Week 8 Individual Activity'}
+                  {quizData?.task_title || currentTask?.task_title || decodedTaskName || 'Week 8 Individual Activity'}
                 </p>
                 <div className="space-y-1 sm:space-y-2">
                   <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
-                    Due Date: <span style={{ opacity: 1 }}>{formatDueDate(quizData?.due_date)}</span>
+                    Due Date: <span style={{ opacity: 1 }}>{formatDueDate(quizData?.due_date || currentTask?.due_date)}</span>
                   </p>
-                  {quizData?.task_instruction && (
+                  {!quizData && !currentTask && (
                     <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
-                      Instructions: <span style={{ opacity: 1 }} className="break-words">{quizData.task_instruction}</span>
+                      Task ID: <span style={{ opacity: 1 }}>{task_id}</span>
+                    </p>
+                  )}
+                  {!quizData && !currentTask && (
+                    <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
+                      Space: <span style={{ opacity: 1 }}>{decodedSpaceName}</span>
+                    </p>
+                  )}
+                  {(quizData?.task_instruction || currentTask?.task_instruction) && (
+                    <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
+                      Instructions: <span style={{ opacity: 1 }} className="break-words">{quizData?.task_instruction || currentTask?.task_instruction}</span>
                     </p>
                   )}
                 </div>
@@ -185,7 +241,7 @@ const ProfViewActivityPage = () => {
                         backgroundColor: currentColors.surface,
                         color: currentColors.primary || currentColors.text
                       }}>
-                        15/{quizData?.total_score || 20}
+                        15/{quizData?.total_score || currentTask?.total_score || 20}
                       </span>
                     </div>
                     <div className="text-xs" style={{ color: currentColors.textSecondary }}>
@@ -204,7 +260,7 @@ const ProfViewActivityPage = () => {
                         backgroundColor: currentColors.background,
                         color: currentColors.primary || currentColors.text
                       }}>
-                        18/{quizData?.total_score || 20}
+                        18/{quizData?.total_score || currentTask?.total_score || 20}
                       </span>
                     </div>
                     <div className="text-xs" style={{ color: currentColors.textSecondary }}>
@@ -223,7 +279,7 @@ const ProfViewActivityPage = () => {
                         backgroundColor: currentColors.surface,
                         color: currentColors.primary || currentColors.text
                       }}>
-                        12/{quizData?.total_score || 20}
+                        12/{quizData?.total_score || currentTask?.total_score || 20}
                       </span>
                     </div>
                     <div className="text-xs" style={{ color: currentColors.textSecondary }}>
@@ -271,7 +327,7 @@ const ProfViewActivityPage = () => {
                               <span className="font-medium" style={{ color: currentColors.primary || currentColors.text }}>15</span>
                             </td>
                             <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              {quizData?.total_score || 20}
+                              {quizData?.total_score || currentTask?.total_score || 20}
                             </td>
                             <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
                               <div>
@@ -291,7 +347,7 @@ const ProfViewActivityPage = () => {
                               <span className="font-medium" style={{ color: currentColors.primary || currentColors.text }}>18</span>
                             </td>
                             <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              {quizData?.total_score || 20}
+                              {quizData?.total_score || currentTask?.total_score || 20}
                             </td>
                             <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
                               <div>
@@ -311,7 +367,7 @@ const ProfViewActivityPage = () => {
                               <span className="font-medium" style={{ color: currentColors.primary || currentColors.text }}>12</span>
                             </td>
                             <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              {quizData?.total_score || 20}
+                              {quizData?.total_score || currentTask?.total_score || 20}
                             </td>
                             <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
                               <div>
