@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { adminApi } from "../../lib/api.admin";
 import { AdminContext, AdminContextType } from "./adminContext";
@@ -14,74 +14,99 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const isCheckingRef = useRef(false);
+  const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced auth state update to prevent rapid changes
+  const updateAuthState = useCallback((authenticated: boolean, adminData: Admin | null) => {
+    try {
+      // Clear any pending timeout
+      if (authTimeoutRef.current) {
+        clearTimeout(authTimeoutRef.current);
+      }
+
+      // Debounce the state update to prevent rapid changes
+      authTimeoutRef.current = setTimeout(() => {
+        setIsAuthenticated(authenticated);
+        setAdmin(adminData);
+        setIsLoading(false);
+      }, 100); // Small delay to prevent rapid state changes
+    } catch (error) {
+      console.error('Error in updateAuthState:', error);
+    }
+  }, []);
 
   // Check authentication status
   const checkAuth = async (): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      const response = await adminApi.get("/admin/profile");
+    
+    if (isCheckingRef.current) return isAuthenticated;
+    isCheckingRef.current = true;
+    setIsLoading(true);
 
-      if (response.data?.success && response.data?.admin) {
-        setAdmin(response.data.admin);
-        setIsAuthenticated(true);
-        return true;
-      } else {
-        setAdmin(null);
-        setIsAuthenticated(false);
-        return false;
-      }
-    } catch (error: any) {
-      console.log("Admin auth failed:", error.response?.status);
+    try {
       
-      // Try refresh if unauthorized
-      if (error.response?.status === 401) {
+      // Try profile
+      const profileRes = await adminApi.get("/admin/profile");
+      
+      
+      
+      if (profileRes.data?.success && profileRes.data?.data) {
+        console.log('Profile successful, updating auth state');
+        updateAuthState(true, profileRes.data.data);
+        return true;
+      }
+
+      throw new Error("No profile");
+    } catch (error: any) {
+      const status = error?.response?.status;
+
+      // Try refresh if unauthorized (401)
+      if (status === 401) {
         try {
           const refreshRes = await adminApi.get("/admin/refresh");
+     
+
           if (refreshRes.data?.success) {
             const retryProfile = await adminApi.get("/admin/profile");
-            if (retryProfile.data?.success && retryProfile.data?.admin) {
-              setAdmin(retryProfile.data.admin);
-              setIsAuthenticated(true);
+           
+            
+            if (retryProfile.data?.success && retryProfile.data?.data) {
+              updateAuthState(true, retryProfile.data.data);
               return true;
             }
           }
         } catch (refreshError) {
-          console.log("Admin refresh failed:", refreshError);
         }
       }
 
-      setAdmin(null);
-      setIsAuthenticated(false);
+      updateAuthState(false, null);
       return false;
     } finally {
-      setIsLoading(false);
+      isCheckingRef.current = false;
     }
   };
 
   // Login function
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<any> => {
     try {
       setIsLoading(true);
-      const response = await adminApi.post("/admin/login", { email, password });
+      
+      const response = await adminApi.post(
+        "/admin/login",
+        { email, password },
+        { withCredentials: true },
+      );
+
 
       if (response.data?.success) {
-        console.log("Admin login successful, cookies after login:", document.cookie);
-        // Set authenticated state immediately after successful login
-        setIsAuthenticated(true);
-        // Set basic admin info from login response (skip profile fetch to avoid 401)
-        setAdmin({
-          id: response.data.admin?.id,
-          email: email,
-          fullname: response.data.admin?.fullname || email.split("@")[0],
-          role: response.data.admin?.role,
-        });
-
-        return true;
+        // Fetch admin profile after login
+        await checkAuth();
+        // Return the response data which contains role and other info
+        return response.data;
       }
 
       return false;
-    } catch (err) {
-      console.error("Login error:", err);
+    } catch (err: unknown) {
       return false;
     } finally {
       setIsLoading(false);
@@ -89,14 +114,13 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   };
 
   // Logout function
-  const logout = async (): Promise<void> => {
+  const logout = async (account_id: number): Promise<void> => {
     try {
-      await adminApi.post("/auth/logout"); // API should clear refresh token cookie
+      await adminApi.post("/auth/logout", { user_id: account_id }); // API should clear refresh token cookie
+      await checkAuth();
     } catch (err) {
-      console.error("Logout error:", err);
     } finally {
-      setAdmin(null);
-      setIsAuthenticated(false);
+      updateAuthState(false, null);
     }
   };
 
@@ -139,7 +163,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         announcementData.title,
         announcementData.content,
         announcementData.target_audience,
-        announcementData.scheduled_at,
         announcementData.publish_option
       );
       return result;
@@ -210,22 +233,57 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     }
   };
 
-  // Refresh announcements
-  const refreshAnnouncements = async (): Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }> => {
+  // Refresh admin data
+  const refreshAdmin = async (): Promise<void> => {
+    await checkAuth();
+  };
+
+  // Update admin
+  const updateAdmin = async (adminId: string, payload: any): Promise<boolean> => {
     try {
       setIsLoading(true);
-      const result = await adminService.getAllAnnouncements();
-      return result;
+      const response = await adminApi.put(`/admin/${adminId}`, payload);
+      if (response.data?.success) {
+        // Refresh admin data after update
+        await checkAuth();
+        return true;
+      }
+      return false;
     } catch (err) {
-      console.error("Refresh announcements error:", err);
-      return {
-        success: false,
-        message: "Failed to refresh announcements"
-      };
+      console.error("Update admin error:", err);
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Delete admin
+  const deleteAdmin = async (adminId: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      const response = await adminApi.delete(`/admin/${adminId}`);
+      return response.data?.success || false;
+    } catch (err) {
+      console.error("Delete admin error:", err);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (authTimeoutRef.current) {
+        clearTimeout(authTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Initial check on mount
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   const contextValue: AdminContextType = {
     admin,
@@ -236,10 +294,14 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     checkAuth,
     createAdmin,
     getAdminStats,
+    createAnnouncement,
     getAllAnnouncements,
     updateAnnouncement,
     deleteAnnouncement,
-    refreshAnnouncements,
+    refreshAnnouncements: getAllAnnouncements, // Using getAllAnnouncements as refresh
+    refreshAdmin,
+    updateAdmin,
+    deleteAdmin,
   };
 
   return (

@@ -16,6 +16,14 @@ const AdminLogin = () => {
 
   const navigate = useNavigate();
 
+  // Check if already authenticated and redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated && admin?.role === 'Admin') {
+      console.log('Redirecting to admin/dashboard...');
+      navigate('/admin/dashboard');
+    }
+  }, [isAuthenticated, admin, navigate]);
+
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -38,23 +46,16 @@ const AdminLogin = () => {
     }
     
     // Call login function from context
-    const success = await login(email, password);
+    const data = await login(email, password);
     
-    if (success) {
+    if (data) {
       toast.success("Login successful");
-      navigate('/admin/dashboard');
+      // Navigation will be handled by the useEffect above
     } else {
       toast.error("Invalid email or password");
       setError("Invalid credentials");
     }
   };
-
-  
-  useEffect(() => {
-    if (isAuthenticated && admin?.role === 'admin') {
-      navigate('/admin/dashboard');
-    }
-  }, [isAuthenticated, admin, navigate]);
 
   if (isLoading) {
     return (

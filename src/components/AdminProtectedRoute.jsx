@@ -6,19 +6,9 @@ import MainLoading from "./LoadingComponents/mainLoading";
 const AdminProtectedRoute = ({ children }) => {
   const { isLoading, isAuthenticated } = useAdmin();
   const location = useLocation();
-  const [shouldWait, setShouldWait] = useState(true);
 
-  // Wait a bit for auth check to complete
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldWait(false);
-    }, 1000); // Wait 1 second
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Show loading during initial auth check or waiting period
-  if (isLoading || shouldWait) {
+  // Show loading only during auth check
+  if (isLoading) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
