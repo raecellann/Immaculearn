@@ -865,7 +865,7 @@ const ProfStreamPage = () => {
   }, [isDragging, dragStartY, dragStartPosition]);
 
   // Loading state
-  if (userLoading || spaceLoading) {
+  if (userLoading || spaceLoading || userSpacesLoading || courseSpacesLoading) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
@@ -873,15 +873,6 @@ const ProfStreamPage = () => {
     );
   }
 
-  if (userSpacesLoading || courseSpacesLoading) {
-    return (
-      <div className="flex h-screen justify-center items-center">
-        <MainLoading />
-      </div>
-    );
-  }
-
-  // Invalid space or not found
   if (!isValidUuid || !currentSpace) {
     return <PageNotFound />;
   }
