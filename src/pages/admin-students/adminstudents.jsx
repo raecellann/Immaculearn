@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
-import { Menu, CheckCircle, Upload, X, FileText, UserPlus } from "lucide-react";
+import { Menu, CheckCircle, Upload, X, FileText, UserPlus, Download } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
@@ -416,6 +416,38 @@ const AdminStudents = () => {
     setEmailError(false);
   };
 
+  /* ================= EXPORT ================= */
+
+  const handleExportStudents = () => {
+    try {
+      // Create data for export - only include emails
+      const exportData = filteredStudents.map((student, index) => ({
+        'No.': index + 1,
+        'Email': student.email,
+        'Name': `${student.firstName} ${student.lastName}`.trim(),
+        'Course': student.course,
+        'Year Level': student.yearLevel,
+        'Gender': student.gender
+      }));
+
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Students Email List");
+
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `students_email_list_${date}.xlsx`;
+
+      // Download the file
+      XLSX.writeFile(wb, filename);
+      toast.success("Students email list exported successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export students email list");
+    }
+  };
+
   /* 🔹 SCROLL BEHAVIOR */
   useEffect(() => {
     const handleScroll = () => {
@@ -548,6 +580,13 @@ const AdminStudents = () => {
                 <Upload className="w-4 h-4" />
                 Import Excel
               </button>
+              <button
+                onClick={handleExportStudents}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
+              </button>
             </div>
           </div>
 
@@ -597,7 +636,7 @@ const AdminStudents = () => {
                 <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <button
                 onClick={() => setShowAddModal(true)}
                 className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
@@ -612,26 +651,40 @@ const AdminStudents = () => {
                 <Upload className="w-4 h-4" />
                 Import Excel
               </button>
+              <button
+                onClick={handleExportStudents}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
+              </button>
             </div>
           </div>
 
           {/* MOBILE SMALL: BUTTONS FIRST, SEARCH BELOW */}
           <div className="md:hidden">
             {/* MOBILE IMPORT BUTTON */}
-            <div className="mb-4 flex gap-3">
+            <div className="mb-4 flex gap-3 flex-wrap">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
               >
                 <UserPlus className="w-4 h-4" />
                 Add Student
               </button>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
               >
                 <Upload className="w-4 h-4" />
                 Import Excel
+              </button>
+              <button
+                onClick={handleExportStudents}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
               </button>
             </div>
 

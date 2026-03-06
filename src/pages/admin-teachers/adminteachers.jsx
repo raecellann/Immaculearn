@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
-import { Menu, Upload, X, FileText, UserPlus } from "lucide-react";
+import { Menu, Upload, X, FileText, UserPlus, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
@@ -346,6 +346,37 @@ const AdminTeachers = () => {
   }
 };
 
+  /* ================= EXPORT ================= */
+
+  const handleExportTeachers = () => {
+    try {
+      // Create data for export - only include emails
+      const exportData = filteredTeachers.map((teacher, index) => ({
+        'No.': index + 1,
+        'Email': teacher.email,
+        'Name': teacher.name,
+        'Department': teacher.department,
+        'Gender': teacher.gender
+      }));
+
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Teachers Email List");
+
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `teachers_email_list_${date}.xlsx`;
+
+      // Download the file
+      XLSX.writeFile(wb, filename);
+      toast.success("Teachers email list exported successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export teachers email list");
+    }
+  };
+
   /* ================= UI ================= */
 
   return (
@@ -462,6 +493,13 @@ const AdminTeachers = () => {
                 <Upload className="w-4 h-4" />
                 Import Excel
               </button>
+              <button
+                onClick={handleExportTeachers}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
+              </button>
             </div>
           </div>
 
@@ -526,26 +564,40 @@ const AdminTeachers = () => {
                 <Upload className="w-4 h-4" />
                 Import Excel
               </button>
+              <button
+                onClick={handleExportTeachers}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
+              </button>
             </div>
           </div>
 
           {/* MOBILE SMALL: BUTTONS FIRST, SEARCH BELOW */}
           <div className="md:hidden">
             {/* MOBILE IMPORT BUTTON */}
-            <div className="mb-4 flex gap-3">
+            <div className="mb-4 flex gap-3 flex-wrap">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
               >
                 <UserPlus className="w-4 h-4" />
                 Add Teacher
               </button>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
               >
                 <Upload className="w-4 h-4" />
                 Import Excel
+              </button>
+              <button
+                onClick={handleExportTeachers}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
               </button>
             </div>
 
