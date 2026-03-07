@@ -145,7 +145,9 @@ const UserPeoplePage = () => {
         "image/webp",
       ];
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
+        toast.error(
+          "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        );
         return;
       }
 
@@ -175,12 +177,12 @@ const UserPeoplePage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Check if it's a gradient or an image
-    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+    if (coverPhotoUrl && coverPhotoUrl.includes("gradient")) {
       // For gradients, save directly without canvas transformations
       localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       toast.success("Your cover photo has been updated successfully!");
     } else {
       // For images, create canvas to apply transformations
@@ -397,7 +399,7 @@ const UserPeoplePage = () => {
         >
           {coverPhotoUrl ? (
             <>
-              {coverPhotoUrl.includes('gradient') ? (
+              {coverPhotoUrl.includes("gradient") ? (
                 <div
                   className="w-full h-full"
                   style={{ background: coverPhotoUrl }}
@@ -477,17 +479,14 @@ const UserPeoplePage = () => {
                 <div className="flex items-center gap-4">
                   <img
                     src={
-                      adviserInfo.profile_pic ||
-                      adviserInfo?.avatar ||
+                      activeSpace?.professor?.avatar ||
                       "/src/assets/default-avatar.jpg"
                     }
-                    alt={adviserInfo.name || adviserInfo.full_name}
+                    alt={activeSpace?.professor?.name}
                     className="w-10 h-10 rounded-full"
                   />
                   <span className="font-medium">
-                    {adviserInfo.account_id === user.id
-                      ? `${user?.name?.split(' ')[0] || 'You'} ${user?.name?.split(' ')[1]?.[0] ? user.name.split(' ')[1][0] + '.' : ''}`
-                      : capitalizeWords(adviserInfo.name || adviserInfo.full_name)}
+                    {capitalizeWords(activeSpace?.professor?.name)}
                   </span>
                 </div>
               </div>
@@ -517,7 +516,7 @@ const UserPeoplePage = () => {
                       <span>
                         {member.account_id !== user.id
                           ? member.full_name
-                          : `${user?.name?.split(' ')[0] || 'You'} ${user?.name?.split(' ')[1]?.[0] ? user.name.split(' ')[1][0] + '.' : ''}`}
+                          : `${user?.name?.split(" ")[0] || "You"} ${user?.name?.split(" ")[1]?.[0] ? user.name.split(" ")[1][0] + "." : ""}`}
                       </span>
                     </div>
                     {isOwner && member.account_id !== user.id && (
@@ -561,14 +560,18 @@ const UserPeoplePage = () => {
                 onClick={cancelRemoveMember}
                 className="px-4 py-2 rounded-lg transition-colors"
                 style={{
-                  backgroundColor: isDarkMode ? '#4B5563' : '#D1D5DB',
-                  color: isDarkMode ? '#FFFFFF' : '#111827',
+                  backgroundColor: isDarkMode ? "#4B5563" : "#D1D5DB",
+                  color: isDarkMode ? "#FFFFFF" : "#111827",
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = isDarkMode ? '#6B7280' : '#9CA3AF';
+                  e.target.style.backgroundColor = isDarkMode
+                    ? "#6B7280"
+                    : "#9CA3AF";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#D1D5DB';
+                  e.target.style.backgroundColor = isDarkMode
+                    ? "#4B5563"
+                    : "#D1D5DB";
                 }}
               >
                 Cancel
@@ -605,7 +608,9 @@ const UserPeoplePage = () => {
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Gradient Options */}
               <div className="mb-6">
-                <p className="text-sm font-medium text-white mb-3">Color & Gradient</p>
+                <p className="text-sm font-medium text-white mb-3">
+                  Color & Gradient
+                </p>
                 <div className="grid grid-cols-4 gap-2">
                   {colorOptions.map((color, i) => (
                     <div
@@ -626,7 +631,7 @@ const UserPeoplePage = () => {
               </div>
 
               {/* Upload Option (only show when gradient is selected) */}
-              {coverPhotoUrl && coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && coverPhotoUrl.includes("gradient") && (
                 <div className="mb-4 flex justify-center">
                   <button
                     onClick={() => coverPhotoInputRef.current?.click()}
@@ -639,18 +644,20 @@ const UserPeoplePage = () => {
               )}
 
               {/* Image Positioning (only show if it's an image, not gradient) */}
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <div className="mb-6">
-                  <p className="text-sm font-medium text-white mb-3">Position Image</p>
+                  <p className="text-sm font-medium text-white mb-3">
+                    Position Image
+                  </p>
                   <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                     <div
                       ref={coverPhotoEditorRef}
-                      className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                      className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
                       style={{
                         backgroundImage: `url(${coverPhotoUrl})`,
-                        backgroundSize: 'cover',
+                        backgroundSize: "cover",
                         backgroundPosition: `center ${coverPhotoPosition}%`,
-                        backgroundRepeat: 'no-repeat',
+                        backgroundRepeat: "no-repeat",
                       }}
                       onMouseDown={handleMouseDown}
                     />
