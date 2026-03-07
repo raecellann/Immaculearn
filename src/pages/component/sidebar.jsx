@@ -20,6 +20,7 @@ import ThemeToggle from "../../components/ThemeToggle";
 import logo from "../../assets/HomePage/logo.png";
 import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
 import { useUser } from "../../contexts/user/useUser";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
@@ -171,10 +172,10 @@ const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
           {/* Text Container */}
           <div className={`flex flex-col ${localMinimized ? "hidden lg:hidden" : ""}`}>
             <span className="text-sm font-medium">
-              {user?.first_name || "User"}
+              {capitalizeWords(user?.first_name) || "User"}
             </span>
             <span className="text-xs text-gray-400">
-              {user?.role || "Role"}
+              {capitalizeWords(user?.role) || "Role"}
             </span>
           </div>
         </div>

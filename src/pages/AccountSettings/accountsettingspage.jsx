@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { departmentOptions, genderOptions } from "../component/enumOptions";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 
 const ProfilePage = () => {
   const { user, isAuthenticated } = useUser();
@@ -179,7 +180,7 @@ const ProfilePage = () => {
                   {profileName}
                 </h2>
                 <p className="mt-1 text-sm font-medium" style={{ color: '#3A7BFF' }}>
-                  {user && user.role}
+                  {user && capitalizeWords(user.role)}
                 </p>
               </div>
 
@@ -199,7 +200,7 @@ const ProfilePage = () => {
                       <label className="block text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>First Name</label>
                       <input
                         type="text"
-                        value={(user?.first_name)}
+                        value={capitalizeWords(user?.first_name)}
                         placeholder="First Name"
                         readOnly
                         className="p-1.5 sm:p-2 rounded-md border outline-none w-full text-sm"
@@ -214,7 +215,7 @@ const ProfilePage = () => {
                       <label className="block text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>Last Name</label>
                       <input
                         type="text"
-                        value={(user?.last_name)}
+                        value={capitalizeWords(user?.last_name)}
                         placeholder="Last Name"
                         readOnly
                         className="p-1.5 sm:p-2 rounded-md border outline-none w-full text-sm"

@@ -5,6 +5,7 @@ import { useUser } from "../../contexts/user/useUser";
 import { useNavigate } from "react-router";
 import { departmentOptions, genderOptions } from "../component/enumOptions";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Logout from "../component/logout";
 
 const ProfProfilePage = () => {
@@ -172,7 +173,7 @@ const ProfProfilePage = () => {
 
                 <h2 className="text-xl font-bold mt-3 lg:mt-4" style={{ color: currentColors.text }}>{profileName}</h2>
                 <p className="mt-1 text-sm font-medium" style={{ color: '#3A7BFF' }}>
-                  {user?.role || 'Professor'}
+                  {capitalizeWords(user?.role) || 'Professor'}
                 </p>
               </div>
 
@@ -192,7 +193,7 @@ const ProfProfilePage = () => {
                       <label className="block text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>First Name</label>
                       <input
                         type="text"
-                        value={(user?.first_name)}
+                        value={capitalizeWords(user?.first_name)}
                         placeholder="First Name"
                         readOnly
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"
@@ -207,7 +208,7 @@ const ProfProfilePage = () => {
                       <label className="block text-xs font-medium mb-1" style={{ color: currentColors.textSecondary }}>Last Name</label>
                       <input
                         type="text"
-                        value={(user?.last_name)}
+                        value={capitalizeWords(user?.last_name)}
                         placeholder="Last Name"
                         readOnly
                         className="p-1.5 sm:p-2 rounded-md border outline-none text-sm w-full"

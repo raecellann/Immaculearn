@@ -20,6 +20,7 @@ import Logout from "./logout";
 import logo from "../../assets/HomePage/logo.png";
 import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
 import { useUser } from "../../contexts/user/useUser";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 
 const ProfSidebar = ({ isMinimized = false, onToggleMinimize }) => {
   const { user, logout } = useUser();
@@ -186,10 +187,10 @@ const ProfSidebar = ({ isMinimized = false, onToggleMinimize }) => {
           {/* Text Container */}
           <div className={`flex flex-col ${localMinimized ? "hidden lg:hidden" : ""}`}>
             <span className="text-sm font-medium">
-              {user?.first_name || "User"}
+              {capitalizeWords(user.first_name) || "User"}
             </span>
             <span className="text-xs text-gray-400">
-              {user?.role || "Role"}
+              {capitalizeWords(user.role) || "Role"}
             </span>
           </div>
         </div>

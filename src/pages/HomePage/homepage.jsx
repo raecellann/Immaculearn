@@ -479,7 +479,7 @@ const HomePage1 = () => {
                     className="text-lg sm:text-xl font-semibold mb-2"
                     style={{ color: "white" }}
                   >
-                    {greeting}, {user?.first_name || "Student"}
+                    {greeting}, {capitalizeWords(user?.first_name) || "Student"}
                   </h1>
                   <p
                     className="mb-1"
