@@ -29,7 +29,11 @@ const CalendarPage = () => {
     allUploadedTasksLoading,
   } = useSpace();
 
-  const allSpaces = [...(userSpaces || []), ...(courseSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(courseSpaces || []),
+    ...(friendSpaces || []),
+  ];
 
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
@@ -64,7 +68,6 @@ const CalendarPage = () => {
 
   // Handler for when a new task is created from the modal
   const handleTaskCreate = (newTask) => {
-    // The newTask from CreateTaskFlowModal should already be in the correct format
     // We just need to trigger a refresh of the tasks
     refreshSpaces();
   };
@@ -255,11 +258,20 @@ const CalendarPage = () => {
             setSelectedStatistic(null);
           }}
           className={`h-20 sm:h-24 border p-1 cursor-pointer transition-colors ${
-            isToday ? (isDarkMode ? 'bg-blue-900' : 'bg-blue-50') : ''
+            isToday ? (isDarkMode ? "bg-blue-900" : "bg-blue-50") : ""
           } ${isSelected ? "ring-2 ring-blue-500" : ""}`}
-          style={{ 
+          style={{
             borderColor: currentColors.border,
-            backgroundColor: isToday && !isSelected ? (isDarkMode ? '#1e3a8a' : '#dbeafe') : (isSelected ? (isDarkMode ? '#1e40af' : '#3b82f6') : 'transparent')
+            backgroundColor:
+              isToday && !isSelected
+                ? isDarkMode
+                  ? "#1e3a8a"
+                  : "#dbeafe"
+                : isSelected
+                  ? isDarkMode
+                    ? "#1e40af"
+                    : "#3b82f6"
+                  : "transparent",
           }}
           onMouseEnter={(e) => {
             if (!isToday && !isSelected) {
@@ -268,11 +280,16 @@ const CalendarPage = () => {
           }}
           onMouseLeave={(e) => {
             if (!isToday && !isSelected) {
-              e.target.style.backgroundColor = 'transparent';
+              e.target.style.backgroundColor = "transparent";
             }
           }}
         >
-          <div className="text-xs font-semibold mb-1" style={{ color: currentColors.text }}>{day}</div>
+          <div
+            className="text-xs font-semibold mb-1"
+            style={{ color: currentColors.text }}
+          >
+            {day}
+          </div>
           <div className="space-y-1">
             {dayActivities.slice(0, 2).map((activity, index) => (
               <div
@@ -327,7 +344,10 @@ const CalendarPage = () => {
   const selectedDateActivities = selectedDateTasks.map(mapTaskToActivity);
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background }}>
+    <div
+      className="flex min-h-screen"
+      style={{ backgroundColor: currentColors.background }}
+    >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
@@ -353,7 +373,13 @@ const CalendarPage = () => {
       {/* ================= MAIN ================= */}
       <div className="flex-1 flex flex-col w-full">
         {/* ================= MOBILE HEADER ================= */}
-        <div className="lg:hidden p-4 border-b flex items-center gap-4" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+        <div
+          className="lg:hidden p-4 border-b flex items-center gap-4"
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border,
+          }}
+        >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
             className="bg-transparent border-none text-2xl p-0"
@@ -361,16 +387,29 @@ const CalendarPage = () => {
           >
             {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="text-xl font-bold" style={{ color: currentColors.text }}>Activity Calendar</h1>
-          <p className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
-            Your academic calendar - track assignments, deadlines, and stay organized.          </p>
+          <h1
+            className="text-xl font-bold"
+            style={{ color: currentColors.text }}
+          >
+            Activity Calendar
+          </h1>
+          <p
+            className="text-xs mt-1"
+            style={{ color: currentColors.textSecondary }}
+          >
+            Your academic calendar - track assignments, deadlines, and stay
+            organized.{" "}
+          </p>
         </div>
 
         {/* ================= CONTENT ================= */}
         <div className="p-4 sm:p-6">
           {/* Desktop Header */}
           <div className="hidden lg:block mb-6">
-            <h1 className="text-2xl font-bold mb-2" style={{ color: currentColors.text }}>
+            <h1
+              className="text-2xl font-bold mb-2"
+              style={{ color: currentColors.text }}
+            >
               Activity Calendar
             </h1>
             <p style={{ color: currentColors.textSecondary }}>
@@ -388,11 +427,13 @@ const CalendarPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Task Statistics - Top */}
               <div className="lg:col-span-3">
-
                 <div className="grid grid-cols-2 gap-4">
                   <div
                     className="rounded-lg p-4 border cursor-pointer hover:shadow-md transition-shadow"
-                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      borderColor: currentColors.border,
+                    }}
                     onClick={() => setSelectedStatistic("total")}
                   >
                     <div className="flex items-center gap-2">
@@ -418,7 +459,10 @@ const CalendarPage = () => {
 
                   <div
                     className="rounded-lg p-4 border cursor-pointer hover:shadow-md transition-shadow"
-                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      borderColor: currentColors.border,
+                    }}
                     onClick={() => setSelectedStatistic("thisweek")}
                   >
                     <div className="flex items-center gap-2">
@@ -462,30 +506,56 @@ const CalendarPage = () => {
 
               {/* Calendar Section */}
               <div className="lg:col-span-2">
-                <div className="rounded-xl shadow-sm border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+                <div
+                  className="rounded-xl shadow-sm border"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.border,
+                  }}
+                >
                   {/* Calendar Header */}
-                  <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
+                  <div
+                    className="p-4 border-b flex items-center justify-between"
+                    style={{ borderColor: currentColors.border }}
+                  >
                     <button
                       onClick={() => changeMonth(-1)}
                       className="p-2 rounded-lg transition-colors"
-                      style={{ backgroundColor: 'transparent' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      style={{ backgroundColor: "transparent" }}
+                      onMouseEnter={(e) =>
+                        (e.target.style.backgroundColor = currentColors.hover)
+                      }
+                      onMouseLeave={(e) =>
+                        (e.target.style.backgroundColor = "transparent")
+                      }
                     >
-                      <FiChevronLeft size={20} style={{ color: currentColors.textSecondary }} />
+                      <FiChevronLeft
+                        size={20}
+                        style={{ color: currentColors.textSecondary }}
+                      />
                     </button>
-                    <h2 className="text-lg font-semibold" style={{ color: currentColors.text }}>
+                    <h2
+                      className="text-lg font-semibold"
+                      style={{ color: currentColors.text }}
+                    >
                       {monthNames[currentMonth.getMonth()]}{" "}
                       {currentMonth.getFullYear()}
                     </h2>
                     <button
                       onClick={() => changeMonth(1)}
                       className="p-2 rounded-lg transition-colors"
-                      style={{ backgroundColor: 'transparent' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      style={{ backgroundColor: "transparent" }}
+                      onMouseEnter={(e) =>
+                        (e.target.style.backgroundColor = currentColors.hover)
+                      }
+                      onMouseLeave={(e) =>
+                        (e.target.style.backgroundColor = "transparent")
+                      }
                     >
-                      <FiChevronRight size={20} style={{ color: currentColors.textSecondary }} />
+                      <FiChevronRight
+                        size={20}
+                        style={{ color: currentColors.textSecondary }}
+                      />
                     </button>
                   </div>
 
@@ -516,8 +586,17 @@ const CalendarPage = () => {
 
               {/* Task List Section */}
               <div className="lg:col-span-1">
-                <div className="rounded-xl shadow-sm border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
-                  <div className="p-4 border-b" style={{ borderColor: currentColors.border }}>
+                <div
+                  className="rounded-xl shadow-sm border"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.border,
+                  }}
+                >
+                  <div
+                    className="p-4 border-b"
+                    style={{ borderColor: currentColors.border }}
+                  >
                     <h3
                       className="font-semibold"
                       style={{ color: currentColors.text }}
@@ -611,7 +690,8 @@ const CalendarPage = () => {
                                           color: currentColors.textSecondary,
                                         }}
                                       >
-                                        {activity.subject} • {activity.yearLevel}
+                                        {activity.subject} •{" "}
+                                        {activity.yearLevel}
                                       </p>
                                       <span
                                         className="text-xs"
