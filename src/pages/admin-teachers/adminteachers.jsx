@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { toast } from "react-toastify";
 import { genderOptions, departmentOptions } from "../component/enumOptions";
 
@@ -723,8 +724,8 @@ const AdminTeachers = () => {
                     key={teacher.id}
                     className="border-b hover:bg-gray-50" style={{ borderColor: '#22282fff' }}
                   >
-                    <td className="py-4 text-sm">{teacher.lastName}</td>
-                    <td className="py-4 text-sm">{teacher.firstName}</td>
+                    <td className="py-4 text-sm">{capitalizeWords(teacher.lastName)}</td>
+                    <td className="py-4 text-sm">{capitalizeWords(teacher.firstName)}</td>
                     <td className="py-4 text-sm">{teacher.email}</td>
                     <td className="py-4 text-sm">{teacher.gender}</td>
                     <td className="py-4 text-sm">{teacher.department}</td>

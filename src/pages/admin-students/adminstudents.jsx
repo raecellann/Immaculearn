@@ -3,6 +3,8 @@ import AdminSidebar from "../component/adminsidebar";
 import { Menu, CheckCircle, Upload, X, FileText, UserPlus, Download } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { useNavigate } from "react-router";
+
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
 import { toast } from "react-toastify";
@@ -816,8 +818,8 @@ const AdminStudents = () => {
                     className="border-b hover:bg-gray-50" style={{ borderColor: '#22282fff' }}
                   >
 
-                    <td className="py-4 text-sm">{student.lastName}</td>
-                    <td className="py-4 text-sm">{student.firstName}</td>
+                    <td className="py-4 text-sm">{capitalizeWords(student.lastName)}</td>
+                    <td className="py-4 text-sm">{capitalizeWords(student.firstName)}</td>
                     <td className="py-4 text-sm">{student.email}</td>
                     <td className="py-4 text-sm">{student.gender}</td>
                     <td className="py-4 text-sm">{student.course}</td>
