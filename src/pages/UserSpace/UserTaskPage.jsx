@@ -99,6 +99,7 @@ const UserTaskPage = () => {
   // Check if user is owner
   const isOwnerSpace = currentSpace?.creator === user?.id;
   const isFriendSpace = !isOwnerSpace;
+  const isCourseSpace = currentSpace?.space_type === "course";
 
   // Space name
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
@@ -1196,6 +1197,7 @@ const UserTaskPage = () => {
                                   </button>
                                 ))}
                               </div>
+                              
                             </div>
                           )}
                         </div>
@@ -1633,15 +1635,33 @@ const UserTaskPage = () => {
                   </div>
                 </>
               )}
-              {isFriendSpace && (
+              {(isFriendSpace || isCourseSpace) && (
                 <div className="flex flex-col gap-2 mt-2">
-                  <div className="flex items-center gap-2 bg-[#2A2F3A] p-2 rounded-md">
-                    <span className="text-xs text-blue-400 break-all">
+                  <div
+                    className="flex items-center gap-2 p-2 rounded-md"
+                    style={{ backgroundColor: currentColors.surface }}
+                  >
+                    <span
+                      className="text-xs break-all"
+                      style={{ color: currentColors.accent }}
+                    >
                       {currentSpace?.space_link || "Loading..."}
                     </span>
                     <button
                       onClick={() => handleCopyLink(currentSpace?.space_link)}
-                      className="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition-colors"
+                      className="p-1 rounded transition-colors"
+                      style={{
+                        color: currentColors.textSecondary,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                        e.currentTarget.style.color = currentColors.text;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = currentColors.textSecondary;
+                      }}
                       title="Copy to clipboard"
                     >
                       <FiCopy size={16} />
@@ -1840,7 +1860,7 @@ const UserTaskPage = () => {
                           </span>
                         </p>
                         <a
-                          href="/prof-task-view"
+                          // href="/prof-task-view"
                           className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                           style={{
                             backgroundColor: currentColors.accent,

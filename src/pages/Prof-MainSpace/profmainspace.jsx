@@ -733,7 +733,7 @@ const ProfSpacePage = () => {
                                 ];
                                 const course = courseOptions.find(option => option.code === space.space_course);
                                 return course ? course.name : space.space_course;
-                              })() : (space.course || space.department || space.space_department || "No Course")}
+                              })() : (space.course || space.department || space.space_department || "")}
                             </p>
                           </div>
                         </div>

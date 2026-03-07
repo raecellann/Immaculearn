@@ -29,7 +29,7 @@ import { departmentOptions } from "../component/enumOptions";
 // Helper function to get course name from code
 const getCourseName = (courseCode) => {
   if (!courseCode || courseCode === undefined || courseCode === null) {
-    return "No Course";
+    return "";
   }
   const course = departmentOptions.find(option => option.code === courseCode);
   return course ? course.name : courseCode; // Return the code itself if not found in options
@@ -884,7 +884,7 @@ const ProfHomePage = () => {
                                       color: isDarkMode ? "#9ca3af" : "#666666",
                                     }}
                                   >
-                                    {space.space_course ? getCourseName(space.space_course) : (space.course || space.department || space.space_department || "No Course")}
+                                    {space.space_course ? getCourseName(space.space_course) : (space.course || space.department || space.space_department || "")}
                                   </p>
                                 </div>
                               </div>
