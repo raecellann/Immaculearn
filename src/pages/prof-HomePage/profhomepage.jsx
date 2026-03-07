@@ -398,7 +398,7 @@ const ProfHomePage = () => {
       <div
         className="flex-1 flex flex-col min-w-0"
         style={{
-          backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+          backgroundColor: currentColors.background,
         }}
       >
         {/* ================= Header (Mobile + Tablet) ================= */}
@@ -407,15 +407,15 @@ const ProfHomePage = () => {
             showHeader ? "translate-y-0" : "-translate-y-full"
           }`}
           style={{
-            backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
-            borderColor: isDarkMode ? "#374151" : currentColors.border,
-            color: isDarkMode ? "white" : currentColors.text,
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border,
+            color: currentColors.text,
           }}
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="bg-transparent border-none text-2xl p-0 focus:outline-none"
-            style={{ color: isDarkMode ? "white" : currentColors.text }}
+            style={{ color: currentColors.text }}
           >
             ☰
           </button>
@@ -433,13 +433,13 @@ const ProfHomePage = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
               <h2
                 className="text-xl sm:text-2xl font-bold text-white font-grotesque"
-                style={{ color: isDarkMode ? "white" : "black" }}
+                style={{ color: currentColors.text }}
               >
                 Get Productive Today!
               </h2>
               <p
                 className="text-xs sm:text-sm font-inter"
-                style={{ color: isDarkMode ? "#9ca3af" : "black" }}
+                style={{ color: isDarkMode ? "white" : currentColors.textSecondary }}
               >
                 {formatFullDate()}
               </p>
@@ -450,9 +450,9 @@ const ProfHomePage = () => {
               className="rounded-xl p-6 mb-10 relative"
               style={{
                 background: isDarkMode
-                  ? currentColors.surface
+                  ? "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
                   : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
-                border: isDarkMode ? "none" : "none",
+                border: "none",
               }}
             >
               <div className="flex flex-col sm:flex-row justify-between gap-6">
@@ -472,7 +472,7 @@ const ProfHomePage = () => {
                   </p>
                   <p
                     className="mb-5"
-                    style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    style={{ color: "white" }}
                   >
                     Create spaces or join existing ones.
                   </p>
@@ -505,7 +505,7 @@ const ProfHomePage = () => {
             <div className="xl:hidden mb-8 mt-6">
               <h2
                 className="text-lg sm:text-xl font-semibold mb-3"
-                style={{ color: isDarkMode ? "white" : "black" }}
+                style={{ color: currentColors.text }}
               >
                 Task Deployed
               </h2>
@@ -513,22 +513,22 @@ const ProfHomePage = () => {
                 className="rounded-xl p-4 sm:p-6"
                 style={{
                   background: isDarkMode
-                    ? currentColors.surface
+                    ? "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
                     : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
-                  border: isDarkMode ? "none" : "none",
+                  border: "none",
                 }}
               >
                 <div className="text-center py-8">
                   <Calendar
                     className="w-12 h-12 mx-auto mb-4"
-                    style={{ color: isDarkMode ? "#9ca3af" : "white" }}
+                    style={{ color: "white" }}
                   />
                   <p className="text-sm" style={{ color: "white" }}>
                     No student activities
                   </p>
                   <p
                     className="text-xs mt-2"
-                    style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                    style={{ color: "white" }}
                   >
                     Check your calendar to monitor student task submissions and progress
                   </p>
@@ -552,7 +552,7 @@ const ProfHomePage = () => {
               <div className="flex justify-between items-center mb-3">
                 <h2
                   className="text-lg sm:text-xl font-semibold"
-                  style={{ color: isDarkMode ? "white" : "black" }}
+                  style={{ color: currentColors.text }}
                 >
                   Your Space
                 </h2>
@@ -564,7 +564,7 @@ const ProfHomePage = () => {
                       )
                     }
                     className="text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
-                    style={{ color: isDarkMode ? "#9ca3af" : "black" }}
+                    style={{ color: currentColors.textSecondary }}
                     disabled={slideIndexYourSpace === 0}
                   >
                     ‹
@@ -576,7 +576,7 @@ const ProfHomePage = () => {
                       )
                     }
                     className="text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
-                    style={{ color: isDarkMode ? "#9ca3af" : "black" }}
+                    style={{ color: currentColors.textSecondary }}
                     disabled={slideIndexYourSpace >= yourSlideCount - 1}
                   >
                     ›
@@ -584,7 +584,7 @@ const ProfHomePage = () => {
                   <button
                     onClick={() => navigate("/prof/spaces")}
                     className="hidden sm:inline hover:underline text-sm ml-2 bg-transparent"
-                    style={{ color: isDarkMode ? "#60A5FA" : "black" }}
+                    style={{ color: isDarkMode ? "#60A5FA" : currentColors.accent }}
                   >
                     View All
                   </button>
@@ -596,8 +596,8 @@ const ProfHomePage = () => {
                   className="rounded-xl p-10 text-center border border-dashed"
                   style={{
                     backgroundColor: currentColors.surface,
-                    color: currentColors.textSecondary,
-                    borderColor: isDarkMode ? currentColors.border : "black",
+                    color: isDarkMode ? "white" : currentColors.textSecondary,
+                    borderColor: currentColors.border,
                   }}
                 >
                   No spaces yet — create one to get started!
@@ -729,7 +729,7 @@ const ProfHomePage = () => {
                     }
                     className="text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
                     style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
+                      color: currentColors.textSecondary,
                     }}
                     disabled={slideIndexSpaces === 0}
                   >
@@ -746,7 +746,7 @@ const ProfHomePage = () => {
                     }
                     className="text-lg px-2 py-1 rounded bg-transparent disabled:opacity-30"
                     style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
+                      color: currentColors.textSecondary,
                     }}
                     disabled={
                       slideIndexSpaces >= Math.ceil(sharedSpaces.length / 3) - 1
@@ -758,7 +758,7 @@ const ProfHomePage = () => {
                     onClick={() => navigate("/prof/spaces#course-spaces")}
                     className="hidden sm:inline hover:underline text-sm ml-2 bg-transparent"
                     style={{
-                      color: isDarkMode ? currentColors.textSecondary : "black",
+                      color: isDarkMode ? "#60A5FA" : currentColors.textSecondary,
                     }}
                   >
                     View All
@@ -771,8 +771,8 @@ const ProfHomePage = () => {
                   className="rounded-xl p-10 text-center border border-dashed"
                   style={{
                     backgroundColor: currentColors.surface,
-                    color: currentColors.textSecondary,
-                    borderColor: isDarkMode ? currentColors.border : "black",
+                    color: isDarkMode ? "white" : currentColors.textSecondary,
+                    borderColor: currentColors.border,
                   }}
                 >
                   No Course spaces yet
@@ -943,9 +943,9 @@ const ProfHomePage = () => {
               className="rounded-xl p-6"
               style={{
                 background: isDarkMode
-                  ? currentColors.surface
+                  ? "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
                   : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
-                border: isDarkMode ? "none" : "none",
+                border: "none",
               }}
             >
               <h4 className="font-semibold mb-3" style={{ color: "white" }}>
@@ -954,14 +954,14 @@ const ProfHomePage = () => {
               <div className="text-center py-8">
                 <Calendar
                   className="w-12 h-12 mx-auto mb-4"
-                  style={{ color: isDarkMode ? "#9ca3af" : "white" }}
+                  style={{ color: "white" }}
                 />
                 <p className="text-sm" style={{ color: "white" }}>
                   No student activities
                 </p>
                 <p
                   className="text-xs mt-2"
-                  style={{ color: "rgba(255, 255, 255, 0.8)" }}
+                  style={{ color: "white" }}
                 >
                   Check your calendar to monitor student task submissions and progress
                 </p>
@@ -998,14 +998,14 @@ const ProfHomePage = () => {
               >
                 <h3
                   className="text-lg font-semibold mb-3"
-                  style={{ color: isDarkMode ? "white" : "black" }}
+                  style={{ color: currentColors.text }}
                 >
                   Leave Space
                 </h3>
                 <p
                   className="text-sm mb-6"
                   style={{
-                    color: isDarkMode ? currentColors.textSecondary : "black",
+                    color: currentColors.textSecondary,
                   }}
                 >
                   Are you sure you want to leave this space? You'll need to be
@@ -1045,14 +1045,14 @@ const ProfHomePage = () => {
               >
                 <h3
                   className="text-lg font-semibold mb-3"
-                  style={{ color: isDarkMode ? "white" : "black" }}
+                  style={{ color: currentColors.text }}
                 >
                   Archive Space
                 </h3>
                 <p
                   className="text-sm mb-6"
                   style={{
-                    color: isDarkMode ? currentColors.textSecondary : "black",
+                    color: currentColors.textSecondary,
                   }}
                 >
                   Are you sure you want to archive this space? It will be moved

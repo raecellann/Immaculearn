@@ -50,7 +50,7 @@ export const SpaceThemeProvider: React.FC<SpaceThemeProviderProps> = ({ children
     toggleTheme,
     colors: {
       dark: {
-        background: '#161A20',
+        background: '#121821',
         surface: '#1B1F26',
         border: '#4a5568',
         text: '#e2e8f0',

@@ -80,16 +80,16 @@ const AnnouncementByAdmin = () => {
       className="rounded-xl p-4 sm:p-6 mt-4"
       style={{
         background: isDarkMode
-          ? currentColors.surface
+          ? "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
           : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
-        border: isDarkMode ? "none" : "none",
+        border: "none",
       }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Megaphone
           className="w-5 h-5 flex-shrink-0"
-          style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+          style={{ color: "white" }}
         />
         <h4
           className="font-semibold text-base sm:text-lg"
@@ -102,9 +102,9 @@ const AnnouncementByAdmin = () => {
       {/* Announcements List */}
       <div className="space-y-3">
         {loading ? (
-          <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "white" }}>
+          <div className="p-6 rounded-lg border text-center" style={{ borderColor: "white" }}>
             <div className="flex flex-col items-center gap-3">
-              <Megaphone size={32} className="text-gray-400" />
+              <Megaphone size={32} style={{ color: isDarkMode ? "white" : "#9CA3AF" }} />
               <div>
                 <p 
                   className="text-sm font-medium mb-1"
@@ -116,9 +116,9 @@ const AnnouncementByAdmin = () => {
             </div>
           </div>
         ) : error ? (
-          <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "white" }}>
+          <div className="p-6 rounded-lg border text-center" style={{ borderColor: "white" }}>
             <div className="flex flex-col items-center gap-3">
-              <Megaphone size={32} className="text-gray-400" />
+              <Megaphone size={32} style={{ color: isDarkMode ? "white" : "#9CA3AF" }} />
               <div>
                 <p 
                   className="text-sm font-medium mb-1"
@@ -136,9 +136,9 @@ const AnnouncementByAdmin = () => {
             </div>
           </div>
         ) : visible.length === 0 ? (
-          <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "white" }}>
+          <div className="p-6 rounded-lg border text-center" style={{ borderColor: "white" }}>
             <div className="flex flex-col items-center gap-3">
-              <Megaphone size={32} className="text-gray-400" />
+              <Megaphone size={32} style={{ color: isDarkMode ? "white" : "#9CA3AF" }} />
               <div>
                 <p 
                   className="text-sm font-medium mb-1"
@@ -148,7 +148,7 @@ const AnnouncementByAdmin = () => {
                 </p>
                 <p 
                   className="text-xs"
-                  style={{ color: isDarkMode ? currentColors.textSecondary : "white" }}
+                  style={{ color: isDarkMode ? "white" : "white" }}
                 >
                   Admin hasn't posted any announcements at the moment
                 </p>
@@ -185,7 +185,7 @@ const AnnouncementByAdmin = () => {
                   className="text-sm leading-relaxed mb-3 line-clamp-3"
                   style={{
                     color: isDarkMode
-                      ? "rgba(229, 231, 235, 0.9)"
+                      ? "white"
                       : "#4B5563",
                     lineHeight: "1.5",
                   }}
@@ -211,7 +211,7 @@ const AnnouncementByAdmin = () => {
                     className="text-xs font-medium"
                     style={{
                       color: isDarkMode
-                        ? "#9CA3AF"
+                        ? "white"
                         : "#6B7280",
                     }}
                   >
@@ -233,7 +233,7 @@ const AnnouncementByAdmin = () => {
         <button
           onClick={() => navigate("/prof/notification", { state: { filter: "announcements" } })}
           className="text-sm font-medium hover:underline transition-colors"
-          style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+          style={{ color: "white" }}
         >
           View All Announcements →
         </button>
