@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
-import { Menu, CheckCircle, Upload, X, FileText, UserPlus } from "lucide-react";
+import { Menu, CheckCircle, Upload, X, FileText, UserPlus, Download } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
@@ -19,6 +19,11 @@ const AdminStudents = () => {
   const [importFile, setImportFile] = useState(null);
   const [importPreview, setImportPreview] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewAll, setViewAll] = useState(false);
+  const itemsPerPage = 10;
+  const [sortBy, setSortBy] = useState("lastName");
+  const [sortOrder, setSortOrder] = useState("asc");
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -95,6 +100,66 @@ const AdminStudents = () => {
     const matchesCourse = !selectedCourse || student.course === selectedCourse;
     return matchesSearch && matchesCourse;
   });
+
+  // Sorting logic
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
+    // Check for missing or empty data and push to end
+    const aHasMissingData = !a.lastName || a.lastName === '-' || !a.firstName || a.firstName === '-' || !a.gender || a.gender === '-' || !a.course || a.course === '-' || !a.yearLevel || a.yearLevel === '-';
+    const bHasMissingData = !b.lastName || b.lastName === '-' || !b.firstName || b.firstName === '-' || !b.gender || b.gender === '-' || !b.course || b.course === '-' || !b.yearLevel || b.yearLevel === '-';
+    
+    // If both have missing data or both have complete data, sort normally
+    if (aHasMissingData === bHasMissingData) {
+      if (sortBy === "lastName") {
+        // Handle missing names in sorting
+        const aName = a.lastName === '-' ? '' : a.lastName;
+        const bName = b.lastName === '-' ? '' : b.lastName;
+        return sortOrder === "asc" 
+          ? aName.localeCompare(bName)
+          : bName.localeCompare(aName);
+      } else if (sortBy === "yearLevel") {
+        const yearOrder = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
+        const aIndex = a.yearLevel === '-' ? -1 : yearOrder.indexOf(a.yearLevel);
+        const bIndex = b.yearLevel === '-' ? -1 : yearOrder.indexOf(b.yearLevel);
+        return sortOrder === "asc" ? aIndex - bIndex : bIndex - aIndex;
+      } else if (sortBy === "gender") {
+        const aGender = a.gender === '-' ? '' : a.gender;
+        const bGender = b.gender === '-' ? '' : b.gender;
+        return sortOrder === "asc"
+          ? aGender.localeCompare(bGender)
+          : bGender.localeCompare(aGender);
+      }
+      return 0;
+    }
+    
+    // If one has missing data, put it at the end
+    return aHasMissingData ? 1 : -1;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedStudents.length / itemsPerPage);
+  const paginatedStudents = viewAll ? sortedStudents : sortedStudents.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleViewAll = () => {
+    setViewAll(true);
+  };
+
+  const handleBackToPagination = () => {
+    setViewAll(false);
+    setCurrentPage(1);
+  };
+
+  // Reset pagination when filters or sorting change
+  useEffect(() => {
+    setCurrentPage(1);
+    setViewAll(false);
+  }, [searchQuery, selectedCourse, sortBy, sortOrder]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -351,6 +416,38 @@ const AdminStudents = () => {
     setEmailError(false);
   };
 
+  /* ================= EXPORT ================= */
+
+  const handleExportStudents = () => {
+    try {
+      // Create data for export - only include emails
+      const exportData = filteredStudents.map((student, index) => ({
+        'No.': index + 1,
+        'Email': student.email,
+        'Name': `${student.firstName} ${student.lastName}`.trim(),
+        'Course': student.course,
+        'Year Level': student.yearLevel,
+        'Gender': student.gender
+      }));
+
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Students Email List");
+
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `students_email_list_${date}.xlsx`;
+
+      // Download the file
+      XLSX.writeFile(wb, filename);
+      toast.success("Students email list exported successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export students email list");
+    }
+  };
+
   /* 🔹 SCROLL BEHAVIOR */
   useEffect(() => {
     const handleScroll = () => {
@@ -448,6 +545,25 @@ const AdminStudents = () => {
                 </select>
                 <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
+              <div className="relative">
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [sort, order] = e.target.value.split('-');
+                    setSortBy(sort);
+                    setSortOrder(order);
+                  }}
+                  className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
+                >
+                  <option value="lastName-asc">Name A-Z</option>
+                  <option value="lastName-desc">Name Z-A</option>
+                  <option value="yearLevel-asc">Year 1-4</option>
+                  <option value="yearLevel-desc">Year 4-1</option>
+                  <option value="gender-asc">Gender F-M</option>
+                  <option value="gender-desc">Gender M-F</option>
+                </select>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+              </div>
             </div>
             <div className="flex gap-3">
               <button
@@ -463,6 +579,13 @@ const AdminStudents = () => {
               >
                 <Upload className="w-4 h-4" />
                 Import Excel
+              </button>
+              <button
+                onClick={handleExportStudents}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
               </button>
             </div>
           </div>
@@ -493,8 +616,27 @@ const AdminStudents = () => {
                 </select>
                 <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
+              <div className="relative">
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [sort, order] = e.target.value.split('-');
+                    setSortBy(sort);
+                    setSortOrder(order);
+                  }}
+                  className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
+                >
+                  <option value="lastName-asc">Name A-Z</option>
+                  <option value="lastName-desc">Name Z-A</option>
+                  <option value="yearLevel-asc">Year 1-4</option>
+                  <option value="yearLevel-desc">Year 4-1</option>
+                  <option value="gender-asc">Gender F-M</option>
+                  <option value="gender-desc">Gender M-F</option>
+                </select>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+              </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <button
                 onClick={() => setShowAddModal(true)}
                 className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
@@ -509,26 +651,40 @@ const AdminStudents = () => {
                 <Upload className="w-4 h-4" />
                 Import Excel
               </button>
+              <button
+                onClick={handleExportStudents}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
+              </button>
             </div>
           </div>
 
           {/* MOBILE SMALL: BUTTONS FIRST, SEARCH BELOW */}
           <div className="md:hidden">
             {/* MOBILE IMPORT BUTTON */}
-            <div className="mb-4 flex gap-3">
+            <div className="mb-4 flex gap-3 flex-wrap">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
               >
                 <UserPlus className="w-4 h-4" />
                 Add Student
               </button>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
               >
                 <Upload className="w-4 h-4" />
                 Import Excel
+              </button>
+              <button
+                onClick={handleExportStudents}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
               </button>
             </div>
 
@@ -557,24 +713,43 @@ const AdminStudents = () => {
                 </select>
                 <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
+              <div className="relative max-w-sm">
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [sort, order] = e.target.value.split('-');
+                    setSortBy(sort);
+                    setSortOrder(order);
+                  }}
+                  className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
+                >
+                  <option value="lastName-asc">Name A-Z</option>
+                  <option value="lastName-desc">Name Z-A</option>
+                  <option value="yearLevel-asc">Year 1-4</option>
+                  <option value="yearLevel-desc">Year 4-1</option>
+                  <option value="gender-asc">Gender F-M</option>
+                  <option value="gender-desc">Gender M-F</option>
+                </select>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+              </div>
             </div>
           </div>
 
           {/* MOBILE / TABLET */}
           <div className="flex flex-col gap-4 lg:hidden">
-            {filteredStudents.map((student) => (
+            {(viewAll ? sortedStudents : sortedStudents.slice(0, itemsPerPage)).map((student) => (
               <div
                 key={student.id}
                 className="bg-white p-5 rounded-xl border border-gray-200"
               >
-                <h2 className="font-semibold text-base mb-1">
+                <h2 className="font-semibold text-base mb-1 text-gray-900">
                   {student.name}
                 </h2>
                 <p className="text-sm text-gray-600 mb-1">
-                  {student.studentNumber}
-                </p>
-                <p className="text-xs text-gray-600 mb-1">
                   {student.email}
+                </p>
+                <p className="text-sm text-gray-600 mb-1">
+                  {student.gender}
                 </p>
                 <p className="text-sm text-gray-600 mb-1">
                   {student.course}
@@ -593,6 +768,30 @@ const AdminStudents = () => {
                 </div>
               </div>
             ))}
+            {/* Mobile Pagination */}
+            {sortedStudents.length > itemsPerPage && !viewAll && (
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Showing 1-{Math.min(itemsPerPage, sortedStudents.length)} of {sortedStudents.length} students
+                </div>
+                <button
+                  onClick={handleViewAll}
+                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                >
+                  View All Students
+                </button>
+              </div>
+            )}
+            {viewAll && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={handleBackToPagination}
+                  className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                >
+                  Back to Paginated View
+                </button>
+              </div>
+            )}
           </div>
 
           {/* DESKTOP TABLE */}
@@ -600,8 +799,8 @@ const AdminStudents = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-600 border-b-2" style={{ borderColor: '#22282fff' }}>
-                  <th className="py-3">First Name</th>
                   <th className="py-3">Last Name</th>
+                  <th className="py-3">First Name</th>
                   <th className="py-3">Email</th>
                   <th className="py-3">Gender</th>
                   <th className="py-3">Course</th>
@@ -611,14 +810,14 @@ const AdminStudents = () => {
               </thead>
 
               <tbody>
-                {filteredStudents.map((student) => (
+                {paginatedStudents.map((student) => (
                   <tr
                     key={student.id}
                     className="border-b hover:bg-gray-50" style={{ borderColor: '#22282fff' }}
                   >
 
-                    <td className="py-4 text-sm">{student.firstName}</td>
                     <td className="py-4 text-sm">{student.lastName}</td>
+                    <td className="py-4 text-sm">{student.firstName}</td>
                     <td className="py-4 text-sm">{student.email}</td>
                     <td className="py-4 text-sm">{student.gender}</td>
                     <td className="py-4 text-sm">{student.course}</td>
@@ -637,6 +836,51 @@ const AdminStudents = () => {
                 ))}
               </tbody>
             </table>
+            
+            {/* Pagination Controls */}
+            {sortedStudents.length > itemsPerPage && (
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Showing {viewAll ? sortedStudents.length : `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, sortedStudents.length)}`} of {sortedStudents.length} students
+                </div>
+                <div className="flex items-center gap-2">
+                  {!viewAll ? (
+                    <>
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      <span className="text-sm text-gray-600">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                      <button
+                        onClick={handleViewAll}
+                        className="ml-4 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                      >
+                        View All Students
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleBackToPagination}
+                      className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                    >
+                      Back to Paginated View
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
         </div>

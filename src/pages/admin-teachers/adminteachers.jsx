@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
-import { Menu, Upload, X, FileText, UserPlus } from "lucide-react";
+import { Menu, Upload, X, FileText, UserPlus, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router";
 import Logout from "../component/logout";
@@ -21,6 +21,11 @@ const AdminTeachers = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [newTeacher, setNewTeacher] = useState({ email: "" });
   const [emailError, setEmailError] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewAll, setViewAll] = useState(false);
+  const itemsPerPage = 10;
+  const [sortBy, setSortBy] = useState("lastName");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -109,6 +114,67 @@ const AdminTeachers = () => {
     const matchesDepartment = !selectedDepartment || teacher.department === selectedDepartment;
     return matchesSearch && matchesDepartment;
   });
+
+  // Sorting logic
+  const sortedTeachers = [...filteredTeachers].sort((a, b) => {
+    // Check for missing or empty data and push to end
+    const aHasMissingData = !a.lastName || a.lastName === '-' || !a.firstName || a.firstName === '-' || !a.gender || a.gender === '-' || !a.department || a.department === '-';
+    const bHasMissingData = !b.lastName || b.lastName === '-' || !b.firstName || b.firstName === '-' || !b.gender || b.gender === '-' || !b.department || b.department === '-';
+    
+    // If both have missing data or both have complete data, sort normally
+    if (aHasMissingData === bHasMissingData) {
+      if (sortBy === "lastName") {
+        // Handle missing names in sorting
+        const aName = a.lastName === '-' ? '' : a.lastName;
+        const bName = b.lastName === '-' ? '' : b.lastName;
+        return sortOrder === "asc" 
+          ? aName.localeCompare(bName)
+          : bName.localeCompare(aName);
+      } else if (sortBy === "department") {
+        const aDept = a.department === '-' ? '' : a.department;
+        const bDept = b.department === '-' ? '' : b.department;
+        return sortOrder === "asc"
+          ? aDept.localeCompare(bDept)
+          : bDept.localeCompare(aDept);
+      } else if (sortBy === "gender") {
+        const aGender = a.gender === '-' ? '' : a.gender;
+        const bGender = b.gender === '-' ? '' : b.gender;
+        return sortOrder === "asc"
+          ? aGender.localeCompare(bGender)
+          : bGender.localeCompare(aGender);
+      }
+      return 0;
+    }
+    
+    // If one has missing data, put it at the end
+    return aHasMissingData ? 1 : -1;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedTeachers.length / itemsPerPage);
+  const paginatedTeachers = viewAll ? sortedTeachers : sortedTeachers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleViewAll = () => {
+    setViewAll(true);
+  };
+
+  const handleBackToPagination = () => {
+    setViewAll(false);
+    setCurrentPage(1);
+  };
+
+  // Reset pagination when filters or sorting change
+  useEffect(() => {
+    setCurrentPage(1);
+    setViewAll(false);
+  }, [searchQuery, selectedDepartment, sortBy, sortOrder]);
 
   /* ================= ADD TEACHER ================= */
 
@@ -280,6 +346,37 @@ const AdminTeachers = () => {
   }
 };
 
+  /* ================= EXPORT ================= */
+
+  const handleExportTeachers = () => {
+    try {
+      // Create data for export - only include emails
+      const exportData = filteredTeachers.map((teacher, index) => ({
+        'No.': index + 1,
+        'Email': teacher.email,
+        'Name': teacher.name,
+        'Department': teacher.department,
+        'Gender': teacher.gender
+      }));
+
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Teachers Email List");
+
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `teachers_email_list_${date}.xlsx`;
+
+      // Download the file
+      XLSX.writeFile(wb, filename);
+      toast.success("Teachers email list exported successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export teachers email list");
+    }
+  };
+
   /* ================= UI ================= */
 
   return (
@@ -350,7 +447,7 @@ const AdminTeachers = () => {
               </div>
               <div className="relative w-32">
                 <select
-                  value={selectedDepartment}
+                  value={selectedDepartment} 
                   onChange={(e) => setSelectedDepartment(e.target.value)}
                   className="w-full px-3 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-8 text-sm truncate"
                 >
@@ -360,6 +457,25 @@ const AdminTeachers = () => {
                   ))}
                 </select>
                 <span className="absolute right-2 top-2.5 text-gray-500 pointer-events-none text-xs">▼</span>
+              </div>
+              <div className="relative">
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [sort, order] = e.target.value.split('-');
+                    setSortBy(sort);
+                    setSortOrder(order);
+                  }}
+                  className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
+                >
+                  <option value="lastName-asc">Name A-Z</option>
+                  <option value="lastName-desc">Name Z-A</option>
+                  <option value="department-asc">Dept A-Z</option>
+                  <option value="department-desc">Dept Z-A</option>
+                  <option value="gender-asc">Gender F-M</option>
+                  <option value="gender-desc">Gender M-F</option>
+                </select>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
             </div>
             <div className="flex gap-3">
@@ -376,6 +492,13 @@ const AdminTeachers = () => {
               >
                 <Upload className="w-4 h-4" />
                 Import Excel
+              </button>
+              <button
+                onClick={handleExportTeachers}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
               </button>
             </div>
           </div>
@@ -399,9 +522,31 @@ const AdminTeachers = () => {
                     onChange={(e) => setSelectedDepartment(e.target.value)}
                     className="w-full px-3 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-8 text-sm truncate"
                   >
-                    <option value="">All Depts.</option>            
-                </select>
+                    <option value="">All Depts.</option>
+                    {uniqueDepartments.map(department => (
+                      <option key={department} value={department}>{department}</option>
+                    ))}
+                  </select>
                 <span className="absolute right-2 top-2.5 text-gray-500 pointer-events-none text-xs">▼</span>
+              </div>
+              <div className="relative">
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [sort, order] = e.target.value.split('-');
+                    setSortBy(sort);
+                    setSortOrder(order);
+                  }}
+                  className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
+                >
+                  <option value="lastName-asc">Name A-Z</option>
+                  <option value="lastName-desc">Name Z-A</option>
+                  <option value="department-asc">Dept A-Z</option>
+                  <option value="department-desc">Dept Z-A</option>
+                  <option value="gender-asc">Gender F-M</option>
+                  <option value="gender-desc">Gender M-F</option>
+                </select>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
             </div>
             <div className="flex gap-3">
@@ -419,26 +564,40 @@ const AdminTeachers = () => {
                 <Upload className="w-4 h-4" />
                 Import Excel
               </button>
+              <button
+                onClick={handleExportTeachers}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
+              </button>
             </div>
           </div>
 
           {/* MOBILE SMALL: BUTTONS FIRST, SEARCH BELOW */}
           <div className="md:hidden">
             {/* MOBILE IMPORT BUTTON */}
-            <div className="mb-4 flex gap-3">
+            <div className="mb-4 flex gap-3 flex-wrap">
               <button
                 onClick={() => setShowAddModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
               >
                 <UserPlus className="w-4 h-4" />
                 Add Teacher
               </button>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center"
+                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
               >
                 <Upload className="w-4 h-4" />
                 Import Excel
+              </button>
+              <button
+                onClick={handleExportTeachers}
+                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors flex-1 justify-center min-w-[120px]"
+              >
+                <Download className="w-4 h-4" />
+                Export Emails
               </button>
             </div>
 
@@ -467,12 +626,31 @@ const AdminTeachers = () => {
                 </select>
                 <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
+              <div className="relative max-w-sm">
+                <select
+                  value={`${sortBy}-${sortOrder}`}
+                  onChange={(e) => {
+                    const [sort, order] = e.target.value.split('-');
+                    setSortBy(sort);
+                    setSortOrder(order);
+                  }}
+                  className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
+                >
+                  <option value="lastName-asc">Last Name A-Z</option>
+                  <option value="lastName-desc">Last Name Z-A</option>
+                  <option value="department-asc">Department A-Z</option>
+                  <option value="department-desc">Department Z-A</option>
+                  <option value="gender-asc">Gender (Female-Male)</option>
+                  <option value="gender-desc">Gender (Male-Female)</option>
+                </select>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+              </div>
             </div>
           </div>
 
           {/* MOBILE / TABLET */}
           <div className="flex flex-col gap-4 lg:hidden">
-            {filteredTeachers.map((teacher) => (
+            {(viewAll ? sortedTeachers : sortedTeachers.slice(0, itemsPerPage)).map((teacher) => (
               <div
                 key={teacher.id}
                 className="bg-white p-5 rounded-xl border border-gray-200"
@@ -500,6 +678,30 @@ const AdminTeachers = () => {
                 </div>
               </div>
             ))}
+            {/* Mobile Pagination */}
+            {sortedTeachers.length > itemsPerPage && !viewAll && (
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Showing 1-{Math.min(itemsPerPage, sortedTeachers.length)} of {sortedTeachers.length} teachers
+                </div>
+                <button
+                  onClick={handleViewAll}
+                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                >
+                  View All Teachers
+                </button>
+              </div>
+            )}
+            {viewAll && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={handleBackToPagination}
+                  className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                >
+                  Back to Paginated View
+                </button>
+              </div>
+            )}
           </div>
 
           {/* DESKTOP TABLE */}
@@ -507,8 +709,8 @@ const AdminTeachers = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="text-gray-600 border-b-2" style={{ borderColor: '#22282fff' }}>
-                  <th className="py-3">First Name</th>
                   <th className="py-3">Last Name</th>
+                  <th className="py-3">First Name</th>
                   <th className="py-3">Email</th>
                   <th className="py-3">Gender</th>
                   <th className="py-3">Department</th>
@@ -516,13 +718,13 @@ const AdminTeachers = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredTeachers.map((teacher) => (
+                {paginatedTeachers.map((teacher) => (
                   <tr
                     key={teacher.id}
                     className="border-b hover:bg-gray-50" style={{ borderColor: '#22282fff' }}
                   >
-                    <td className="py-4 text-sm">{teacher.firstName}</td>
                     <td className="py-4 text-sm">{teacher.lastName}</td>
+                    <td className="py-4 text-sm">{teacher.firstName}</td>
                     <td className="py-4 text-sm">{teacher.email}</td>
                     <td className="py-4 text-sm">{teacher.gender}</td>
                     <td className="py-4 text-sm">{teacher.department}</td>
@@ -539,10 +741,49 @@ const AdminTeachers = () => {
               </tbody>
             </table>
 
-            {filteredTeachers.length === 0 && (
-              <p className="text-gray-500 text-center mt-4">
-                No teachers found
-              </p>
+            {/* Pagination Controls */}
+            {sortedTeachers.length > itemsPerPage && (
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Showing {viewAll ? sortedTeachers.length : `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, sortedTeachers.length)}`} of {sortedTeachers.length} teachers
+                </div>
+                <div className="flex items-center gap-2">
+                  {!viewAll ? (
+                    <>
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      <span className="text-sm text-gray-600">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                      <button
+                        onClick={handleViewAll}
+                        className="ml-4 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                      >
+                        View All Teachers
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleBackToPagination}
+                      className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                    >
+                      Back to Paginated View
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
           </div>
 

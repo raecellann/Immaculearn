@@ -1024,7 +1024,7 @@ const HomePage1 = () => {
                                       hour: "numeric",
                                       minute: "2-digit",
                                       hour12: true,
-                                    })}
+                                    })})
                                   </p>
                                 </div>
                               </div>

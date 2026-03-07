@@ -670,15 +670,70 @@ const ProfSpacePage = () => {
                               {space.space_name}
                             </h3>
                             <p
-                              className="text-xs"
+                              className="text-xs mt-1"
                               style={{
                                 color: isDarkMode ? "#9ca3af" : "#666666",
                               }}
                             >
-                              {space.members?.length || 0}{" "}
-                              {space.members?.length > 1
-                                ? "Students"
-                                : "Student"}
+                              Prof.{" "}
+                              {capitalizeWords(
+                                space.professor?.name?.split(" ")[0] || space.professor?.name || "Unknown",
+                              )}{" "}
+                              • {space.members?.length > 0 ? space.members.length - 1 : 0}{" "}
+                              {space.members?.length > 1 ? "Students" : "Student"}
+                            </p>
+                            <p
+                              className="text-xs mt-1"
+                              style={{
+                                color: isDarkMode ? "#9ca3af" : "#666666",
+                              }}
+                            >
+                              {space.space_day || "TBD"} (
+                              {new Date(
+                                `2000-01-01T${space.space_time_start}`,
+                              ).toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              })}{" "}
+                              -{" "}
+                              {new Date(
+                                `2000-01-01T${space.space_time_end}`,
+                              ).toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              })})
+                            </p>
+                            <p
+                              className="text-xs mt-1"
+                              style={{
+                                color: isDarkMode ? "#9ca3af" : "#666666",
+                              }}
+                            >
+                              {space.space_course ? (() => {
+                                const courseOptions = [
+                                  { code: "BSIT", name: "Bachelor of Science in Information Technology" },
+                                  { code: "BSCS", name: "Bachelor of Science in Computer Science" },
+                                  { code: "BSIS", name: "Bachelor of Science in Information Systems" },
+                                  { code: "BSA", name: "Bachelor of Science in Accountancy" },
+                                  { code: "BSBA", name: "Bachelor of Science in Business Administration" },
+                                  { code: "BSHM", name: "Bachelor of Science in Hospitality Management" },
+                                  { code: "BSTM", name: "Bachelor of Science in Tourism Management" },
+                                  { code: "BSP", name: "Bachelor of Science in Psychology" },
+                                  { code: "BSN", name: "Bachelor of Science in Nursing" },
+                                  { code: "BSED", name: "Bachelor of Secondary Education" },
+                                  { code: "BEED", name: "Bachelor of Elementary Education" },
+                                  { code: "BSA", name: "Bachelor of Science in Architecture" },
+                                  { code: "BSCE", name: "Bachelor of Science in Civil Engineering" },
+                                  { code: "BSEE", name: "Bachelor of Science in Electrical Engineering" },
+                                  { code: "BSME", name: "Bachelor of Science in Mechanical Engineering" },
+                                  { code: "BSECE", name: "Bachelor of Science in Electronics Engineering" },
+                                  { code: "BSIE", name: "Bachelor of Science in Industrial Engineering" }
+                                ];
+                                const course = courseOptions.find(option => option.code === space.space_course);
+                                return course ? course.name : space.space_course;
+                              })() : (space.course || space.department || space.space_department || "No Course")}
                             </p>
                           </div>
                         </div>
