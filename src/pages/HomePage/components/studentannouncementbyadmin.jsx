@@ -79,16 +79,16 @@ const StudentAnnouncementByAdmin = () => {
       className="rounded-xl p-4 sm:p-6 mt-4"
       style={{
         background: isDarkMode
-          ? currentColors.surface
+          ? "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
           : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
-        border: isDarkMode ? "none" : "none",
+        border: "none",
       }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Megaphone
           className="w-5 h-5 flex-shrink-0"
-          style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+          style={{ color: "white" }}
         />
         <h4
           className="font-semibold text-base sm:text-lg"
@@ -116,7 +116,7 @@ const StudentAnnouncementByAdmin = () => {
       {!loading && !error && (
         <div className="space-y-3">
           {visible.length === 0 ? (
-            <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "white" }}>
+            <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? "white" : "white" }}>
               <div className="flex flex-col items-center gap-3">
                 <Megaphone size={32} className="text-gray-400" />
                 <div>
@@ -128,7 +128,7 @@ const StudentAnnouncementByAdmin = () => {
                   </p>
                   <p 
                     className="text-xs"
-                    style={{ color: isDarkMode ? currentColors.textSecondary : "white" }}
+                    style={{ color: isDarkMode ? "white" : "white" }}
                   >
                     Admin hasn't posted any announcements at the moment
                   </p>
@@ -211,7 +211,7 @@ const StudentAnnouncementByAdmin = () => {
           <button
             onClick={() => navigate("/notifications", { state: { filter: "announcements" } })}
             className="text-sm font-medium hover:underline transition-colors"
-            style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+            style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
           >
             View All Announcements →
           </button>

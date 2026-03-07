@@ -468,9 +468,9 @@ const HomePage1 = () => {
               className="rounded-xl p-6 mb-10 relative"
               style={{
                 background: isDarkMode
-                  ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                  ? "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
                   : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
-                border: isDarkMode ? "none" : "none",
+                border: "none",
               }}
             >
               <div className="flex flex-col sm:flex-row justify-between gap-6">
@@ -531,23 +531,22 @@ const HomePage1 = () => {
                 className="absolute top-1 right-1 w-48 h-48 object-contain hidden sm:block"
               />
             </div>
-
             {/* Reminders (Mobile/Tablet only) */}
             <div className="xl:hidden mb-8">
               <div
                 className="rounded-xl p-4 sm:p-6"
                 style={{
                   background: isDarkMode
-                    ? currentColors.surface
+                    ? "linear-gradient(159deg, #3498db 0%, #2ecc71 100%)"
                     : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
-                  border: isDarkMode ? "none" : "none",
+                  border: "none",
                 }}
               >
                 {/* Header */}
                 <div className="flex items-center gap-2 mb-4">
                   <Calendar
                     className="w-5 h-5 flex-shrink-0"
-                    style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+                    style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
                   />
                   <h2
                     className="font-semibold text-base sm:text-lg"
@@ -694,7 +693,7 @@ const HomePage1 = () => {
                     <button
                       onClick={() => navigate("/task")}
                       className="text-sm font-medium hover:underline transition-colors"
-                      style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+                      style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
                     >
                       View All Tasks →
                     </button>
@@ -740,7 +739,7 @@ const HomePage1 = () => {
                   <button
                     onClick={() => navigate("/space#your-spaces")}
                     className="hidden sm:block hover:underline text-sm"
-                    style={{ color: isDarkMode ? "#60A5FA" : "black" }}
+                    style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
                   >
                     View All
                   </button>
@@ -910,7 +909,7 @@ const HomePage1 = () => {
                   </button>
                   <button
                     className="hidden sm:block hover:underline text-sm"
-                    style={{ color: isDarkMode ? "#60A5FA" : "black" }}
+                    style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
                   >
                     View All
                   </button>
@@ -1105,7 +1104,7 @@ const HomePage1 = () => {
                   </button>
                   <button
                     className="hidden sm:block hover:underline text-sm"
-                    style={{ color: isDarkMode ? "#60A5FA" : "black" }}
+                    style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
                   >
                     View All
                   </button>
@@ -1254,16 +1253,16 @@ const HomePage1 = () => {
               className="rounded-xl p-6 flex-1"
               style={{
                 background: isDarkMode
-                  ? currentColors.surface
+                  ? "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
                   : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
-                border: isDarkMode ? "none" : "none",
+                border: "none",
               }}
             >
               {/* Header */}
               <div className="flex items-center gap-2 mb-4">
                 <Calendar
                   className="w-5 h-5 flex-shrink-0"
-                  style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+                  style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
                 />
                 <h4
                   className="font-semibold text-base"
@@ -1410,7 +1409,7 @@ const HomePage1 = () => {
                   <button
                     onClick={() => navigate("/task")}
                     className="text-sm font-medium hover:underline transition-colors"
-                    style={{ color: isDarkMode ? "#60A5FA" : "white" }}
+                    style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
                   >
                     View All Tasks →
                   </button>

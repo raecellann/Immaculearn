@@ -102,7 +102,7 @@ const AnnouncementByAdmin = () => {
       {/* Announcements List */}
       <div className="space-y-3">
         {loading ? (
-          <div className="p-6 rounded-lg border text-center" style={{ borderColor: "white" }}>
+          <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? "white" : "white" }}>
             <div className="flex flex-col items-center gap-3">
               <Megaphone size={32} style={{ color: isDarkMode ? "white" : "#9CA3AF" }} />
               <div>
@@ -116,7 +116,7 @@ const AnnouncementByAdmin = () => {
             </div>
           </div>
         ) : error ? (
-          <div className="p-6 rounded-lg border text-center" style={{ borderColor: "white" }}>
+          <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? "white" : "white" }}>
             <div className="flex flex-col items-center gap-3">
               <Megaphone size={32} style={{ color: isDarkMode ? "white" : "#9CA3AF" }} />
               <div>
@@ -136,7 +136,7 @@ const AnnouncementByAdmin = () => {
             </div>
           </div>
         ) : visible.length === 0 ? (
-          <div className="p-6 rounded-lg border text-center" style={{ borderColor: "white" }}>
+          <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? "white" : "white" }}>
             <div className="flex flex-col items-center gap-3">
               <Megaphone size={32} style={{ color: isDarkMode ? "white" : "#9CA3AF" }} />
               <div>
@@ -195,7 +195,7 @@ const AnnouncementByAdmin = () => {
                 <div className="flex items-center gap-2">
                   <svg 
                     className="w-4 h-4 flex-shrink-0" 
-                    style={{ color: isDarkMode ? "#9CA3AF" : "#6B7280" }}
+                    style={{ color: isDarkMode ? "white" : "#6B7280" }}
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
