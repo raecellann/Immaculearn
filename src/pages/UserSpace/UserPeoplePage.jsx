@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import Sidebar from "../component/sidebar";
-import { FiMenu, FiX, FiChevronLeft, FiUpload } from "react-icons/fi";
+import { FiMenu, FiX, FiChevronLeft, FiUpload, FiMessageSquare } from "react-icons/fi";
 import Logout from "../component/logout";
 import DeleteButton from "../component/DeleteButton";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -292,8 +292,11 @@ const UserPeoplePage = () => {
   const isOwner = creator.account_id === user.id;
 
   // Determine if this is a classroom space and who should be displayed as adviser/admin
-  const isClassroomSpace = activeSpace.space_type === "course";
-  const adviserInfo = isClassroomSpace ? activeSpace?.professor : creator;
+  const adviserInfo = activeSpace?.professor && creator;
+  const isAdmin = activeSpace?.creator === user?.id
+
+  console.log(user)
+
 
   // Handle not found - moved after all hooks
   if (!activeSpace) {
@@ -470,24 +473,50 @@ const UserPeoplePage = () => {
           </div>
 
           {/* CREATOR / ADVISER SECTION */}
-          {adviserInfo && (
+          {(activeSpace) && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4">
-                {isClassroomSpace ? "Adviser" : "Admin"}
+                {activeSpace?.professor ? "Adviser" : "Admin"}
               </h2>
               <div className="border-t border-gray-600 pt-4">
-                <div className="flex items-center gap-4">
-                  <img
-                    src={
-                      activeSpace?.professor?.avatar ||
-                      "/src/assets/default-avatar.jpg"
-                    }
-                    alt={activeSpace?.professor?.name}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <span className="font-medium">
-                    {capitalizeWords(activeSpace?.professor?.name)}
-                  </span>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={
+                        activeSpace?.professor?.avatar || isAdmin && user?.profile_pic ||
+                        "/src/assets/default-avatar.jpg"
+                      }
+                      alt={activeSpace?.professor?.name || isAdmin && user?.last_name}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <span className="font-medium">
+                      {capitalizeWords((activeSpace?.professor?.name || isAdmin && "You" || !isAdmin && `${user?.first_name + " " + user?.last_name}`))}
+                    </span>
+                  </div>
+                  {
+                    !isAdmin && (
+                    <button
+                      onClick={() => navigate('/chatlist')}
+                      className="p-2 rounded-lg transition-colors"
+                      style={{
+                        backgroundColor: '#3B82F6',
+                        color: '#FFFFFF',
+                        border: '1px solid #3B82F6'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#2563EB';
+                        e.target.style.borderColor = '#2563EB';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#3B82F6';
+                        e.target.style.borderColor = '#3B82F6';
+                      }}
+                      title="Message"
+                    >
+                      <FiMessageSquare size={16} />
+                    </button>
+                    )
+                  }
                 </div>
               </div>
             </div>
@@ -519,10 +548,36 @@ const UserPeoplePage = () => {
                           : `${user?.name?.split(" ")[0] || "You"} ${user?.name?.split(" ")[1]?.[0] ? user.name.split(" ")[1][0] + "." : ""}`}
                       </span>
                     </div>
-                    {isOwner && member.account_id !== user.id && (
-                      <DeleteButton
-                        onClick={() => handleRemoveMember(member)}
-                      />
+                    {(isOwner && member.account_id !== user.id)  && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigate('/chatlist')}
+                          className="p-2 rounded-lg transition-colors"
+                          style={{
+                            backgroundColor: '#3B82F6',
+                            color: '#FFFFFF',
+                            border: '1px solid #3B82F6'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#2563EB';
+                            e.target.style.borderColor = '#2563EB';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#3B82F6';
+                            e.target.style.borderColor = '#3B82F6';
+                          }}
+                          title="Message"
+                        >
+                          <FiMessageSquare size={16} />
+                        </button>
+                        {
+                          ((!activeSpace?.professor || !member.role === "owner") && (
+                            <DeleteButton
+                            onClick={() => handleRemoveMember(member)}
+                          />
+                          ))
+                        } 
+                      </div>
                     )}
                   </div>
                 ))

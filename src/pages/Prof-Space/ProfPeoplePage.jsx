@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
-import { FiMenu, FiX, FiChevronLeft, FiUpload } from "react-icons/fi";
+import { FiMenu, FiX, FiChevronLeft, FiUpload, FiMessageSquare } from "react-icons/fi";
 import Logout from "../component/logout";
 import DeleteButton from "../component/DeleteButton";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -13,7 +13,7 @@ import { toast } from "react-toastify";
 const ProfPeoplePage = () => {
   const { user } = useUser();
   const { addNotification } = useNotification();
-  const { userSpaces, courseSpaces, removeUserFromSpace } = useSpace();
+  const { userSpaces, courseSpaces, removeUserFromSpace, userSpacesLoading, courseSpacesLoading, isLoading } = useSpace();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const navigate = useNavigate();
@@ -276,7 +276,25 @@ const ProfPeoplePage = () => {
   const allSpaces = [...(userSpaces || []), ...(courseSpaces || [])];
   const activeSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
 
-  // Handle not found
+  // Show loading state while data is being fetched
+  if (userSpacesLoading || courseSpacesLoading || isLoading) {
+    return (
+      <div
+        className="flex items-center justify-center min-h-screen font-sans"
+        style={{
+          backgroundColor: currentColors.background,
+          color: currentColors.text,
+        }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="text-lg">Loading space...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle not found (only after loading is complete)
   if (!activeSpace) {
     return (
       <div
@@ -530,9 +548,31 @@ const ProfPeoplePage = () => {
                       </span>
                     </div>
                     {isOwner && member.account_id !== user.id && (
-                      <DeleteButton
-                        onClick={() => handleRemoveMember(member)}
-                      />
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigate('/prof/chats')}
+                          className="p-2 rounded-lg transition-colors"
+                          style={{
+                            backgroundColor: '#3B82F6',
+                            color: '#FFFFFF',
+                            border: '1px solid #3B82F6'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#2563EB';
+                            e.target.style.borderColor = '#2563EB';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#3B82F6';
+                            e.target.style.borderColor = '#3B82F6';
+                          }}
+                          title="Message"
+                        >
+                          <FiMessageSquare size={16} />
+                        </button>
+                        <DeleteButton
+                          onClick={() => handleRemoveMember(member)}
+                        />
+                      </div>
                     )}
                   </div>
                 ))
