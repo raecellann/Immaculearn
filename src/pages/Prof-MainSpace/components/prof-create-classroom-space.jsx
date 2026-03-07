@@ -287,7 +287,7 @@ const ProfCreateClassroomSpace = () => {
       const spaceData = {
         space_name: spaceName,
         space_description: shortDescription,
-        section_content: sectionContent,
+        space_section: sectionContent,
         space_day: selectedDay,
         space_time_start: timeStart24,
         space_time_end: timeEnd24,
@@ -340,7 +340,10 @@ const ProfCreateClassroomSpace = () => {
         setTimeError(false);
         navigator(`/prof/space/${space_uuid}/${spaceName}`);
       } else {
-        alert(result.message || "Failed to create space. Please try again.");
+        // alert(result.message || "Failed to create space. Please try again.");
+        toast.error(
+          result.message || "Failed to create space. Please try again.",
+        );
       }
     } catch (error) {
       console.error("Create space error:", error);

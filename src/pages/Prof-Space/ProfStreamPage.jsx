@@ -50,7 +50,7 @@ const ProfStreamPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
-  
+
   // Sidebar minimization state
   const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState("");
@@ -868,7 +868,10 @@ const ProfStreamPage = () => {
   }, [isDragging, dragStartY, dragStartPosition]);
 
   // Loading state
-  if (userLoading || spaceLoading || userSpacesLoading || courseSpacesLoading) {
+  if (
+    (userLoading || spaceLoading || userSpacesLoading || courseSpacesLoading,
+    !currentSpace)
+  ) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
@@ -876,7 +879,7 @@ const ProfStreamPage = () => {
     );
   }
 
-  if (!isValidUuid || !currentSpace) {
+  if (!isValidUuid) {
     return <PageNotFound />;
   }
 
@@ -890,10 +893,10 @@ const ProfStreamPage = () => {
     >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <ProfSidebar 
-          isMinimized={isSidebarMinimized} 
+        <ProfSidebar
+          isMinimized={isSidebarMinimized}
           onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
-          onLogoutClick={() => setShowLogout(true)} 
+          onLogoutClick={() => setShowLogout(true)}
         />
       </div>
 
@@ -914,10 +917,10 @@ const ProfStreamPage = () => {
           backgroundColor: currentColors.surface,
         }}
       >
-        <ProfSidebar 
-          isMinimized={isSidebarMinimized} 
+        <ProfSidebar
+          isMinimized={isSidebarMinimized}
           onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
-          onLogoutClick={() => setShowLogout(true)} 
+          onLogoutClick={() => setShowLogout(true)}
         />
       </div>
 
@@ -2259,7 +2262,11 @@ const ProfStreamPage = () => {
                           const prevMessage = dateMessages[i - 1];
                           const shouldShowAvatar =
                             m.from === "them" &&
-                            (!prevMessage || prevMessage.senderId !== m.senderId || !nextMessage || nextMessage.from !== "them" || nextMessage.senderId !== m.senderId);
+                            (!prevMessage ||
+                              prevMessage.senderId !== m.senderId ||
+                              !nextMessage ||
+                              nextMessage.from !== "them" ||
+                              nextMessage.senderId !== m.senderId);
 
                           return (
                             <div

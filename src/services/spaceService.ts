@@ -39,6 +39,7 @@ class SpaceService {
         {
           space_name: spaceData.space_name,
           space_description: spaceData.space_description,
+          space_section: spaceData.space_section,
           space_cover: spaceData.space_cover,
           space_day: spaceData.space_day,
           space_time_start: spaceData.space_time_start,

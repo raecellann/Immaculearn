@@ -28,6 +28,7 @@ export interface SpaceCreateData {
 export interface CourseSpaceCreateData {
     space_name: string;
     space_description: string;
+    space_section: string;
     space_cover: string;
     space_day: string;
     space_time_start: string;

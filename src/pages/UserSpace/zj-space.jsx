@@ -61,7 +61,7 @@ const UserPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
-  
+
   // Sidebar minimization state
   const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState("");
@@ -455,7 +455,12 @@ const UserPage = () => {
 
   // Invalid space or not found
 
-  if (userSpacesLoading || courseSpacesLoading || friendSpacesLoading) {
+  if (
+    userSpacesLoading ||
+    courseSpacesLoading ||
+    friendSpacesLoading ||
+    !currentSpace
+  ) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
@@ -463,7 +468,7 @@ const UserPage = () => {
     );
   }
 
-  if (!isValidUuid || !currentSpace) {
+  if (!isValidUuid) {
     return <PageNotFound />;
   }
 
@@ -1187,10 +1192,10 @@ const UserPage = () => {
     >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
-        <Sidebar 
-          isMinimized={isSidebarMinimized} 
+        <Sidebar
+          isMinimized={isSidebarMinimized}
           onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
-          onLogoutClick={() => setShowLogout(true)} 
+          onLogoutClick={() => setShowLogout(true)}
         />
       </div>
 
@@ -1208,10 +1213,10 @@ const UserPage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
       >
-        <Sidebar 
-          isMinimized={isSidebarMinimized} 
+        <Sidebar
+          isMinimized={isSidebarMinimized}
           onToggleMinimize={() => setIsSidebarMinimized(!isSidebarMinimized)}
-          onLogoutClick={() => setShowLogout(true)} 
+          onLogoutClick={() => setShowLogout(true)}
         />
       </div>
 
@@ -2835,7 +2840,7 @@ const UserPage = () => {
             {!isChatMinimized && (
               <>
                 <div
-                  className={`overflow-y-auto ${isChatMaximized ? 'h-[calc(90vh-140px)]' : 'h-[calc(100vh-180px)] sm:h-96'} p-4 space-y-2`}
+                  className={`overflow-y-auto ${isChatMaximized ? "h-[calc(90vh-140px)]" : "h-[calc(100vh-180px)] sm:h-96"} p-4 space-y-2`}
                   style={{
                     backgroundColor: currentColors.background,
                   }}
@@ -2859,7 +2864,11 @@ const UserPage = () => {
                           const prevMessage = dateMessages[i - 1];
                           const shouldShowAvatar =
                             m.from === "them" &&
-                            (!prevMessage || prevMessage.senderId !== m.senderId || !nextMessage || nextMessage.from !== "them" || nextMessage.senderId !== m.senderId);
+                            (!prevMessage ||
+                              prevMessage.senderId !== m.senderId ||
+                              !nextMessage ||
+                              nextMessage.from !== "them" ||
+                              nextMessage.senderId !== m.senderId);
 
                           return (
                             <div
