@@ -82,15 +82,32 @@ class AdminService {
     title: string,
     content: string,
     target_audience: string,
-    publish_option: string = "NOW"
+    publish_option: string = "NOW",
+    images?: File[]
   ): Promise<ApiResponse<AnnouncementData>> {
     try {
+      const formData = new FormData();
+      
+      // Append basic announcement data
+      formData.append('title', title);
+      formData.append('content', content);
+      formData.append('target_audience', target_audience);
+      formData.append('publish_option', publish_option);
+      
+      // Append images if provided
+      if (images && images.length > 0) {
+        images.forEach((image, index) => {
+          formData.append(`image_${index}`, image);
+        });
+      }
+
       const response = await adminApi.post<ApiResponse<AnnouncementData>>(
-        "/announce/create", {
-          title,
-          content,
-          target_audience,
-          publish_option
+        "/announce/create", 
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         }
       );
       return response.data;

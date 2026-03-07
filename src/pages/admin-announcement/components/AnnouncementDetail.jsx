@@ -1,6 +1,6 @@
 import React from "react";
 import Button from "../../component/Button";
-import { Calendar, Clock, User, FileText } from "lucide-react";
+import { Calendar, Clock, User, FileText, Image as ImageIcon } from "lucide-react";
 
 const AnnouncementDetail = ({
   selectedAnnouncement,
@@ -28,8 +28,9 @@ const AnnouncementDetail = ({
     );
   }
 
-  // Handle attachments safely
+  // Handle attachments and images safely
   const attachments = selectedAnnouncement.attachments || [];
+  const images = selectedAnnouncement.images || [];
   
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
@@ -74,6 +75,32 @@ const AnnouncementDetail = ({
           {selectedAnnouncement.announcement_content || selectedAnnouncement.content || 'No content available'}
         </p>
       </div>
+
+      {/* Images Section */}
+      {images.length > 0 && (
+        <div className="mb-6">
+          <h3 className="font-semibold mb-4 flex items-center gap-2 text-gray-900">
+            <ImageIcon className="w-5 h-5" />
+            Images
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {images.map((image, index) => (
+              <div key={index} className="relative group">
+                <div className="aspect-video w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                  <img
+                    src={image}
+                    alt={`Announcement image ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onClick={() => window.open(image, '_blank')}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </div>
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300 rounded-lg pointer-events-none" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {attachments.length > 0 && (
         <div className="mb-6">

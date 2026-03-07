@@ -58,7 +58,7 @@ export interface AnnouncementData {
   publish_option: string;
   scheduled_at: string;
   created_by: string;
-
+  images?: string[];
 }
 
 export interface AnnouncementCreateData {
@@ -67,6 +67,7 @@ export interface AnnouncementCreateData {
   target_audience: string;
   scheduled_at?: string;
   publish_option: string;
+  images?: File[];
 }
 
 

@@ -28,7 +28,8 @@ const AdminAnnouncement = () => {
     targetAudience: "all",
     scheduledDate: "",
     scheduledTime: "",
-    attachments: []
+    attachments: [],
+    images: []
   });
   const [publishOption, setPublishOption] = useState("NOW"); // "NOW", "DRAFT", "SCHEDULED"
 
@@ -156,7 +157,8 @@ const AdminAnnouncement = () => {
       content: formData.content,
       target_audience: formData.targetAudience.toUpperCase(),
       scheduled_at,
-      publish_option: publishOption
+      publish_option: publishOption,
+      images: formData.images
     };
 
     setIsLoading(true);
@@ -172,7 +174,8 @@ const AdminAnnouncement = () => {
           targetAudience: "all",
           scheduledDate: "",
           scheduledTime: "",
-          attachments: []
+          attachments: [],
+          images: []
         });
         setPublishOption("NOW"); // Reset publishOption to "NOW"
         setShowCreateModal(false);
@@ -215,7 +218,8 @@ const AdminAnnouncement = () => {
       targetAudience: announcement.targetAudience,
       scheduledDate: "",
       scheduledTime: "",
-      attachments: announcement.attachments
+      attachments: announcement.attachments,
+      images: announcement.images || []
     });
   };
 
@@ -227,7 +231,8 @@ const AdminAnnouncement = () => {
       targetAudience: "all",
       scheduledDate: "",
       scheduledTime: "",
-      attachments: []
+      attachments: [],
+      images: []
     });
     setPublishOption("NOW");
   };
