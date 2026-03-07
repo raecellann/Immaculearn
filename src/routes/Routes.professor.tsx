@@ -25,7 +25,8 @@ import ProfViewActivityPage from "../pages/prof-ListActivities/components/ProfVi
 
 import ProfFilePage from "../pages/prof-Files/proffiles.jsx";
 import ProfViewFiles from "../pages/prof-Files/components/ProfViewAllFiles.jsx";
-import ProfCalendarPage from "../pages/prof-Calendar/ProfCalendar.jsx";
+// import ProfCalendarPage from "../pages/prof-Calendar/ProfCalendar.jsx";
+import ProfCalendarPage from "../pages/Prof-Calendar/ProfCalendar.jsx";
 import ProfGradeRecordPage from "../pages/prof-GradeViewing/profgradeviewing.jsx";
 import ProfArchiveClass from "../pages/prof-Archiveclass/ProfArchiveClass.jsx";
 import ProfSettingsPage from "../pages/Prof-Settings/profsettings.jsx";
@@ -79,7 +80,6 @@ export const ProfRoutes = () => {
       <Route path="acc-settings" element={<ProfProfilePage />} />
       <Route path="files" element={<ProfFilePage />} />
 
-
       {/* <Route path="files-by-subject" element={<ProfMain />} /> */}
 
       <Route path="chats" element={<ProfChatsPage />} />
@@ -110,13 +110,12 @@ export const ProfRoutes = () => {
         path="files/:space_name/:space_uuid"
         element={
           <SpaceProvider>
-          <FileProvider>
-            <ProtectedRoute>
-              <ProfViewFiles />
-            </ProtectedRoute>
-          </FileProvider>
+            <FileProvider>
+              <ProtectedRoute>
+                <ProfViewFiles />
+              </ProtectedRoute>
+            </FileProvider>
           </SpaceProvider>
-
         }
       />
 
@@ -130,8 +129,6 @@ export const ProfRoutes = () => {
           </SpaceProvider>
         }
       />
-
-
 
       <Route path="calendar" element={<ProfCalendarPage />} />
 

@@ -2859,7 +2859,7 @@ const UserPage = () => {
                           const prevMessage = dateMessages[i - 1];
                           const shouldShowAvatar =
                             m.from === "them" &&
-                            (!nextMessage || nextMessage.from !== "them");
+                            (!prevMessage || prevMessage.senderId !== m.senderId || !nextMessage || nextMessage.from !== "them" || nextMessage.senderId !== m.senderId);
 
                           return (
                             <div
