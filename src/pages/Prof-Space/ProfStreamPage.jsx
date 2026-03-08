@@ -883,6 +883,36 @@ const ProfStreamPage = () => {
     return <PageNotFound />;
   }
 
+
+  const renderPostContent = (text) => {
+
+    const youtubeRegex =
+    /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+))(?:\?[^&\s]*)?(?:&[^&\s]*)*/;
+
+  const match = text.match(youtubeRegex);
+
+  if (!match) return <p>{text}</p>;
+
+  const videoId = match[2];
+  const cleanText = text.replace(match[0], "").trim();
+
+  return (
+    <div>
+      <p className="mb-3 whitespace-pre-wrap">{cleanText}</p>
+
+      <div className="aspect-video w-full max-w-xl">
+        <iframe
+          className="w-full h-full rounded-lg"
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title="YouTube video"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  );
+};
+
+
   return (
     <div
       className="flex min-h-screen font-sans"
@@ -1547,12 +1577,14 @@ const ProfStreamPage = () => {
                                 {timeAgo(post?.created_at)}
                               </span>
                             </div>
-                            <p
+                            <div
                               className="whitespace-pre-wrap mb-3 text-sm break-words"
                               style={{ color: currentColors.text }}
                             >
-                              {post.post_content}
-                            </p>
+                              {renderPostContent(post.post_content)}
+                            </div>
+
+
 
                             {/* Comment Button */}
                             <button

@@ -854,33 +854,7 @@ const UserPage = () => {
     setShowChatPopup(false);
   };
 
-  // Sample space members (replace with actual data from your backend)
-  const spaceMembers = [
-    {
-      id: user?.id,
-      name: user?.fullname || "You",
-      email: user?.email,
-      avatar: user?.profile_pic,
-      online: true,
-    },
-    {
-      id: 2,
-      name: "Zeldrick",
-      email: "zeldrick@example.com",
-      avatar:
-        "https://res.cloudinary.com/diws5bcu6/image/upload/v1766419203/raecell_v0f5d1.jpg",
-      online: true,
-    },
-    {
-      id: 3,
-      name: "Nathaniel",
-      email: "nathaniel@example.com",
-      avatar:
-        "https://res.cloudinary.com/dpxfbom0j/image/upload/v1766990148/nath_wml06m.jpg",
-      online: false,
-    },
-  ];
-
+  
   // File validation
   const validateFile = (file) => {
     const validTypes = [
@@ -1181,6 +1155,34 @@ const UserPage = () => {
   const showUploadStatusModal = () => {
     setShowUploadModal(true);
   };
+
+  const renderPostContent = (text) => {
+
+    const youtubeRegex =
+    /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+))(?:\?[^&\s]*)?(?:&[^&\s]*)*/;
+
+  const match = text.match(youtubeRegex);
+
+  if (!match) return <p>{text}</p>;
+
+  const videoId = match[2];
+  const cleanText = text.replace(match[0], "").trim();
+
+  return (
+    <div>
+      <p className="mb-3 whitespace-pre-wrap">{cleanText}</p>
+
+      <div className="aspect-video w-full max-w-xl">
+        <iframe
+          className="w-full h-full rounded-lg"
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title="YouTube video"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  );
+};
 
   return (
     <div
@@ -1858,12 +1860,12 @@ const UserPage = () => {
                                 {timeAgo(post?.created_at)}
                               </span>
                             </div>
-                            <p
+                            <div
                               className="whitespace-pre-wrap mb-3 text-sm break-words"
                               style={{ color: currentColors.text }}
                             >
-                              {post.post_content}
-                            </p>
+                              {renderPostContent(post.post_content)}
+                            </div>
 
                             {/* Comment Button */}
                             <button
