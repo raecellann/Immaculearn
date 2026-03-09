@@ -563,38 +563,6 @@ const getEmailPreview = () => {
                 />
                 <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
               </div>
-              <div className="relative">
-                <select
-                  value={selectedCourse}
-                  onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
-                >
-                  <option value="">All Courses</option>
-                  {uniqueCourses.map(course => (
-                    <option key={course} value={course}>{course}</option>
-                  ))}
-                </select>
-                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
-              </div>
-              <div className="relative">
-                <select
-                  value={`${sortBy}-${sortOrder}`}
-                  onChange={(e) => {
-                    const [sort, order] = e.target.value.split('-');
-                    setSortBy(sort);
-                    setSortOrder(order);
-                  }}
-                  className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
-                >
-                  <option value="lastName-asc">Name A-Z</option>
-                  <option value="lastName-desc">Name Z-A</option>
-                  <option value="yearLevel-asc">Year 1-4</option>
-                  <option value="yearLevel-desc">Year 4-1</option>
-                  <option value="gender-asc">Gender F-M</option>
-                  <option value="gender-desc">Gender M-F</option>
-                </select>
-                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
-              </div>
             </div>
             <div className="flex gap-3">
               <button
@@ -620,20 +588,84 @@ const getEmailPreview = () => {
               </button>
             </div>
           </div>
+          <div className="hidden lg:flex gap-3 items-center mb-6">
+            <div className="relative">
+              <select
+                value={selectedCourse}
+                onChange={(e) => setSelectedCourse(e.target.value)}
+                className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
+              >
+                <option value="">All Courses</option>
+                {uniqueCourses.map(course => (
+                  <option key={course} value={course}>{course}</option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+            </div>
+            <div className="relative">
+              <select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [sort, order] = e.target.value.split('-');
+                  setSortBy(sort);
+                  setSortOrder(order);
+                }}
+                disabled={!selectedCourse}
+                className={`px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10 ${
+                  !selectedCourse ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
+                }`}
+              >
+                <option value="lastName-asc">Ascending A-Z</option>
+                <option value="lastName-desc">Descending Z-A</option>
+                <option value="yearLevel-asc">Year 1-4</option>
+                <option value="yearLevel-desc">Year 4-1</option>
+                <option value="gender-asc">Gender F-M</option>
+                <option value="gender-desc">Gender M-F</option>
+              </select>
+              <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+            </div>
+          </div>
 
           {/* MOBILE LARGE TO TABLET: SEARCH AND BUTTONS ALIGNED */}
           <div className="hidden md:flex lg:hidden flex-col gap-4 mb-6">
-            <div className="flex gap-3 items-center">
-              <div className="relative w-64">
-                <input
-                  type="text"
-                  placeholder="Search student..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
+            <div className="flex justify-between items-center">
+              <div className="flex gap-3 items-center">
+                <div className="relative w-64">
+                  <input
+                    type="text"
+                    placeholder="Search student..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
+                </div>
               </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Add Student
+                </button>
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  Import Excel
+                </button>
+                <button
+                  onClick={handleExportStudents}
+                  className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Export Emails
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-3 items-center">
               <div className="relative">
                 <select
                   value={selectedCourse}
@@ -655,10 +687,13 @@ const getEmailPreview = () => {
                     setSortBy(sort);
                     setSortOrder(order);
                   }}
-                  className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
+                  disabled={!selectedCourse}
+                  className={`px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10 ${
+                    !selectedCourse ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
+                  }`}
                 >
-                  <option value="lastName-asc">Name A-Z</option>
-                  <option value="lastName-desc">Name Z-A</option>
+                  <option value="lastName-asc">Ascending A-Z</option>
+                  <option value="lastName-desc">Descending Z-A</option>
                   <option value="yearLevel-asc">Year 1-4</option>
                   <option value="yearLevel-desc">Year 4-1</option>
                   <option value="gender-asc">Gender F-M</option>
@@ -666,29 +701,6 @@ const getEmailPreview = () => {
                 </select>
                 <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
               </div>
-            </div>
-            <div className="flex gap-3 flex-wrap">
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
-              >
-                <UserPlus className="w-4 h-4" />
-                Add Student
-              </button>
-              <button
-                onClick={() => setShowImportModal(true)}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-                Import Excel
-              </button>
-              <button
-                onClick={handleExportStudents}
-                className="text-white flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Export Emails
-              </button>
             </div>
           </div>
 
@@ -752,10 +764,13 @@ const getEmailPreview = () => {
                     setSortBy(sort);
                     setSortOrder(order);
                   }}
-                  className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
+                  disabled={!selectedCourse}
+                  className={`w-full px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10 ${
+                    !selectedCourse ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
+                  }`}
                 >
-                  <option value="lastName-asc">Name A-Z</option>
-                  <option value="lastName-desc">Name Z-A</option>
+                  <option value="lastName-asc">Ascending A-Z</option>
+                  <option value="lastName-desc">Descending Z-A</option>
                   <option value="yearLevel-asc">Year 1-4</option>
                   <option value="yearLevel-desc">Year 4-1</option>
                   <option value="gender-asc">Gender F-M</option>

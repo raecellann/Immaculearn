@@ -22,6 +22,8 @@ const ProfGradeRecordPage = () => {
   });
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc"); // asc or desc
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
 
   const [showHeader, setShowHeader] = useState(true);
   const lastScrollY = useRef(0);
@@ -82,13 +84,28 @@ const ProfGradeRecordPage = () => {
     }
   };
 
-  // Format name to show surname first
+  // Format name to show surname first, handling compound last names
   const formatName = (fullName) => {
     if (!fullName) return "";
     const parts = fullName.trim().split(/\s+/);
     if (parts.length === 1) return fullName;
-    const surname = parts[parts.length - 1];
-    const givenNames = parts.slice(0, -1).join(" ");
+    
+    // Handle common compound last names that start with lowercase particles
+    const compoundLastNames = ['de', 'del', 'de la', 'delos', 'dos', 'da', 'do', 'di', 'von', 'van', 'le', 'la'];
+    
+    let surnameEndIndex = parts.length - 1;
+    
+    // Check if the second to last part is a compound last name particle
+    if (parts.length >= 2) {
+      const secondToLast = parts[parts.length - 2].toLowerCase();
+      if (compoundLastNames.includes(secondToLast)) {
+        surnameEndIndex = parts.length - 2;
+      }
+    }
+    
+    const surname = parts.slice(surnameEndIndex).join(' ');
+    const givenNames = parts.slice(0, surnameEndIndex).join(' ');
+    
     return `${surname}, ${givenNames}`;
   };
 
@@ -115,10 +132,78 @@ const ProfGradeRecordPage = () => {
     return "N/A";
   };
 
-  // Filter students based on search query
-  const filteredStudents = student_remarks.filter((student) =>
-    student.fullname.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // Calculate final average (college numerical grading scale)
+  const calculateFinalAverage = (grades) => {
+    const validGrades = [];
+    
+    if (grades.prelim && grades.prelim !== "-" && grades.prelim !== "N/A") {
+      validGrades.push(parseFloat(grades.prelim));
+    }
+    if (grades.midterm && grades.midterm !== "-" && grades.midterm !== "N/A") {
+      validGrades.push(parseFloat(grades.midterm));
+    }
+    if (grades.prefinal && grades.prefinal !== "-" && grades.prefinal !== "N/A") {
+      validGrades.push(parseFloat(grades.prefinal));
+    }
+    if (grades.final && grades.final !== "-" && grades.final !== "N/A") {
+      validGrades.push(parseFloat(grades.final));
+    }
+
+    if (validGrades.length === 0) return "-";
+    
+    const average = validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
+    return average.toFixed(2);
+  };
+
+  // Convert numerical grade to college scale (1.0 - 5.0)
+  const convertToCollegeScale = (numericalGrade) => {
+    if (numericalGrade === "-") return "-";
+    
+    const num = parseFloat(numericalGrade);
+    if (num >= 97) return "1.0";
+    if (num >= 94) return "1.25";
+    if (num >= 91) return "1.5";
+    if (num >= 88) return "1.75";
+    if (num >= 85) return "2.0";
+    if (num >= 82) return "2.25";
+    if (num >= 79) return "2.5";
+    if (num >= 76) return "2.75";
+    if (num >= 75) return "3.0";
+    return "5.0";
+  };
+
+  // Determine pass/fail status
+  const getPassFailStatus = (grades) => {
+    const average = calculateFinalAverage(grades);
+    if (average === "-") return "-";
+    
+    const numAverage = parseFloat(average);
+    return numAverage >= 75 ? "PASSED" : "FAILED";
+  };
+
+  // Get color for pass/fail status
+  const getPassFailColor = (grades) => {
+    const status = getPassFailStatus(grades);
+    if (status === "-") return currentColors.text;
+    if (status === "PASSED") return "#10b981"; // green
+    return "#ef4444"; // red
+  };
+
+  // Filter and sort students based on search query and sort order
+  const filteredAndSortedStudents = student_remarks
+    .filter((student) =>
+      student.fullname.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+    .sort((a, b) => {
+      const nameA = formatName(a.fullname);
+      const nameB = formatName(b.fullname);
+      
+      if (sortOrder === "asc") {
+        return nameA.localeCompare(nameB);
+      } else {
+        return nameB.localeCompare(nameA);
+      }
+    });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -303,8 +388,8 @@ const ProfGradeRecordPage = () => {
                 {selectedSubject.space_name}
               </h2>
 
-              {/* Search Bar */}
-              <div className="mb-4">
+              {/* Search and Sort Bar */}
+              <div className="mb-4 flex flex-col sm:flex-row gap-4">
                 <div className="relative w-64">
                   <input
                     type="text"
@@ -325,10 +410,63 @@ const ProfGradeRecordPage = () => {
                     🔍
                   </span>
                 </div>
+                
+                {/* Sort Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowSortDropdown(!showSortDropdown)}
+                    className="px-4 py-2 rounded-lg focus:outline-none flex items-center gap-2"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      border: `1px solid ${isDarkMode ? "#3B4457" : "black"}`,
+                      color: currentColors.text,
+                    }}
+                  >
+                    <span>Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
+                    <span className="text-xs">▼</span>
+                  </button>
+                  
+                  {showSortDropdown && (
+                    <div
+                      className="absolute top-full mt-1 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg border z-10 min-w-[120px]"
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
+                    >
+                      <button
+                        onClick={() => {
+                          setSortOrder("asc");
+                          setShowSortDropdown(false);
+                        }}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        style={{
+                          color: currentColors.text,
+                          backgroundColor: sortOrder === "asc" ? (isDarkMode ? "#374151" : "#f3f4f6") : "transparent",
+                        }}
+                      >
+                        Ascending (A-Z)
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSortOrder("desc");
+                          setShowSortDropdown(false);
+                        }}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        style={{
+                          color: currentColors.text,
+                          backgroundColor: sortOrder === "desc" ? (isDarkMode ? "#374151" : "#f3f4f6") : "transparent",
+                        }}
+                      >
+                        Descending (Z-A)
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* No students state */}
-              {filteredStudents.length === 0 ? (
+              {filteredAndSortedStudents.length === 0 ? (
                 <div
                   className="rounded-xl p-10 text-center border border-dashed"
                   style={{
@@ -347,7 +485,7 @@ const ProfGradeRecordPage = () => {
                 <>
                   {/* Mobile Cards Only */}
                   <div className="sm:hidden space-y-4">
-                    {student_remarks?.map((student, idx) => (
+                    {filteredAndSortedStudents?.map((student, idx) => (
                       <div
                         key={idx}
                         className="p-4 rounded-lg border"
@@ -448,6 +586,34 @@ const ProfGradeRecordPage = () => {
                                 Pre-Final:{" "}
                                 {getGradeDisplay(student?.grades, "prefinals")}
                               </p>
+                              <p
+                                style={{
+                                  color: getGradeColor(
+                                    getGradeDisplay(student?.grades, "final"),
+                                  ),
+                                }}
+                              >
+                                Final:{" "}
+                                {getGradeDisplay(student?.grades, "final")}
+                              </p>
+                              <p
+                                style={{
+                                  color: getPassFailColor(student?.grades),
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                Final Average:{" "}
+                                {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                              </p>
+                              <p
+                                style={{
+                                  color: getPassFailColor(student?.grades),
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                Remarks:{" "}
+                                {getPassFailStatus(student?.grades)}
+                              </p>
                             </div>
                             <button
                               onClick={() => handleEditGrade(student)}
@@ -526,6 +692,24 @@ const ProfGradeRecordPage = () => {
                                   Final
                                 </th>
                                 <th
+                                  className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r"
+                                  style={{
+                                    color: currentColors.text,
+                                    borderColor: currentColors.border,
+                                  }}
+                                >
+                                  Final Average
+                                </th>
+                                <th
+                                  className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r"
+                                  style={{
+                                    color: currentColors.text,
+                                    borderColor: currentColors.border,
+                                  }}
+                                >
+                                  Remarks
+                                </th>
+                                <th
                                   className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold"
                                   style={{
                                     color: currentColors.text,
@@ -539,7 +723,7 @@ const ProfGradeRecordPage = () => {
                               className="divide-y"
                               style={{ borderColor: currentColors.border }}
                             >
-                              {student_remarks?.map((student, index) => (
+                              {filteredAndSortedStudents?.map((student, index) => (
                                 <tr
                                   key={index}
                                   style={{
@@ -709,6 +893,25 @@ const ProfGradeRecordPage = () => {
                                           student?.grades,
                                           "final",
                                         )}
+                                      </td>
+                                      <td
+                                        className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                        style={{
+                                          borderColor: currentColors.border,
+                                          color: getPassFailColor(student?.grades),
+                                        }}
+                                      >
+                                        {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                                      </td>
+                                      <td
+                                        className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                        style={{
+                                          borderColor: currentColors.border,
+                                          color: getPassFailColor(student?.grades),
+                                          fontWeight: "bold",
+                                        }}
+                                      >
+                                        {getPassFailStatus(student?.grades)}
                                       </td>
                                       <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-center">
                                         <button
