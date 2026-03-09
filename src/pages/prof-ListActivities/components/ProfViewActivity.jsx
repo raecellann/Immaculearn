@@ -4,11 +4,14 @@ import { useUser } from "../../../contexts/user/useUser";
 import { useTasks } from "../../../hooks/useTasks";
 import ProfSidebar from "../../component/profsidebar";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
+import { FiX, FiUser, FiCheck, FiX as FiXIcon } from "react-icons/fi";
 
 const ProfViewActivityPage = () => {
   const { space_uuid, space_name, task_name, task_id } = useParams();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [quizData, setQuizData] = useState(null);
+  const [showStudentAnswers, setShowStudentAnswers] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const navigate = useNavigate();
   const { isAuthenticated } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
@@ -40,6 +43,157 @@ const ProfViewActivityPage = () => {
   // sticky header scroll state
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Mock student data with answers - replace with actual API call
+  const mockStudentData = [
+    {
+      student_id: "1",
+      student_name: "Juan Dela Cruz",
+      student_email: "juan.cruz@email.com",
+      score: 15,
+      total_score: 20,
+      completed_at: "2025-11-20T14:30:00Z",
+      answers: {
+        1: "A", // Question 1 answer
+        2: "True", // Question 2 answer
+        3: "C", // Question 3 answer
+        4: "B", // Question 4 answer
+        5: "Photosynthesis is the process by which plants make their own food", // Question 5 answer
+      }
+    },
+    {
+      student_id: "2",
+      student_name: "Maria Santos",
+      student_email: "maria.santos@email.com",
+      score: 18,
+      total_score: 20,
+      completed_at: "2025-11-20T15:15:00Z",
+      answers: {
+        1: "B", // Question 1 answer
+        2: "False", // Question 2 answer
+        3: "A", // Question 3 answer
+        4: "D", // Question 4 answer
+        5: "The process where plants convert sunlight into energy", // Question 5 answer
+      }
+    },
+    {
+      student_id: "3",
+      student_name: "Jose Reyes",
+      student_email: "jose.reyes@email.com",
+      score: 12,
+      total_score: 20,
+      completed_at: "2025-11-21T10:45:00Z",
+      answers: {
+        1: "C", // Question 1 answer
+        2: "True", // Question 2 answer
+        3: "B", // Question 3 answer
+        4: "A", // Question 4 answer
+        5: "Plants use chlorophyll to capture light energy", // Question 5 answer
+      }
+    }
+  ];
+
+  // Mock quiz questions - replace with actual quiz data
+  const mockQuizQuestions = [
+    {
+      id: 1,
+      question: "What is the primary function of chlorophyll in plants?",
+      type: "multiple-choice",
+      answers: [
+        { letter_identifier: "A", answer_text: "Capture light energy", is_correct: true },
+        { letter_identifier: "B", answer_text: "Store water", is_correct: false },
+        { letter_identifier: "C", answer_text: "Produce oxygen", is_correct: false },
+        { letter_identifier: "D", answer_text: "Absorb nutrients", is_correct: false }
+      ]
+    },
+    {
+      id: 2,
+      question: "Photosynthesis requires sunlight.",
+      type: "true-false",
+      answers: [
+        { letter_identifier: "T", answer_text: "True", is_correct: true },
+        { letter_identifier: "F", answer_text: "False", is_correct: false }
+      ]
+    },
+    {
+      id: 3,
+      question: "Which gas is released during photosynthesis?",
+      type: "multiple-choice",
+      answers: [
+        { letter_identifier: "A", answer_text: "Carbon dioxide", is_correct: false },
+        { letter_identifier: "B", answer_text: "Nitrogen", is_correct: false },
+        { letter_identifier: "C", answer_text: "Oxygen", is_correct: true },
+        { letter_identifier: "D", answer_text: "Hydrogen", is_correct: false }
+      ]
+    },
+    {
+      id: 4,
+      question: "Where does photosynthesis primarily occur in plants?",
+      type: "multiple-choice",
+      answers: [
+        { letter_identifier: "A", answer_text: "Roots", is_correct: false },
+        { letter_identifier: "B", answer_text: "Leaves", is_correct: true },
+        { letter_identifier: "C", answer_text: "Stem", is_correct: false },
+        { letter_identifier: "D", answer_text: "Flowers", is_correct: false }
+      ]
+    },
+    {
+      id: 5,
+      question: "Briefly describe the process of photosynthesis.",
+      type: "short-answer",
+      answers: [
+        { answer_text: "The process by which plants use sunlight, water, and CO2 to produce glucose and oxygen", is_correct: true }
+      ]
+    }
+  ];
+
+  // Helper functions
+  const handleStudentClick = (student) => {
+    setSelectedStudent(student);
+    setShowStudentAnswers(true);
+  };
+
+  const checkIfAnswerIsCorrect = (question, studentAnswer) => {
+    if (!question.answers || !studentAnswer) return false;
+    
+    const correctAnswer = question.answers.find(a => a.is_correct);
+    if (!correctAnswer) return false;
+    
+    // Handle different answer formats
+    if (question.type === 'true-false') {
+      return studentAnswer.toLowerCase() === correctAnswer.answer_text.toLowerCase();
+    }
+    
+    return studentAnswer === correctAnswer.letter_identifier || 
+           studentAnswer.toLowerCase() === correctAnswer.answer_text.toLowerCase();
+  };
+
+  const renderStudentAnswer = (question, studentAnswer) => {
+    const isCorrect = checkIfAnswerIsCorrect(question, studentAnswer);
+    
+    return (
+      <div 
+        className={`mt-4 p-3 rounded border ${
+          isCorrect 
+            ? 'bg-green-50 border-green-200' 
+            : 'bg-red-50 border-red-200'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <p className={`text-sm font-semibold ${
+            isCorrect ? 'text-green-800' : 'text-red-800'
+          }`}>
+            Student Answer: {studentAnswer}
+          </p>
+          {isCorrect ? (
+            <FiCheck className="text-green-600" size={16} />
+          ) : (
+            <FiXIcon className="text-red-600" size={16} />
+          )}
+        </div>
+      </div>
+    );
+  };
 
   // useEffect(() => {
   //   if (!isAuthenticated) {
@@ -229,63 +383,34 @@ const ProfViewActivityPage = () => {
               {/* Mobile Card View - For small screens */}
               <div className="block sm:hidden">
                 <div className="space-y-3">
-                  {/* Sample data - replace with actual student submissions */}
-                  <div className="rounded-lg border p-3" style={{ 
-                    backgroundColor: currentColors.background,
-                    borderColor: currentColors.border,
-                    transition: 'background-color 0.2s ease'
-                  }}>
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-sm" style={{ color: currentColors.text }}>Juan Dela Cruz</h4>
-                      <span className="text-xs px-2 py-1 rounded-full font-medium" style={{
-                        backgroundColor: currentColors.surface,
-                        color: currentColors.primary || currentColors.text
-                      }}>
-                        15/{quizData?.total_score || currentTask?.total_score || 20}
-                      </span>
-                    </div>
-                    <div className="text-xs" style={{ color: currentColors.textSecondary }}>
-                      Completed: Nov 20, 2025 at 2:30 PM
-                    </div>
-                  </div>
-                  
-                  <div className="rounded-lg border p-3" style={{ 
-                    backgroundColor: currentColors.hover,
-                    borderColor: currentColors.border,
-                    transition: 'background-color 0.2s ease'
-                  }}>
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-sm" style={{ color: currentColors.text }}>Maria Santos</h4>
-                      <span className="text-xs px-2 py-1 rounded-full font-medium" style={{
+                  {mockStudentData.map((student) => (
+                    <div 
+                      key={student.student_id}
+                      className="rounded-lg border p-3 cursor-pointer transition-all hover:shadow-md" 
+                      style={{ 
                         backgroundColor: currentColors.background,
-                        color: currentColors.primary || currentColors.text
-                      }}>
-                        18/{quizData?.total_score || currentTask?.total_score || 20}
-                      </span>
+                        borderColor: currentColors.border,
+                        transition: 'background-color 0.2s ease'
+                      }}
+                      onClick={() => handleStudentClick(student)}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-sm" style={{ color: currentColors.text }}>{student.student_name}</h4>
+                        <span className="text-xs px-2 py-1 rounded-full font-medium" style={{
+                          backgroundColor: currentColors.surface,
+                          color: currentColors.primary || currentColors.text
+                        }}>
+                          {student.score}/{student.total_score}
+                        </span>
+                      </div>
+                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>
+                        Completed: {new Date(student.completed_at).toLocaleDateString()} at {new Date(student.completed_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      </div>
+                      <div className="text-xs mt-1" style={{ color: currentColors.textSecondary }}>
+                        Click to view answers
+                      </div>
                     </div>
-                    <div className="text-xs" style={{ color: currentColors.textSecondary }}>
-                      Completed: Nov 20, 2025 at 3:15 PM
-                    </div>
-                  </div>
-                  
-                  <div className="rounded-lg border p-3" style={{ 
-                    backgroundColor: currentColors.background,
-                    borderColor: currentColors.border,
-                    transition: 'background-color 0.2s ease'
-                  }}>
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-sm" style={{ color: currentColors.text }}>Jose Reyes</h4>
-                      <span className="text-xs px-2 py-1 rounded-full font-medium" style={{
-                        backgroundColor: currentColors.surface,
-                        color: currentColors.primary || currentColors.text
-                      }}>
-                        12/{quizData?.total_score || currentTask?.total_score || 20}
-                      </span>
-                    </div>
-                    <div className="text-xs" style={{ color: currentColors.textSecondary }}>
-                      Completed: Nov 21, 2025 at 10:45 AM
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
               
@@ -307,7 +432,7 @@ const ProfViewActivityPage = () => {
                               Score
                             </th>
                             <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold" style={{ color: currentColors.text }}>
-                              Total Score
+                              Total Items
                             </th>
                             <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold" style={{ color: currentColors.text }}>
                               Completed
@@ -315,67 +440,48 @@ const ProfViewActivityPage = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y" style={{ borderColor: currentColors.border }}>
-                          {/* Sample data - replace with actual student submissions */}
-                          <tr style={{ 
-                            backgroundColor: currentColors.background,
-                            transition: 'background-color 0.2s ease'
-                          }}>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              Juan Dela Cruz
-                            </td>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              <span className="font-medium" style={{ color: currentColors.primary || currentColors.text }}>15</span>
-                            </td>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              {quizData?.total_score || currentTask?.total_score || 20}
-                            </td>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              <div>
-                                <div>Nov 20, 2025</div>
-                                <div className="text-xs" style={{ color: currentColors.textSecondary }}>2:30 PM</div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr style={{ 
-                            backgroundColor: currentColors.hover,
-                            transition: 'background-color 0.2s ease'
-                          }}>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              Maria Santos
-                            </td>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              <span className="font-medium" style={{ color: currentColors.primary || currentColors.text }}>18</span>
-                            </td>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              {quizData?.total_score || currentTask?.total_score || 20}
-                            </td>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              <div>
-                                <div>Nov 20, 2025</div>
-                                <div className="text-xs" style={{ color: currentColors.textSecondary }}>3:15 PM</div>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr style={{ 
-                            backgroundColor: currentColors.background,
-                            transition: 'background-color 0.2s ease'
-                          }}>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              Jose Reyes
-                            </td>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              <span className="font-medium" style={{ color: currentColors.primary || currentColors.text }}>12</span>
-                            </td>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              {quizData?.total_score || currentTask?.total_score || 20}
-                            </td>
-                            <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
-                              <div>
-                                <div>Nov 21, 2025</div>
-                                <div className="text-xs" style={{ color: currentColors.textSecondary }}>10:45 AM</div>
-                              </div>
-                            </td>
-                          </tr>
+                          {mockStudentData.map((student) => (
+                            <tr 
+                              key={student.student_id}
+                              className="cursor-pointer transition-all hover:shadow-md"
+                              style={{ 
+                                backgroundColor: currentColors.background,
+                                transition: 'background-color 0.2s ease'
+                              }}
+                              onClick={() => handleStudentClick(student)}
+                            >
+                              <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs"
+                                    style={{ backgroundColor: currentColors.primary || currentColors.accent }}
+                                  >
+                                    {student.student_name.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <div>{student.student_name}</div>
+                                    <div className="text-xs" style={{ color: currentColors.textSecondary }}>
+                                      {student.student_email}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
+                                <span className="font-medium" style={{ color: currentColors.primary || currentColors.text }}>{student.score}</span>
+                              </td>
+                              <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
+                                {student.total_score}
+                              </td>
+                              <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" style={{ color: currentColors.text }}>
+                                <div>
+                                  <div>{new Date(student.completed_at).toLocaleDateString()}</div>
+                                  <div className="text-xs" style={{ color: currentColors.textSecondary }}>
+                                    {new Date(student.completed_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
@@ -392,6 +498,130 @@ const ProfViewActivityPage = () => {
                 </div>
               )}
             </div>
+
+          {/* Student Answers Modal */}
+          {showStudentAnswers && selectedStudent && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div 
+                className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                style={{ backgroundColor: currentColors.background }}
+              >
+                {/* Modal Header */}
+                <div 
+                  className="sticky top-0 p-4 border-b flex justify-between items-center"
+                  style={{ 
+                    backgroundColor: currentColors.background,
+                    borderColor: currentColors.border 
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                      style={{ backgroundColor: currentColors.primary || currentColors.accent }}
+                    >
+                      {selectedStudent.student_name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold" style={{ color: currentColors.text }}>
+                        {selectedStudent.student_name}'s Answers
+                      </h3>
+                      <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                        {selectedStudent.student_email}
+                      </p>
+                      <div className="flex gap-4 mt-1 text-sm">
+                        <span style={{ color: currentColors.text }}>
+                          Score: <strong>{selectedStudent.score}/{selectedStudent.total_score}</strong>
+                        </span>
+                        <span style={{ color: currentColors.textSecondary }}>
+                          Completed: {new Date(selectedStudent.completed_at).toLocaleDateString()} at {new Date(selectedStudent.completed_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowStudentAnswers(false);
+                      setSelectedStudent(null);
+                    }}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    style={{ color: currentColors.text }}
+                  >
+                    <FiX size={20} />
+                  </button>
+                </div>
+
+                {/* Modal Content */}
+                <div className="p-6">
+                  <div className="space-y-6">
+                    {mockQuizQuestions.map((question) => (
+                      <div
+                        key={question.id}
+                        className="p-4 rounded-lg border"
+                        style={{
+                          backgroundColor: currentColors.surface,
+                          borderColor: currentColors.border,
+                        }}
+                      >
+                        <div className="flex items-start gap-3">
+                          <span 
+                            className="font-bold text-lg"
+                            style={{ color: currentColors.primary || currentColors.accent }}
+                          >
+                            {question.id}.
+                          </span>
+                          <div className="flex-1">
+                            <p 
+                              className="font-medium mb-3"
+                              style={{ color: currentColors.text }}
+                            >
+                              {question.question}
+                            </p>
+
+                            {/* Answer Options */}
+                            <div className="space-y-2 mb-3">
+                              {question.answers.map((answer, index) => (
+                                <div 
+                                  key={index}
+                                  className={`flex items-center gap-2 p-2 rounded ${
+                                    answer.is_correct 
+                                      ? 'bg-green-50 border border-green-200' 
+                                      : 'bg-gray-50 border border-gray-200'
+                                  }`}
+                                >
+                                  <div 
+                                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                                    style={{
+                                      backgroundColor: answer.is_correct 
+                                        ? '#10b981' 
+                                        : currentColors.border,
+                                      color: answer.is_correct ? 'white' : currentColors.text
+                                    }}
+                                  >
+                                    {answer.letter_identifier || String.fromCharCode(65 + index)}
+                                  </div>
+                                  <span className="text-sm" style={{ color: currentColors.text }}>
+                                    {answer.answer_text}
+                                  </span>
+                                  {answer.is_correct && (
+                                    <FiCheck className="text-green-600 ml-auto" size={16} />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Student Answer Display */}
+                            {selectedStudent.answers[question.id] && (
+                              renderStudentAnswer(question, selectedStudent.answers[question.id])
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           </div>
         </div>

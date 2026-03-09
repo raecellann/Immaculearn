@@ -1203,7 +1203,7 @@ const ProfTaskPage = () => {
                         e.preventDefault();
                         handlePreviewTask(task);
                       }}
-                      className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                         task.isLocal && task.task_category === "quiz"
                           ? "flex-1"
                           : "block w-full"
@@ -1354,7 +1354,7 @@ const ProfTaskPage = () => {
                                   e.preventDefault();
                                   handleEditTask(task);
                                 }}
-                                className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                className="flex-1 text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                                 style={{
                                   backgroundColor: "#22c55e",
                                   color: "white",
@@ -1373,7 +1373,7 @@ const ProfTaskPage = () => {
                                   e.preventDefault();
                                   handlePreviewTask(task);
                                 }}
-                                className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                className="flex-1 text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                                 style={{
                                   backgroundColor: currentColors.accent,
                                   color: "white",
@@ -1398,7 +1398,7 @@ const ProfTaskPage = () => {
                             e.preventDefault();
                             handlePreviewTask(task);
                           }}
-                          className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          className={`text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                             task.isLocal ? "flex-1" : "block w-full"
                           }`}
                           style={{
@@ -2058,7 +2058,7 @@ const ProfTaskPage = () => {
                         </p>
                         <a
                           href="/prof-task-view"
-                          className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                          className="block w-full text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                           style={{
                             backgroundColor: currentColors.accent,
                             color: "white",
@@ -2111,7 +2111,7 @@ const ProfTaskPage = () => {
                         <div className="col-span-1">
                           <a
                             href="/prof-task-view"
-                            className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            className="block w-full text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                             style={{
                               backgroundColor: currentColors.accent,
                               color: "white",
