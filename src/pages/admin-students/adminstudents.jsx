@@ -75,8 +75,8 @@ const AdminStudents = () => {
       setStudents(
         res.data.students.map((student, index) => ({
           id: student.student_id ?? `temp-${index}`,
-          firstName: student.student_fn || '-',
-          lastName: student.student_ln || '-',
+          firstName: capitalizeWords(student.student_fn) || '-',
+          lastName: capitalizeWords(student.student_ln) || '-',
           email: student.email || '-',
           gender: getGenderName(student.student_gender) || '-',
           course: student.student_course || '-',
@@ -113,8 +113,8 @@ const AdminStudents = () => {
     if (aHasMissingData === bHasMissingData) {
       if (sortBy === "lastName") {
         // Handle missing names in sorting
-        const aName = a.lastName === '-' ? '' : a.lastName;
-        const bName = b.lastName === '-' ? '' : b.lastName;
+        const aName = (a.lastName && a.lastName !== '-') ? a.lastName : '';
+        const bName = (b.lastName && b.lastName !== '-') ? b.lastName : '';
         return sortOrder === "asc" 
           ? aName.localeCompare(bName)
           : bName.localeCompare(aName);
@@ -124,11 +124,17 @@ const AdminStudents = () => {
         const bIndex = b.yearLevel === '-' ? -1 : yearOrder.indexOf(b.yearLevel);
         return sortOrder === "asc" ? aIndex - bIndex : bIndex - aIndex;
       } else if (sortBy === "gender") {
-        const aGender = a.gender === '-' ? '' : a.gender;
-        const bGender = b.gender === '-' ? '' : b.gender;
+        const aGender = (a.gender && a.gender !== '-') ? a.gender : '';
+        const bGender = (b.gender && b.gender !== '-') ? b.gender : '';
         return sortOrder === "asc"
           ? aGender.localeCompare(bGender)
           : bGender.localeCompare(aGender);
+      } else if (sortBy === "course") {
+        const aCourse = (a.course && a.course !== '-') ? a.course : '';
+        const bCourse = (b.course && b.course !== '-') ? b.course : '';
+        return sortOrder === "asc"
+          ? aCourse.localeCompare(bCourse)
+          : bCourse.localeCompare(aCourse);
       }
       return 0;
     }
@@ -309,8 +315,8 @@ const AdminStudents = () => {
 
   // Manual student entry functions
   const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    const gmailRegex = /^[^\s@]+@gmail\.com$/;
+    return gmailRegex.test(email);
   };
 
   const handleInputChange = (e) => {
@@ -331,27 +337,36 @@ const AdminStudents = () => {
     return;
   }
 
-  if (!validateEmail(newStudent.email)) {
-    toast.error("Please enter a valid email address");
+  // Split emails by comma and trim whitespace
+  const emails = newStudent.email.split(',').map(email => email.trim()).filter(email => email);
+  
+  // Remove duplicates while preserving order
+  const uniqueEmails = [...new Set(emails)];
+  
+  // Validate each email
+  const invalidEmails = uniqueEmails.filter(email => !validateEmail(email));
+  const validEmails = uniqueEmails.filter(email => validateEmail(email));
+  
+  if (invalidEmails.length > 0) {
+    toast.error(`Only Gmail addresses are allowed. Invalid: ${invalidEmails.join(', ')}`);
     setEmailError(true);
     return;
   }
 
   try {
     const res = await adminDashboardService.registerStudentEmail({
-      email: newStudent.email,
+      email: validEmails.join(', '), // Send only valid emails as comma-separated string
     });
 
     if (!res.success) {
-      alert(res.message);
+      toast.error(res.message);
       return;
     }
 
-    
-
-    setNewStudent({ name: "", email: "" });
+    setNewStudent({ email: "" });
+    setEmailError(false);
     setShowAddModal(false);
-    toast.success("Student registered successfully!");
+    toast.success(`Successfully added ${validEmails.length} student${validEmails.length > 1 ? 's' : ''}`);
     
     // Refresh data after adding
     const refreshRes = await adminDashboardService.getAllStudentEmails();
@@ -359,12 +374,12 @@ const AdminStudents = () => {
       setStudents(
         refreshRes.data.students.map((student, index) => ({
           id: student.student_id ?? `temp-${index}`,
-          firstName: student.student_fn,
-          lastName: student.student_ln,
-          email: student.email,
-          gender: getGenderName(student.student_gender),
-          course: student.student_course,
-          yearLevel: getYearLevelName(student.student_yr_lvl)
+          firstName: capitalizeWords(student.student_fn) || '-',
+          lastName: capitalizeWords(student.student_ln) || '-',
+          email: student.email || '-',
+          gender: getGenderName(student.student_gender) || '-',
+          course: student.student_course || '-',
+          yearLevel: getYearLevelName(student.student_yr_lvl) || '-',
         }))
       );
     }
@@ -374,6 +389,20 @@ const AdminStudents = () => {
   }
 };
 
+// Function to get and validate emails for preview
+const getEmailPreview = () => {
+  if (!newStudent.email) return [];
+  
+  const emails = newStudent.email.split(',').map(email => email.trim()).filter(email => email);
+  
+  // Remove duplicates while preserving order
+  const uniqueEmails = [...new Set(emails)];
+  
+  const validEmails = uniqueEmails.filter(email => validateEmail(email));
+  const invalidEmails = uniqueEmails.filter(email => !validateEmail(email));
+  
+  return { validEmails, invalidEmails, totalEmails: uniqueEmails, duplicatesRemoved: emails.length - uniqueEmails.length };
+};
 
   const handleDeleteStudent = async (studentEmail) => {
     console.log('Deleting student with email:', studentEmail);
@@ -745,7 +774,7 @@ const AdminStudents = () => {
                 className="bg-white p-5 rounded-xl border border-gray-200"
               >
                 <h2 className="font-semibold text-base mb-1 text-gray-900">
-                  {student.name}
+                  {capitalizeWords(student.firstName)} {capitalizeWords(student.lastName)}
                 </h2>
                 <p className="text-sm text-gray-600 mb-1">
                   {student.email}
@@ -1031,7 +1060,7 @@ const AdminStudents = () => {
                   className={`w-full px-3 py-2 bg-white border rounded-lg text-gray-900 focus:outline-none focus:border-blue-500 ${
                     emailError ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="student@example.com"
+                  placeholder="student@gmail.com, student2@gmail.com, student3@gmail.com"
                   style={{
                     WebkitTextFillColor: 'gray-900',
                     WebkitBoxShadow: '0 0 0 1000px white inset',
@@ -1039,9 +1068,72 @@ const AdminStudents = () => {
                   }}
                 />
                 {emailError && (
-                  <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>
+                  <p className="text-red-500 text-sm mt-1">Only Gmail addresses are allowed (@gmail.com)</p>
                 )}
+                <p className="text-gray-500 text-xs mt-1">
+                  Enter multiple Gmail addresses separated by commas
+                </p>
               </div>
+
+              {/* Email Preview */}
+              {newStudent.email && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Preview
+                  </label>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 max-h-40 overflow-y-auto">
+                    {(() => {
+                      const { validEmails, invalidEmails, totalEmails, duplicatesRemoved } = getEmailPreview();
+                      return (
+                        <div className="space-y-2">
+                          {totalEmails.length > 0 && (
+                            <div className="text-sm">
+                              <span className="font-medium text-gray-700">
+                                Total: {totalEmails.length} email{totalEmails.length > 1 ? 's' : ''}
+                              </span>
+                              {duplicatesRemoved > 0 && (
+                                <span className="text-orange-600 ml-2">
+                                  (Removed {duplicatesRemoved} duplicate{duplicatesRemoved > 1 ? 's' : ''})
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          
+                          {validEmails.length > 0 && (
+                            <div>
+                              <div className="text-xs font-medium text-green-700 mb-1">
+                                Valid ({validEmails.length}):
+                              </div>
+                              <div className="space-y-1">
+                                {validEmails.map((email, index) => (
+                                  <div key={index} className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                                    {email}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {invalidEmails.length > 0 && (
+                            <div>
+                              <div className="text-xs font-medium text-red-700 mb-1">
+                                Invalid ({invalidEmails.length}):
+                              </div>
+                              <div className="space-y-1">
+                                {invalidEmails.map((email, index) => (
+                                  <div key={index} className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                                    {email}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}

@@ -126,20 +126,20 @@ const AdminTeachers = () => {
     if (aHasMissingData === bHasMissingData) {
       if (sortBy === "lastName") {
         // Handle missing names in sorting
-        const aName = a.lastName === '-' ? '' : a.lastName;
-        const bName = b.lastName === '-' ? '' : b.lastName;
+        const aName = (a.lastName && a.lastName !== '-') ? a.lastName : '';
+        const bName = (b.lastName && b.lastName !== '-') ? b.lastName : '';
         return sortOrder === "asc" 
           ? aName.localeCompare(bName)
           : bName.localeCompare(aName);
       } else if (sortBy === "department") {
-        const aDept = a.department === '-' ? '' : a.department;
-        const bDept = b.department === '-' ? '' : b.department;
+        const aDept = (a.department && a.department !== '-') ? a.department : '';
+        const bDept = (b.department && b.department !== '-') ? b.department : '';
         return sortOrder === "asc"
           ? aDept.localeCompare(bDept)
           : bDept.localeCompare(aDept);
       } else if (sortBy === "gender") {
-        const aGender = a.gender === '-' ? '' : a.gender;
-        const bGender = b.gender === '-' ? '' : b.gender;
+        const aGender = (a.gender && a.gender !== '-') ? a.gender : '';
+        const bGender = (b.gender && b.gender !== '-') ? b.gender : '';
         return sortOrder === "asc"
           ? aGender.localeCompare(bGender)
           : bGender.localeCompare(aGender);
@@ -180,8 +180,8 @@ const AdminTeachers = () => {
   /* ================= ADD TEACHER ================= */
 
   const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    const gmailRegex = /^[^\s@]+@gmail\.com$/;
+    return gmailRegex.test(email);
   };
 
   const handleAddTeacher = async () => {
@@ -190,15 +190,25 @@ const AdminTeachers = () => {
     return;
   }
 
-  if (!validateEmail(newTeacher.email)) {
-    toast.error("Please enter a valid email address");
+  // Split emails by comma and trim whitespace
+  const emails = newTeacher.email.split(',').map(email => email.trim()).filter(email => email);
+  
+  // Remove duplicates while preserving order
+  const uniqueEmails = [...new Set(emails)];
+  
+  // Validate each email
+  const invalidEmails = uniqueEmails.filter(email => !validateEmail(email));
+  const validEmails = uniqueEmails.filter(email => validateEmail(email));
+  
+  if (invalidEmails.length > 0) {
+    toast.error(`Only Gmail addresses are allowed. Invalid: ${invalidEmails.join(', ')}`);
     setEmailError(true);
     return;
   }
 
   try {
     const res = await adminDashboardService.registerProfEmail({
-      email: newTeacher.email,
+      email: validEmails.join(', '), // Send only valid emails as comma-separated string
     });
 
     if (!res.success) {
@@ -209,7 +219,7 @@ const AdminTeachers = () => {
     setNewTeacher({ email: "" });
     setEmailError(false);
     setShowAddModal(false);
-    toast.success("Teacher added successfully");
+    toast.success(`Successfully added ${validEmails.length} teacher${validEmails.length > 1 ? 's' : ''}`);
     
     // Refresh data after adding
     const refreshRes = await adminDashboardService.getAllProfEmails();
@@ -232,6 +242,20 @@ const AdminTeachers = () => {
   }
 };
 
+// Function to get and validate emails for preview
+const getEmailPreview = () => {
+  if (!newTeacher.email) return [];
+  
+  const emails = newTeacher.email.split(',').map(email => email.trim()).filter(email => email);
+  
+  // Remove duplicates while preserving order
+  const uniqueEmails = [...new Set(emails)];
+  
+  const validEmails = uniqueEmails.filter(email => validateEmail(email));
+  const invalidEmails = uniqueEmails.filter(email => !validateEmail(email));
+  
+  return { validEmails, invalidEmails, totalEmails: uniqueEmails, duplicatesRemoved: emails.length - uniqueEmails.length };
+};
 
   const handleCancelImport = () => {
     setShowImportModal(false);
@@ -826,7 +850,7 @@ const AdminTeachers = () => {
                   className={`w-full px-3 py-2 bg-white border rounded-lg text-gray-900 focus:outline-none focus:border-blue-500 ${
                     emailError ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="teacher@gmail.com"
+                  placeholder="teacher@gmail.com, teacher2@gmail.com, teacher3@gmail.com"
                   style={{
                     WebkitTextFillColor: 'gray-900',
                     WebkitBoxShadow: '0 0 0 1000px white inset',
@@ -834,9 +858,72 @@ const AdminTeachers = () => {
                   }}
                 />
                 {emailError && (
-                  <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>
+                  <p className="text-red-500 text-sm mt-1">Only Gmail addresses are allowed (@gmail.com)</p>
                 )}
+                <p className="text-gray-500 text-xs mt-1">
+                  Enter multiple Gmail addresses separated by commas
+                </p>
               </div>
+
+              {/* Email Preview */}
+              {newTeacher.email && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Preview
+                  </label>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 max-h-40 overflow-y-auto">
+                    {(() => {
+                      const { validEmails, invalidEmails, totalEmails, duplicatesRemoved } = getEmailPreview();
+                      return (
+                        <div className="space-y-2">
+                          {totalEmails.length > 0 && (
+                            <div className="text-sm">
+                              <span className="font-medium text-gray-700">
+                                Total: {totalEmails.length} email{totalEmails.length > 1 ? 's' : ''}
+                              </span>
+                              {duplicatesRemoved > 0 && (
+                                <span className="text-orange-600 ml-2">
+                                  (Removed {duplicatesRemoved} duplicate{duplicatesRemoved > 1 ? 's' : ''})
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          
+                          {validEmails.length > 0 && (
+                            <div>
+                              <div className="text-xs font-medium text-green-700 mb-1">
+                                Valid ({validEmails.length}):
+                              </div>
+                              <div className="space-y-1">
+                                {validEmails.map((email, index) => (
+                                  <div key={index} className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                                    {email}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {invalidEmails.length > 0 && (
+                            <div>
+                              <div className="text-xs font-medium text-red-700 mb-1">
+                                Invalid ({invalidEmails.length}):
+                              </div>
+                              <div className="space-y-1">
+                                {invalidEmails.map((email, index) => (
+                                  <div key={index} className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                                    {email}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
