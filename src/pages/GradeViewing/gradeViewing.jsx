@@ -67,13 +67,85 @@ const GradeViewing = () => {
     return "N/A";
   };
 
-  // Format name to show surname first
+  // Calculate final average (college numerical grading scale)
+  const calculateFinalAverage = (grades) => {
+    const validGrades = [];
+    
+    if (grades.prelim && grades.prelim !== "-" && grades.prelim !== "N/A") {
+      validGrades.push(parseFloat(grades.prelim));
+    }
+    if (grades.midterm && grades.midterm !== "-" && grades.midterm !== "N/A") {
+      validGrades.push(parseFloat(grades.midterm));
+    }
+    if (grades.prefinals && grades.prefinals !== "-" && grades.prefinals !== "N/A") {
+      validGrades.push(parseFloat(grades.prefinals));
+    }
+    if (grades.final && grades.final !== "-" && grades.final !== "N/A") {
+      validGrades.push(parseFloat(grades.final));
+    }
+
+    if (validGrades.length === 0) return "-";
+    
+    const average = validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
+    return average.toFixed(2);
+  };
+
+  // Convert numerical grade to college scale (1.0 - 5.0)
+  const convertToCollegeScale = (numericalGrade) => {
+    if (numericalGrade === "-") return "-";
+    
+    const num = parseFloat(numericalGrade);
+    if (num >= 97) return "1.0";
+    if (num >= 94) return "1.25";
+    if (num >= 91) return "1.5";
+    if (num >= 88) return "1.75";
+    if (num >= 85) return "2.0";
+    if (num >= 82) return "2.25";
+    if (num >= 79) return "2.5";
+    if (num >= 76) return "2.75";
+    if (num >= 75) return "3.0";
+    return "5.0";
+  };
+
+  // Determine pass/fail status
+  const getPassFailStatus = (grades) => {
+    const average = calculateFinalAverage(grades);
+    if (average === "-") return "-";
+    
+    const numAverage = parseFloat(average);
+    return numAverage >= 75 ? "PASSED" : "FAILED";
+  };
+
+  // Get color for pass/fail status
+  const getPassFailColor = (grades) => {
+    const status = getPassFailStatus(grades);
+    if (status === "-") return currentColors.text;
+    if (status === "PASSED") return "#10b981"; // green
+    return "#ef4444"; // red
+  };
+
+  // Format name to show surname first, handling compound last names
   const formatName = (fullName) => {
     if (!fullName) return "";
     const parts = fullName.trim().split(/\s+/);
     if (parts.length === 1) return fullName;
-    const surname = parts[parts.length - 1];
-    const givenNames = parts.slice(0, -1).join(" ");
+    
+    // Handle common compound last names that start with lowercase particles
+    const compoundLastNames = ['de', 'del', 'de la', 'delos', 'dos', 'da', 'do', 'di', 'von', 'van', 'le', 'la'];
+    
+    let surnameEndIndex = parts.length - 1;
+    
+    // Check if the second to last part is a compound last name particle
+    if (parts.length >= 2) {
+      const secondToLast = parts[parts.length - 2].toLowerCase();
+      if (compoundLastNames.includes(secondToLast)) {
+        surnameEndIndex = parts.length - 2;
+      }
+    }
+    
+    const surname = parts.slice(surnameEndIndex).join(' ');
+    const givenNames = parts.slice(0, surnameEndIndex).join(' ');
+    
     return `${surname}, ${givenNames}`;
   };
 
@@ -342,6 +414,48 @@ const GradeViewing = () => {
                           {getGradeDisplay(student?.grades, "final")}
                         </p>
                       </div>
+                      <div
+                        className="p-3 rounded-lg"
+                        style={{
+                          backgroundColor: isDarkMode ? "#1F242D" : "#f8fafc",
+                        }}
+                      >
+                        <p
+                          className="text-xs"
+                          style={{ color: currentColors.textSecondary }}
+                        >
+                          Final Average
+                        </p>
+                        <p
+                          className="font-bold"
+                          style={{
+                            color: getPassFailColor(student?.grades),
+                          }}
+                        >
+                          {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                        </p>
+                      </div>
+                      <div
+                        className="p-3 rounded-lg col-span-2"
+                        style={{
+                          backgroundColor: isDarkMode ? "#1F242D" : "#f8fafc",
+                        }}
+                      >
+                        <p
+                          className="text-xs"
+                          style={{ color: currentColors.textSecondary }}
+                        >
+                          Remarks
+                        </p>
+                        <p
+                          className="font-bold text-lg"
+                          style={{
+                            color: getPassFailColor(student?.grades),
+                          }}
+                        >
+                          {getPassFailStatus(student?.grades)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -403,12 +517,30 @@ const GradeViewing = () => {
                               Pre-Final
                             </th>
                             <th
+                              className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r"
+                              style={{
+                                color: currentColors.text,
+                                borderColor: currentColors.border,
+                              }}
+                            >
+                              Final
+                            </th>
+                            <th
+                              className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r"
+                              style={{
+                                color: currentColors.text,
+                                borderColor: currentColors.border,
+                              }}
+                            >
+                              Final Average
+                            </th>
+                            <th
                               className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold"
                               style={{
                                 color: currentColors.text,
                               }}
                             >
-                              Final
+                              Remarks
                             </th>
                           </tr>
                         </thead>
@@ -473,7 +605,7 @@ const GradeViewing = () => {
                                 {getGradeDisplay(student?.grades, "prefinals")}
                               </td>
                               <td
-                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center font-medium"
+                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
                                 style={{
                                   color: getGradeColor(
                                     getGradeDisplay(student?.grades, "final"),
@@ -481,6 +613,24 @@ const GradeViewing = () => {
                                 }}
                               >
                                 {getGradeDisplay(student?.grades, "final")}
+                              </td>
+                              <td
+                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                style={{
+                                  borderColor: currentColors.border,
+                                  color: getPassFailColor(student?.grades),
+                                }}
+                              >
+                                {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                              </td>
+                              <td
+                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center font-medium"
+                                style={{
+                                  color: getPassFailColor(student?.grades),
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                {getPassFailStatus(student?.grades)}
                               </td>
                             </tr>
                           ))}
