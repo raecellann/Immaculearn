@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { FiEdit } from "react-icons/fi";
 
-const QuizPreview = ({ taskData, currentColors }) => {
+const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
   const [userAnswers, setUserAnswers] = useState({});
   const [hoveredOption, setHoveredOption] = useState(null);
 
@@ -371,20 +372,37 @@ const QuizPreview = ({ taskData, currentColors }) => {
           borderColor: currentColors.border,
         }}
       >
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center gap-4">
           <p style={{ color: currentColors.textSecondary }}>
             This is a preview of the quiz. Students will see this interface when
             taking the quiz.
           </p>
           <button
-            className="px-4 py-2 rounded-lg text-white font-medium"
-            style={{ backgroundColor: "#2563eb" }}
+            className="px-6 py-3 rounded-lg text-white font-medium text-base shadow-lg hover:shadow-xl transition-all"
+            style={{ 
+              backgroundColor: "#22c55e",
+              border: "2px solid #22c55e"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#1d9d3a";
+              e.target.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "#22c55e";
+              e.target.style.transform = "translateY(0px)";
+            }}
             onClick={() => {
               setUserAnswers({});
               setHoveredOption(null);
+              if (onEditQuiz) {
+                onEditQuiz(taskData);
+              }
             }}
           >
-            Edit Quiz
+            <div className="flex items-center gap-2">
+              <FiEdit size={16} />
+              Edit Quiz
+            </div>
           </button>
         </div>
       </div>

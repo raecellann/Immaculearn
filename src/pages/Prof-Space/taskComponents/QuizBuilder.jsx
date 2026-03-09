@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiArrowLeft,
   FiPlus,
@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 
 const QuizBuilder = ({
   currentColors,
+  editingTask,
   onBack,
   onSave,
   onPublish,
@@ -87,6 +88,202 @@ const QuizBuilder = ({
       points: 1,
     },
   ]);
+
+  // Populate form with editing task data
+  useEffect(() => {
+    console.log("=== QUIZ EDIT DEBUG START ===");
+    console.log("QuizBuilder editingTask:", editingTask);
+    
+    if (editingTask) {
+      // Handle different possible data structures
+      const taskData = editingTask.rawData || editingTask;
+      console.log("taskData:", taskData);
+      
+      setQuizTitle(taskData.task_title || taskData.title || "");
+      setInstruction(taskData.task_instructions || taskData.instruction || "");
+      
+      // Fix date format - convert to proper datetime-local format
+      if (taskData.due_date) {
+        try {
+          const date = new Date(taskData.due_date);
+          // Format: yyyy-MM-ddThh:mm
+          const formattedDate = date.toISOString().slice(0, 16);
+          setDueDate(formattedDate);
+          console.log("Formatted due date:", formattedDate);
+        } catch (error) {
+          console.error("Date formatting error:", error);
+          setDueDate("");
+        }
+      } else {
+        setDueDate("");
+      }
+      
+      setTimeLimit(taskData.time_limit || "");
+      setAttempts(taskData.attempts || "1");
+      setShowCorrectAnswers(taskData.show_correct_answers || false);
+      setSelectedLesson(taskData.lesson_id || "");
+      
+      // Handle questions based on the actual data structure we saw
+      console.log("=== PARSING QUESTIONS ===");
+      
+      let questionsData = [];
+      
+      // Try to parse questions from different possible locations
+      try {
+        // Method 1: Check if questions is a string that needs JSON parsing
+        if (typeof taskData.questions === 'string') {
+          console.log("Questions is a string, attempting to parse...");
+          const parsedQuestions = JSON.parse(taskData.questions);
+          if (Array.isArray(parsedQuestions)) {
+            questionsData = parsedQuestions;
+            console.log("✓ Successfully parsed questions from string:", questionsData);
+          }
+        }
+        // Method 2: Check if questions is already an array
+        else if (Array.isArray(taskData.questions)) {
+          questionsData = taskData.questions;
+          console.log("✓ Found questions array directly:", questionsData);
+        }
+        // Method 3: Check editingTask.questions
+        else if (Array.isArray(editingTask.questions)) {
+          questionsData = editingTask.questions;
+          console.log("✓ Found questions in editingTask:", questionsData);
+        }
+        // Method 4: Check if questions are stored in task_content or other properties
+        else if (taskData.task_content && typeof taskData.task_content === 'string') {
+          console.log("Checking task_content...");
+          const parsedContent = JSON.parse(taskData.task_content);
+          if (parsedContent.questions && Array.isArray(parsedContent.questions)) {
+            questionsData = parsedContent.questions;
+            console.log("✓ Found questions in task_content:", questionsData);
+          }
+        }
+        // Method 5: Look for any property that might contain questions
+        else {
+          console.log("Searching all properties for questions...");
+          Object.keys(taskData).forEach(key => {
+            const value = taskData[key];
+            if (typeof value === 'string' && value.includes('question')) {
+              try {
+                const parsed = JSON.parse(value);
+                if (parsed.questions && Array.isArray(parsed.questions)) {
+                  questionsData = parsed.questions;
+                  console.log(`✓ Found questions in property "${key}":`, questionsData);
+                }
+              } catch (e) {
+                // Not valid JSON, continue searching
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing questions:", error);
+      }
+      
+      console.log("Final questionsData:", questionsData);
+      
+      if (questionsData.length > 0) {
+        console.log(`Processing ${questionsData.length} questions...`);
+        
+        const parsedQuestions = questionsData.map((qObj, index) => {
+          console.log(`\n--- Processing question ${index + 1} ---`);
+          console.log("Full qObj:", qObj);
+          
+          // Handle different question structures
+          let questionData = null;
+          
+          // Structure 1: {q1: {question: "...", answers: [...]}}
+          const questionKey = `q${index + 1}`;
+          if (qObj[questionKey]) {
+            questionData = qObj[questionKey];
+            console.log("✓ Found with key method:", questionData);
+          }
+          // Structure 2: Direct question object
+          else if (qObj.question) {
+            questionData = qObj;
+            console.log("✓ Found with direct method:", questionData);
+          }
+          // Structure 3: Check if qObj itself is the question data
+          else if (typeof qObj === 'object' && (qObj.question || qObj.answers)) {
+            questionData = qObj;
+            console.log("✓ qObj is the question data:", questionData);
+          }
+          
+          console.log(`Final questionData for Q${index + 1}:`, questionData);
+          
+          if (questionData) {
+            const parsed = {
+              id: index + 1,
+              type: determineQuestionType(questionData.answers),
+              question: questionData.question || "",
+              options: questionData.answers ? questionData.answers.map(a => a.answer_text || a.answer || a.text || "") : ["", "", ""],
+              correctAnswer: questionData.answers ? questionData.answers.findIndex(a => a.is_correct) : 0,
+              points: questionData.points || 1,
+            };
+            console.log("Parsed question:", parsed);
+            return parsed;
+          }
+          
+          console.log("❌ No valid question data found");
+          return null;
+        }).filter(Boolean);
+        
+        console.log("\nFinal parsed questions:", parsedQuestions);
+        
+        if (parsedQuestions.length > 0) {
+          setQuestions(parsedQuestions);
+          console.log("✅ Questions set successfully!");
+        } else {
+          console.log("❌ No valid questions parsed");
+        }
+      } else {
+        console.log("❌ No questions found");
+        
+        // Show what we have for debugging
+        console.log("=== DEBUG INFO ===");
+        console.log("taskData.questions:", taskData.questions);
+        console.log("editingTask.questions:", editingTask.questions);
+        console.log("taskData keys:", Object.keys(taskData));
+        
+        // If we still can't find questions, create a default question for testing
+        console.log("Creating default question for testing...");
+        setQuestions([{
+          id: 1,
+          type: "multiple-choice",
+          question: "Sample question - please edit your quiz questions",
+          options: ["Option A", "Option B", "Option C", "Option D"],
+          correctAnswer: 0,
+          points: 1,
+        }]);
+      }
+    }
+    
+    console.log("=== QUIZ EDIT DEBUG END ===\n");
+  }, [editingTask]);
+
+  const determineQuestionType = (answers) => {
+    if (!answers || answers.length === 0) return "multiple-choice";
+
+    // Check if it's true/false
+    if (
+      answers.length === 2 &&
+      answers.some((a) => a.letter_identifier === "T") &&
+      answers.some((a) => a.letter_identifier === "F")
+    ) {
+      return "true-false";
+    }
+
+    // Check if it's multiple choice
+    if (
+      answers.length > 2 &&
+      answers.every((a) => /^[A-Z]$/.test(a.letter_identifier))
+    ) {
+      return "multiple-choice";
+    }
+
+    // Default to multiple choice
+    return "multiple-choice";
+  };
 
   // Calculate total score from all questions
   const totalScore = questions.reduce(
@@ -533,6 +730,11 @@ const QuizBuilder = ({
       questions: formattedQuestions,
     };
 
+    // Add task ID if editing
+    if (editingTask && editingTask.task_id) {
+      taskData.task_id = editingTask.task_id;
+    }
+
     // Store in localStorage
     // try {
     //   const completeData = {
@@ -546,9 +748,10 @@ const QuizBuilder = ({
     // }
 
     if (status === "published") {
-      toast.success("Quiz published successfully!");
+      toast.success(editingTask ? "Quiz updated and published successfully!" : "Quiz published successfully!");
       onPublish(taskData);
     } else {
+      toast.success(editingTask ? "Quiz updated successfully!" : "Quiz saved as draft!");
       onSave(taskData);
     }
   };
@@ -892,7 +1095,7 @@ const QuizBuilder = ({
               }}
               onClick={() => handleSave("draft")}
             >
-              {isLoading ? "Saving..." : "Save as Draft"}
+              {isLoading ? "Saving..." : (editingTask ? "Update Draft" : "Save as Draft")}
             </button>
             <button
               className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
@@ -908,7 +1111,7 @@ const QuizBuilder = ({
               }}
               onClick={() => handleSave("published")}
             >
-              {isLoading ? "Publishing..." : "Publish Activity"}
+              {isLoading ? "Publishing..." : (editingTask ? "Update and Publish" : "Publish Activity")}
             </button>
           </div>
         </div>

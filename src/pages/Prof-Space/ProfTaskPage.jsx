@@ -187,6 +187,7 @@ const ProfTaskPage = () => {
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [showTaskTypeSelection, setShowTaskTypeSelection] = useState(false);
   const [selectedTaskType, setSelectedTaskType] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
   const [showManualGroups, setShowManualGroups] = useState(false);
   const [showGenerateGroups, setShowGenerateGroups] = useState(false);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
@@ -744,16 +745,22 @@ const ProfTaskPage = () => {
         members: [],
         leader: "",
         showInputs: false,
-        isSaved: false,
-        wasPreviouslySaved: false,
       },
     ]);
-    setNumberOfGroups(1);
-    setGroupsConfigured(false);
+    setEditingTask(null);
     setGroupCreationMethod(null);
     if (instructionRef.current) {
       instructionRef.current.innerHTML = "";
     }
+  };
+
+  const handleEditTask = (task) => {
+    console.log("handleEditTask called with task:", task);
+    setEditingTask(task);
+    setSelectedTaskType(task.category || task.task_category);
+    setTaskCategory(task.category || task.task_category);
+    setIsCreatingTask(true);
+    setShowTaskTypeSelection(false);
   };
 
   const handleManualGroups = () => {
@@ -1168,6 +1175,28 @@ const ProfTaskPage = () => {
                         Take Quiz
                       </button>
                     )}
+                    {task.task_category === "quiz" && !task.isLocal && (
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleEditTask(task);
+                        }}
+                        className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full"
+                        style={{
+                          backgroundColor: "#22c55e",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#1d9d3a";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "#22c55e";
+                        }}
+                      >
+                        Edit Quiz
+                      </a>
+                    )}
                     <a
                       href="#"
                       onClick={(e) => {
@@ -1319,34 +1348,46 @@ const ProfTaskPage = () => {
                               {task.has_answered ? "View Score" : "Take Quiz"}
                             </button>
                           ) : (
-                            <a
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handlePreviewTask(task);
-                              }}
-                              className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                task.isLocal ? "flex-1" : "block w-full"
-                              }`}
-                              style={{
-                                backgroundColor: task.isLocal
-                                  ? "#2563eb"
-                                  : currentColors.accent,
-                                color: "white",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = task.isLocal
-                                  ? "#1d4ed8"
-                                  : "#1d4ed8";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = task.isLocal
-                                  ? "#2563eb"
-                                  : currentColors.accent;
-                              }}
-                            >
-                              View Details
-                            </a>
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleEditTask(task);
+                                }}
+                                className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                style={{
+                                  backgroundColor: "#22c55e",
+                                  color: "white",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.backgroundColor = "#1d9d3a";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.backgroundColor = "#22c55e";
+                                }}
+                              >
+                                Edit Quiz
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handlePreviewTask(task);
+                                }}
+                                className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                style={{
+                                  backgroundColor: currentColors.accent,
+                                  color: "white",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.backgroundColor = "#1d4ed8";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.backgroundColor = currentColors.accent;
+                                }}
+                              >
+                                View Details
+                              </button>
+                            </>
                           )}
                         </>
                       )}
@@ -1462,6 +1503,7 @@ const ProfTaskPage = () => {
           <QuizPreview
             taskData={task.rawData || task}
             currentColors={currentColors}
+            onEditQuiz={handleEditTask}
           />
         );
       case "individual-activity":
@@ -1819,7 +1861,76 @@ const ProfTaskPage = () => {
             </div>
           )}
 
-          {!isCreatingTask && !showTaskTypeSelection ? (
+          {isCreatingTask ? (
+            /* ================= TASK BUILDERS ================= */
+            <div>
+              {selectedTaskType === "quiz" && (
+                <QuizBuilder
+                  currentColors={currentColors}
+                  editingTask={editingTask}
+                  onBack={() => {
+                    setIsCreatingTask(false);
+                    setSelectedTaskType(null);
+                    setShowTaskTypeSelection(false);
+                    setEditingTask(null);
+                  }}
+                  onSave={(taskData) => handleUpload("draft", taskData)}
+                  onPublish={(taskData) => handleUpload("uploaded", taskData)}
+                  isLoading={
+                    draftTaskMutation.isLoading || uploadTaskMutation.isLoading
+                  }
+                />
+              )}
+
+              {selectedTaskType === "individual-activity" && (
+                <IndividualActivityBuilder
+                  currentColors={currentColors}
+                  onBack={() => {
+                    setIsCreatingTask(false);
+                    setSelectedTaskType(null);
+                    setShowTaskTypeSelection(false);
+                  }}
+                  onSave={(taskData) => handleUpload("draft", taskData)}
+                  onPublish={(TaskData) => handleUpload("uploaded", TaskData)}
+                  isLoading={
+                    draftTaskMutation.isLoading || uploadTaskMutation.isLoading
+                  }
+                />
+              )}
+
+              {selectedTaskType === "group-activity" && (
+                <GroupActivityBuilder
+                  currentColors={currentColors}
+                  onBack={() => {
+                    setIsCreatingTask(false);
+                    setSelectedTaskType(null);
+                    setShowTaskTypeSelection(false);
+                  }}
+                  onSave={(TaskData) => handleUpload("draft", TaskData)}
+                  onPublish={(TaskData) => handleUpload("uploaded", TaskData)}
+                  isLoading={
+                    draftTaskMutation.isLoading || uploadTaskMutation.isLoading
+                  }
+                />
+              )}
+
+              {selectedTaskType === "exam" && (
+                <ExamBuilder
+                  currentColors={currentColors}
+                  onBack={() => {
+                    setIsCreatingTask(false);
+                    setSelectedTaskType(null);
+                    setShowTaskTypeSelection(false);
+                  }}
+                  onSave={(TaskData) => handleUpload("draft", TaskData)}
+                  onPublish={(TaskData) => handleUpload("uploaded", TaskData)}
+                  isLoading={
+                    draftTaskMutation.isLoading || uploadTaskMutation.isLoading
+                  }
+                />
+              )}
+            </div>
+          ) : !isCreatingTask && !showTaskTypeSelection ? (
             /* ================= TASKS LIST VIEW WITH SECTIONS ================= */
             <div className="max-w-5xl mx-auto">
               <button
@@ -2137,10 +2248,12 @@ const ProfTaskPage = () => {
               {selectedTaskType === "quiz" && (
                 <QuizBuilder
                   currentColors={currentColors}
+                  editingTask={editingTask}
                   onBack={() => {
                     setIsCreatingTask(false);
                     setSelectedTaskType(null);
                     setShowTaskTypeSelection(false);
+                    setEditingTask(null);
                   }}
                   onSave={(taskData) => handleUpload("draft", taskData)}
                   onPublish={(taskData) => handleUpload("uploaded", taskData)}
