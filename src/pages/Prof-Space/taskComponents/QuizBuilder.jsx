@@ -266,6 +266,9 @@ const QuizBuilder = ({
                   ? questionData.answers.findIndex((a) => a.is_correct)
                   : 0,
                 points: questionData.points || 1,
+                correctAnswers: questionData.identification_answer 
+                  ? questionData.identification_answer.split(",").map(answer => answer.trim())
+                  : [""],
               };
               console.log("Parsed question:", parsed);
               return parsed;
@@ -357,6 +360,7 @@ const QuizBuilder = ({
       options: ["", "", ""],
       correctAnswer: 0,
       points: 1,
+      correctAnswers: [""], // For identification type questions
     };
     setQuestions([...questions, newQuestion]);
   };
@@ -587,35 +591,81 @@ const QuizBuilder = ({
           <div>
             {validationErrors[`correctAnswer_${question.id}`] && (
               <p className="text-red-500 text-xs sm:text-sm mb-2">
-                Please provide the correct answer
+                Please provide at least one correct answer
               </p>
             )}
-            <input
-              type="text"
-              value={question.correctAnswer || ""}
-              onChange={(e) => {
-                updateQuestion(question.id, "correctAnswer", e.target.value);
-                if (validationErrors[`correctAnswer_${question.id}`]) {
-                  setValidationErrors((prev) => ({
-                    ...prev,
-                    [`correctAnswer_${question.id}`]: false,
-                  }));
-                }
-              }}
-              placeholder="Correct answer"
-              className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm ${
-                validationErrors[`correctAnswer_${question.id}`]
-                  ? "border-red-500"
-                  : ""
-              }`}
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: validationErrors[`correctAnswer_${question.id}`]
-                  ? "#ef4444"
-                  : currentColors.border,
-              }}
-            />
+            <div
+              className="text-xs sm:text-sm mb-2"
+              style={{ color: currentColors.textSecondary }}
+            >
+              Correct answers (comma-separated for multiple possible answers):
+            </div>
+            <div className="space-y-2">
+              {question.correctAnswers?.map((answer, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={answer || ""}
+                    onChange={(e) => {
+                      const newAnswers = [...question.correctAnswers];
+                      newAnswers[index] = e.target.value;
+                      updateQuestion(question.id, "correctAnswers", newAnswers);
+                      if (validationErrors[`correctAnswer_${question.id}`]) {
+                        setValidationErrors((prev) => ({
+                          ...prev,
+                          [`correctAnswer_${question.id}`]: false,
+                        }));
+                      }
+                    }}
+                    placeholder={`Correct answer ${index + 1}`}
+                    className={`flex-1 rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm ${
+                      validationErrors[`correctAnswer_${question.id}`]
+                        ? "border-red-500"
+                        : ""
+                    }`}
+                    style={{
+                      backgroundColor: currentColors.background,
+                      color: currentColors.text,
+                      borderColor: validationErrors[`correctAnswer_${question.id}`]
+                        ? "#ef4444"
+                        : currentColors.border,
+                    }}
+                  />
+                  {question.correctAnswers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newAnswers = question.correctAnswers.filter((_, i) => i !== index);
+                        updateQuestion(question.id, "correctAnswers", newAnswers);
+                      }}
+                      className="p-2 rounded-lg border text-red-500 hover:bg-red-50 transition-colors"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        borderColor: currentColors.border,
+                      }}
+                    >
+                      <FiTrash2 size={14} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  const newAnswers = [...(question.correctAnswers || []), ""];
+                  updateQuestion(question.id, "correctAnswers", newAnswers);
+                }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs sm:text-sm transition-colors"
+                style={{
+                  backgroundColor: currentColors.background,
+                  borderColor: currentColors.border,
+                  color: currentColors.text,
+                }}
+              >
+                <FiPlus size={14} />
+                Add Another Answer
+              </button>
+            </div>
           </div>
         );
 
@@ -751,7 +801,7 @@ const QuizBuilder = ({
         errors[`correctAnswer_${question.id}`] = true;
       } else if (
         question.type === "identification" &&
-        !question.correctAnswer?.trim()
+        (!question.correctAnswers || question.correctAnswers.length === 0 || !question.correctAnswers.some(answer => answer?.trim()))
       ) {
         errors[`correctAnswer_${question.id}`] = true;
       } else if (
@@ -820,7 +870,7 @@ const QuizBuilder = ({
           },
         ];
       } else if (question.type === "identification") {
-        questionData.identification_answer = question.correctAnswer || "";
+        questionData.identification_answer = question.correctAnswers?.filter(answer => answer?.trim()).join(", ") || "";
       }
 
       return questionData;
