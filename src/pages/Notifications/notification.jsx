@@ -6,6 +6,8 @@ import { FiUsers, FiBell, FiFilter } from "react-icons/fi";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { useQueryClient } from "@tanstack/react-query";
+import { io } from "socket.io-client";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 import { GroupCover } from "../component/groupCover";
 import { SpaceCover } from "../component/spaceCover";
@@ -94,6 +96,25 @@ const NotificationPage = () => {
   const pendingInvitesCount = allJoinRequests.length;
   const pendingSpaceInvitationCount = allPendingSpaceInvitation.length;
   const announcementsCount = schoolAnnouncements.length;
+  
+  // Calculate unread notifications count
+  const unreadNotificationsCount = useMemo(() => {
+    let count = 0;
+    
+    // Count unread announcements (not in viewedAnnouncements)
+    const unreadAnnouncements = schoolAnnouncements.filter(
+      announcement => !viewedAnnouncements.has(announcement.announce_id)
+    );
+    count += unreadAnnouncements.length;
+    
+    // Count pending join requests (these are always unread until acted upon)
+    count += allJoinRequests.length || 0;
+    
+    // Count pending space invitations (these are always unread until acted upon)
+    count += allPendingSpaceInvitation.length || 0;
+    
+    return count;
+  }, [schoolAnnouncements, viewedAnnouncements, allJoinRequests, allPendingSpaceInvitation]);
 
   // Filter logic
   const filteredSections = useMemo(() => {
@@ -200,7 +221,10 @@ const NotificationPage = () => {
     >
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar 
+          onLogoutClick={() => setShowLogout(true)} 
+          notificationCount={unreadNotificationsCount}
+        />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -215,9 +239,15 @@ const NotificationPage = () => {
       <div
         className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-        style={{ backgroundColor: currentColors.surface }}
+        style={{
+          backgroundColor: currentColors.surface,
+          color: currentColors.text,
+        }}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar 
+          onLogoutClick={() => setShowLogout(true)} 
+          notificationCount={unreadNotificationsCount}
+        />
       </div>
 
       {/* MAIN */}

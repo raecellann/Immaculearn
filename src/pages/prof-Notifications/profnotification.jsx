@@ -169,6 +169,25 @@ const ProfNotificationPage = () => {
   const pendingInvitesCount = joinRequestsByLink?.length;
 
   const announcementsCount = schoolAnnouncements.length;
+  
+  // Calculate unread notifications count
+  const unreadNotificationsCount = useMemo(() => {
+    let count = 0;
+    
+    // Count unread announcements (not in viewedAnnouncements)
+    const unreadAnnouncements = schoolAnnouncements.filter(
+      announcement => !viewedAnnouncements.has(announcement.announce_id)
+    );
+    count += unreadAnnouncements.length;
+    
+    // Count pending join requests (filtered for owned spaces only)
+    count += allJoinRequests?.length || 0;
+    
+    // Count pending space invitations (these are always unread until acted upon)
+    count += pendingSpaceInvitation?.length || 0;
+    
+    return count;
+  }, [schoolAnnouncements, viewedAnnouncements, allJoinRequests, pendingSpaceInvitation]);
 
   // Filter logic
   const filteredSections = useMemo(() => {
@@ -270,7 +289,10 @@ const ProfNotificationPage = () => {
     >
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar 
+          onLogoutClick={() => setShowLogout(true)} 
+          notificationCount={unreadNotificationsCount}
+        />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -290,7 +312,10 @@ const ProfNotificationPage = () => {
           color: currentColors.text,
         }}
       >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        <Sidebar 
+          onLogoutClick={() => setShowLogout(true)} 
+          notificationCount={unreadNotificationsCount}
+        />
       </div>
 
       {/* MAIN */}

@@ -23,7 +23,7 @@ import { useUser } from "../../contexts/user/useUser";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
-const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
+const Sidebar = ({ isMinimized = false, onToggleMinimize, notificationCount = 0 }) => {
   const { user, logout } = useUser();
   const [showLogout, setShowLogout] = useState(false);
   const location = useLocation();
@@ -119,6 +119,7 @@ const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
                 {...item}
                 active={location.pathname === item.path}
                 isMinimized={localMinimized}
+                notificationCount={item.label === "Notifications" ? notificationCount : 0}
               />
             ))}
           </nav>
@@ -191,7 +192,7 @@ const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
   );
 };
 
-const SidebarItem = ({ icon, label, path, onClick, active, isMinimized }) => {
+const SidebarItem = ({ icon, label, path, onClick, active, isMinimized, notificationCount = 0 }) => {
   const Component = path ? Link : "div";
 
   return (
@@ -222,6 +223,15 @@ const SidebarItem = ({ icon, label, path, onClick, active, isMinimized }) => {
       <div className="relative z-10 flex items-center gap-3">
         {icon}
         <span className={`${isMinimized ? "hidden lg:hidden" : ""}`}>{label}</span>
+        
+        {/* Notification Counter Badge - Beside Text */}
+        {notificationCount > 0 && !isMinimized && (
+          <div 
+            className="bg-indigo-500 text-white text-xs font-bold rounded-full flex items-center justify-center w-5 h-5 text-[10px] shadow-lg shadow-indigo-500/30"
+          >
+            {notificationCount > 99 ? "99+" : notificationCount}
+          </div>
+        )}
       </div>
       
       {/* Tooltip for minimized state */}

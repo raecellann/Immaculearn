@@ -46,12 +46,12 @@ export default function Routes() {
           ))}
           {StudentRoutes.map((route) => (
             <Route
-              key={route.key}
-              path={route.path}
+              key={route?.key || 'student-route'}
+              path={route?.path || ''}
               element={
                 <UserProvider>
                   <SpaceProvider>
-                    <ProtectedRoute>{route.element}</ProtectedRoute>
+                    <ProtectedRoute>{route?.element}</ProtectedRoute>
                   </SpaceProvider>
                 </UserProvider>
               }
@@ -59,12 +59,12 @@ export default function Routes() {
           ))}
           {SpaceRoutes.map((route) => (
             <Route
-              key={route.key}
-              path={route.path}
+              key={route?.key || 'space-route'}
+              path={route?.path || ''}
               element={
                 <UserProvider>
                   <SpaceProvider>
-                    <ProtectedRoute>{route.element}</ProtectedRoute>
+                    <ProtectedRoute>{route?.element}</ProtectedRoute>
                   </SpaceProvider>
                 </UserProvider>
               }
