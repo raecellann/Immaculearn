@@ -14,6 +14,7 @@ import {
   FiFileText,
   FiCopy,
   FiUpload,
+  FiCheck,
 } from "react-icons/fi";
 import Logout from "../component/logout";
 import Sidebar from "../component/sidebar.jsx";
@@ -615,8 +616,81 @@ const UserTaskPage = () => {
   };
 
   const handleViewScore = (task) => {
+    console.log('Original task:', task);
+    
+    // Force override with mock quiz data for testing
+    const taskWithMockData = {
+      ...task,
+      task_title: task.task_title || "Sample Biology Quiz",
+      quiz_content: {
+        questions: [
+          {
+            id: 1,
+            question: "What is the primary function of chlorophyll in plants?",
+            type: "multiple-choice",
+            answers: [
+              { letter_identifier: "A", answer_text: "Capture light energy", is_correct: true },
+              { letter_identifier: "B", answer_text: "Store water", is_correct: false },
+              { letter_identifier: "C", answer_text: "Produce oxygen", is_correct: false },
+              { letter_identifier: "D", answer_text: "Absorb nutrients", is_correct: false }
+            ]
+          },
+          {
+            id: 2,
+            question: "Photosynthesis requires sunlight.",
+            type: "true-false",
+            answers: [
+              { letter_identifier: "T", answer_text: "True", is_correct: true },
+              { letter_identifier: "F", answer_text: "False", is_correct: false }
+            ]
+          },
+          {
+            id: 3,
+            question: "Which gas is released during photosynthesis?",
+            type: "multiple-choice",
+            answers: [
+              { letter_identifier: "A", answer_text: "Carbon dioxide", is_correct: false },
+              { letter_identifier: "B", answer_text: "Nitrogen", is_correct: false },
+              { letter_identifier: "C", answer_text: "Oxygen", is_correct: true },
+              { letter_identifier: "D", answer_text: "Hydrogen", is_correct: false }
+            ]
+          },
+          {
+            id: 4,
+            question: "Where does photosynthesis primarily occur in plants?",
+            type: "multiple-choice",
+            answers: [
+              { letter_identifier: "A", answer_text: "Roots", is_correct: false },
+              { letter_identifier: "B", answer_text: "Leaves", is_correct: true },
+              { letter_identifier: "C", answer_text: "Stem", is_correct: false },
+              { letter_identifier: "D", answer_text: "Flowers", is_correct: false }
+            ]
+          },
+          {
+            id: 5,
+            question: "Briefly describe the process of photosynthesis.",
+            type: "short-answer",
+            answers: [
+              { answer_text: "The process by which plants use sunlight, water, and CO2 to produce glucose and oxygen", is_correct: true }
+            ]
+          }
+        ]
+      },
+      student_answers: {
+        1: "A", // Correct answer
+        2: "T", // Correct answer
+        3: "B", // Wrong answer (should be C)
+        4: "B", // Correct answer
+        5: "Plants use sunlight to make food" // Partially correct but not exact
+      },
+      score: 3, // 3 out of 5 correct
+      total_score: 5
+    };
+    
+    console.log('Task with mock data:', taskWithMockData);
+    
     // Open ViewScore modal
-    setViewScoreTask(task);
+    setViewScoreTask(taskWithMockData);
     setShowViewScore(true);
   };
 
@@ -1487,6 +1561,64 @@ const UserTaskPage = () => {
       </div>
     );
   }
+
+  // Helper functions for quiz score viewing
+  const getStudentAnswerForQuestion = (question) => {
+    // Get the student's answer for this question from the task's answer data
+    if (viewScoreTask?.student_answers) {
+      return viewScoreTask.student_answers[question.id];
+    }
+    return null;
+  };
+
+  const checkIfAnswerIsCorrect = (question, studentAnswer) => {
+    if (!studentAnswer) return false;
+    
+    // Find the correct answer for this question
+    const correctAnswer = question.answers.find(answer => answer.is_correct);
+    if (!correctAnswer) return false;
+    
+    // Check if student answer matches correct answer
+    if (question.type === 'multiple-choice' || question.type === 'true-false') {
+      return studentAnswer === correctAnswer.letter_identifier;
+    } else if (question.type === 'short-answer') {
+      // For short answers, do a case-insensitive comparison
+      return studentAnswer.toLowerCase().trim() === correctAnswer.answer_text.toLowerCase().trim();
+    }
+    
+    return false;
+  };
+
+  const renderStudentAnswer = (question, studentAnswer) => {
+    if (!studentAnswer) return null;
+    
+    const isCorrect = checkIfAnswerIsCorrect(question, studentAnswer);
+    
+    return (
+      <div 
+        className={`mt-4 p-3 rounded border ${
+          isCorrect 
+            ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+            : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <p className={`text-sm font-semibold ${
+            isCorrect 
+              ? 'text-green-800 dark:text-green-200' 
+              : 'text-red-800 dark:text-red-200'
+          }`}>
+            Your Answer: {studentAnswer}
+          </p>
+          {isCorrect ? (
+            <FiCheck className="text-green-600 dark:text-green-400" size={16} />
+          ) : (
+            <FiX className="text-red-600 dark:text-red-400" size={16} />
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -2997,38 +3129,130 @@ const UserTaskPage = () => {
 
       {/* VIEW SCORE MODAL */}
       {showViewScore && viewScoreTask && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Quiz Score</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div 
+            className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            style={{ backgroundColor: currentColors.background }}
+          >
+            {/* Modal Header */}
+            <div 
+              className="sticky top-0 p-4 border-b flex justify-between items-center"
+              style={{ 
+                backgroundColor: currentColors.background,
+                borderColor: currentColors.border 
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                  style={{ backgroundColor: currentColors.primary || currentColors.accent }}
+                >
+                  {user?.fullname?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold" style={{ color: currentColors.text }}>
+                    Your Quiz Results
+                  </h3>
+                  <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                    {viewScoreTask.task_title}
+                  </p>
+                  <div className="flex gap-4 mt-1 text-sm">
+                    <span style={{ color: currentColors.text }}>
+                      Score: <strong>{viewScoreTask.score || 0}/{viewScoreTask.total_score || 0}</strong>
+                    </span>
+                    <span style={{ color: currentColors.textSecondary }}>
+                      Completed: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </span>
+                  </div>
+                </div>
+              </div>
               <button
-                onClick={() => setShowViewScore(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl bg-transparent border-none outline-none hover:bg-transparent focus:outline-none focus:ring-0"
+                onClick={() => {
+                  setShowViewScore(false);
+                  setViewScoreTask(null);
+                }}
+                className="p-2 rounded-lg transition-colors"
+                style={{ 
+                  color: currentColors.text,
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
               >
-                ×
+                <FiX size={20} />
               </button>
             </div>
 
-            <div className="text-center">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  {viewScoreTask.task_title}
-                </h3>
-                <div className="text-6xl font-bold text-green-600 mb-2">
-                  ✓ Completed
-                </div>
-                <p className="text-gray-600">
-                  You have successfully completed this quiz.
-                </p>
-              </div>
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="space-y-6">
+                {/* Render quiz questions with student answers */}
+                {viewScoreTask.quiz_content?.questions?.map((question) => (
+                  <div
+                    key={question.id}
+                    className="p-4 rounded-lg border"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      borderColor: currentColors.border,
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span 
+                        className="font-bold text-lg"
+                        style={{ color: currentColors.primary || currentColors.accent }}
+                      >
+                        {question.id}.
+                      </span>
+                      <div className="flex-1">
+                        <p 
+                          className="font-medium mb-3"
+                          style={{ color: currentColors.text }}
+                        >
+                          {question.question}
+                        </p>
 
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowViewScore(false)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                >
-                  Close
-                </button>
+                        {/* Answer Options */}
+                        <div className="space-y-2 mb-3">
+                          {question.answers.map((answer, index) => (
+                            <div 
+                              key={index}
+                              className={`flex items-center gap-2 p-2 rounded ${
+                                answer.is_correct 
+                                  ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+                                  : 'bg-gray-50 border border-gray-200 dark:bg-gray-800/50 dark:border-gray-700'
+                              }`}
+                            >
+                              <div 
+                                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                                style={{
+                                  backgroundColor: answer.is_correct 
+                                    ? '#10b981' 
+                                    : currentColors.border,
+                                  color: answer.is_correct ? 'white' : currentColors.text
+                                }}
+                              >
+                                {answer.letter_identifier || String.fromCharCode(65 + index)}
+                              </div>
+                              <span className="text-sm" style={{ color: currentColors.text }}>
+                                {answer.answer_text}
+                              </span>
+                              {answer.is_correct && (
+                                <FiCheck className="text-green-600 dark:text-green-400 ml-auto" size={16} />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Student Answer Display */}
+                        {renderStudentAnswer(question, getStudentAnswerForQuestion(question))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
