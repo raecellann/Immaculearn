@@ -348,7 +348,6 @@ const UserTaskPage = () => {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     setSelectedFile(file);
-    console.log("File selected:", file);
 
     // Extract text from document and populate instruction field
     if (file) {
@@ -360,7 +359,6 @@ const UserTaskPage = () => {
           if (instructionRef.current) {
             instructionRef.current.innerHTML = extractedText;
           }
-          console.log("Text extracted from document:", extractedText);
         }
       } catch (error) {
         console.error("Error extracting text from file:", error);
@@ -718,10 +716,6 @@ const UserTaskPage = () => {
   const handleUpload = async (status_type, taskData) => {
     let payload;
 
-    console.log(taskData);
-
-    console.log("Uploading task with payload:", taskData);
-
     try {
       if (status_type === "uploaded") {
         await uploadTaskMutation.mutateAsync({
@@ -913,7 +907,6 @@ const UserTaskPage = () => {
 
     if (currentMember.trim()) {
       // Member is already saved through the onChange handler
-      console.log(`Member "${currentMember}" saved to Group ${groupId}`);
       // Could add visual feedback here if needed
     }
   };
@@ -922,9 +915,7 @@ const UserTaskPage = () => {
     // Check if the active group has inputs visible
     const activeGroupData = groups[activeGroup - 1];
     if (!activeGroupData.showInputs) {
-      console.log(
-        'Cannot add member: Group inputs are not visible. Click "Add People" first.',
-      );
+      // Cannot add member: Group inputs are not visible
       return;
     }
 
@@ -937,7 +928,6 @@ const UserTaskPage = () => {
       activeGroupDataUpdated.leader.trim() === ""
     ) {
       activeGroupDataUpdated.leader = memberName;
-      console.log(`Added "${memberName}" as leader of Group ${activeGroup}`);
     } else {
       // If group already has a leader, add as member
       const activeGroupMembers = activeGroupDataUpdated.members;
@@ -952,9 +942,6 @@ const UserTaskPage = () => {
         // Add a new empty input field to maintain one empty field
         activeGroupMembers.push("");
       }
-      console.log(
-        `Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`,
-      );
     }
 
     setGroups(updatedGroups);
@@ -1001,10 +988,6 @@ const UserTaskPage = () => {
   const saveGroup = (groupId) => {
     const group = groups.find((g) => g.id === groupId);
     const validMembers = group.members.filter((member) => member.trim());
-    console.log(
-      `Group ${groupId} saved with leader: ${group.leader}, members:`,
-      validMembers,
-    );
 
     // Mark the group as saved
     const updatedGroups = [...groups];
@@ -1034,11 +1017,32 @@ const UserTaskPage = () => {
     setGroups(updatedGroups);
   };
 
-  // Task status styles
+  // Task status styles - colored text only
   const statusStyles = {
-    Done: "border-2 border-[#00B865] text-[#10E164]",
-    "In Progress": "border-[#0066D2] text-[#4D9BEF]",
-    Missing: "border-[#FF5252] text-[#FF5252]",
+    Done: "text-green-600",
+    "In Progress": "text-blue-600",
+    Missing: "text-red-600",
+  };
+
+  // Function to determine quiz status for students
+  const getQuizStatusForStudent = (task) => {
+    if (task.task_category !== "quiz") return task.task_status;
+    
+    const now = new Date();
+    const dueDate = task.task_due ? new Date(task.task_due) : null;
+    
+    // If student has answered the quiz
+    if (task.has_answered) {
+      return "Done";
+    }
+    
+    // If quiz has due date and it's passed
+    if (dueDate && now > dueDate) {
+      return "Missing";
+    }
+    
+    // If student hasn't taken the quiz yet and due date not passed
+    return "In Progress";
   };
 
   // TaskSection component for reusable task sections
@@ -1112,26 +1116,11 @@ const UserTaskPage = () => {
                         {task.task_title}
                       </span>
                     </div>
-                    {!task.isLocal ? (
-                      <button
-                        onClick={() =>
-                          setOpenIndex(
-                            openIndex === originalIndex ? null : originalIndex,
-                          )
-                        }
-                        className={`px-3 py-1 rounded-full text-xs`}
-                        style={{
-                          backgroundColor: currentColors.text,
-                          color: "white",
-                        }}
-                      >
-                        {task.task_status}
-                      </button>
-                    ) : (
-                      <span className="px-3 py-1 rounded-full text-xs bg-blue-500 text-white">
-                        {task.task_status}
-                      </span>
-                    )}
+                    <span className={`text-xs font-medium ${
+                      statusStyles[getQuizStatusForStudent(task)] || 'text-gray-500'
+                    }`}>
+                      {getQuizStatusForStudent(task)}
+                    </span>
                   </div>
                   <p
                     className="text-sm mb-2"
@@ -1234,59 +1223,11 @@ const UserTaskPage = () => {
                           Local
                         </span>
                       )}
-                      {!task.isLocal ? (
-                        <div className="relative inline-block">
-                          <button
-                            onClick={() =>
-                              setOpenIndex(
-                                openIndex === originalIndex
-                                  ? null
-                                  : originalIndex,
-                              )
-                            }
-                            className={`px-4 py-1 rounded-full text-sm`}
-                            style={{
-                              backgroundColor: currentColors.text,
-                              color: "white",
-                            }}
-                          >
-                            {task.task_status} ▼
-                          </button>
-                          {openIndex === originalIndex && (
-                            <div
-                              className="absolute left-0 mt-2 w-44 rounded-lg p-3 z-50 shadow-lg"
-                              style={{
-                                backgroundColor: currentColors.surface,
-                                borderColor: currentColors.border,
-                                border: "1px solid",
-                              }}
-                            >
-                              <div className="flex flex-col gap-2">
-                                {Object.keys(statusStyles).map((st) => (
-                                  <button
-                                    key={st}
-                                    onClick={() =>
-                                      handleStatusChange(originalIndex, st)
-                                    }
-                                    className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 whitespace-nowrap`}
-                                    style={{
-                                      backgroundColor: currentColors.text,
-                                      color: "white",
-                                    }}
-                                  >
-                                    {st}
-                                  </button>
-                                ))}
-                              </div>
-                              
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="px-4 py-1 rounded-full text-sm bg-blue-500 text-white">
-                          {task.task_status}
-                        </span>
-                      )}
+                      <span className={`text-sm font-medium ${
+                        statusStyles[getQuizStatusForStudent(task)] || 'text-gray-500'
+                      }`}>
+                        {getQuizStatusForStudent(task)}
+                      </span>
                     </div>
                   </div>
                   <div className="col-span-1">
@@ -1333,7 +1274,11 @@ const UserTaskPage = () => {
                                 padding: '0.3em 0.8em',
                                 fontSize: '0.75rem',
                                 borderRadius: '6px',
-                                flex: 1,
+                                flex: 'none',
+                                width: 'auto',
+                                minWidth: '80px',
+                                margin: '0 auto',
+                                display: 'block',
                               }}
                             >
                               {task.has_answered ? "View Score" : "Take Quiz"}
@@ -1537,7 +1482,7 @@ const UserTaskPage = () => {
         { taskId: task.id, newStatus },
         {
           onSuccess: () => {
-            console.log(`Task ${task.id} status updated to ${newStatus}`);
+            // Task status updated successfully
           },
           onError: (error) => {
             console.error("Failed to update task status:", error);
@@ -1555,7 +1500,7 @@ const UserTaskPage = () => {
         { taskId: draft.id, newStatus },
         {
           onSuccess: () => {
-            console.log(`Draft ${draft.id} status updated to ${newStatus}`);
+            // Draft status updated successfully
           },
           onError: (error) => {
             console.error("Failed to update draft status:", error);
@@ -2645,7 +2590,6 @@ const UserTaskPage = () => {
                     leader: group.leader.trim(),
                     members: group.members.filter((member) => member.trim()), // Remove empty members
                   }));
-                  console.log("All groups saved:", groupsData);
                   // Here you would send this data to your backend
                   setGroupsConfigured(true);
                   setGroupCreationMethod("manual");
@@ -2771,10 +2715,6 @@ const UserTaskPage = () => {
                   setGroups(generatedGroupsPreview);
                   setGroupsConfigured(true);
                   setGroupCreationMethod("generate");
-                  console.log(
-                    `Generated ${numberOfGroups} groups:`,
-                    generatedGroupsPreview,
-                  );
                   setShowGenerateGroups(false);
                 }}
                 className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:text-base font-medium"

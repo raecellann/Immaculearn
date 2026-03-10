@@ -4,12 +4,15 @@ import { useUser } from "../../../contexts/user/useUser";
 import { useTasks } from "../../../hooks/useTasks";
 import Sidebar from "../../component/sidebar";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
+import ButtonComponent from "../../component/Button.jsx";
 
 const ViewAllTaskPage = () => {
   const { space_name, space_uuid } = useParams();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showViewScore, setShowViewScore] = useState(false);
+  const [viewScoreTask, setViewScoreTask] = useState(null);
   const navigate = useNavigate();
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated, user } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   
@@ -70,8 +73,45 @@ const ViewAllTaskPage = () => {
     });
   };
 
-  const handleViewDetails = (task) => {
-    navigate(``);
+  const handleViewScore = (task) => {
+    // Force override with mock quiz data for testing
+    const taskWithMockData = {
+      ...task,
+      quiz_content: {
+        questions: [
+          {
+            id: 1,
+            type: "multiple-choice",
+            question: "What is the capital of France?",
+            options: ["London", "Berlin", "Paris", "Madrid"],
+            correctAnswer: "Paris"
+          },
+          {
+            id: 2,
+            type: "true-false",
+            question: "The Earth is flat.",
+            correctAnswer: "False"
+          },
+          {
+            id: 3,
+            type: "identification",
+            question: "Identify the largest planet in our solar system:",
+            correctAnswer: "Jupiter"
+          }
+        ]
+      },
+      student_answers: {
+        1: "Paris",
+        2: "False", 
+        3: "Jupiter"
+      },
+      score: 3,
+      total_score: 3
+    };
+    
+    // Open ViewScore modal
+    setViewScoreTask(taskWithMockData);
+    setShowViewScore(true);
   };
 
   return (
@@ -197,16 +237,18 @@ const ViewAllTaskPage = () => {
                         <p className="text-sm" style={{ color: currentColors.textSecondary }}>{formatDate(task.due_date)}</p>
                       </td>
                       <td className="py-4 px-4 text-center">
-                        <button
-                          onClick={() => handleViewDetails(task)}
-                          className="px-3 py-2 rounded-lg transition-colors text-xs font-medium"
+                        <ButtonComponent
+                          onClick={() => handleViewScore(task)}
                           style={{
                             backgroundColor: isDarkMode ? '#1d4ed8' : '#2563eb',
-                            color: 'white'
+                            borderColor: isDarkMode ? '#1d4ed8' : '#2563eb',
+                            padding: '0.3em 0.8em',
+                            fontSize: '0.75rem',
+                            borderRadius: '6px',
                           }}
                         >
-                          View Details
-                        </button>
+                          View Score
+                        </ButtonComponent>
                       </td>
                     </tr>
                   ))}
@@ -246,18 +288,21 @@ const ViewAllTaskPage = () => {
                       <p className="text-xs sm:text-sm" style={{ color: currentColors.textSecondary }}>{formatDate(task.due_date)}</p>
                     </div>
                     
-                    {/* View Details Button */}
+                    {/* View Score Button */}
                     <div className="flex justify-end">
-                      <button
-                        onClick={() => handleViewDetails(task)}
-                        className="px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium w-full sm:w-auto"
+                      <ButtonComponent
+                        onClick={() => handleViewScore(task)}
                         style={{
                           backgroundColor: isDarkMode ? '#1d4ed8' : '#2563eb',
-                          color: 'white'
+                          borderColor: isDarkMode ? '#1d4ed8' : '#2563eb',
+                          padding: '0.3em 0.8em',
+                          fontSize: '0.75rem',
+                          borderRadius: '6px',
+                          width: '100%',
                         }}
                       >
-                        View Details
-                      </button>
+                        View Score
+                      </ButtonComponent>
                     </div>
                   </div>
                 </div>
@@ -282,6 +327,195 @@ const ViewAllTaskPage = () => {
           )}
         </div>
       </div>
+
+      {/* VIEW SCORE MODAL */}
+      {showViewScore && viewScoreTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div 
+            className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            style={{ backgroundColor: currentColors.background }}
+          >
+            {/* Modal Header */}
+            <div 
+              className="sticky top-0 p-4 border-b flex justify-between items-center"
+              style={{ 
+                backgroundColor: currentColors.background,
+                borderColor: currentColors.border 
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                  style={{ backgroundColor: currentColors.primary || currentColors.accent }}
+                >
+                  {user?.fullname?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold" style={{ color: currentColors.text }}>
+                    Your Quiz Results
+                  </h3>
+                  <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                    {viewScoreTask.task_title}
+                  </p>
+                  <div className="flex gap-4 mt-1 text-sm">
+                    <span style={{ color: currentColors.text }}>
+                      Score: <strong>{viewScoreTask.score || 0}/{viewScoreTask.total_score || 0}</strong>
+                    </span>
+                    <span style={{ color: currentColors.textSecondary }}>
+                      Completed: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowViewScore(false);
+                  setViewScoreTask(null);
+                }}
+                className="p-2 rounded-lg transition-colors"
+                style={{ 
+                  color: currentColors.text,
+                  backgroundColor: 'transparent'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="space-y-6">
+                {/* Render quiz questions with student answers */}
+                {viewScoreTask.quiz_content?.questions?.map((question) => (
+                  <div
+                    key={question.id}
+                    className="p-4 rounded-lg border"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      borderColor: currentColors.border
+                    }}
+                  >
+                    <div className="mb-3">
+                      <h4 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                        {question.question}
+                      </h4>
+                      
+                      {/* Question Type Badge */}
+                      <span 
+                        className="inline-block px-2 py-1 rounded text-xs font-medium"
+                        style={{
+                          backgroundColor: currentColors.accent + '20',
+                          color: currentColors.accent
+                        }}
+                      >
+                        {question.type}
+                      </span>
+                    </div>
+
+                    {/* Display based on question type */}
+                    {question.type === "multiple-choice" && (
+                      <div className="space-y-2">
+                        {question.options?.map((option, index) => {
+                          const studentAnswer = viewScoreTask.student_answers?.[question.id];
+                          const isCorrect = option === question.correctAnswer;
+                          const isSelected = option === studentAnswer;
+                          
+                          return (
+                            <div
+                              key={index}
+                              className={`p-2 rounded text-sm ${
+                                isSelected && isCorrect ? 'bg-green-100 text-green-800' :
+                                isSelected && !isCorrect ? 'bg-red-100 text-red-800' :
+                                isCorrect ? 'bg-green-50 text-green-600' : ''
+                              }`}
+                              style={{
+                                backgroundColor: isSelected && isCorrect ? (isDarkMode ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)') :
+                                             isSelected && !isCorrect ? (isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)') :
+                                             isCorrect ? (isDarkMode ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.05)') : 'transparent',
+                                color: isSelected && isCorrect ? (isDarkMode ? '#10e164' : '#16a34a') :
+                                       isSelected && !isCorrect ? (isDarkMode ? '#ef4444' : '#dc2626') :
+                                       isCorrect ? (isDarkMode ? '#10e164' : '#16a34a') : currentColors.text
+                              }}
+                            >
+                              {option}
+                              {isSelected && ' '}
+                              {isCorrect && !isSelected && ' '}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {question.type === "true-false" && (
+                      <div className="space-y-2">
+                        {['True', 'False'].map((option) => {
+                          const studentAnswer = viewScoreTask.student_answers?.[question.id];
+                          const isCorrect = option === question.correctAnswer;
+                          const isSelected = option === studentAnswer;
+                          
+                          return (
+                            <div
+                              key={option}
+                              className={`p-2 rounded text-sm ${
+                                isSelected && isCorrect ? 'bg-green-100 text-green-800' :
+                                isSelected && !isCorrect ? 'bg-red-100 text-red-800' :
+                                isCorrect ? 'bg-green-50 text-green-600' : ''
+                              }`}
+                              style={{
+                                backgroundColor: isSelected && isCorrect ? (isDarkMode ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)') :
+                                             isSelected && !isCorrect ? (isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)') :
+                                             isCorrect ? (isDarkMode ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.05)') : 'transparent',
+                                color: isSelected && isCorrect ? (isDarkMode ? '#10e164' : '#16a34a') :
+                                       isSelected && !isCorrect ? (isDarkMode ? '#ef4444' : '#dc2626') :
+                                       isCorrect ? (isDarkMode ? '#10e164' : '#16a34a') : currentColors.text
+                              }}
+                            >
+                              {option}
+                              {isSelected && ' '}
+                              {isCorrect && !isSelected && ' '}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {question.type === "identification" && (
+                      <div>
+                        <div
+                          className={`p-3 rounded text-sm ${
+                            viewScoreTask.student_answers?.[question.id] === question.correctAnswer 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                          style={{
+                            backgroundColor: viewScoreTask.student_answers?.[question.id] === question.correctAnswer 
+                              ? (isDarkMode ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)')
+                              : (isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)'),
+                            color: viewScoreTask.student_answers?.[question.id] === question.correctAnswer 
+                              ? (isDarkMode ? '#10e164' : '#16a34a')
+                              : (isDarkMode ? '#ef4444' : '#dc2626')
+                          }}
+                        >
+                          Your Answer: {viewScoreTask.student_answers?.[question.id] || 'Not answered'}
+                        </div>
+                        <div 
+                          className="mt-2 p-2 rounded text-sm"
+                          style={{
+                            backgroundColor: isDarkMode ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.05)',
+                            color: isDarkMode ? '#10e164' : '#16a34a'
+                          }}
+                        >
+                          Correct Answer: {question.correctAnswer}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
