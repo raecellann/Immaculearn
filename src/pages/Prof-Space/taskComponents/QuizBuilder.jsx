@@ -467,6 +467,7 @@ const QuizBuilder = ({
                           : currentColors.border,
                     }}
                   />
+                  {question.options.length > 2 && (
                   <button
                     type="button"
                     onClick={() => {
@@ -479,6 +480,7 @@ const QuizBuilder = ({
                   >
                     <FiTrash2 size={14} />
                   </button>
+                )}
                 </div>
               );
             })}
