@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const Button = ({ text = "Share", onClick }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   const getIcon = () => {
     switch(text) {
       case "Add Member":
@@ -54,136 +56,108 @@ const Button = ({ text = "Share", onClick }) => {
     }
   };
 
-  const getHoverColor = () => {
-    switch(text) {
-      case "Add Member":
-        return "rgba(34, 197, 94, 0.5)"; // Green
-      case "Pending Invites":
-        return "rgba(59, 130, 246, 0.5)"; // Blue
-      case "Delete Room":
-        return "rgba(239, 68, 68, 0.5)"; // Red
-      case "All Notifications":
-        return "rgba(156, 163, 175, 0.5)"; // Gray
-      case "Pending Join Requests":
-        return "rgba(59, 130, 246, 0.5)"; // Blue
-      case "Space Invitations":
-        return "rgba(34, 197, 94, 0.5)"; // Green
-      case "School Announcements":
-        return "rgba(251, 191, 36, 0.5)"; // Amber/Yellow
-      default:
-        return "rgba(50, 100, 180, 0.5)"; // Default blue
-    }
-  };
-
-  const getTextColor = () => {
-    // Return black for light mode, white for dark mode
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    // Also check for hardcoded dark backgrounds (like in notification page)
-    const hasDarkBackground = document.body.style.backgroundColor === '' && 
-                             (document.body.classList.contains('bg-[#161A20]') || 
-                              getComputedStyle(document.body).backgroundColor === 'rgb(22, 26, 32)');
-    // Special case: Go to Calendar button should have white text in light mode (used on gradient backgrounds)
-    if (text === "Go to Calendar") {
-      return isDarkMode ? "white" : "white";
-    }
-    return (isDarkMode || hasDarkBackground) ? "white" : "black";
-  };
-
-  const getHoverTextColor = () => {
-    // Always return white for hover state in both light and dark modes
-    return "white";
-  };
-
-  const getBorderColor = () => {
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    // Also check for hardcoded dark backgrounds (like in notification page)
-    const hasDarkBackground = document.body.style.backgroundColor === '' && 
-                             (document.body.classList.contains('bg-[#161A20]') || 
-                              getComputedStyle(document.body).backgroundColor === 'rgb(22, 26, 32)');
+  const getButtonColor = () => {
     switch(text) {
       case "Add Member":
         return "#22c55e"; // Green
       case "Pending Invites":
+        return "#60a5fa"; // Light blue
+      case "Archive":
         return "#3b82f6"; // Blue
       case "Delete Room":
         return "#ef4444"; // Red
       case "All Notifications":
         return "#9ca3af"; // Gray
       case "Pending Join Requests":
-        return "#3b82f6"; // Blue
+        return "#60a5fa"; // Light blue
       case "Space Invitations":
         return "#22c55e"; // Green
       case "School Announcements":
         return "#fbbf24"; // Amber/Yellow
-      case "Go to Calendar":
-        return isDarkMode ? "#3b82f6" : "white"; // White border in light mode for gradient backgrounds
       default:
-        return "transparent"; // Default transparent
+        return "#007AFF"; // Default blue
     }
   };
 
-  const buttonStyle = {
-    cursor: 'pointer',
-    padding: '0.5em 1em',
-    fontSize: '0.7em',
-    width: 'auto',
-    height: 'auto',
-    color: getTextColor(),
-    background: 'transparent',
-    borderRadius: '0.25em',
-    border: 'none',
-    boxShadow: 'none',
-    transition: 'all 0.3s ease-in-out',
-    outline: '0.1em solid #353535', 
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.5em',
+  const getHoverColor = () => {
+    switch(text) {
+      case "Add Member":
+        return "#16a34a"; // Darker green
+      case "Pending Invites":
+        return "#3b82f6"; // Blue
+      case "Archive":
+        return "#2563eb"; // Darker blue
+      case "Delete Room":
+        return "#dc2626"; // Darker red
+      case "All Notifications":
+        return "#6b7280"; // Darker gray
+      case "Pending Join Requests":
+        return "#3b82f6"; // Blue
+      case "Space Invitations":
+        return "#16a34a"; // Darker green
+      case "School Announcements":
+        return "#f59e0b"; // Darker amber
+      default:
+        return "#0066D2"; // Default darker blue
+    }
+  };
+
+  const getButtonStyle = () => {
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const borderColor = isDarkMode ? 'white' : '#1a1a1a';
+    
+    let computedStyle = {
+      color: "#fff",
+      cursor: "pointer",
+      border: `1px solid ${borderColor}`,
+      borderRadius: "6px",
+      padding: "clamp(0.3em, 1vw, 0.4em) clamp(0.8em, 3vw, 1.2em)",
+      background: getButtonColor(),
+      transition: "all 0.2s ease-in-out",
+      fontWeight: "500",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "clamp(0.2em, 1vw, 0.4em)",
+      fontSize: "clamp(0.6rem, 2.5vw, 0.75rem)",
+      minWidth: "fit-content",
+      whiteSpace: "nowrap",
+      maxWidth: "100%",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+    };
+
+    if (isHovered) {
+      computedStyle.color = "#fff";
+      computedStyle.background = getHoverColor();
+      computedStyle.transform = "translate(-0.15rem, -0.15rem)";
+      computedStyle.boxShadow = "0.15rem 0.15rem rgba(0, 0, 0, 0.3)";
+    }
+
+    if (isActive) {
+      computedStyle.transform = "translate(0)";
+      computedStyle.boxShadow = "none";
+    }
+
+    return computedStyle;
   };
 
   const iconStyle = {
-    fill: getTextColor(),
-    width: '1em',
-    height: '1em',
-    marginRight: '0.5em',
-    display: 'inline-block',
-    verticalAlign: 'middle',
+    fill: "#fff",
+    width: "1em",
+    height: "1em",
+    display: "inline-block",
+    verticalAlign: "middle",
   };
 
   return (
     <button 
-      style={buttonStyle}
+      style={getButtonStyle()}
       onClick={onClick}
-      onMouseEnter={(e) => {
-        const color = getHoverColor();
-        const hoverTextColor = getHoverTextColor();
-        e.target.style.background = `radial-gradient(circle at bottom, ${color} 10%, #212121 70%)`;
-        // Remove scale transform and margin changes
-        e.target.style.transform = 'scale(1)';
-        e.target.style.boxShadow = '0 0 1em 0.45em rgba(0, 0, 0, 0.1)';
-        e.target.style.margin = '0';
-
-        // 👇 Change text to category color on hover
-        e.target.style.color = hoverTextColor;
-
-        // 👇 Change icon to category color on hover
-        const svg = e.target.querySelector('svg');
-        if (svg) svg.style.fill = hoverTextColor;
-      }}
-
-      onMouseLeave={(e) => {
-        e.target.style.background = 'transparent';
-        e.target.style.transform = 'scale(1)';
-        e.target.style.boxShadow = 'none';
-        e.target.style.margin = '0';
-
-        // Restore original color
-        e.target.style.color = getTextColor();
-
-        const svg = e.target.querySelector('svg');
-        if (svg) svg.style.fill = getTextColor();
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseDown={() => setIsActive(true)}
+      onMouseUp={() => setIsActive(false)}
     >
       <span style={iconStyle}>
         {getIcon()}

@@ -37,46 +37,79 @@ const AddMember = ({
   };
 
   const sendInvite = async () => {
-    const email = inviteEmail.trim();
+    const emailText = inviteEmail.trim();
     
-    if (!email) {
-      setEmailError("Please enter an email address");
+    if (!emailText) {
+      setEmailError("Please enter at least one email address");
       return;
     }
 
-    if (!isValidEmail(email)) {
-      setEmailError("Please enter a valid Gmail address");
+    // Split emails by comma and filter out empty strings
+    const emails = emailText.split(',').map(email => email.trim()).filter(email => email);
+    
+    // Validate each email
+    const invalidEmails = emails.filter(email => !isValidEmail(email));
+    if (invalidEmails.length > 0) {
+      setEmailError(`Invalid Gmail address(es): ${invalidEmails.join(', ')}`);
       return;
     }
 
     setIsSending(true);
     
     try {
-      const result = await inviteUser(currentSpace?.space_uuid, email);
+      // Send invites to all valid emails
+      const results = await Promise.all(
+        emails.map(email => inviteUser(currentSpace?.space_uuid, email))
+      );
       
-      if (result.success) {
-        toast.success(`Invitation has been sent to ${email}`);
+      // Check if all invites were sent successfully
+      const successfulInvites = results.filter(result => result.success);
+      const failedInvites = results.filter(result => !result.success);
+      
+      if (successfulInvites.length > 0) {
+        if (emails.length === 1) {
+          toast.success(`Invitation has been sent to ${emails[0]}`);
+        } else {
+          toast.success(`Invitations have been sent to ${emails.length} email addresses`);
+        }
         setInviteEmail("");
         setEmailError("");
         setShowInvitePopup(false);
-      } else {
-        setEmailError(result.message || "Failed to send invitation");
+      }
+      
+      if (failedInvites.length > 0) {
+        const failedEmails = failedInvites.map((result, index) => emails[index]).join(', ');
+        setEmailError(`Failed to send invitations to: ${failedEmails}`);
       }
     } catch (error) {
-      setEmailError("Failed to send invitation. Please try again.");
+      setEmailError("Failed to send invitations. Please try again.");
     } finally {
       setIsSending(false);
     }
   };
 
-  const validateEmail = (email) => {
-    if (!email.trim()) {
+  const validateEmail = (emailText) => {
+    if (!emailText.trim()) {
       setEmailError("");
       return;
     }
     
-    if (!isValidEmail(email)) {
-      setEmailError("Please enter a valid Gmail address");
+    // Split emails by comma and filter out empty strings
+    const emails = emailText.split(',').map(email => email.trim()).filter(email => email);
+    
+    if (emails.length === 0) {
+      setEmailError("");
+      return;
+    }
+    
+    // Validate each email
+    const invalidEmails = emails.filter(email => !isValidEmail(email));
+    if (invalidEmails.length > 0) {
+      if (invalidEmails.length === 1) {
+        setEmailError("Please enter a valid Gmail address");
+      } else {
+        setEmailError(`Invalid Gmail address(es): ${invalidEmails.join(', ')}`);
+      }
     } else {
       setEmailError("");
     }
@@ -173,7 +206,7 @@ const AddMember = ({
                   setInviteEmail(e.target.value);
                   validateEmail(e.target.value);
                 }}
-                placeholder="Enter email address"
+                placeholder="Enter email addresses (separated by commas)"
                 className={`${styles.emailInput} ${
                   emailError 
                     ? 'border-red-500 focus:border-red-500' 
@@ -215,7 +248,7 @@ const AddMember = ({
                   <p className={`text-xs leading-relaxed ${
                     isDarkMode ? 'text-gray-400' : 'text-gray-600'
                   }`}>
-                    Enter a Gmail address and click "Send Invite" to notify the user.
+                    Enter multiple Gmail addresses separated by commas and click "Send Invite" to notify users.
                   </p>
                 </div>
               </div>
