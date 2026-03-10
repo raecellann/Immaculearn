@@ -1,9 +1,14 @@
 import React, { useState } from "react";
-import { FiEdit } from "react-icons/fi";
+import { FiEdit, FiArrowRight } from "react-icons/fi";
+import { useNavigate } from "react-router";
 
 const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
   const [userAnswers, setUserAnswers] = useState({});
   const [hoveredOption, setHoveredOption] = useState(null);
+  const navigate = useNavigate();
+
+  // Debug taskData structure
+  console.log('QuizPreview taskData:', taskData);
 
   // Parse questions from the task data
   const getQuestions = () => {
@@ -21,6 +26,15 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
       };
     });
   };
+
+  const allQuestions = getQuestions();
+  const hasMoreQuestions = allQuestions.length > 3;
+  
+  // Debug logging
+  console.log('QuizPreview Debug:');
+  console.log('- All questions count:', allQuestions.length);
+  console.log('- Has more questions:', hasMoreQuestions);
+  console.log('- First 3 questions:', allQuestions.slice(0, 3));
 
   const determineQuestionType = (answers) => {
     if (!answers || answers.length === 0) return "short-answer";
@@ -233,7 +247,7 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
     }
   };
 
-  const questions = getQuestions();
+  const questions = allQuestions.slice(0, 3); // Use the limited questions
 
   return (
     <div
@@ -321,7 +335,7 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
 
       {/* Questions */}
       <div className="space-y-8">
-        {questions.map((question, index) => (
+        {allQuestions.slice(0, 3).map((question, index) => (
           <div
             key={question.id}
             className="p-6 rounded-lg border"
@@ -363,6 +377,40 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
           </div>
         ))}
       </div>
+
+      {/* See More Button */}
+      {hasMoreQuestions && (
+        <div className="mt-6 text-center">
+          {console.log('Rendering See More button...')}
+          <button
+            onClick={() => {
+              // Navigate to ViewAllTaskPage with current space context
+              const spaceId = taskData?.c_space_id || taskData?.space_id;
+              const spaceName = taskData?.space_name || taskData?.c_space_name;
+              if (spaceId && spaceName) {
+                navigate(`/task/${spaceId}/${encodeURIComponent(spaceName)}`);
+              } else {
+                console.warn('No space ID or name found for navigation');
+              }
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            style={{
+              backgroundColor: currentColors.accent || '#2563eb',
+              color: '#ffffff',
+              border: 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#1d4ed8';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = currentColors.accent || '#2563eb';
+            }}
+          >
+            See More Questions
+            <FiArrowRight size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Quiz Footer */}
       <div

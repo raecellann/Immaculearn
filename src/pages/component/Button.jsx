@@ -28,7 +28,7 @@ const Button = ({
 
     if (isHovered) {
       computedStyle.color = "#fff";
-      computedStyle.background = "#0066D2";
+      // Keep the same background color, only add transform and shadow
       computedStyle.transform = "translate(-0.25rem, -0.25rem)";
       computedStyle.boxShadow = "0.25rem 0.25rem #000";
     }

@@ -11,6 +11,7 @@ import {
   FiUnderline,
   FiUploadCloud,
   FiArrowLeft,
+  FiArrowRight,
   FiFileText,
   FiCopy,
   FiUpload,
@@ -22,6 +23,7 @@ import AddMember from "../component/AddMember";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
+import ButtonComponent from "../component/Button.jsx";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { toast } from "react-toastify";
@@ -1045,6 +1047,11 @@ const UserTaskPage = () => {
 
     if (categoryTasks.length === 0) return null;
 
+    // For quiz category, limit to 3 tasks and add See More button
+    const isQuizCategory = category === "quiz";
+    const displayedTasks = isQuizCategory ? categoryTasks.slice(0, 3) : categoryTasks;
+    const hasMoreTasks = isQuizCategory && categoryTasks.length > 3;
+
     return (
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
@@ -1076,7 +1083,7 @@ const UserTaskPage = () => {
           </div>
 
           {/* TASK LIST */}
-          {categoryTasks.map((task, index) => {
+          {displayedTasks.map((task, index) => {
             const originalIndex = allTasks.findIndex(
               (t) => t.task_id === task.task_id,
             );
@@ -1308,7 +1315,7 @@ const UserTaskPage = () => {
                       {task.task_category === "quiz" && (
                         <>
                           {!isOwnerSpace ? (
-                            <button
+                            <ButtonComponent
                               onClick={(e) => {
                                 e.preventDefault();
                                 // Decide what to do based on whether the quiz was answered
@@ -1316,55 +1323,43 @@ const UserTaskPage = () => {
                                   ? handleViewScore(task)
                                   : handleTakeQuiz(task);
                               }}
-                              className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                               style={{
                                 backgroundColor: task.has_answered
-                                  ? "gray"
+                                  ? "#6b7280"
                                   : "#10B981",
-                                color: "white",
-                                cursor: "pointer", // always clickable
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor =
-                                  task.has_answered ? "#6b7280" : "#059669";
-                                // optional: darker gray for answered
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor =
-                                  task.has_answered ? "gray" : "#10B981";
+                                borderColor: task.has_answered
+                                  ? "#6b7280"
+                                  : "#10B981",
+                                padding: '0.3em 0.8em',
+                                fontSize: '0.75rem',
+                                borderRadius: '6px',
+                                flex: 1,
                               }}
                             >
                               {task.has_answered ? "View Score" : "Take Quiz"}
-                            </button>
+                            </ButtonComponent>
                           ) : (
-                            <a
-                              href="#"
+                            <ButtonComponent
                               onClick={(e) => {
                                 e.preventDefault();
                                 handlePreviewTask(task);
                               }}
-                              className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                task.isLocal ? "flex-1" : "block w-full"
-                              }`}
                               style={{
                                 backgroundColor: task.isLocal
                                   ? "#2563eb"
                                   : currentColors.accent,
-                                color: "white",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = task.isLocal
-                                  ? "#1d4ed8"
-                                  : "#1d4ed8";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = task.isLocal
+                                borderColor: task.isLocal
                                   ? "#2563eb"
-                                  : currentColors.accent;
+                                  : currentColors.accent,
+                                padding: '0.3em 0.8em',
+                                fontSize: '0.75rem',
+                                borderRadius: '6px',
+                                flex: task.isLocal ? 1 : 'none',
+                                width: task.isLocal ? 'auto' : '100%',
                               }}
                             >
                               View Details
-                            </a>
+                            </ButtonComponent>
                           )}
                         </>
                       )}
@@ -1375,6 +1370,33 @@ const UserTaskPage = () => {
             );
           })}
         </div>
+
+        {/* See More Button for Quiz Category */}
+        {isQuizCategory && hasMoreTasks && (
+          <div className="mt-4 text-right">
+            <ButtonComponent
+              onClick={() => {
+                // Navigate to ViewAllTaskPage with current space context
+                const spaceId = space_uuid;
+                const spaceName = currentSpace?.space_name;
+                if (spaceId && spaceName) {
+                  navigate(`/task/${spaceId}/${encodeURIComponent(spaceName)}`);
+                } else {
+                  console.warn('No space ID or name found for navigation');
+                }
+              }}
+              style={{
+                backgroundColor: currentColors.accent || '#2563eb',
+                borderColor: currentColors.accent || '#2563eb',
+                padding: '0.3em 0.8em',
+                fontSize: '0.75rem',
+                borderRadius: '6px',
+              }}
+            >
+              See More Quizzes
+            </ButtonComponent>
+          </div>
+        )}
       </div>
     );
   };

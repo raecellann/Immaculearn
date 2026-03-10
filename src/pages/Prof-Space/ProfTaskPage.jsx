@@ -11,6 +11,7 @@ import {
   FiUnderline,
   FiUploadCloud,
   FiArrowLeft,
+  FiArrowRight,
   FiFileText,
   FiCopy,
   FiUpload,
@@ -22,6 +23,7 @@ import ArchiveClassAlert from "../component/ArchiveClassAlert";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
+import ButtonComponent from "../component/Button.jsx";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
 import { toast } from "react-toastify";
@@ -1035,6 +1037,11 @@ const ProfTaskPage = () => {
 
     if (categoryTasks.length === 0) return null;
 
+    // For quiz category, limit to 3 tasks and add See More button
+    const isQuizCategory = category === "quiz";
+    const displayedTasks = isQuizCategory ? categoryTasks.slice(0, 3) : categoryTasks;
+    const hasMoreTasks = isQuizCategory && categoryTasks.length > 3;
+
     return (
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
@@ -1066,7 +1073,7 @@ const ProfTaskPage = () => {
           </div>
 
           {/* TASK LIST */}
-          {categoryTasks.map((task, index) => {
+          {displayedTasks.map((task, index) => {
             const originalIndex = allTasks.findIndex(
               (t) => t.task_id === task.task_id,
             );
@@ -1349,44 +1356,38 @@ const ProfTaskPage = () => {
                             </button>
                           ) : (
                             <>
-                              <button
+                              <ButtonComponent
                                 onClick={(e) => {
                                   e.preventDefault();
                                   handleEditTask(task);
                                 }}
-                                className="flex-1 text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                                 style={{
                                   backgroundColor: "#22c55e",
-                                  color: "white",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#1d9d3a";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = "#22c55e";
+                                  borderColor: "#22c55e",
+                                  padding: '0.3em 0.8em',
+                                  fontSize: '0.75rem',
+                                  borderRadius: '6px',
+                                  flex: 1,
                                 }}
                               >
                                 Edit Quiz
-                              </button>
-                              <button
+                              </ButtonComponent>
+                              <ButtonComponent
                                 onClick={(e) => {
                                   e.preventDefault();
                                   handlePreviewTask(task);
                                 }}
-                                className="flex-1 text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                                 style={{
                                   backgroundColor: currentColors.accent,
-                                  color: "white",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#1d4ed8";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = currentColors.accent;
+                                  borderColor: currentColors.accent,
+                                  padding: '0.3em 0.8em',
+                                  fontSize: '0.75rem',
+                                  borderRadius: '6px',
+                                  flex: 1,
                                 }}
                               >
                                 View Details
-                              </button>
+                              </ButtonComponent>
                             </>
                           )}
                         </>
@@ -1428,6 +1429,33 @@ const ProfTaskPage = () => {
             );
           })}
         </div>
+
+        {/* See More Button for Quiz Category */}
+        {isQuizCategory && hasMoreTasks && (
+          <div className="mt-4 text-right">
+            <ButtonComponent
+              onClick={() => {
+                // Navigate to ProfViewAllActivities with current space context
+                const spaceId = space_uuid;
+                const spaceName = space_name || currentSpace?.space_name;
+                if (spaceId && spaceName) {
+                  navigate(`/prof/list-activity/${spaceId}/${encodeURIComponent(spaceName)}`);
+                } else {
+                  console.warn('No space ID or name found for navigation');
+                }
+              }}
+              style={{
+                backgroundColor: currentColors.accent || '#2563eb',
+                borderColor: currentColors.accent || '#2563eb',
+                padding: '0.3em 0.8em',
+                fontSize: '0.75rem',
+                borderRadius: '6px',
+              }}
+            >
+              See More Quizzes
+            </ButtonComponent>
+          </div>
+        )}
       </div>
     );
   };
