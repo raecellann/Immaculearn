@@ -22,6 +22,7 @@ import ProfNotificationPage from "../pages/prof-Notifications/profnotification.j
 import ProfListActivityPage from "../pages/prof-ListActivities/proflistactivitypage.jsx";
 import ProfViewAllActivityPage from "../pages/prof-ListActivities/components/ProfViewAllActivities.jsx";
 import ProfViewActivityPage from "../pages/prof-ListActivities/components/ProfViewActivity.jsx";
+import ResponseSummaryPage from "../pages/prof-ListActivities/components/ResponseSummaryPage.jsx";
 
 import ProfFilePage from "../pages/prof-Files/proffiles.jsx";
 import ProfViewFiles from "../pages/prof-Files/components/ProfViewAllFiles.jsx";
@@ -100,6 +101,14 @@ export const ProfRoutes = () => {
         element={
           <SpaceProvider>
             <ProfViewActivityPage />
+          </SpaceProvider>
+        }
+      />
+      <Route
+        path="response-summary/:space_uuid/:space_name/:task_name/:task_id"
+        element={
+          <SpaceProvider>
+            <ResponseSummaryPage />
           </SpaceProvider>
         }
       />

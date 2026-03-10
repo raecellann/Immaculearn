@@ -4,7 +4,7 @@ import { useUser } from "../../../contexts/user/useUser";
 import { useTasks } from "../../../hooks/useTasks";
 import ProfSidebar from "../../component/profsidebar";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
-import { FiX, FiUser, FiCheck, FiX as FiXIcon } from "react-icons/fi";
+import { FiX, FiUser, FiCheck, FiX as FiXIcon, FiBarChart2, FiArrowLeft } from "react-icons/fi";
 
 const ProfViewActivityPage = () => {
   const { space_uuid, space_name, task_name, task_id } = useParams();
@@ -151,6 +151,11 @@ const ProfViewActivityPage = () => {
   const handleStudentClick = (student) => {
     setSelectedStudent(student);
     setShowStudentAnswers(true);
+  };
+
+  // Handle response summary for quiz - navigate to separate page
+  const handleResponseSummary = () => {
+    navigate(`/prof/response-summary/${space_uuid}/${encodeURIComponent(space_name)}/${encodeURIComponent(decodedTaskName)}/${task_id}`);
   };
 
   const checkIfAnswerIsCorrect = (question, studentAnswer) => {
@@ -378,7 +383,26 @@ const ProfViewActivityPage = () => {
 
             {/* Students Who Took Quiz Table */}
             <div className="mt-6 sm:mt-8">
-              <h3 className="text-sm sm:text-base font-semibold mb-3 sm:mb-4">Students Who Completed This Quiz:</h3>
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <h3 className="text-sm sm:text-base font-semibold">Students Who Completed This Quiz:</h3>
+                <button
+                  onClick={handleResponseSummary}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  style={{
+                    backgroundColor: "#f59e0b",
+                    color: "white",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#d97706";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "#f59e0b";
+                  }}
+                >
+                  <FiBarChart2 size={16} />
+                  Response Summary
+                </button>
+              </div>
               
               {/* Mobile Card View - For small screens */}
               <div className="block sm:hidden">

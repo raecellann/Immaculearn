@@ -218,6 +218,11 @@ const ProfTaskPage = () => {
   const [showStudentQuiz, setShowStudentQuiz] = useState(false);
   const [studentQuizTask, setStudentQuizTask] = useState(null);
 
+  // Response summary state
+  const [showResponseSummary, setShowResponseSummary] = useState(false);
+  const [responseSummaryData, setResponseSummaryData] = useState(null);
+  const [selectedQuizForSummary, setSelectedQuizForSummary] = useState(null);
+
   // Example available members in the professor's space
   const availableMembers = [
     "John Smith",
@@ -1490,6 +1495,75 @@ const ProfTaskPage = () => {
     setStudentQuizTask(null);
   };
 
+  // Handle response summary for quiz
+  const handleResponseSummary = async (task) => {
+    setSelectedQuizForSummary(task);
+    setShowResponseSummary(true);
+    
+    // Mock data for demonstration - replace with actual API call
+    const mockSummaryData = {
+      quizTitle: task.task_title || "Quiz",
+      totalStudents: 25,
+      passedStudents: 18,
+      failedStudents: 7,
+      averageScore: 78.5,
+      passRate: 72,
+      questionAnalysis: [
+        {
+          questionId: 1,
+          questionText: "What is the capital of France?",
+          correctAnswer: "Paris",
+          incorrectAnswers: {
+            "London": 5,
+            "Berlin": 3,
+            "Madrid": 2
+          },
+          correctCount: 15,
+          incorrectCount: 10
+        },
+        {
+          questionId: 2,
+          questionText: "Which planet is known as the Red Planet?",
+          correctAnswer: "Mars",
+          incorrectAnswers: {
+            "Venus": 4,
+            "Jupiter": 3,
+            "Saturn": 2
+          },
+          correctCount: 16,
+          incorrectCount: 9
+        },
+        {
+          questionId: 3,
+          questionText: "What is 2 + 2?",
+          correctAnswer: "4",
+          incorrectAnswers: {
+            "3": 3,
+            "5": 2,
+            "22": 1
+          },
+          correctCount: 19,
+          incorrectCount: 6
+        }
+      ],
+      studentResults: [
+        { name: "Alice Johnson", score: 85, status: "passed", answers: ["Paris", "Mars", "4"] },
+        { name: "Bob Smith", score: 92, status: "passed", answers: ["Paris", "Mars", "4"] },
+        { name: "Charlie Brown", score: 65, status: "failed", answers: ["London", "Mars", "4"] },
+        { name: "Diana Prince", score: 78, status: "passed", answers: ["Paris", "Venus", "4"] },
+        { name: "Edward Norton", score: 58, status: "failed", answers: ["Berlin", "Mars", "3"] }
+      ]
+    };
+    
+    setResponseSummaryData(mockSummaryData);
+  };
+
+  const handleCloseResponseSummary = () => {
+    setShowResponseSummary(false);
+    setResponseSummaryData(null);
+    setSelectedQuizForSummary(null);
+  };
+
   const handleQuizSubmit = async (answers) => {
     const submissionData = {
       task_id: studentQuizTask.task_id || studentQuizTask.rawData?.task_id,
@@ -2389,6 +2463,146 @@ const ProfTaskPage = () => {
             onSubmit={handleQuizSubmit}
             onExit={handleCloseStudentQuiz}
           />
+        </div>
+      )}
+
+      {/* RESPONSE SUMMARY MODAL */}
+      {showResponseSummary && responseSummaryData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div 
+            className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4"
+            style={{ backgroundColor: currentColors.surface }}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 
+                className="text-2xl font-bold"
+                style={{ color: currentColors.text }}
+              >
+                Response Summary - {responseSummaryData.quizTitle}
+              </h2>
+              <button
+                onClick={handleCloseResponseSummary}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+                style={{ color: currentColors.text }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Overview Statistics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-blue-50 p-4 rounded-lg" style={{ backgroundColor: currentColors.accent + '20' }}>
+                <div className="text-2xl font-bold text-blue-600" style={{ color: currentColors.accent }}>
+                  {responseSummaryData.totalStudents}
+                </div>
+                <div className="text-sm text-gray-600">Total Students</div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">{responseSummaryData.passedStudents}</div>
+                <div className="text-sm text-gray-600">Passed</div>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">{responseSummaryData.failedStudents}</div>
+                <div className="text-sm text-gray-600">Failed</div>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">{responseSummaryData.passRate}%</div>
+                <div className="text-sm text-gray-600">Pass Rate</div>
+              </div>
+            </div>
+
+            {/* Question Analysis */}
+            <div className="mb-6">
+              <h3 
+                className="text-lg font-semibold mb-4"
+                style={{ color: currentColors.text }}
+              >
+                Question Analysis - Common Incorrect Answers
+              </h3>
+              <div className="space-y-4">
+                {responseSummaryData.questionAnalysis.map((question) => (
+                  <div 
+                    key={question.questionId} 
+                    className="border rounded-lg p-4"
+                    style={{ borderColor: currentColors.border }}
+                  >
+                    <div className="mb-2">
+                      <span 
+                        className="font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        Q{question.questionId}:
+                      </span>
+                      <span className="ml-2" style={{ color: currentColors.text }}>
+                        {question.questionText}
+                      </span>
+                    </div>
+                    <div className="mb-2">
+                      <span className="text-sm text-green-600 font-medium">Correct: {question.correctAnswer}</span>
+                      <span className="ml-4 text-sm text-blue-600">
+                        ({question.correctCount} students)
+                      </span>
+                    </div>
+                    <div className="text-sm">
+                      <span className="text-red-600 font-medium">Common incorrect answers:</span>
+                      <div className="mt-1 space-y-1">
+                        {Object.entries(question.incorrectAnswers).map(([answer, count]) => (
+                          <div key={answer} className="flex items-center gap-2">
+                            <span className="text-red-500">• {answer}</span>
+                            <span className="text-gray-500">({count} students)</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Student Results */}
+            <div>
+              <h3 
+                className="text-lg font-semibold mb-4"
+                style={{ color: currentColors.text }}
+              >
+                Student Results
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr style={{ backgroundColor: currentColors.accent + '20' }}>
+                      <th className="border p-2 text-left" style={{ borderColor: currentColors.border }}>Student Name</th>
+                      <th className="border p-2 text-center" style={{ borderColor: currentColors.border }}>Score</th>
+                      <th className="border p-2 text-center" style={{ borderColor: currentColors.border }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {responseSummaryData.studentResults.map((student, index) => (
+                      <tr key={index}>
+                        <td className="border p-2" style={{ borderColor: currentColors.border, color: currentColors.text }}>
+                          {student.name}
+                        </td>
+                        <td className="border p-2 text-center" style={{ borderColor: currentColors.border, color: currentColors.text }}>
+                          {student.score}%
+                        </td>
+                        <td className="border p-2 text-center" style={{ borderColor: currentColors.border }}>
+                          <span 
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              student.status === 'passed' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {student.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
