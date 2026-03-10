@@ -537,7 +537,7 @@ const HomePage1 = () => {
                 className="rounded-xl p-4 sm:p-6"
                 style={{
                   background: isDarkMode
-                    ? "linear-gradient(159deg, #3498db 0%, #2ecc71 100%)"
+                    ? "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
                     : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
                   border: "none",
                 }}

@@ -465,7 +465,7 @@ const SpacePage = () => {
 
                 <Button
                   onClick={() => navigate("/space/create")}
-                  style={{ border: "1px solid black" }}
+                  style={{borderColor: "white" }}
                 >
                   Create Space
                 </Button>

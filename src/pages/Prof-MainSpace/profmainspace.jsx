@@ -423,7 +423,7 @@ const ProfSpacePage = () => {
               <div className="flex md:justify-end">
                 <Button
                   onClick={() => navigate("/prof/space/create")}
-                  style={{ border: isDarkMode ? "1px solid black" : "1px solid white" }}
+                  style={{ borderColor: "white" }}
                 >
                   Create Space
                 </Button>
@@ -602,7 +602,7 @@ const ProfSpacePage = () => {
                 <Button
                   onClick={() => navigate("/prof/spaces/classroom/create")}
                   className="px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm"
-                  style={{ border: isDarkMode ? "1px solid black" : "1px solid white" }}
+                  style={{ border: isDarkMode ? "1px solid white" : "1px solid black " }}
                 >
                   Create Space
                 </Button>

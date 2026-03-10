@@ -211,7 +211,7 @@ const StudentAnnouncementByAdmin = () => {
           <button
             onClick={() => navigate("/notifications", { state: { filter: "announcements" } })}
             className="text-sm font-medium hover:underline transition-colors"
-            style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
+            style={{ color: "white"  }}
           >
             View All Announcements →
           </button>
