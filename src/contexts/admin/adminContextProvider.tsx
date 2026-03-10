@@ -2,7 +2,12 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { adminApi } from "../../lib/api.admin";
 import { AdminContext, AdminContextType } from "./adminContext";
-import { Admin, AdminStats, AnnouncementData, AnnouncementCreateData } from "../../types/admin";
+import {
+  Admin,
+  AdminStats,
+  AnnouncementData,
+  AnnouncementCreateData,
+} from "../../types/admin";
 import { adminService } from "../../services/adminService";
 
 interface AdminProviderProps {
@@ -18,40 +23,39 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced auth state update to prevent rapid changes
-  const updateAuthState = useCallback((authenticated: boolean, adminData: Admin | null) => {
-    try {
-      // Clear any pending timeout
-      if (authTimeoutRef.current) {
-        clearTimeout(authTimeoutRef.current);
-      }
+  const updateAuthState = useCallback(
+    (authenticated: boolean, adminData: Admin | null) => {
+      try {
+        // Clear any pending timeout
+        if (authTimeoutRef.current) {
+          clearTimeout(authTimeoutRef.current);
+        }
 
-      // Debounce the state update to prevent rapid changes
-      authTimeoutRef.current = setTimeout(() => {
-        setIsAuthenticated(authenticated);
-        setAdmin(adminData);
-        setIsLoading(false);
-      }, 100); // Small delay to prevent rapid state changes
-    } catch (error) {
-      console.error('Error in updateAuthState:', error);
-    }
-  }, []);
+        // Debounce the state update to prevent rapid changes
+        authTimeoutRef.current = setTimeout(() => {
+          setIsAuthenticated(authenticated);
+          setAdmin(adminData);
+          setIsLoading(false);
+        }, 100); // Small delay to prevent rapid state changes
+      } catch (error) {
+        console.error("Error in updateAuthState:", error);
+      }
+    },
+    [],
+  );
 
   // Check authentication status
   const checkAuth = async (): Promise<boolean> => {
-    
     if (isCheckingRef.current) return isAuthenticated;
     isCheckingRef.current = true;
     setIsLoading(true);
 
     try {
-      
       // Try profile
       const profileRes = await adminApi.get("/admin/profile");
-      
-      
-      
+
       if (profileRes.data?.success && profileRes.data?.data) {
-        console.log('Profile successful, updating auth state');
+        console.log("Profile successful, updating auth state");
         updateAuthState(true, profileRes.data.data);
         return true;
       }
@@ -64,19 +68,16 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       if (status === 401) {
         try {
           const refreshRes = await adminApi.get("/admin/refresh");
-     
 
           if (refreshRes.data?.success) {
             const retryProfile = await adminApi.get("/admin/profile");
-           
-            
+
             if (retryProfile.data?.success && retryProfile.data?.data) {
               updateAuthState(true, retryProfile.data.data);
               return true;
             }
           }
-        } catch (refreshError) {
-        }
+        } catch (refreshError) {}
       }
 
       updateAuthState(false, null);
@@ -90,13 +91,12 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<any> => {
     try {
       setIsLoading(true);
-      
+
       const response = await adminApi.post(
         "/admin/login",
         { email, password },
         { withCredentials: true },
       );
-
 
       if (response.data?.success) {
         // Fetch admin profile after login
@@ -139,45 +139,60 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   };
 
   // Get admin statistics
-  const getAdminStats = async (): Promise<{ success: boolean; data?: AdminStats | undefined; message?: string }> => {
+  const getAdminStats = async (): Promise<{
+    success: boolean;
+    data?: AdminStats | undefined;
+    message?: string;
+  }> => {
     try {
       const response = await adminApi.get("/admin/stats");
       return {
         success: true,
-        data: response.data?.data
+        data: response.data?.data,
       };
     } catch (err) {
       console.error("Get admin stats error:", err);
       return {
         success: false,
-        message: "Failed to get admin stats"
+        message: "Failed to get admin stats",
       };
     }
   };
 
   // Announcement functions
-  const createAnnouncement = async (announcementData: AnnouncementCreateData): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
+  const createAnnouncement = async (
+    announcementData: AnnouncementCreateData,
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    data?: AnnouncementData;
+  }> => {
     try {
       setIsLoading(true);
       const result = await adminService.create_announcement(
         announcementData.title,
         announcementData.content,
         announcementData.target_audience,
-        announcementData.publish_option
+        announcementData.publish_option,
+        announcementData.images,
       );
       return result;
     } catch (err) {
       console.error("Create announcement error:", err);
       return {
         success: false,
-        message: "Failed to create announcement"
+        message: "Failed to create announcement",
       };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getAllAnnouncements = async (): Promise<{ success: boolean; message?: string; data?: AnnouncementData[] }> => {
+  const getAllAnnouncements = async (): Promise<{
+    success: boolean;
+    message?: string;
+    data?: AnnouncementData[];
+  }> => {
     try {
       const result = await adminService.getAllAnnouncements();
       return result;
@@ -185,15 +200,19 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       console.error("Get all announcements error:", err);
       return {
         success: false,
-        message: "Failed to fetch announcements"
+        message: "Failed to fetch announcements",
       };
     }
   };
 
   const updateAnnouncement = async (
     announcement_id: number,
-    announcementData: Partial<AnnouncementCreateData>
-  ): Promise<{ success: boolean; message?: string; data?: AnnouncementData }> => {
+    announcementData: Partial<AnnouncementCreateData>,
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    data?: AnnouncementData;
+  }> => {
     try {
       setIsLoading(true);
       const result = await adminService.updateAnnouncement(
@@ -201,14 +220,14 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
         announcementData.title,
         announcementData.content,
         announcementData.target_audience,
-        announcementData.publish_option
+        announcementData.publish_option,
       );
       return result;
     } catch (err) {
       console.error("Update announcement error:", err);
       return {
         success: false,
-        message: "Failed to update announcement"
+        message: "Failed to update announcement",
       };
     } finally {
       setIsLoading(false);
@@ -216,7 +235,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   };
 
   const deleteAnnouncement = async (
-    announcement_id: number
+    announcement_id: number,
   ): Promise<{ success: boolean; message?: string }> => {
     try {
       setIsLoading(true);
@@ -226,7 +245,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       console.error("Delete announcement error:", err);
       return {
         success: false,
-        message: "Failed to delete announcement"
+        message: "Failed to delete announcement",
       };
     } finally {
       setIsLoading(false);
@@ -239,7 +258,10 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   };
 
   // Update admin
-  const updateAdmin = async (adminId: string, payload: any): Promise<boolean> => {
+  const updateAdmin = async (
+    adminId: string,
+    payload: any,
+  ): Promise<boolean> => {
     try {
       setIsLoading(true);
       const response = await adminApi.put(`/admin/${adminId}`, payload);

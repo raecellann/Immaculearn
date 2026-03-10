@@ -2,26 +2,24 @@ import { adminApi } from "../lib/api.admin";
 import { AcademicData, AnnouncementData, ApiResponse } from "../types/admin";
 
 class AdminService {
-
   async createAcademic(
     academic_period: string,
     academic_semester: number,
-    academic_year: string): Promise<ApiResponse> {
+    academic_year: string,
+  ): Promise<ApiResponse> {
     try {
-      
-      const response = await adminApi.post<ApiResponse>(
-        "/admin/academic", {
-            academic_period, academic_semester, academic_year
-        }
-      );
+      const response = await adminApi.post<ApiResponse>("/admin/academic", {
+        academic_period,
+        academic_semester,
+        academic_year,
+      });
 
       return response.data;
     } catch (error: any) {
       return {
         success: false,
         message:
-          error.response?.data?.message ||
-          "Failed to create academic term",
+          error.response?.data?.message || "Failed to create academic term",
       };
     }
   }
@@ -30,7 +28,7 @@ class AdminService {
     academic_period?: string,
     academic_semester?: number,
     academic_year?: string,
-    academic_status?: string
+    academic_status?: string,
   ): Promise<ApiResponse> {
     try {
       const payload: Record<string, any> = { academic_id };
@@ -41,15 +39,14 @@ class AdminService {
       if (academic_semester !== undefined)
         payload.academic_semester = academic_semester;
 
-      if (academic_year !== undefined)
-        payload.academic_year = academic_year;
+      if (academic_year !== undefined) payload.academic_year = academic_year;
 
       if (academic_status !== undefined)
         payload.academic_status = academic_status;
 
       const response = await adminApi.patch<ApiResponse>(
         "/admin/academic/update",
-        payload
+        payload,
       );
 
       return response.data;
@@ -57,8 +54,7 @@ class AdminService {
       return {
         success: false,
         message:
-          error.response?.data?.message ||
-          "Failed to update academic term",
+          error.response?.data?.message || "Failed to update academic term",
       };
     }
   }
@@ -66,71 +62,72 @@ class AdminService {
   async getAllAcademicTerms(): Promise<ApiResponse<AcademicData[]>> {
     try {
       const response = await adminApi.get<ApiResponse<AcademicData[]>>(
-        "/admin/academic/all"
-      );
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to fetch academic terms",
-      };
-    }
-  }
-
-
-  async create_announcement(
-    title: string,
-    content: string,
-    target_audience: string,
-    publish_option: string = "NOW",
-    images?: File[]
-  ): Promise<ApiResponse<AnnouncementData>> {
-    try {
-      const formData = new FormData();
-      
-      // Append basic announcement data
-      formData.append('title', title);
-      formData.append('content', content);
-      formData.append('target_audience', target_audience);
-      formData.append('publish_option', publish_option);
-      
-      // Append images if provided
-      if (images && images.length > 0) {
-        images.forEach((image, index) => {
-          formData.append(`image_${index}`, image);
-        });
-      }
-
-      const response = await adminApi.post<ApiResponse<AnnouncementData>>(
-        "/announce/create", 
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+        "/admin/academic/all",
       );
       return response.data;
     } catch (error: any) {
       return {
         success: false,
         message:
-          error.response?.data?.message ||
-          "Failed to create announcement",
+          error.response?.data?.message || "Failed to fetch academic terms",
+      };
+    }
+  }
+
+  async create_announcement(
+    title: string,
+    content: string,
+    target_audience: string,
+    publish_option: string = "NOW",
+    images?: File[],
+  ): Promise<ApiResponse<AnnouncementData>> {
+    try {
+      const formData = new FormData();
+
+      // Append basic announcement data
+      formData.append("title", title);
+      formData.append("content", content);
+      formData.append("target_audience", target_audience);
+      formData.append("publish_option", publish_option);
+
+      // Append images if provided
+      if (images && images.length > 0) {
+        images.forEach((image) => {
+          formData.append("images", image);
+        });
+      }
+
+      console.log(formData)
+
+      const response = await adminApi.post<ApiResponse<AnnouncementData>>(
+        "/announce/create",
+        formData,
+        // {
+        //   headers: {
+        //     "Content-Type": "multipart/form-data",
+        //   },
+        // },
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to create announcement",
       };
     }
   }
 
   async getAllAnnouncements(): Promise<ApiResponse<AnnouncementData[]>> {
     try {
-      const response = await adminApi.get<ApiResponse<AnnouncementData[]>>(
-        "/announce/"
-      );
+      const response =
+        await adminApi.get<ApiResponse<AnnouncementData[]>>("/announce/");
       return response.data;
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch announcements",
+        message:
+          error.response?.data?.message || "Failed to fetch announcements",
       };
     }
   }
@@ -140,19 +137,20 @@ class AdminService {
     title?: string,
     content?: string,
     target_audience?: string,
-    publish_option?: string
+    publish_option?: string,
   ): Promise<ApiResponse<AnnouncementData>> {
     try {
       const payload: Record<string, any> = { announcement_id };
 
       if (title !== undefined) payload.title = title;
       if (content !== undefined) payload.content = content;
-      if (target_audience !== undefined) payload.target_audience = target_audience;
+      if (target_audience !== undefined)
+        payload.target_audience = target_audience;
       if (publish_option !== undefined) payload.publish_option = publish_option;
 
       const response = await adminApi.patch<ApiResponse<AnnouncementData>>(
         "/announce/update",
-        payload
+        payload,
       );
 
       return response.data;
@@ -160,8 +158,7 @@ class AdminService {
       return {
         success: false,
         message:
-          error.response?.data?.message ||
-          "Failed to update announcement",
+          error.response?.data?.message || "Failed to update announcement",
       };
     }
   }
@@ -169,15 +166,14 @@ class AdminService {
   async deleteAnnouncement(announcement_id: number): Promise<ApiResponse> {
     try {
       const response = await adminApi.delete<ApiResponse>(
-        `/announce/delete/${announcement_id}`
+        `/announce/delete/${announcement_id}`,
       );
       return response.data;
     } catch (error: any) {
       return {
         success: false,
         message:
-          error.response?.data?.message ||
-          "Failed to delete announcement",
+          error.response?.data?.message || "Failed to delete announcement",
       };
     }
   }

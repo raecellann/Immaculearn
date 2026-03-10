@@ -537,6 +537,18 @@ class SpaceService {
     }
   }
 
+  async getQuestionAndAnswerByTaskId(taskId: number) {
+    try {
+      const response = await api.get(`/tasks/question-answer/${taskId}`);
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
   async updateGrade(
     student_id: number,
     space_uuid: string,
@@ -577,7 +589,7 @@ class SpaceService {
 
   async getOneStudentRemarks(
     space_uuid: string,
-    user_id: number
+    user_id: number | null
   ) {
     try {
       const response = await api.get(`/spaces/remarks/${space_uuid}/${user_id}`);

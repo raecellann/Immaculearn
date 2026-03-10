@@ -21,6 +21,8 @@ export interface SpaceContextType {
   setCurrentSpace: (space: Space | null) => void;
   setTaskId: (taskID: number) => void;
   questionnaire: QuestionnaireData[];
+  questionnaireEditData: QuestionnaireData[];
+  questionnaireEditDataLoading: boolean;
 
   // Server data
   userSpaces: Space[];

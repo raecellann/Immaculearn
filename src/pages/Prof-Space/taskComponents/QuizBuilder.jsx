@@ -93,23 +93,48 @@ const QuizBuilder = ({
   useEffect(() => {
     console.log("=== QUIZ EDIT DEBUG START ===");
     console.log("QuizBuilder editingTask:", editingTask);
-    
+
     if (editingTask) {
       // Handle different possible data structures
       const taskData = editingTask.rawData || editingTask;
       console.log("taskData:", taskData);
-      
+
       setQuizTitle(taskData.task_title || taskData.title || "");
       setInstruction(taskData.task_instructions || taskData.instruction || "");
-      
+
       // Fix date format - convert to proper datetime-local format
       if (taskData.due_date) {
         try {
-          const date = new Date(taskData.due_date);
+          // const date = new Date(taskData.due_date);
+
+          // const formatted = date.toLocaleString("en-US", {
+          //   year: "numeric",
+          //   month: "long",
+          //   day: "numeric",
+          //   hour: "numeric",
+          //   minute: "2-digit",
+          //   hour12: true,
+          // });
+
+          // console.log("format", formatted);
           // Format: yyyy-MM-ddThh:mm
-          const formattedDate = date.toISOString().slice(0, 16);
-          setDueDate(formattedDate);
-          console.log("Formatted due date:", formattedDate);
+
+          const date = new Date(taskData.due_date);
+          // const formatted = date.toISOString().slice(0, 16);
+          const formatted =
+            date.getFullYear() +
+            "-" +
+            String(date.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(date.getDate()).padStart(2, "0") +
+            "T" +
+            String(date.getHours()).padStart(2, "0") +
+            ":" +
+            String(date.getMinutes()).padStart(2, "0");
+
+          // const formattedDate = date.toLocaleDateString("en-US");
+          setDueDate(formatted);
+          console.log("Formatted due date:", formatted);
         } catch (error) {
           console.error("Date formatting error:", error);
           setDueDate("");
@@ -117,26 +142,29 @@ const QuizBuilder = ({
       } else {
         setDueDate("");
       }
-      
+
       setTimeLimit(taskData.time_limit || "");
       setAttempts(taskData.attempts || "1");
       setShowCorrectAnswers(taskData.show_correct_answers || false);
       setSelectedLesson(taskData.lesson_id || "");
-      
+
       // Handle questions based on the actual data structure we saw
       console.log("=== PARSING QUESTIONS ===");
-      
+
       let questionsData = [];
-      
+
       // Try to parse questions from different possible locations
       try {
         // Method 1: Check if questions is a string that needs JSON parsing
-        if (typeof taskData.questions === 'string') {
+        if (typeof taskData.questions === "string") {
           console.log("Questions is a string, attempting to parse...");
           const parsedQuestions = JSON.parse(taskData.questions);
           if (Array.isArray(parsedQuestions)) {
             questionsData = parsedQuestions;
-            console.log("✓ Successfully parsed questions from string:", questionsData);
+            console.log(
+              "✓ Successfully parsed questions from string:",
+              questionsData,
+            );
           }
         }
         // Method 2: Check if questions is already an array
@@ -150,10 +178,16 @@ const QuizBuilder = ({
           console.log("✓ Found questions in editingTask:", questionsData);
         }
         // Method 4: Check if questions are stored in task_content or other properties
-        else if (taskData.task_content && typeof taskData.task_content === 'string') {
+        else if (
+          taskData.task_content &&
+          typeof taskData.task_content === "string"
+        ) {
           console.log("Checking task_content...");
           const parsedContent = JSON.parse(taskData.task_content);
-          if (parsedContent.questions && Array.isArray(parsedContent.questions)) {
+          if (
+            parsedContent.questions &&
+            Array.isArray(parsedContent.questions)
+          ) {
             questionsData = parsedContent.questions;
             console.log("✓ Found questions in task_content:", questionsData);
           }
@@ -161,14 +195,17 @@ const QuizBuilder = ({
         // Method 5: Look for any property that might contain questions
         else {
           console.log("Searching all properties for questions...");
-          Object.keys(taskData).forEach(key => {
+          Object.keys(taskData).forEach((key) => {
             const value = taskData[key];
-            if (typeof value === 'string' && value.includes('question')) {
+            if (typeof value === "string" && value.includes("question")) {
               try {
                 const parsed = JSON.parse(value);
                 if (parsed.questions && Array.isArray(parsed.questions)) {
                   questionsData = parsed.questions;
-                  console.log(`✓ Found questions in property "${key}":`, questionsData);
+                  console.log(
+                    `✓ Found questions in property "${key}":`,
+                    questionsData,
+                  );
                 }
               } catch (e) {
                 // Not valid JSON, continue searching
@@ -179,57 +216,68 @@ const QuizBuilder = ({
       } catch (error) {
         console.error("Error parsing questions:", error);
       }
-      
+
       console.log("Final questionsData:", questionsData);
-      
+
       if (questionsData.length > 0) {
         console.log(`Processing ${questionsData.length} questions...`);
-        
-        const parsedQuestions = questionsData.map((qObj, index) => {
-          console.log(`\n--- Processing question ${index + 1} ---`);
-          console.log("Full qObj:", qObj);
-          
-          // Handle different question structures
-          let questionData = null;
-          
-          // Structure 1: {q1: {question: "...", answers: [...]}}
-          const questionKey = `q${index + 1}`;
-          if (qObj[questionKey]) {
-            questionData = qObj[questionKey];
-            console.log("✓ Found with key method:", questionData);
-          }
-          // Structure 2: Direct question object
-          else if (qObj.question) {
-            questionData = qObj;
-            console.log("✓ Found with direct method:", questionData);
-          }
-          // Structure 3: Check if qObj itself is the question data
-          else if (typeof qObj === 'object' && (qObj.question || qObj.answers)) {
-            questionData = qObj;
-            console.log("✓ qObj is the question data:", questionData);
-          }
-          
-          console.log(`Final questionData for Q${index + 1}:`, questionData);
-          
-          if (questionData) {
-            const parsed = {
-              id: index + 1,
-              type: determineQuestionType(questionData.answers),
-              question: questionData.question || "",
-              options: questionData.answers ? questionData.answers.map(a => a.answer_text || a.answer || a.text || "") : ["", "", ""],
-              correctAnswer: questionData.answers ? questionData.answers.findIndex(a => a.is_correct) : 0,
-              points: questionData.points || 1,
-            };
-            console.log("Parsed question:", parsed);
-            return parsed;
-          }
-          
-          console.log("❌ No valid question data found");
-          return null;
-        }).filter(Boolean);
-        
+
+        const parsedQuestions = questionsData
+          .map((qObj, index) => {
+            console.log(`\n--- Processing question ${index + 1} ---`);
+            console.log("Full qObj:", qObj);
+
+            // Handle different question structures
+            let questionData = null;
+
+            // Structure 1: {q1: {question: "...", answers: [...]}}
+            const questionKey = `q${index + 1}`;
+            if (qObj[questionKey]) {
+              questionData = qObj[questionKey];
+              console.log("✓ Found with key method:", questionData);
+            }
+            // Structure 2: Direct question object
+            else if (qObj.question) {
+              questionData = qObj;
+              console.log("✓ Found with direct method:", questionData);
+            }
+            // Structure 3: Check if qObj itself is the question data
+            else if (
+              typeof qObj === "object" &&
+              (qObj.question || qObj.answers)
+            ) {
+              questionData = qObj;
+              console.log("✓ qObj is the question data:", questionData);
+            }
+
+            console.log(`Final questionData for Q${index + 1}:`, questionData);
+
+            if (questionData) {
+              const parsed = {
+                id: index + 1,
+                type: determineQuestionType(questionData.answers),
+                question: questionData.question || "",
+                options: questionData.answers
+                  ? questionData.answers.map(
+                      (a) => a.answer_text || a.answer || a.text || "",
+                    )
+                  : ["", "", ""],
+                correctAnswer: questionData.answers
+                  ? questionData.answers.findIndex((a) => a.is_correct)
+                  : 0,
+                points: questionData.points || 1,
+              };
+              console.log("Parsed question:", parsed);
+              return parsed;
+            }
+
+            console.log("❌ No valid question data found");
+            return null;
+          })
+          .filter(Boolean);
+
         console.log("\nFinal parsed questions:", parsedQuestions);
-        
+
         if (parsedQuestions.length > 0) {
           setQuestions(parsedQuestions);
           console.log("✅ Questions set successfully!");
@@ -238,26 +286,28 @@ const QuizBuilder = ({
         }
       } else {
         console.log("❌ No questions found");
-        
+
         // Show what we have for debugging
         console.log("=== DEBUG INFO ===");
         console.log("taskData.questions:", taskData.questions);
         console.log("editingTask.questions:", editingTask.questions);
         console.log("taskData keys:", Object.keys(taskData));
-        
+
         // If we still can't find questions, create a default question for testing
         console.log("Creating default question for testing...");
-        setQuestions([{
-          id: 1,
-          type: "multiple-choice",
-          question: "Sample question - please edit your quiz questions",
-          options: ["Option A", "Option B", "Option C", "Option D"],
-          correctAnswer: 0,
-          points: 1,
-        }]);
+        setQuestions([
+          {
+            id: 1,
+            type: "multiple-choice",
+            question: "Sample question - please edit your quiz questions",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            correctAnswer: 0,
+            points: 1,
+          },
+        ]);
       }
     }
-    
+
     console.log("=== QUIZ EDIT DEBUG END ===\n");
   }, [editingTask]);
 
@@ -342,7 +392,9 @@ const QuizBuilder = ({
         return (
           <div className="space-y-3">
             {validationErrors[`options_${question.id}`] && (
-              <p className="text-red-500 text-xs sm:text-sm">Please fill in all option fields</p>
+              <p className="text-red-500 text-xs sm:text-sm">
+                Please fill in all option fields
+              </p>
             )}
             {question.options.map((option, index) => {
               const letter = String.fromCharCode(65 + index); // A, B, C, D, etc.
@@ -388,17 +440,27 @@ const QuizBuilder = ({
                     onChange={(e) => {
                       updateOption(question.id, index, e.target.value);
                       if (validationErrors[`options_${question.id}`]) {
-                        setValidationErrors(prev => ({ ...prev, [`options_${question.id}`]: false }));
+                        setValidationErrors((prev) => ({
+                          ...prev,
+                          [`options_${question.id}`]: false,
+                        }));
                       }
                     }}
                     placeholder={`Option ${index + 1}`}
                     className={`flex-1 rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm min-w-0 ${
-                      validationErrors[`options_${question.id}`] && !option.trim() ? 'border-red-500' : ''
+                      validationErrors[`options_${question.id}`] &&
+                      !option.trim()
+                        ? "border-red-500"
+                        : ""
                     }`}
                     style={{
                       backgroundColor: currentColors.background,
                       color: currentColors.text,
-                      borderColor: validationErrors[`options_${question.id}`] && !option.trim() ? '#ef4444' : currentColors.border,
+                      borderColor:
+                        validationErrors[`options_${question.id}`] &&
+                        !option.trim()
+                          ? "#ef4444"
+                          : currentColors.border,
                     }}
                   />
                   <button
@@ -437,7 +499,9 @@ const QuizBuilder = ({
         return (
           <div className="space-y-2">
             {validationErrors[`correctAnswer_${question.id}`] && (
-              <p className="text-red-500 text-xs sm:text-sm">Please select True or False</p>
+              <p className="text-red-500 text-xs sm:text-sm">
+                Please select True or False
+              </p>
             )}
             <label className="flex items-center gap-2">
               <input
@@ -522,7 +586,9 @@ const QuizBuilder = ({
         return (
           <div>
             {validationErrors[`correctAnswer_${question.id}`] && (
-              <p className="text-red-500 text-xs sm:text-sm mb-2">Please provide the correct answer</p>
+              <p className="text-red-500 text-xs sm:text-sm mb-2">
+                Please provide the correct answer
+              </p>
             )}
             <input
               type="text"
@@ -530,17 +596,24 @@ const QuizBuilder = ({
               onChange={(e) => {
                 updateQuestion(question.id, "correctAnswer", e.target.value);
                 if (validationErrors[`correctAnswer_${question.id}`]) {
-                  setValidationErrors(prev => ({ ...prev, [`correctAnswer_${question.id}`]: false }));
+                  setValidationErrors((prev) => ({
+                    ...prev,
+                    [`correctAnswer_${question.id}`]: false,
+                  }));
                 }
               }}
               placeholder="Correct answer"
               className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm ${
-                validationErrors[`correctAnswer_${question.id}`] ? 'border-red-500' : ''
+                validationErrors[`correctAnswer_${question.id}`]
+                  ? "border-red-500"
+                  : ""
               }`}
               style={{
                 backgroundColor: currentColors.background,
                 color: currentColors.text,
-                borderColor: validationErrors[`correctAnswer_${question.id}`] ? '#ef4444' : currentColors.border,
+                borderColor: validationErrors[`correctAnswer_${question.id}`]
+                  ? "#ef4444"
+                  : currentColors.border,
               }}
             />
           </div>
@@ -550,7 +623,9 @@ const QuizBuilder = ({
         return (
           <div className="space-y-2">
             {validationErrors[`correctAnswer_${question.id}`] && (
-              <p className="text-red-500 text-xs sm:text-sm mb-2">Please provide at least one answer</p>
+              <p className="text-red-500 text-xs sm:text-sm mb-2">
+                Please provide at least one answer
+              </p>
             )}
             <div
               className="text-xs sm:text-sm"
@@ -571,17 +646,24 @@ const QuizBuilder = ({
                   e.target.value.split(",").map((a) => a.trim()),
                 );
                 if (validationErrors[`correctAnswer_${question.id}`]) {
-                  setValidationErrors(prev => ({ ...prev, [`correctAnswer_${question.id}`]: false }));
+                  setValidationErrors((prev) => ({
+                    ...prev,
+                    [`correctAnswer_${question.id}`]: false,
+                  }));
                 }
               }}
               placeholder="Answer 1, Answer 2, Answer 3..."
               className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm h-16 sm:h-20 resize-none ${
-                validationErrors[`correctAnswer_${question.id}`] ? 'border-red-500' : ''
+                validationErrors[`correctAnswer_${question.id}`]
+                  ? "border-red-500"
+                  : ""
               }`}
               style={{
                 backgroundColor: currentColors.background,
                 color: currentColors.text,
-                borderColor: validationErrors[`correctAnswer_${question.id}`] ? '#ef4444' : currentColors.border,
+                borderColor: validationErrors[`correctAnswer_${question.id}`]
+                  ? "#ef4444"
+                  : currentColors.border,
               }}
             />
           </div>
@@ -591,7 +673,9 @@ const QuizBuilder = ({
         return (
           <div className="space-y-2">
             {validationErrors[`correctAnswer_${question.id}`] && (
-              <p className="text-red-500 text-xs sm:text-sm mb-2">Please provide a sample answer</p>
+              <p className="text-red-500 text-xs sm:text-sm mb-2">
+                Please provide a sample answer
+              </p>
             )}
             <div
               className="text-xs sm:text-sm"
@@ -604,17 +688,24 @@ const QuizBuilder = ({
               onChange={(e) => {
                 updateQuestion(question.id, "correctAnswer", e.target.value);
                 if (validationErrors[`correctAnswer_${question.id}`]) {
-                  setValidationErrors(prev => ({ ...prev, [`correctAnswer_${question.id}`]: false }));
+                  setValidationErrors((prev) => ({
+                    ...prev,
+                    [`correctAnswer_${question.id}`]: false,
+                  }));
                 }
               }}
               placeholder="Enter sample answer or key points..."
               className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm h-16 sm:h-20 resize-none ${
-                validationErrors[`correctAnswer_${question.id}`] ? 'border-red-500' : ''
+                validationErrors[`correctAnswer_${question.id}`]
+                  ? "border-red-500"
+                  : ""
               }`}
               style={{
                 backgroundColor: currentColors.background,
                 color: currentColors.text,
-                borderColor: validationErrors[`correctAnswer_${question.id}`] ? '#ef4444' : currentColors.border,
+                borderColor: validationErrors[`correctAnswer_${question.id}`]
+                  ? "#ef4444"
+                  : currentColors.border,
               }}
             />
           </div>
@@ -627,41 +718,57 @@ const QuizBuilder = ({
 
   const validateFields = () => {
     const errors = {};
-    
+
     if (!quizTitle.trim()) {
       errors.quizTitle = true;
     }
-    
+
     if (!dueDate) {
       errors.dueDate = true;
     }
-    
+
     if (!selectedLesson) {
       errors.selectedLesson = true;
     }
-    
+
     // Validate questions
     questions.forEach((question, index) => {
       if (!question.question.trim()) {
         errors[`question_${question.id}`] = true;
       }
-      
+
       // Validate based on question type
       if (question.type === "multiple-choice") {
-        if (question.options.some(option => !option.trim())) {
+        if (question.options.some((option) => !option.trim())) {
           errors[`options_${question.id}`] = true;
         }
-      } else if (question.type === "true-false" && (!question.correctAnswer || (question.correctAnswer !== "true" && question.correctAnswer !== "false"))) {
+      } else if (
+        question.type === "true-false" &&
+        (!question.correctAnswer ||
+          (question.correctAnswer !== "true" &&
+            question.correctAnswer !== "false"))
+      ) {
         errors[`correctAnswer_${question.id}`] = true;
-      } else if (question.type === "identification" && !question.correctAnswer?.trim()) {
+      } else if (
+        question.type === "identification" &&
+        !question.correctAnswer?.trim()
+      ) {
         errors[`correctAnswer_${question.id}`] = true;
-      } else if (question.type === "enumeration" && (!question.correctAnswer || question.correctAnswer.length === 0 || question.correctAnswer.every(ans => !ans.trim()))) {
+      } else if (
+        question.type === "enumeration" &&
+        (!question.correctAnswer ||
+          question.correctAnswer.length === 0 ||
+          question.correctAnswer.every((ans) => !ans.trim()))
+      ) {
         errors[`correctAnswer_${question.id}`] = true;
-      } else if (question.type === "short-answer" && !question.correctAnswer?.trim()) {
+      } else if (
+        question.type === "short-answer" &&
+        !question.correctAnswer?.trim()
+      ) {
         errors[`correctAnswer_${question.id}`] = true;
       }
     });
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -670,7 +777,7 @@ const QuizBuilder = ({
     if (!validateFields()) {
       return;
     }
-    
+
     // Convert datetime-local to ISO string
     let combinedDueDate = dueDate;
     if (dueDate) {
@@ -748,10 +855,16 @@ const QuizBuilder = ({
     // }
 
     if (status === "published") {
-      toast.success(editingTask ? "Quiz updated and published successfully!" : "Quiz published successfully!");
+      toast.success(
+        editingTask
+          ? "Quiz updated and published successfully!"
+          : "Quiz published successfully!",
+      );
       onPublish(taskData);
     } else {
-      toast.success(editingTask ? "Quiz updated successfully!" : "Quiz saved as draft!");
+      toast.success(
+        editingTask ? "Quiz updated successfully!" : "Quiz saved as draft!",
+      );
       onSave(taskData);
     }
   };
@@ -810,7 +923,9 @@ const QuizBuilder = ({
                 Quiz Title: <span className="text-red-500">*</span>
               </label>
               {validationErrors.quizTitle && (
-                <p className="text-red-500 text-xs sm:text-sm mb-1">Please enter a quiz title</p>
+                <p className="text-red-500 text-xs sm:text-sm mb-1">
+                  Please enter a quiz title
+                </p>
               )}
               <input
                 type="text"
@@ -818,16 +933,21 @@ const QuizBuilder = ({
                 onChange={(e) => {
                   setQuizTitle(e.target.value);
                   if (validationErrors.quizTitle) {
-                    setValidationErrors(prev => ({ ...prev, quizTitle: false }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      quizTitle: false,
+                    }));
                   }
                 }}
                 className={`w-full rounded-lg px-4 py-2 outline-none border ${
-                  validationErrors.quizTitle ? 'border-red-500' : ''
+                  validationErrors.quizTitle ? "border-red-500" : ""
                 }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: validationErrors.quizTitle ? '#ef4444' : currentColors.border,
+                  borderColor: validationErrors.quizTitle
+                    ? "#ef4444"
+                    : currentColors.border,
                 }}
                 placeholder="Enter quiz title"
               />
@@ -863,7 +983,9 @@ const QuizBuilder = ({
                 Due Date: <span className="text-red-500">*</span>
               </label>
               {validationErrors.dueDate && (
-                <p className="text-red-500 text-xs sm:text-sm mb-1">Please select a due date</p>
+                <p className="text-red-500 text-xs sm:text-sm mb-1">
+                  Please select a due date
+                </p>
               )}
               <input
                 type="datetime-local"
@@ -871,16 +993,21 @@ const QuizBuilder = ({
                 onChange={(e) => {
                   setDueDate(e.target.value);
                   if (validationErrors.dueDate) {
-                    setValidationErrors(prev => ({ ...prev, dueDate: false }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      dueDate: false,
+                    }));
                   }
                 }}
                 className={`w-full rounded-lg px-4 py-2 outline-none border ${
-                  validationErrors.dueDate ? 'border-red-500' : ''
+                  validationErrors.dueDate ? "border-red-500" : ""
                 }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: validationErrors.dueDate ? '#ef4444' : currentColors.border,
+                  borderColor: validationErrors.dueDate
+                    ? "#ef4444"
+                    : currentColors.border,
                 }}
                 min={getLocalDateTimeMin()}
               />
@@ -894,23 +1021,30 @@ const QuizBuilder = ({
                 Connect to Lesson: <span className="text-red-500">*</span>
               </label>
               {validationErrors.selectedLesson && (
-                <p className="text-red-500 text-xs sm:text-sm mb-1">Please select a lesson</p>
+                <p className="text-red-500 text-xs sm:text-sm mb-1">
+                  Please select a lesson
+                </p>
               )}
               <select
                 value={selectedLesson}
                 onChange={(e) => {
                   setSelectedLesson(e.target.value);
                   if (validationErrors.selectedLesson) {
-                    setValidationErrors(prev => ({ ...prev, selectedLesson: false }));
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      selectedLesson: false,
+                    }));
                   }
                 }}
                 className={`w-full rounded-lg px-4 py-2 outline-none border ${
-                  validationErrors.selectedLesson ? 'border-red-500' : ''
+                  validationErrors.selectedLesson ? "border-red-500" : ""
                 }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: validationErrors.selectedLesson ? '#ef4444' : currentColors.border,
+                  borderColor: validationErrors.selectedLesson
+                    ? "#ef4444"
+                    : currentColors.border,
                 }}
                 required
               >
@@ -1032,24 +1166,33 @@ const QuizBuilder = ({
 
               <div className="space-y-3 sm:space-y-4">
                 {validationErrors[`question_${question.id}`] && (
-                  <p className="text-red-500 text-xs sm:text-sm mb-1">Please enter a question</p>
+                  <p className="text-red-500 text-xs sm:text-sm mb-1">
+                    Please enter a question
+                  </p>
                 )}
                 <textarea
                   value={question.question}
                   onChange={(e) => {
                     updateQuestion(question.id, "question", e.target.value);
                     if (validationErrors[`question_${question.id}`]) {
-                      setValidationErrors(prev => ({ ...prev, [`question_${question.id}`]: false }));
+                      setValidationErrors((prev) => ({
+                        ...prev,
+                        [`question_${question.id}`]: false,
+                      }));
                     }
                   }}
                   placeholder="Enter your question..."
                   className={`w-full rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 outline-none border h-16 sm:h-20 text-sm resize-none ${
-                    validationErrors[`question_${question.id}`] ? 'border-red-500' : ''
+                    validationErrors[`question_${question.id}`]
+                      ? "border-red-500"
+                      : ""
                   }`}
                   style={{
                     backgroundColor: currentColors.surface,
                     color: currentColors.text,
-                    borderColor: validationErrors[`question_${question.id}`] ? '#ef4444' : currentColors.border,
+                    borderColor: validationErrors[`question_${question.id}`]
+                      ? "#ef4444"
+                      : currentColors.border,
                   }}
                 />
 
@@ -1095,7 +1238,11 @@ const QuizBuilder = ({
               }}
               onClick={() => handleSave("draft")}
             >
-              {isLoading ? "Saving..." : (editingTask ? "Update Draft" : "Save as Draft")}
+              {isLoading
+                ? "Saving..."
+                : editingTask
+                  ? "Update Draft"
+                  : "Save as Draft"}
             </button>
             <button
               className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
@@ -1111,7 +1258,11 @@ const QuizBuilder = ({
               }}
               onClick={() => handleSave("published")}
             >
-              {isLoading ? "Publishing..." : (editingTask ? "Update and Publish" : "Publish Activity")}
+              {isLoading
+                ? "Publishing..."
+                : editingTask
+                  ? "Update and Publish"
+                  : "Publish Activity"}
             </button>
           </div>
         </div>

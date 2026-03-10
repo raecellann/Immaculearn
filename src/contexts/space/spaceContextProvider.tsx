@@ -529,7 +529,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       queryFn: async () => {
         const res = await spaceService.getOneStudentRemarks(
           currentSpace?.space_uuid || "",
-          user?.id,
+          Number(user?.id) || null,
         );
         return res.data || [];
       },
@@ -551,6 +551,21 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
     });
+
+  const {
+    data: questionnaireEditData = [],
+    isLoading: questionnaireEditDataLoading,
+  } = useQuery({
+    queryKey: ["questionnaire", taskId],
+    queryFn: async () => {
+      const res = await spaceService.getQuestionnaireByTaskId(taskId);
+      return res.data || [];
+    },
+    enabled: isAuthenticated && !!taskId,
+    staleTime: Infinity, // never becomes stale automatically
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
   // WebSocket connection for real-time updates
   useEffect(() => {
@@ -659,6 +674,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     setCurrentSpace,
     setTaskId,
     questionnaire,
+    questionnaireEditData,
+    questionnaireEditDataLoading,
 
     student_remarks,
     one_student_remarks,
@@ -669,6 +686,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     userSpaces,
     courseSpaces,
     friendSpaces,
+    userSpacesLoading,
+    friendSpacesLoading,
+    courseSpacesLoading,
     archivedSpaces,
     archivedSpacesLoading,
     isLoading,
