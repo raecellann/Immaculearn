@@ -12,6 +12,7 @@ import {
   QuestionnaireData,
   AnswerData,
   StudentData,
+  TaskUpdateData,
 } from "../../types/space";
 import { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
@@ -94,6 +95,13 @@ export interface SpaceContextType {
     any,
     Error,
     { spaceId: string; taskData: TaskCreateData },
+    unknown
+  >;
+
+  updateTaskByTaskIdMutation: UseMutationResult<
+    any,
+    Error,
+    { taskData: TaskUpdateData },
     unknown
   >;
 

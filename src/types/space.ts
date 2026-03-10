@@ -140,6 +140,16 @@ export interface TaskCreateData {
     groupsData?: any[];
 }
 
+export interface TaskUpdateData {
+    task_id: number
+    title: string;
+    instruction?: string;
+    scoring?: number;
+    status: string;
+    due_date: string;
+    groupsData?: any[];
+}
+
 
 export interface Choice {
   choice_id: number;

@@ -81,6 +81,8 @@ const ProfTaskPage = () => {
     courseSpaces,
     friendSpaces,
     useJoinRequests,
+    setTaskId,
+    updateTaskByTaskIdMutation,
     isLoading: spaceLoading,
     acceptJoinRequest,
     declineJoinRequest,
@@ -270,8 +272,9 @@ const ProfTaskPage = () => {
     if (!currentSpace) return;
 
     // Check if it's a course space
-    const isCourseSpace = currentSpace?.space_type === "course" || currentSpace?.space_day;
-    
+    const isCourseSpace =
+      currentSpace?.space_type === "course" || currentSpace?.space_day;
+
     if (isCourseSpace) {
       // Show archive confirmation dialog for course spaces
       setDialogMessage(currentSpace);
@@ -321,7 +324,9 @@ const ProfTaskPage = () => {
       // Use the archive function instead of delete
       await setArchive(currentSpace.space_uuid);
 
-      toast.success(`Class "${currentSpace.space_name}" has been archived successfully!`);
+      toast.success(
+        `Class "${currentSpace.space_name}" has been archived successfully!`,
+      );
 
       // Navigate to archive page after successful archiving
       navigate("/prof/archive");
@@ -396,7 +401,6 @@ const ProfTaskPage = () => {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     setSelectedFile(file);
-    console.log("File selected:", file);
 
     // Extract text from document and populate instruction field
     if (file) {
@@ -408,7 +412,6 @@ const ProfTaskPage = () => {
           if (instructionRef.current) {
             instructionRef.current.innerHTML = extractedText;
           }
-          console.log("Text extracted from document:", extractedText);
         }
       } catch (error) {
         console.error("Error extracting text from file:", error);
@@ -419,7 +422,6 @@ const ProfTaskPage = () => {
   // Load saved cover photo from backend on component mount
   useEffect(() => {
     const savedCoverPhoto = currentSpace?.space_cover;
-    console.log("Loading cover photo:", savedCoverPhoto);
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }
@@ -486,7 +488,9 @@ const ProfTaskPage = () => {
         "image/webp",
       ];
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
+        toast.error(
+          "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        );
         return;
       }
 
@@ -524,12 +528,12 @@ const ProfTaskPage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Check if it's a gradient or an image
-    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+    if (coverPhotoUrl && coverPhotoUrl.includes("gradient")) {
       // For gradients, save directly without canvas transformations
       // Backend will handle saving the space_cover
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       addNotification({
         type: "success",
         title: "Cover Photo Updated",
@@ -672,13 +676,7 @@ const ProfTaskPage = () => {
     });
   };
 
-  const handleViewScore = (task) => {
-    // Example: navigate to score page or open modal
-    console.log("Viewing score for task:", task);
-    // You can replace the console.log with your actual logic, e.g.,
-    // navigate(`/quiz/${task.id}/score`);
-    // or open a modal with the score
-  };
+  const handleViewScore = (task) => {};
 
   // Sync instruction state with contentEditable
   useEffect(() => {
@@ -701,10 +699,6 @@ const ProfTaskPage = () => {
   // ================= UPLOAD HANDLER =================
   const handleUpload = async (status_type, taskData) => {
     let payload;
-
-    console.log(taskData);
-
-    console.log("Uploading task with payload:", taskData);
 
     try {
       if (status_type === "uploaded") {
@@ -732,6 +726,24 @@ const ProfTaskPage = () => {
     }
   };
 
+  const handleUpdateTask = async (taskData) => {
+    updateTaskByTaskIdMutation.mutate(
+      { taskData },
+      {
+        onSuccess: () => {
+          toast.success("Task updated successfully!");
+          resetTaskForm();
+          setIsCreatingTask(false);
+          setSelectedTaskType(null);
+          setShowTaskTypeSelection(false);
+        },
+        onError: () => {
+          toast.error("Failed to save task. Please try again.");
+        },
+      },
+    );
+  };
+
   const resetTaskForm = () => {
     setTaskTitle("");
     setInstruction("");
@@ -757,8 +769,8 @@ const ProfTaskPage = () => {
   };
 
   const handleEditTask = (task) => {
-    console.log("handleEditTask called with task:", task);
     setEditingTask(task);
+    setTaskId(task.task_id);
     setSelectedTaskType(task.category || task.task_category);
     setTaskCategory(task.category || task.task_category);
     setIsCreatingTask(true);
@@ -903,7 +915,6 @@ const ProfTaskPage = () => {
 
     if (currentMember.trim()) {
       // Member is already saved through the onChange handler
-      console.log(`Member "${currentMember}" saved to Group ${groupId}`);
       // Could add visual feedback here if needed
     }
   };
@@ -912,9 +923,6 @@ const ProfTaskPage = () => {
     // Check if the active group has inputs visible
     const activeGroupData = groups[activeGroup - 1];
     if (!activeGroupData.showInputs) {
-      console.log(
-        'Cannot add member: Group inputs are not visible. Click "Add People" first.',
-      );
       return;
     }
 
@@ -927,7 +935,6 @@ const ProfTaskPage = () => {
       activeGroupDataUpdated.leader.trim() === ""
     ) {
       activeGroupDataUpdated.leader = memberName;
-      console.log(`Added "${memberName}" as leader of Group ${activeGroup}`);
     } else {
       // If group already has a leader, add as member
       const activeGroupMembers = activeGroupDataUpdated.members;
@@ -942,9 +949,6 @@ const ProfTaskPage = () => {
         // Add a new empty input field to maintain one empty field
         activeGroupMembers.push("");
       }
-      console.log(
-        `Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`,
-      );
     }
 
     setGroups(updatedGroups);
@@ -991,10 +995,6 @@ const ProfTaskPage = () => {
   const saveGroup = (groupId) => {
     const group = groups.find((g) => g.id === groupId);
     const validMembers = group.members.filter((member) => member.trim());
-    console.log(
-      `Group ${groupId} saved with leader: ${group.leader}, members:`,
-      validMembers,
-    );
 
     // Mark the group as saved
     const updatedGroups = [...groups];
@@ -1039,7 +1039,9 @@ const ProfTaskPage = () => {
 
     // For quiz category, limit to 3 tasks and add See More button
     const isQuizCategory = category === "quiz";
-    const displayedTasks = isQuizCategory ? categoryTasks.slice(0, 3) : categoryTasks;
+    const displayedTasks = isQuizCategory
+      ? categoryTasks.slice(0, 3)
+      : categoryTasks;
     const hasMoreTasks = isQuizCategory && categoryTasks.length > 3;
 
     return (
@@ -1364,9 +1366,9 @@ const ProfTaskPage = () => {
                                 style={{
                                   backgroundColor: "#22c55e",
                                   borderColor: "#22c55e",
-                                  padding: '0.3em 0.8em',
-                                  fontSize: '0.75rem',
-                                  borderRadius: '6px',
+                                  padding: "0.3em 0.8em",
+                                  fontSize: "0.75rem",
+                                  borderRadius: "6px",
                                   flex: 1,
                                 }}
                               >
@@ -1380,9 +1382,9 @@ const ProfTaskPage = () => {
                                 style={{
                                   backgroundColor: currentColors.accent,
                                   borderColor: currentColors.accent,
-                                  padding: '0.3em 0.8em',
-                                  fontSize: '0.75rem',
-                                  borderRadius: '6px',
+                                  padding: "0.3em 0.8em",
+                                  fontSize: "0.75rem",
+                                  borderRadius: "6px",
                                   flex: 1,
                                 }}
                               >
@@ -1439,17 +1441,19 @@ const ProfTaskPage = () => {
                 const spaceId = space_uuid;
                 const spaceName = space_name || currentSpace?.space_name;
                 if (spaceId && spaceName) {
-                  navigate(`/prof/list-activity/${spaceId}/${encodeURIComponent(spaceName)}`);
+                  navigate(
+                    `/prof/list-activity/${spaceId}/${encodeURIComponent(spaceName)}`,
+                  );
                 } else {
-                  console.warn('No space ID or name found for navigation');
+                  console.warn("No space ID or name found for navigation");
                 }
               }}
               style={{
-                backgroundColor: currentColors.accent || '#2563eb',
-                borderColor: currentColors.accent || '#2563eb',
-                padding: '0.3em 0.8em',
-                fontSize: '0.75rem',
-                borderRadius: '6px',
+                backgroundColor: currentColors.accent || "#2563eb",
+                borderColor: currentColors.accent || "#2563eb",
+                padding: "0.3em 0.8em",
+                fontSize: "0.75rem",
+                borderRadius: "6px",
               }}
             >
               See More Quizzes
@@ -1463,9 +1467,11 @@ const ProfTaskPage = () => {
   // Handle preview for local tasks - Navigate to ProfViewActivity page
   const handlePreviewTask = (task) => {
     // Navigate to ProfViewActivity page with required parameters
-    const taskTitle = task.task_title || task.title || 'Untitled Task';
+    const taskTitle = task.task_title || task.title || "Untitled Task";
     const encodedTaskTitle = encodeURIComponent(taskTitle);
-    navigate(`/prof/list-activity/${space_uuid}/${encodeURIComponent(space_name)}/${task.task_id || task.id}/${encodedTaskTitle}`);
+    navigate(
+      `/prof/list-activity/${space_uuid}/${encodeURIComponent(space_name)}/${task.task_id || task.id}/${encodedTaskTitle}`,
+    );
   };
 
   const handleClosePreview = () => {
@@ -1511,7 +1517,6 @@ const ProfTaskPage = () => {
       }),
     };
 
-    console.log("Quiz submitted with formatted data:", submissionData);
     toast.success("Quiz submitted successfully!");
     try {
       await submitTaskAnswer(submissionData);
@@ -1615,9 +1620,6 @@ const ProfTaskPage = () => {
       updateTaskStatusMutation.mutate(
         { taskId: task.id, newStatus },
         {
-          onSuccess: () => {
-            console.log(`Task ${task.id} status updated to ${newStatus}`);
-          },
           onError: (error) => {
             console.error("Failed to update task status:", error);
           },
@@ -1633,9 +1635,6 @@ const ProfTaskPage = () => {
       updateTaskStatusMutation.mutate(
         { taskId: draft.id, newStatus },
         {
-          onSuccess: () => {
-            console.log(`Draft ${draft.id} status updated to ${newStatus}`);
-          },
           onError: (error) => {
             console.error("Failed to update draft status:", error);
           },
@@ -1733,7 +1732,7 @@ const ProfTaskPage = () => {
         >
           {coverPhotoUrl ? (
             <>
-              {coverPhotoUrl.includes('gradient') ? (
+              {coverPhotoUrl.includes("gradient") ? (
                 <div
                   className="w-full h-full"
                   style={{ background: coverPhotoUrl }}
@@ -1757,10 +1756,10 @@ const ProfTaskPage = () => {
             </>
           ) : (
             <>
-              <div 
-                className="absolute inset-0" 
+              <div
+                className="absolute inset-0"
                 style={{
-                  background: `linear-gradient(135deg, ${currentColors.accent}, ${currentColors.hover})`
+                  background: `linear-gradient(135deg, ${currentColors.accent}, ${currentColors.hover})`,
                 }}
               />
               <div className="absolute inset-0 bg-black/30" />
@@ -1811,7 +1810,14 @@ const ProfTaskPage = () => {
                     )}
                   </div>
                   <div onClick={handleDeleteRoom}>
-                    <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
+                    <Button
+                      text={
+                        currentSpace?.space_type === "course" ||
+                        currentSpace?.space_day
+                          ? "Archive Class"
+                          : "Delete Room"
+                      }
+                    />
                   </div>
                 </>
               )}
@@ -1884,7 +1890,14 @@ const ProfTaskPage = () => {
                 )}
               </div>
               <div onClick={handleDeleteRoom}>
-                <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
+                <Button
+                  text={
+                    currentSpace?.space_type === "course" ||
+                    currentSpace?.space_day
+                      ? "Archive Class"
+                      : "Delete Room"
+                  }
+                />
               </div>
             </div>
           )}
@@ -1904,6 +1917,7 @@ const ProfTaskPage = () => {
                   }}
                   onSave={(taskData) => handleUpload("draft", taskData)}
                   onPublish={(taskData) => handleUpload("uploaded", taskData)}
+                  onUpdate={(taskData) => handleUpdateTask(taskData)}
                   isLoading={
                     draftTaskMutation.isLoading || uploadTaskMutation.isLoading
                   }
@@ -2763,7 +2777,6 @@ const ProfTaskPage = () => {
                     leader: group.leader.trim(),
                     members: group.members.filter((member) => member.trim()), // Remove empty members
                   }));
-                  console.log("All groups saved:", groupsData);
                   // Here you would send this data to your backend
                   setGroupsConfigured(true);
                   setGroupCreationMethod("manual");
@@ -2889,10 +2902,6 @@ const ProfTaskPage = () => {
                   setGroups(generatedGroupsPreview);
                   setGroupsConfigured(true);
                   setGroupCreationMethod("generate");
-                  console.log(
-                    `Generated ${numberOfGroups} groups:`,
-                    generatedGroupsPreview,
-                  );
                   setShowGenerateGroups(false);
                 }}
                 className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:text-base font-medium"
@@ -3010,18 +3019,24 @@ const ProfTaskPage = () => {
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Gradient Options */}
               <div className="mb-6">
-                <p className="text-sm font-medium mb-3" style={{ color: currentColors.text }}>Color & Gradient</p>
+                <p
+                  className="text-sm font-medium mb-3"
+                  style={{ color: currentColors.text }}
+                >
+                  Color & Gradient
+                </p>
                 <div className="grid grid-cols-4 gap-2">
                   {colorOptions.map((color, i) => (
                     <div
                       key={i}
                       className="h-12 rounded cursor-pointer border-2 transition-colors"
-                      style={{ 
+                      style={{
                         background: color,
-                        borderColor: currentColors.border
+                        borderColor: currentColors.border,
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.borderColor = currentColors.accent || '#3B82F6';
+                        e.target.style.borderColor =
+                          currentColors.accent || "#3B82F6";
                       }}
                       onMouseLeave={(e) => {
                         e.target.style.borderColor = currentColors.border;
@@ -3034,13 +3049,24 @@ const ProfTaskPage = () => {
 
               {/* Separator Line */}
               <div className="relative flex items-center my-4">
-                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
-                <span className="px-3 text-sm" style={{ color: currentColors.textSecondary }}>or</span>
-                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
+                <div
+                  className="flex-1 border-t"
+                  style={{ borderColor: currentColors.border }}
+                ></div>
+                <span
+                  className="px-3 text-sm"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  or
+                </span>
+                <div
+                  className="flex-1 border-t"
+                  style={{ borderColor: currentColors.border }}
+                ></div>
               </div>
 
               {/* Upload Option (only show when gradient is selected) */}
-              {coverPhotoUrl && coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && coverPhotoUrl.includes("gradient") && (
                 <div className="mb-4 flex justify-center">
                   <button
                     onClick={() => coverPhotoInputRef.current?.click()}
@@ -3048,11 +3074,12 @@ const ProfTaskPage = () => {
                     style={{
                       backgroundColor: currentColors.background,
                       color: currentColors.text,
-                      border: `1px solid ${currentColors.border}`
+                      border: `1px solid ${currentColors.border}`,
                     }}
                     onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
-                      e.target.style.color = '#ffffff';
+                      e.target.style.backgroundColor =
+                        currentColors.accent || "#3B82F6";
+                      e.target.style.color = "#ffffff";
                     }}
                     onMouseLeave={(e) => {
                       e.target.style.backgroundColor = currentColors.background;
@@ -3066,9 +3093,12 @@ const ProfTaskPage = () => {
               )}
 
               {/* Preview Area (only show if it's an image, not gradient) */}
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <div className="mb-6">
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden" style={{ backgroundColor: currentColors.background }}>
+                  <div
+                    className="relative w-full h-48 rounded-lg overflow-hidden"
+                    style={{ backgroundColor: currentColors.background }}
+                  >
                     <div
                       ref={coverPhotoEditorRef}
                       className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
@@ -3087,7 +3117,10 @@ const ProfTaskPage = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-sm mt-2" style={{ color: currentColors.textSecondary }}>
+                  <p
+                    className="text-sm mt-2"
+                    style={{ color: currentColors.textSecondary }}
+                  >
                     Click and drag the image up or down to position it
                   </p>
                 </div>
@@ -3154,10 +3187,22 @@ const ProfTaskPage = () => {
       {/* PENDING INVITATIONS POPUP */}
       {showPendingInvitations && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="rounded-xl shadow-2xl max-w-md w-full border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+          <div
+            className="rounded-xl shadow-2xl max-w-md w-full border"
+            style={{
+              backgroundColor: currentColors.surface,
+              borderColor: currentColors.border,
+            }}
+          >
             {/* Header */}
-            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
-              <h3 className="text-xl font-semibold" style={{ color: currentColors.text }}>
+            <div
+              className="p-4 border-b flex items-center justify-between"
+              style={{ borderColor: currentColors.border }}
+            >
+              <h3
+                className="text-xl font-semibold"
+                style={{ color: currentColors.text }}
+              >
                 Pending Invites
               </h3>
               <button
@@ -3182,8 +3227,12 @@ const ProfTaskPage = () => {
                   <p className="mb-4" style={{ color: currentColors.text }}>
                     No pending invitations at the moment.
                   </p>
-                  <div className="text-sm" style={{ color: currentColors.textSecondary }}>
-                    Invited members will appear here once they have not yet accepted your invitation.
+                  <div
+                    className="text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    Invited members will appear here once they have not yet
+                    accepted your invitation.
                   </div>
                 </>
               ) : (
@@ -3203,17 +3252,29 @@ const ProfTaskPage = () => {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                       <div className="flex-1">
-                        <h3 className="font-medium" style={{ color: currentColors.text }}>
+                        <h3
+                          className="font-medium"
+                          style={{ color: currentColors.text }}
+                        >
                           {invitation.fullname}
                         </h3>
-                        <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                        <p
+                          className="text-sm"
+                          style={{ color: currentColors.textSecondary }}
+                        >
                           {invitation.email}
                         </p>
-                        <p className="text-sm mt-1" style={{ color: currentColors.textSecondary }}>
+                        <p
+                          className="text-sm mt-1"
+                          style={{ color: currentColors.textSecondary }}
+                        >
                           {invitation.message || "Hello world"}
                         </p>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs" style={{ color: currentColors.textSecondary }}>
+                          <span
+                            className="text-xs"
+                            style={{ color: currentColors.textSecondary }}
+                          >
                             {invitation.added_at}
                           </span>
                         </div>
@@ -3227,33 +3288,31 @@ const ProfTaskPage = () => {
                         }
                         className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
                         style={{
-                          backgroundColor: '#6B7280',
-                          color: 'white',
+                          backgroundColor: "#6B7280",
+                          color: "white",
                         }}
                         onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#4B5563';
+                          e.target.style.backgroundColor = "#4B5563";
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = '#6B7280';
+                          e.target.style.backgroundColor = "#6B7280";
                         }}
                       >
                         Decline
                       </button>
                       <button
                         disabled={spaceLoading}
-                        onClick={() =>
-                          acceptJoinRequest(invitation.account_id)
-                        }
+                        onClick={() => acceptJoinRequest(invitation.account_id)}
                         className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
                         style={{
-                          backgroundColor: '#2563EB',
-                          color: 'white',
+                          backgroundColor: "#2563EB",
+                          color: "white",
                         }}
                         onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#1D4ED8';
+                          e.target.style.backgroundColor = "#1D4ED8";
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = '#2563EB';
+                          e.target.style.backgroundColor = "#2563EB";
                         }}
                       >
                         Accept
@@ -3263,16 +3322,24 @@ const ProfTaskPage = () => {
                 ))
               )}
             </div>
-            <div className="flex justify-end p-6 border-t" style={{ borderColor: currentColors.border }}>
+            <div
+              className="flex justify-end p-6 border-t"
+              style={{ borderColor: currentColors.border }}
+            >
               <button
                 onClick={() => setShowPendingInvitations(false)}
                 className="px-4 py-2 rounded-lg font-medium transition-colors"
-                style={{ backgroundColor: currentColors.accent || '#3B82F6', color: '#ffffff' }}
+                style={{
+                  backgroundColor: currentColors.accent || "#3B82F6",
+                  color: "#ffffff",
+                }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = currentColors.accentHover || '#2563EB';
+                  e.target.style.backgroundColor =
+                    currentColors.accentHover || "#2563EB";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
+                  e.target.style.backgroundColor =
+                    currentColors.accent || "#3B82F6";
                 }}
               >
                 Close

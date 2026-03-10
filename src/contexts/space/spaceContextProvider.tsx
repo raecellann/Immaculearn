@@ -13,6 +13,7 @@ import {
   CourseSpaceCreateData,
   CourseSPace,
   AnswerData,
+  TaskUpdateData,
 } from "../../types/space";
 import { useUser } from "../user/useUser";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -482,6 +483,18 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       queryClient.invalidateQueries({ queryKey: ["draftedTasks"] });
     },
   });
+
+  const updateTaskByTaskIdMutation = useMutation({
+    mutationFn: ({ taskData }: { taskData: TaskUpdateData }) =>
+      spaceService.updateTaskByTaskId(taskData),
+    onSuccess: (_, variables) => {
+      // Invalidate both tasks queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ["uploadedTasks"] });
+      queryClient.invalidateQueries({ queryKey: ["question-answer"] });
+      // queryClient.invalidateQueries({ queryKey: ["draftedTasks"] });
+    },
+  });
+
   const updateStudentGrades = useMutation({
     mutationFn: ({
       student_id,
@@ -556,9 +569,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     data: questionnaireEditData = [],
     isLoading: questionnaireEditDataLoading,
   } = useQuery({
-    queryKey: ["questionnaire", taskId],
+    queryKey: ["question-answer", taskId],
     queryFn: async () => {
-      const res = await spaceService.getQuestionnaireByTaskId(taskId);
+      const res = await spaceService.getQuestionAndAnswerByTaskId(taskId);
       return res.data || [];
     },
     enabled: isAuthenticated && !!taskId,
@@ -740,6 +753,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     uploadTaskMutation,
     draftTaskMutation,
     updateTaskStatusMutation,
+
+    updateTaskByTaskIdMutation,
   };
 
   return (

@@ -10,6 +10,7 @@ import {
   CourseSPace,
   TaskCreateData,
   AnswerData,
+  TaskUpdateData,
 } from "../types/space";
 
 class SpaceService {
@@ -467,6 +468,20 @@ class SpaceService {
       return {
         success: false,
         message: err.response?.data?.message || "Failed to draft task",
+      };
+    }
+  }
+
+  async updateTaskByTaskId(taskData: TaskUpdateData) {
+    try {
+      const response = await api.patch(`/tasks/update`, {
+        taskData,
+      });
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to upload task",
       };
     }
   }
