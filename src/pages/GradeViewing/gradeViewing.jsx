@@ -67,8 +67,19 @@ const GradeViewing = () => {
     return "N/A";
   };
 
+  // Check if all four quarters are completed
+  const areAllQuartersCompleted = (grades) => {
+    const quarters = ['prelim', 'midterm', 'prefinals', 'final'];
+    return quarters.every(quarter => {
+      const grade = grades[quarter];
+      return grade && grade !== "-" && grade !== "N/A" && grade !== "";
+    });
+  };
+
   // Calculate final average (college numerical grading scale)
   const calculateFinalAverage = (grades) => {
+    if (!areAllQuartersCompleted(grades)) return "-";
+    
     const validGrades = [];
     
     if (grades.prelim && grades.prelim !== "-" && grades.prelim !== "N/A") {
@@ -109,6 +120,8 @@ const GradeViewing = () => {
 
   // Determine pass/fail status
   const getPassFailStatus = (grades) => {
+    if (!areAllQuartersCompleted(grades)) return "-";
+    
     const average = calculateFinalAverage(grades);
     if (average === "-") return "-";
     
@@ -131,7 +144,7 @@ const GradeViewing = () => {
     if (parts.length === 1) return fullName;
     
     // Handle common compound last names that start with lowercase particles
-    const compoundLastNames = ['de', 'del', 'de la', 'delos', 'dos', 'da', 'do', 'di', 'von', 'van', 'le', 'la'];
+    const compoundLastNames = ['de', 'del', 'de la', 'dela', 'delos', 'dos', 'da','san','santa', 'sta.', 'do', 'di', 'von', 'van', 'le', 'la'];
     
     let surnameEndIndex = parts.length - 1;
     
@@ -414,48 +427,52 @@ const GradeViewing = () => {
                           {getGradeDisplay(student?.grades, "final")}
                         </p>
                       </div>
-                      <div
-                        className="p-3 rounded-lg"
-                        style={{
-                          backgroundColor: isDarkMode ? "#1F242D" : "#f8fafc",
-                        }}
-                      >
-                        <p
-                          className="text-xs"
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          Final Average
-                        </p>
-                        <p
-                          className="font-bold"
-                          style={{
-                            color: getPassFailColor(student?.grades),
-                          }}
-                        >
-                          {convertToCollegeScale(calculateFinalAverage(student?.grades))}
-                        </p>
-                      </div>
-                      <div
-                        className="p-3 rounded-lg col-span-2"
-                        style={{
-                          backgroundColor: isDarkMode ? "#1F242D" : "#f8fafc",
-                        }}
-                      >
-                        <p
-                          className="text-xs"
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          Remarks
-                        </p>
-                        <p
-                          className="font-bold text-lg"
-                          style={{
-                            color: getPassFailColor(student?.grades),
-                          }}
-                        >
-                          {getPassFailStatus(student?.grades)}
-                        </p>
-                      </div>
+                      {areAllQuartersCompleted(student?.grades) && (
+                        <>
+                          <div
+                            className="p-3 rounded-lg"
+                            style={{
+                              backgroundColor: isDarkMode ? "#1F242D" : "#f8fafc",
+                            }}
+                          >
+                            <p
+                              className="text-xs"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              Final Average
+                            </p>
+                            <p
+                              className="font-bold"
+                              style={{
+                                color: getPassFailColor(student?.grades),
+                              }}
+                            >
+                              {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                            </p>
+                          </div>
+                          <div
+                            className="p-3 rounded-lg col-span-2"
+                            style={{
+                              backgroundColor: isDarkMode ? "#1F242D" : "#f8fafc",
+                            }}
+                          >
+                            <p
+                              className="text-xs"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              Remarks
+                            </p>
+                            <p
+                              className="font-bold text-lg"
+                              style={{
+                                color: getPassFailColor(student?.grades),
+                              }}
+                            >
+                              {getPassFailStatus(student?.grades)}
+                            </p>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -614,24 +631,48 @@ const GradeViewing = () => {
                               >
                                 {getGradeDisplay(student?.grades, "final")}
                               </td>
-                              <td
-                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
-                                style={{
-                                  borderColor: currentColors.border,
-                                  color: getPassFailColor(student?.grades),
-                                }}
-                              >
-                                {convertToCollegeScale(calculateFinalAverage(student?.grades))}
-                              </td>
-                              <td
-                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center font-medium"
-                                style={{
-                                  color: getPassFailColor(student?.grades),
-                                  fontWeight: "bold",
-                                }}
-                              >
-                                {getPassFailStatus(student?.grades)}
-                              </td>
+                              {areAllQuartersCompleted(student?.grades) ? (
+                                <>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                    style={{
+                                      borderColor: currentColors.border,
+                                      color: getPassFailColor(student?.grades),
+                                    }}
+                                  >
+                                    {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                                  </td>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center font-medium"
+                                    style={{
+                                      color: getPassFailColor(student?.grades),
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    {getPassFailStatus(student?.grades)}
+                                  </td>
+                                </>
+                              ) : (
+                                <>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                    style={{
+                                      borderColor: currentColors.border,
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    -
+                                  </td>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center font-medium"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    -
+                                  </td>
+                                </>
+                              )}
                             </tr>
                           ))}
                         </tbody>

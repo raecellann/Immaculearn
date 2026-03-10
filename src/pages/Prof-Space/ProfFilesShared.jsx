@@ -19,65 +19,37 @@ import { toast } from "react-toastify";
 // ─── Helper Functions ────────────────────────────────────────────────────────
 
 const FILE_TYPE_ICONS = {
-  jsx: "⚛️",
-  tsx: "🔷",
-  js: "🟨",
-  ts: "🔷",
-  html: "🌐",
-  htm: "🌐",
-  css: "🎨",
-  scss: "💅",
-  sass: "💅",
-  json: "📋",
-  xml: "📄",
+  // Document files
   doc: "📘",
   docx: "📘",
+  dot: "📘",
+  dotx: "📘",
+  docm: "📘",
   pdf: "📕",
   txt: "📝",
-  md: "📝",
   rtf: "📄",
+  
+  // Spreadsheet files
   xls: "📗",
   xlsx: "📗",
+  xlsm: "📗",
+  xlt: "📗",
+  xltx: "📗",
   csv: "📗",
+  
+  // Presentation files
   ppt: "📙",
   pptx: "📙",
-  jpg: "🖼️",
-  jpeg: "🖼️",
-  png: "🖼️",
-  gif: "🖼️",
-  bmp: "🖼️",
-  svg: "🖼️",
-  webp: "🖼️",
-  mp4: "🎥",
-  avi: "🎥",
-  mov: "🎥",
-  wmv: "🎥",
-  mkv: "🎥",
-  mp3: "🎵",
-  wav: "🎵",
-  flac: "🎵",
-  aac: "🎵",
-  zip: "📦",
-  rar: "📦",
-  "7z": "📦",
-  tar: "📦",
-  gz: "📦",
-  py: "🐍",
-  java: "☕",
-  php: "🐘",
-  rb: "💎",
-  go: "🐹",
-  rs: "🦀",
-  swift: "🍎",
-  vue: "💚",
-  svelte: "🧡",
-  sql: "🗄️",
-  db: "🗄️",
-  sqlite: "🗄️",
-  yml: "⚙️",
-  yaml: "⚙️",
-  env: "🔐",
-  config: "⚙️",
+  pps: "📙",
+  ppsx: "📙",
+  pptm: "📙",
+  
+  // PDF forms
+  xfdf: "📕",
+  fdf: "📕",
+  
+  // Default for other files
+  default: "📄",
 };
 
 const getFileExt = (name) => name?.split(".").pop()?.toLowerCase() || "";
@@ -102,6 +74,43 @@ const formatSize = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / 1048576).toFixed(1)} MB`;
+};
+
+const validateFileForUpload = (file, isOwnerOrProfessor) => {
+  // Only validate if user is owner or professor
+  if (!isOwnerOrProfessor) return { isValid: true };
+  
+  // Allowed file extensions
+  const allowedExtensions = [
+    'doc', 'docx', 'dot', 'dotx', 'docm',
+    'ppt', 'pptx', 'pps', 'ppsx', 'pptm',
+    'pdf', 'xfdf', 'fdf',
+    'xls', 'xlsx', 'xlsm', 'xlt', 'xltx', 'csv'
+  ];
+  
+  // Maximum file size (50MB)
+  const maxSize = 50 * 1024 * 1024;
+  
+  // Get file extension
+  const fileExtension = file.name.split('.').pop().toLowerCase();
+  
+  // Check file extension
+  if (!allowedExtensions.includes(fileExtension)) {
+    return {
+      isValid: false,
+      error: 'Only documents, spreadsheets, and presentations are allowed (PDF, DOC, PPT, XLS, CSV)'
+    };
+  }
+  
+  // Check file size
+  if (file.size > maxSize) {
+    return {
+      isValid: false,
+      error: 'File size must be less than 50MB'
+    };
+  }
+  
+  return { isValid: true };
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -515,8 +524,28 @@ const ProfFilesShared = () => {
     if (!files?.length) return;
     if (files.length > 5) {
       alert("Maximum 5 files allowed");
+      const inp = document.getElementById("file-upload");
+      if (inp) inp.value = "";
       return;
     }
+
+    // Check if user is owner or professor (in course space)
+    const isCourseSpace = currentSpace?.space_type === "course" || currentSpace?.space_day;
+    const isOwnerOrProfessor = isOwnerSpace || isCourseSpace;
+
+    // Validate files if user is owner or professor
+    if (isOwnerOrProfessor) {
+      for (const file of files) {
+        const validation = validateFileForUpload(file, isOwnerOrProfessor);
+        if (!validation.isValid) {
+          toast.error(validation.error);
+          const inp = document.getElementById("file-upload");
+          if (inp) inp.value = "";
+          return;
+        }
+      }
+    }
+
     setPendingFiles(Array.from(files));
     setPendingLessonName(lessonName);
     setFileAlreadyExists(checkFileExists(files[0].name));
