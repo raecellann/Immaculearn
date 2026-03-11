@@ -290,6 +290,10 @@ const ProfStreamPage = () => {
 
   const isFriendSpace = !isOwnerSpace;
 
+  // Debug: Log currentSpace data to see available fields
+  console.log("CurrentSpace data:", currentSpace);
+  console.log("Available fields:", currentSpace ? Object.keys(currentSpace) : "No currentSpace");
+
   // Space name
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
 
@@ -1051,13 +1055,79 @@ const ProfStreamPage = () => {
           )}
         </div>
 
+        {/* MOBILE/TABLET SPACE INFO OVERLAY */}
+        <div className="md:hidden">
+          <div 
+            className="absolute top-4 right-2 left-2 p-2 rounded-lg border z-10"
+            style={{
+              backgroundColor: currentColors.surface + "CC", // Add 80% opacity
+              borderColor: currentColors.border + "CC", // Add 80% opacity to border
+              backdropFilter: "blur(8px)"
+            }}
+          >
+            <div className="grid grid-cols-1 gap-1">
+              {/* Schedule */}
+              <div>
+                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
+                  Schedule
+                </h3>
+                <p className="text-[0.55rem]" style={{ color: currentColors.textSecondary }}>
+                  {currentSpace?.space_schedule || 
+                   `${currentSpace?.space_day || "Mon"} ${currentSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
+                   currentSpace?.schedule ||
+                   currentSpace?.class_schedule ||
+                   (currentSpace?.space_type === "course" 
+                      ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
+                      : "Flexible schedule"
+                    )
+                  }
+                </p>
+              </div>
+
+              {/* Section */}
+              <div>
+                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
+                  Section
+                </h3>
+                <p className="text-[0.55rem]" style={{ color: currentColors.textSecondary }}>
+                  {(currentSpace?.space_section && currentSpace.space_section.charAt(0)) || 
+                   (currentSpace?.section && currentSpace.section.charAt(0)) ||
+                   (currentSpace?.class_section && currentSpace.class_section.charAt(0)) ||
+                   (currentSpace?.section_name && currentSpace.section_name.charAt(0)) ||
+                   (currentSpace?.space_day && currentSpace.space_day.charAt(0)) ||
+                   (currentSpace?.space_type === "course" 
+                      ? "G"
+                      : "G"
+                    )
+                  }
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
+                  Description
+                </h3>
+                <p className="text-[0.55rem] line-clamp-3" style={{ color: currentColors.textSecondary }}>
+                  {currentSpace?.space_description || 
+                    (currentSpace?.space_type === "course" 
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources."
+                    )
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-4 mt-0">
               <span
-                className="text-xs"
+                className="text-sm"
                 style={{ color: currentColors.textSecondary }}
               >
                 (
@@ -1074,7 +1144,7 @@ const ProfStreamPage = () => {
                   <div onClick={handlePendingInvitations} className="relative">
                     <Button text="Pending Invites" />
                     {pendingInvitesCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      <span className="absolute top-1 -right-1 bg-red-500 text-white text-sm rounded-full w-6 h-6 flex items-center justify-center">
                         {pendingInvitesCount}
                       </span>
                     )}
@@ -1092,13 +1162,13 @@ const ProfStreamPage = () => {
                 </>
               )}
               {isFriendSpace && (
-                <div className="flex flex-col gap-2 mt-2">
+                <div className="flex items-center gap-2">
                   <div
-                    className="flex items-center gap-2 p-2 rounded-md"
+                    className="flex items-center gap-3 p-4 rounded-lg"
                     style={{ backgroundColor: currentColors.surface }}
                   >
                     <span
-                      className="text-xs break-all"
+                      className="text-base break-all"
                       style={{ color: currentColors.accent }}
                     >
                       {currentSpace?.space_link || "Loading..."}
@@ -1125,6 +1195,71 @@ const ProfStreamPage = () => {
                   </div>
                 </div>
               )}
+
+              {/* SPACE INFO SECTION - Right Side */}
+              <div 
+                className="absolute top-4 right-4 p-4 rounded-lg border z-10"
+                style={{
+                  backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+                  borderColor: currentColors.border + "CC", // Add 80% opacity to border
+                  maxWidth: "1000px",
+                  backdropFilter: "blur(8px)" // Add subtle blur for better readability
+                }}
+              >
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Schedule */}
+                  <div>
+                    <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                      Schedule
+                    </h3>
+                    <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                      {currentSpace?.space_schedule || 
+                       `${currentSpace?.space_day || "Mon"} ${currentSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
+                       currentSpace?.schedule ||
+                       currentSpace?.class_schedule ||
+                       (currentSpace?.space_type === "course" 
+                          ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
+                          : "Flexible schedule"
+                        )
+                      }
+                    </p>
+                  </div>
+
+                  {/* Section */}
+                  <div>
+                    <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                      Section
+                    </h3>
+                    <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                      {(currentSpace?.space_section && currentSpace.space_section.charAt(0)) || 
+                       (currentSpace?.section && currentSpace.section.charAt(0)) ||
+                       (currentSpace?.class_section && currentSpace.class_section.charAt(0)) ||
+                       (currentSpace?.section_name && currentSpace.section_name.charAt(0)) ||
+                       (currentSpace?.space_day && currentSpace.space_day.charAt(0)) ||
+                       (currentSpace?.space_type === "course" 
+                          ? "G"
+                          : "G"
+                        )
+                      }
+                    </p>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                      Description
+                    </h3>
+                    <p className="text-sm line-clamp-3" style={{ color: currentColors.textSecondary }}>
+                      {currentSpace?.space_description || 
+                        (currentSpace?.space_type === "course" 
+                          ? "Course space for lectures, assignments, and discussions."
+                          : "Collaborative space for sharing ideas and resources."
+                        )
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

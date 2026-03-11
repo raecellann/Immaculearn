@@ -461,6 +461,139 @@ const ProfPeoplePage = () => {
           )}
         </div>
 
+        {/* MOBILE/TABLET SPACE INFO OVERLAY */}
+        <div className="md:hidden">
+          <div 
+            className="absolute top-4 right-2 left-2 p-2 rounded-lg border z-10"
+            style={{
+              backgroundColor: currentColors.surface + "CC", // Add 80% opacity
+              borderColor: currentColors.border + "CC", // Add 80% opacity to border
+              backdropFilter: "blur(8px)"
+            }}
+          >
+            <div className="grid grid-cols-1 gap-1">
+              {/* Schedule */}
+              <div>
+                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
+                  Schedule
+                </h3>
+                <p className="text-[0.55rem]" style={{ color: currentColors.textSecondary }}>
+                  {activeSpace?.space_schedule || 
+                   `${activeSpace?.space_day || "Mon"} ${activeSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
+                   activeSpace?.schedule ||
+                   activeSpace?.class_schedule ||
+                   (activeSpace?.space_type === "course" 
+                      ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
+                      : "Flexible schedule"
+                    )
+                  }
+                </p>
+              </div>
+
+              {/* Section */}
+              <div>
+                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
+                  Section
+                </h3>
+                <p className="text-[0.55rem]" style={{ color: currentColors.textSecondary }}>
+                  {(activeSpace?.space_section && activeSpace.space_section.charAt(0)) || 
+                   (activeSpace?.section && activeSpace.section.charAt(0)) ||
+                   (activeSpace?.class_section && activeSpace.class_section.charAt(0)) ||
+                   (activeSpace?.section_name && activeSpace.section_name.charAt(0)) ||
+                   (activeSpace?.space_day && activeSpace.space_day.charAt(0)) ||
+                   (activeSpace?.space_type === "course" 
+                      ? "G"
+                      : "G"
+                    )
+                  }
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
+                  Description
+                </h3>
+                <p className="text-[0.55rem] line-clamp-3" style={{ color: currentColors.textSecondary }}>
+                  {activeSpace?.space_description || 
+                    (activeSpace?.space_type === "course" 
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources."
+                    )
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* DESKTOP SPACE INFO OVERLAY */}
+        <div className="hidden md:block">
+          <div 
+            className="absolute top-4 right-4 p-4 rounded-lg border z-10"
+            style={{
+              backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+              borderColor: currentColors.border + "CC", // Add 80% opacity to border
+              maxWidth: "1000px",
+              backdropFilter: "blur(8px)" // Add subtle blur for better readability
+            }}
+          >
+            <div className="grid grid-cols-3 gap-2">
+              {/* Schedule */}
+              <div>
+                <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                  Schedule
+                </h3>
+                <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                  {activeSpace?.space_schedule || 
+                   `${activeSpace?.space_day || "Mon"} ${activeSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
+                   activeSpace?.schedule ||
+                   activeSpace?.class_schedule ||
+                   (activeSpace?.space_type === "course" 
+                      ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
+                      : "Flexible schedule"
+                    )
+                  }
+                </p>
+              </div>
+
+              {/* Section */}
+              <div>
+                <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                  Section
+                </h3>
+                <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                  {(activeSpace?.space_section && activeSpace.space_section.charAt(0)) || 
+                   (activeSpace?.section && activeSpace.section.charAt(0)) ||
+                   (activeSpace?.class_section && activeSpace.class_section.charAt(0)) ||
+                   (activeSpace?.section_name && activeSpace.section_name.charAt(0)) ||
+                   (activeSpace?.space_day && activeSpace.space_day.charAt(0)) ||
+                   (activeSpace?.space_type === "course" 
+                      ? "G"
+                      : "G"
+                    )
+                  }
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                  Description
+                </h3>
+                <p className="text-sm line-clamp-3" style={{ color: currentColors.textSecondary }}>
+                  {activeSpace?.space_description || 
+                    (activeSpace?.space_type === "course" 
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources."
+                    )
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* PAGE HEADER */}
         <div className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-6">

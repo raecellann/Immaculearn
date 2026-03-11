@@ -930,6 +930,72 @@ const ProfFilesShared = () => {
           )}
         </div>
 
+        {/* MOBILE/TABLET SPACE INFO OVERLAY */}
+        <div className="md:hidden">
+          <div 
+            className="absolute top-4 right-2 left-2 p-2 rounded-lg border z-10"
+            style={{
+              backgroundColor: c.surface + "CC", // Add 80% opacity
+              borderColor: c.border + "CC", // Add 80% opacity to border
+              backdropFilter: "blur(8px)"
+            }}
+          >
+            <div className="grid grid-cols-1 gap-1">
+              {/* Schedule */}
+              <div>
+                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: c.text }}>
+                  Schedule
+                </h3>
+                <p className="text-[0.55rem]" style={{ color: c.textSecondary }}>
+                  {currentSpace?.space_schedule || 
+                   `${currentSpace?.space_day || "Mon"} ${currentSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
+                   currentSpace?.schedule ||
+                   currentSpace?.class_schedule ||
+                   (currentSpace?.space_type === "course" 
+                      ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
+                      : "Flexible schedule"
+                    )
+                  }
+                </p>
+              </div>
+
+              {/* Section */}
+              <div>
+                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: c.text }}>
+                  Section
+                </h3>
+                <p className="text-[0.55rem]" style={{ color: c.textSecondary }}>
+                  {(currentSpace?.space_section && currentSpace.space_section.charAt(0)) || 
+                   (currentSpace?.section && currentSpace.section.charAt(0)) ||
+                   (currentSpace?.class_section && currentSpace.class_section.charAt(0)) ||
+                   (currentSpace?.section_name && currentSpace.section_name.charAt(0)) ||
+                   (currentSpace?.space_day && currentSpace.space_day.charAt(0)) ||
+                   (currentSpace?.space_type === "course" 
+                      ? "G"
+                      : "G"
+                    )
+                  }
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: c.text }}>
+                  Description
+                </h3>
+                <p className="text-[0.55rem] line-clamp-3" style={{ color: c.textSecondary }}>
+                  {currentSpace?.space_description || 
+                    (currentSpace?.space_type === "course" 
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources."
+                    )
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="p-4 sm:p-6">
           {/* DESKTOP TITLE */}
           <div className="hidden md:block mb-8">
@@ -986,6 +1052,71 @@ const ProfFilesShared = () => {
                   </button>
                 </div>
               )}
+            </div>
+
+            {/* SPACE INFO SECTION - Right Side */}
+            <div 
+              className="absolute top-4 right-4 p-4 rounded-lg border z-10"
+              style={{
+                backgroundColor: c.surface + "CC", // Add 80% opacity (CC in hex)
+                borderColor: c.border + "CC", // Add 80% opacity to border
+                maxWidth: "1000px",
+                backdropFilter: "blur(8px)" // Add subtle blur for better readability
+              }}
+            >
+              <div className="grid grid-cols-3 gap-2">
+                {/* Schedule */}
+                <div>
+                  <h3 className="font-semibold text-sm mb-2" style={{ color: c.text }}>
+                    Schedule
+                  </h3>
+                  <p className="text-sm" style={{ color: c.textSecondary }}>
+                    {currentSpace?.space_schedule || 
+                     `${currentSpace?.space_day || "Mon"} ${currentSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
+                     currentSpace?.schedule ||
+                     currentSpace?.class_schedule ||
+                     (currentSpace?.space_type === "course" 
+                        ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
+                        : "Flexible schedule"
+                      )
+                    }
+                  </p>
+                </div>
+
+                {/* Section */}
+                <div>
+                  <h3 className="font-semibold text-sm mb-2" style={{ color: c.text }}>
+                    Section
+                  </h3>
+                  <p className="text-sm" style={{ color: c.textSecondary }}>
+                    {(currentSpace?.space_section && currentSpace.space_section.charAt(0)) || 
+                     (currentSpace?.section && currentSpace.section.charAt(0)) ||
+                     (currentSpace?.class_section && currentSpace.class_section.charAt(0)) ||
+                     (currentSpace?.section_name && currentSpace.section_name.charAt(0)) ||
+                     (currentSpace?.space_day && currentSpace.space_day.charAt(0)) ||
+                     (currentSpace?.space_type === "course" 
+                        ? "G"
+                        : "G"
+                      )
+                    }
+                  </p>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <h3 className="font-semibold text-sm mb-2" style={{ color: c.text }}>
+                    Description
+                  </h3>
+                  <p className="text-sm line-clamp-3" style={{ color: c.textSecondary }}>
+                    {currentSpace?.space_description || 
+                      (currentSpace?.space_type === "course" 
+                        ? "Course space for lectures, assignments, and discussions."
+                        : "Collaborative space for sharing ideas and resources."
+                      )
+                    }
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 

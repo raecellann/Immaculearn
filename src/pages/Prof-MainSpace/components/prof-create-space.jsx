@@ -21,6 +21,9 @@ const ProfCreateSpace = () => {
   const [spaceName, setSpaceName] = useState("");
   const [people, setPeople] = useState(Array(5).fill(""));
   const [wordCount, setWordCount] = useState(0);
+  const [spaceSchedule, setSpaceSchedule] = useState("");
+  const [spaceSection, setSpaceSection] = useState("");
+  const [spaceTime, setSpaceTime] = useState("");
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
   const [coverImage, setCoverImage] = useState(
     "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
@@ -169,6 +172,9 @@ const ProfCreateSpace = () => {
         space_name: spaceName,
         short_description: people[0] || "",
         space_cover: coverImage,
+        space_schedule: spaceSchedule,
+        space_section: spaceSection,
+        space_time: spaceTime,
       };
       const result = await createSpace(spaceData);
       if (result.success) {
@@ -193,6 +199,9 @@ const ProfCreateSpace = () => {
         setSpaceName("");
         setPeople(Array(5).fill(""));
         setWordCount(0);
+        setSpaceSchedule("");
+        setSpaceSection("");
+        setSpaceTime("");
         setCoverImage(
           "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
         );
@@ -680,6 +689,92 @@ const ProfCreateSpace = () => {
                   >
                     {wordCount}/100 words
                   </span>
+                </div>
+              </div>
+
+              {/* ─────────────────────────────────────────────────
+                  ROW 3: Schedule and Section — side by side
+              ───────────────────────────────────────────────── */}
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Schedule */}
+                <div>
+                  <label className="block text-xs lg:text-sm font-medium mb-2">
+                    Schedule
+                  </label>
+                  <InputField
+                    placeholder="e.g., Mon, Wed, Fri"
+                    value={spaceSchedule}
+                    onChange={(e) => setSpaceSchedule(e.target.value)}
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #d1d5db",
+                      fontSize: "0.875rem",
+                    }}
+                    className="text-sm sm:text-base"
+                  />
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span
+                      className="text-xs lg:text-xs"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Days (optional)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Time */}
+                <div>
+                  <label className="block text-xs lg:text-sm font-medium mb-2">
+                    Time
+                  </label>
+                  <InputField
+                    placeholder="e.g., 2:00 PM - 4:00 PM"
+                    value={spaceTime}
+                    onChange={(e) => setSpaceTime(e.target.value)}
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #d1d5db",
+                      fontSize: "0.875rem",
+                    }}
+                    className="text-sm sm:text-base"
+                  />
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span
+                      className="text-xs lg:text-xs"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Class time (optional)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Section */}
+                <div>
+                  <label className="block text-xs lg:text-sm font-medium mb-2">
+                    Section
+                  </label>
+                  <InputField
+                    placeholder="e.g., Section A, BSCS-3A"
+                    value={spaceSection}
+                    onChange={(e) => setSpaceSection(e.target.value)}
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #d1d5db",
+                      fontSize: "0.875rem",
+                    }}
+                    className="text-sm sm:text-base"
+                  />
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span
+                      className="text-xs lg:text-xs"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Section or class code (optional)
+                    </span>
+                  </div>
                 </div>
               </div>
 
