@@ -885,7 +885,13 @@ const ProfHomePage = () => {
                                     {capitalizeWords(
                                       space.professor?.name.split(" ")[0],
                                     ) || "Unknown"}{" "}
-                                    • {space.members?.length > 0 ? space.members.length - 1 : 0} Students
+                                    • {
+                                      (() => {
+                                        const studentCount = space.members?.filter(member => member.role !== 'owner' && member.role !== 'professor').length || 0;
+                                        console.log(`Space ${space.space_name} - Total members: ${space.members?.length || 0}, Students: ${studentCount}`, space.members);
+                                        return studentCount;
+                                      })()
+                                    } Students
                                   </p>
                                   <p
                                     className="text-xs mt-1"

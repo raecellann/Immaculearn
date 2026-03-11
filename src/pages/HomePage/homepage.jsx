@@ -1023,11 +1023,14 @@ const HomePage1 = () => {
                                       {course.professor?.name &&
                                         `Prof. ${capitalizeWords(course.professor?.name.split(" ")[0])}`}
                                     </span>
-                                    <br></br>•{" "}
-                                    {course.space_type === "course"
-                                      ? course.members?.length - 1
-                                      : course.members?.length || 0}{" "}
-                                    Students
+                                    <br></br>• {
+                                    (() => {
+                                      const studentCount = course.members?.filter(member => member.role !== 'owner' && member.role !== 'professor').length || 0;
+                                      console.log(`Space ${course.space_name} - Total members: ${course.members?.length || 0}, Students: ${studentCount}`, course.members);
+                                      return studentCount;
+                                    })()
+                                  }{" "}
+                                  Students
                                   </p>
                                   <p className="text-gray-500 text-xs mt-1">
                                     {course.space_day || "TBD"} (
