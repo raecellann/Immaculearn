@@ -15,6 +15,7 @@ import {
   TaskUpdateData,
   UserCompletedTaskData,
   RespondentsTaskData,
+  TaskResultApiResponse,
 } from "../../types/space";
 import { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
@@ -32,6 +33,10 @@ export interface SpaceContextType {
 
   allRespondentsInTask: RespondentsTaskData[];
   allRespondentsInTaskLoading: boolean;
+
+
+  studentResponseData: TaskResultApiResponse;
+  studentResponseDataLoading: boolean;
 
   // Server data
   userSpaces: Space[];

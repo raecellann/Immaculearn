@@ -16,6 +16,7 @@ import {
   TaskUpdateData,
   UserCompletedTaskData,
   RespondentsTaskData,
+  TaskResultApiResponse,
 } from "../../types/space";
 import { useUser } from "../user/useUser";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -558,6 +559,36 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       refetchOnReconnect: false,
     });
 
+  const {
+    data: studentResponseData = {
+      success: false,
+      data: {
+        questions: [],
+        student_answers: {},
+        score: 0,
+        total_items_score: 0,
+      },
+    },
+    isLoading: studentResponseDataLoading,
+  } = useQuery<TaskResultApiResponse>({
+    queryKey: ["student-response-data", user?.id, taskId],
+    queryFn: async () => {
+      console.log(
+        `Querying student response for user ${user?.id}, task ${taskId}`,
+      );
+      const res = await spaceService.getResponseByStudentIdAndTaskId(
+        Number(user?.id),
+        taskId,
+      );
+      console.log("Query result:", res);
+      return res;
+    },
+    enabled: isAuthenticated && !!taskId && !!user?.id,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
   const { data: questionnaire = [], isLoading: questionnaireLoading } =
     useQuery({
       queryKey: ["questionnaire", taskId],
@@ -731,6 +762,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
 
     allRespondentsInTask,
     allRespondentsInTaskLoading,
+
+    studentResponseData,
+    studentResponseDataLoading,
 
     student_remarks,
     one_student_remarks,

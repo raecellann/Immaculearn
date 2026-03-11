@@ -585,6 +585,21 @@ class SpaceService {
     }
   }
 
+  async getResponseByStudentIdAndTaskId(student_id: number, taskId: number) {
+    try {
+      console.log(`Fetching response for student ${student_id}, task ${taskId}`);
+      const response = await api.get(`/tasks/${taskId}/response/${student_id}`);
+      console.log('API response:', response.data);
+      return response.data;
+    } catch (err: any) {
+      console.error('Error fetching student response:', err);
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to get student response",
+      };
+    }
+  }
+
   async updateGrade(
     student_id: number,
     space_uuid: string,
