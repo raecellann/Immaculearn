@@ -1247,7 +1247,7 @@ const HomePage1 = () => {
           </div>
 
           {/* RIGHT SIDEBAR – visible on xl+ */}
-          <div className="hidden xl:block w-80 mr-6 flex-shrink-0 self-start sticky top-6 flex flex-col gap-6">
+          <div className="hidden xl:flex xl:flex-col w-80 gap-4 mr-6 my-6 flex-shrink-0 self-start sticky top-4">
             {/* Reminders */}
             <div
               className="rounded-xl p-6 flex-1"

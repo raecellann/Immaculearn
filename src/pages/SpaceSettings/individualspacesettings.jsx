@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import Sidebar from "../component/sidebar";
 import ProfSidebar from "../component/profsidebar";
-import { ArrowLeft, Users, Settings as SettingsIcon, Link, Trash2, UserX } from "lucide-react";
+import { ArrowLeft, Settings as SettingsIcon } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
@@ -83,24 +83,7 @@ const IndividualSpaceSettings = () => {
     alert("Space settings saved successfully!");
   };
 
-  const handleKickMember = (memberId, memberName) => {
-    if (window.confirm(`Are you sure you want to remove ${memberName} from this space?`)) {
-      console.log(`Kicking member ${memberId} from space ${spaceUuid}`);
-      alert(`${memberName} has been removed from the space.`);
-      // In a real implementation, you would call an API here
-      // and update the members list
-    }
-  };
 
-  const getSpaceLink = () => {
-    return currentSpace?.space_uuid || spaceUuid;
-  };
-
-  const copySpaceLink = () => {
-    const link = getSpaceLink();
-    navigator.clipboard.writeText(link);
-    alert('Space code copied to clipboard!');
-  };
 
   const handleBackToSpaces = () => {
     navigate('/space-settings');
@@ -238,7 +221,7 @@ const IndividualSpaceSettings = () => {
             </div>
               <div className="rounded-lg p-4 inline-block mb-2" style={{ backgroundColor: currentColors.surface }}>
                 <h2 className="text-lg font-semibold" style={{ color: '#3b82f6' }}>{currentSpace.space_name}</h2>
-                <p className="text-sm" style={{ color: currentColors.textSecondary }}>{currentSpace.members?.length || 0} members</p>
+                <p className="text-sm" style={{ color: currentColors.textSecondary }}>{currentSpace.space_name}</p>
               </div>
 
 
@@ -409,81 +392,6 @@ const IndividualSpaceSettings = () => {
                 </div>
               )}
 
-              {/* Space Code */}
-              <div className="mb-8">
-                <h2 className="text-lg font-semibold mb-6 flex items-center">
-                  <Link size={20} className="mr-2" />
-                  Space Code
-                </h2>
-                
-                <div className="rounded-lg p-4" style={{ backgroundColor: currentColors.input }}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 mr-4">
-                      <p className="text-sm mb-1" style={{ color: currentColors.textSecondary }}>Share this code with others to join your space:</p>
-                      <p className="text-sm font-mono" style={{ color: '#3b82f6' }}>{getSpaceLink()}</p>
-                    </div>
-                    <button
-                      onClick={copySpaceLink}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
-                    >
-                      Copy Code
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Members */}
-              <div className="mb-8">
-                <h2 className="text-lg font-semibold mb-6 flex items-center">
-                  <Users size={20} className="mr-2" />
-                  Members ({currentSpace.members?.length || 0})
-                </h2>
-                
-                <div className="space-y-3">
-                  {currentSpace.members?.map((member) => (
-                    <div
-                      key={member.account_id}
-                      className="rounded-lg p-4 flex items-center justify-between"
-                      style={{
-                        backgroundColor: currentColors.input
-                      }}
-                    >
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                          <span className="text-white font-semibold">
-                            {member.full_name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <h4 className="font-medium" style={{ color: currentColors.text }}>{member.full_name}</h4>
-                          <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                            {member.role} • {member.course} • {member.year_level}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {(!isCourseSpace || user?.role === "professor") && member.role !== "Professor" && member.account_id !== user?.account_id && (
-                        <button
-                          onClick={() => handleKickMember(member.account_id, member.full_name)}
-                          className="p-2 rounded-lg transition-colors"
-                          style={{
-                            color: '#ef4444'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                          }}
-                          title="Remove member"
-                        >
-                          <UserX size={18} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               {/* SAVE BUTTON */}
               <div className="flex justify-end">
