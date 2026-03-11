@@ -81,6 +81,7 @@ export interface SpaceContextType {
   declineJoinRequest: (userId: number, spaceUuid: string) => Promise<any>;
   leaveSpace: (space_uuid: string) => Promise<any>;
   deleteSpace: (spaceUuid: string) => Promise<any>;
+  updateSpace: (spaceUuid: string, spaceData?: any) => Promise<any>;
   removeUserFromSpace: (spaceUuid: string, userId: number) => Promise<any>;
   setArchive: (spaceUuid: string) => Promise<any>;
   submitTaskAnswer: (answerData: AnswerData) => Promise<any>;

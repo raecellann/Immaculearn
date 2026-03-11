@@ -93,7 +93,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       setIsLoading(true);
 
       const response = await adminApi.post(
-        "/login",
+        "/admin/login",
         { email, password },
         { withCredentials: true },
       );

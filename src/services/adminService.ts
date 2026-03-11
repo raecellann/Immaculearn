@@ -102,11 +102,11 @@ class AdminService {
       const response = await adminApi.post<ApiResponse<AnnouncementData>>(
         "/announce/create",
         formData,
-        // {
-        //   headers: {
-        //     "Content-Type": "multipart/form-data",
-        //   },
-        // },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
       );
       return response.data;
     } catch (error: any) {

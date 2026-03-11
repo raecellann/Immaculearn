@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router";
 import { api } from "../../lib/api"; // Axios instance with withCredentials
-import { adminApi } from "../../lib/api.admin";
 
 import { UserContext, User } from "./userContext";
 import { PostCreateData, CommentCreateData } from "../../types/post";
@@ -128,11 +127,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   };
 
   // Login function
-  const login = async (email: string, password: string): Promise<any> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-
-      // First try regular user login (student/prof)
       const response = await api.post(
         "/account/login",
         { email, password },
@@ -142,41 +139,13 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       if (response.data.success) {
         // Fetch user profile after login
         await checkAuth();
-        return response.data;
+        return true;
       }
 
-      return response.data;
-    } catch (userError: any) {
-      // Only try admin login if it's not a 401 (invalid credentials)
-      // 401 means wrong email/password, so don't try admin login
-      if (userError?.response?.status === 401) {
-        return { 
-          success: false, 
-          message: "Invalid email or password" 
-        };
-      }
-
-      // For other errors (like 404 user not found), try admin login
-      try {
-        const adminResponse = await adminApi.post(
-          "/admin/login",
-          { email, password },
-          { withCredentials: true },
-        );
-
-        if (adminResponse.data.success) {
-          // For admin, we need to set admin context
-          return adminResponse.data;
-        }
-
-        return adminResponse.data;
-      } catch (adminError: any) {
-        console.error("Both login attempts failed:", { userError, adminError });
-        return { 
-          success: false, 
-          message: "Login failed. Please check your credentials and try again." 
-        };
-      }
+      return false;
+    } catch (err) {
+      console.error("Login error:", err);
+      return false;
     } finally {
       setIsLoading(false);
     }

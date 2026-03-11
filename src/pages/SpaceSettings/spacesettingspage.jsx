@@ -56,7 +56,7 @@ const SpaceSettingsPage = () => {
         ...(userSpaces || []),
         ...(courseSpaces || []).map(courseSpace => ({
           ...courseSpace,
-          description: courseSpace.space_description,
+          description: courseSpace.space_description || '',
           space_type: 'course'
         }))
       ]
@@ -205,7 +205,7 @@ const SpaceSettingsPage = () => {
                             <div className="flex-1">
                               <h3 className="text-lg font-semibold mb-2" style={{ color: currentColors.text }}>{space.space_name}</h3>
                               <p className="text-sm line-clamp-2" style={{ color: currentColors.textSecondary }}>
-                                {space.description || "No description available"}
+                                {space.space_description || "No description available"}
                               </p>
                             </div>
                             <ChevronRight className="mt-1" size={20} style={{ color: currentColors.textSecondary }} />

@@ -328,6 +328,16 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
   };
 
+
+  const updateSpace = async (spaceId: string, spaceData?: any) => {
+    await spaceService.updateSpace(spaceId, spaceData);
+    queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["friendSpaces"] });
+    queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
+    if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
+  };
+  
+
   const removeUserFromSpace = async (spaceId: string, userId: number) => {
     await spaceService.removeUserFromSpace(spaceId, userId);
     if (userSpaces?.some((s) => s.space_id === spaceId)) {
@@ -808,6 +818,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     declineJoinRequest,
     leaveSpace,
     deleteSpace,
+    updateSpace,
     removeUserFromSpace,
     setArchive,
     submitTaskAnswer,
