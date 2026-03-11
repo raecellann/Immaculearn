@@ -14,6 +14,8 @@ import {
   CourseSPace,
   AnswerData,
   TaskUpdateData,
+  UserCompletedTaskData,
+  RespondentsTaskData,
 } from "../../types/space";
 import { useUser } from "../user/useUser";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -584,6 +586,36 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     refetchOnReconnect: false,
   });
 
+  const {
+    data: allUserCompletedTask = [],
+    isLoading: allUserCompletedTaskLoading,
+  } = useQuery<UserCompletedTaskData[]>({
+    queryKey: ["all-user-completed-task", taskId],
+    queryFn: async () => {
+      const res = await spaceService.getAllUserCompletedTaskByTaskId(taskId);
+      return res.data || [];
+    },
+    enabled: isAuthenticated && !!taskId,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
+  const {
+    data: allRespondentsInTask = [],
+    isLoading: allRespondentsInTaskLoading,
+  } = useQuery<RespondentsTaskData[]>({
+    queryKey: ["all-respondents-in-task", taskId],
+    queryFn: async () => {
+      const res = await spaceService.getAllRespondentsByTaskId(taskId);
+      return res.data || [];
+    },
+    enabled: isAuthenticated && !!taskId,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
   // WebSocket connection for real-time updates
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -693,6 +725,12 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     questionnaire,
     questionnaireEditData,
     questionnaireEditDataLoading,
+
+    allUserCompletedTask,
+    allUserCompletedTaskLoading,
+
+    allRespondentsInTask,
+    allRespondentsInTaskLoading,
 
     student_remarks,
     one_student_remarks,

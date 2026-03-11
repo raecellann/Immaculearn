@@ -56,7 +56,7 @@ const GradeViewing = () => {
   // Get display value for grade with N/A logic
   const getGradeDisplay = (grades, currentPeriod) => {
     // Check if any period has a grade
-    const hasAnyGrade = grades.prelim || grades.midterm || grades.prefinals;
+    const hasAnyGrade = grades.prelim || grades.midterm || grades.prefinals || grades.finals;
 
     if (!hasAnyGrade) return "-";
 
@@ -69,7 +69,7 @@ const GradeViewing = () => {
 
   // Check if all four quarters are completed
   const areAllQuartersCompleted = (grades) => {
-    const quarters = ['prelim', 'midterm', 'prefinals', 'final'];
+    const quarters = ['prelim', 'midterm', 'prefinals', 'finals'];
     return quarters.every(quarter => {
       const grade = grades[quarter];
       return grade && grade !== "-" && grade !== "N/A" && grade !== "";
@@ -91,16 +91,20 @@ const GradeViewing = () => {
     if (grades.prefinals && grades.prefinals !== "-" && grades.prefinals !== "N/A") {
       validGrades.push(parseFloat(grades.prefinals));
     }
-    if (grades.final && grades.final !== "-" && grades.final !== "N/A") {
-      validGrades.push(parseFloat(grades.final));
+    if (grades.finals && grades.finals !== "-" && grades.finals !== "N/A") {
+      validGrades.push(parseFloat(grades.finals));
     }
 
     if (validGrades.length === 0) return "-";
     
     const average = validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
     
-    // Convert to nearest valid grade
-    const validGradeValues = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 5.0];
+    // If average is 3.5 or higher, mark as failed
+    if (average >= 3.5) {
+      return "5.00";
+    }
+    
+    const validGradeValues = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0];
     let closestGrade = validGradeValues[0];
     let minDiff = Math.abs(average - closestGrade);
     
@@ -419,11 +423,11 @@ const GradeViewing = () => {
                           className="font-bold"
                           style={{
                             color: getGradeColor(
-                              getGradeDisplay(student?.grades, "final"),
+                              getGradeDisplay(student?.grades, "finals"),
                             ),
                           }}
                         >
-                          {getGradeDisplay(student?.grades, "final")}
+                          {getGradeDisplay(student?.grades, "finals")}
                         </p>
                       </div>
                       {areAllQuartersCompleted(student?.grades) && (
@@ -624,11 +628,11 @@ const GradeViewing = () => {
                                 className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
                                 style={{
                                   color: getGradeColor(
-                                    getGradeDisplay(student?.grades, "final"),
+                                    getGradeDisplay(student?.grades, "finals"),
                                   ),
                                 }}
                               >
-                                {getGradeDisplay(student?.grades, "final")}
+                                {getGradeDisplay(student?.grades, "finals")}
                               </td>
                               {areAllQuartersCompleted(student?.grades) ? (
                                 <>

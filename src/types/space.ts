@@ -186,3 +186,44 @@ export type StudentData = {
     prefinals: number,
     finals: number,
 }
+
+
+
+export type UserCompletedTaskData = {
+  account_id: number;
+  student_fn: string;
+  student_ln: string;
+  full_name: string;
+  score: number;
+  total_items_score: number;
+  completed_at: string; // ISO date string
+};
+
+
+export type TaskChoice = {
+  choice_id: number;
+  letter_identifier: string;
+  choice_answer: string;
+  is_right_answer: number;
+};
+
+export type TaskAnswer = {
+  answer_id: number;
+  account_id: number;
+  choice_id: number | null;
+  answer_text: string | null;
+  answered_at: string;
+};
+
+export type RespondentsTaskData = {
+  question_id: number;
+  task_id: number;
+  question_type: string;
+  question: string;
+  identification_answer: string | null;
+  point: number;
+  position: number;
+  expected_count: number;
+  choices: TaskChoice[];
+  answers: TaskAnswer[];
+};

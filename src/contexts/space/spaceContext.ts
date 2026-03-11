@@ -13,6 +13,8 @@ import {
   AnswerData,
   StudentData,
   TaskUpdateData,
+  UserCompletedTaskData,
+  RespondentsTaskData,
 } from "../../types/space";
 import { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
@@ -24,6 +26,12 @@ export interface SpaceContextType {
   questionnaire: QuestionnaireData[];
   questionnaireEditData: QuestionnaireData[];
   questionnaireEditDataLoading: boolean;
+
+  allUserCompletedTask: UserCompletedTaskData[];
+  allUserCompletedTaskLoading: boolean;
+
+  allRespondentsInTask: RespondentsTaskData[];
+  allRespondentsInTaskLoading: boolean;
 
   // Server data
   userSpaces: Space[];

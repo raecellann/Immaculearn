@@ -67,7 +67,6 @@ class SpaceService {
     try {
       const response = await api.get<ApiResponse<Space[]>>("/spaces/all");
       const data = Array.isArray(response.data?.data) ? response.data.data : [];
-      console.log(response);
       return {
         success: response.data.success,
         message: response.data.message,
@@ -89,7 +88,6 @@ class SpaceService {
         "/spaces/course-spaces",
       );
       const data = Array.isArray(response.data?.data) ? response.data.data : [];
-      console.log(response);
       return {
         success: response.data.success,
         message: response.data.message,
@@ -121,7 +119,6 @@ class SpaceService {
     try {
       const response = await api.get<ApiResponse<Space[]>>("/spaces/shared");
       const data = Array.isArray(response.data?.data) ? response.data.data : [];
-      console.log(response);
       return {
         success: response.data.success,
         message: response.data.message,
@@ -564,6 +561,30 @@ class SpaceService {
     }
   }
 
+  async getAllUserCompletedTaskByTaskId(taskId: number) {
+    try {
+      const response = await api.get(`/tasks/${taskId}/task-completed`);
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
+  async getAllRespondentsByTaskId(taskId: number) {
+    try {
+      const response = await api.get(`/tasks/${taskId}/respondents`);
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
   async updateGrade(
     student_id: number,
     space_uuid: string,
@@ -651,7 +672,6 @@ class SpaceService {
         "/spaces/archived",
       );
       const data = Array.isArray(response.data?.data) ? response.data.data : [];
-      console.log(response);
       return {
         success: response.data.success,
         message: response.data.message,
