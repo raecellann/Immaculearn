@@ -67,7 +67,7 @@ const Button = ({ text = "Share", onClick }) => {
       case "Delete Room":
         return "#ef4444"; // Red
       case "All Notifications":
-        return "#9ca3af"; // Gray
+        return "#1468B1"; // Gray
       case "Pending Join Requests":
         return "#60a5fa"; // Light blue
       case "Space Invitations":
@@ -90,7 +90,7 @@ const Button = ({ text = "Share", onClick }) => {
       case "Delete Room":
         return "#dc2626"; // Darker red
       case "All Notifications":
-        return "#6b7280"; // Darker gray
+        return "#1c7acdff"; // Darker blue
       case "Pending Join Requests":
         return "#3b82f6"; // Blue
       case "Space Invitations":
