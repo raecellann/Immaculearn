@@ -603,7 +603,7 @@ const HomePage1 = () => {
                       {allUploadedTasks.slice(0, 3).map((task) => (
                         <div
                           key={task.task_id}
-                          className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                          className="p-3 rounded-lg border hover:shadow-md transition-all duration-200"
                           style={{
                             backgroundColor: isDarkMode
                               ? "rgba(30, 36, 46, 0.9)"
@@ -612,73 +612,72 @@ const HomePage1 = () => {
                             borderWidth: "1px",
                           }}
                         >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div 
-                                  className={`w-2 h-2 rounded-full ${
-                                    task.task_status === "completed"
-                                      ? "bg-green-500"
-                                      : task.task_status === "in_progress"
-                                      ? "bg-yellow-500"
-                                      : "bg-blue-500"
-                                  }`}
-                                ></div>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <div 
+                                className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                  task.task_status === "completed"
+                                    ? "bg-green-500"
+                                    : task.task_status === "in_progress"
+                                    ? "bg-yellow-500"
+                                    : "bg-blue-500"
+                                }`}
+                              ></div>
+                              <div className="flex-1 min-w-0">
                                 <p
-                                  className="text-sm font-semibold"
+                                  className="text-sm font-semibold truncate"
                                   style={{ color: currentColors.text }}
                                 >
                                   {task.task_title || "Untitled Task"}
                                 </p>
-                              </div>
-                              <p
-                                className="text-sm leading-relaxed mb-3"
-                                style={{
-                                  color: currentColors.textSecondary,
-                                  lineHeight: "1.5",
-                                }}
-                              >
-                                {task.task_description || "No description"}
-                              </p>
-                              <div className="flex items-center gap-4">
-                                {task.due_date && (
-                                  <div className="flex items-center gap-2">
-                                    <svg 
-                                      className="w-4 h-4" 
-                                      style={{ color: currentColors.textSecondary }}
-                                      fill="none" 
-                                      stroke="currentColor" 
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round" 
-                                        strokeWidth={2} 
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
-                                      />
-                                    </svg>
-                                    <p
-                                      className="text-xs font-medium"
-                                      style={{
-                                        color: currentColors.textSecondary,
-                                      }}
-                                    >
-                                      {new Date(task.due_date).toLocaleDateString()}
-                                    </p>
-                                  </div>
-                                )}
-                                <span
-                                  className={`text-xs px-2 py-1 rounded-full ${
-                                    task.task_status === "completed"
-                                      ? "bg-green-100 text-green-700"
-                                      : task.task_status === "in_progress"
-                                      ? "bg-yellow-100 text-yellow-700"
-                                      : "bg-blue-100 text-blue-700"
-                                  }`}
+                                <p
+                                  className="text-xs truncate mt-1"
+                                  style={{
+                                    color: currentColors.textSecondary,
+                                  }}
                                 >
-                                  {task.task_status?.replace("_", " ") || "pending"}
-                                </span>
+                                  {task.task_description || "No description"}
+                                </p>
                               </div>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {task.due_date && (
+                                <div className="flex items-center gap-1">
+                                  <svg 
+                                    className="w-3 h-3" 
+                                    style={{ color: currentColors.textSecondary }}
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path 
+                                      strokeLinecap="round" 
+                                      strokeLinejoin="round" 
+                                      strokeWidth={2} 
+                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                                    />
+                                  </svg>
+                                  <p
+                                    className="text-xs font-medium"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    {new Date(task.due_date).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              )}
+                              <span
+                                className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                                  task.task_status === "completed"
+                                    ? "bg-green-100 text-green-700"
+                                    : task.task_status === "in_progress"
+                                    ? "bg-yellow-100 text-yellow-700"
+                                    : "bg-blue-100 text-blue-700"
+                                }`}
+                              >
+                                {task.task_status?.replace("_", " ") || "pending"}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -693,7 +692,7 @@ const HomePage1 = () => {
                     <button
                       onClick={() => navigate("/task")}
                       className="text-sm font-medium hover:underline transition-colors"
-                      style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
+                      style={{ color: "white" }}
                     >
                       View All Tasks →
                     </button>
@@ -703,11 +702,9 @@ const HomePage1 = () => {
             </div>
 
             {/* Announcements by Admin (Mobile/Tablet only) */}
-            {user?.role !== 'PROFESSOR' && (
-              <div className="xl:hidden mb-8">
-                <StudentAnnouncementByAdmin />
-              </div>
-            )}
+            <div className="xl:hidden mb-8">
+              <StudentAnnouncementByAdmin />
+            </div>
 
             {/* Your Spaces */}
             <section className="mb-12">
@@ -1318,10 +1315,10 @@ const HomePage1 = () => {
                   </div>
                 ) : (
                   <>
-                    {allUploadedTasks.slice(0, 4).map((task) => (
+                    {allUploadedTasks.slice(0, 3).map((task) => (
                       <div
                         key={task.task_id}
-                        className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                        className="p-3 rounded-lg border hover:shadow-md transition-all duration-200"
                         style={{
                           backgroundColor: isDarkMode
                             ? "rgba(30, 36, 46, 0.9)"
@@ -1330,73 +1327,61 @@ const HomePage1 = () => {
                           borderWidth: "1px",
                         }}
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div 
-                                className={`w-2 h-2 rounded-full ${
-                                  task.task_status === "completed"
-                                    ? "bg-green-500"
-                                    : task.task_status === "in_progress"
-                                    ? "bg-yellow-500"
-                                    : "bg-blue-500"
-                                }`}
-                              ></div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div 
+                              className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                task.task_status === "completed"
+                                  ? "bg-green-500"
+                                  : task.task_status === "in_progress"
+                                  ? "bg-yellow-500"
+                                  : "bg-blue-500"
+                              }`}
+                            ></div>
+                            <div className="flex-1 min-w-0">
                               <p
-                                className="text-sm font-semibold"
+                                className="text-sm font-semibold truncate"
                                 style={{ color: currentColors.text }}
                               >
                                 {task.task_title || "Untitled Task"}
                               </p>
-                            </div>
-                            <p
-                              className="text-sm leading-relaxed mb-3"
-                              style={{
-                                color: currentColors.textSecondary,
-                                lineHeight: "1.5",
-                              }}
-                            >
-                              {task.task_instruction || "No description"}
-                            </p>
-                            <div className="flex items-center gap-4">
-                              {task.due_date && (
-                                <div className="flex items-center gap-2">
-                                  <svg 
-                                    className="w-4 h-4" 
-                                    style={{ color: currentColors.textSecondary }}
-                                    fill="none" 
-                                    stroke="currentColor" 
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path 
-                                      strokeLinecap="round" 
-                                      strokeLinejoin="round" 
-                                      strokeWidth={2} 
-                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
-                                    />
-                                  </svg>
-                                  <p
-                                    className="text-xs font-medium"
-                                    style={{
-                                      color: currentColors.textSecondary,
-                                    }}
-                                  >
-                                    {new Date(task.due_date).toLocaleDateString()}
-                                  </p>
-                                </div>
-                              )}
-                              {/* <span
-                                className={`text-xs px-2 py-1 rounded-full ${
-                                  task.task_status === "completed"
-                                    ? "bg-green-100 text-green-700"
-                                    : task.task_status === "in_progress"
-                                    ? "bg-yellow-100 text-yellow-700"
-                                    : "bg-blue-100 text-blue-700"
-                                }`}
+                              <p
+                                className="text-xs truncate mt-1"
+                                style={{
+                                  color: currentColors.textSecondary,
+                                }}
                               >
-                                {task.task_status?.replace("_", " ") || "pending"}
-                              </span> */}
+                                {task.task_instruction || "No description"}
+                              </p>
                             </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {task.due_date && (
+                              <div className="flex items-center gap-1">
+                                <svg 
+                                  className="w-3 h-3" 
+                                  style={{ color: currentColors.textSecondary }}
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round" 
+                                    strokeWidth={2} 
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                                  />
+                                </svg>
+                                <p
+                                  className="text-xs font-medium"
+                                  style={{
+                                    color: currentColors.textSecondary,
+                                  }}
+                                >
+                                  {new Date(task.due_date).toLocaleDateString()}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1411,7 +1396,7 @@ const HomePage1 = () => {
                   <button
                     onClick={() => navigate("/task")}
                     className="text-sm font-medium hover:underline transition-colors"
-                    style={{ color: isDarkMode ? "#60A5FA" : "#60A5FA" }}
+                    style={{ color: "white" }}
                   >
                     View All Tasks →
                   </button>
@@ -1420,7 +1405,7 @@ const HomePage1 = () => {
             </div>
 
             {/* Announcements by Admin */}
-            {user?.role !== 'PROFESSOR' && <StudentAnnouncementByAdmin />}
+            <StudentAnnouncementByAdmin />
           </div>
         </div>
 
