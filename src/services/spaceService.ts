@@ -407,6 +407,22 @@ class SpaceService {
     }
   }
 
+  async updateSpace(spaceUuid: string, spaceData: any): Promise<ApiResponse> {
+    try {
+      console.log(`SPACE UUID ${spaceUuid}`);
+      console.log('SPACE DATA TO UPDATE:', spaceData);
+      const response = await api.patch<ApiResponse>(`/spaces/${spaceUuid}`, spaceData);
+
+      console.log(response.data);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to update space",
+      };
+    }
+  }
+
   async removeUserFromSpace(
     space_id: string,
     userId: number,
@@ -686,6 +702,7 @@ class SpaceService {
       };
     }
   }
+  
 }
 
 export const spaceService = new SpaceService();

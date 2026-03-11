@@ -10,7 +10,7 @@ import Logout from "../component/logout";
 
 const IndividualSpaceSettings = () => {
   const { user } = useUser();
-  const { userSpaces, courseSpaces } = useSpace();
+  const { userSpaces, courseSpaces , updateSpace} = useSpace();
   const { spaceUuid, spaceName } = useParams();
   const navigate = useNavigate();
   const { isDarkMode, colors } = useSpaceTheme();
@@ -48,7 +48,7 @@ const IndividualSpaceSettings = () => {
 
   const [spaceSettings, setSpaceSettings] = useState({
     spaceName: currentSpace?.space_name || "",
-    spaceDescription: isCourseSpace ? (currentSpace?.space_description || "") : (currentSpace?.description || ""),
+    spaceDescription: currentSpace?.space_description || currentSpace?.description || "",
     spaceDay: currentSpace?.space_day || "",
     spaceTimeStart: currentSpace?.space_time_start || "",
     spaceTimeEnd: currentSpace?.space_time_end || "",
@@ -61,14 +61,14 @@ const IndividualSpaceSettings = () => {
       setSpaceSettings(prev => ({
         ...prev,
         spaceName: currentSpace.space_name,
-        spaceDescription: isCourseSpace ? (currentSpace.space_description || "") : (currentSpace.description || ""),
+        spaceDescription: currentSpace.space_description || currentSpace.description || "",
         spaceDay: currentSpace.space_day || "",
         spaceTimeStart: currentSpace.space_time_start || "",
         spaceTimeEnd: currentSpace.space_time_end || "",
         spaceYearLevel: currentSpace.space_yr_lvl || "",
       }));
     }
-  }, [currentSpace, isCourseSpace]);
+  }, [currentSpace]);
 
 
   const handleSettingChange = (field, value) => {
@@ -78,9 +78,43 @@ const IndividualSpaceSettings = () => {
     }));
   };
 
-  const handleSaveSettings = () => {
-    console.log("Saving space settings:", spaceSettings);
-    alert("Space settings saved successfully!");
+  const handleSaveSettings = async () => {
+    try {
+      console.log("Saving space settings:", spaceSettings);
+      console.log("Is course space:", isCourseSpace);
+      console.log("Current space data:", currentSpace);
+      
+      // Prepare the data object based on space type
+      let updateData;
+      
+      if (isCourseSpace) {
+        updateData = {
+          space_name: spaceSettings.spaceName,
+          space_description: spaceSettings.spaceDescription,
+          space_day: spaceSettings.spaceDay,
+          space_time_start: spaceSettings.spaceTimeStart,
+          space_time_end: spaceSettings.spaceTimeEnd,
+          space_yr_lvl: spaceSettings.spaceYearLevel,
+        };
+        console.log("Using COURSE SPACE data structure:", updateData);
+      } else {
+        updateData = {
+          space_name: spaceSettings.spaceName,
+          space_description: spaceSettings.spaceDescription,
+        };
+        console.log("Using REGULAR SPACE data structure:", updateData);
+      }
+      
+      console.log("Update data being sent:", updateData);
+      
+      const result = await updateSpace(spaceUuid, updateData);
+      console.log("Update result:", result);
+      
+      alert("Space settings saved successfully!");
+    } catch (error) {
+      console.error("Error saving space settings:", error);
+      alert("Failed to save space settings. Please try again.");
+    }
   };
 
 

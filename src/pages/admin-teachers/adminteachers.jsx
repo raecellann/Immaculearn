@@ -16,6 +16,7 @@ const AdminTeachers = () => {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [showLogout, setShowLogout] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [isAddingTeacher, setIsAddingTeacher] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [importPreview, setImportPreview] = useState([]);
@@ -186,9 +187,7 @@ const AdminTeachers = () => {
   };
 
   const handleAddTeacher = async () => {
-  if (isLoading) {
-    return;
-  }
+  if (isAddingTeacher) return;
 
   if (!newTeacher.email) {
     toast.error("Email is required");
@@ -211,7 +210,7 @@ const AdminTeachers = () => {
     return;
   }
 
-  setIsLoading(true);
+  setIsAddingTeacher(true); 
 
   try {
     const res = await adminDashboardService.registerProfEmail({
@@ -219,9 +218,10 @@ const AdminTeachers = () => {
     });
 
     if (!res.success) {
-      toast.error(res.message);
-      return;
-    }
+          toast.error(res.message);
+          setIsAddingTeacher(false); // Reset loading state
+          return;
+        }
 
     setNewTeacher({ email: "" });
     setEmailError(false);
@@ -960,9 +960,14 @@ const getEmailPreview = () => {
               </button>
               <button
                 onClick={handleAddTeacher}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                disabled={isAddingTeacher}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  isAddingTeacher 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
               >
-                Add Teacher
+                {isAddingTeacher ? 'Adding...' : 'Add Teacher'}
               </button>
             </div>
           </div>
