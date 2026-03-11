@@ -411,7 +411,8 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       spaces: Space[] | CourseSPace[],
       key: string,
     ) => {
-      if (spaces?.some((s) => Number(s.space_id) === Number(spaceUuid))) {
+      console.log(spaces, spaceUuid);
+      if (spaces?.some((s) => s.space_uuid === spaceUuid)) {
         queryClient.invalidateQueries({ queryKey: [key] });
       }
     };
