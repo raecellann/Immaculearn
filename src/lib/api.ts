@@ -56,7 +56,8 @@ api.interceptors.response.use(
     // 🚨 Do NOT retry refresh or profile endpoints
     if (
       originalRequest?.url?.includes("/auth/refresh") ||
-      originalRequest?.url?.includes("/auth/profile")
+      originalRequest?.url?.includes("/auth/profile") ||
+      originalRequest?.url?.includes("/account/login")
     ) {
       return Promise.reject(error);
     }
