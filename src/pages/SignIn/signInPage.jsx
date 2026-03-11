@@ -41,49 +41,27 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Field-level errors
-  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
-  // Track whether a field has been touched (blurred) for eager validation
-  const [touched, setTouched] = useState({ email: false, password: false });
+  // Single error state for form validation
+  const [formError, setFormError] = useState("");
 
   const navigate = useNavigate();
 
-  // Validate a single field on-the-fly whenever value/touched changes
-  const getFieldError = (name, val) => {
-    if (name === "email") {
-      if (!val.trim()) return "Email address is required";
-      if (!EMAIL_REGEX.test(val.trim()))
-        return "Please enter a valid email address";
-    }
-    if (name === "password") {
-      if (!val) return "Password is required";
-    }
-    return "";
-  };
-
-  const handleBlur = (name) => {
-    setTouched((prev) => ({ ...prev, [name]: true }));
-    setFieldErrors((prev) => ({
-      ...prev,
-      [name]: getFieldError(name, name === "email" ? email : password),
-    }));
-  };
 
   // ── Submit ──
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mark all fields as touched
-    setTouched({ email: true, password: true });
-
     const errors = validateLoginForm(email, password);
-    setFieldErrors(errors);
 
     if (Object.keys(errors).length > 0) {
-      // Show a toast for the first error
+      // Set single form error message
+      setFormError("Invalid email or password");
       toast.error(Object.values(errors)[0]);
       return;
     }
+
+    // Clear form error on successful validation
+    setFormError("");
 
     try {
       const data = await login(email, password);
@@ -267,29 +245,11 @@ const LoginPage = () => {
               type="email"
               placeholder="Enter your email address"
               value={email}
-              onChange={(e) => {
-                const val = e.target.value;
-                setEmail(val);
-                // Always clear error when field is emptied (user deleting); also re-validate if already touched
-                if (!val) {
-                  setFieldErrors((prev) => ({ ...prev, email: "" }));
-                } else if (touched.email) {
-                  setFieldErrors((prev) => ({
-                    ...prev,
-                    email: getFieldError("email", val),
-                  }));
-                }
-              }}
-              onBlur={() => handleBlur("email")}
+              onChange={(e) => setEmail(e.target.value)}
               style={{
                 width: "100%",
-                borderColor: fieldErrors.email ? "#ef4444" : "#000",
-                boxShadow: fieldErrors.email
-                  ? "2.5px 3px 0 #ef4444"
-                  : "2.5px 3px 0 #000",
               }}
             />
-            <FieldError message={fieldErrors.email} />
           </div>
 
           {/* Password field */}
@@ -299,26 +259,9 @@ const LoginPage = () => {
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPassword(val);
-                  // Always clear error when field is emptied (user deleting); also re-validate if already touched
-                  if (!val) {
-                    setFieldErrors((prev) => ({ ...prev, password: "" }));
-                  } else if (touched.password) {
-                    setFieldErrors((prev) => ({
-                      ...prev,
-                      password: getFieldError("password", val),
-                    }));
-                  }
-                }}
-                onBlur={() => handleBlur("password")}
+                onChange={(e) => setPassword(e.target.value)}
                 style={{
                   width: "100%",
-                  borderColor: fieldErrors.password ? "#ef4444" : "#000",
-                  boxShadow: fieldErrors.password
-                    ? "2.5px 3px 0 #ef4444"
-                    : "2.5px 3px 0 #000",
                   paddingRight: "2.5rem",
                 }}
               />
@@ -329,7 +272,13 @@ const LoginPage = () => {
                 {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </div>
             </div>
-            <FieldError message={fieldErrors.password} />
+            {/* Single error message under password field */}
+            {formError && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <AlertCircle size={13} style={{ color: "#ef4444", flexShrink: 0 }} />
+                <p className="text-red-500 text-xs">{formError}</p>
+              </div>
+            )}
           </div>
 
           {/* Log in Button */}

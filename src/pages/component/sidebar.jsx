@@ -22,11 +22,13 @@ import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
 import { useUser } from "../../contexts/user/useUser";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { useNotificationCount } from "../../hooks/useNotificationCount";
 
-const Sidebar = ({ isMinimized = false, onToggleMinimize, notificationCount = 0 }) => {
+const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
   const { user, logout } = useUser();
   const [showLogout, setShowLogout] = useState(false);
   const location = useLocation();
+  const { unreadNotificationsCount } = useNotificationCount();
 
   // Load minimize state from localStorage on mount
   const [localMinimized, setLocalMinimized] = useState(() => {
@@ -119,7 +121,7 @@ const Sidebar = ({ isMinimized = false, onToggleMinimize, notificationCount = 0 
                 {...item}
                 active={location.pathname === item.path}
                 isMinimized={localMinimized}
-                notificationCount={item.label === "Notifications" ? notificationCount : 0}
+                notificationCount={item.label === "Notifications" ? unreadNotificationsCount : undefined}
               />
             ))}
           </nav>
@@ -201,7 +203,7 @@ const SidebarItem = ({ icon, label, path, onClick, active, isMinimized, notifica
       onClick={onClick}
       className={`
         relative flex items-center gap-3 py-3 text-xs font-medium
-        rounded-l-full cursor-pointer overflow-hidden
+        rounded-l-full cursor-pointer
         transition-all duration-700 group
 
         before:absolute before:inset-0
@@ -216,18 +218,18 @@ const SidebarItem = ({ icon, label, path, onClick, active, isMinimized, notifica
             ? "bg-[#161A20] text-white shadow-lg"
             : "text-blue-100 hover:text-white hover:shadow-md before:hover:scale-x-100"
         }
-        ${isMinimized ? "lg:px-2 lg:justify-center" : "pl-5"}
+        ${isMinimized ? "lg:px-2 lg:justify-center" : "pl-5 pr-3"}
       `}
       title={isMinimized ? label : ""}
     >
-      <div className="relative z-10 flex items-center gap-3">
+      <div className="relative z-10 flex items-center gap-3 w-full">
         {icon}
         <span className={`${isMinimized ? "hidden lg:hidden" : ""}`}>{label}</span>
         
         {/* Notification Counter Badge - Beside Text */}
         {notificationCount > 0 && !isMinimized && (
           <div 
-            className="bg-indigo-500 text-white text-xs font-bold rounded-full flex items-center justify-center w-5 h-5 text-[10px] shadow-lg shadow-indigo-500/30"
+            className="ml-auto bg-red-500 text-white font-bold rounded-full flex items-center justify-center w-5 h-5 text-[10px] shadow-lg"
           >
             {notificationCount > 99 ? "99+" : notificationCount}
           </div>

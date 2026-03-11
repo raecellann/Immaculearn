@@ -14,6 +14,7 @@ import { SpaceCover } from "../component/spaceCover";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 import { announcementService } from "../../services/userAnnounceservice";
+import { useNotificationCount } from "../../hooks/useNotificationCount";
 
 const NotificationPage = () => {
   const location = useLocation();
@@ -21,20 +22,19 @@ const NotificationPage = () => {
   const [showLogout, setShowLogout] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [showPendingInvitations, setShowPendingInvitations] = useState(false);
-  const [ShowPendingSpaceInvitation, setShowPendingSpaceInvitation] =
-    useState(false);
+  const [ShowPendingSpaceInvitation, setShowPendingSpaceInvitation] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState(location.state?.filter || "all");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
-  const [viewedAnnouncements, setViewedAnnouncements] = useState(new Set());
   
-  // State for real announcements
-  const [schoolAnnouncements, setSchoolAnnouncements] = useState([]);
-  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
-  const [announcementsError, setAnnouncementsError] = useState(null);
-  
-  // Prevent duplicate fetches
-  const hasFetchedAnnouncements = useRef(false);
+  // Use global notification count hook
+  const { 
+    unreadNotificationsCount, 
+    schoolAnnouncements, 
+    viewedAnnouncements, 
+    markAnnouncementAsViewed,
+    isLoading 
+  } = useNotificationCount('STUDENT');
 
   const { user, isLoading: userLoading } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
@@ -53,40 +53,8 @@ const NotificationPage = () => {
 
   const handleAnnouncementClick = (announcement) => {
     setSelectedAnnouncement(announcement);
-    if (!viewedAnnouncements.has(announcement.announce_id)) {
-      setViewedAnnouncements(prev => new Set(prev).add(announcement.announce_id));
-    }
+    markAnnouncementAsViewed(announcement.announce_id);
   };
-
-  // Fetch student announcements on component mount
-  useEffect(() => {
-    const fetchStudentAnnouncements = async () => {
-      // Prevent duplicate fetches
-      if (hasFetchedAnnouncements.current) return;
-      hasFetchedAnnouncements.current = true;
-      
-      try {
-        setAnnouncementsLoading(true);
-        setAnnouncementsError(null);
-        
-        // Get announcements for students
-        const response = await announcementService.getAnnouncementsByAudience("STUDENTS");
-        
-        if (response.success && response.data) {
-          setSchoolAnnouncements(response.data);
-        } else {
-          setAnnouncementsError(response.message || "Failed to load announcements");
-        }
-      } catch (err) {
-        setAnnouncementsError("Failed to load announcements");
-        console.error("Error fetching announcements:", err);
-      } finally {
-        setAnnouncementsLoading(false);
-      }
-    };
-
-    fetchStudentAnnouncements();
-  }, []); // Empty dependency array - only runs once on mount
 
   const allJoinRequests = joinRequestsByLink || [];
   const allPendingSpaceInvitation = pendingSpaceInvitation || [];
@@ -96,25 +64,6 @@ const NotificationPage = () => {
   const pendingInvitesCount = allJoinRequests.length;
   const pendingSpaceInvitationCount = allPendingSpaceInvitation.length;
   const announcementsCount = schoolAnnouncements.length;
-  
-  // Calculate unread notifications count
-  const unreadNotificationsCount = useMemo(() => {
-    let count = 0;
-    
-    // Count unread announcements (not in viewedAnnouncements)
-    const unreadAnnouncements = schoolAnnouncements.filter(
-      announcement => !viewedAnnouncements.has(announcement.announce_id)
-    );
-    count += unreadAnnouncements.length;
-    
-    // Count pending join requests (these are always unread until acted upon)
-    count += allJoinRequests.length || 0;
-    
-    // Count pending space invitations (these are always unread until acted upon)
-    count += allPendingSpaceInvitation.length || 0;
-    
-    return count;
-  }, [schoolAnnouncements, viewedAnnouncements, allJoinRequests, allPendingSpaceInvitation]);
 
   // Filter logic
   const filteredSections = useMemo(() => {
@@ -201,8 +150,7 @@ const NotificationPage = () => {
   if (
     userLoading ||
     spaceLoading ||
-    joinRequestsByLinkLoading ||
-    pendingSpaceInvitationLoading
+    isLoading
   ) {
     return (
       <div className="flex h-screen justify-center items-center">
@@ -223,7 +171,6 @@ const NotificationPage = () => {
       <div className="hidden lg:block">
         <Sidebar 
           onLogoutClick={() => setShowLogout(true)} 
-          notificationCount={unreadNotificationsCount}
         />
       </div>
 
@@ -246,7 +193,6 @@ const NotificationPage = () => {
       >
         <Sidebar 
           onLogoutClick={() => setShowLogout(true)} 
-          notificationCount={unreadNotificationsCount}
         />
       </div>
 
@@ -537,7 +483,7 @@ const NotificationPage = () => {
                 </div>
 
                 {/* Display announcements */}
-                {announcementsLoading ? (
+                {isLoading ? (
                   <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
                     <div className="flex flex-col items-center gap-3">
                       <FiBell size={40} className="text-gray-400" />
@@ -547,26 +493,6 @@ const NotificationPage = () => {
                           style={{ color: currentColors.text }}
                         >
                           Loading announcements...
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : announcementsError ? (
-                  <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
-                    <div className="flex flex-col items-center gap-3">
-                      <FiBell size={40} className="text-gray-400" />
-                      <div>
-                        <p 
-                          className="text-sm font-medium mb-1"
-                          style={{ color: currentColors.text }}
-                        >
-                          Failed to load announcements
-                        </p>
-                        <p 
-                          className="text-xs"
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          {announcementsError}
                         </p>
                       </div>
                     </div>

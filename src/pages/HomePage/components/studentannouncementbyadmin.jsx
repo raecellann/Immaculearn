@@ -79,13 +79,13 @@ const StudentAnnouncementByAdmin = () => {
       className="rounded-xl p-4 sm:p-6 mt-4"
       style={{
         background: isDarkMode
-          ? "-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
+          ? "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)"
           : "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
         border: "none",
       }}
     >
       {/* Header */}
-      <div className="flex items-clinearenter gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4">
         <Megaphone
           className="w-5 h-5 flex-shrink-0"
           style={{ color: "white" }}

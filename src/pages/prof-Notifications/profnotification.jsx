@@ -14,6 +14,7 @@ import { SpaceCover } from "../component/spaceCover";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Button from "../component/button_2";
 import { announcementService } from "../../services/userAnnounceservice";
+import { useNotificationCount } from "../../hooks/useNotificationCount";
 
 const ProfNotificationPage = () => {
   const location = useLocation();
@@ -26,15 +27,15 @@ const ProfNotificationPage = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState(location.state?.filter || "all");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
-  const [viewedAnnouncements, setViewedAnnouncements] = useState(new Set());
   
-  // State for real announcements
-  const [schoolAnnouncements, setSchoolAnnouncements] = useState([]);
-  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
-  const [announcementsError, setAnnouncementsError] = useState(null);
-  
-  // Prevent duplicate fetches
-  const hasFetchedAnnouncements = useRef(false);
+  // Use global notification count hook
+  const { 
+    unreadNotificationsCount, 
+    schoolAnnouncements, 
+    viewedAnnouncements, 
+    markAnnouncementAsViewed,
+    isLoading 
+  } = useNotificationCount('PROFESSOR');
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -129,65 +130,14 @@ const ProfNotificationPage = () => {
       });
   }, [joinRequestsByLink, ownedSpaces]);
 
-  // Fetch professor announcements on component mount
-  useEffect(() => {
-    const fetchProfessorAnnouncements = async () => {
-      // Prevent duplicate fetches
-      if (hasFetchedAnnouncements.current) return;
-      hasFetchedAnnouncements.current = true;
-      
-      try {
-        setAnnouncementsLoading(true);
-        setAnnouncementsError(null);
-        
-        // Get announcements for professors (target_audience = "PROFESSORS" or "ALL")
-        const response = await announcementService.getAnnouncementsByAudience("PROFESSORS");
-        
-        if (response.success && response.data) {
-          setSchoolAnnouncements(response.data);
-        } else {
-          setAnnouncementsError(response.message || "Failed to load announcements");
-        }
-      } catch (err) {
-        setAnnouncementsError("Failed to load announcements");
-        console.error("Error fetching announcements:", err);
-      } finally {
-        setAnnouncementsLoading(false);
-      }
-    };
-
-    fetchProfessorAnnouncements();
-  }, []); // Empty dependency array - only runs once on mount
-
   const handleAnnouncementClick = (announcement) => {
     setSelectedAnnouncement(announcement);
-    if (!viewedAnnouncements.has(announcement.announce_id)) {
-      setViewedAnnouncements(prev => new Set(prev).add(announcement.announce_id));
-    }
+    markAnnouncementAsViewed(announcement.announce_id);
   };
 
   const pendingInvitesCount = joinRequestsByLink?.length;
 
   const announcementsCount = schoolAnnouncements.length;
-  
-  // Calculate unread notifications count
-  const unreadNotificationsCount = useMemo(() => {
-    let count = 0;
-    
-    // Count unread announcements (not in viewedAnnouncements)
-    const unreadAnnouncements = schoolAnnouncements.filter(
-      announcement => !viewedAnnouncements.has(announcement.announce_id)
-    );
-    count += unreadAnnouncements.length;
-    
-    // Count pending join requests (filtered for owned spaces only)
-    count += allJoinRequests?.length || 0;
-    
-    // Count pending space invitations (these are always unread until acted upon)
-    count += pendingSpaceInvitation?.length || 0;
-    
-    return count;
-  }, [schoolAnnouncements, viewedAnnouncements, allJoinRequests, pendingSpaceInvitation]);
 
   // Filter logic
   const filteredSections = useMemo(() => {
@@ -239,7 +189,7 @@ const ProfNotificationPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  if (userLoading || spaceLoading || joinRequestsByLinkLoading) {
+  if (userLoading || spaceLoading || isLoading) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
@@ -291,7 +241,6 @@ const ProfNotificationPage = () => {
       <div className="hidden lg:block">
         <Sidebar 
           onLogoutClick={() => setShowLogout(true)} 
-          notificationCount={unreadNotificationsCount}
         />
       </div>
 
@@ -314,7 +263,6 @@ const ProfNotificationPage = () => {
       >
         <Sidebar 
           onLogoutClick={() => setShowLogout(true)} 
-          notificationCount={unreadNotificationsCount}
         />
       </div>
 
@@ -648,7 +596,7 @@ const ProfNotificationPage = () => {
                 </div>
 
                 {/* Display announcements */}
-                {announcementsLoading ? (
+                {isLoading ? (
                   <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
                     <div className="flex flex-col items-center gap-3">
                       <FiBell size={40} className="text-gray-400" />
@@ -658,26 +606,6 @@ const ProfNotificationPage = () => {
                           style={{ color: isDarkMode ? "white" : "black" }}
                         >
                           Loading announcements...
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : announcementsError ? (
-                  <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
-                    <div className="flex flex-col items-center gap-3">
-                      <FiBell size={40} className="text-gray-400" />
-                      <div>
-                        <p 
-                          className="text-sm font-medium mb-1"
-                          style={{ color: isDarkMode ? "white" : "black" }}
-                        >
-                          Failed to load announcements
-                        </p>
-                        <p 
-                          className="text-xs"
-                          style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
-                        >
-                          {announcementsError}
                         </p>
                       </div>
                     </div>

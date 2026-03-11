@@ -21,11 +21,13 @@ import logo from "../../assets/HomePage/logo.png";
 import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
 import { useUser } from "../../contexts/user/useUser";
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { useNotificationCount } from "../../hooks/useNotificationCount";
 
-const ProfSidebar = ({ isMinimized = false, onToggleMinimize, notificationCount = 0 }) => {
+const ProfSidebar = ({ isMinimized = false, onToggleMinimize }) => {
   const { user, logout } = useUser();
   const [showLogout, setShowLogout] = useState(false);
   const location = useLocation();
+  const { unreadNotificationsCount } = useNotificationCount();
 
   // Load minimize state from localStorage on mount
   const [localMinimized, setLocalMinimized] = useState(() => {
@@ -135,7 +137,7 @@ const ProfSidebar = ({ isMinimized = false, onToggleMinimize, notificationCount 
                 {...item}
                 active={location.pathname === item.path}
                 isMinimized={localMinimized}
-                notificationCount={item.label === "Notifications" ? notificationCount : 0}
+                notificationCount={item.label === "Notifications" ? unreadNotificationsCount : undefined}
               />
             ))}
           </nav>
@@ -235,14 +237,14 @@ const SidebarItem = ({ icon, label, path, onClick, active, isMinimized, notifica
       `}
       title={isMinimized ? label : ""}
     >
-      <div className="relative z-10 flex items-center gap-3">
+      <div className="relative z-10 flex items-center gap-3 w-full">
         {icon}
         <span className={`${isMinimized ? "hidden lg:hidden" : ""}`}>{label}</span>
         
         {/* Notification Counter Badge - Beside Text */}
         {notificationCount > 0 && !isMinimized && (
           <div 
-            className="bg-indigo-500 text-white text-xs font-bold rounded-full flex items-center justify-center w-5 h-5 text-[10px] shadow-lg shadow-indigo-500/30"
+            className="ml-auto mr-3 bg-red-500 text-white font-bold rounded-full flex items-center justify-center w-5 h-5 text-[10px] shadow-lg"
           >
             {notificationCount > 99 ? "99+" : notificationCount}
           </div>
