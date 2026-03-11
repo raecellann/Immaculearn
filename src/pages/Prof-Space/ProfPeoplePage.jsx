@@ -67,23 +67,6 @@ const ProfPeoplePage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Load saved cover photo on component mount
-  useEffect(() => {
-    const savedCoverPhoto = localStorage.getItem(`coverPhoto_${space_uuid}`);
-    if (savedCoverPhoto) {
-      setCoverPhotoUrl(savedCoverPhoto);
-    }
-  }, [space_uuid]);
-
-  // Save cover photo to localStorage when it changes
-  useEffect(() => {
-    if (coverPhotoUrl && !showCoverPhotoEditor) {
-      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
-      // Dispatch custom event to notify HomePage
-      window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
-    }
-  }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
-
   // Cover photo drag handlers
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -126,7 +109,6 @@ const ProfPeoplePage = () => {
     }
   }, [isDragging, dragStartY, dragStartPosition]);
 
-  // Cover photo handlers
   const handleCoverPhotoClick = () => {
     if (isOwner) {
       coverPhotoInputRef.current?.click();
@@ -177,14 +159,16 @@ const ProfPeoplePage = () => {
     // Check if it's a gradient or an image
     if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
       // For gradients, save directly without canvas transformations
-      localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
+      // Backend will handle saving the space_cover
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
-      // Dispatch custom event to notify HomePage
-      window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
-      
-      toast.success("Your cover photo has been updated successfully!");
+
+      addNotification({
+        type: "success",
+        title: "Cover Photo Updated",
+        message: "Your cover photo has been updated successfully!",
+        duration: 3000,
+      });
     } else {
       // For images, create canvas to apply transformations
       const canvas = document.createElement("canvas");
@@ -215,12 +199,7 @@ const ProfPeoplePage = () => {
         const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
         setCoverPhotoUrl(dataUrl);
 
-        // Save to localStorage
-        localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-
-        // Dispatch custom event to notify HomePage
-        window.dispatchEvent(new CustomEvent("coverPhotoUpdated"));
-
+        // Backend will handle saving the space_cover
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
 
@@ -230,6 +209,16 @@ const ProfPeoplePage = () => {
           message: "Your cover photo has been updated successfully!",
           duration: 3000,
         });
+      };
+
+      img.onerror = () => {
+        addNotification({
+          type: "error",
+          title: "Image Load Failed",
+          message: "Failed to load image. Please try again.",
+          duration: 3000,
+        });
+        setShowCoverPhotoConfirm(false);
       };
 
       img.src = coverPhotoUrl;
@@ -265,8 +254,7 @@ const ProfPeoplePage = () => {
     setCoverPhoto(null);
     setCoverPhotoUrl(null);
     setCoverPhotoPosition(50);
-    // Remove from localStorage
-    localStorage.removeItem(`coverPhoto_${space_uuid}`);
+    // Backend will handle removing the space_cover
     if (coverPhotoInputRef.current) {
       coverPhotoInputRef.current.value = "";
     }
@@ -275,6 +263,14 @@ const ProfPeoplePage = () => {
   // Combine user and friend spaces
   const allSpaces = [...(userSpaces || []), ...(courseSpaces || [])];
   const activeSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
+
+  // Load saved cover photo from backend on component mount
+  useEffect(() => {
+    const savedCoverPhoto = activeSpace?.space_cover;
+    if (savedCoverPhoto) {
+      setCoverPhotoUrl(savedCoverPhoto);
+    }
+  }, [activeSpace]);
 
   // Show loading state while data is being fetched
   if (userSpacesLoading || courseSpacesLoading || isLoading) {

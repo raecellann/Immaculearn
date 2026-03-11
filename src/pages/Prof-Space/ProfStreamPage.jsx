@@ -2018,6 +2018,11 @@ const ProfStreamPage = () => {
             color: #9ca3af;
             pointer-events: none;
           }
+          .lg\\:hidden .bg-white .editor:empty:before {
+            content: "Post something to your space with a maximum of 250 letters";
+            color: #9ca3af;
+            pointer-events: none;
+          }
         `}
       </style>
 
