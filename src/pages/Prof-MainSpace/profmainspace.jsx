@@ -31,6 +31,7 @@ const ProfSpacePage = () => {
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("All");
+  const [showAllCourseSpaces, setShowAllCourseSpaces] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [hoveredSpace, setHoveredSpace] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -583,12 +584,12 @@ const ProfSpacePage = () => {
                   <select
                     value={yearFilter}
                     onChange={(e) => setYearFilter(e.target.value)}
-                    className="rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-1 focus:ring-[#0EA5E9] text-xs sm:text-sm"
+                    className="rounded-md px-2 py-1.5 sm:px-3 sm:py-2 focus:outline-none focus:ring-1 focus:ring-[#0EA5E9] text-xs sm:text-sm border"
                     style={{
                       backgroundColor: isDarkMode
                         ? "#1E242E"
                         : currentColors.surface,
-                      borderColor: isDarkMode ? "#3B4457" : "black",
+                      borderColor: isDarkMode ? "white" : "black",
                       color: isDarkMode ? "white" : "black",
                     }}
                   >
@@ -613,8 +614,10 @@ const ProfSpacePage = () => {
               {courseSpaces && courseSpaces.length > 0 ? (
                 filterCourseSpacesByYear(courseSpaces, yearFilter)?.length >
                 0 ? (
-                  filterCourseSpacesByYear(courseSpaces, yearFilter)?.map(
-                    (space, index) => (
+                  filterCourseSpacesByYear(courseSpaces, yearFilter)
+                    .slice(0, showAllCourseSpaces ? undefined : 9)
+                    .map(
+                      (space, index) => (
                       <div
                         key={index}
                         className="group rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer relative hover-lift"
@@ -813,6 +816,19 @@ const ProfSpacePage = () => {
                 </div>
               )}
             </div>
+            
+            {/* View All Spaces Button */}
+            {courseSpaces && courseSpaces.length > 0 && filterCourseSpacesByYear(courseSpaces, yearFilter)?.length > 9 && (
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setShowAllCourseSpaces(!showAllCourseSpaces)}
+                  className="hover:underline text-base font-medium transition-colors"
+                  style={{ color: isDarkMode ? "#60A5FA" : currentColors.accent }}
+                >
+                  {showAllCourseSpaces ? "Show Less" : "View All Spaces"}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Delete Confirmation Dialog */}
