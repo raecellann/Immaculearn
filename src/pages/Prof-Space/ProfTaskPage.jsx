@@ -305,7 +305,7 @@ const ProfTaskPage = () => {
       // Navigate immediately after successful deletion
       navigate("/prof/spaces");
     } catch (error) {
-      console.error("Failed to delete space:", error);
+      toast.error("Failed to delete space. Please try again.");
     } finally {
       setIsDeleting(false);
       setDeleteButtonClicked(false);
@@ -336,7 +336,6 @@ const ProfTaskPage = () => {
       // Navigate to archive page after successful archiving
       navigate("/prof/archive");
     } catch (error) {
-      console.error("Failed to archive class:", error);
       toast.error("Failed to archive class. Please try again.");
     } finally {
       setIsDeleting(false);
@@ -363,7 +362,7 @@ const ProfTaskPage = () => {
     try {
       await acceptJoinRequest(userId, space_uuid);
     } catch (error) {
-      console.error("Failed to accept join request:", error);
+      toast.error("Failed to accept join request. Please try again.");
     }
   };
 
@@ -371,7 +370,7 @@ const ProfTaskPage = () => {
     try {
       await declineJoinRequest(userId, space_uuid);
     } catch (error) {
-      console.error("Failed to decline join request:", error);
+      toast.error("Failed to decline join request. Please try again.");
     }
   };
 
@@ -394,7 +393,6 @@ const ProfTaskPage = () => {
         setTimeout(() => setCopyFeedback(""), 2000);
       })
       .catch((err) => {
-        console.error("Failed to copy: ", err);
         toast.error("Failed to copy link. Please try again.");
       });
   };
@@ -419,7 +417,7 @@ const ProfTaskPage = () => {
           }
         }
       } catch (error) {
-        console.error("Error extracting text from file:", error);
+        toast.error("Failed to extract text from file.");
       }
     }
   };
@@ -726,7 +724,6 @@ const ProfTaskPage = () => {
       setSelectedTaskType(null);
       setShowTaskTypeSelection(false);
     } catch (error) {
-      console.error("Failed to save task:", error);
       toast.error("Failed to save task. Please try again.");
     }
   };
@@ -1029,11 +1026,27 @@ const ProfTaskPage = () => {
     setGroups(updatedGroups);
   };
 
-  // Task status styles
+  // Task status styles - colored text only
   const statusStyles = {
-    Done: "border-2 border-[#00B865] text-[#10E164]",
-    "In Progress": "border-[#0066D2] text-[#4D9BEF]",
-    Missing: "border-[#FF5252] text-[#FF5252]",
+    Done: "text-green-600",
+    "In Progress": "text-blue-600",
+    Missing: "text-red-600",
+  };
+
+  // Function to determine quiz status for professor
+  const getQuizStatusForProfessor = (task) => {
+    if (task.task_category !== "quiz") return task.task_status;
+    
+    const now = new Date();
+    const dueDate = task.task_due ? new Date(task.task_due) : null;
+    
+    // If quiz has due date and it's passed
+    if (dueDate && now > dueDate) {
+      return "Done";
+    }
+    
+    // If quiz is posted and due date not passed
+    return "In Progress";
   };
 
   // TaskSection component for reusable task sections
@@ -1111,26 +1124,11 @@ const ProfTaskPage = () => {
                         {task.task_title}
                       </span>
                     </div>
-                    {!task.isLocal ? (
-                      <button
-                        onClick={() =>
-                          setOpenIndex(
-                            openIndex === originalIndex ? null : originalIndex,
-                          )
-                        }
-                        className={`px-3 py-1 rounded-full text-xs`}
-                        style={{
-                          backgroundColor: currentColors.text,
-                          color: "white",
-                        }}
-                      >
-                        {task.task_status}
-                      </button>
-                    ) : (
-                      <span className="px-3 py-1 rounded-full text-xs bg-blue-500 text-white">
-                        {task.task_status}
-                      </span>
-                    )}
+                    <span className={`text-xs font-medium ${
+                      statusStyles[getQuizStatusForProfessor(task)] || 'text-gray-500'
+                    }`}>
+                      {getQuizStatusForProfessor(task)}
+                    </span>
                   </div>
                   <p
                     className="text-sm mb-2"
@@ -1255,58 +1253,13 @@ const ProfTaskPage = () => {
                           Local
                         </span>
                       )}
-                      {!task.isLocal ? (
-                        <div className="relative inline-block">
-                          <button
-                            onClick={() =>
-                              setOpenIndex(
-                                openIndex === originalIndex
-                                  ? null
-                                  : originalIndex,
-                              )
-                            }
-                            className={`px-4 py-1 rounded-full text-sm`}
-                            style={{
-                              backgroundColor: currentColors.text,
-                              color: "white",
-                            }}
-                          >
-                            {task.task_status} ▼
-                          </button>
-                          {openIndex === originalIndex && (
-                            <div
-                              className="absolute left-0 mt-2 w-44 rounded-lg p-3 z-50 shadow-lg"
-                              style={{
-                                backgroundColor: currentColors.surface,
-                                borderColor: currentColors.border,
-                                border: "1px solid",
-                              }}
-                            >
-                              <div className="flex flex-col gap-2">
-                                {Object.keys(statusStyles).map((st) => (
-                                  <button
-                                    key={st}
-                                    onClick={() =>
-                                      handleStatusChange(originalIndex, st)
-                                    }
-                                    className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 whitespace-nowrap`}
-                                    style={{
-                                      backgroundColor: currentColors.text,
-                                      color: "white",
-                                    }}
-                                  >
-                                    {st}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="px-4 py-1 rounded-full text-sm bg-blue-500 text-white">
-                          {task.task_status}
-                        </span>
-                      )}
+                      <span
+                        className={`text-xs font-medium ${
+                          statusStyles[getQuizStatusForProfessor(task)] || 'text-gray-500'
+                        }`}
+                      >
+                        {getQuizStatusForProfessor(task)}
+                      </span>
                     </div>
                   </div>
                   <div className="col-span-1">
@@ -1481,7 +1434,7 @@ const ProfTaskPage = () => {
                     `/prof/list-activity/${spaceId}/${encodeURIComponent(spaceName)}`,
                   );
                 } else {
-                  console.warn("No space ID or name found for navigation");
+                  // No space ID or name found for navigation
                 }
               }}
               style={{
@@ -1697,7 +1650,7 @@ const ProfTaskPage = () => {
         ];
       }
     } catch (error) {
-      console.error("Error loading tasks from localStorage:", error);
+      // Error loading tasks from localStorage
     }
     return [];
   };
@@ -1726,7 +1679,7 @@ const ProfTaskPage = () => {
         { taskId: task.id, newStatus },
         {
           onError: (error) => {
-            console.error("Failed to update task status:", error);
+            // Failed to update task status
           },
         },
       );
@@ -1741,7 +1694,7 @@ const ProfTaskPage = () => {
         { taskId: draft.id, newStatus },
         {
           onError: (error) => {
-            console.error("Failed to update draft status:", error);
+            // Failed to update draft status
           },
         },
       );
@@ -2082,16 +2035,15 @@ const ProfTaskPage = () => {
           ) : !isCreatingTask && !showTaskTypeSelection ? (
             /* ================= TASKS LIST VIEW WITH SECTIONS ================= */
             <div className="max-w-5xl mx-auto">
-              <button
-                className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
-                onClick={() => setShowTaskTypeSelection(true)}
-              >
-                <FiFileText size={16} />
-                Create Task
-              </button>
-
-              <div className="mb-6">
+              <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                  onClick={() => setShowTaskTypeSelection(true)}
+                >
+                  <FiFileText size={16} />
+                  Create Task
+                </button>
               </div>
 
               {/* TASK SECTIONS */}
