@@ -226,22 +226,32 @@ const SpacePage = () => {
   const handleDeleteSpace = async () => {
     try {
       const spaceUuid = showDeleteConfirm;
+      const space = userSpaces.find(s => s.space_uuid === spaceUuid) || 
+                   friendSpaces.find(s => s.space_uuid === spaceUuid) ||
+                   courseSpaces.find(s => s.space_uuid === spaceUuid);
       await deleteSpace(spaceUuid);
+      toast.success(`Space "${space?.space_name || 'Unknown'}" has been deleted successfully!`);
       setShowDeleteConfirm(null);
       setShowMenu(null);
     } catch (error) {
       console.error("Failed to delete space:", error);
+      toast.error("Failed to delete space. Please try again.");
     }
   };
 
   const handleLeaveSpace = async () => {
     try {
       const spaceUuid = showLeaveConfirm;
+      const space = userSpaces.find(s => s.space_uuid === spaceUuid) || 
+                   friendSpaces.find(s => s.space_uuid === spaceUuid) ||
+                   courseSpaces.find(s => s.space_uuid === spaceUuid);
       await leaveSpace(spaceUuid);
+      toast.success(`You have left "${space?.space_name || 'Unknown'}" space successfully!`);
       setShowLeaveConfirm(null);
       setShowMenu(null);
     } catch (error) {
-      console.error("Failed to delete space:", error);
+      console.error("Failed to leave space:", error);
+      toast.error("Failed to leave space. Please try again.");
     }
   };
 

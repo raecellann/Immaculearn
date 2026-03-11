@@ -20,6 +20,7 @@ import { SpaceCover } from "../component/spaceCover";
 import ArticlesScrape from "../component/articles_scrape";
 import { DeleteConfirmationDialog } from "../component/SweetAlert";
 import StudentAnnouncementByAdmin from "./components/studentannouncementbyadmin";
+import { toast } from "react-toastify";
 
 const HomePage1 = () => {
   const { user } = useUser();
@@ -30,6 +31,7 @@ const HomePage1 = () => {
     friendSpaces = [],
     courseSpaces = [],
     deleteSpace,
+    leaveSpace: leaveSpaceFromContext,
     allUploadedTasks = [],
     allUploadedTasksLoading = false,
   } = useSpace();
@@ -341,11 +343,32 @@ const HomePage1 = () => {
   const handleDeleteSpace = async () => {
     try {
       const spaceUuid = showDeleteConfirm;
+      const space = userSpaces.find(s => s.space_uuid === spaceUuid) || 
+                   friendSpaces.find(s => s.space_uuid === spaceUuid) ||
+                   courseSpaces.find(s => s.space_uuid === spaceUuid);
       await deleteSpace(spaceUuid);
+      toast.success(`Space "${space?.space_name || 'Unknown'}" has been deleted successfully!`);
       setShowDeleteConfirm(null);
       setShowMenu(null);
     } catch (error) {
       console.error("Failed to delete space:", error);
+      toast.error("Failed to delete space. Please try again.");
+    }
+  };
+
+  const handleLeaveSpace = async () => {
+    try {
+      const spaceUuid = showLeaveConfirm;
+      const space = userSpaces.find(s => s.space_uuid === spaceUuid) || 
+                   friendSpaces.find(s => s.space_uuid === spaceUuid) ||
+                   courseSpaces.find(s => s.space_uuid === spaceUuid);
+      await leaveSpaceFromContext(spaceUuid);
+      toast.success(`You have left "${space?.space_name || 'Unknown'}" space successfully!`);
+      setShowLeaveConfirm(null);
+      setShowMenu(null);
+    } catch (error) {
+      console.error("Failed to leave space:", error);
+      toast.error("Failed to leave space. Please try again.");
     }
   };
 
@@ -1454,11 +1477,7 @@ const HomePage1 = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    console.log("Leaving:", showLeaveConfirm);
-                    setShowLeaveConfirm(null);
-                    setShowMenu(null);
-                  }}
+                  onClick={handleLeaveSpace}
                   className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-sm"
                   style={{ color: "white" }}
                 >
