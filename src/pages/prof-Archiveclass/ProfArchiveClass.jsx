@@ -198,7 +198,7 @@ const ProfArchiveClass = () => {
               <div>
                 <h2
                   className="text-2xl font-bold mb-2"
-                  style={{ color: "#60A5FA" }}
+                  style={{ color: "#ffffffff" }}
                 >
                   Archived Course Space
                 </h2>
