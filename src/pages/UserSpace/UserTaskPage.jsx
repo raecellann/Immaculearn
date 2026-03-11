@@ -1879,161 +1879,25 @@ const UserTaskPage = () => {
               {/* Show message if no tasks exist */}
               {allTasks.length === 0 && (
                 <div
-                  className="text-center py-12"
-                  style={{ color: currentColors.textSecondary }}
-                >
-                  <div className="text-4xl mb-4">📝</div>
-                  <p className="text-lg mb-2">No tasks assigned yet</p>
-                  <p className="text-sm">
-                    Create your first task to get started!
-                  </p>
-                </div>
-              )}
-
-              {/* DRAFT ACTIVITIES TABLE */}
-              <div className="max-w-5xl mx-auto w-full mt-12">
-                <h2 className="text-xl font-semibold mb-6">
-                  Draft Activities 📝
-                </h2>
-                {/* RESPONSIVE DRAFT TABLE */}
-                <div
                   className="rounded-xl p-4 sm:p-6 border"
                   style={{
                     backgroundColor: currentColors.surface,
                     borderColor: isDarkMode ? currentColors.border : "#000000",
                   }}
                 >
-                  {/* TABLE HEADER - Hidden on mobile, visible on larger screens */}
                   <div
-                    className="hidden sm:grid grid-cols-4 text-sm pb-3 border-b mb-4"
-                    style={{
-                      color: currentColors.textSecondary,
-                      borderColor: currentColors.border,
-                    }}
+                    className="text-center py-12"
+                    style={{ color: currentColors.textSecondary }}
                   >
-                    <div className="col-span-1">Status</div>
-                    <div className="col-span-1">Task Name</div>
-                    <div className="col-span-1">Deadline</div>
-                    <div className="col-span-1">Details</div>
+                    <FiFileText size={40} className="mx-auto mb-3 opacity-40" />
+                    <p className="text-lg mb-2">No tasks assigned yet</p>
+                    <p className="text-sm">
+                      Create your first task to get started!
+                    </p>
                   </div>
-
-                  {/* DRAFT LIST - Responsive cards for all screen sizes */}
-                  {draftedTask?.map((draft, index) => (
-                    <div
-                      key={index}
-                      className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4"
-                      style={{
-                        backgroundColor: currentColors.background,
-                        borderColor: currentColors.border,
-                      }}
-                    >
-                      {/* Mobile and Tablet Layout */}
-                      <div className="sm:hidden">
-                        <div className="flex justify-between items-center mb-3">
-                          <p
-                            className="text-sm font-semibold"
-                            style={{ color: currentColors.text }}
-                          >
-                            {draft.task_title}
-                          </p>
-                          <span
-                            className="px-3 py-1 rounded-full text-xs font-bold"
-                            style={{
-                              backgroundColor: currentColors.text,
-                              color: currentColors.textSecondary,
-                              border: `2px solid ${currentColors.border}`,
-                            }}
-                          >
-                            Draft
-                          </span>
-                        </div>
-                        <p
-                          className="text-xs mb-3"
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          Deadline:{" "}
-                          <span style={{ color: currentColors.text }}>
-                            {new Date(draft.task_due).toLocaleDateString(
-                              "en-US",
-                            )}
-                          </span>
-                        </p>
-                        <a
-                          // href="/prof-task-view"
-                          className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                          style={{
-                            backgroundColor: currentColors.accent,
-                            color: "white",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = "#1d4ed8";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor =
-                              currentColors.accent;
-                          }}
-                        >
-                          View Details
-                        </a>
-                      </div>
-
-                      {/* Desktop Layout */}
-                      <div className="hidden sm:grid grid-cols-4 items-center">
-                        <div className="col-span-1">
-                          <span
-                            className="px-6 py-1 rounded-full text-sm font-bold inline-block min-w-[120px] text-center"
-                            style={{
-                              backgroundColor: currentColors.text,
-                              color: currentColors.textSecondary,
-                              border: `2px solid ${currentColors.border}`,
-                            }}
-                          >
-                            Draft
-                          </span>
-                        </div>
-                        <div
-                          className="col-span-1"
-                          style={{ color: currentColors.text }}
-                        >
-                          {draft.task_title}
-                        </div>
-                        <div
-                          className="col-span-1"
-                          style={{ color: currentColors.text }}
-                        >
-                          {new Date(draft.task_due).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "2-digit",
-                            },
-                          )}
-                        </div>
-                        <div className="col-span-1">
-                          <a
-                            href="/prof-task-view"
-                            className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                            style={{
-                              backgroundColor: currentColors.accent,
-                              color: "white",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.backgroundColor = "#1d4ed8";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor =
-                                currentColors.accent;
-                            }}
-                          >
-                            View Details
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
                 </div>
-              </div>
+              )}
+
             </div>
           ) : showTaskTypeSelection ? (
             /* ================= TASK TYPE SELECTION ================= */

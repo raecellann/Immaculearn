@@ -31,6 +31,7 @@ const QuizBuilder = ({
   const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
+  const [showUpdateConfirmation, setShowUpdateConfirmation] = useState(false);
 
   const getLocalDateTimeMin = () => {
     const now = new Date();
@@ -1224,27 +1225,6 @@ const QuizBuilder = ({
             <button
               className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
               style={{
-                backgroundColor: currentColors.surface,
-                color: currentColors.text,
-                border: `1px solid ${currentColors.border}`,
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = currentColors.hover;
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = currentColors.surface;
-              }}
-              onClick={() => handleSave("draft")}
-            >
-              {isLoading
-                ? "Saving..."
-                : editingTask
-                  ? "Update Draft"
-                  : "Save as Draft"}
-            </button>
-            <button
-              className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-              style={{
                 backgroundColor: "#2563eb",
                 color: "#ffffff",
               }}
@@ -1254,9 +1234,13 @@ const QuizBuilder = ({
               onMouseLeave={(e) => {
                 e.target.style.backgroundColor = "#2563eb";
               }}
-              onClick={() =>
-                editingTask ? handleUpdateTask() : handleSave("published")
-              }
+              onClick={() => {
+                if (editingTask) {
+                  setShowUpdateConfirmation(true);
+                } else {
+                  handleSave("published");
+                }
+              }}
             >
               {isLoading
                 ? "Publishing..."
@@ -1267,6 +1251,57 @@ const QuizBuilder = ({
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {showUpdateConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div
+            className="rounded-lg p-6 max-w-md w-full"
+            style={{
+              backgroundColor: currentColors.surface,
+              borderColor: currentColors.border,
+            }}
+          >
+            <h3
+              className="text-lg font-semibold mb-4"
+              style={{ color: currentColors.text }}
+            >
+              Confirm Quiz Update
+            </h3>
+            <p
+              className="mb-6"
+              style={{ color: currentColors.textSecondary }}
+            >
+              Are you sure you want to update this quiz? This will modify the existing quiz and students may see the changes immediately.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                className="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  border: `1px solid ${currentColors.border}`,
+                }}
+                onClick={() => {
+                  setShowUpdateConfirmation(false);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg font-medium text-sm text-white transition-colors"
+                style={{ backgroundColor: "#2563eb" }}
+                onClick={() => {
+                  setShowUpdateConfirmation(false);
+                  handleUpdateTask();
+                }}
+              >
+                Yes, Update Quiz
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

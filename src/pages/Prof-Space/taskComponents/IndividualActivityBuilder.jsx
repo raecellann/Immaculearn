@@ -505,23 +505,6 @@ const IndividualActivityBuilder = ({
             <button
               className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
               style={{
-                backgroundColor: currentColors.surface,
-                color: currentColors.text,
-                border: `1px solid ${currentColors.border}`
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = currentColors.hover;
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = currentColors.surface;
-              }}
-              onClick={() => handleSave('draft')}
-            >
-              {isLoading ? 'Saving...' : 'Save as Draft'}
-            </button>
-            <button
-              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-              style={{
                 backgroundColor: '#2563eb',
                 color: '#ffffff'
               }}
