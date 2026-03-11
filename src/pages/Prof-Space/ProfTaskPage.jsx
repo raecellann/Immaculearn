@@ -1401,34 +1401,63 @@ const ProfTaskPage = () => {
                           )}
                         </>
                       )}
-                      {task.task_category === "individual-activity" && (
+                      {task.task_category === "individual-activity" && !task.isLocal && (
+                        <>
+                          <ButtonComponent
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleEditTask(task);
+                            }}
+                            style={{
+                              backgroundColor: "#22c55e",
+                              borderColor: "#22c55e",
+                              padding: "0.3em 0.8em",
+                              fontSize: "0.75rem",
+                              borderRadius: "6px",
+                              flex: 1,
+                              marginRight: "0.5rem",
+                            }}
+                          >
+                            Edit Activity
+                          </ButtonComponent>
+                          <ButtonComponent
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handlePreviewTask(task);
+                            }}
+                            style={{
+                              backgroundColor: currentColors.accent,
+                              borderColor: currentColors.accent,
+                              padding: "0.3em 0.8em",
+                              fontSize: "0.75rem",
+                              borderRadius: "6px",
+                              flex: 1,
+                            }}
+                          >
+                            View Details
+                          </ButtonComponent>
+                        </>
+                      )}
+                      {task.task_category === "individual-activity" && task.isLocal && (
                         <a
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
                             handlePreviewTask(task);
                           }}
-                          className={`text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                            task.isLocal ? "flex-1" : "block w-full"
-                          }`}
+                          className="text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex-1"
                           style={{
-                            backgroundColor: task.isLocal
-                              ? "#2563eb"
-                              : currentColors.accent,
+                            backgroundColor: "#2563eb",
                             color: "white",
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = task.isLocal
-                              ? "#1d4ed8"
-                              : "#1d4ed8";
+                            e.target.style.backgroundColor = "#1d4ed8";
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = task.isLocal
-                              ? "#2563eb"
-                              : currentColors.accent;
+                            e.target.style.backgroundColor = "#2563eb";
                           }}
                         >
-                          View Details
+                          Preview
                         </a>
                       )}
                     </div>
@@ -2003,12 +2032,14 @@ const ProfTaskPage = () => {
               {selectedTaskType === "individual-activity" && (
                 <IndividualActivityBuilder
                   currentColors={currentColors}
+                  editingTask={editingTask}
                   onBack={() => {
                     setIsCreatingTask(false);
                     setSelectedTaskType(null);
                     setShowTaskTypeSelection(false);
                   }}
                   onSave={(taskData) => handleUpload("draft", taskData)}
+                  onUpdate={(taskData) => handleUpdateTask(taskData)}
                   onPublish={(TaskData) => handleUpload("uploaded", TaskData)}
                   isLoading={
                     draftTaskMutation.isLoading || uploadTaskMutation.isLoading
@@ -2236,12 +2267,14 @@ const ProfTaskPage = () => {
               {selectedTaskType === "individual-activity" && (
                 <IndividualActivityBuilder
                   currentColors={currentColors}
+                  editingTask={editingTask}
                   onBack={() => {
                     setIsCreatingTask(false);
                     setSelectedTaskType(null);
                     setShowTaskTypeSelection(false);
                   }}
                   onSave={(taskData) => handleUpload("draft", taskData)}
+                  onUpdate={(taskData) => handleUpdateTask(taskData)}
                   onPublish={(taskData) => handleUpload("uploaded", taskData)}
                   isLoading={
                     draftTaskMutation.isLoading || uploadTaskMutation.isLoading

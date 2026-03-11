@@ -5,8 +5,10 @@ import { toast } from 'react-toastify';
 
 const IndividualActivityBuilder = ({ 
   currentColors, 
+  editingTask,
   onBack, 
   onSave, 
+  onUpdate,
   onPublish,
   isLoading = false 
 }) => {
@@ -23,6 +25,8 @@ const IndividualActivityBuilder = ({
     selectedLesson: '',
     questions: []
   });
+
+  const [showUpdateConfirmation, setShowUpdateConfirmation] = useState(false);
 
   const getLocalDateTimeMin = () => {
     const now = new Date();
@@ -46,6 +50,37 @@ const IndividualActivityBuilder = ({
       questions: questions.map(() => ({ question: '', answer: '' }))
     }));
   }, [questions.length]);
+
+  // Populate form with editing task data
+  useEffect(() => {
+    if (editingTask) {
+      // Handle different possible data structures
+      const taskData = editingTask.rawData || editingTask;
+
+      setActivityTitle(taskData.task_title || taskData.title || '');
+      setInstruction(taskData.task_instruction || taskData.instruction || '');
+      setDueDate(taskData.due_date || taskData.dueDate || '');
+      setSelectedLesson(taskData.selected_lesson || taskData.selectedLesson || '');
+
+      // Parse questions if they exist
+      if (taskData.questions && Array.isArray(taskData.questions)) {
+        const parsedQuestions = taskData.questions.map((q, index) => ({
+          id: index + 1,
+          question: q.question || '',
+          answer: q.answer || q.correctAnswer || '',
+          points: q.points || 5,
+        }));
+        setQuestions(parsedQuestions.length > 0 ? parsedQuestions : [
+          {
+            id: 1,
+            question: '',
+            answer: '',
+            points: 5,
+          }
+        ]);
+      }
+    }
+  }, [editingTask]);
 
   // Validation functions
   const validateForm = () => {
@@ -157,6 +192,7 @@ const IndividualActivityBuilder = ({
     }));
 
     const taskData = {
+      task_id: editingTask?.task_id,
       task_category: 'individual-activity',
       task_title: activityTitle,
       due_date: new Date(dueDate).toISOString(),
@@ -167,11 +203,20 @@ const IndividualActivityBuilder = ({
     };
 
     if (status === 'published') {
-      toast.success("Individual Act published successfully!");
-      onPublish(taskData);
+      if (editingTask) {
+        onUpdate(taskData);
+      } else {
+        toast.success("Individual Activity published successfully!");
+        onPublish(taskData);
+      }
     } else {
+      toast.success("Individual Activity saved as draft!");
       onSave(taskData);
     }
+  };
+
+  const handleUpdateTask = () => {
+    handleSave('published');
   };
 
   const resetForm = () => {
@@ -514,13 +559,75 @@ const IndividualActivityBuilder = ({
               onMouseLeave={(e) => {
                 e.target.style.backgroundColor = '#2563eb';
               }}
-              onClick={() => handleSave('published')}
+              onClick={() => {
+                if (editingTask) {
+                  setShowUpdateConfirmation(true);
+                } else {
+                  handleSave('published');
+                }
+              }}
             >
-              {isLoading ? 'Publishing...' : 'Publish Activity'}
+              {isLoading
+                ? 'Publishing...'
+                : editingTask
+                  ? 'Update and Publish'
+                  : 'Publish Activity'}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {showUpdateConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div
+            className="rounded-lg p-6 max-w-md w-full"
+            style={{
+              backgroundColor: currentColors.surface,
+              borderColor: currentColors.border,
+              border: `1px solid ${currentColors.border}`,
+            }}
+          >
+            <h3
+              className="text-lg font-semibold mb-4"
+              style={{ color: currentColors.text }}
+            >
+              Update and Publish Activity
+            </h3>
+            <p
+              className="mb-6"
+              style={{ color: currentColors.textSecondary }}
+            >
+              Are you sure you want to update and publish this individual activity? This will make the changes visible to students immediately.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                className="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  border: `1px solid ${currentColors.border}`,
+                }}
+                onClick={() => {
+                  setShowUpdateConfirmation(false);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg font-medium text-sm text-white transition-colors"
+                style={{ backgroundColor: "#2563eb" }}
+                onClick={() => {
+                  setShowUpdateConfirmation(false);
+                  handleUpdateTask();
+                }}
+              >
+                Update and Publish
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
