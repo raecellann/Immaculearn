@@ -63,6 +63,20 @@ class PostService {
             };
         }
     }
+
+    async deletepost(postId: string): Promise<ApiResponse<void>> {
+        try {
+            const response = await api.delete<ApiResponse<void>>(
+                `/post/${postId}`
+            );
+            return response.data;
+        } catch (error: any) {
+            return {
+                success: false,
+                message: error.response?.data?.message || "Failed to delete post",
+            };
+        }
+    }
 }
 
 export const postService = new PostService();

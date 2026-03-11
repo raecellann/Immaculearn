@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 import Sidebar from "../component/sidebar";
+import DeleteButton from "../component/DeleteButton.jsx";
 import Logout from "../component/logout";
 import Button from "../component/button_2";
 import AddMember from "../component/AddMember";
+import { postService } from "../../services/postService";
 import { useSpaceTheme } from "../../contexts/theme/spaceThemeContextProvider";
 import {
   DeleteConfirmationDialog,
@@ -11,7 +13,7 @@ import {
   CancelledDialog,
 } from "../component/SweetAlert.jsx";
 import {
-  FiSearch,
+FiSearch,
   FiFileText,
   FiCheckCircle,
   FiLink,
@@ -52,6 +54,7 @@ const UserPage = () => {
 
   // Add loading state for post creation
   const [isCreatingPost, setIsCreatingPost] = useState(false);
+  
 
   // State hooks - MUST BE AT THE TOP
   const [isFocused, setIsFocused] = useState(false);
@@ -234,7 +237,7 @@ const UserPage = () => {
 
   const isFriendSpace = !isOwnerSpace;
 
-  // Posts hook with React Query for 15-minute auto-re-render
+  // Posts hook with React Query for 15-minute auto-rerender
   const { createPost, createComment, getPosts, getComments } = useUserPosts();
 
   const {
@@ -566,6 +569,20 @@ const UserPage = () => {
       toast.error("Failed to create post. Please try again.");
     } finally {
       setIsCreatingPost(false);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      const result = await postService.deletepost(postId);
+      if (result.success) {
+        toast.success("Post deleted successfully!");
+        refetchPosts();
+      } else {
+        toast.error(result.message || "Failed to delete post");
+      }
+    } catch (error) {
+      toast.error("Failed to delete post. Please try again.");
     }
   };
 
@@ -1843,6 +1860,15 @@ const UserPage = () => {
                                 "U"}
                             </div>
                           )}
+
+
+                          {
+                          (
+                            <DeleteButton
+                            onClick={() => handleDeletePost(post.post_id)}
+                            />
+                          )
+                        } 
 
                           {/* Post Content */}
                           <div className="flex-1 min-w-0">

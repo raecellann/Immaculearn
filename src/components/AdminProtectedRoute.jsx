@@ -6,10 +6,15 @@ import MainLoading from "./LoadingComponents/mainLoading";
 const AdminProtectedRoute = ({ children }) => {
   const { isLoading, isAuthenticated } = useAdmin();
   const location = useLocation();
-  const hasCheckedAuth = useRef(false);
+  const hasMounted = useRef(false);
 
-  // Show loading during auth check
-  if (isLoading) {
+  // Prevent redirect on initial mount
+  useEffect(() => {
+    hasMounted.current = true;
+  }, []);
+
+  // Show loading during auth check or before component mounts
+  if (isLoading || !hasMounted.current) {
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
@@ -17,13 +22,8 @@ const AdminProtectedRoute = ({ children }) => {
     );
   }
 
-  // Mark that auth check has completed
-  if (!hasCheckedAuth.current) {
-    hasCheckedAuth.current = true;
-  }
-
-  // Only redirect if auth check is complete and user is not authenticated
-  if (hasCheckedAuth.current && !isAuthenticated) {
+  // Only redirect if user is not authenticated and component has mounted
+  if (!isAuthenticated) {
     console.log("AdminProtectedRoute: Redirecting to login");
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }

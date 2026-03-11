@@ -27,6 +27,7 @@ const AdminTeachers = () => {
   const itemsPerPage = 10;
   const [sortBy, setSortBy] = useState("lastName");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [isLoading, setIsLoading] = useState(false);
 
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -185,6 +186,10 @@ const AdminTeachers = () => {
   };
 
   const handleAddTeacher = async () => {
+  if (isLoading) {
+    return;
+  }
+
   if (!newTeacher.email) {
     toast.error("Email is required");
     return;
@@ -205,6 +210,8 @@ const AdminTeachers = () => {
     setEmailError(true);
     return;
   }
+
+  setIsLoading(true);
 
   try {
     const res = await adminDashboardService.registerProfEmail({
@@ -239,6 +246,8 @@ const AdminTeachers = () => {
   } catch (err) {
     console.error(err);
     toast.error("Something went wrong");
+  } finally {
+    setIsLoading(false);
   }
 };
 

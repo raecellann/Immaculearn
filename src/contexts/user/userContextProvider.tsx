@@ -232,6 +232,19 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   };
 
+  const deletePost = async (postId: string) => {
+    try {
+      const response = await api.delete(`/post/${postId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Delete post error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to delete post",
+      };
+    }
+  };
+
   // Initial check on mount
   useEffect(() => {
     checkAuth();
@@ -252,6 +265,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         createComment,
         getPosts,
         getComments,
+        deletePost,
       }}
     >
       {children}

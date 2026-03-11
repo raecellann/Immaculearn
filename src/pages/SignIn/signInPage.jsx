@@ -35,7 +35,7 @@ const FieldError = ({ message }) =>
 
 // ─── Main component ────────────────────────────────────────────────────────────
 const LoginPage = () => {
-  const { isAuthenticated, user, isLoading, checkAuth, login } = useUser();
+  const { isAuthenticated, user, isLoading, checkAuth, login} = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -64,7 +64,7 @@ const LoginPage = () => {
     setFormError("");
 
     try {
-      const data = await login(email, password);
+      const data = await login(email, password)
 
       if (data.needsOnboarding) {
         sessionStorage.setItem("tempToken", data.tempToken);

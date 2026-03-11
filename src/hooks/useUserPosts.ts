@@ -14,5 +14,6 @@ export const useUserPosts = () => {
     createComment: context.createComment,
     getPosts: context.getPosts,
     getComments: context.getComments,
+    deletePost: context.deletePost,
   };
 };

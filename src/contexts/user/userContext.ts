@@ -22,6 +22,7 @@ export interface UserContextType {
     createComment: (commentData: CommentCreateData) => Promise<{ success: boolean; message?: string; data?: Comment }>;
     getPosts: (spaceId: string) => Promise<{ success: boolean; message?: string; data?: Post[] }>;
     getComments: (postId: string) => Promise<{ success: boolean; message?: string; data?: Comment[] }>;
+    deletePost: (postId: string) => Promise<{ success: boolean; message?: string }>;
 }
 
 export const UserContext = createContext<UserContextType | undefined>(
