@@ -5,6 +5,7 @@ import { useTasks } from "../../../hooks/useTasks";
 import ProfSidebar from "../../component/profsidebar";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 import { FiX, FiUser, FiCheck, FiX as FiXIcon, FiBarChart2, FiArrowLeft } from "react-icons/fi";
+import { useSpace } from "../../../contexts/space/useSpace";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -29,6 +30,9 @@ const ResponseSummaryPage = () => {
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   
+  // Use useSpace hook to get completed task data
+  const { allUserCompletedTask, allUserCompletedTaskLoading, setTaskId } = useSpace();
+  
   // Use useTasks hook to fetch tasks
   const { uploadedTasksQuery, draftedTasksQuery } = useTasks(space_uuid);
   
@@ -51,108 +55,16 @@ const ResponseSummaryPage = () => {
   const decodedSpaceName = decodeURIComponent(space_name || '');
   const decodedTaskName = decodeURIComponent(task_name || '');
 
-  // Mock student data with answers - replace with actual API call
-  const mockStudentData = [
-    {
-      student_id: "1",
-      student_name: "Juan Dela Cruz",
-      student_email: "juan.cruz@email.com",
-      score: 15,
-      total_score: 20,
-      completed_at: "2025-11-20T14:30:00Z",
-      answers: {
-        1: "A", // Question 1 answer
-        2: "True", // Question 2 answer
-        3: "C", // Question 3 answer
-        4: "B", // Question 4 answer
-        5: "Photosynthesis is the process by which plants make their own food", // Question 5 answer
-      }
-    },
-    {
-      student_id: "2",
-      student_name: "Maria Santos",
-      student_email: "maria.santos@email.com",
-      score: 18,
-      total_score: 20,
-      completed_at: "2025-11-20T15:15:00Z",
-      answers: {
-        1: "B", // Question 1 answer
-        2: "False", // Question 2 answer
-        3: "A", // Question 3 answer
-        4: "D", // Question 4 answer
-        5: "The process where plants convert sunlight into energy", // Question 5 answer
-      }
-    },
-    {
-      student_id: "3",
-      student_name: "Jose Reyes",
-      student_email: "jose.reyes@email.com",
-      score: 12,
-      total_score: 20,
-      completed_at: "2025-11-21T10:45:00Z",
-      answers: {
-        1: "C", // Question 1 answer
-        2: "True", // Question 2 answer
-        3: "B", // Question 3 answer
-        4: "A", // Question 4 answer
-        5: "Plants use chlorophyll to capture light energy", // Question 5 answer
-      }
-    }
-  ];
-
-  // Mock quiz questions - replace with actual quiz data
-  const mockQuizQuestions = [
-    {
-      id: 1,
-      question: "What is the primary function of chlorophyll in plants?",
-      type: "multiple-choice",
-      answers: [
-        { letter_identifier: "A", answer_text: "Capture light energy", is_correct: true },
-        { letter_identifier: "B", answer_text: "Store water", is_correct: false },
-        { letter_identifier: "C", answer_text: "Produce oxygen", is_correct: false },
-        { letter_identifier: "D", answer_text: "Absorb nutrients", is_correct: false }
-      ]
-    },
-    {
-      id: 2,
-      question: "Photosynthesis requires sunlight.",
-      type: "true-false",
-      answers: [
-        { letter_identifier: "T", answer_text: "True", is_correct: true },
-        { letter_identifier: "F", answer_text: "False", is_correct: false }
-      ]
-    },
-    {
-      id: 3,
-      question: "Which gas is released during photosynthesis?",
-      type: "multiple-choice",
-      answers: [
-        { letter_identifier: "A", answer_text: "Carbon dioxide", is_correct: false },
-        { letter_identifier: "B", answer_text: "Nitrogen", is_correct: false },
-        { letter_identifier: "C", answer_text: "Oxygen", is_correct: true },
-        { letter_identifier: "D", answer_text: "Hydrogen", is_correct: false }
-      ]
-    },
-    {
-      id: 4,
-      question: "Where does photosynthesis primarily occur in plants?",
-      type: "multiple-choice",
-      answers: [
-        { letter_identifier: "A", answer_text: "Roots", is_correct: false },
-        { letter_identifier: "B", answer_text: "Leaves", is_correct: true },
-        { letter_identifier: "C", answer_text: "Stem", is_correct: false },
-        { letter_identifier: "D", answer_text: "Flowers", is_correct: false }
-      ]
-    },
-    {
-      id: 5,
-      question: "Briefly describe the process of photosynthesis.",
-      type: "short-answer",
-      answers: [
-        { answer_text: "The process by which plants use sunlight, water, and CO2 to produce glucose and oxygen", is_correct: true }
-      ]
-    }
-  ];
+  // Set task ID for useSpace hook
+  if (task_id) {
+    setTaskId(task_id);
+  }
+  
+  // Get real student data from allUserCompletedTask
+  const realStudentData = allUserCompletedTask?.students || [];
+  
+  // Get real questions from allUserCompletedTask
+  const realQuestions = allUserCompletedTask?.questions || [];
 
   // Admin Dashboard Theme
   const THEME = {
@@ -199,13 +111,36 @@ const ResponseSummaryPage = () => {
     const correctAnswer = question.answers.find(a => a.is_correct);
     if (!correctAnswer) return false;
     
-    // Handle different answer formats
-    if (question.type === 'true-false') {
-      return studentAnswer.toLowerCase() === correctAnswer.answer_text.toLowerCase();
+    // Debug logging for true-false questions
+    if (question.question_type === 'true-false') {
+      console.log('True-False Question Debug:', {
+        questionText: question.question,
+        studentAnswer,
+        correctLetter: correctAnswer.letter_identifier,
+        correctChoice: correctAnswer.choice_answer,
+        studentMatchesLetter: studentAnswer === correctAnswer.letter_identifier,
+        studentMatchesChoice: studentAnswer.toLowerCase() === correctAnswer.choice_answer.toLowerCase()
+      });
+      
+      // Try to match with letter_identifier first (T/F), then with choice_answer (True/False)
+      return studentAnswer === correctAnswer.letter_identifier ||
+             studentAnswer.toLowerCase() === correctAnswer.choice_answer.toLowerCase();
     }
+
+    // Debug logging for other question types
+    console.log('General Question Debug:', {
+      questionText: question.question,
+      studentAnswer,
+      correctLetter: correctAnswer.letter_identifier,
+      correctChoice: correctAnswer.choice_answer,
+      studentMatchesLetter: studentAnswer === correctAnswer.letter_identifier,
+      studentMatchesChoice: studentAnswer.toLowerCase() === correctAnswer.choice_answer.toLowerCase()
+    });
     
+    // For other question types, check if student answer matches letter_identifier or any part of choice_answer
+    const correctChoiceParts = correctAnswer.choice_answer.split(',').map(part => part.trim().toLowerCase());
     return studentAnswer === correctAnswer.letter_identifier || 
-           studentAnswer.toLowerCase() === correctAnswer.answer_text.toLowerCase();
+           correctChoiceParts.includes(studentAnswer.toLowerCase());
   };
 
   // Helper function to generate pie chart data for questions using admin dashboard styling
@@ -213,8 +148,8 @@ const ResponseSummaryPage = () => {
     const answerCounts = {};
     
     // Count all answers (correct and incorrect)
-    mockStudentData.forEach(student => {
-      const studentAnswer = student.answers[question.id];
+    realStudentData.forEach(student => {
+      const studentAnswer = student.answers?.[question.question_id] || student.answers?.[question.position];
       if (studentAnswer) {
         answerCounts[studentAnswer] = (answerCounts[studentAnswer] || 0) + 1;
       }
@@ -228,9 +163,9 @@ const ResponseSummaryPage = () => {
         // Find the answer text for this label
         const answer = question.answers.find(a => 
           a.letter_identifier === label || 
-          a.answer_text.toLowerCase() === label.toLowerCase()
+          a.choice_answer.toLowerCase() === label.toLowerCase()
         );
-        return answer ? answer.answer_text : label;
+        return answer ? answer.choice_answer : label;
       }),
       datasets: [{
         data: values,
@@ -272,19 +207,36 @@ const ResponseSummaryPage = () => {
 
   // Generate response summary data
   const generateResponseSummaryData = () => {
-    const mockSummaryData = {
+    if (!realStudentData.length || !realQuestions.length) {
+      setIsLoading(false);
+      return;
+    }
+    
+    const summaryData = {
       quizTitle: quizData?.task_title || currentTask?.task_title || decodedTaskName || "Quiz",
-      totalStudents: mockStudentData.length,
-      passedStudents: mockStudentData.filter(s => s.score >= (s.total_score * 0.6)).length,
-      failedStudents: mockStudentData.filter(s => s.score < (s.total_score * 0.6)).length,
-      averageScore: Math.round(mockStudentData.reduce((acc, s) => acc + (s.score / s.total_score * 100), 0) / mockStudentData.length),
-      passRate: Math.round((mockStudentData.filter(s => s.score >= (s.total_score * 0.6)).length / mockStudentData.length) * 100),
-      questionAnalysis: mockQuizQuestions.map((question, index) => {
+      totalStudents: realStudentData.length,
+      passedStudents: realStudentData.filter(s => {
+        const percentage = (s.score / s.total_items_score) * 100;
+        return percentage >= 60;
+      }).length,
+      failedStudents: realStudentData.filter(s => {
+        const percentage = (s.score / s.total_items_score) * 100;
+        return percentage < 60;
+      }).length,
+      averageScore: Math.round(realStudentData.reduce((acc, s) => {
+        const percentage = (s.score / s.total_items_score) * 100;
+        return acc + percentage;
+      }, 0) / realStudentData.length),
+      passRate: Math.round((realStudentData.filter(s => {
+        const percentage = (s.score / s.total_items_score) * 100;
+        return percentage >= 60;
+      }).length / realStudentData.length) * 100),
+      questionAnalysis: realQuestions.map((question) => {
         const correctAnswer = question.answers.find(a => a.is_correct);
         const incorrectCounts = {};
         
-        mockStudentData.forEach(student => {
-          const studentAnswer = student.answers[question.id];
+        realStudentData.forEach(student => {
+          const studentAnswer = student.answers?.[question.question_id] || student.answers?.[question.position];
           const isCorrect = checkIfAnswerIsCorrect(question, studentAnswer);
           
           if (!isCorrect && studentAnswer) {
@@ -293,23 +245,32 @@ const ResponseSummaryPage = () => {
         });
         
         return {
-          questionId: question.id,
+          questionId: question.question_id || question.position,
           questionText: question.question,
-          correctAnswer: correctAnswer?.letter_identifier || correctAnswer?.answer_text || "N/A",
+          correctAnswer: correctAnswer?.letter_identifier || correctAnswer?.choice_answer || "N/A",
           incorrectAnswers: incorrectCounts,
-          correctCount: mockStudentData.filter(s => checkIfAnswerIsCorrect(question, s.answers[question.id])).length,
-          incorrectCount: mockStudentData.filter(s => !checkIfAnswerIsCorrect(question, s.answers[question.id])).length
+          correctCount: realStudentData.filter(s => {
+            const studentAnswer = s.answers?.[question.question_id] || s.answers?.[question.position];
+            return checkIfAnswerIsCorrect(question, studentAnswer);
+          }).length,
+          incorrectCount: realStudentData.filter(s => {
+            const studentAnswer = s.answers?.[question.question_id] || s.answers?.[question.position];
+            return !checkIfAnswerIsCorrect(question, studentAnswer);
+          }).length
         };
       }),
-      studentResults: mockStudentData.map(student => ({
-        name: student.student_name,
-        score: Math.round(student.score / student.total_score * 100),
-        status: student.score >= (student.total_score * 0.6) ? 'passed' : 'failed',
-        answers: student.answers
-      }))
+      studentResults: realStudentData.map(student => {
+        const percentage = Math.round((student.score / student.total_items_score) * 100);
+        return {
+          name: student.student_name,
+          score: percentage,
+          status: percentage >= 60 ? 'passed' : 'failed',
+          answers: student.answers
+        };
+      })
     };
     
-    setResponseSummaryData(mockSummaryData);
+    setResponseSummaryData(summaryData);
     setIsLoading(false);
   };
 
@@ -317,6 +278,7 @@ const ResponseSummaryPage = () => {
     // Fetch quiz data based on currentTask from useTasks
     console.log("Fetching quiz data for task_id:", task_id, "space_uuid:", space_uuid);
     console.log("Current task found:", currentTask);
+    console.log("All user completed task:", allUserCompletedTask);
     
     try {
       // Use currentTask data if found
@@ -340,14 +302,19 @@ const ResponseSummaryPage = () => {
         }
       }
       
-      // Generate response summary data
-      generateResponseSummaryData();
+      // Generate response summary data when real data is available
+      if (realStudentData.length > 0 && realQuestions.length > 0) {
+        generateResponseSummaryData();
+      } else if (!allUserCompletedTaskLoading) {
+        // If loading is complete but no data, stop loading
+        setIsLoading(false);
+      }
       
     } catch (error) {
       console.error("Error fetching quiz data:", error);
       setIsLoading(false);
     }
-  }, [task_id, space_uuid, currentTask]);
+  }, [task_id, space_uuid, currentTask, allUserCompletedTask, allUserCompletedTaskLoading, realStudentData, realQuestions]);
 
   const formatDueDate = (dueDate) => {
     if (!dueDate) return "No due date set";
@@ -503,8 +470,11 @@ const ResponseSummaryPage = () => {
             </h2>
             <div className="space-y-8">
               {responseSummaryData?.questionAnalysis?.map((question, index) => {
-                const mockQuestion = mockQuizQuestions.find(q => q.id === question.questionId);
-                const chartData = mockQuestion ? generatePieChartData(mockQuestion) : null;
+                const realQuestion = realQuestions.find(q => 
+                  (q.question_id && q.question_id === question.questionId) || 
+                  (q.position && q.position === question.questionId)
+                );
+                const chartData = realQuestion ? generatePieChartData(realQuestion) : null;
                 
                 return (
                   <div 

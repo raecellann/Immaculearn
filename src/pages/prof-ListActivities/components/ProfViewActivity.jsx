@@ -28,6 +28,8 @@ const ProfViewActivityPage = () => {
   const { allUserCompletedTask, allUserCompletedTaskLoading, setTaskId } =
     useSpace();
 
+  console.log(allUserCompletedTask);
+
   if (task_id) {
     setTaskId(task_id);
   }
@@ -61,133 +63,6 @@ const ProfViewActivityPage = () => {
   // sticky header scroll state
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-
-  // Mock student data with answers - replace with actual API call
-  const mockStudentData = [
-    {
-      student_id: "1",
-      student_name: "Juan Dela Cruz",
-      student_email: "juan.cruz@email.com",
-      score: 15,
-      total_score: 20,
-      completed_at: "2025-11-20T14:30:00Z",
-      answers: {
-        1: "A", // Question 1 answer
-        2: "True", // Question 2 answer
-        3: "C", // Question 3 answer
-        4: "B", // Question 4 answer
-        5: "Photosynthesis is the process by which plants make their own food", // Question 5 answer
-      },
-    },
-    {
-      student_id: "2",
-      student_name: "Maria Santos",
-      student_email: "maria.santos@email.com",
-      score: 18,
-      total_score: 20,
-      completed_at: "2025-11-20T15:15:00Z",
-      answers: {
-        1: "B", // Question 1 answer
-        2: "False", // Question 2 answer
-        3: "A", // Question 3 answer
-        4: "D", // Question 4 answer
-        5: "The process where plants convert sunlight into energy", // Question 5 answer
-      },
-    },
-    {
-      student_id: "3",
-      student_name: "Jose Reyes",
-      student_email: "jose.reyes@email.com",
-      score: 12,
-      total_score: 20,
-      completed_at: "2025-11-21T10:45:00Z",
-      answers: {
-        1: "C", // Question 1 answer
-        2: "True", // Question 2 answer
-        3: "B", // Question 3 answer
-        4: "A", // Question 4 answer
-        5: "Plants use chlorophyll to capture light energy", // Question 5 answer
-      },
-    },
-  ];
-
-  // Mock quiz questions - replace with actual quiz data
-  const mockQuizQuestions = [
-    {
-      id: 1,
-      question: "What is the primary function of chlorophyll in plants?",
-      type: "multiple-choice",
-      answers: [
-        {
-          letter_identifier: "A",
-          answer_text: "Capture light energy",
-          is_correct: true,
-        },
-        {
-          letter_identifier: "B",
-          answer_text: "Store water",
-          is_correct: false,
-        },
-        {
-          letter_identifier: "C",
-          answer_text: "Produce oxygen",
-          is_correct: false,
-        },
-        {
-          letter_identifier: "D",
-          answer_text: "Absorb nutrients",
-          is_correct: false,
-        },
-      ],
-    },
-    {
-      id: 2,
-      question: "Photosynthesis requires sunlight.",
-      type: "true-false",
-      answers: [
-        { letter_identifier: "T", answer_text: "True", is_correct: true },
-        { letter_identifier: "F", answer_text: "False", is_correct: false },
-      ],
-    },
-    {
-      id: 3,
-      question: "Which gas is released during photosynthesis?",
-      type: "multiple-choice",
-      answers: [
-        {
-          letter_identifier: "A",
-          answer_text: "Carbon dioxide",
-          is_correct: false,
-        },
-        { letter_identifier: "B", answer_text: "Nitrogen", is_correct: false },
-        { letter_identifier: "C", answer_text: "Oxygen", is_correct: true },
-        { letter_identifier: "D", answer_text: "Hydrogen", is_correct: false },
-      ],
-    },
-    {
-      id: 4,
-      question: "Where does photosynthesis primarily occur in plants?",
-      type: "multiple-choice",
-      answers: [
-        { letter_identifier: "A", answer_text: "Roots", is_correct: false },
-        { letter_identifier: "B", answer_text: "Leaves", is_correct: true },
-        { letter_identifier: "C", answer_text: "Stem", is_correct: false },
-        { letter_identifier: "D", answer_text: "Flowers", is_correct: false },
-      ],
-    },
-    {
-      id: 5,
-      question: "Briefly describe the process of photosynthesis.",
-      type: "short-answer",
-      answers: [
-        {
-          answer_text:
-            "The process by which plants use sunlight, water, and CO2 to produce glucose and oxygen",
-          is_correct: true,
-        },
-      ],
-    },
-  ];
 
   // Helper functions
   const handleStudentClick = (student) => {
@@ -491,7 +366,7 @@ const ProfViewActivityPage = () => {
               {/* Mobile Card View - For small screens */}
               <div className="block sm:hidden">
                 <div className="space-y-3">
-                  {allUserCompletedTask.map((student) => (
+                  {allUserCompletedTask?.students?.map((student) => (
                     <div
                       key={student.account_id}
                       className="rounded-lg border p-3 cursor-pointer transition-all hover:shadow-md"
@@ -507,7 +382,7 @@ const ProfViewActivityPage = () => {
                           className="font-medium text-sm"
                           style={{ color: currentColors.text }}
                         >
-                          {student.full_name}
+                          {student.student_name}
                         </h4>
                         <span
                           className="text-xs px-2 py-1 rounded-full font-medium"
@@ -590,7 +465,7 @@ const ProfViewActivityPage = () => {
                           className="divide-y"
                           style={{ borderColor: currentColors.border }}
                         >
-                          {allUserCompletedTask?.map((student) => (
+                          {allUserCompletedTask?.students?.map((student) => (
                             <tr
                               key={student.account_id}
                               className="cursor-pointer transition-all hover:shadow-md"
@@ -606,7 +481,7 @@ const ProfViewActivityPage = () => {
                               >
                                 <div className="flex items-center gap-2">
                                   <div>
-                                    <div>{student.full_name}</div>
+                                    <div>{student.student_name}</div>
                                   </div>
                                 </div>
                               </td>
@@ -714,18 +589,13 @@ const ProfViewActivityPage = () => {
                         >
                           {selectedStudent.student_name}'s Answers
                         </h3>
-                        <p
-                          className="text-sm"
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          {selectedStudent.student_email}
-                        </p>
+
                         <div className="flex gap-4 mt-1 text-sm">
                           <span style={{ color: currentColors.text }}>
                             Score:{" "}
                             <strong>
                               {selectedStudent.score}/
-                              {selectedStudent.total_score}
+                              {selectedStudent.total_items_score}
                             </strong>
                           </span>
                           <span style={{ color: currentColors.textSecondary }}>
@@ -759,9 +629,9 @@ const ProfViewActivityPage = () => {
                   {/* Modal Content */}
                   <div className="p-6">
                     <div className="space-y-6">
-                      {mockQuizQuestions.map((question) => (
+                      {allUserCompletedTask?.questions?.map((question) => (
                         <div
-                          key={question.id}
+                          key={question.position}
                           className="p-4 rounded-lg border"
                           style={{
                             backgroundColor: currentColors.surface,
@@ -776,7 +646,7 @@ const ProfViewActivityPage = () => {
                                   currentColors.primary || currentColors.accent,
                               }}
                             >
-                              {question.id}.
+                              {question.position}.
                             </span>
                             <div className="flex-1">
                               <p
@@ -786,53 +656,222 @@ const ProfViewActivityPage = () => {
                                 {question.question}
                               </p>
 
-                              {/* Answer Options */}
-                              <div className="space-y-2 mb-3">
-                                {question.answers.map((answer, index) => (
+                              {/* Answer Options - Different display based on question type */}
+                              {question.question_type === "identification" ? (
+                                /* Identification questions - show correct answer */
+                                <div className="space-y-2 mb-3">
                                   <div
-                                    key={index}
-                                    className={`flex items-center gap-2 p-2 rounded ${
-                                      answer.is_correct
-                                        ? "bg-green-50 border border-green-200"
-                                        : "bg-gray-50 border border-gray-200"
-                                    }`}
+                                    className="text-xs sm:text-sm mb-2"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
                                   >
-                                    <div
-                                      className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
-                                      style={{
-                                        backgroundColor: answer.is_correct
-                                          ? "#10b981"
-                                          : currentColors.border,
-                                        color: answer.is_correct
-                                          ? "white"
-                                          : currentColors.text,
-                                      }}
-                                    >
-                                      {answer.letter_identifier ||
-                                        String.fromCharCode(65 + index)}
-                                    </div>
-                                    <span
-                                      className="text-sm"
-                                      style={{ color: currentColors.text }}
-                                    >
-                                      {answer.answer_text}
-                                    </span>
-                                    {answer.is_correct && (
-                                      <FiCheck
-                                        className="text-green-600 ml-auto"
-                                        size={16}
-                                      />
-                                    )}
+                                    Student's Answer:
                                   </div>
-                                ))}
-                              </div>
+                                  <div className="flex gap-2">
+                                    {(() => {
+                                      const studentAnswer =
+                                        selectedStudent.answers?.[
+                                          question.question_id
+                                        ] ||
+                                        selectedStudent.answers?.[
+                                          question.position
+                                        ] ||
+                                        "";
+                                      const correctAnswers =
+                                        question.answers
+                                          ?.filter((a) => a.is_correct)
+                                          .flatMap((a) =>
+                                            a.choice_answer
+                                              .split(",")
+                                              .map((part) => part.trim()),
+                                          ) || [];
+                                      const isCorrect = correctAnswers.includes(
+                                        studentAnswer.trim(),
+                                      );
+
+                                      return (
+                                        <div className="flex-1 relative">
+                                          <input
+                                            type="text"
+                                            value={studentAnswer}
+                                            readOnly
+                                            placeholder="No answer provided"
+                                            className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm ${
+                                              isCorrect
+                                                ? "bg-green-50 border-green-200"
+                                                : ""
+                                            }`}
+                                            style={{
+                                              backgroundColor: isCorrect
+                                                ? undefined
+                                                : currentColors.surface,
+                                              color: "black",
+                                              borderColor: isCorrect
+                                                ? undefined
+                                                : currentColors.border,
+                                            }}
+                                          />
+                                          {isCorrect && (
+                                            <FiCheck
+                                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600"
+                                              size={16}
+                                            />
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                  {/* Show correct answers below for reference */}
+                                  <div
+                                    className="text-xs sm:text-sm mt-2"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    Correct answers:{" "}
+                                    {question.answers
+                                      ?.filter((a) => a.is_correct)
+                                      .map((a) =>
+                                        a.choice_answer
+                                          .split(",")
+                                          .map((part, index) => part.trim())
+                                          .join(", "),
+                                      )
+                                      .join(", ") || "N/A"}
+                                  </div>
+                                </div>
+                              ) : (
+                                /* Multiple-choice and true-false questions - show options with student answer */
+                                <div className="space-y-2 mb-3">
+                                  {question.answers.map((answer, index) => {
+                                    const studentAnswer =
+                                      selectedStudent.answers?.[
+                                        question.question_id
+                                      ] ||
+                                      selectedStudent.answers?.[
+                                        question.position
+                                      ] ||
+                                      "";
+                                    const isStudentAnswer =
+                                      question.question_type === "true-false"
+                                        ? studentAnswer ===
+                                            answer.letter_identifier ||
+                                          studentAnswer.toLowerCase() ===
+                                            answer.choice_answer.toLowerCase()
+                                        : studentAnswer ===
+                                          answer.letter_identifier;
+                                    const isCorrect = answer.is_correct;
+
+                                    return (
+                                      <div
+                                        key={index}
+                                        className={`flex items-center gap-2 p-2 rounded ${
+                                          isStudentAnswer
+                                            ? isCorrect
+                                              ? "bg-green-50 border border-green-200"
+                                              : "bg-red-50 border border-red-200"
+                                            : "bg-gray-50 border border-gray-200"
+                                        }`}
+                                      >
+                                        <div
+                                          className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                                          style={{
+                                            backgroundColor: isStudentAnswer
+                                              ? isCorrect
+                                                ? "#10b981"
+                                                : "#ef4444"
+                                              : currentColors.border,
+                                            color: isStudentAnswer
+                                              ? "white"
+                                              : currentColors.text,
+                                          }}
+                                        >
+                                          {answer.letter_identifier ||
+                                            String.fromCharCode(65 + index)}
+                                        </div>
+                                        <span
+                                          className="text-sm"
+                                          style={{ color: "black" }}
+                                        >
+                                          {question.question_type ===
+                                          "identification"
+                                            ? answer.choice_answer
+                                                .split(",")
+                                                .map((part, index) => (
+                                                  <span key={index}>
+                                                    {part.trim()}
+                                                    {index <
+                                                      answer.choice_answer.split(
+                                                        ",",
+                                                      ).length -
+                                                        1 && ", "}
+                                                  </span>
+                                                ))
+                                            : answer.choice_answer}
+                                        </span>
+                                        {isStudentAnswer &&
+                                          (isCorrect ? (
+                                            <FiCheck
+                                              className="text-green-600 ml-auto"
+                                              size={16}
+                                            />
+                                          ) : (
+                                            <FiXIcon
+                                              className="text-red-600 ml-auto"
+                                              size={16}
+                                            />
+                                          ))}
+                                      </div>
+                                    );
+                                  })}
+                                  {/* Show correct answer below for reference only when student is incorrect */}
+                                  {(() => {
+                                    const studentAnswer =
+                                      selectedStudent.answers?.[
+                                        question.question_id
+                                      ] ||
+                                      selectedStudent.answers?.[
+                                        question.position
+                                      ] ||
+                                      "";
+                                    const correctAnswer =
+                                      question.answers?.find(
+                                        (a) => a.is_correct,
+                                      );
+                                    const isStudentCorrect =
+                                      correctAnswer &&
+                                      (studentAnswer ===
+                                        correctAnswer.letter_identifier ||
+                                        (question.question_type ===
+                                          "true-false" &&
+                                          studentAnswer.toLowerCase() ===
+                                            correctAnswer.choice_answer.toLowerCase()));
+
+                                    return (
+                                      !isStudentCorrect && (
+                                        <div
+                                          className="text-xs sm:text-sm mt-2"
+                                          style={{
+                                            color: currentColors.textSecondary,
+                                          }}
+                                        >
+                                          Correct answer:{" "}
+                                          {correctAnswer?.choice_answer ||
+                                            "N/A"}
+                                        </div>
+                                      )
+                                    );
+                                  })()}
+                                </div>
+                              )}
 
                               {/* Student Answer Display */}
-                              {selectedStudent.answers[question.id] &&
+                              {/* {selectedStudent.answers[question.id] &&
                                 renderStudentAnswer(
                                   question,
                                   selectedStudent.answers[question.id],
-                                )}
+                                )} */}
                             </div>
                           </div>
                         </div>

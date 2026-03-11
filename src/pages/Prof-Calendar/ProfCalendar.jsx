@@ -27,6 +27,8 @@ const ProfCalendarPage = () => {
     allUploadedTasksLoading,
   } = useSpace();
 
+  console.log(allUploadedTasks)
+
   const allSpaces = [...(userSpaces || []), ...(courseSpaces || [])];
 
   // const {
@@ -71,107 +73,6 @@ const ProfCalendarPage = () => {
     console.log("Manual refresh triggered"); // Debug log
   };
 
-  // Try to get space context, but handle errors gracefully
-  // useEffect(() => {
-  //   const initializeCalendar = async () => {
-  //     try {
-  //       // First, let's set some basic spaces to ensure calendar works
-  //       console.log('Initializing calendar with basic spaces...'); // Debug log
-
-  //       // Start with mock spaces to ensure calendar renders
-  //       const initialSpaces = [
-  //         {
-  //           space_uuid: "arlecchino-space",
-  //           space_name: "Arlecchino Space",
-  //           space_type: "User",
-  //           members: [{ user_id: 1, role: "admin" }]
-  //         },
-  //         {
-  //           space_uuid: "sample-space",
-  //           space_name: "Sample Space",
-  //           space_type: "Course",
-  //           members: [{ user_id: 1, role: "professor" }]
-  //         }
-  //       ];
-
-  //       // Try to fetch real spaces from API
-  //       try {
-  //         const [userSpacesResponse, courseSpacesResponse] = await Promise.allSettled([
-  //           fetch('/api/spaces/user-spaces').then(res => res.json()).catch(() => ({ data: [] })),
-  //           fetch('/api/spaces/course-spaces').then(res => res.json()).catch(() => ({ data: [] }))
-  //         ]);
-
-  //         const userSpaces = userSpacesResponse.status === 'fulfilled' ? userSpacesResponse.value.data || [] : [];
-  //         const courseSpaces = courseSpacesResponse.status === 'fulfilled' ? courseSpacesResponse.value.data || [] : [];
-
-  //         console.log('API User spaces response:', userSpacesResponse); // Debug log
-  //         console.log('API Course spaces response:', courseSpacesResponse); // Debug log
-  //         console.log('API User spaces:', userSpaces); // Debug log
-  //         console.log('API Course spaces:', courseSpaces); // Debug log
-
-  //         const allSpaces = [...userSpaces, ...courseSpaces];
-
-  //         if (allSpaces.length > 0) {
-  //           // Use real spaces if API worked
-  //           spacesRef.current = allSpaces;
-  //           setAvailableSpaces(allSpaces);
-  //           console.log('Using real spaces from API:', allSpaces); // Debug log
-  //         } else {
-  //           // Use initial spaces if API failed
-  //           spacesRef.current = initialSpaces;
-  //           setAvailableSpaces(initialSpaces);
-  //           console.log('Using initial spaces:', initialSpaces); // Debug log
-  //         }
-  //       } catch (apiError) {
-  //         console.warn('API failed, using initial spaces:', apiError); // Debug log
-  //         spacesRef.current = initialSpaces;
-  //         setAvailableSpaces(initialSpaces);
-  //       }
-
-  //       const finalSpaces = availableSpaces.length > 0 ? availableSpaces : initialSpaces;
-  //       console.log('Final spaces for calendar:', finalSpaces); // Debug log
-
-  //       // Set some basic activities to ensure calendar shows content
-  //       const basicActivities = [
-  //         {
-  //           id: 1,
-  //           title: "Sample Activity",
-  //           description: "This is a sample activity for testing",
-  //           dueDate: new Date().toISOString().split('T')[0],
-  //           dueTime: "11:59 PM",
-  //           priority: "medium",
-  //           status: "pending",
-  //           subject: "Arlecchino Space",
-  //           type: "Assignment",
-  //           studentsCount: 25,
-  //           yearLevel: "4th Year",
-  //           spaceId: "arlecchino-space"
-  //         }
-  //       ];
-
-  //       setContextError(false);
-  //       setLoading(false);
-
-  //     } catch (error) {
-  //       console.error('Calendar initialization error:', error); // Debug log
-  //       // Even if everything fails, show basic calendar
-  //       const fallbackSpaces = [
-  //         {
-  //           space_uuid: "fallback-space",
-  //           space_name: "Arlecchino Space",
-  //           space_type: "User",
-  //           members: [{ user_id: 1, role: "admin" }]
-  //         }
-  //       ];
-  //       spacesRef.current = fallbackSpaces;
-  //       setAvailableSpaces(fallbackSpaces);
-  //       setContextError(true);
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   initializeCalendar();
-  // }, [refreshKey]); // Re-run when refreshKey changes
 
   // Handler for when a new task is created from the modal
   const handleTaskCreate = (newTask) => {
