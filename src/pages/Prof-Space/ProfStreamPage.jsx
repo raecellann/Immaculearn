@@ -21,6 +21,7 @@ import {
   FiMaximize2,
   FiSend,
   FiPaperclip,
+  FiMoreVertical,
 } from "react-icons/fi";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -73,6 +74,12 @@ const ProfStreamPage = () => {
   const [hasProfanity, setHasProfanity] = useState(false);
   const messagesEndRef = useRef(null);
   const MAX_CHAR = 250;
+  
+  const [showDeletePostDialog, setShowDeletePostDialog] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
+
+  // State for three-dot menu
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   // Cover photo state
   const [coverPhoto, setCoverPhoto] = useState(null);
@@ -507,18 +514,34 @@ const ProfStreamPage = () => {
   };
 
   const handleDeletePost = async (postId) => {
-      try {
-        const result = await postService.deletepost(postId);
-        if (result.success) {
-          toast.success("Post deleted successfully!");
-          refetchPosts();
-        } else {
-          toast.error(result.message || "Failed to delete post");
-        }
-      } catch (error) {
-        toast.error("Failed to delete post. Please try again.");
+    setPostToDelete(postId);
+    setShowDeletePostDialog(true);
+  };
+
+  const handleConfirmDeletePost = async () => {
+    if (!postToDelete) return;
+    
+    try {
+      const result = await postService.deletepost(postToDelete);
+      if (result.success) {
+        toast.success("Post deleted successfully!");
+        refetchPosts();
+      } else {
+        toast.error(result.message || "Failed to delete post");
       }
-    };
+    } catch (error) {
+      toast.error("Failed to delete post. Please try again.");
+    } finally {
+      setShowDeletePostDialog(false);
+      setPostToDelete(null);
+      setActiveDropdown(null);
+    }
+  };
+
+  const handleCancelDeletePost = () => {
+    setShowDeletePostDialog(false);
+    setPostToDelete(null);
+  };
   
 
   // Enter chat
@@ -888,6 +911,18 @@ const ProfStreamPage = () => {
     }
   }, [isDragging, dragStartY, dragStartPosition]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (activeDropdown && !event.target.closest('.dropdown-menu-container')) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [activeDropdown]);
+
   // Loading state
   if (
     (userLoading || spaceLoading || userSpacesLoading || courseSpacesLoading,
@@ -1138,10 +1173,10 @@ const ProfStreamPage = () => {
               </span>
               {isOwnerSpace && (
                 <>
-                  <div onClick={handleInviteMember}>
+                  <div onClick={handleInviteMember} className="mt-2">
                     <Button text="Add Member" />
                   </div>
-                  <div onClick={handlePendingInvitations} className="relative">
+                  <div onClick={handlePendingInvitations} className="relative mt-2">
                     <Button text="Pending Invites" />
                     {pendingInvitesCount > 0 && (
                       <span className="absolute top-1 -right-1 bg-red-500 text-white text-sm rounded-full w-6 h-6 flex items-center justify-center">
@@ -1677,7 +1712,7 @@ const ProfStreamPage = () => {
                     {posts.map((post) => (
                       <div
                         key={post.post_id}
-                        className="rounded-lg p-4 border"
+                        className="rounded-lg p-4 border relative"
                         style={{
                           backgroundColor: currentColors.background,
                           borderColor: isDarkMode
@@ -1715,10 +1750,37 @@ const ProfStreamPage = () => {
                             </div>
                           )}
 
+                          {/* Three-dot menu for owner - positioned at top right */}
                           {isOwnerSpace && (
-                            <DeleteButton
-                              onClick={() => handleDeletePost(post.post_id)}
-                            />
+                            <div className="dropdown-menu-container absolute top-2 right-4">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveDropdown(
+                                    activeDropdown === post.post_id ? null : post.post_id
+                                  );
+                                }}
+                                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                style={{ color: currentColors.textSecondary }}
+                              >
+                                <FiMoreVertical size={16} className="transform rotate-90" />
+                              </button>
+                              
+                              {/* Dropdown menu */}
+                              {activeDropdown === post.post_id && (
+                                <div className="dropdown-menu absolute right-0 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 min-w-32">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeletePost(post.post_id);
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                  >
+                                    Delete Post
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           )} 
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2">
@@ -2613,6 +2675,101 @@ const ProfStreamPage = () => {
                 </form>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* DELETE POST CONFIRMATION DIALOG */}
+      {showDeletePostDialog && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div
+            className="rounded-xl shadow-2xl max-w-md w-full border"
+            style={{
+              backgroundColor: currentColors.surface,
+              borderColor: currentColors.border,
+            }}
+          >
+            {/* Header */}
+            <div
+              className="p-4 border-b flex items-center justify-between"
+              style={{ borderColor: currentColors.border }}
+            >
+              <h3
+                className="text-xl font-semibold"
+                style={{ color: currentColors.text }}
+              >
+                Delete Post
+              </h3>
+              <button
+                onClick={handleCancelDeletePost}
+                className="transition-colors p-1 rounded-lg"
+                style={{ color: currentColors.textSecondary }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = currentColors.text;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = currentColors.textSecondary;
+                }}
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <p
+                className="mb-4"
+                style={{ color: currentColors.text }}
+              >
+                Are you sure you want to delete this post? This action cannot be undone.
+              </p>
+              <div
+                className="text-sm"
+                style={{ color: currentColors.textSecondary }}
+              >
+                This will permanently remove the post and all its comments from the space.
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div
+              className="flex justify-end p-6 border-t gap-3"
+              style={{ borderColor: currentColors.border }}
+            >
+              <button
+                onClick={handleCancelDeletePost}
+                className="px-4 py-2 rounded-lg font-medium transition-colors"
+                style={{
+                  backgroundColor: "transparent",
+                  color: currentColors.text,
+                  border: `1px solid ${currentColors.border}`,
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = currentColors.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "transparent";
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDeletePost}
+                className="px-4 py-2 rounded-lg font-medium transition-colors"
+                style={{
+                  backgroundColor: "#DC2626",
+                  color: "#ffffff",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = "#B91C1C";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "#DC2626";
+                }}
+              >
+                Delete Post
+              </button>
+            </div>
           </div>
         </div>
       )}
