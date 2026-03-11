@@ -81,7 +81,7 @@ adminApi.interceptors.response.use(
         refreshSubscribers = [];
 
         // 🔐 Redirect to login if refresh fails
-        window.location.href = "/admin/login";
+        window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }

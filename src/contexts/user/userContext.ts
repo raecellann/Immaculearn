@@ -13,7 +13,7 @@ export interface UserContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    login: (email: string, password: string) => Promise<boolean>;
+    login: (email: string, password: string) => Promise<any>;
     logout: (account_id: number) => Promise<void>;
     refreshUser: () => Promise<void>;
     checkAuth: () => Promise<boolean>;

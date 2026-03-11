@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
+import DeleteButton from "../component/DeleteButton.jsx";
+import { postService } from "../../services/postService.js";
 import Logout from "../component/logout";
 import ArchiveClassAlert from "../component/ArchiveClassAlert";
 import {
@@ -499,6 +501,21 @@ const ProfStreamPage = () => {
       setIsCreatingPost(false);
     }
   };
+
+  const handleDeletePost = async (postId) => {
+      try {
+        const result = await postService.deletepost(postId);
+        if (result.success) {
+          toast.success("Post deleted successfully!");
+          refetchPosts();
+        } else {
+          toast.error(result.message || "Failed to delete post");
+        }
+      } catch (error) {
+        toast.error("Failed to delete post. Please try again.");
+      }
+    };
+  
 
   // Enter chat
   const handleEnterChat = () => {
@@ -1562,6 +1579,12 @@ const ProfStreamPage = () => {
                                 "U"}
                             </div>
                           )}
+
+                          {isOwnerSpace && (
+                            <DeleteButton
+                              onClick={() => handleDeletePost(post.post_id)}
+                            />
+                          )} 
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2">
                               <span

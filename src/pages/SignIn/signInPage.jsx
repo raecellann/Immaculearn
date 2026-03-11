@@ -64,7 +64,12 @@ const LoginPage = () => {
     setFormError("");
 
     try {
-      const data = await login(email, password)
+      const data = await login(email, password);
+      
+      if (!data.success) {
+        toast.error(data.message || "Invalid email or password");
+        return;
+      }
 
       if (data.needsOnboarding) {
         sessionStorage.setItem("tempToken", data.tempToken);
@@ -76,8 +81,8 @@ const LoginPage = () => {
         navigate(`/home`);
       } else if (data.role === "professor") {
         navigate(`/prof/home`);
-      } else if (data.role === "admin") {
-        navigate(`/admin-dashboard`);
+      } else if (data.role === "Admin") {
+        navigate(`/admin/dashboard`);
       }
     } catch (err) {
       toast.error("Login failed. Please check your credentials and try again.");
@@ -112,7 +117,7 @@ const LoginPage = () => {
             navigate(`/home?role=${role}`);
           } else if (role === "professor") {
             navigate(`/prof/home?role=${role}`);
-          } else if (role === "admin") {
+          } else if (role === "Admin") {
             navigate(`/admin-dashboard?role=${role}`);
           } else {
             navigate("/");

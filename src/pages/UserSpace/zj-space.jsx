@@ -1862,13 +1862,11 @@ const UserPage = () => {
                           )}
 
 
-                          {
-                          (
+                          {isOwnerSpace && (
                             <DeleteButton
-                            onClick={() => handleDeletePost(post.post_id)}
+                              onClick={() => handleDeletePost(post.post_id)}
                             />
-                          )
-                        } 
+                          )} 
 
                           {/* Post Content */}
                           <div className="flex-1 min-w-0">

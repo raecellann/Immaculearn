@@ -93,7 +93,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       setIsLoading(true);
 
       const response = await adminApi.post(
-        "/admin/login",
+        "/login",
         { email, password },
         { withCredentials: true },
       );
@@ -121,6 +121,8 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     } catch (err) {
     } finally {
       updateAuthState(false, null);
+      // Redirect to login page
+      window.location.href = "/login";
     }
   };
 
