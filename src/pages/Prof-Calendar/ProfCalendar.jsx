@@ -707,20 +707,6 @@ const ProfCalendarPage = () => {
                                         ).toLocaleDateString()}
                                       </span>
                                     </div>
-                                    <div className="flex items-center justify-between mt-2">
-                                      <p
-                                        className="text-xs"
-                                        style={{
-                                          color: currentColors.textSecondary,
-                                        }}
-                                      >
-                                        {activity.studentsCount} students
-                                      </p>
-                                      <button className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                        <FiEdit size={10} />
-                                        Edit
-                                      </button>
-                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -801,20 +787,6 @@ const ProfCalendarPage = () => {
                                   >
                                     {activity.subject} • {activity.yearLevel}
                                   </p>
-                                </div>
-                                <div className="flex items-center justify-between mt-2">
-                                  <p
-                                    className="text-xs"
-                                    style={{
-                                      color: currentColors.textSecondary,
-                                    }}
-                                  >
-                                    {activity.studentsCount} students
-                                  </p>
-                                  <button className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                    <FiEdit size={10} />
-                                    Edit
-                                  </button>
                                 </div>
                               </div>
                             </div>
