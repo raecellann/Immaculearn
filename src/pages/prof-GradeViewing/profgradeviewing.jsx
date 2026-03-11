@@ -6,7 +6,12 @@ import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { toast } from "react-toastify";
 
 const ProfGradeRecordPage = () => {
-  const { courseSpaces, student_remarks, setCurrentSpace, updateStudentGrades } = useSpace();
+  const {
+    courseSpaces,
+    student_remarks,
+    setCurrentSpace,
+    updateStudentGrades,
+  } = useSpace();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -17,8 +22,8 @@ const ProfGradeRecordPage = () => {
   const [editForm, setEditForm] = useState({
     prelim: "",
     midterm: "",
-    preFinal: "",
-    final: "",
+    prefinal: "",
+    finals: "",
   });
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,7 +38,8 @@ const ProfGradeRecordPage = () => {
     setEditForm({
       prelim: student?.grades.prelim || "",
       midterm: student?.grades.midterm || "",
-      preFinal: student?.grades.preFinal || "",
+      prefinal: student?.grades.prefinals || "",
+      finals: student?.grades.finals || "",
     });
   };
 
@@ -47,7 +53,18 @@ const ProfGradeRecordPage = () => {
       return num.toFixed(2);
     };
 
-    const validGrades = ["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "5.00"];
+    const validGrades = [
+      "1.00",
+      "1.25",
+      "1.50",
+      "1.75",
+      "2.00",
+      "2.25",
+      "2.50",
+      "2.75",
+      "3.00",
+      "5.00",
+    ];
     const isValid = Object.values(editForm).every((value) => {
       if (value === "") return true; // Allow empty values
       const normalized = normalizeGrade(value);
@@ -55,7 +72,9 @@ const ProfGradeRecordPage = () => {
     });
 
     if (!isValid) {
-      toast.error("Invalid grade format. Please use valid numerical grades only.");
+      toast.error(
+        "Invalid grade format. Please use valid numerical grades only.",
+      );
       return;
     }
 
@@ -63,27 +82,28 @@ const ProfGradeRecordPage = () => {
     const gradesData = {
       student_id: editingStudent,
       space_uuid: selectedSubject.space_uuid,
-      prelim: normalizeGrade(editForm.prelim) || "",
-      midterm: normalizeGrade(editForm.midterm) || "",
-      prefinals: normalizeGrade(editForm.preFinal) || "",
+      prelim: parseFloat(normalizeGrade(editForm.prelim)) || 0,
+      midterm: parseFloat(normalizeGrade(editForm.midterm)) || 0,
+      prefinals: parseFloat(normalizeGrade(editForm.prefinal)) || 0,
+      finals: parseFloat(normalizeGrade(editForm.finals)) || 0,
     };
+
+    console.log(gradesData);
 
     try {
       updateStudentGrades.mutate(gradesData);
       setEditingStudent(null);
-      setEditForm({ prelim: "", midterm: "", preFinal: "", final: "" });
-
-    } catch(err) {
-      throw err
+      setEditForm({ prelim: "", midterm: "", prefinal: "", finals: "" });
+    } catch (err) {
+      throw err;
     } finally {
-      toast.success("Successfully Update Students Grade")
+      toast.success("Successfully Update Students Grade");
     }
-
   };
 
   const handleCancelEdit = () => {
     setEditingStudent(null);
-    setEditForm({ prelim: "", midterm: "", preFinal: "", final: "" });
+    setEditForm({ prelim: "", midterm: "", prefinal: "", finals: "" });
   };
 
   const handleInputChange = (field, value) => {
@@ -98,12 +118,29 @@ const ProfGradeRecordPage = () => {
     if (!fullName) return "";
     const parts = fullName.trim().split(/\s+/);
     if (parts.length === 1) return fullName;
-    
+
     // Handle common compound last names that start with lowercase particles
-    const compoundLastNames = ['de', 'del', 'de la','dela', 'delos', 'dos', 'da', 'do','san', 'santa', 'sta.', 'di', 'von', 'van', 'le', 'la'];
-    
+    const compoundLastNames = [
+      "de",
+      "del",
+      "de la",
+      "dela",
+      "delos",
+      "dos",
+      "da",
+      "do",
+      "san",
+      "santa",
+      "sta.",
+      "di",
+      "von",
+      "van",
+      "le",
+      "la",
+    ];
+
     let surnameEndIndex = parts.length - 1;
-    
+
     // Check if the second to last part is a compound last name particle
     if (parts.length >= 2) {
       const secondToLast = parts[parts.length - 2].toLowerCase();
@@ -111,10 +148,10 @@ const ProfGradeRecordPage = () => {
         surnameEndIndex = parts.length - 2;
       }
     }
-    
-    const surname = parts.slice(surnameEndIndex).join(' ');
-    const givenNames = parts.slice(0, surnameEndIndex).join(' ');
-    
+
+    const surname = parts.slice(surnameEndIndex).join(" ");
+    const givenNames = parts.slice(0, surnameEndIndex).join(" ");
+
     return `${surname}, ${givenNames}`;
   };
 
@@ -130,7 +167,8 @@ const ProfGradeRecordPage = () => {
   const getGradeDisplay = (grades, currentPeriod) => {
     // Check if any period has a grade
 
-    const hasAnyGrade = grades.prelim || grades.midterm || grades.prefinal;
+    const hasAnyGrade =
+      grades.prelim || grades.midterm || grades.prefinals || grades.finals;
 
     if (!hasAnyGrade) return "-";
 
@@ -144,31 +182,41 @@ const ProfGradeRecordPage = () => {
   // Calculate final average (college numerical grading scale)
   const calculateFinalAverage = (grades) => {
     if (!areAllQuartersCompleted(grades)) return "-";
-    
+
     const validGrades = [];
-    
+
     if (grades.prelim && grades.prelim !== "-" && grades.prelim !== "N/A") {
       validGrades.push(parseFloat(grades.prelim));
     }
     if (grades.midterm && grades.midterm !== "-" && grades.midterm !== "N/A") {
       validGrades.push(parseFloat(grades.midterm));
     }
-    if (grades.prefinal && grades.prefinal !== "-" && grades.prefinal !== "N/A") {
-      validGrades.push(parseFloat(grades.prefinal));
+    if (
+      grades.prefinals &&
+      grades.prefinals !== "-" &&
+      grades.prefinals !== "N/A"
+    ) {
+      validGrades.push(parseFloat(grades.prefinals));
     }
-    if (grades.final && grades.final !== "-" && grades.final !== "N/A") {
-      validGrades.push(parseFloat(grades.final));
+    if (grades.finals && grades.finals !== "-" && grades.finals !== "N/A") {
+      validGrades.push(parseFloat(grades.finals));
     }
 
     if (validGrades.length === 0) return "-";
-    
-    const average = validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
-    
-    // Convert to nearest valid grade
-    const validGradeValues = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 5.0];
+
+    const average =
+      validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
+
+    // If average is 3.5 or higher, mark as failed
+    if (average >= 3.5) {
+      return "5.00";
+    }
+
+    const validGradeValues = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0];
+
     let closestGrade = validGradeValues[0];
     let minDiff = Math.abs(average - closestGrade);
-    
+
     for (const grade of validGradeValues) {
       const diff = Math.abs(average - grade);
       if (diff < minDiff) {
@@ -176,7 +224,7 @@ const ProfGradeRecordPage = () => {
         closestGrade = grade;
       }
     }
-    
+
     return closestGrade.toFixed(2);
   };
 
@@ -184,8 +232,8 @@ const ProfGradeRecordPage = () => {
 
   // Check if all four quarters are completed
   const areAllQuartersCompleted = (grades) => {
-    const quarters = ['prelim', 'midterm', 'preFinal', 'final'];
-    return quarters.every(quarter => {
+    const quarters = ["prelim", "midterm", "prefinals", "finals"];
+    return quarters.every((quarter) => {
       const grade = grades[quarter];
       return grade && grade !== "-" && grade !== "N/A" && grade !== "";
     });
@@ -194,10 +242,10 @@ const ProfGradeRecordPage = () => {
   // Determine pass/fail status
   const getPassFailStatus = (grades) => {
     if (!areAllQuartersCompleted(grades)) return "-";
-    
+
     const average = calculateFinalAverage(grades);
     if (average === "-") return "-";
-    
+
     const numAverage = parseFloat(average);
     return numAverage <= 3.0 ? "PASSED" : "FAILED";
   };
@@ -218,7 +266,7 @@ const ProfGradeRecordPage = () => {
     .sort((a, b) => {
       const nameA = formatName(a.fullname);
       const nameB = formatName(b.fullname);
-      
+
       if (sortOrder === "asc") {
         return nameA.localeCompare(nameB);
       } else {
@@ -363,7 +411,7 @@ const ProfGradeRecordPage = () => {
                             accountId: member.account_id,
                             prelim: "",
                             midterm: "",
-                            preFinal: "",
+                            prefinal: "",
                             final: "",
                           }));
                           setStudentGrades(grades);
@@ -431,7 +479,7 @@ const ProfGradeRecordPage = () => {
                     🔍
                   </span>
                 </div>
-                
+
                 {/* Sort Dropdown */}
                 <div className="relative">
                   <button
@@ -446,7 +494,7 @@ const ProfGradeRecordPage = () => {
                     <span>Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
                     <span className="text-xs">▼</span>
                   </button>
-                  
+
                   {showSortDropdown && (
                     <div
                       className="absolute top-full mt-1 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg border z-10 min-w-[120px]"
@@ -463,7 +511,12 @@ const ProfGradeRecordPage = () => {
                         className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         style={{
                           color: currentColors.text,
-                          backgroundColor: sortOrder === "asc" ? (isDarkMode ? "#374151" : "#f3f4f6") : "transparent",
+                          backgroundColor:
+                            sortOrder === "asc"
+                              ? isDarkMode
+                                ? "#374151"
+                                : "#f3f4f6"
+                              : "transparent",
                         }}
                       >
                         Ascending (A-Z)
@@ -476,7 +529,12 @@ const ProfGradeRecordPage = () => {
                         className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         style={{
                           color: currentColors.text,
-                          backgroundColor: sortOrder === "desc" ? (isDarkMode ? "#374151" : "#f3f4f6") : "transparent",
+                          backgroundColor:
+                            sortOrder === "desc"
+                              ? isDarkMode
+                                ? "#374151"
+                                : "#f3f4f6"
+                              : "transparent",
                         }}
                       >
                         Descending (Z-A)
@@ -520,7 +578,7 @@ const ProfGradeRecordPage = () => {
                         </p>
                         {editingStudent === student.account_id ? (
                           <div className="space-y-2">
-                            {["prelim", "midterm", "preFinal", "final"].map(
+                            {["prelim", "midterm", "prefinal", "finals"].map(
                               (field) => (
                                 <div
                                   key={field}
@@ -610,14 +668,14 @@ const ProfGradeRecordPage = () => {
                               <p
                                 style={{
                                   color: getGradeColor(
-                                    getGradeDisplay(student?.grades, "final"),
+                                    getGradeDisplay(student?.grades, "finals"),
                                   ),
                                 }}
                               >
                                 Final:{" "}
-                                {getGradeDisplay(student?.grades, "final")}
+                                {getGradeDisplay(student?.grades, "finals")}
                               </p>
-                              {areAllQuartersCompleted(student?.grades) && (
+                              {student?.grades?.finals && student?.grades.finals !== "-" && student?.grades.finals !== "N/A" && student?.grades.finals !== "" ? (
                                 <>
                                   <p
                                     style={{
@@ -638,7 +696,7 @@ const ProfGradeRecordPage = () => {
                                     {getPassFailStatus(student?.grades)}
                                   </p>
                                 </>
-                              )}
+                              ) : null}
                             </div>
                             <button
                               onClick={() => handleEditGrade(student)}
@@ -748,66 +806,251 @@ const ProfGradeRecordPage = () => {
                               className="divide-y"
                               style={{ borderColor: currentColors.border }}
                             >
-                              {filteredAndSortedStudents?.map((student, index) => (
-                                <tr
-                                  key={index}
-                                  style={{
-                                    backgroundColor:
-                                      index % 2 === 0
-                                        ? currentColors.background
-                                        : currentColors.hover,
-                                    transition: "background-color 0.2s ease",
-                                  }}
-                                >
-                                  <td
-                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm border-r"
+                              {filteredAndSortedStudents?.map(
+                                (student, index) => (
+                                  <tr
+                                    key={index}
                                     style={{
-                                      color: currentColors.text,
-                                      borderColor: currentColors.border,
+                                      backgroundColor:
+                                        index % 2 === 0
+                                          ? currentColors.background
+                                          : currentColors.hover,
+                                      transition: "background-color 0.2s ease",
                                     }}
                                   >
-                                    {formatName(student.fullname)}
-                                  </td>
-                                  {editingStudent === student.account_id ? (
-                                    <>
-                                      {["prelim", "midterm", "preFinal", "final"].map((field) => (
+                                    <td
+                                      className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm border-r"
+                                      style={{
+                                        color: currentColors.text,
+                                        borderColor: currentColors.border,
+                                      }}
+                                    >
+                                      {formatName(student.fullname)}
+                                    </td>
+                                    {editingStudent === student.account_id ? (
+                                      <>
+                                        {[
+                                          "prelim",
+                                          "midterm",
+                                          "prefinal",
+                                          "finals",
+                                        ].map((field) => (
+                                          <td
+                                            key={field}
+                                            className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap border-r text-center"
+                                            style={{
+                                              borderColor: currentColors.border,
+                                            }}
+                                          >
+                                            <input
+                                              type="text"
+                                              value={editForm[field]}
+                                              onChange={(e) =>
+                                                handleInputChange(
+                                                  field,
+                                                  e.target.value,
+                                                )
+                                              }
+                                              className="w-16 sm:w-20 rounded px-2 py-1 text-sm focus:outline-none text-center mx-auto"
+                                              style={{
+                                                backgroundColor: isDarkMode
+                                                  ? "#1F242D"
+                                                  : "#f8fafc",
+                                                border: `1px solid ${currentColors.border}`,
+                                                color: currentColors.text,
+                                              }}
+                                              placeholder="1.0-5.0"
+                                            />
+                                          </td>
+                                        ))}
+                                        <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
+                                          <div className="flex gap-2 justify-center">
+                                            <button
+                                              onClick={handleSaveGrade}
+                                              className="text-xs sm:text-sm bg-transparent border-none p-1 font-medium transition-colors"
+                                              style={{
+                                                color: isDarkMode
+                                                  ? "#10b981"
+                                                  : "#059669",
+                                              }}
+                                              onMouseEnter={(e) =>
+                                                (e.currentTarget.style.opacity =
+                                                  "0.8")
+                                              }
+                                              onMouseLeave={(e) =>
+                                                (e.currentTarget.style.opacity =
+                                                  "1")
+                                              }
+                                            >
+                                              Save
+                                            </button>
+                                            <span
+                                              style={{
+                                                color:
+                                                  currentColors.textSecondary,
+                                              }}
+                                            >
+                                              |
+                                            </span>
+                                            <button
+                                              onClick={handleCancelEdit}
+                                              className="text-xs sm:text-sm bg-transparent border-none p-1 font-medium transition-colors"
+                                              style={{
+                                                color:
+                                                  currentColors.textSecondary,
+                                              }}
+                                              onMouseEnter={(e) =>
+                                                (e.currentTarget.style.opacity =
+                                                  "0.8")
+                                              }
+                                              onMouseLeave={(e) =>
+                                                (e.currentTarget.style.opacity =
+                                                  "1")
+                                              }
+                                            >
+                                              Cancel
+                                            </button>
+                                          </div>
+                                        </td>
+                                      </>
+                                    ) : (
+                                      <>
                                         <td
-                                          key={field}
-                                          className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap border-r text-center"
+                                          className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
                                           style={{
                                             borderColor: currentColors.border,
+                                            color: getGradeColor(
+                                              getGradeDisplay(
+                                                student?.grades,
+                                                "prelim",
+                                              ),
+                                            ),
                                           }}
                                         >
-                                          <input
-                                            type="text"
-                                            value={editForm[field]}
-                                            onChange={(e) =>
-                                              handleInputChange(
-                                                field,
-                                                e.target.value,
-                                              )
-                                            }
-                                            className="w-16 sm:w-20 rounded px-2 py-1 text-sm focus:outline-none text-center mx-auto"
-                                            style={{
-                                              backgroundColor: isDarkMode
-                                                ? "#1F242D"
-                                                : "#f8fafc",
-                                              border: `1px solid ${currentColors.border}`,
-                                              color: currentColors.text,
-                                            }}
-                                            placeholder="1.0-5.0"
-                                          />
+                                          {getGradeDisplay(
+                                            student?.grades,
+                                            "prelim",
+                                          )}
                                         </td>
-                                      ))}
-                                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap">
-                                        <div className="flex gap-2 justify-center">
+                                        <td
+                                          className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                          style={{
+                                            borderColor: currentColors.border,
+                                            color: getGradeColor(
+                                              getGradeDisplay(
+                                                student?.grades,
+                                                "midterm",
+                                              ),
+                                            ),
+                                          }}
+                                        >
+                                          {getGradeDisplay(
+                                            student?.grades,
+                                            "midterm",
+                                          )}
+                                        </td>
+                                        <td
+                                          className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                          style={{
+                                            borderColor: currentColors.border,
+                                            color: getGradeColor(
+                                              getGradeDisplay(
+                                                student?.grades,
+                                                "prefinals",
+                                              ),
+                                            ),
+                                          }}
+                                        >
+                                          {getGradeDisplay(
+                                            student?.grades,
+                                            "prefinals",
+                                          )}
+                                        </td>
+                                        <td
+                                          className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                          style={{
+                                            borderColor: currentColors.border,
+                                            color: getGradeColor(
+                                              getGradeDisplay(
+                                                student?.grades,
+                                                "finals",
+                                              ),
+                                            ),
+                                          }}
+                                        >
+                                          {getGradeDisplay(
+                                            student?.grades,
+                                            "finals",
+                                          )}
+                                        </td>
+                                        {student?.grades?.finals && student?.grades.finals !== "-" && student?.grades.finals !== "N/A" && student?.grades.finals !== "" ? (
+                                          <>
+                                            <td
+                                              className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                              style={{
+                                                borderColor:
+                                                  currentColors.border,
+                                                color: getPassFailColor(
+                                                  student?.grades,
+                                                ),
+                                              }}
+                                            >
+                                              {calculateFinalAverage(
+                                                student?.grades,
+                                              )}
+                                            </td>
+                                            <td
+                                              className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                              style={{
+                                                borderColor:
+                                                  currentColors.border,
+                                                color: getPassFailColor(
+                                                  student?.grades,
+                                                ),
+                                                fontWeight: "bold",
+                                              }}
+                                            >
+                                              {getPassFailStatus(
+                                                student?.grades,
+                                              )}
+                                            </td>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <td
+                                              className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                              style={{
+                                                borderColor:
+                                                  currentColors.border,
+                                                color:
+                                                  currentColors.textSecondary,
+                                              }}
+                                            >
+                                              -
+                                            </td>
+                                            <td
+                                              className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                              style={{
+                                                borderColor:
+                                                  currentColors.border,
+                                                color:
+                                                  currentColors.textSecondary,
+                                              }}
+                                            >
+                                              -
+                                            </td>
+                                          </>
+                                        )}
+                                        <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-center">
                                           <button
-                                            onClick={handleSaveGrade}
+                                            onClick={() =>
+                                              handleEditGrade(student)
+                                            }
                                             className="text-xs sm:text-sm bg-transparent border-none p-1 font-medium transition-colors"
                                             style={{
                                               color: isDarkMode
-                                                ? "#10b981"
-                                                : "#059669",
+                                                ? "#60a5fa"
+                                                : "#2563eb",
                                             }}
                                             onMouseEnter={(e) =>
                                               (e.currentTarget.style.opacity =
@@ -818,178 +1061,14 @@ const ProfGradeRecordPage = () => {
                                                 "1")
                                             }
                                           >
-                                            Save
+                                            Edit Grade
                                           </button>
-                                          <span
-                                            style={{
-                                              color:
-                                                currentColors.textSecondary,
-                                            }}
-                                          >
-                                            |
-                                          </span>
-                                          <button
-                                            onClick={handleCancelEdit}
-                                            className="text-xs sm:text-sm bg-transparent border-none p-1 font-medium transition-colors"
-                                            style={{
-                                              color:
-                                                currentColors.textSecondary,
-                                            }}
-                                            onMouseEnter={(e) =>
-                                              (e.currentTarget.style.opacity =
-                                                "0.8")
-                                            }
-                                            onMouseLeave={(e) =>
-                                              (e.currentTarget.style.opacity =
-                                                "1")
-                                            }
-                                          >
-                                            Cancel
-                                          </button>
-                                        </div>
-                                      </td>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <td
-                                        className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
-                                        style={{
-                                          borderColor: currentColors.border,
-                                          color: getGradeColor(
-                                            getGradeDisplay(
-                                              student?.grades,
-                                              "prelim",
-                                            ),
-                                          ),
-                                        }}
-                                      >
-                                        {getGradeDisplay(
-                                          student?.grades,
-                                          "prelim",
-                                        )}
-                                      </td>
-                                      <td
-                                        className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
-                                        style={{
-                                          borderColor: currentColors.border,
-                                          color: getGradeColor(
-                                            getGradeDisplay(
-                                              student?.grades,
-                                              "midterm",
-                                            ),
-                                          ),
-                                        }}
-                                      >
-                                        {getGradeDisplay(
-                                          student?.grades,
-                                          "midterm",
-                                        )}
-                                      </td>
-                                      <td
-                                        className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
-                                        style={{
-                                          borderColor: currentColors.border,
-                                          color: getGradeColor(
-                                            getGradeDisplay(
-                                              student,
-                                              "preFinal",
-                                            ),
-                                          ),
-                                        }}
-                                      >
-                                        {getGradeDisplay(
-                                          student?.grades,
-                                          "preFinal",
-                                        )}
-                                      </td>
-                                      <td
-                                        className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
-                                        style={{
-                                          borderColor: currentColors.border,
-                                          color: getGradeColor(
-                                            getGradeDisplay(
-                                              student?.grades,
-                                              "final",
-                                            ),
-                                          ),
-                                        }}
-                                      >
-                                        {getGradeDisplay(
-                                          student?.grades,
-                                          "final",
-                                        )}
-                                      </td>
-                                      {areAllQuartersCompleted(student?.grades) ? (
-                                        <>
-                                          <td
-                                            className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
-                                            style={{
-                                              borderColor: currentColors.border,
-                                              color: getPassFailColor(student?.grades),
-                                            }}
-                                          >
-                                            {calculateFinalAverage(student?.grades)}
-                                          </td>
-                                          <td
-                                            className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
-                                            style={{
-                                              borderColor: currentColors.border,
-                                              color: getPassFailColor(student?.grades),
-                                              fontWeight: "bold",
-                                            }}
-                                          >
-                                            {getPassFailStatus(student?.grades)}
-                                          </td>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <td
-                                            className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
-                                            style={{
-                                              borderColor: currentColors.border,
-                                              color: currentColors.textSecondary,
-                                            }}
-                                          >
-                                            -
-                                          </td>
-                                          <td
-                                            className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
-                                            style={{
-                                              borderColor: currentColors.border,
-                                              color: currentColors.textSecondary,
-                                            }}
-                                          >
-                                            -
-                                          </td>
-                                        </>
-                                      )}
-                                      <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-center">
-                                        <button
-                                          onClick={() =>
-                                            handleEditGrade(student)
-                                          }
-                                          className="text-xs sm:text-sm bg-transparent border-none p-1 font-medium transition-colors"
-                                          style={{
-                                            color: isDarkMode
-                                              ? "#60a5fa"
-                                              : "#2563eb",
-                                          }}
-                                          onMouseEnter={(e) =>
-                                            (e.currentTarget.style.opacity =
-                                              "0.8")
-                                          }
-                                          onMouseLeave={(e) =>
-                                            (e.currentTarget.style.opacity =
-                                              "1")
-                                          }
-                                        >
-                                          Edit Grade
-                                        </button>
-                                      </td>
-                                    </>
-                                  )}
-                                </tr>
-                              ))}
+                                        </td>
+                                      </>
+                                    )}
+                                  </tr>
+                                ),
+                              )}
                             </tbody>
                           </table>
                         </div>

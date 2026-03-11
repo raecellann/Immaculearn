@@ -119,7 +119,8 @@ export interface SpaceContextType {
       space_uuid: string;
       prelim: number;
       midterm: number;
-      prefinals: number; },
+      prefinals: number;
+      finals: number; },
     unknown
   >;
 

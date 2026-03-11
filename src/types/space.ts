@@ -184,4 +184,5 @@ export type StudentData = {
     prelim: number,
     midterm: number,
     prefinals: number,
+    finals: number,
 }

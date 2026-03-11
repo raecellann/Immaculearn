@@ -503,12 +503,14 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       prelim,
       midterm,
       prefinals,
+      finals,
     }: {
       student_id: number;
       space_uuid: string;
       prelim: number;
       midterm: number;
       prefinals: number;
+      finals: number;
     }) =>
       spaceService.updateGrade(
         student_id,
@@ -516,6 +518,7 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
         prelim,
         midterm,
         prefinals,
+        finals,
       ),
     onSuccess: (_, variables) => {
       // Invalidate both tasks queries to refetch updated data
