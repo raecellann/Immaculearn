@@ -39,24 +39,33 @@ const ProfGradeRecordPage = () => {
 
   const handleSaveGrade = () => {
     // Validate grades before saving
+    const normalizeGrade = (grade) => {
+      if (!grade) return grade;
+      // Convert to standard format (e.g., "1" -> "1.00", "1.0" -> "1.00", "1.00" -> "1.00")
+      const num = parseFloat(grade);
+      if (isNaN(num)) return grade;
+      return num.toFixed(2);
+    };
+
+    const validGrades = ["1.00", "1.25", "1.50", "1.75", "2.00", "2.25", "2.50", "2.75", "3.00", "5.00"];
     const isValid = Object.values(editForm).every((value) => {
       if (value === "") return true; // Allow empty values
-      const numValue = parseInt(value);
-      return numValue >= 30 && numValue <= 100;
+      const normalized = normalizeGrade(value);
+      return validGrades.includes(normalized);
     });
 
     if (!isValid) {
-      toast.error("Grades must be between 30 and 100");
+      toast.error("Invalid grade format. Please use valid numerical grades only.");
       return;
     }
 
-    // Prepare grades data for mutation
+    // Prepare grades data for mutation (normalize to standard format)
     const gradesData = {
       student_id: editingStudent,
       space_uuid: selectedSubject.space_uuid,
-      prelim: editForm.prelim ? parseInt(editForm.prelim) : 0,
-      midterm: editForm.midterm ? parseInt(editForm.midterm) : 0,
-      prefinals: editForm.preFinal ? parseInt(editForm.preFinal) : 0,
+      prelim: normalizeGrade(editForm.prelim) || "",
+      midterm: normalizeGrade(editForm.midterm) || "",
+      prefinals: normalizeGrade(editForm.preFinal) || "",
     };
 
     try {
@@ -78,8 +87,8 @@ const ProfGradeRecordPage = () => {
   };
 
   const handleInputChange = (field, value) => {
-    if (value === "" || /^\d*$/.test(value)) {
-      // Allow empty value or any number, but validate on save
+    if (value === "" || /^[1-5](?:\.\d{0,2})?$/.test(value)) {
+      // Allow empty value or valid grade format (1-5 with optional 1-2 decimal places)
       setEditForm((prev) => ({ ...prev, [field]: value }));
     }
   };
@@ -112,9 +121,9 @@ const ProfGradeRecordPage = () => {
   // Get grade color based on value
   const getGradeColor = (grade) => {
     if (!grade || grade === "-" || grade === "N/A") return currentColors.text;
-    const numGrade = parseInt(grade);
-    if (numGrade >= 75) return "#10b981"; // green
-    return "#ef4444"; // red
+    const numGrade = parseFloat(grade);
+    if (numGrade <= 3.0) return "#10b981"; // green for passing grades
+    return "#ef4444"; // red for failing grade (5.0)
   };
 
   // Get display value for grade with N/A logic
@@ -154,25 +163,24 @@ const ProfGradeRecordPage = () => {
     if (validGrades.length === 0) return "-";
     
     const average = validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
-    return average.toFixed(2);
+    
+    // Convert to nearest valid grade
+    const validGradeValues = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 5.0];
+    let closestGrade = validGradeValues[0];
+    let minDiff = Math.abs(average - closestGrade);
+    
+    for (const grade of validGradeValues) {
+      const diff = Math.abs(average - grade);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestGrade = grade;
+      }
+    }
+    
+    return closestGrade.toFixed(2);
   };
 
-  // Convert numerical grade to college scale (1.0 - 5.0)
-  const convertToCollegeScale = (numericalGrade) => {
-    if (numericalGrade === "-") return "-";
-    
-    const num = parseFloat(numericalGrade);
-    if (num >= 97) return "1.0";
-    if (num >= 94) return "1.25";
-    if (num >= 91) return "1.5";
-    if (num >= 88) return "1.75";
-    if (num >= 85) return "2.0";
-    if (num >= 82) return "2.25";
-    if (num >= 79) return "2.5";
-    if (num >= 76) return "2.75";
-    if (num >= 75) return "3.0";
-    return "5.0";
-  };
+  // Remove the conversion function since we're already using college scale
 
   // Check if all four quarters are completed
   const areAllQuartersCompleted = (grades) => {
@@ -191,7 +199,7 @@ const ProfGradeRecordPage = () => {
     if (average === "-") return "-";
     
     const numAverage = parseFloat(average);
-    return numAverage >= 75 ? "PASSED" : "FAILED";
+    return numAverage <= 3.0 ? "PASSED" : "FAILED";
   };
 
   // Get color for pass/fail status
@@ -540,7 +548,7 @@ const ProfGradeRecordPage = () => {
                                       border: `1px solid ${currentColors.border}`,
                                       color: currentColors.text,
                                     }}
-                                    placeholder="0-100"
+                                    placeholder="1.0-5.0"
                                   />
                                 </div>
                               ),
@@ -618,7 +626,7 @@ const ProfGradeRecordPage = () => {
                                     }}
                                   >
                                     Final Average:{" "}
-                                    {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                                    {calculateFinalAverage(student?.grades)}
                                   </p>
                                   <p
                                     style={{
@@ -787,7 +795,7 @@ const ProfGradeRecordPage = () => {
                                               border: `1px solid ${currentColors.border}`,
                                               color: currentColors.text,
                                             }}
-                                            placeholder="30-100"
+                                            placeholder="1.0-5.0"
                                           />
                                         </td>
                                       ))}
@@ -920,7 +928,7 @@ const ProfGradeRecordPage = () => {
                                               color: getPassFailColor(student?.grades),
                                             }}
                                           >
-                                            {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                                            {calculateFinalAverage(student?.grades)}
                                           </td>
                                           <td
                                             className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"

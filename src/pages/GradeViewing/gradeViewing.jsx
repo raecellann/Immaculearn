@@ -48,9 +48,9 @@ const GradeViewing = () => {
   // Get grade color based on value
   const getGradeColor = (grade) => {
     if (!grade || grade === "-" || grade === "N/A") return currentColors.text;
-    const numGrade = parseInt(grade);
-    if (numGrade >= 75) return "#10b981"; // green
-    return "#ef4444"; // red
+    const numGrade = parseFloat(grade);
+    if (numGrade <= 3.0) return "#10b981"; // green for passing grades
+    return "#ef4444"; // red for failing grade (5.0)
   };
 
   // Get display value for grade with N/A logic
@@ -98,25 +98,24 @@ const GradeViewing = () => {
     if (validGrades.length === 0) return "-";
     
     const average = validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
-    return average.toFixed(2);
+    
+    // Convert to nearest valid grade
+    const validGradeValues = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 5.0];
+    let closestGrade = validGradeValues[0];
+    let minDiff = Math.abs(average - closestGrade);
+    
+    for (const grade of validGradeValues) {
+      const diff = Math.abs(average - grade);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestGrade = grade;
+      }
+    }
+    
+    return closestGrade.toFixed(2);
   };
 
-  // Convert numerical grade to college scale (1.0 - 5.0)
-  const convertToCollegeScale = (numericalGrade) => {
-    if (numericalGrade === "-") return "-";
-    
-    const num = parseFloat(numericalGrade);
-    if (num >= 97) return "1.0";
-    if (num >= 94) return "1.25";
-    if (num >= 91) return "1.5";
-    if (num >= 88) return "1.75";
-    if (num >= 85) return "2.0";
-    if (num >= 82) return "2.25";
-    if (num >= 79) return "2.5";
-    if (num >= 76) return "2.75";
-    if (num >= 75) return "3.0";
-    return "5.0";
-  };
+  // Remove the conversion function since we're already using college scale
 
   // Determine pass/fail status
   const getPassFailStatus = (grades) => {
@@ -126,7 +125,7 @@ const GradeViewing = () => {
     if (average === "-") return "-";
     
     const numAverage = parseFloat(average);
-    return numAverage >= 75 ? "PASSED" : "FAILED";
+    return numAverage <= 3.0 ? "PASSED" : "FAILED";
   };
 
   // Get color for pass/fail status
@@ -447,7 +446,7 @@ const GradeViewing = () => {
                                 color: getPassFailColor(student?.grades),
                               }}
                             >
-                              {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                              {calculateFinalAverage(student?.grades)}
                             </p>
                           </div>
                           <div
@@ -640,7 +639,7 @@ const GradeViewing = () => {
                                       color: getPassFailColor(student?.grades),
                                     }}
                                   >
-                                    {convertToCollegeScale(calculateFinalAverage(student?.grades))}
+                                    {calculateFinalAverage(student?.grades)}
                                   </td>
                                   <td
                                     className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center font-medium"
