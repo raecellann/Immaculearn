@@ -703,9 +703,11 @@ const HomePage1 = () => {
             </div>
 
             {/* Announcements by Admin (Mobile/Tablet only) */}
-            <div className="xl:hidden mb-8">
-              <StudentAnnouncementByAdmin />
-            </div>
+            {user?.role !== 'PROFESSOR' && (
+              <div className="xl:hidden mb-8">
+                <StudentAnnouncementByAdmin />
+              </div>
+            )}
 
             {/* Your Spaces */}
             <section className="mb-12">
@@ -1418,7 +1420,7 @@ const HomePage1 = () => {
             </div>
 
             {/* Announcements by Admin */}
-            <StudentAnnouncementByAdmin />
+            {user?.role !== 'PROFESSOR' && <StudentAnnouncementByAdmin />}
           </div>
         </div>
 

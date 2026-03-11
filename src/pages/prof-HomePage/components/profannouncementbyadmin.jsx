@@ -321,6 +321,21 @@ const AnnouncementByAdmin = () => {
                 >
                   {selectedAnnouncement.content}
                 </p>
+
+                {/* Display images if available */}
+                {selectedAnnouncement.images && selectedAnnouncement.images.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {selectedAnnouncement.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`Announcement Image ${index + 1}`}
+                        className="w-full h-auto object-cover rounded-lg"
+                        style={{ maxHeight: "400px" }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

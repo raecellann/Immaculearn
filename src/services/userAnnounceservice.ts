@@ -8,6 +8,7 @@ import {
 class AnnouncementService {
   private cache = new Map<string, { data: ApiResponse<Announcement[]>; timestamp: number }>();
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  private pendingRequests = new Map<string, Promise<ApiResponse<Announcement[]>>>();
 
   // Check if cache is valid
   private isCacheValid(key: string): boolean {
@@ -33,49 +34,92 @@ class AnnouncementService {
 
   // Get announcements for students
   async getStudentAnnouncements(): Promise<ApiResponse<Announcement[]>> {
-    try {
-      // Check cache first
-      const cached = this.getCachedData('students');
-      if (cached) return cached;
+    const cacheKey = 'students';
+    
+    // Check cache first
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
 
-      const response = await api.get<ApiResponse<Announcement[]>>("/announce/students");
-      
-      // Cache the response
-      this.setCachedData('students', response.data);
-      
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to fetch student announcements",
-      };
+    // Check if there's already a pending request for this endpoint
+    if (this.pendingRequests.has(cacheKey)) {
+      return this.pendingRequests.get(cacheKey)!;
     }
+
+    // Create the request promise
+    const requestPromise = (async () => {
+      try {
+        const response = await api.get<ApiResponse<Announcement[]>>("/announce/students");
+        
+        // Cache the response
+        this.setCachedData(cacheKey, response.data);
+        
+        // Remove from pending requests
+        this.pendingRequests.delete(cacheKey);
+        
+        return response.data;
+      } catch (error: any) {
+        // Remove from pending requests on error
+        this.pendingRequests.delete(cacheKey);
+        
+        return {
+          success: false,
+          message: error.response?.data?.message || "Failed to fetch student announcements",
+        };
+      }
+    })();
+
+    // Store the pending request
+    this.pendingRequests.set(cacheKey, requestPromise);
+    
+    return requestPromise;
   }
 
   // Get announcements for professors
   async getProfessorAnnouncements(): Promise<ApiResponse<Announcement[]>> {
-    try {
-      // Check cache first
-      const cached = this.getCachedData('professors');
-      if (cached) return cached;
+    const cacheKey = 'professors';
+    
+    // Check cache first
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
 
-      const response = await api.get<ApiResponse<Announcement[]>>("/announce/professors");
-      
-      // Cache the response
-      this.setCachedData('professors', response.data);
-      
-      return response.data;
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to fetch professor announcements",
-      };
+    // Check if there's already a pending request for this endpoint
+    if (this.pendingRequests.has(cacheKey)) {
+      return this.pendingRequests.get(cacheKey)!;
     }
+
+    // Create the request promise
+    const requestPromise = (async () => {
+      try {
+        const response = await api.get<ApiResponse<Announcement[]>>("/announce/professors");
+        
+        // Cache the response
+        this.setCachedData(cacheKey, response.data);
+        
+        // Remove from pending requests
+        this.pendingRequests.delete(cacheKey);
+        
+        return response.data;
+      } catch (error: any) {
+        // Remove from pending requests on error
+        this.pendingRequests.delete(cacheKey);
+        
+        return {
+          success: false,
+          message: error.response?.data?.message || "Failed to fetch professor announcements",
+        };
+      }
+    })();
+
+    // Store the pending request
+    this.pendingRequests.set(cacheKey, requestPromise);
+    
+    return requestPromise;
   }
 
   // Get all announcements (both students and professors)
   async getAllAnnouncements(): Promise<ApiResponse<Announcement[]>> {
     try {
+      // Fetch both announcements simultaneously (for admin use)
       const [studentResponse, professorResponse] = await Promise.all([
         this.getStudentAnnouncements(),
         this.getProfessorAnnouncements()
@@ -108,47 +152,45 @@ class AnnouncementService {
 
   // Get announcements filtered by target audience (optimized - single API call)
   async getAnnouncementsByAudience(audience: string): Promise<ApiResponse<Announcement[]>> {
-    try {
-      let response: ApiResponse<Announcement[]>;
+    const cacheKey = audience.toLowerCase();
+    
+    // Check cache first
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
 
-      // For students, only fetch student announcements (more efficient)
-      if (audience === "STUDENTS") {
-        response = await this.getStudentAnnouncements();
-      } 
-      // For professors, only fetch professor announcements (more efficient)
-      else if (audience === "PROFESSORS") {
-        response = await this.getProfessorAnnouncements();
-      } 
-      // For any other audience, fetch all and filter
-      else {
-        response = await this.getAllAnnouncements();
-      }
-
-      if (!response.success || !response.data) {
-        return response;
-      }
-
-      // Filter announcements by target audience (only needed for "ALL" case)
-      let filteredAnnouncements = response.data;
-      if (audience !== "STUDENTS" && audience !== "PROFESSORS") {
-        filteredAnnouncements = response.data.filter(announcement => 
-          announcement.target_audience === audience || 
-          announcement.target_audience === "ALL"
-        );
-      }
-
-      return {
-        success: true,
-        data: filteredAnnouncements,
-        message: `${audience} announcements retrieved successfully`,
-        total: filteredAnnouncements.length
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to fetch announcements by audience",
-      };
+    // Check if there's already a pending request for this endpoint
+    if (this.pendingRequests.has(cacheKey)) {
+      return this.pendingRequests.get(cacheKey)!;
     }
+
+    // Create the request promise
+    const requestPromise = (async () => {
+      try {
+        const url = `/announce/${cacheKey}`;
+        const response = await api.get<ApiResponse<Announcement[]>>(url);
+        
+        // Cache the response
+        this.setCachedData(cacheKey, response.data);
+        
+        // Remove from pending requests
+        this.pendingRequests.delete(cacheKey);
+        
+        return response.data;
+      } catch (error: any) {
+        // Remove from pending requests on error
+        this.pendingRequests.delete(cacheKey);
+        
+        return {
+          success: false,
+          message: error.response?.data?.message || `Failed to fetch ${audience} announcements`,
+        };
+      }
+    })();
+
+    // Store the pending request
+    this.pendingRequests.set(cacheKey, requestPromise);
+    
+    return requestPromise;
   }
 }
 

@@ -27,7 +27,7 @@ const ProfSidebar = ({ isMinimized = false, onToggleMinimize }) => {
   const { user, logout } = useUser();
   const [showLogout, setShowLogout] = useState(false);
   const location = useLocation();
-  const { unreadNotificationsCount } = useNotificationCount();
+  const { unreadNotificationsCount } = useNotificationCount('PROFESSOR');
 
   // Load minimize state from localStorage on mount
   const [localMinimized, setLocalMinimized] = useState(() => {

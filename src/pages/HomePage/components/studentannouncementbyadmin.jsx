@@ -4,21 +4,6 @@ import { Megaphone } from "lucide-react";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 import { announcementService } from "../../../services/userAnnounceservice";
 
-const priorityStyles = {
-  high: {
-    dot: "bg-red-500",
-    badge: "bg-red-100 text-red-700",
-    badgeDark: "bg-red-900/40 text-red-300",
-    label: "Urgent",
-  },
-  normal: {
-    dot: "bg-blue-500",
-    badge: "bg-blue-100 text-blue-700",
-    badgeDark: "bg-blue-900/40 text-blue-300",
-    label: "Info",
-  },
-};
-
 const StudentAnnouncementByAdmin = () => {
   const navigate = useNavigate();
   const { isDarkMode, colors } = useSpaceTheme();
@@ -300,7 +285,23 @@ const StudentAnnouncementByAdmin = () => {
                 >
                   {selectedAnnouncement.content}
                 </p>
+
+                {/* Display images if available */}
+                {selectedAnnouncement.images && selectedAnnouncement.images.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {selectedAnnouncement.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`Announcement Image ${index + 1}`}
+                        className="w-full h-auto object-cover rounded-lg"
+                        style={{ maxHeight: "400px" }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
+
             </div>
 
             {/* Footer */}

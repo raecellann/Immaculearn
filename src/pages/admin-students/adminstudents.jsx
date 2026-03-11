@@ -23,6 +23,7 @@ const AdminStudents = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewAll, setViewAll] = useState(false);
+  const [isAddingStudent, setIsAddingStudent] = useState(false);
   const itemsPerPage = 10;
   const [sortBy, setSortBy] = useState("lastName");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -332,6 +333,8 @@ const AdminStudents = () => {
   };
 
   const handleAddStudent = async () => {
+  if (isAddingStudent) return; // Prevent multiple clicks
+  
   if (!newStudent.email) {
     toast.error("Email is required");
     return;
@@ -353,6 +356,8 @@ const AdminStudents = () => {
     return;
   }
 
+  setIsAddingStudent(true); // Set loading state
+  
   try {
     const res = await adminDashboardService.registerStudentEmail({
       email: validEmails.join(', '), // Send only valid emails as comma-separated string
@@ -360,6 +365,7 @@ const AdminStudents = () => {
 
     if (!res.success) {
       toast.error(res.message);
+      setIsAddingStudent(false); // Reset loading state
       return;
     }
 
@@ -386,6 +392,8 @@ const AdminStudents = () => {
   } catch (err) {
     console.error(err);
     toast.error("Something went wrong");
+  } finally {
+    setIsAddingStudent(false); // Reset loading state
   }
 };
 
@@ -1161,9 +1169,14 @@ const getEmailPreview = () => {
               </button>
               <button
                 onClick={handleAddStudent}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                disabled={isAddingStudent}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  isAddingStudent 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
               >
-                Add Student
+                {isAddingStudent ? 'Adding...' : 'Add Student'}
               </button>
             </div>
           </div>
