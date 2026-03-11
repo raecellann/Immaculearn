@@ -280,19 +280,13 @@ const ProfArchiveClass = () => {
                             className="w-full h-full object-cover group-hover:brightness-75 transition duration-300"
                           />
                         </div>
-                        <div className="p-4">
+                        <div className="p-4 pb-5">
                           <h3
                             className="font-semibold text-sm"
                             style={{ color: currentColors.text }}
                           >
                             {space.space_name}
                           </h3>
-                          <p
-                            className="text-xs mt-1"
-                            style={{ color: currentColors.textSecondary }}
-                          >
-                            {space.members?.length - 1 || 0} Students
-                          </p>
                         </div>
                       </div>
 
@@ -335,7 +329,7 @@ const ProfArchiveClass = () => {
                               }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                  "#3B4457";
+                                  "#cfdaefff";
                               }}
                               onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
@@ -359,7 +353,7 @@ const ProfArchiveClass = () => {
                               }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                  "#3B4457";
+                                  "#cfdaefff";
                               }}
                               onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
@@ -474,7 +468,7 @@ const ProfArchiveClass = () => {
                   </button>
                   <button
                     onClick={() => handleRestoreClass(showRestoreConfirm)}
-                    className="px-5 py-2 rounded-lg bg-[#60A5FA] hover:bg-[#3B82F6] text-white text-sm transition-colors"
+                    className="px-5 py-2 rounded-lg bg-[#1468B1] hover:bg-[#3B82F6] text-white text-sm transition-colors"
                   >
                     Restore
                   </button>
