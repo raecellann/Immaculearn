@@ -227,3 +227,37 @@ export type RespondentsTaskData = {
   choices: TaskChoice[];
   answers: TaskAnswer[];
 };
+
+
+
+export interface TaskAnswerChoice {
+    choice_id: number;
+    letter_identifier: string;
+    answer_text: string;
+    is_correct: boolean;
+}
+
+export interface TaskQuestion {
+    question_id: number;
+    position: number;
+    question: string;
+    type: "mcq" | "true-false" | "identification";
+    answers: TaskAnswerChoice[];
+}
+
+export interface StudentAnswerMap {
+    [question_id: string]: string; // key = question_id, value = choice_id as string OR text for identification
+}
+
+export interface TaskResultData {
+    questions: TaskQuestion[];
+    student_answers: StudentAnswerMap;
+    score: number;
+    total_items_score: number;
+}
+
+export interface TaskResultApiResponse {
+    success: boolean;
+    message?: string;
+    data: TaskResultData;
+}

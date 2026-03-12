@@ -34,6 +34,7 @@ import StudentQuizTaker from "../Prof-Space/taskPreviewComponents/StudentQuizTak
 const UserTaskPage = () => {
   // ================= TASK FORM STATE =================
   const [taskTitle, setTaskTitle] = useState("");
+  const [taskingId, setTaskingId] = useState(null);
   const [instruction, setInstruction] = useState("");
   const [score, setScore] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -74,6 +75,9 @@ const UserTaskPage = () => {
     friendSpaces,
     useJoinRequests,
     isLoading: spaceLoading,
+    studentResponseData,
+    studentResponseDataLoading,
+    setTaskId,
     acceptJoinRequest,
     declineJoinRequest,
     deleteSpace,
@@ -207,6 +211,7 @@ const UserTaskPage = () => {
   const [studentQuizTask, setStudentQuizTask] = useState(null);
   const [showViewScore, setShowViewScore] = useState(false);
   const [viewScoreTask, setViewScoreTask] = useState(null);
+  const [pendingViewScoreTask, setPendingViewScoreTask] = useState(null);
 
   // Example available members in the professor's space
   const availableMembers = [
@@ -245,6 +250,34 @@ const UserTaskPage = () => {
     window.addEventListener("resize", checkTablet);
     return () => window.removeEventListener("resize", checkTablet);
   }, []);
+
+  // Handle pending view score when studentResponseData becomes available
+  useEffect(() => {
+    if (pendingViewScoreTask && studentResponseData?.success) {
+      console.log("Student response data is now available, showing score");
+
+      const taskWithScoreData = {
+        ...pendingViewScoreTask,
+        task_title:
+          pendingViewScoreTask.task_title ||
+          studentResponseData?.data?.task_title ||
+          "Quiz",
+        quiz_content: {
+          questions: studentResponseData?.data?.questions || [],
+        },
+        student_answers: studentResponseData?.data?.student_answers || {},
+        score: studentResponseData?.data?.score || 0,
+        total_score: studentResponseData?.data?.total_items_score || 0,
+      };
+
+      console.log("Task with score data:", taskWithScoreData);
+
+      // Open ViewScore modal
+      setViewScoreTask(taskWithScoreData);
+      setShowViewScore(true);
+      setPendingViewScoreTask(null); // Clear pending task
+    }
+  }, [studentResponseData, pendingViewScoreTask]);
 
   // Invite member
   const handleInviteMember = () => {
@@ -442,7 +475,9 @@ const UserTaskPage = () => {
         "image/webp",
       ];
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
+        toast.error(
+          "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        );
         return;
       }
 
@@ -480,12 +515,12 @@ const UserTaskPage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Check if it's a gradient or an image
-    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+    if (coverPhotoUrl && coverPhotoUrl.includes("gradient")) {
       // For gradients, save directly without canvas transformations
       localStorage.setItem(`coverPhoto_${space_uuid}`, coverPhotoUrl);
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       toast.success("Your cover photo has been updated successfully!");
     } else {
       // For images, create canvas to apply transformations
@@ -616,81 +651,38 @@ const UserTaskPage = () => {
   };
 
   const handleViewScore = (task) => {
-    console.log('Original task:', task);
-    
-    // Force override with mock quiz data for testing
-    const taskWithMockData = {
+    console.log("Original task:", task);
+
+    const currentTaskId = Number(task?.task_id);
+    setTaskId(currentTaskId);
+
+    console.log("taskId:", currentTaskId);
+    console.log("studentResponseData:", studentResponseData);
+
+    // Check if studentResponseData is successful
+    if (!studentResponseData?.success) {
+      console.log("Waiting for student response data...");
+      setPendingViewScoreTask(task);
+      return;
+    }
+
+    // Use actual studentResponseData instead of mock data
+    const taskWithScoreData = {
       ...task,
-      task_title: task.task_title || "Sample Biology Quiz",
+      task_title:
+        task.task_title || studentResponseData?.data?.task_title || "Quiz",
       quiz_content: {
-        questions: [
-          {
-            id: 1,
-            question: "What is the primary function of chlorophyll in plants?",
-            type: "multiple-choice",
-            answers: [
-              { letter_identifier: "A", answer_text: "Capture light energy", is_correct: true },
-              { letter_identifier: "B", answer_text: "Store water", is_correct: false },
-              { letter_identifier: "C", answer_text: "Produce oxygen", is_correct: false },
-              { letter_identifier: "D", answer_text: "Absorb nutrients", is_correct: false }
-            ]
-          },
-          {
-            id: 2,
-            question: "Photosynthesis requires sunlight.",
-            type: "true-false",
-            answers: [
-              { letter_identifier: "T", answer_text: "True", is_correct: true },
-              { letter_identifier: "F", answer_text: "False", is_correct: false }
-            ]
-          },
-          {
-            id: 3,
-            question: "Which gas is released during photosynthesis?",
-            type: "multiple-choice",
-            answers: [
-              { letter_identifier: "A", answer_text: "Carbon dioxide", is_correct: false },
-              { letter_identifier: "B", answer_text: "Nitrogen", is_correct: false },
-              { letter_identifier: "C", answer_text: "Oxygen", is_correct: true },
-              { letter_identifier: "D", answer_text: "Hydrogen", is_correct: false }
-            ]
-          },
-          {
-            id: 4,
-            question: "Where does photosynthesis primarily occur in plants?",
-            type: "multiple-choice",
-            answers: [
-              { letter_identifier: "A", answer_text: "Roots", is_correct: false },
-              { letter_identifier: "B", answer_text: "Leaves", is_correct: true },
-              { letter_identifier: "C", answer_text: "Stem", is_correct: false },
-              { letter_identifier: "D", answer_text: "Flowers", is_correct: false }
-            ]
-          },
-          {
-            id: 5,
-            question: "Briefly describe the process of photosynthesis.",
-            type: "short-answer",
-            answers: [
-              { answer_text: "The process by which plants use sunlight, water, and CO2 to produce glucose and oxygen", is_correct: true }
-            ]
-          }
-        ]
+        questions: studentResponseData?.data?.questions || [],
       },
-      student_answers: {
-        1: "A", // Correct answer
-        2: "T", // Correct answer
-        3: "B", // Wrong answer (should be C)
-        4: "B", // Correct answer
-        5: "Plants use sunlight to make food" // Partially correct but not exact
-      },
-      score: 3, // 3 out of 5 correct
-      total_score: 5
+      student_answers: studentResponseData?.data?.student_answers || {},
+      score: studentResponseData?.data?.score || 0,
+      total_score: studentResponseData?.data?.total_items_score || 0,
     };
-    
-    console.log('Task with mock data:', taskWithMockData);
-    
+
+    console.log("Task with score data:", taskWithScoreData);
+
     // Open ViewScore modal
-    setViewScoreTask(taskWithMockData);
+    setViewScoreTask(taskWithScoreData);
     setShowViewScore(true);
   };
 
@@ -1027,20 +1019,20 @@ const UserTaskPage = () => {
   // Function to determine quiz status for students
   const getQuizStatusForStudent = (task) => {
     if (task.task_category !== "quiz") return task.task_status;
-    
+
     const now = new Date();
     const dueDate = task.task_due ? new Date(task.task_due) : null;
-    
+
     // If student has answered the quiz
     if (task.has_answered) {
       return "Done";
     }
-    
+
     // If quiz has due date and it's passed
     if (dueDate && now > dueDate) {
       return "Missing";
     }
-    
+
     // If student hasn't taken the quiz yet and due date not passed
     return "In Progress";
   };
@@ -1053,7 +1045,9 @@ const UserTaskPage = () => {
 
     // For quiz category, limit to 3 tasks and add See More button
     const isQuizCategory = category === "quiz";
-    const displayedTasks = isQuizCategory ? categoryTasks.slice(0, 3) : categoryTasks;
+    const displayedTasks = isQuizCategory
+      ? categoryTasks.slice(0, 3)
+      : categoryTasks;
     const hasMoreTasks = isQuizCategory && categoryTasks.length > 3;
 
     return (
@@ -1116,9 +1110,12 @@ const UserTaskPage = () => {
                         {task.task_title}
                       </span>
                     </div>
-                    <span className={`text-xs font-medium ${
-                      statusStyles[getQuizStatusForStudent(task)] || 'text-gray-500'
-                    }`}>
+                    <span
+                      className={`text-xs font-medium ${
+                        statusStyles[getQuizStatusForStudent(task)] ||
+                        "text-gray-500"
+                      }`}
+                    >
                       {getQuizStatusForStudent(task)}
                     </span>
                   </div>
@@ -1223,9 +1220,12 @@ const UserTaskPage = () => {
                           Local
                         </span>
                       )}
-                      <span className={`text-sm font-medium ${
-                        statusStyles[getQuizStatusForStudent(task)] || 'text-gray-500'
-                      }`}>
+                      <span
+                        className={`text-sm font-medium ${
+                          statusStyles[getQuizStatusForStudent(task)] ||
+                          "text-gray-500"
+                        }`}
+                      >
                         {getQuizStatusForStudent(task)}
                       </span>
                     </div>
@@ -1259,10 +1259,13 @@ const UserTaskPage = () => {
                             <ButtonComponent
                               onClick={(e) => {
                                 e.preventDefault();
-                                // Decide what to do based on whether the quiz was answered
-                                task?.has_answered
-                                  ? handleViewScore(task)
-                                  : handleTakeQuiz(task);
+                                setTaskId(task?.id);
+
+                                if (task?.has_answered) {
+                                  handleViewScore(task);
+                                } else {
+                                  handleTakeQuiz(task);
+                                }
                               }}
                               style={{
                                 backgroundColor: task.has_answered
@@ -1271,14 +1274,14 @@ const UserTaskPage = () => {
                                 borderColor: task.has_answered
                                   ? "#6b7280"
                                   : "#10B981",
-                                padding: '0.3em 0.8em',
-                                fontSize: '0.75rem',
-                                borderRadius: '6px',
-                                flex: 'none',
-                                width: 'auto',
-                                minWidth: '80px',
-                                margin: '0 auto',
-                                display: 'block',
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: "none",
+                                width: "auto",
+                                minWidth: "80px",
+                                margin: "0 auto",
+                                display: "block",
                               }}
                             >
                               {task.has_answered ? "View Score" : "Take Quiz"}
@@ -1296,11 +1299,11 @@ const UserTaskPage = () => {
                                 borderColor: task.isLocal
                                   ? "#2563eb"
                                   : currentColors.accent,
-                                padding: '0.3em 0.8em',
-                                fontSize: '0.75rem',
-                                borderRadius: '6px',
-                                flex: task.isLocal ? 1 : 'none',
-                                width: task.isLocal ? 'auto' : '100%',
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: task.isLocal ? 1 : "none",
+                                width: task.isLocal ? "auto" : "100%",
                               }}
                             >
                               View Details
@@ -1327,15 +1330,15 @@ const UserTaskPage = () => {
                 if (spaceId && spaceName) {
                   navigate(`/task/${spaceId}/${encodeURIComponent(spaceName)}`);
                 } else {
-                  console.warn('No space ID or name found for navigation');
+                  console.warn("No space ID or name found for navigation");
                 }
               }}
               style={{
-                backgroundColor: currentColors.accent || '#2563eb',
-                borderColor: currentColors.accent || '#2563eb',
-                padding: '0.3em 0.8em',
-                fontSize: '0.75rem',
-                borderRadius: '6px',
+                backgroundColor: currentColors.accent || "#2563eb",
+                borderColor: currentColors.accent || "#2563eb",
+                padding: "0.3em 0.8em",
+                fontSize: "0.75rem",
+                borderRadius: "6px",
               }}
             >
               See More Quizzes
@@ -1540,41 +1543,51 @@ const UserTaskPage = () => {
 
   const checkIfAnswerIsCorrect = (question, studentAnswer) => {
     if (!studentAnswer) return false;
-    
+
     // Find the correct answer for this question
-    const correctAnswer = question.answers.find(answer => answer.is_correct);
+    const correctAnswer = question.answers.find((answer) => answer.is_correct);
     if (!correctAnswer) return false;
-    
+
     // Check if student answer matches correct answer
-    if (question.type === 'multiple-choice' || question.type === 'true-false') {
+    if (question.type === "multiple-choice" || question.type === "true-false") {
       return studentAnswer === correctAnswer.letter_identifier;
-    } else if (question.type === 'short-answer') {
+    } else if (question.type === "identification") {
+      // For identification questions, check if student answer is contained within correct answer (case-insensitive)
+      const studentAnswerLower = studentAnswer.toLowerCase().trim();
+      const correctAnswerLower = correctAnswer.answer_text.toLowerCase().trim();
+      return correctAnswerLower.includes(studentAnswerLower);
+    } else if (question.type === "short-answer") {
       // For short answers, do a case-insensitive comparison
-      return studentAnswer.toLowerCase().trim() === correctAnswer.answer_text.toLowerCase().trim();
+      return (
+        studentAnswer.toLowerCase().trim() ===
+        correctAnswer.answer_text.toLowerCase().trim()
+      );
     }
-    
+
     return false;
   };
 
   const renderStudentAnswer = (question, studentAnswer) => {
     if (!studentAnswer) return null;
-    
+
     const isCorrect = checkIfAnswerIsCorrect(question, studentAnswer);
-    
+
     return (
-      <div 
+      <div
         className={`mt-4 p-3 rounded border ${
-          isCorrect 
-            ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
-            : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
+          isCorrect
+            ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800"
+            : "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
         }`}
       >
         <div className="flex items-center justify-between">
-          <p className={`text-sm font-semibold ${
-            isCorrect 
-              ? 'text-green-800 dark:text-green-200' 
-              : 'text-red-800 dark:text-red-200'
-          }`}>
+          <p
+            className={`text-sm font-semibold ${
+              isCorrect
+                ? "text-green-800 dark:text-green-200"
+                : "text-red-800 dark:text-red-200"
+            }`}
+          >
             Your Answer: {studentAnswer}
           </p>
           {isCorrect ? (
@@ -1657,7 +1670,7 @@ const UserTaskPage = () => {
         >
           {coverPhotoUrl ? (
             <>
-              {coverPhotoUrl.includes('gradient') ? (
+              {coverPhotoUrl.includes("gradient") ? (
                 <div
                   className="w-full h-full"
                   style={{ background: coverPhotoUrl }}
@@ -1754,12 +1767,14 @@ const UserTaskPage = () => {
                         backgroundColor: "transparent",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                        e.currentTarget.style.backgroundColor =
+                          currentColors.hover;
                         e.currentTarget.style.color = currentColors.text;
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color = currentColors.textSecondary;
+                        e.currentTarget.style.color =
+                          currentColors.textSecondary;
                       }}
                       title="Copy to clipboard"
                     >
@@ -1776,9 +1791,7 @@ const UserTaskPage = () => {
             <div className="flex justify-center min-w-max mx-auto px-4">
               <div className="flex justify-center space-x-12">
                 <button
-                  onClick={() =>
-                    navigate(`/space/${space_uuid}/${space_name}`)
-                  }
+                  onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}
                 >
                   Stream
                 </button>
@@ -1897,7 +1910,6 @@ const UserTaskPage = () => {
                   </div>
                 </div>
               )}
-
             </div>
           ) : showTaskTypeSelection ? (
             /* ================= TASK TYPE SELECTION ================= */
@@ -2011,7 +2023,6 @@ const UserTaskPage = () => {
           ) : (
             /* ================= TASK BUILDERS ================= */
             <div>
-              
               {selectedTaskType === "group-activity" && (
                 <GroupActivityBuilder
                   currentColors={currentColors}
@@ -2027,8 +2038,6 @@ const UserTaskPage = () => {
                   }
                 />
               )}
-
-              
             </div>
           )}
         </div>
@@ -2681,18 +2690,24 @@ const UserTaskPage = () => {
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Gradient Options */}
               <div className="mb-6">
-                <p className="text-sm font-medium mb-3" style={{ color: currentColors.text }}>Color & Gradient</p>
+                <p
+                  className="text-sm font-medium mb-3"
+                  style={{ color: currentColors.text }}
+                >
+                  Color & Gradient
+                </p>
                 <div className="grid grid-cols-4 gap-2">
                   {colorOptions.map((color, i) => (
                     <div
                       key={i}
                       className="h-12 rounded cursor-pointer border-2 transition-colors"
-                      style={{ 
+                      style={{
                         background: color,
-                        borderColor: currentColors.border
+                        borderColor: currentColors.border,
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.borderColor = currentColors.accent || '#3B82F6';
+                        e.target.style.borderColor =
+                          currentColors.accent || "#3B82F6";
                       }}
                       onMouseLeave={(e) => {
                         e.target.style.borderColor = currentColors.border;
@@ -2705,13 +2720,24 @@ const UserTaskPage = () => {
 
               {/* Separator Line */}
               <div className="relative flex items-center my-4">
-                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
-                <span className="px-3 text-sm" style={{ color: currentColors.textSecondary }}>or</span>
-                <div className="flex-1 border-t" style={{ borderColor: currentColors.border }}></div>
+                <div
+                  className="flex-1 border-t"
+                  style={{ borderColor: currentColors.border }}
+                ></div>
+                <span
+                  className="px-3 text-sm"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  or
+                </span>
+                <div
+                  className="flex-1 border-t"
+                  style={{ borderColor: currentColors.border }}
+                ></div>
               </div>
 
               {/* Upload Option (only show when gradient is selected) */}
-              {coverPhotoUrl && coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && coverPhotoUrl.includes("gradient") && (
                 <div className="mb-4 flex justify-center">
                   <button
                     onClick={() => coverPhotoInputRef.current?.click()}
@@ -2719,11 +2745,12 @@ const UserTaskPage = () => {
                     style={{
                       backgroundColor: currentColors.background,
                       color: currentColors.text,
-                      border: `1px solid ${currentColors.border}`
+                      border: `1px solid ${currentColors.border}`,
                     }}
                     onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
-                      e.target.style.color = '#ffffff';
+                      e.target.style.backgroundColor =
+                        currentColors.accent || "#3B82F6";
+                      e.target.style.color = "#ffffff";
                     }}
                     onMouseLeave={(e) => {
                       e.target.style.backgroundColor = currentColors.background;
@@ -2737,9 +2764,12 @@ const UserTaskPage = () => {
               )}
 
               {/* Preview Area (only show if it's an image, not gradient) */}
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <div className="mb-6">
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden" style={{ backgroundColor: currentColors.background }}>
+                  <div
+                    className="relative w-full h-48 rounded-lg overflow-hidden"
+                    style={{ backgroundColor: currentColors.background }}
+                  >
                     <div
                       ref={coverPhotoEditorRef}
                       className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
@@ -2758,7 +2788,10 @@ const UserTaskPage = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-sm mt-2" style={{ color: currentColors.textSecondary }}>
+                  <p
+                    className="text-sm mt-2"
+                    style={{ color: currentColors.textSecondary }}
+                  >
                     Click and drag the image up or down to position it
                   </p>
                 </div>
@@ -2825,10 +2858,22 @@ const UserTaskPage = () => {
       {/* PENDING INVITATIONS POPUP */}
       {showPendingInvitations && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="rounded-xl shadow-2xl max-w-md w-full border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+          <div
+            className="rounded-xl shadow-2xl max-w-md w-full border"
+            style={{
+              backgroundColor: currentColors.surface,
+              borderColor: currentColors.border,
+            }}
+          >
             {/* Header */}
-            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: currentColors.border }}>
-              <h3 className="text-xl font-semibold" style={{ color: currentColors.text }}>
+            <div
+              className="p-4 border-b flex items-center justify-between"
+              style={{ borderColor: currentColors.border }}
+            >
+              <h3
+                className="text-xl font-semibold"
+                style={{ color: currentColors.text }}
+              >
                 Pending Invites
               </h3>
               <button
@@ -2853,8 +2898,12 @@ const UserTaskPage = () => {
                   <p className="mb-4" style={{ color: currentColors.text }}>
                     No pending invitations at the moment.
                   </p>
-                  <div className="text-sm" style={{ color: currentColors.textSecondary }}>
-                    Invited members will appear here once they have not yet accepted your invitation.
+                  <div
+                    className="text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    Invited members will appear here once they have not yet
+                    accepted your invitation.
                   </div>
                 </>
               ) : (
@@ -2874,17 +2923,29 @@ const UserTaskPage = () => {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                       <div className="flex-1">
-                        <h3 className="font-medium" style={{ color: currentColors.text }}>
+                        <h3
+                          className="font-medium"
+                          style={{ color: currentColors.text }}
+                        >
                           {invitation.fullname}
                         </h3>
-                        <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                        <p
+                          className="text-sm"
+                          style={{ color: currentColors.textSecondary }}
+                        >
                           {invitation.email}
                         </p>
-                        <p className="text-sm mt-1" style={{ color: currentColors.textSecondary }}>
+                        <p
+                          className="text-sm mt-1"
+                          style={{ color: currentColors.textSecondary }}
+                        >
                           {invitation.message || "Hello world"}
                         </p>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs" style={{ color: currentColors.textSecondary }}>
+                          <span
+                            className="text-xs"
+                            style={{ color: currentColors.textSecondary }}
+                          >
                             {invitation.added_at}
                           </span>
                         </div>
@@ -2898,33 +2959,31 @@ const UserTaskPage = () => {
                         }
                         className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
                         style={{
-                          backgroundColor: '#6B7280',
-                          color: 'white',
+                          backgroundColor: "#6B7280",
+                          color: "white",
                         }}
                         onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#4B5563';
+                          e.target.style.backgroundColor = "#4B5563";
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = '#6B7280';
+                          e.target.style.backgroundColor = "#6B7280";
                         }}
                       >
                         Decline
                       </button>
                       <button
                         disabled={spaceLoading}
-                        onClick={() =>
-                          acceptJoinRequest(invitation.account_id)
-                        }
+                        onClick={() => acceptJoinRequest(invitation.account_id)}
                         className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
                         style={{
-                          backgroundColor: '#2563EB',
-                          color: 'white',
+                          backgroundColor: "#2563EB",
+                          color: "white",
                         }}
                         onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#1D4ED8';
+                          e.target.style.backgroundColor = "#1D4ED8";
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = '#2563EB';
+                          e.target.style.backgroundColor = "#2563EB";
                         }}
                       >
                         Accept
@@ -2934,16 +2993,24 @@ const UserTaskPage = () => {
                 ))
               )}
             </div>
-            <div className="flex justify-end p-6 border-t" style={{ borderColor: currentColors.border }}>
+            <div
+              className="flex justify-end p-6 border-t"
+              style={{ borderColor: currentColors.border }}
+            >
               <button
                 onClick={() => setShowPendingInvitations(false)}
                 className="px-4 py-2 rounded-lg font-medium transition-colors"
-                style={{ backgroundColor: currentColors.accent || '#3B82F6', color: '#ffffff' }}
+                style={{
+                  backgroundColor: currentColors.accent || "#3B82F6",
+                  color: "#ffffff",
+                }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = currentColors.accentHover || '#2563EB';
+                  e.target.style.backgroundColor =
+                    currentColors.accentHover || "#2563EB";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = currentColors.accent || '#3B82F6';
+                  e.target.style.backgroundColor =
+                    currentColors.accent || "#3B82F6";
                 }}
               >
                 Close
@@ -2956,38 +3023,55 @@ const UserTaskPage = () => {
       {/* VIEW SCORE MODAL */}
       {showViewScore && viewScoreTask && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div 
+          <div
             className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             style={{ backgroundColor: currentColors.background }}
           >
             {/* Modal Header */}
-            <div 
+            <div
               className="sticky top-0 p-4 border-b flex justify-between items-center"
-              style={{ 
+              style={{
                 backgroundColor: currentColors.background,
-                borderColor: currentColors.border 
+                borderColor: currentColors.border,
               }}
             >
               <div className="flex items-center gap-3">
-                <div 
+                <div
                   className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                  style={{ backgroundColor: currentColors.primary || currentColors.accent }}
+                  style={{
+                    backgroundColor:
+                      currentColors.primary || currentColors.accent,
+                  }}
                 >
-                  {user?.fullname?.charAt(0).toUpperCase() || 'U'}
+                  {user?.fullname?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold" style={{ color: currentColors.text }}>
+                  <h3
+                    className="text-lg font-bold"
+                    style={{ color: currentColors.text }}
+                  >
                     Your Quiz Results
                   </h3>
-                  <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                  <p
+                    className="text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
                     {viewScoreTask.task_title}
                   </p>
                   <div className="flex gap-4 mt-1 text-sm">
                     <span style={{ color: currentColors.text }}>
-                      Score: <strong>{viewScoreTask.score || 0}/{viewScoreTask.total_score || 0}</strong>
+                      Score:{" "}
+                      <strong>
+                        {viewScoreTask.score || 0}/
+                        {viewScoreTask.total_score || 0}
+                      </strong>
                     </span>
                     <span style={{ color: currentColors.textSecondary }}>
-                      Completed: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      Completed: {new Date().toLocaleDateString()} at{" "}
+                      {new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </div>
                 </div>
@@ -2998,15 +3082,17 @@ const UserTaskPage = () => {
                   setViewScoreTask(null);
                 }}
                 className="p-2 rounded-lg transition-colors"
-                style={{ 
+                style={{
                   color: currentColors.text,
-                  backgroundColor: 'transparent'
+                  backgroundColor: "transparent",
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                  e.target.style.backgroundColor = isDarkMode
+                    ? "rgba(255, 255, 255, 0.1)"
+                    : "rgba(0, 0, 0, 0.05)";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.backgroundColor = "transparent";
                 }}
               >
                 <FiX size={20} />
@@ -3027,54 +3113,118 @@ const UserTaskPage = () => {
                     }}
                   >
                     <div className="flex items-start gap-3">
-                      <span 
+                      <span
                         className="font-bold text-lg"
-                        style={{ color: currentColors.primary || currentColors.accent }}
+                        style={{
+                          color: currentColors.primary || currentColors.accent,
+                        }}
                       >
-                        {question.id}.
+                        {question.position}.
                       </span>
                       <div className="flex-1">
-                        <p 
+                        <p
                           className="font-medium mb-3"
                           style={{ color: currentColors.text }}
                         >
                           {question.question}
                         </p>
 
-                        {/* Answer Options */}
-                        <div className="space-y-2 mb-3">
-                          {question.answers.map((answer, index) => (
-                            <div 
-                              key={index}
-                              className={`flex items-center gap-2 p-2 rounded ${
-                                answer.is_correct 
-                                  ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' 
-                                  : 'bg-gray-50 border border-gray-200 dark:bg-gray-800/50 dark:border-gray-700'
-                              }`}
-                            >
-                              <div 
-                                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                        {/* Answer Options - Different rendering based on question type */}
+                        {question.type === "identification" ? (
+                          /* Identification type question */
+                          <div className="space-y-3">
+                            {/* Student Answer Input Field */}
+                            <div>
+                              <label className="block text-sm font-medium mb-2" style={{ color: currentColors.text }}>
+                                Your Answer:
+                              </label>
+                              <input
+                                type="text"
+                                value={viewScoreTask.student_answers[question.question_id] || ""}
+                                readOnly
+                                className={`w-full p-3 rounded border font-medium ${
+                                  checkIfAnswerIsCorrect(question, viewScoreTask.student_answers[question.question_id])
+                                    ? "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200"
+                                    : "bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200"
+                                }`}
                                 style={{
-                                  backgroundColor: answer.is_correct 
-                                    ? '#10b981' 
-                                    : currentColors.border,
-                                  color: answer.is_correct ? 'white' : currentColors.text
+                                  backgroundColor: checkIfAnswerIsCorrect(question, viewScoreTask.student_answers[question.question_id])
+                                    ? "rgba(16, 185, 129, 0.1)"
+                                    : "rgba(239, 68, 68, 0.1)",
+                                  borderColor: checkIfAnswerIsCorrect(question, viewScoreTask.student_answers[question.question_id])
+                                    ? "#10b981"
+                                    : "#ef4444",
+                                }}
+                              />
+                            </div>
+                            
+                            {/* Correct Answer Display */}
+                            <div className="mt-3">
+                              <span className="text-sm font-medium" style={{ color: currentColors.text }}>
+                                Correct answer: 
+                              </span>
+                              <span 
+                                className="ml-2 text-sm font-semibold px-2 py-1 rounded"
+                                style={{
+                                  backgroundColor: "#10b981",
+                                  color: "white"
                                 }}
                               >
-                                {answer.letter_identifier || String.fromCharCode(65 + index)}
-                              </div>
-                              <span className="text-sm" style={{ color: currentColors.text }}>
-                                {answer.answer_text}
+                                {question.answers.find(answer => answer.is_correct)?.answer_text || "N/A"}
                               </span>
-                              {answer.is_correct && (
-                                <FiCheck className="text-green-600 dark:text-green-400 ml-auto" size={16} />
-                              )}
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        ) : (
+                          /* Multiple choice questions */
+                          <div className="space-y-2 mb-3">
+                            {question.answers.map((answer, index) => (
+                              <div
+                                key={index}
+                                className={`flex items-center gap-2 p-2 rounded ${
+                                  answer.is_correct
+                                    ? "bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800"
+                                    : "bg-gray-50 border border-gray-200 dark:bg-gray-800/50 dark:border-gray-700"
+                                }`}
+                              >
+                                <div
+                                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                                  style={{
+                                    backgroundColor: answer.is_correct && answer.letter_identifier === viewScoreTask.student_answers[question.question_id]
+                                      ? "#10b981" // Green for correct answer that matches student's choice
+                                      : !answer.is_correct && answer.letter_identifier === viewScoreTask.student_answers[question.question_id]
+                                      ? "#ef4444" // Red for student's incorrect choice
+                                      : currentColors.border, // Default for other answers
+                                    color: (answer.is_correct && answer.letter_identifier === viewScoreTask.student_answers[question.question_id]) ||
+                                           (!answer.is_correct && answer.letter_identifier === viewScoreTask.student_answers[question.question_id])
+                                      ? "white"
+                                      : currentColors.text,
+                                  }}
+                                >
+                                  {answer.letter_identifier ||
+                                    String.fromCharCode(65 + index)}
+                                </div>
+                                <span
+                                  className="text-sm"
+                                  style={{ color: currentColors.text }}
+                                >
+                                  {answer.answer_text}
+                                </span>
+                                {answer.is_correct && (
+                                  <FiCheck
+                                    className="text-green-600 dark:text-green-400 ml-auto"
+                                    size={16}
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
 
-                        {/* Student Answer Display */}
-                        {renderStudentAnswer(question, getStudentAnswerForQuestion(question))}
+                        {/* Student Answer Display - Only for non-identification questions */}
+                        {question.type !== "identification" && renderStudentAnswer(
+                          question,
+                          getStudentAnswerForQuestion(question),
+                        )}
                       </div>
                     </div>
                   </div>

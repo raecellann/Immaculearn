@@ -14,6 +14,7 @@ import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { SpaceCover } from "../component/spaceCover";
 import { DeleteConfirmationDialog } from "../component/SweetAlert";
+import ArchiveClassAlert from "../component/ArchiveClassAlert";
 import { toast } from "react-toastify";
 
 const ProfSpacePage = () => {
@@ -29,6 +30,8 @@ const ProfSpacePage = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(null);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(null);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("All");
   const [showAllCourseSpaces, setShowAllCourseSpaces] = useState(false);
@@ -298,11 +301,14 @@ const ProfSpacePage = () => {
   const handleDeleteSpace = async () => {
     try {
       const spaceUuid = showDeleteConfirm;
+      const space = userSpaces.find(s => s.space_uuid === spaceUuid);
       await deleteSpace(spaceUuid);
+      toast.success(`Space "${space?.space_name || 'Unknown'}" has been deleted successfully!`);
       setShowDeleteConfirm(null);
       setShowMenu(null);
     } catch (error) {
       console.error("Failed to delete space:", error);
+      toast.error("Failed to delete space. Please try again.");
     }
   };
 
@@ -313,7 +319,34 @@ const ProfSpacePage = () => {
     } catch (err) {
       toast.error("Error for Archiving Course Space");
     }
-    setShowArchiveConfirm(null);
+    setShowArchiveDialog(false);
+    setShowMenu(null);
+  };
+
+  const handleConfirmArchive = async () => {
+    if (!dialogMessage || !showArchiveDialog) return;
+
+    setShowArchiveDialog(false);
+    
+    try {
+      await setArchive(dialogMessage.space_uuid);
+      toast.success(
+        `Class "${dialogMessage.space_name}" has been archived successfully!`
+      );
+    } catch (error) {
+      console.error("Failed to archive class:", error);
+      toast.error("Failed to archive class. Please try again.");
+    }
+  };
+
+  const handleCancelArchive = () => {
+    setShowArchiveDialog(false);
+    setDialogMessage(null);
+  };
+
+  const handleArchiveClick = (space) => {
+    setDialogMessage(space);
+    setShowArchiveDialog(true);
     setShowMenu(null);
   };
 
@@ -682,8 +715,19 @@ const ProfSpacePage = () => {
                               {capitalizeWords(
                                 space.professor?.name?.split(" ")[0] || space.professor?.name || "Unknown",
                               )}{" "}
-                              • {space.members?.length > 0 ? space.members.length - 1 : 0}{" "}
-                              {space.members?.length > 1 ? "Students" : "Student"}
+                              • {
+                                (() => {
+                                  const studentCount = space.members?.filter(member => member.role !== 'owner' && member.role !== 'professor').length || 0;
+                                  console.log(`Space ${space.space_name} - Total members: ${space.members?.length || 0}, Students: ${studentCount}`, space.members);
+                                  return studentCount;
+                                })()
+                              }{" "}
+                              {
+                                (() => {
+                                  const studentCount = space.members?.filter(member => member.role !== 'owner' && member.role !== 'professor').length || 0;
+                                  return studentCount > 1 ? "Students" : "Student";
+                                })()
+                              }
                             </p>
                             <p
                               className="text-xs mt-1"
@@ -768,7 +812,7 @@ const ProfSpacePage = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setShowArchiveConfirm(space.space_uuid);
+                                  handleArchiveClick(space);
                                 }}
                                 className="w-full text-left px-3 py-2 text-sm text-[#60A5FA] hover:bg-[#3B4457] rounded-t-lg"
                               >
@@ -888,52 +932,12 @@ const ProfSpacePage = () => {
           )}
 
           {/* Archive Course Space Confirmation Dialog */}
-          {showArchiveConfirm && (
-            <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-              <div
-                className="rounded-xl p-6 max-w-sm w-full"
-                style={{
-                  backgroundColor: currentColors.surface,
-                  border: `1px solid ${currentColors.border}`,
-                }}
-              >
-                <h3
-                  className="text-lg font-semibold mb-3"
-                  style={{ color: isDarkMode ? "white" : "black" }}
-                >
-                  Archive Space
-                </h3>
-                <p
-                  className="text-sm mb-6"
-                  style={{
-                    color: isDarkMode ? currentColors.textSecondary : "black",
-                  }}
-                >
-                  Are you sure you want to archive this course space? It will be
-                  moved to your Archived Classes and can be restored anytime.
-                </p>
-                <div className="flex gap-3 justify-end">
-                  <button
-                    onClick={() => {
-                      setShowArchiveConfirm(null);
-                      setShowMenu(null);
-                    }}
-                    className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={async () =>
-                      await handleArchiveSpace(showArchiveConfirm)
-                    }
-                    className="px-5 py-2 rounded-lg bg-[#60A5FA] hover:bg-[#3B82F6] text-white text-sm"
-                  >
-                    Archive
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ArchiveClassAlert
+            isOpen={showArchiveDialog}
+            onClose={handleCancelArchive}
+            onConfirm={handleConfirmArchive}
+            space={dialogMessage || { space_name: "", members: [], files: [], tasks: [] }}
+          />
         </div>
       </div>
 
