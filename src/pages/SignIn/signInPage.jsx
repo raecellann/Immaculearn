@@ -35,7 +35,7 @@ const FieldError = ({ message }) =>
 
 // ─── Main component ────────────────────────────────────────────────────────────
 const LoginPage = () => {
-  const { isAuthenticated, user, isLoading, checkAuth, login} = useUser();
+  const { isAuthenticated, user, isLoading, checkAuth, login } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -45,7 +45,6 @@ const LoginPage = () => {
   const [formError, setFormError] = useState("");
 
   const navigate = useNavigate();
-
 
   // ── Submit ──
   const handleSubmit = async (e) => {
@@ -65,7 +64,7 @@ const LoginPage = () => {
 
     try {
       const data = await login(email, password);
-      
+
       if (!data.success) {
         toast.error(data.message || "Invalid email or password");
         return;
@@ -93,7 +92,7 @@ const LoginPage = () => {
   const handleGmailLogin = async () => {
     const baseUrl =
       config.VITE_ENV === "production"
-        ? `${config.API_URL}/account/oauth/google/redirect`
+        ? `${config.API_URL}/v1/account/oauth/google/redirect`
         : "http://localhost:3000/v1/account/oauth/google/redirect";
 
     const popup = window.open(
@@ -216,7 +215,10 @@ const LoginPage = () => {
       <div className="text-center mb-8">
         <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mt-8">
           Log in with{" "}
-          <span className="font-bold" style={{ color: "#1D4ED8" }}>ImmacuLearn</span> Today!
+          <span className="font-bold" style={{ color: "#1D4ED8" }}>
+            ImmacuLearn
+          </span>{" "}
+          Today!
         </h2>
         <p className="text-gray-800 text-sm md:text-base mt-2 font-medium">
           Experience a smarter way to learn and achieve your goals effortlessly.
@@ -228,7 +230,9 @@ const LoginPage = () => {
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-6">
           <div className="flex flex-col items-center">
-            <h3 className="text-2xl font-bold" style={{ color: "#1D4ED8" }}>ImmacuLearn</h3>
+            <h3 className="text-2xl font-bold" style={{ color: "#1D4ED8" }}>
+              ImmacuLearn
+            </h3>
             <p className="text-gray-600 text-sm">Log in to continue</p>
           </div>
           <img
@@ -280,7 +284,10 @@ const LoginPage = () => {
             {/* Single error message under password field */}
             {formError && (
               <div className="flex items-center gap-1.5 mt-1">
-                <AlertCircle size={13} style={{ color: "#ef4444", flexShrink: 0 }} />
+                <AlertCircle
+                  size={13}
+                  style={{ color: "#ef4444", flexShrink: 0 }}
+                />
                 <p className="text-red-500 text-xs">{formError}</p>
               </div>
             )}
