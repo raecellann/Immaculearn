@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build:client": "vite build --outDir dist/client",
-    "build:server": "vite build --ssr src/server-entry.jsx --outDir dist/server",
+    "dev": "cross-env PORT=5173 node server.js",
     "build": "npm run build:client && npm run build:server",
-    "start": "ENV=production PORT=5173 node server.js"
+    "build:client": "vite build --outDir dist/client",
+    "build:server": "vite build --outDir dist/server --ssr src/server-entry.jsx",
+    "start": "ENV=production PORT=5173 node server.js",
+    "lint": "eslint ."
   },
   "keywords": [
     "yjs",

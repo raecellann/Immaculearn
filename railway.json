@@ -1,6 +1,10 @@
 {
   "build": {
-    "builder": "NIXPACKS"
+    "commands": [
+      "npm ci",
+      "npm run build:client",
+      "npm run build:server"
+    ]
   },
   "deploy": {
     "startCommand": "npm run start",
