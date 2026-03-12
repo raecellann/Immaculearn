@@ -28,22 +28,21 @@ async function createCustomServer() {
     : "http://localhost:3000";
   // Only proxy /api requests that come from our app (fetch/XHR), block direct browser access
   app.use("/v1", (req, res, next) => {
-    if (req.headers["x-requested-with"] !== "XMLHttpRequest") {
+    const xhrHeader = req.headers["x-requested-with"];
+    if (xhrHeader && xhrHeader !== "XMLHttpRequest") {
       return res.status(403).json({ success: false, message: "Forbidden. 🙂" });
     }
     next();
   });
 
   app.use(
+    "/v1",
     createProxyMiddleware({
       target: apiTarget,
       changeOrigin: true,
-      pathFilter: "/v1",
       cookieDomainRewrite: "",
-      on: {
-        proxyReq: (proxyReq) => {
-          proxyReq.setHeader("apikey", process.env.API_KEY);
-        },
+      onProxyReq: (proxyReq) => {
+        proxyReq.setHeader("apikey", process.env.API_KEY);
       },
     }),
   );
@@ -114,10 +113,10 @@ async function createCustomServer() {
 
   //   socket.emit('welcome', 'A message from the server');
   // });
-  console.log("Is Production: ", IS_PRODUCTION)
+  console.log("Is Production: ", IS_PRODUCTION);
 
   console.log("console", process.env.PORT);
-  server.listen(process.env.PORT, "::");
+  server.listen(process.env.PORT, "0.0.0.0");
 }
 
 createCustomServer();
