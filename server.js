@@ -47,7 +47,7 @@ async function createCustomServer() {
 
   if (IS_PRODUCTION) {
     // Try common production build folders
-    const possiblePaths = ["dist/client", "build"];
+    const possiblePaths = ["/app/dist/client", "build"];
     clientDistPath = possiblePaths
       .map((p) => path.resolve(__dirname, p))
       .find((p) => fs.existsSync(p));
@@ -93,7 +93,7 @@ async function createCustomServer() {
 
       if (IS_PRODUCTION) {
         template = index;
-        render = await import(path.join(__dirname, "dist/server/server-entry.js")).then(
+        render = await import(path.join(__dirname, "/app/dist/server/server-entry.js")).then(
           (mod) => mod.render
         );
       } else {
