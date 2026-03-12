@@ -39,32 +39,22 @@ async function createCustomServer() {
 
   // Remove the XHR header check or make it optional
   app.use("/v1", (req, res, next) => {
-    console.log(`🔄 API Request received: ${req.method} ${req.url}`);
-    // Don't block requests without XHR header in production
+    if (req.headers["x-requested-with"] !== "XMLHttpRequest") {
+      return res.status(403).json({ success: false, message: "Forbidden. 🙂" });
+    }
     next();
   });
 
-  // Proxy /v1 requests to the API
   app.use(
-    "/v1",
     createProxyMiddleware({
       target: apiTarget,
       changeOrigin: true,
+      pathFilter: "/v1",
       cookieDomainRewrite: "",
-      pathRewrite: {
-        "^/v1": "/v1", // Keep the /v1 prefix
-      },
-      onProxyReq: (proxyReq, req, res) => {
-        if (process.env.API_KEY) {
+      on: {
+        proxyReq: (proxyReq) => {
           proxyReq.setHeader("apikey", process.env.API_KEY);
-        }
-        console.log(
-          `✅ Proxied: ${req.method} ${req.url} -> ${apiTarget}${req.url}`,
-        );
-      },
-      onError: (err, req, res) => {
-        console.error("❌ Proxy error:", err);
-        res.status(500).json({ error: "Proxy error", message: err.message });
+        },
       },
     }),
   );
