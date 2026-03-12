@@ -1,18 +1,30 @@
 import axios from "axios";
 import config from "../config";
 
-const baseUrl =
-      config.VITE_ENV === "production"
-        ? config.API_URL
-        : "http://localhost:3000/v1";
+// const baseUrl =
+//       config.VITE_ENV === "production"
+//         ? config.API_URL
+//         : "http://localhost:3000/v1";
 
+
+// export const adminApi = axios.create({
+//   baseURL: baseUrl,
+//   withCredentials: true,
+//   headers: {
+//     Authorization: `Bearer ${config.APIKEY}`,
+//     "Cache-Control": "no-cache",
+//   },
+// });
+
+
+const baseUrl = "/v1";
 
 export const adminApi = axios.create({
   baseURL: baseUrl,
   withCredentials: true,
   headers: {
-    Authorization: `Bearer ${config.APIKEY}`,
     "Cache-Control": "no-cache",
+    "X-Requested-With": "XMLHttpRequest",
   },
 });
 

@@ -7,6 +7,8 @@ import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import { createServer as createViteServer } from "vite";
+import { createProxyMiddleware } from "http-proxy-middleware";
+import "dotenv/config";
 // import { Server } from 'socket.io';
 
 const IS_PRODUCTION = process.env.ENV === "production";
@@ -18,6 +20,33 @@ async function createCustomServer() {
   // const io = new Server(server);
 
   let vite;
+
+  // Proxy API requests to the backend (same-origin for cookies)
+  // MUST be registered before Vite middlewares, which consume the request body
+  const apiTarget = IS_PRODUCTION
+    ? process.env.API_URL
+    : "http://localhost:3000";
+  // Only proxy /api requests that come from our app (fetch/XHR), block direct browser access
+  app.use("/v1", (req, res, next) => {
+    if (req.headers["x-requested-with"] !== "XMLHttpRequest") {
+      return res.status(403).json({ success: false, message: "Forbidden. 🙂" });
+    }
+    next();
+  });
+
+  app.use(
+    createProxyMiddleware({
+      target: apiTarget,
+      changeOrigin: true,
+      pathFilter: "/v1",
+      cookieDomainRewrite: "",
+      on: {
+        proxyReq: (proxyReq) => {
+          proxyReq.setHeader("apikey", process.env.API_KEY);
+        },
+      },
+    }),
+  );
 
   if (IS_PRODUCTION) {
     app.use(
