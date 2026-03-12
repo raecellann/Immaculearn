@@ -1,122 +1,55 @@
-/* eslint no-restricted-globals: ["error", "event"] */
-/* global process */
-
 import fs from "node:fs";
 import path from "node:path";
-import { createServer } from "node:http";
-import { fileURLToPath } from "node:url";
-import express from "express";
-import { createServer as createViteServer } from "vite";
-import { createProxyMiddleware } from "http-proxy-middleware";
-import "dotenv/config";
-// import { Server } from 'socket.io';
 
 const IS_PRODUCTION = process.env.ENV === "production";
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const distClient = path.resolve("./dist/client");
+const distServer = path.resolve("./dist/server");
 
-async function createCustomServer() {
-  const app = express();
-  const server = createServer(app);
-  // const io = new Server(server);
+export default async function handler(req, res) {
+  try {
+    const url = req.url;
 
-  let vite;
-
-  // Proxy API requests to the backend (same-origin for cookies)
-  // MUST be registered before Vite middlewares, which consume the request body
-  const apiTarget = IS_PRODUCTION
-    ? process.env.API_URL
-    : "http://localhost:3000";
-  // Only proxy /api requests that come from our app (fetch/XHR), block direct browser access
-  app.use("/v1", (req, res, next) => {
-    if (req.headers["x-requested-with"] !== "XMLHttpRequest") {
-      return res.status(403).json({ success: false, message: "Forbidden. 🙂" });
+    // Serve static files from dist/client
+    const filePath = path.join(distClient, url);
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const stream = fs.createReadStream(filePath);
+      res.setHeader("Content-Type", getContentType(filePath));
+      stream.pipe(res);
+      return;
     }
-    next();
-  });
 
-  app.use(
-    createProxyMiddleware({
-      target: apiTarget,
-      changeOrigin: true,
-      pathFilter: "/v1",
-      cookieDomainRewrite: "",
-      on: {
-        proxyReq: (proxyReq) => {
-          proxyReq.setHeader("apikey", process.env.API_KEY);
-        },
-      },
-    }),
-  );
+    // SSR: import server bundle dynamically
+    const { render } = await import(path.join(distServer, "server-entry.js"));
 
-  if (IS_PRODUCTION) {
-    app.use(
-      express.static(path.resolve(__dirname, "./dist/client/"), {
-        index: false,
-      }),
-    );
-  } else {
-    vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "custom",
-      build: {
-        ssr: true,
-        ssrEmitAssets: true,
-      },
-    });
+    const context = {};
+    const appHtml = await render(url, context);
 
-    app.use(vite.middlewares);
+    // Read HTML template
+    const templatePath = IS_PRODUCTION
+      ? path.join(distClient, "index.html")
+      : path.resolve("./index.html");
+    const template = fs.readFileSync(templatePath, "utf-8");
+
+    const html = template.replace("<!-- ssr -->", appHtml);
+
+    res.setHeader("Content-Type", "text/html");
+    res.statusCode = 200;
+    res.end(html);
+  } catch (err) {
+    console.error("SSR Error:", err);
+    res.statusCode = 500;
+    res.end("Internal Server Error");
   }
-  // Ignore Chrome DevTools and other well-known paths
-  app.use((req, res, next) => {
-    if (req.path.startsWith("/.well-known")) {
-      return res.status(404).end();
-    }
-    next();
-  });
-
-  app.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
-
-    try {
-      const index = fs.readFileSync(
-        path.resolve(
-          __dirname,
-          IS_PRODUCTION ? "./dist/client/index.html" : "./index.html",
-        ),
-        "utf-8",
-      );
-
-      let render, template;
-
-      if (IS_PRODUCTION) {
-        template = index;
-        render = await import("./dist/server/server-entry.js").then(
-          (mod) => mod.render,
-        );
-      } else {
-        template = await vite.transformIndexHtml(url, index);
-        render = (await vite.ssrLoadModule("/src/server-entry.jsx")).render;
-      }
-
-      const context = {};
-      const appHtml = render(url, context);
-
-      const html = template.replace("<!-- ssr -->", appHtml);
-
-      res.status(200).set({ "Content-Type": "text/html" }).end(html);
-    } catch (e) {
-      next(e);
-    }
-  });
-
-  // io.on('connection', (socket) => {
-  //   console.log('user connected');
-
-  //   socket.emit('welcome', 'A message from the server');
-  // });
-
-  console.log("console", process.env.PORT);
-  server.listen(process.env.PORT, "::");
 }
 
-createCustomServer();
+// Simple content type mapping
+function getContentType(filePath) {
+  if (filePath.endsWith(".js")) return "application/javascript";
+  if (filePath.endsWith(".css")) return "text/css";
+  if (filePath.endsWith(".html")) return "text/html";
+  if (filePath.endsWith(".json")) return "application/json";
+  if (filePath.endsWith(".png")) return "image/png";
+  if (filePath.endsWith(".jpg") || filePath.endsWith(".jpeg"))
+    return "image/jpeg";
+  return "text/plain";
+}
