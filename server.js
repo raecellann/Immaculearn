@@ -114,6 +114,7 @@ async function createCustomServer() {
 
   //   socket.emit('welcome', 'A message from the server');
   // });
+  console.log("Is Production: ", IS_PRODUCTION)
 
   console.log("console", process.env.PORT);
   server.listen(process.env.PORT, "::");
