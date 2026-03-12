@@ -680,6 +680,8 @@ const ProfHomePage = () => {
                                   <SpaceCover
                                     image={
                                       spaceCoverPhotos[space.space_uuid] ||
+                                      space.space_cover ||
+                                      space.background_img ||
                                       space.image
                                     }
                                     name={space.space_name}
@@ -855,6 +857,7 @@ const ProfHomePage = () => {
                                   <SpaceCover
                                     image={
                                       spaceCoverPhotos[space.space_uuid] ||
+                                      space.space_cover ||
                                       space.background_img ||
                                       space.image
                                     }

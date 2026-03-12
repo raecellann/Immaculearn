@@ -507,8 +507,9 @@ const ProfSpacePage = () => {
                       <div className="relative h-40 bg-gray-800 overflow-hidden transform-hover shadow-hover">
                         <SpaceCover
                           image={
-                            spaceCoverPhotos[space.space_uuid] ||
-                            space.space_cover
+                            space.space_cover ||
+                            space.background_img ||
+                            space.image
                           }
                           name={space.space_name}
                           className="w-full h-full object-cover transition duration-300"

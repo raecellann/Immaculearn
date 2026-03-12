@@ -997,7 +997,8 @@ const HomePage1 = () => {
                                 <div className="relative overflow-hidden">
                                   <SpaceCover
                                     image={
-                                      spaceCoverPhotos[course.space_uuid] ||
+                                      course.space_cover ||
+                                      course.background_img ||
                                       course.image
                                     }
                                     name={course.space_name}

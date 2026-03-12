@@ -576,7 +576,9 @@ const SpacePage = () => {
                       >
                         <SpaceCover
                           image={
-                            spaceCoverPhotos[space.space_uuid] || space.image
+                            space.space_cover ||
+                            space.background_img ||
+                            space.image
                           }
                           name={space.space_name}
                           className="w-full h-full object-cover transition duration-300"
@@ -710,7 +712,7 @@ const SpacePage = () => {
                       >
                         <SpaceCover
                           image={
-                            spaceCoverPhotos[course.space_uuid] ||
+                            course.space_cover ||
                             course.background_img ||
                             course.image
                           }
