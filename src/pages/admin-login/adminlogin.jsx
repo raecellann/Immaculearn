@@ -46,12 +46,13 @@ const AdminLogin = () => {
     }
     
     // Call login function from context
-    const data = await login(email, password);
+    const success = await login(email, password);
     
-    if (data) {
+    if (success) {
       toast.success("Login successful");
       // Navigation will be handled by the useEffect above
     } else {
+      // Always show generic error message for security
       toast.error("Invalid email or password");
       setError("Invalid credentials");
     }

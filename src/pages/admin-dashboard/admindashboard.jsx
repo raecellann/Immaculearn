@@ -21,8 +21,7 @@ const AdminDashboard = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [animatedStats, setAnimatedStats] = useState({ teachers: 0, students: 0, pending: 0 });
+    const [animatedStats, setAnimatedStats] = useState({ teachers: 0, students: 0, pending: 0 });
 
   /* STICKY HEADER STATE */
   const [showHeader, setShowHeader] = useState(true);
@@ -87,13 +86,7 @@ const AdminDashboard = () => {
     return () => clearTimeout(timer);
   }, [stats]);
 
-  // Loading animation
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
-  const fetchStudents = async () => {
-    setIsLoading(true);
+    const fetchStudents = async () => {
     try {
       const res = await adminDashboardService.getAllStudentEmails();
 
@@ -116,12 +109,9 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching students:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
   const fetchTeachers = async () => {
-    setIsLoading(true);
     try {
       const res = await adminDashboardService.getAllProfEmails();
 
@@ -142,8 +132,6 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching teachers:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -246,18 +234,6 @@ const AdminDashboard = () => {
 
         {/* PAGE CONTENT */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          {/* Loading Overlay */}
-          {isLoading && (
-            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
-              <div className="bg-white p-8 rounded-2xl shadow-2xl">
-                <div className="flex items-center space-x-4">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                  <span className="text-gray-900 text-lg">Loading Dashboard...</span>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Header with animation */}
           <div className="mb-8 animate-fade-in">
             <h1 className="hidden lg:block text-3xl font-bold text-center text-gray-900">

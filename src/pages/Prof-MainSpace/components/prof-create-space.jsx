@@ -19,11 +19,8 @@ const ProfCreateSpace = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [spaceName, setSpaceName] = useState("");
-  const [people, setPeople] = useState(Array(5).fill(""));
+  const [description, setDescription] = useState("");
   const [wordCount, setWordCount] = useState(0);
-  const [spaceSchedule, setSpaceSchedule] = useState("");
-  const [spaceSection, setSpaceSection] = useState("");
-  const [spaceTime, setSpaceTime] = useState("");
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
   const [coverImage, setCoverImage] = useState(
     "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
@@ -77,10 +74,7 @@ const ProfCreateSpace = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    setPeople(Array(5).fill(""));
-  }, []);
-
+  
   const colorOptions = [
     "linear-gradient(45deg, #FFC107, #FF5722)",
     "linear-gradient(45deg, #3F51B5, #2196F3)",
@@ -104,15 +98,18 @@ const ProfCreateSpace = () => {
   // Word count handler
   const handleShortDescriptionChange = (e) => {
     const text = e.target.value;
+    console.log("Description input changed:", text);
     const words = text
       .trim()
       .split(/\s+/)
       .filter((word) => word.length > 0);
     const count = words.length;
+    console.log("Word count:", count);
 
     if (count <= 100) {
-      setPeople([text, ...people.slice(1)]);
+      setDescription(text);
       setWordCount(count);
+      console.log("Description state set to:", text);
     }
 
     // Clear description error when user starts typing
@@ -145,7 +142,7 @@ const ProfCreateSpace = () => {
     }
 
     // Validate description
-    if (!people[0].trim() || wordCount === 0) {
+    if (!description.trim() || wordCount === 0) {
       setDescriptionError(true);
       hasErrors = true;
     }
@@ -168,14 +165,14 @@ const ProfCreateSpace = () => {
 
     try {
       setIsLoading(true);
+      console.log("Current description state:", description);
+      console.log("Current wordCount:", wordCount);
       const spaceData = {
         space_name: spaceName,
-        short_description: people[0] || "",
+        space_description: description || "",
         space_cover: coverImage,
-        space_schedule: spaceSchedule,
-        space_section: spaceSection,
-        space_time: spaceTime,
       };
+      console.log("Space data being sent:", spaceData);
       const result = await createSpace(spaceData);
       if (result.success) {
         const space_uuid = result.space_uuid;
@@ -197,11 +194,8 @@ const ProfCreateSpace = () => {
 
         // Reset form
         setSpaceName("");
-        setPeople(Array(5).fill(""));
+        setDescription("");
         setWordCount(0);
-        setSpaceSchedule("");
-        setSpaceSection("");
-        setSpaceTime("");
         setCoverImage(
           "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
         );
@@ -650,7 +644,7 @@ const ProfCreateSpace = () => {
                 </label>
                 <InputField
                   placeholder="Brief description for this space"
-                  value={people[0]}
+                  value={description}
                   onChange={handleShortDescriptionChange}
                   style={{
                     width: "100%",
@@ -664,7 +658,7 @@ const ProfCreateSpace = () => {
                 />
                 {descriptionError && (
                   <p className="text-red-500 text-xs mt-1">
-                    {!people[0].trim() || wordCount === 0
+                    {!description.trim() || wordCount === 0
                       ? "Short description is required"
                       : "Short description exceeds 100 words"}
                   </p>
@@ -689,92 +683,6 @@ const ProfCreateSpace = () => {
                   >
                     {wordCount}/100 words
                   </span>
-                </div>
-              </div>
-
-              {/* ─────────────────────────────────────────────────
-                  ROW 3: Schedule and Section — side by side
-              ───────────────────────────────────────────────── */}
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Schedule */}
-                <div>
-                  <label className="block text-xs lg:text-sm font-medium mb-2">
-                    Schedule
-                  </label>
-                  <InputField
-                    placeholder="e.g., Mon, Wed, Fri"
-                    value={spaceSchedule}
-                    onChange={(e) => setSpaceSchedule(e.target.value)}
-                    style={{
-                      width: "100%",
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #d1d5db",
-                      fontSize: "0.875rem",
-                    }}
-                    className="text-sm sm:text-base"
-                  />
-                  <div className="flex items-center justify-between mt-1.5">
-                    <span
-                      className="text-xs lg:text-xs"
-                      style={{ color: currentColors.textSecondary }}
-                    >
-                      Days (optional)
-                    </span>
-                  </div>
-                </div>
-
-                {/* Time */}
-                <div>
-                  <label className="block text-xs lg:text-sm font-medium mb-2">
-                    Time
-                  </label>
-                  <InputField
-                    placeholder="e.g., 2:00 PM - 4:00 PM"
-                    value={spaceTime}
-                    onChange={(e) => setSpaceTime(e.target.value)}
-                    style={{
-                      width: "100%",
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #d1d5db",
-                      fontSize: "0.875rem",
-                    }}
-                    className="text-sm sm:text-base"
-                  />
-                  <div className="flex items-center justify-between mt-1.5">
-                    <span
-                      className="text-xs lg:text-xs"
-                      style={{ color: currentColors.textSecondary }}
-                    >
-                      Class time (optional)
-                    </span>
-                  </div>
-                </div>
-
-                {/* Section */}
-                <div>
-                  <label className="block text-xs lg:text-sm font-medium mb-2">
-                    Section
-                  </label>
-                  <InputField
-                    placeholder="e.g., Section A, BSCS-3A"
-                    value={spaceSection}
-                    onChange={(e) => setSpaceSection(e.target.value)}
-                    style={{
-                      width: "100%",
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #d1d5db",
-                      fontSize: "0.875rem",
-                    }}
-                    className="text-sm sm:text-base"
-                  />
-                  <div className="flex items-center justify-between mt-1.5">
-                    <span
-                      className="text-xs lg:text-xs"
-                      style={{ color: currentColors.textSecondary }}
-                    >
-                      Section or class code (optional)
-                    </span>
-                  </div>
                 </div>
               </div>
 

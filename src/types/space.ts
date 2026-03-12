@@ -21,7 +21,7 @@ interface SpaceSettings {
 
 export interface SpaceCreateData {
     space_name: string;
-    description?: string;
+    space_description?: string;
     settings?: SpaceSettings;
     space_cover?: string;
 }
@@ -70,7 +70,7 @@ export interface Space {
     space_name: string;
     space_type: string;
     members: SpaceMemberProfile[];
-    description: string | null;
+    space_description: string | null;
     settings?: SpaceSettings;
     created_by: string; // User ID
     created_at: string;

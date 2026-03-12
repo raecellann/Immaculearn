@@ -46,10 +46,11 @@ adminApi.interceptors.response.use(
 
     const status = error.response.status;
 
-    // 🚨 Do NOT retry refresh or profile endpoints
+    // 🚨 Do NOT retry refresh, profile, or login endpoints
     if (
       originalRequest?.url?.includes("/admin/refresh") ||
-      originalRequest?.url?.includes("/admin/profile")
+      originalRequest?.url?.includes("/admin/profile") ||
+      originalRequest?.url?.includes("/admin/login")
     ) {
       return Promise.reject(error);
     }
@@ -81,7 +82,7 @@ adminApi.interceptors.response.use(
         refreshSubscribers = [];
 
         // 🔐 Redirect to login if refresh fails
-        window.location.href = "/login";
+        window.location.href = "/admin/login";
         return Promise.reject(refreshError);
       }
     }

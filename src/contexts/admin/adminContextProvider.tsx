@@ -17,26 +17,19 @@ interface AdminProviderProps {
 export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState<Admin | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const isCheckingRef = useRef(false);
-  const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Debounced auth state update to prevent rapid changes
+  // Immediate auth state update
   const updateAuthState = useCallback(
     (authenticated: boolean, adminData: Admin | null) => {
       try {
-        // Clear any pending timeout
-        if (authTimeoutRef.current) {
-          clearTimeout(authTimeoutRef.current);
-        }
-
-        // Debounce the state update to prevent rapid changes
-        authTimeoutRef.current = setTimeout(() => {
-          setIsAuthenticated(authenticated);
-          setAdmin(adminData);
-          setIsLoading(false);
-        }, 100); // Small delay to prevent rapid state changes
+        console.log("updateAuthState called:", { authenticated, adminData: !!adminData });
+        setIsAuthenticated(authenticated);
+        setAdmin(adminData);
+        setIsLoading(false);
+        console.log("isLoading set to false in updateAuthState");
       } catch (error) {
         console.error("Error in updateAuthState:", error);
       }
@@ -46,9 +39,11 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Check authentication status
   const checkAuth = async (): Promise<boolean> => {
+    console.log("checkAuth called, isCheckingRef:", isCheckingRef.current);
     if (isCheckingRef.current) return isAuthenticated;
     isCheckingRef.current = true;
     setIsLoading(true);
+    console.log("isLoading set to true in checkAuth");
 
     try {
       // Try profile
@@ -62,33 +57,21 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
       throw new Error("No profile");
     } catch (error: any) {
-      const status = error?.response?.status;
-
-      // Try refresh if unauthorized (401)
-      if (status === 401) {
-        try {
-          const refreshRes = await adminApi.get("/admin/refresh");
-
-          if (refreshRes.data?.success) {
-            const retryProfile = await adminApi.get("/admin/profile");
-
-            if (retryProfile.data?.success && retryProfile.data?.data) {
-              updateAuthState(true, retryProfile.data.data);
-              return true;
-            }
-          }
-        } catch (refreshError) {}
-      }
+      
+      
 
       updateAuthState(false, null);
       return false;
     } finally {
+      console.log("checkAuth finally block");
       isCheckingRef.current = false;
+      setIsLoading(false);
+      console.log("isLoading set to false in checkAuth finally");
     }
   };
 
   // Login function
-  const login = async (email: string, password: string): Promise<any> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
 
@@ -101,8 +84,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       if (response.data?.success) {
         // Fetch admin profile after login
         await checkAuth();
-        // Return the response data which contains role and other info
-        return response.data;
+        return true;
       }
 
       return false;
@@ -117,12 +99,11 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const logout = async (account_id: number): Promise<void> => {
     try {
       await adminApi.post("/auth/logout", { user_id: account_id }); // API should clear refresh token cookie
-      await checkAuth();
     } catch (err) {
     } finally {
       updateAuthState(false, null);
-      // Redirect to login page
-      window.location.href = "/login";
+      // Use navigate instead of window.location to avoid hard refresh
+      navigate("/admin/login");
     }
   };
 
@@ -294,15 +275,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (authTimeoutRef.current) {
-        clearTimeout(authTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Initial check on mount
   useEffect(() => {

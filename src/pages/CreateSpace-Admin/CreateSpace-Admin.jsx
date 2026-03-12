@@ -8,17 +8,19 @@ import { useSpace } from "../../contexts/space/useSpace";
 import { toast } from "react-toastify";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
+
 const CreateSpaceAdmin = () => {
   const { createSpace } = useSpace();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
+  
+  const [description, setDescription] = useState("");
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [spaceName, setSpaceName] = useState("");
-  const [people, setPeople] = useState(Array(5).fill(""));
-  const [charCount, setCharCount] = useState(0);
+    const [charCount, setCharCount] = useState(0);
   const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
   const [coverImage, setCoverImage] = useState(
     "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
@@ -93,21 +95,17 @@ const CreateSpaceAdmin = () => {
     "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809911/datastructure_ekrsn5.jpg",
   ];
 
-  useEffect(() => {
-    setPeople(Array(5).fill(""));
-  }, []);
-
+  
   // Word count handler
   const handleShortDescriptionChange = (e) => {
     const text = e.target.value;
-    setPeople([text, ...people.slice(1)]);
 
     // Count characters
     const count = text.length;
 
     // Limit to 100 characters
     if (count <= 100) {
-      setPeople([text, ...people.slice(1)]);
+      setDescription(text);
       setCharCount(count);
     }
 
@@ -180,7 +178,7 @@ const CreateSpaceAdmin = () => {
     }
 
     // Validate description
-    if (!people[0].trim() || charCount === 0) {
+    if (!description.trim() || charCount === 0) {
       setDescriptionError(true);
       hasErrors = true;
     }
@@ -207,7 +205,7 @@ const CreateSpaceAdmin = () => {
       const spaceData = {
         space_name: spaceName,
         max_members: 5,
-        short_description: people[0] || "",
+       space_description: description || "",
         space_cover: coverImage,
       };
 
@@ -229,7 +227,7 @@ const CreateSpaceAdmin = () => {
 
         // Reset form
         setSpaceName("");
-        setPeople(Array(5).fill(""));
+        setDescription("");
         setCharCount(0);
         setCoverImage(
           "https://res.cloudinary.com/dpxfbom0j/image/upload/v1768809912/lecture_gtow4u.jpg",
@@ -643,7 +641,7 @@ const CreateSpaceAdmin = () => {
                 </label>
                 <InputField
                   placeholder="Brief description for this space"
-                  value={people[0]}
+                  value={description}
                   onChange={handleShortDescriptionChange}
                   style={{
                     width: "100%",
@@ -657,7 +655,7 @@ const CreateSpaceAdmin = () => {
                 />
                 {descriptionError && (
                   <p className="text-red-500 text-xs mt-1">
-                    {!people[0].trim() || wordCount === 0
+                    {!description.trim() || charCount === 0
                       ? "Short description is required"
                       : "Short description exceeds 100 characters"}
                   </p>

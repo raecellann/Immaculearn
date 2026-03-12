@@ -18,7 +18,7 @@ class SpaceService {
     try {
       const response = await api.post<ApiResponse<Space>>("/spaces/", {
         space_name: spaceData.space_name,
-        description: spaceData.description || "",
+        space_description: spaceData.space_description || "",
         space_cover: spaceData.space_cover || "",
         settings: spaceData.settings || { space_cover: null, max_member: 10 },
       });
