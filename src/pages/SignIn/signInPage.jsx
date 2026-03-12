@@ -41,34 +41,52 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Single error state for form validation
-  const [formError, setFormError] = useState("");
+  // Field-level errors
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
+  // Track whether a field has been touched (blurred) for eager validation
+  const [touched, setTouched] = useState({ email: false, password: false });
 
   const navigate = useNavigate();
+
+  // Validate a single field on-the-fly whenever value/touched changes
+  const getFieldError = (name, val) => {
+    if (name === "email") {
+      if (!val.trim()) return "Email address is required";
+      if (!EMAIL_REGEX.test(val.trim()))
+        return "Please enter a valid email address";
+    }
+    if (name === "password") {
+      if (!val) return "Password is required";
+    }
+    return "";
+  };
+
+  const handleBlur = (name) => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: getFieldError(name, name === "email" ? email : password),
+    }));
+  };
 
   // ── Submit ──
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Mark all fields as touched
+    setTouched({ email: true, password: true });
+
     const errors = validateLoginForm(email, password);
+    setFieldErrors(errors);
 
     if (Object.keys(errors).length > 0) {
-      // Set single form error message
-      setFormError("Invalid email or password");
+      // Show a toast for the first error
       toast.error(Object.values(errors)[0]);
       return;
     }
 
-    // Clear form error on successful validation
-    setFormError("");
-
     try {
       const data = await login(email, password);
-
-      if (!data.success) {
-        toast.error(data.message || "Invalid email or password");
-        return;
-      }
 
       if (data.needsOnboarding) {
         sessionStorage.setItem("tempToken", data.tempToken);
@@ -80,8 +98,8 @@ const LoginPage = () => {
         navigate(`/home`);
       } else if (data.role === "professor") {
         navigate(`/prof/home`);
-      } else if (data.role === "Admin") {
-        navigate(`/admin/dashboard`);
+      } else if (data.role === "admin") {
+        navigate(`/admin-dashboard`);
       }
     } catch (err) {
       toast.error("Login failed. Please check your credentials and try again.");
@@ -92,8 +110,8 @@ const LoginPage = () => {
   const handleGmailLogin = async () => {
     const baseUrl =
       config.VITE_ENV === "production"
-        ? "https://immaculearn.up.railway.app/v1/account/oauth/google/redirect?popup=true"
-        : "http://localhost:3000/v1/account/oauth/google/redirect?popup=true";
+        ? `${config.API_URL}/account/oauth/google/redirect`
+        : "http://localhost:3000/v1/account/oauth/google/redirect";
 
     const popup = window.open(
       baseUrl,
@@ -105,42 +123,21 @@ const LoginPage = () => {
       if (event.origin !== window.location.origin) return;
 
       if (event.data.type === "OAUTH_SUCCESS") {
-        const { role, needsOnboarding, tempToken } = event.data;
+        const { role, needsOnboarding, token } = event.data;
 
-        if (needsOnboarding && tempToken) {
-          sessionStorage.setItem("tempToken", tempToken);
+        if (needsOnboarding && token) {
+          sessionStorage.setItem("tempToken", token);
           navigate(`/onboarding?role=${role}`);
-        } else if (tempToken) {
-          try {
-            // 🟢 CALL EXCHANGE ENDPOINT WITH api.post
-            const response = await api.post("/v1/auth/exchange", { tempToken });
-
-            console.log("Exchange response:", response);
-
-            if (response.success) {
-              // Store user data
-              localStorage.setItem("user", JSON.stringify(response.user));
-              localStorage.setItem("role", response.role);
-
-              // Check authentication status
-              await checkAuth();
-
-              // Navigate based on role
-              if (response.role === "student") {
-                navigate(`/home`);
-              } else if (response.role === "professor") {
-                navigate(`/prof/home`);
-              } else if (response.role === "Admin") {
-                navigate(`/admin-dashboard`);
-              } else {
-                navigate("/");
-              }
-            } else {
-              toast.error("Failed to complete login. Please try again.");
-            }
-          } catch (error) {
-            console.error("Exchange failed:", error);
-            toast.error("Failed to complete login. Please try again.");
+        } else {
+          await checkAuth();
+          if (role === "student") {
+            navigate(`/home?role=${role}`);
+          } else if (role === "professor") {
+            navigate(`/prof/home?role=${role}`);
+          } else if (role === "admin") {
+            navigate(`/admin-dashboard?role=${role}`);
+          } else {
+            navigate("/");
           }
         }
       } else if (event.data.type === "OAUTH_ERROR") {
@@ -236,10 +233,7 @@ const LoginPage = () => {
       <div className="text-center mb-8">
         <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mt-8">
           Log in with{" "}
-          <span className="font-bold" style={{ color: "#1D4ED8" }}>
-            ImmacuLearn
-          </span>{" "}
-          Today!
+          <span className="text-green-600 font-bold">ImmacuLearn</span> Today!
         </h2>
         <p className="text-gray-800 text-sm md:text-base mt-2 font-medium">
           Experience a smarter way to learn and achieve your goals effortlessly.
@@ -249,18 +243,9 @@ const LoginPage = () => {
       {/* Login Form Box */}
       <div className="bg-white shadow-lg rounded-lg p-8 md:p-10 w-full max-w-md relative z-10 border border-gray-200">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="flex flex-col items-center">
-            <h3 className="text-2xl font-bold" style={{ color: "#1D4ED8" }}>
-              ImmacuLearn
-            </h3>
-            <p className="text-gray-600 text-sm">Log in to continue</p>
-          </div>
-          <img
-            src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1768808239/book-pen_nb81th.svg"
-            alt="ImmacuLearn Logo"
-            className="w-16 h-16 object-contain"
-          />
+        <div className="flex flex-col items-center mb-6">
+          <h3 className="text-2xl font-bold text-green-700">ImmacuLearn</h3>
+          <p className="text-gray-600 text-sm">Log in to continue</p>
         </div>
 
         {/* Form */}
@@ -275,11 +260,29 @@ const LoginPage = () => {
               type="email"
               placeholder="Enter your email address"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setEmail(val);
+                // Always clear error when field is emptied (user deleting); also re-validate if already touched
+                if (!val) {
+                  setFieldErrors((prev) => ({ ...prev, email: "" }));
+                } else if (touched.email) {
+                  setFieldErrors((prev) => ({
+                    ...prev,
+                    email: getFieldError("email", val),
+                  }));
+                }
+              }}
+              onBlur={() => handleBlur("email")}
               style={{
                 width: "100%",
+                borderColor: fieldErrors.email ? "#ef4444" : "#000",
+                boxShadow: fieldErrors.email
+                  ? "2.5px 3px 0 #ef4444"
+                  : "2.5px 3px 0 #000",
               }}
             />
+            <FieldError message={fieldErrors.email} />
           </div>
 
           {/* Password field */}
@@ -289,9 +292,26 @@ const LoginPage = () => {
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPassword(val);
+                  // Always clear error when field is emptied (user deleting); also re-validate if already touched
+                  if (!val) {
+                    setFieldErrors((prev) => ({ ...prev, password: "" }));
+                  } else if (touched.password) {
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      password: getFieldError("password", val),
+                    }));
+                  }
+                }}
+                onBlur={() => handleBlur("password")}
                 style={{
                   width: "100%",
+                  borderColor: fieldErrors.password ? "#ef4444" : "#000",
+                  boxShadow: fieldErrors.password
+                    ? "2.5px 3px 0 #ef4444"
+                    : "2.5px 3px 0 #000",
                   paddingRight: "2.5rem",
                 }}
               />
@@ -302,16 +322,7 @@ const LoginPage = () => {
                 {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </div>
             </div>
-            {/* Single error message under password field */}
-            {formError && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <AlertCircle
-                  size={13}
-                  style={{ color: "#ef4444", flexShrink: 0 }}
-                />
-                <p className="text-red-500 text-xs">{formError}</p>
-              </div>
-            )}
+            <FieldError message={fieldErrors.password} />
           </div>
 
           {/* Log in Button */}
