@@ -1184,7 +1184,7 @@ const ProfStreamPage = () => {
                       </span>
                     )}
                   </div>
-                  <div onClick={handleDeleteRoom}>
+                  <div onClick={handleDeleteRoom} className="mt-2">
                     <Button
                       text={
                         currentSpace?.space_type === "course" ||
