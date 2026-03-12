@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { FiArrowLeft, FiUsers } from 'react-icons/fi';
+import { FiArrowLeft, FiUsers, FiFilePlus } from 'react-icons/fi';
+import { useNavigate } from 'react-router';
 
 const GroupActivityBuilder = ({ 
   currentColors, 
@@ -8,6 +9,7 @@ const GroupActivityBuilder = ({
   onPublish,
   isLoading = false 
 }) => {
+  const navigate = useNavigate();
   const [activityTitle, setActivityTitle] = useState('');
   const [instruction, setInstruction] = useState('');
   const [score, setScore] = useState('');
@@ -502,40 +504,60 @@ const GroupActivityBuilder = ({
         </div>
 
         {/* ACTION BUTTONS */}
-        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-8">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-8">
           <button
-            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
             style={{
-              backgroundColor: currentColors.surface,
-              color: currentColors.text,
-              border: `1px solid ${currentColors.border}`
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = currentColors.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = currentColors.surface;
-            }}
-            onClick={() => handleSave('draft')}
-          >
-            {isLoading ? 'Saving...' : 'Save as Draft'}
-          </button>
-          <button
-            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-            style={{
-              backgroundColor: '#2563eb',
+              backgroundColor: '#10b981',
               color: '#ffffff'
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#1d4ed8';
+              e.target.style.backgroundColor = '#059669';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#2563eb';
+              e.target.style.backgroundColor = '#10b981';
             }}
-            onClick={() => handleSave('published')}
+            onClick={() => navigate('/create-document')}
           >
-            {isLoading ? 'Publishing...' : 'Publish Activity'}
+            <FiFilePlus className="inline mr-2" size={16} />
+            Create Document
           </button>
+          
+          <div className="flex gap-3 sm:gap-4">
+            <button
+              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
+              style={{
+                backgroundColor: currentColors.surface,
+                color: currentColors.text,
+                border: `1px solid ${currentColors.border}`
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = currentColors.hover;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = currentColors.surface;
+              }}
+              onClick={() => handleSave('draft')}
+            >
+              {isLoading ? 'Saving...' : 'Save as Draft'}
+            </button>
+            <button
+              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
+              style={{
+                backgroundColor: '#2563eb',
+                color: '#ffffff'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#1d4ed8';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#2563eb';
+              }}
+              onClick={() => handleSave('published')}
+            >
+              {isLoading ? 'Publishing...' : 'Publish Activity'}
+            </button>
+          </div>
         </div>
       </div>
 

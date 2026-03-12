@@ -1,5 +1,5 @@
 import React from "react";
-import { FiArrowLeft, FiSave, FiCheck, FiDownload, FiSun, FiMoon } from "react-icons/fi";
+import { FiArrowLeft, FiSave, FiCheck, FiDownload, FiSun, FiMoon, FiClock } from "react-icons/fi";
 import { useTheme } from "../contexts/ThemeContext";
 
 const EditorHeader = ({
@@ -11,6 +11,7 @@ const EditorHeader = ({
   connectedUsers = [],
   isOnline = false,
   collaborationEnabled = false,
+  onToggleHistory,
 }) => {
   const { isDarkMode, toggleTheme, colors } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
@@ -44,6 +45,20 @@ const EditorHeader = ({
         </div>
 
         <div className="flex items-center gap-2 xl:gap-3 flex-wrap justify-end">
+          {/* History Toggle */}
+          <button
+            onClick={onToggleHistory}
+            className="p-1.5 xl:p-2 rounded-full transition-colors shrink-0"
+            style={{
+              backgroundColor: currentColors.surface,
+              color: currentColors.text,
+              border: `1px solid ${currentColors.border}`,
+            }}
+            title="View document history"
+          >
+            <FiClock size={16} />
+          </button>
+
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}

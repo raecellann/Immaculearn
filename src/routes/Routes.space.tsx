@@ -11,7 +11,7 @@ import UserPeoplePage from "../pages/UserSpace/UserPeoplePage.jsx";
 import FormBuilderPage from "../pages/UserSpace/AdminSpacePages/FormBuilderPage.jsx";
 import SpacePage from "../pages/Space/SpacePage.jsx";
 import CreateSpaceAdmin from "../pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
-import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
+import CreateDocumentPage from "../pages/Create-Document/CreateDocumentWithHistory.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 import TaskBuilder from "../pages/EXAMPLE_PAGE/builder.jsx";
@@ -27,6 +27,15 @@ export const SpaceRoutes = [
     key: "/space/create",
     path: "/space/create",
     element: <CreateSpaceAdmin />,
+  },
+  {
+    key: "/create-document",
+    path: "/create-document",
+    element: (
+      <ThemeProvider>
+        <CreateDocumentPage />
+      </ThemeProvider>
+    ),
   },
   {
     key: "/space-settings",
@@ -61,7 +70,11 @@ export const SpaceRoutes = [
   {
     key: "/create-document",
     path: "/space/:space_uuid/:space_name/create-document",
-    element: <div>Collaborative Document Creation Page (Coming Soon)</div>,
+    element: (
+      <ThemeProvider>
+        <CreateDocumentPage />
+      </ThemeProvider>
+    ),
   },
   {
     key: "/form-builder",
@@ -69,25 +82,14 @@ export const SpaceRoutes = [
     element: <FormBuilderPage />,
   },
   {
-  key: "/files",
-  path: "/space/:space_uuid/:space_name/files",
-  element: (
-    <SpaceProvider>
-      <FileProvider>
-        <UserFilesShared />
-      </FileProvider>
-    </SpaceProvider>
-  ),
-},
-,
-  {
     key: "/files",
-    path: "/FILES_WANT",
+    path: "/space/:space_uuid/:space_name/files",
     element: (
-      <ThemeProvider>
-            <CreateDocumentPage />
-            </ThemeProvider>
-          
+      <SpaceProvider>
+        <FileProvider>
+          <UserFilesShared />
+        </FileProvider>
+      </SpaceProvider>
     ),
   },
   {
