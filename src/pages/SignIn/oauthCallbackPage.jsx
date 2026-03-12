@@ -6,48 +6,57 @@ const OAuthCallback = () => {
     const handleOAuthCallback = () => {
       // If this is not in a popup, redirect to login
       if (!window.opener) {
-        window.location.href = '/login';
+        window.location.href = "/login";
         return;
       }
 
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get("error");
-      const needsOnboarding = urlParams.get("needsOnboarding") === 'true';
+      const needsOnboarding = urlParams.get("needsOnboarding") === "true";
       const role = urlParams.get("role")?.toLowerCase();
       const token = urlParams.get("tempToken");
 
-      console.log(token)
+      console.log(token);
 
       if (error) {
         console.error("OAuth error:", error);
-        window.opener.postMessage({
-          type: 'OAUTH_ERROR',
-          error: error
-        }, window.location.origin);
+        window.opener.postMessage(
+          {
+            type: "OAUTH_ERROR",
+            error: error,
+          },
+          window.location.origin,
+        );
         window.close();
         return;
       }
 
       if (!role) {
         console.error("No role provided in OAuth callback");
-        window.opener.postMessage({
-          type: 'OAUTH_ERROR',
-          error: 'No role information received'
-        }, window.location.origin);
+        window.opener.postMessage(
+          {
+            type: "OAUTH_ERROR",
+            error: "No role information received",
+          },
+          window.location.origin,
+        );
         window.close();
         return;
       }
 
       // Send success message to parent window
-      window.opener.postMessage({
-        type: 'OAUTH_SUCCESS',
-        role: role,
-        needsOnboarding: needsOnboarding,
-        token: token
-      }, window.location.origin);
+      window.opener.postMessage(
+        {
+          type: "OAUTH_SUCCESS",
+          role: role,
+          needsOnboarding: needsOnboarding,
+          token: token,
+        },
+        window.location.origin,
+      );
 
       // Close the popup
-      window.close();
+      // window.close();
     };
 
     handleOAuthCallback();

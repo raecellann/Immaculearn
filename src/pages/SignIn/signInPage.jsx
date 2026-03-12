@@ -90,7 +90,7 @@ const LoginPage = () => {
 
   // ── Gmail OAuth ──
   const handleGmailLogin = async () => {
-    const baseUrl = `https://immaculearn.up.railway.app/v1/account/oauth/google/redirect`;
+    const baseUrl = `https://immaculearn.up.railway.app/v1/account/oauth/google/redirect?popup=true`;
     // config.VITE_ENV === "production"
     //   ? `/v1/account/oauth/google/redirect`
     //   : "http://localhost:3000/v1/account/oauth/google/redirect";
