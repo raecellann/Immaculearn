@@ -1,6 +1,4 @@
-/* eslint no-restricted-globals: ["error", "event"] */
-/* global process */
-
+/* server.js */
 import fs from "node:fs";
 import path from "node:path";
 import { createServer } from "node:http";
@@ -9,31 +7,24 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import "dotenv/config";
-// import { Server } from 'socket.io';
 
-const IS_PRODUCTION = process.env.ENV === "production";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function createCustomServer() {
   const app = express();
   const server = createServer(app);
-  // const io = new Server(server);
 
-  let vite;
-
-  // Proxy API requests to the backend (same-origin for cookies)
-  // MUST be registered before Vite middlewares, which consume the request body
+  // API proxy
   const apiTarget = IS_PRODUCTION
     ? process.env.API_URL
     : "http://localhost:3000";
-  // Only proxy /api requests that come from our app (fetch/XHR), block direct browser access
   app.use("/v1", (req, res, next) => {
     if (req.headers["x-requested-with"] !== "XMLHttpRequest") {
       return res.status(403).json({ success: false, message: "Forbidden. 🙂" });
     }
     next();
   });
-
   app.use(
     createProxyMiddleware({
       target: apiTarget,
@@ -48,37 +39,28 @@ async function createCustomServer() {
     }),
   );
 
-  if (IS_PRODUCTION) {
-    app.use(
-      express.static(path.resolve(__dirname, "./dist/client/"), {
-        index: false,
-      }),
-    );
-  } else {
+  // Vite dev vs production
+  let vite;
+  if (!IS_PRODUCTION) {
     vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "custom",
-      build: {
-        ssr: true,
-        ssrEmitAssets: true,
-      },
+      build: { ssr: true, ssrEmitAssets: true },
     });
-
     app.use(vite.middlewares);
+  } else {
+    app.use(
+      express.static(path.resolve(__dirname, "./dist/client"), {
+        index: false,
+      }),
+    );
   }
-  // Ignore Chrome DevTools and other well-known paths
-  app.use((req, res, next) => {
-    if (req.path.startsWith("/.well-known")) {
-      return res.status(404).end();
-    }
-    next();
-  });
 
+  // SSR handler
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
-
     try {
-      const index = fs.readFileSync(
+      const indexHtml = fs.readFileSync(
         path.resolve(
           __dirname,
           IS_PRODUCTION ? "./dist/client/index.html" : "./index.html",
@@ -86,21 +68,22 @@ async function createCustomServer() {
         "utf-8",
       );
 
-      let render, template;
+      let template = indexHtml;
+      let render;
 
       if (IS_PRODUCTION) {
-        template = index;
-        render = await import("./dist/server/server-entry.js").then(
-          (mod) => mod.render,
+        const serverEntryPath = path.resolve(
+          __dirname,
+          "./dist/server/server-entry.js",
         );
+        render = await import(serverEntryPath).then((mod) => mod.render);
       } else {
-        template = await vite.transformIndexHtml(url, index);
+        template = await vite.transformIndexHtml(url, indexHtml);
         render = (await vite.ssrLoadModule("/src/server-entry.jsx")).render;
       }
 
       const context = {};
       const appHtml = render(url, context);
-
       const html = template.replace("<!-- ssr -->", appHtml);
 
       res.status(200).set({ "Content-Type": "text/html" }).end(html);
@@ -109,14 +92,8 @@ async function createCustomServer() {
     }
   });
 
-  // io.on('connection', (socket) => {
-  //   console.log('user connected');
-
-  //   socket.emit('welcome', 'A message from the server');
-  // });
-
-  console.log("console", process.env.PORT);
-  server.listen(process.env.PORT, "::");
+  const PORT = process.env.PORT || 5173;
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 createCustomServer();
