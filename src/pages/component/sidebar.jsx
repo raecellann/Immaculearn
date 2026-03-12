@@ -1,0 +1,249 @@
+import React, { useState } from "react";
+import {
+  Home,
+  Users,
+  Bell,
+  Calendar,
+  Folder,
+  ClipboardList,
+  MessageCircle,
+  User,
+  Settings,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+
+import { Link, useLocation } from "react-router";
+import Logout from "./logout";
+import ThemeToggle from "../../components/ThemeToggle";
+import logo from "../../assets/HomePage/logo.png";
+import frierenAvatar from "../../assets/HomePage/frieren-avatar.jpg";
+import { useUser } from "../../contexts/user/useUser";
+import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
+import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
+import { useNotificationCount } from "../../hooks/useNotificationCount";
+
+const Sidebar = ({ isMinimized = false, onToggleMinimize }) => {
+  const { user, logout } = useUser();
+  const [showLogout, setShowLogout] = useState(false);
+  const location = useLocation();
+  const { unreadNotificationsCount } = useNotificationCount();
+
+  // Load minimize state from localStorage on mount
+  const [localMinimized, setLocalMinimized] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sidebarMinimized');
+      return saved ? JSON.parse(saved) : false;
+    } catch {
+      return false;
+    }
+  });
+
+  // Update localStorage when minimize state changes
+  const handleToggleMinimize = () => {
+    const newState = !localMinimized;
+    setLocalMinimized(newState);
+    localStorage.setItem('sidebarMinimized', JSON.stringify(newState));
+    if (onToggleMinimize) {
+      onToggleMinimize();
+    }
+  };
+
+  const menuItems = [
+    { icon: <Home size={20} />, label: "Home", path: "/home" },
+    { icon: <Users size={20} />, label: "Spaces", path: "/space" },
+    { icon: <Bell size={20} />, label: "Notifications", path: "/notifications" },
+    { icon: <Calendar size={20} />, label: "Tasks", path: "/task" },
+    { icon: <Folder size={20} />, label: "Files", path: "/files" },
+  ];
+
+  const privateItems = [
+    { icon: <Calendar size={20} />, label: "Calendar", path: "/calendar" },
+    { icon: <ClipboardList size={20} />, label: "Grade Viewing", path: "/grade-viewing" },
+    { icon: <MessageCircle size={20} />, label: "Chats", path: "/chatlist" },
+  ];
+
+  const accountItems = [
+    { icon: <User size={20} />, label: "Account", path: "/accsettings" },
+    { icon: <Settings size={20} />, label: "Settings", path: "/settings" },
+  ];
+
+  // Check if current page is related to settings
+  const isSettingsPage = location.pathname === "/settings" || 
+                        location.pathname.startsWith("/space-settings");
+
+  return (
+    <div
+      className={`
+        h-screen text-white flex flex-col font-inter
+        sticky top-0 overflow-hidden transition-all duration-300
+        bg-gradient-to-b from-[#6cadf3] via-[#2c81e1] to-[#0066d2]
+        ${localMinimized ? "lg:w-20" : "w-64 lg:w-60"}
+      `}
+    >
+      {/* Logo and Minimize Button */}
+      <div className="p-6 flex items-center justify-between">
+        <div className={`flex items-center space-x-2 ${localMinimized ? "hidden lg:hidden" : ""}`}>
+          <img src={logo} alt="ImmacuLearn Logo" className="w-8 h-8" />
+          <h1 className="text-lg font-bold">ImmacuLearn</h1>
+        </div>
+        <button
+          onClick={handleToggleMinimize}
+          className="hidden lg:block p-2 rounded-lg hover:bg-white/10 transition-colors"
+        >
+          {localMinimized ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <div
+        className="flex-1 pl-5 overflow-y-auto"
+        style={{
+          scrollbarWidth: "none", // Firefox
+          msOverflowStyle: "none", // IE & Edge
+        }}
+      >
+        {/* Hide scrollbar for Chrome/Safari/Edge */}
+        <style>
+          {`
+            .sidebar-scroll::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
+
+        <div className="sidebar-scroll">
+          <nav className="space-y-1">
+            {menuItems.map((item) => (
+              <SidebarItem
+                key={item.label}
+                {...item}
+                active={location.pathname === item.path}
+                isMinimized={localMinimized}
+                notificationCount={item.label === "Notifications" ? unreadNotificationsCount : undefined}
+              />
+            ))}
+          </nav>
+
+          {/* Private */}
+          <div className={`mt-4 ${localMinimized ? "" : ""}`}>
+            <h2 className={`text-sm font-semibold mb-3 text-blue-100 ${localMinimized ? "hidden" : ""}`}>
+              Private
+            </h2>
+            <nav className="space-y-1">
+              {privateItems.map((item) => (
+                <SidebarItem
+                  key={item.label}
+                  {...item}
+                  active={location.pathname === item.path}
+                  isMinimized={localMinimized}
+                />
+              ))}
+            </nav>
+          </div>
+
+          {/* Account */}
+          <div className="mt-4 space-y-1">
+            {accountItems.map((item) => (
+              <SidebarItem
+                key={item.label}
+                {...item}
+                active={item.path === "/settings" ? isSettingsPage : location.pathname === item.path}
+                isMinimized={localMinimized}
+              />
+            ))}
+
+            <SidebarItem
+              icon={<LogOut size={20} />}
+              label="Log Out Account"
+              onClick={() => setShowLogout(true)}
+              isMinimized={localMinimized}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* User Profile */}
+      <div className={`px-6 py-2 pt-3 border-t border-blue-500 ${localMinimized ? "lg:text-center" : ""}`}>
+        <div className={`flex items-center gap-3 ${localMinimized ? "lg:flex-col" : ""}`}>
+          <img
+            src={user ? user.profile_pic : frierenAvatar}
+            alt="Profile"
+            className="w-8 h-8 rounded-full"
+          />
+          {/* Text Container */}
+          <div className={`flex flex-col ${localMinimized ? "hidden lg:hidden" : ""}`}>
+            <span className="text-sm font-medium">
+              {capitalizeWords(user?.first_name) || "User"}
+            </span>
+            <span className="text-xs text-gray-400">
+              {capitalizeWords(user?.role) || "Role"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {showLogout && (
+        <Logout
+          onClose={() => setShowLogout(false)}
+          onLogOut={() => logout(user?.id)}
+        />
+      )}
+    </div>
+  );
+};
+
+const SidebarItem = ({ icon, label, path, onClick, active, isMinimized, notificationCount = 0 }) => {
+  const Component = path ? Link : "div";
+
+  return (
+    <Component
+      to={path}
+      onClick={onClick}
+      className={`
+        relative flex items-center gap-3 py-3 text-xs font-medium
+        rounded-l-full cursor-pointer
+        transition-all duration-700 group
+
+        before:absolute before:inset-0
+        before:bg-[rgba(255,255,255,0.05)]
+        before:origin-right before:scale-x-0
+        before:transition-transform before:duration-700
+
+        hover:before:scale-x-100
+
+        ${
+          active
+            ? "bg-[#161A20] text-white shadow-lg"
+            : "text-blue-100 hover:text-white hover:shadow-md before:hover:scale-x-100"
+        }
+        ${isMinimized ? "lg:px-2 lg:justify-center" : "pl-5 pr-3"}
+      `}
+      title={isMinimized ? label : ""}
+    >
+      <div className="relative z-10 flex items-center gap-3 w-full">
+        {icon}
+        <span className={`${isMinimized ? "hidden lg:hidden" : ""}`}>{label}</span>
+        
+        {/* Notification Counter Badge - Beside Text */}
+        {notificationCount > 0 && !isMinimized && (
+          <div 
+            className="ml-auto bg-red-500 text-white font-bold rounded-full flex items-center justify-center w-5 h-5 text-[10px] shadow-lg"
+          >
+            {notificationCount > 99 ? "99+" : notificationCount}
+          </div>
+        )}
+      </div>
+      
+      {/* Tooltip for minimized state */}
+      {isMinimized && (
+        <div className="hidden lg:block absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+          {label}
+        </div>
+      )}
+    </Component>
+  );
+};
+
+export default Sidebar;
