@@ -90,10 +90,10 @@ const LoginPage = () => {
 
   // ── Gmail OAuth ──
   const handleGmailLogin = async () => {
-    const baseUrl =
-      config.VITE_ENV === "production"
-        ? `${config.API_URL}/v1/account/oauth/google/redirect`
-        : "http://localhost:3000/v1/account/oauth/google/redirect";
+    const baseUrl = `/v1/account/oauth/google/redirect`;
+    // config.VITE_ENV === "production"
+    //   ? `/v1/account/oauth/google/redirect`
+    //   : "http://localhost:3000/v1/account/oauth/google/redirect";
 
     const popup = window.open(
       baseUrl,
