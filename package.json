@@ -4,9 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build && vite build --ssr src/server-entry.jsx",
-    "start": "node server.js",
+    "dev": "cross-env PORT=5173 node server.js",
+    "build": "npm run build:client",
+    "build:client": "vite build --outDir dist/client",
+    "build:server": "vite build --outDir dist/server --ssr src/server-entry.jsx",
+    "start": "ENV=production PORT=5173 node server.js",
     "lint": "eslint ."
   },
   "keywords": [
