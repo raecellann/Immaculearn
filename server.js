@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 8080;
 
 async function createCustomServer() {
   const app = express();
+  app.set("trust proxy", 1); // FOR RAILWAY
   const server = createServer(app);
 
   // Health check endpoint
