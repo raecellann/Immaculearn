@@ -90,10 +90,10 @@ const LoginPage = () => {
 
   // ── Gmail OAuth ──
   const handleGmailLogin = async () => {
-    const baseUrl = `https://immaculearn.up.railway.app/v1/account/oauth/google/redirect?popup=true`;
-    // config.VITE_ENV === "production"
-    //   ? `/v1/account/oauth/google/redirect`
-    //   : "http://localhost:3000/v1/account/oauth/google/redirect";
+    const baseUrl =
+      config.VITE_ENV === "production"
+        ? "https://immaculearn.up.railway.app/v1/account/oauth/google/redirect?popup=true"
+        : "http://localhost:3000/v1/account/oauth/google/redirect?popup=true";
 
     const popup = window.open(
       baseUrl,
@@ -105,21 +105,42 @@ const LoginPage = () => {
       if (event.origin !== window.location.origin) return;
 
       if (event.data.type === "OAUTH_SUCCESS") {
-        const { role, needsOnboarding, token } = event.data;
+        const { role, needsOnboarding, tempToken } = event.data;
 
-        if (needsOnboarding && token) {
-          sessionStorage.setItem("tempToken", token);
+        if (needsOnboarding && tempToken) {
+          sessionStorage.setItem("tempToken", tempToken);
           navigate(`/onboarding?role=${role}`);
-        } else {
-          await checkAuth();
-          if (role === "student") {
-            navigate(`/home?role=${role}`);
-          } else if (role === "professor") {
-            navigate(`/prof/home?role=${role}`);
-          } else if (role === "Admin") {
-            navigate(`/admin-dashboard?role=${role}`);
-          } else {
-            navigate("/");
+        } else if (tempToken) {
+          try {
+            // 🟢 CALL EXCHANGE ENDPOINT WITH api.post
+            const response = await api.post("/v1/auth/exchange", { tempToken });
+
+            console.log("Exchange response:", response);
+
+            if (response.success) {
+              // Store user data
+              localStorage.setItem("user", JSON.stringify(response.user));
+              localStorage.setItem("role", response.role);
+
+              // Check authentication status
+              await checkAuth();
+
+              // Navigate based on role
+              if (response.role === "student") {
+                navigate(`/home`);
+              } else if (response.role === "professor") {
+                navigate(`/prof/home`);
+              } else if (response.role === "Admin") {
+                navigate(`/admin-dashboard`);
+              } else {
+                navigate("/");
+              }
+            } else {
+              toast.error("Failed to complete login. Please try again.");
+            }
+          } catch (error) {
+            console.error("Exchange failed:", error);
+            toast.error("Failed to complete login. Please try again.");
           }
         }
       } else if (event.data.type === "OAUTH_ERROR") {

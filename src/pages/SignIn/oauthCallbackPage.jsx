@@ -56,7 +56,7 @@ const OAuthCallback = () => {
       );
 
       // Close the popup
-      // window.close();
+      window.close();
     };
 
     handleOAuthCallback();
