@@ -1,25 +1,19 @@
 {
-    "version": 3,
+    "version": 2,
     "builds": [
         {
-            "src": "vite.config.js",
-            "use": "@vercel/node",
-            "config": {
-                "includeFiles": [
-                    "dist/server/**",
-                    "dist/client/**"
-                ]
-            }
+            "src": "server.js",
+            "use": "@vercel/node"
         },
         {
-            "src": "dist/server/server-entry.js",
-            "use": "@vercel/node"
+            "src": "dist/client/**",
+            "use": "@vercel/static"
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "dist/server/server-entry.js"
+            "dest": "/server.js"
         }
     ],
     "env": {
