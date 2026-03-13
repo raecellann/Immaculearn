@@ -490,8 +490,8 @@ const ProfChatPage = () => {
                           className={`absolute bottom-0 right-0 w-3 h-3 ${statusDotClass} rounded-full border-2 border-[#1E2330]`}
                         ></div>
                       </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-sm" style={{ color: currentColors.text }}>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate" style={{ color: currentColors.text }}>
                           {m.full_name}
                         </p>
                         <p className="text-xs" style={{ color: currentColors.textSecondary }}>
@@ -543,8 +543,8 @@ const ProfChatPage = () => {
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1E2330]"></div>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm" style={{ color: currentColors.text }}>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate" style={{ color: currentColors.text }}>
                       {space.space_name}
                     </p>
                     <p className="text-xs" style={{ color: currentColors.textSecondary }}>
@@ -612,7 +612,7 @@ const ProfChatPage = () => {
                         ></div>
                       </div>
                       <div>
-                        <h2 className="font-semibold" style={{ color: currentColors.text }}>
+                        <h2 className="font-semibold truncate" style={{ color: currentColors.text }}>
                           {activeSpace?.space_name || "Chat"}
                         </h2>
                         <p className={`text-xs ${statusColorClass}`}>
@@ -739,7 +739,7 @@ const ProfChatPage = () => {
                                   <div className="w-8 h-8 mr-2 mt-1"></div>
                                 )}
                                 <div
-                                  className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? `${currentConversationColor.sent} text-white rounded-br-md` : `${currentConversationColor.received} text-white rounded-bl-md`} ${m.from === "them" ? "-mt-1" : ""}`}
+                                  className={`px-4 py-2 rounded-2xl max-w-[70%] sm:max-w-[75%] md:max-w-[80%] break-words ${m.from === "me" ? `${currentConversationColor.sent} text-white rounded-br-md` : `${currentConversationColor.received} text-white rounded-bl-md`} ${m.from === "them" ? "-mt-1" : ""}`}
                                 >
                                   {m.type === "image" ? (
                                     <div className="space-y-2">

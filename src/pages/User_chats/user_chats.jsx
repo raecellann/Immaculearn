@@ -517,9 +517,9 @@ const ChatList = () => {
                           style={{ borderColor: currentColors.surface }}
                         ></div>
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <p
-                          className="font-semibold text-sm"
+                          className="font-semibold text-sm truncate"
                           style={{ color: currentColors.text }}
                         >
                           {m.full_name}
@@ -576,9 +576,9 @@ const ChatList = () => {
                       ></div>
                     )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p
-                      className="font-semibold text-sm"
+                      className="font-semibold text-sm truncate"
                       style={{ color: currentColors.text }}
                     >
                       {space.space_name}
@@ -661,7 +661,7 @@ const ChatList = () => {
                       </div>
                       <div>
                         <h2
-                          className="font-semibold"
+                          className="font-semibold truncate"
                           style={{ color: currentColors.text }}
                         >
                           {activeSpace?.space_name || "Chat"}
@@ -800,7 +800,7 @@ const ChatList = () => {
                                   <div className="w-8 h-8 mr-2 mt-1"></div>
                                 )}
                                 <div
-                                  className={`px-4 py-2 rounded-2xl max-w-[200px] sm:max-w-xs md:max-w-sm ${m.from === "me" ? `${currentConversationColor.sent} text-white rounded-br-md` : `${currentConversationColor.received} text-white rounded-bl-md`} ${m.from === "them" ? "-mt-1" : ""}`}
+                                  className={`px-4 py-2 rounded-2xl max-w-[70%] sm:max-w-[75%] md:max-w-[80%] break-words ${m.from === "me" ? `${currentConversationColor.sent} text-white rounded-br-md` : `${currentConversationColor.received} text-white rounded-bl-md`} ${m.from === "them" ? "-mt-1" : ""}`}
                                 >
                                   {m.type === "image" ? (
                                     <div className="space-y-2">
