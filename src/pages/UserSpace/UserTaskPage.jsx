@@ -26,6 +26,7 @@ import { DeleteConfirmationDialog } from "../component/SweetAlert.jsx";
 import ButtonComponent from "../component/Button.jsx";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
+import { FileProvider } from "../../contexts/file/fileContextProvider";
 import { toast } from "react-toastify";
 import GroupActivityBuilder from "../Prof-Space/taskComponents/GroupActivityBuilder.jsx";
 import QuizPreview from "../Prof-Space/taskPreviewComponents/QuizPreview.jsx";
@@ -1043,12 +1044,14 @@ const UserTaskPage = () => {
 
     if (categoryTasks.length === 0) return null;
 
-    // For quiz category, limit to 3 tasks and add See More button
+    // For quiz and individual-activity categories, limit to 3 tasks and add See More button
     const isQuizCategory = category === "quiz";
-    const displayedTasks = isQuizCategory
+    const isIndividualActivityCategory = category === "individual-activity";
+    const shouldLimit = isQuizCategory || isIndividualActivityCategory;
+    const displayedTasks = shouldLimit
       ? categoryTasks.slice(0, 3)
       : categoryTasks;
-    const hasMoreTasks = isQuizCategory && categoryTasks.length > 3;
+    const hasMoreTasks = shouldLimit && categoryTasks.length > 3;
 
     return (
       <div className="mb-8">
@@ -1178,6 +1181,29 @@ const UserTaskPage = () => {
                         Take Quiz
                       </button>
                     )}
+                    {task.isLocal && task.task_category === "individual-activity" && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleTakeActivity(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: task.has_answered
+                            ? "black"
+                            : "#10B981",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#059669";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "#10B981";
+                        }}
+                      >
+                        Take Activity
+                      </button>
+                    )}
                     <a
                       href="#"
                       onClick={(e) => {
@@ -1185,7 +1211,7 @@ const UserTaskPage = () => {
                         handlePreviewTask(task);
                       }}
                       className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        task.isLocal && task.task_category === "quiz"
+                        task.isLocal && (task.task_category === "quiz" || task.task_category === "individual-activity")
                           ? "flex-1"
                           : "block w-full"
                       }`}
@@ -1311,6 +1337,64 @@ const UserTaskPage = () => {
                           )}
                         </>
                       )}
+                      {task.task_category === "individual-activity" && (
+                        <>
+                          {!isOwnerSpace ? (
+                            <ButtonComponent
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setTaskId(task?.id);
+
+                                if (task?.has_answered) {
+                                  handleViewScore(task);
+                                } else {
+                                  handleTakeActivity(task);
+                                }
+                              }}
+                              style={{
+                                backgroundColor: task.has_answered
+                                  ? "#6b7280"
+                                  : "#10B981",
+                                borderColor: task.has_answered
+                                  ? "#6b7280"
+                                  : "#10B981",
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: "none",
+                                width: "auto",
+                                minWidth: "80px",
+                                margin: "0 auto",
+                                display: "block",
+                              }}
+                            >
+                              {task.has_answered ? "View Score" : "Take Activity"}
+                            </ButtonComponent>
+                          ) : (
+                            <ButtonComponent
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handlePreviewTask(task);
+                              }}
+                              style={{
+                                backgroundColor: task.isLocal
+                                  ? "#2563eb"
+                                  : currentColors.accent,
+                                borderColor: task.isLocal
+                                  ? "#2563eb"
+                                  : currentColors.accent,
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: task.isLocal ? 1 : "none",
+                                width: task.isLocal ? "auto" : "100%",
+                              }}
+                            >
+                              View Details
+                            </ButtonComponent>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1319,8 +1403,8 @@ const UserTaskPage = () => {
           })}
         </div>
 
-        {/* See More Button for Quiz Category */}
-        {isQuizCategory && hasMoreTasks && (
+        {/* See More Button for Quiz and Individual Activity Categories */}
+        {shouldLimit && hasMoreTasks && (
           <div className="mt-4 text-right">
             <ButtonComponent
               onClick={() => {
@@ -1341,7 +1425,7 @@ const UserTaskPage = () => {
                 borderRadius: "6px",
               }}
             >
-              See More Quizzes
+              See More {isQuizCategory ? "Quizzes" : "Individual Activities"}
             </ButtonComponent>
           </div>
         )}
@@ -1362,6 +1446,12 @@ const UserTaskPage = () => {
 
   // Handle student quiz taking
   const handleTakeQuiz = (task) => {
+    setStudentQuizTask(task);
+    setShowStudentQuiz(true);
+  };
+
+  // Handle student activity taking
+  const handleTakeActivity = (task) => {
     setStudentQuizTask(task);
     setShowStudentQuiz(true);
   };
@@ -1601,13 +1691,14 @@ const UserTaskPage = () => {
   };
 
   return (
-    <div
-      className="flex min-h-screen font-sans"
-      style={{
-        backgroundColor: currentColors.background,
-        color: currentColors.text,
-      }}
-    >
+    <FileProvider>
+      <div
+        className="flex min-h-screen font-sans"
+        style={{
+          backgroundColor: currentColors.background,
+          color: currentColors.text,
+        }}
+      >
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div className="hidden lg:block">
         {/* <ProfSidebar onLogoutClick={() => setShowLogout(true)} /> */}
@@ -3235,6 +3326,7 @@ const UserTaskPage = () => {
         </div>
       )}
     </div>
+    </FileProvider>
   );
 };
 
