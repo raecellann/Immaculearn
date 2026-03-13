@@ -9,27 +9,40 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import "dotenv/config";
-// import { Server } from 'socket.io';
 
-const IS_PRODUCTION = process.env.ENV === "production";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PORT = process.env.PORT || 8080;
 
 async function createCustomServer() {
   const app = express();
+  app.set("trust proxy", 1); // FOR RAILWAY
   const server = createServer(app);
-  // const io = new Server(server);
 
-  let vite;
+  // Health check endpoint
+  app.get("/health", (req, res) => {
+    res.status(200).json({
+      status: "OK",
+      environment: IS_PRODUCTION ? "production" : "development",
+    });
+  });
 
-  // Proxy API requests to the backend (same-origin for cookies)
-  // MUST be registered before Vite middlewares, which consume the request body
+  // IMPORTANT: In production, API requests should go to the same server
+  // since both frontend and backend are running on the same instance
   const apiTarget = IS_PRODUCTION
     ? process.env.API_URL
     : "http://localhost:3000";
-  // Only proxy /api requests that come from our app (fetch/XHR), block direct browser access
+
+  console.log(`🌐 API Target: ${apiTarget}`);
+  console.log(
+    `🔧 Environment: ${IS_PRODUCTION ? "production" : "development"}`,
+  );
+
+  // Remove the XHR header check or make it optional
   app.use("/v1", (req, res, next) => {
+    if (req.method === "GET") return next();
     if (req.headers["x-requested-with"] !== "XMLHttpRequest") {
-      return res.status(403).json({ success: false, message: "Forbidden. 🙂" });
+      return res.status(403).json({ success: false, message: "Forbidden." });
     }
     next();
   });
@@ -39,7 +52,9 @@ async function createCustomServer() {
       target: apiTarget,
       changeOrigin: true,
       pathFilter: "/v1",
-      cookieDomainRewrite: "",
+      cookieDomainRewrite: {
+        "*": "",
+      },
       on: {
         proxyReq: (proxyReq) => {
           proxyReq.setHeader("apikey", process.env.API_KEY);
@@ -48,75 +63,89 @@ async function createCustomServer() {
     }),
   );
 
+  // If in production and this is an API request to the main server,
+  // we need to handle it directly
   if (IS_PRODUCTION) {
-    app.use(
-      express.static(path.resolve(__dirname, "./dist/client/"), {
-        index: false,
-      }),
-    );
+    // This will be used when the proxy targets itself
+    app.use("/v1", (req, res, next) => {
+      console.log(`📦 Handling API request directly: ${req.method} ${req.url}`);
+      next();
+    });
+  }
+
+  let vite;
+
+  if (IS_PRODUCTION) {
+    // Serve static files in production
+    const staticPath = path.resolve(__dirname, "./dist/client");
+    if (fs.existsSync(staticPath)) {
+      app.use(express.static(staticPath, { index: false }));
+      console.log(`📁 Serving static from: ${staticPath}`);
+    }
   } else {
+    // Development mode with Vite
     vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "custom",
-      build: {
-        ssr: true,
-        ssrEmitAssets: true,
-      },
+      root: path.resolve(__dirname, "."),
     });
 
     app.use(vite.middlewares);
   }
-  // Ignore Chrome DevTools and other well-known paths
-  app.use((req, res, next) => {
-    if (req.path.startsWith("/.well-known")) {
-      return res.status(404).end();
-    }
-    next();
-  });
 
+  // Handle all other routes - serve the React app
   app.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
+    // Skip API and health routes
+    if (req.path.startsWith("/v1") || req.path.startsWith("/health")) {
+      return next();
+    }
 
     try {
-      const index = fs.readFileSync(
-        path.resolve(
-          __dirname,
-          IS_PRODUCTION ? "./dist/client/index.html" : "./index.html",
-        ),
-        "utf-8",
-      );
-
-      let render, template;
+      let template, render;
 
       if (IS_PRODUCTION) {
-        template = index;
-        render = await import("./dist/server/server-entry.js").then(
-          (mod) => mod.render,
+        // Production: serve built index.html
+        template = fs.readFileSync(
+          path.resolve(__dirname, "./dist/client/index.html"),
+          "utf-8",
         );
+
+        try {
+          render = (await import("./dist/server/server-entry.js")).render;
+        } catch (e) {
+          console.log("SSR not available");
+        }
       } else {
-        template = await vite.transformIndexHtml(url, index);
+        // Development: use Vite
+        template = await vite.transformIndexHtml(
+          req.originalUrl,
+          fs.readFileSync(path.resolve(__dirname, "./index.html"), "utf-8"),
+        );
         render = (await vite.ssrLoadModule("/src/server-entry.jsx")).render;
       }
 
       const context = {};
-      const appHtml = render(url, context);
-
+      const appHtml = render ? render(req.originalUrl, context) : "";
       const html = template.replace("<!-- ssr -->", appHtml);
 
       res.status(200).set({ "Content-Type": "text/html" }).end(html);
     } catch (e) {
+      console.error("❌ Error serving page:", e);
       next(e);
     }
   });
 
-  // io.on('connection', (socket) => {
-  //   console.log('user connected');
+  // Error handling
+  app.use((err, req, res, next) => {
+    console.error("❌ Server error:", err);
+    res.status(500).send("Server Error");
+  });
 
-  //   socket.emit('welcome', 'A message from the server');
-  // });
-
-  console.log("console", process.env.PORT);
-  server.listen(process.env.PORT, "::");
+  server.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📝 Production mode: ${IS_PRODUCTION}`);
+    console.log(`🎯 API endpoint: /v1/*`);
+  });
 }
 
-createCustomServer();
+createCustomServer().catch(console.error);

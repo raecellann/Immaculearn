@@ -8,7 +8,7 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
   const navigate = useNavigate();
 
   // Debug taskData structure
-  console.log('QuizPreview taskData:', taskData);
+  console.log("QuizPreview taskData:", taskData);
 
   // Parse questions from the task data
   const getQuestions = () => {
@@ -29,12 +29,12 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
 
   const allQuestions = getQuestions();
   const hasMoreQuestions = allQuestions.length > 3;
-  
+
   // Debug logging
-  console.log('QuizPreview Debug:');
-  console.log('- All questions count:', allQuestions.length);
-  console.log('- Has more questions:', hasMoreQuestions);
-  console.log('- First 3 questions:', allQuestions.slice(0, 3));
+  console.log("QuizPreview Debug:");
+  console.log("- All questions count:", allQuestions.length);
+  console.log("- Has more questions:", hasMoreQuestions);
+  console.log("- First 3 questions:", allQuestions.slice(0, 3));
 
   const determineQuestionType = (answers) => {
     if (!answers || answers.length === 0) return "short-answer";
@@ -381,7 +381,7 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
       {/* See More Button */}
       {hasMoreQuestions && (
         <div className="mt-6 text-center">
-          {console.log('Rendering See More button...')}
+          {console.log("Rendering See More button...")}
           <button
             onClick={() => {
               // Navigate to ViewAllTaskPage with current space context
@@ -390,20 +390,21 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
               if (spaceId && spaceName) {
                 navigate(`/task/${spaceId}/${encodeURIComponent(spaceName)}`);
               } else {
-                console.warn('No space ID or name found for navigation');
+                console.warn("No space ID or name found for navigation");
               }
             }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             style={{
-              backgroundColor: currentColors.accent || '#2563eb',
-              color: '#ffffff',
-              border: 'none'
+              backgroundColor: currentColors.accent || "#2563eb",
+              color: "#ffffff",
+              border: "none",
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#1d4ed8';
+              e.target.style.backgroundColor = "#1d4ed8";
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = currentColors.accent || '#2563eb';
+              e.target.style.backgroundColor =
+                currentColors.accent || "#2563eb";
             }}
           >
             See More Questions
@@ -427,9 +428,9 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
           </p>
           <button
             className="px-6 py-3 rounded-lg text-white font-medium text-base shadow-lg hover:shadow-xl transition-all"
-            style={{ 
+            style={{
               backgroundColor: "#22c55e",
-              border: "2px solid #22c55e"
+              border: "2px solid #22c55e",
             }}
             onMouseEnter={(e) => {
               e.target.style.backgroundColor = "#1d9d3a";

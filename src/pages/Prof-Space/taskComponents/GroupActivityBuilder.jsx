@@ -1,37 +1,46 @@
-import React, { useState, useRef } from 'react';
-import { FiArrowLeft, FiUsers, FiFilePlus } from 'react-icons/fi';
-import { useNavigate } from 'react-router';
+import React, { useState, useRef } from "react";
+import { FiArrowLeft, FiUsers, FiFilePlus } from "react-icons/fi";
+import { useNavigate } from "react-router";
 
-const GroupActivityBuilder = ({ 
-  currentColors, 
-  onBack, 
-  onSave, 
+const GroupActivityBuilder = ({
+  currentColors,
+  onBack,
+  onSave,
   onPublish,
-  isLoading = false 
+  isLoading = false,
 }) => {
   const navigate = useNavigate();
-  const [activityTitle, setActivityTitle] = useState('');
-  const [instruction, setInstruction] = useState('');
-  const [score, setScore] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [activityTitle, setActivityTitle] = useState("");
+  const [instruction, setInstruction] = useState("");
+  const [score, setScore] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const getLocalDateTimeMin = () => {
     const now = new Date();
     const tzOffsetMs = now.getTimezoneOffset() * 60000;
     return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 16);
   };
 
-  const [estimatedTime, setEstimatedTime] = useState('');
-  const [groupSize, setGroupSize] = useState('3');
+  const [estimatedTime, setEstimatedTime] = useState("");
+  const [groupSize, setGroupSize] = useState("3");
   const [allowSelfGrouping, setAllowSelfGrouping] = useState(false);
   const [peerEvaluation, setPeerEvaluation] = useState(false);
-  
+
   const instructionRef = useRef(null);
 
   // Group management state
   const [showManualGroups, setShowManualGroups] = useState(false);
   const [showGenerateGroups, setShowGenerateGroups] = useState(false);
   const [numberOfGroups, setNumberOfGroups] = useState(1);
-  const [groups, setGroups] = useState([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+  const [groups, setGroups] = useState([
+    {
+      id: 1,
+      members: [],
+      leader: "",
+      showInputs: false,
+      isSaved: false,
+      wasPreviouslySaved: false,
+    },
+  ]);
   const [activeGroup, setActiveGroup] = useState(1);
   const [groupsConfigured, setGroupsConfigured] = useState(false);
   const [groupCreationMethod, setGroupCreationMethod] = useState(null);
@@ -39,47 +48,51 @@ const GroupActivityBuilder = ({
 
   // Example available members
   const availableMembers = [
-    "John Smith", "Emily Johnson", "Michael Brown", "Sarah Davis",
-    "James Wilson", "Lisa Anderson", "Robert Taylor", "Maria Garcia",
-    "David Martinez", "Jennifer Lopez"
+    "John Smith",
+    "Emily Johnson",
+    "Michael Brown",
+    "Sarah Davis",
+    "James Wilson",
+    "Lisa Anderson",
+    "Robert Taylor",
+    "Maria Garcia",
+    "David Martinez",
+    "Jennifer Lopez",
   ];
-
-
 
   React.useEffect(() => {
     if (instructionRef.current) {
       const handleInput = () => {
         setInstruction(instructionRef.current.innerHTML);
       };
-      instructionRef.current.addEventListener('input', handleInput);
+      instructionRef.current.addEventListener("input", handleInput);
       return () => {
-        instructionRef.current?.removeEventListener('input', handleInput);
+        instructionRef.current?.removeEventListener("input", handleInput);
       };
     }
   }, []);
 
-  
   // Group management functions
   const handleManualGroups = () => {
     if (groupsConfigured) {
-      if (groupCreationMethod === 'generate') {
+      if (groupCreationMethod === "generate") {
         setShowGenerateGroups(true);
       } else {
         setActiveGroup(1);
         setShowManualGroups(true);
       }
     } else {
-      const input = document.getElementById('groups-input');
+      const input = document.getElementById("groups-input");
       const numGroups = parseInt(input.value) || 1;
       setNumberOfGroups(numGroups);
-      setGroupCreationMethod('manual');
-      
+      setGroupCreationMethod("manual");
+
       const newGroups = Array.from({ length: numGroups }, (_, index) => ({
         id: index + 1,
-        members: [''],
-        leader: '',
+        members: [""],
+        leader: "",
         showInputs: false,
-        isSaved: false
+        isSaved: false,
       }));
       setGroups(newGroups);
       setActiveGroup(1);
@@ -88,7 +101,7 @@ const GroupActivityBuilder = ({
   };
 
   const handleGenerateGroups = () => {
-    const input = document.getElementById('groups-input');
+    const input = document.getElementById("groups-input");
     const numGroups = parseInt(input.value) || 1;
     setNumberOfGroups(numGroups);
     shuffleGroups(numGroups);
@@ -96,33 +109,35 @@ const GroupActivityBuilder = ({
   };
 
   const shuffleGroups = (numGroups) => {
-    const shuffledMembers = [...availableMembers].sort(() => Math.random() - 0.5);
+    const shuffledMembers = [...availableMembers].sort(
+      () => Math.random() - 0.5,
+    );
     const totalMembers = shuffledMembers.length;
     const baseMembersPerGroup = Math.floor(totalMembers / numGroups);
     const remainder = totalMembers % numGroups;
-    
+
     const newGroups = Array.from({ length: numGroups }, (_, index) => {
       const membersCount = baseMembersPerGroup + (index < remainder ? 1 : 0);
-      
+
       let startIndex = 0;
       for (let i = 0; i < index; i++) {
         startIndex += baseMembersPerGroup + (i < remainder ? 1 : 0);
       }
       const endIndex = startIndex + membersCount;
-      
+
       const groupMembers = shuffledMembers.slice(startIndex, endIndex);
-      const leader = groupMembers[0] || '';
+      const leader = groupMembers[0] || "";
       const members = groupMembers.slice(1);
-      
+
       return {
         id: index + 1,
         leader: leader,
         members: members,
         showInputs: false,
-        isSaved: true
+        isSaved: true,
       };
     });
-    
+
     setGeneratedGroupsPreview(newGroups);
   };
 
@@ -140,15 +155,19 @@ const GroupActivityBuilder = ({
 
   const toggleGroupInputs = (groupId) => {
     const updatedGroups = [...groups];
-    updatedGroups[groupId - 1].showInputs = !updatedGroups[groupId - 1].showInputs;
+    updatedGroups[groupId - 1].showInputs =
+      !updatedGroups[groupId - 1].showInputs;
     setGroups(updatedGroups);
   };
 
   const saveGroup = (groupId) => {
-    const group = groups.find(g => g.id === groupId);
-    const validMembers = group.members.filter(member => member.trim());
-    console.log(`Group ${groupId} saved with leader: ${group.leader}, members:`, validMembers);
-    
+    const group = groups.find((g) => g.id === groupId);
+    const validMembers = group.members.filter((member) => member.trim());
+    console.log(
+      `Group ${groupId} saved with leader: ${group.leader}, members:`,
+      validMembers,
+    );
+
     const updatedGroups = [...groups];
     updatedGroups[groupId - 1].isSaved = true;
     updatedGroups[groupId - 1].showInputs = false;
@@ -159,39 +178,48 @@ const GroupActivityBuilder = ({
   const addMemberToGroup = (memberName) => {
     const activeGroupData = groups[activeGroup - 1];
     if (!activeGroupData.showInputs) {
-      console.log('Cannot add member: Group inputs are not visible. Click "Add People" first.');
+      console.log(
+        'Cannot add member: Group inputs are not visible. Click "Add People" first.',
+      );
       return;
     }
 
     const updatedGroups = [...groups];
     const activeGroupDataUpdated = updatedGroups[activeGroup - 1];
-    
-    if (!activeGroupDataUpdated.leader || activeGroupDataUpdated.leader.trim() === '') {
+
+    if (
+      !activeGroupDataUpdated.leader ||
+      activeGroupDataUpdated.leader.trim() === ""
+    ) {
       activeGroupDataUpdated.leader = memberName;
       console.log(`Added "${memberName}" as leader of Group ${activeGroup}`);
     } else {
       const activeGroupMembers = activeGroupDataUpdated.members;
-      const firstEmptyIndex = activeGroupMembers.findIndex(member => !member || member.trim() === '');
-      
+      const firstEmptyIndex = activeGroupMembers.findIndex(
+        (member) => !member || member.trim() === "",
+      );
+
       if (firstEmptyIndex !== -1) {
         activeGroupMembers[firstEmptyIndex] = memberName;
       } else {
         activeGroupMembers.push(memberName);
-        activeGroupMembers.push('');
+        activeGroupMembers.push("");
       }
-      console.log(`Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`);
+      console.log(
+        `Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`,
+      );
     }
-    
+
     setGroups(updatedGroups);
   };
 
   const getAssignedMembers = () => {
     const allAssignedMembers = new Set();
-    groups.forEach(group => {
+    groups.forEach((group) => {
       if (group.leader && group.leader.trim()) {
         allAssignedMembers.add(group.leader.trim());
       }
-      group.members.forEach(member => {
+      group.members.forEach((member) => {
         if (member && member.trim()) {
           allAssignedMembers.add(member.trim());
         }
@@ -215,15 +243,24 @@ const GroupActivityBuilder = ({
       allowSelfGrouping,
       peerEvaluation,
       groupsConfigured,
-      groupsData: groupsConfigured && groups.length > 0 ? groups.filter(g => g.leader?.trim() || g.members?.some(m => m?.trim())).map((group, index) => ({
-        group_name: `Group_${index + 1}`,
-        leader_id: group.leader?.trim() || null,
-        members: group.members.filter(member => member?.trim()).map(member => member.trim())
-      })) : null,
-      category: 'group-activity'
+      groupsData:
+        groupsConfigured && groups.length > 0
+          ? groups
+              .filter(
+                (g) => g.leader?.trim() || g.members?.some((m) => m?.trim()),
+              )
+              .map((group, index) => ({
+                group_name: `Group_${index + 1}`,
+                leader_id: group.leader?.trim() || null,
+                members: group.members
+                  .filter((member) => member?.trim())
+                  .map((member) => member.trim()),
+              }))
+          : null,
+      category: "group-activity",
     };
 
-    if (status === 'published') {
+    if (status === "published") {
       onPublish(activityData);
     } else {
       onSave(activityData);
@@ -239,7 +276,7 @@ const GroupActivityBuilder = ({
           style={{
             backgroundColor: currentColors.surface,
             color: currentColors.text,
-            border: `1px solid ${currentColors.border}`
+            border: `1px solid ${currentColors.border}`,
           }}
           onMouseEnter={(e) => {
             e.target.style.backgroundColor = currentColors.hover;
@@ -256,16 +293,30 @@ const GroupActivityBuilder = ({
       </div>
 
       {/* GROUP ACTIVITY FORM */}
-      <div className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+      <div
+        className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border"
+        style={{
+          backgroundColor: currentColors.surface,
+          borderColor: currentColors.border,
+        }}
+      >
         <div className="flex items-center gap-3 mb-6">
           <div className="text-3xl">👥</div>
-          <h1 className="text-2xl font-bold" style={{ color: currentColors.text }}>Group Activity Builder</h1>
+          <h1
+            className="text-2xl font-bold"
+            style={{ color: currentColors.text }}
+          >
+            Group Activity Builder
+          </h1>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* LEFT SECTION */}
           <div className="flex-1 flex flex-col gap-4">
-            <label className="font-semibold text-lg" style={{ color: currentColors.text }}>
+            <label
+              className="font-semibold text-lg"
+              style={{ color: currentColors.text }}
+            >
               Activity Title: <span className="text-red-500">*</span>
             </label>
             <input
@@ -276,14 +327,17 @@ const GroupActivityBuilder = ({
               style={{
                 backgroundColor: currentColors.background,
                 color: currentColors.text,
-                borderColor: currentColors.border
+                borderColor: currentColors.border,
               }}
               placeholder="Enter activity title"
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="font-semibold" style={{ color: currentColors.text }}>
+                <label
+                  className="font-semibold"
+                  style={{ color: currentColors.text }}
+                >
                   Score: <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -294,7 +348,7 @@ const GroupActivityBuilder = ({
                   style={{
                     backgroundColor: currentColors.background,
                     color: currentColors.text,
-                    borderColor: currentColors.border
+                    borderColor: currentColors.border,
                   }}
                   placeholder="Enter score"
                   min="0"
@@ -302,7 +356,10 @@ const GroupActivityBuilder = ({
               </div>
 
               <div>
-                <label className="font-semibold" style={{ color: currentColors.text }}>
+                <label
+                  className="font-semibold"
+                  style={{ color: currentColors.text }}
+                >
                   Est. Time (min):
                 </label>
                 <input
@@ -313,7 +370,7 @@ const GroupActivityBuilder = ({
                   style={{
                     backgroundColor: currentColors.background,
                     color: currentColors.text,
-                    borderColor: currentColors.border
+                    borderColor: currentColors.border,
                   }}
                   placeholder="e.g., 45"
                 />
@@ -321,7 +378,10 @@ const GroupActivityBuilder = ({
             </div>
 
             <div className="mt-4">
-              <label className="font-semibold" style={{ color: currentColors.text }}>
+              <label
+                className="font-semibold"
+                style={{ color: currentColors.text }}
+              >
                 Due Date: <span className="text-red-500">*</span>
               </label>
               <input
@@ -332,44 +392,60 @@ const GroupActivityBuilder = ({
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: currentColors.border
+                  borderColor: currentColors.border,
                 }}
                 min={getLocalDateTimeMin()}
               />
             </div>
 
             {/* INSTRUCTION */}
-            <label className="font-semibold" style={{ color: currentColors.text }}>
+            <label
+              className="font-semibold"
+              style={{ color: currentColors.text }}
+            >
               Instructions (optional)
             </label>
 
-            <div className="rounded-lg border transition-colors" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
+            <div
+              className="rounded-lg border transition-colors"
+              style={{
+                backgroundColor: currentColors.background,
+                borderColor: currentColors.border,
+              }}
+            >
               <div
                 ref={instructionRef}
                 contentEditable
                 className="min-h-[140px] px-4 py-3 outline-none"
                 style={{
                   backgroundColor: currentColors.background,
-                  color: currentColors.text
+                  color: currentColors.text,
                 }}
                 suppressContentEditableWarning
               />
-
-              </div>
-
+            </div>
           </div>
 
           {/* RIGHT SECTION */}
           <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
             {/* GROUP SETTINGS */}
-            <div className="p-4 rounded-lg" style={{ backgroundColor: currentColors.background }}>
-              <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: currentColors.text }}>
+            <div
+              className="p-4 rounded-lg"
+              style={{ backgroundColor: currentColors.background }}
+            >
+              <h3
+                className="font-semibold mb-4 flex items-center gap-2"
+                style={{ color: currentColors.text }}
+              >
                 <FiUsers /> Group Settings
               </h3>
-              
+
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: currentColors.textSecondary }}>
+                  <label
+                    className="block text-sm mb-2"
+                    style={{ color: currentColors.textSecondary }}
+                  >
                     Group Size:
                   </label>
                   <select
@@ -379,7 +455,7 @@ const GroupActivityBuilder = ({
                     style={{
                       backgroundColor: currentColors.surface,
                       color: currentColors.text,
-                      borderColor: currentColors.border
+                      borderColor: currentColors.border,
                     }}
                   >
                     <option value="2">2 members</option>
@@ -397,7 +473,9 @@ const GroupActivityBuilder = ({
                     onChange={(e) => setAllowSelfGrouping(e.target.checked)}
                     className="w-4 h-4 mr-3"
                   />
-                  <span style={{ color: currentColors.text }}>Allow students to form their own groups</span>
+                  <span style={{ color: currentColors.text }}>
+                    Allow students to form their own groups
+                  </span>
                 </label>
 
                 <label className="flex items-center">
@@ -407,28 +485,58 @@ const GroupActivityBuilder = ({
                     onChange={(e) => setPeerEvaluation(e.target.checked)}
                     className="w-4 h-4 mr-3"
                   />
-                  <span style={{ color: currentColors.text }}>Enable peer evaluation</span>
+                  <span style={{ color: currentColors.text }}>
+                    Enable peer evaluation
+                  </span>
                 </label>
               </div>
             </div>
 
             {/* GROUP MANAGEMENT */}
             {!allowSelfGrouping && (
-              <div className="p-4 rounded-lg" style={{ backgroundColor: currentColors.background }}>
-                <h3 className="font-semibold mb-4" style={{ color: currentColors.text }}>Group Management</h3>
-                
+              <div
+                className="p-4 rounded-lg"
+                style={{ backgroundColor: currentColors.background }}
+              >
+                <h3
+                  className="font-semibold mb-4"
+                  style={{ color: currentColors.text }}
+                >
+                  Group Management
+                </h3>
+
                 {groupsConfigured ? (
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm" style={{ color: currentColors.text }}>
-                        Groups configured ({groups.filter(g => g.leader?.trim() || g.members?.some(m => m?.trim())).length})
+                      <span
+                        className="text-sm"
+                        style={{ color: currentColors.text }}
+                      >
+                        Groups configured (
+                        {
+                          groups.filter(
+                            (g) =>
+                              g.leader?.trim() ||
+                              g.members?.some((m) => m?.trim()),
+                          ).length
+                        }
+                        )
                       </span>
                       <div className="flex gap-2">
                         <button
                           type="button"
                           className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
                           onClick={() => {
-                            setGroups([{ id: 1, members: [], leader: '', showInputs: false, isSaved: false, wasPreviouslySaved: false }]);
+                            setGroups([
+                              {
+                                id: 1,
+                                members: [],
+                                leader: "",
+                                showInputs: false,
+                                isSaved: false,
+                                wasPreviouslySaved: false,
+                              },
+                            ]);
                             setGroupsConfigured(false);
                             setGroupCreationMethod(null);
                           }}
@@ -448,14 +556,27 @@ const GroupActivityBuilder = ({
                 ) : (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      <label className="text-sm" style={{ color: currentColors.text }}>Number of groups:</label>
-                      <div className="flex items-center rounded-lg border" style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}>
+                      <label
+                        className="text-sm"
+                        style={{ color: currentColors.text }}
+                      >
+                        Number of groups:
+                      </label>
+                      <div
+                        className="flex items-center rounded-lg border"
+                        style={{
+                          backgroundColor: currentColors.background,
+                          borderColor: currentColors.border,
+                        }}
+                      >
                         <button
                           type="button"
                           className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
                           onClick={() => {
-                            const input = document.getElementById('groups-input');
-                            if (input.value > 1) input.value = parseInt(input.value) - 1;
+                            const input =
+                              document.getElementById("groups-input");
+                            if (input.value > 1)
+                              input.value = parseInt(input.value) - 1;
                           }}
                         >
                           -
@@ -472,7 +593,8 @@ const GroupActivityBuilder = ({
                           type="button"
                           className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
                           onClick={() => {
-                            const input = document.getElementById('groups-input');
+                            const input =
+                              document.getElementById("groups-input");
                             input.value = parseInt(input.value) + 1;
                           }}
                         >
@@ -508,28 +630,28 @@ const GroupActivityBuilder = ({
           <button
             className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
             style={{
-              backgroundColor: '#10b981',
-              color: '#ffffff'
+              backgroundColor: "#10b981",
+              color: "#ffffff",
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#059669';
+              e.target.style.backgroundColor = "#059669";
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#10b981';
+              e.target.style.backgroundColor = "#10b981";
             }}
-            onClick={() => navigate('/create-document')}
+            onClick={() => navigate("/create-document")}
           >
             <FiFilePlus className="inline mr-2" size={16} />
             Create Document
           </button>
-          
+
           <div className="flex gap-3 sm:gap-4">
             <button
               className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
               style={{
                 backgroundColor: currentColors.surface,
                 color: currentColors.text,
-                border: `1px solid ${currentColors.border}`
+                border: `1px solid ${currentColors.border}`,
               }}
               onMouseEnter={(e) => {
                 e.target.style.backgroundColor = currentColors.hover;
@@ -537,25 +659,25 @@ const GroupActivityBuilder = ({
               onMouseLeave={(e) => {
                 e.target.style.backgroundColor = currentColors.surface;
               }}
-              onClick={() => handleSave('draft')}
+              onClick={() => handleSave("draft")}
             >
-              {isLoading ? 'Saving...' : 'Save as Draft'}
+              {isLoading ? "Saving..." : "Save as Draft"}
             </button>
             <button
               className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
               style={{
-                backgroundColor: '#2563eb',
-                color: '#ffffff'
+                backgroundColor: "#2563eb",
+                color: "#ffffff",
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#1d4ed8';
+                e.target.style.backgroundColor = "#1d4ed8";
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#2563eb';
+                e.target.style.backgroundColor = "#2563eb";
               }}
-              onClick={() => handleSave('published')}
+              onClick={() => handleSave("published")}
             >
-              {isLoading ? 'Publishing...' : 'Publish Activity'}
+              {isLoading ? "Publishing..." : "Publish Activity"}
             </button>
           </div>
         </div>
@@ -567,7 +689,8 @@ const GroupActivityBuilder = ({
           <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-white">
-                Manual Groups ({numberOfGroups} {numberOfGroups === 1 ? 'Group' : 'Groups'})
+                Manual Groups ({numberOfGroups}{" "}
+                {numberOfGroups === 1 ? "Group" : "Groups"})
               </h2>
               <button
                 onClick={() => setShowManualGroups(false)}
@@ -580,8 +703,10 @@ const GroupActivityBuilder = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               {groups.map((group) => (
                 <div key={group.id} className="bg-[#23272F] rounded-lg p-4">
-                  <h3 className="font-semibold text-white mb-3">Group {group.id}</h3>
-                  
+                  <h3 className="font-semibold text-white mb-3">
+                    Group {group.id}
+                  </h3>
+
                   {!group.showInputs ? (
                     <button
                       onClick={() => toggleGroupInputs(group.id)}
@@ -592,23 +717,35 @@ const GroupActivityBuilder = ({
                   ) : (
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-sm text-gray-300 mb-1">Leader:</label>
+                        <label className="block text-sm text-gray-300 mb-1">
+                          Leader:
+                        </label>
                         <input
                           type="text"
                           value={group.leader}
-                          onChange={(e) => handleGroupLeaderChange(group.id, e.target.value)}
+                          onChange={(e) =>
+                            handleGroupLeaderChange(group.id, e.target.value)
+                          }
                           placeholder="Enter leader name"
                           className="w-full bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-gray-300 mb-1">Members:</label>
+                        <label className="block text-sm text-gray-300 mb-1">
+                          Members:
+                        </label>
                         {group.members.map((member, index) => (
                           <input
                             key={index}
                             type="text"
                             value={member}
-                            onChange={(e) => handleGroupMemberChange(group.id, index, e.target.value)}
+                            onChange={(e) =>
+                              handleGroupMemberChange(
+                                group.id,
+                                index,
+                                e.target.value,
+                              )
+                            }
                             placeholder="Enter member name"
                             className="w-full bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 mb-2"
                           />
@@ -630,7 +767,7 @@ const GroupActivityBuilder = ({
               <button
                 onClick={() => {
                   setGroupsConfigured(true);
-                  setGroupCreationMethod('manual');
+                  setGroupCreationMethod("manual");
                   setShowManualGroups(false);
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -648,7 +785,8 @@ const GroupActivityBuilder = ({
           <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-white">
-                Generate Groups ({numberOfGroups} {numberOfGroups === 1 ? 'Group' : 'Groups'})
+                Generate Groups ({numberOfGroups}{" "}
+                {numberOfGroups === 1 ? "Group" : "Groups"})
               </h2>
               <button
                 onClick={() => setShowGenerateGroups(false)}
@@ -660,20 +798,25 @@ const GroupActivityBuilder = ({
 
             <div className="mb-6">
               <p className="text-gray-300 text-sm mb-4">
-                The system will automatically generate {numberOfGroups} groups and randomly assign students to them.
+                The system will automatically generate {numberOfGroups} groups
+                and randomly assign students to them.
               </p>
-              
+
               <div className="bg-[#23272F] rounded-lg p-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {generatedGroupsPreview.map((group, index) => (
                     <div key={index} className="bg-[#161A20] rounded p-3">
-                      <div className="text-blue-400 font-semibold text-sm mb-2">Group {group.id}</div>
+                      <div className="text-blue-400 font-semibold text-sm mb-2">
+                        Group {group.id}
+                      </div>
                       <div className="text-xs space-y-1">
                         <div className="text-yellow-400">
-                          <span className="font-medium">Leader:</span> {group.leader}
+                          <span className="font-medium">Leader:</span>{" "}
+                          {group.leader}
                         </div>
                         <div className="text-green-400">
-                          <span className="font-medium">Members:</span> {group.members.join(", ")}
+                          <span className="font-medium">Members:</span>{" "}
+                          {group.members.join(", ")}
                         </div>
                       </div>
                     </div>
@@ -693,7 +836,7 @@ const GroupActivityBuilder = ({
                 onClick={() => {
                   setGroups(generatedGroupsPreview);
                   setGroupsConfigured(true);
-                  setGroupCreationMethod('generate');
+                  setGroupCreationMethod("generate");
                   setShowGenerateGroups(false);
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"

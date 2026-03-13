@@ -15,9 +15,7 @@ import config from "../config";
 //   },
 // });
 
-const baseUrl =
-      config.VITE_ENV === "production"
-        ? config.API_URL : "/v1";
+const baseUrl = "/v1";
 
 export const api = axios.create({
   baseURL: baseUrl,

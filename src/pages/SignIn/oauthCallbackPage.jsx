@@ -3,54 +3,59 @@ import { toast } from "react-toastify";
 
 const OAuthCallback = () => {
   useEffect(() => {
-    const handleOAuthCallback = () => {
-      // If this is not in a popup, redirect to login
-      if (!window.opener) {
-        window.location.href = '/login';
-        return;
+    // This component is only opened in popup
+    if (!window.opener) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const handleMessage = (event) => {
+      // Only accept messages from your backend
+      const allowedOrigin =
+        process.env.VITE_ENV === "production"
+          ? "https://immaculearn.up.railway.app"
+          : "http://localhost:3000";
+
+      if (event.origin !== allowedOrigin) return;
+
+      const data = event.data;
+
+      if (data.type === "OAUTH_SUCCESS") {
+        const { role, needsOnboarding, token } = data;
+
+        if (needsOnboarding && token) {
+          sessionStorage.setItem("tempToken", token);
+          window.location.href = `/onboarding?role=${role}`;
+        } else {
+          // Optionally, call your checkAuth to refresh main window
+          window.location.href =
+            role === "student"
+              ? `/home?role=${role}`
+              : role === "professor"
+                ? `/prof/home?role=${role}`
+                : role === "admin"
+                  ? `/admin-dashboard?role=${role}`
+                  : "/";
+        }
+      } else if (data.type === "OAUTH_ERROR") {
+        toast.error(`OAuth failed: ${data.error}`);
       }
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const error = urlParams.get("error");
-      const needsOnboarding = urlParams.get("needsOnboarding") === 'true';
-      const role = urlParams.get("role")?.toLowerCase();
-      const token = urlParams.get("tempToken");
-
-      console.log(token)
-
-      if (error) {
-        console.error("OAuth error:", error);
-        window.opener.postMessage({
-          type: 'OAUTH_ERROR',
-          error: error
-        }, window.location.origin);
-        window.close();
-        return;
-      }
-
-      if (!role) {
-        console.error("No role provided in OAuth callback");
-        window.opener.postMessage({
-          type: 'OAUTH_ERROR',
-          error: 'No role information received'
-        }, window.location.origin);
-        window.close();
-        return;
-      }
-
-      // Send success message to parent window
-      window.opener.postMessage({
-        type: 'OAUTH_SUCCESS',
-        role: role,
-        needsOnboarding: needsOnboarding,
-        token: token
-      }, window.location.origin);
-
-      // Close the popup
-      window.close();
     };
 
-    handleOAuthCallback();
+    window.addEventListener("message", handleMessage);
+
+    // Clean up if user closes popup
+    const checkClosed = setInterval(() => {
+      if (window.closed) {
+        clearInterval(checkClosed);
+        window.removeEventListener("message", handleMessage);
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+      clearInterval(checkClosed);
+    };
   }, []);
 
   return (

@@ -1,5 +1,13 @@
 import React from "react";
-import { FiArrowLeft, FiSave, FiCheck, FiDownload, FiSun, FiMoon, FiClock } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiSave,
+  FiCheck,
+  FiDownload,
+  FiSun,
+  FiMoon,
+  FiClock,
+} from "react-icons/fi";
 import { useTheme } from "../contexts/ThemeContext";
 
 const EditorHeader = ({
@@ -78,7 +86,9 @@ const EditorHeader = ({
             {saveStatus === "saving" && (
               <>
                 <FiSave className="text-blue-500 animate-spin" size={14} />
-                <span style={{ color: currentColors.textSecondary }}>Saving...</span>
+                <span style={{ color: currentColors.textSecondary }}>
+                  Saving...
+                </span>
               </>
             )}
 
@@ -99,7 +109,9 @@ const EditorHeader = ({
             {saveStatus === "unsaved" && (
               <>
                 <FiSave className="text-gray-400" size={14} />
-                <span style={{ color: currentColors.textSecondary }}>Unsaved changes</span>
+                <span style={{ color: currentColors.textSecondary }}>
+                  Unsaved changes
+                </span>
               </>
             )}
 
@@ -110,7 +122,10 @@ const EditorHeader = ({
                   isOnline ? "bg-green-500" : "bg-red-500"
                 }`}
               />
-              <span className="text-xs" style={{ color: currentColors.textSecondary }}>
+              <span
+                className="text-xs"
+                style={{ color: currentColors.textSecondary }}
+              >
                 {isOnline ? "Online" : "Offline"}
               </span>
             </div>
@@ -158,7 +173,10 @@ const EditorHeader = ({
 
       {/* Active Editors */}
       <div className="flex items-center gap-2 xl:gap-3 flex-wrap">
-        <span className="text-xs xl:text-sm" style={{ color: currentColors.textSecondary }}>
+        <span
+          className="text-xs xl:text-sm"
+          style={{ color: currentColors.textSecondary }}
+        >
           Active editors:
         </span>
 
@@ -175,8 +193,12 @@ const EditorHeader = ({
           ))}
         </div>
 
-        <span className="text-xs xl:text-sm" style={{ color: currentColors.textSecondary }}>
-          {activeEditors.length} {activeEditors.length === 1 ? "person" : "people"} editing
+        <span
+          className="text-xs xl:text-sm"
+          style={{ color: currentColors.textSecondary }}
+        >
+          {activeEditors.length}{" "}
+          {activeEditors.length === 1 ? "person" : "people"} editing
         </span>
       </div>
     </div>
