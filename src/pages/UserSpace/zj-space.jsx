@@ -1239,14 +1239,14 @@ const UserPage = () => {
 
   const match = text.match(youtubeRegex);
 
-  if (!match) return <p>{text}</p>;
+  if (!match) return <p style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{text}</p>;
 
   const videoId = match[2];
   const cleanText = text.replace(match[0], "").trim();
 
   return (
     <div>
-      <p className="mb-3 whitespace-pre-wrap">{cleanText}</p>
+      <p className="mb-3 whitespace-pre-wrap break-words" style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{cleanText}</p>
 
       <div className="aspect-video w-full max-w-xl">
         <iframe
@@ -2020,7 +2020,7 @@ const UserPage = () => {
                     {posts.map((post) => (
                       <div
                         key={post.post_id}
-                        className="rounded-lg p-4 border"
+                        className="rounded-lg p-4 border overflow-hidden"
                         style={{
                           backgroundColor: currentColors.background,
                           borderColor: isDarkMode
@@ -2082,8 +2082,8 @@ const UserPage = () => {
                               </span>
                             </div>
                             <div
-                              className="whitespace-pre-wrap mb-3 text-sm break-words"
-                              style={{ color: currentColors.text }}
+                              className="whitespace-pre-wrap mb-3 text-sm break-words overflow-hidden"
+                              style={{ color: currentColors.text, wordBreak: "break-word", overflowWrap: "break-word" }}
                             >
                               {renderPostContent(post.post_content)}
                             </div>
