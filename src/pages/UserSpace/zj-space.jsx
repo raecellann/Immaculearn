@@ -13,7 +13,7 @@ import {
   CancelledDialog,
 } from "../component/SweetAlert.jsx";
 import {
-FiSearch,
+  FiSearch,
   FiFileText,
   FiCheckCircle,
   FiLink,
@@ -21,6 +21,7 @@ FiSearch,
   FiMenu,
   FiX,
   FiChevronLeft,
+  FiChevronRight,
   FiCopy,
   FiUpload,
   FiRefreshCw,
@@ -34,8 +35,8 @@ import * as XLSX from "xlsx";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useNotification } from "../../contexts/notification/notificationContextProvider";
-import { toast } from "react-toastify";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { spaceService } from "../../services/spaceService";
 import { useUserPosts } from "../../hooks/useUserPosts";
 import MainLoading from "../../components/LoadingComponents/mainLoading";
 import PageNotFound from "../PageNotFound/pageNotFound";
@@ -254,6 +255,64 @@ const UserPage = () => {
   });
 
   const posts = postsData?.data || [];
+
+  // Tasks query for reminders
+  const {
+    data: tasksData,
+    isLoading: isLoadingTasks,
+    error: tasksError,
+  } = useQuery({
+    queryKey: ["tasks", currentSpace?.space_uuid],
+    queryFn: () => spaceService.getUploadedTasksBySpaceUUID(currentSpace?.space_uuid || ""),
+    enabled: !!currentSpace?.space_uuid,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  const tasks = tasksData?.data || [];
+  
+  // Filter in-progress tasks (exclude overdue and done tasks)
+  const inProgressTasks = tasks.filter(task => {
+    // Debug log to check task structure and dates
+    console.log('Task:', task);
+    console.log('Task status:', task.status || task.task_status);
+    console.log('Task due date:', task.due_date || task.task_due);
+    
+    // Check if task is done (multiple variations)
+    const isDone = task.status === "Done" || 
+                   task.status === "done" || 
+                   task.status === "completed" || 
+                   task.status === "Completed" ||
+                   task.task_status === "Done" ||
+                   task.task_status === "done" ||
+                   task.task_status === "completed" ||
+                   task.task_status === "Completed";
+    
+    // Check if task is overdue (check multiple date fields)
+    const dueDate = task.due_date || task.task_due || task.dueDate;
+    const isOverdue = dueDate && new Date(dueDate) < new Date();
+    
+    console.log('Is done?', isDone);
+    console.log('Is overdue?', isOverdue);
+    console.log('Due date:', dueDate);
+    console.log('Current date:', new Date());
+    
+    // Check if task is in-progress (multiple variations and fields)
+    const isInProgress = task.status === "In Progress" || 
+                         task.status === "in-progress" || 
+                         task.status === "in_progress" ||
+                         task.task_status === "In Progress" ||
+                         task.task_status === "in-progress" ||
+                         task.task_status === "in_progress" ||
+                         !task.status && !task.task_status; // No status at all
+    
+    // Include task if it's in-progress and not overdue and not done
+    const shouldShow = isInProgress && !isDone && !isOverdue;
+    
+    console.log('Should show in reminders?', shouldShow);
+    
+    return shouldShow;
+  }).slice(0, 3); // Limit to 3 tasks
 
   // Comments state
   const [expandedPosts, setExpandedPosts] = useState(new Set());
@@ -1603,59 +1662,190 @@ const UserPage = () => {
 
               {/* REMINDERS - STICKY */}
               <div
-                className="sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 h-fit max-h-[400px]"
+                className="sticky top-4 bg-[#1B1F26] border border-gray-700 rounded-xl p-6 h-fit max-h-[400px] w-full"
                 style={{
                   backgroundColor: currentColors.surface,
                   borderColor: currentColors.border,
                 }}
               >
-                <h2 className="font-bold mb-4">Reminders</h2>
-                <div className="text-center py-6">
-                  <div className="text-gray-500 mb-2">
-                    <svg
-                      className="w-12 h-12 mx-auto"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-gray-400 text-sm">
-                    No reminders posted yet
-                  </p>
-                  <p className="text-gray-500 text-xs mt-1">
-                    Reminders will appear here when created
-                  </p>
+                <h2 className="font-bold mb-3">Reminders</h2>
+                <div
+                  className="text-left py-3"
+                >
+                  {isLoadingTasks ? (
+                    <div className="flex flex-col itmakems-start justify-start py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mb-2"></div>
+                      <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                        Loading tasks...
+                      </p>
+                    </div>
+                  ) : inProgressTasks.length > 0 ? (
+                    <div className="space-y-2">
+                      {inProgressTasks.map((task) => (
+                        <div
+                          key={task.task_id || task.id}
+                          className="p-2 rounded-lg cursor-pointer transition-colors hover:opacity-80"
+                          style={{
+                            backgroundColor: currentColors.background,
+                            borderColor: currentColors.border,
+                          }}
+                          onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium text-sm truncate" style={{ color: currentColors.text }}>
+                                {task.title || task.task_title || 'Untitled Task'}
+                              </h3>
+                              <div className="flex items-center gap-2 mt-2">
+                                <span 
+                                  className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                                  style={{
+                                    backgroundColor: '#3b82f6',
+                                    color: 'white'
+                                  }}
+                                >
+                                  In Progress
+                                </span>
+                                {task.due_date && (
+                                  <span className="text-xs" style={{ color: currentColors.textSecondary }}>
+                                    Due: {new Date(task.due_date).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <FiChevronRight size={14} style={{ color: currentColors.textSecondary }} />
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {tasks.filter(task => {
+                        // Check if task is done (multiple variations)
+                        const isDone = task.status === "Done" || 
+                                       task.status === "done" || 
+                                       task.status === "completed" || 
+                                       task.status === "Completed" ||
+                                       task.task_status === "Done" ||
+                                       task.task_status === "done" ||
+                                       task.task_status === "completed" ||
+                                       task.task_status === "Completed";
+                        
+                        // Check if task is overdue (check multiple date fields)
+                        const dueDate = task.due_date || task.task_due || task.dueDate;
+                        const isOverdue = dueDate && new Date(dueDate) < new Date();
+                        
+                        // Check if task is in-progress (multiple variations and fields)
+                        const isInProgress = task.status === "In Progress" || 
+                                             task.status === "in-progress" || 
+                                             task.status === "in_progress" ||
+                                             task.task_status === "In Progress" ||
+                                             task.task_status === "in-progress" ||
+                                             task.task_status === "in_progress" ||
+                                             !task.status && !task.task_status; // No status at all
+                        
+                        // Include task if it's in-progress and not overdue and not done
+                        return isInProgress && !isDone && !isOverdue;
+                      }).length > 3 && (
+                        <button
+                          onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}
+                          className="w-full text-center py-1.5 text-xs font-medium transition-colors rounded-lg"
+                          style={{
+                            backgroundColor: currentColors.background,
+                            color: currentColors.primary,
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = currentColors.hover;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = currentColors.background;
+                          }}
+                        >
+                          See All ({tasks.filter(task => {
+                        // Check if task is done (multiple variations)
+                        const isDone = task.status === "Done" || 
+                                       task.status === "done" || 
+                                       task.status === "completed" || 
+                                       task.status === "Completed" ||
+                                       task.task_status === "Done" ||
+                                       task.task_status === "done" ||
+                                       task.task_status === "completed" ||
+                                       task.task_status === "Completed";
+                        
+                        // Check if task is overdue (check multiple date fields)
+                        const dueDate = task.due_date || task.task_due || task.dueDate;
+                        const isOverdue = dueDate && new Date(dueDate) < new Date();
+                        
+                        // Check if task is in-progress (multiple variations and fields)
+                        const isInProgress = task.status === "In Progress" || 
+                                             task.status === "in-progress" || 
+                                             task.status === "in_progress" ||
+                                             task.task_status === "In Progress" ||
+                                             task.task_status === "in-progress" ||
+                                             task.task_status === "in_progress" ||
+                                             !task.status && !task.task_status; // No status at all
+                        
+                        // Include task if it's in-progress and not overdue and not done
+                        return isInProgress && !isDone && !isOverdue;
+                      }).length} tasks)
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-left py-6">
+                      <div className="mb-2">
+                        <div
+                          className="mb-2"
+                          style={{ color: currentColors.textSecondary }}
+                        >
+                          <svg
+                            className="w-12 h-12"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a9 9 0 0118 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                        No in-progress tasks
+                      </p>
+                      <p
+                        className="text-xs mt-1"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        Tasks in progress will appear here
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                {/* CHAT */}
-                <div className="flex justify-center">
+                {/* CHAT - Inside reminders section */}
+                <div className="flex justify-center mt-2 pt-2 border-t" style={{ borderColor: currentColors.border }}>
                   <button
                     onClick={() => {
                       setActiveChatSpaceUuid(space_uuid);
                       setShowChatPopup(true);
                     }}
-                    className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
+                    className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg border transition-colors"
                     style={{
-                      backgroundColor: "transparent",
+                      backgroundColor: currentColors.background,
                       borderColor: currentColors.border,
-                      color: currentColors.text,
+                      color: currentColors.textSecondary,
                     }}
                     onMouseEnter={(e) => {
                       e.target.style.backgroundColor = currentColors.hover;
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = "transparent";
+                      e.target.style.backgroundColor = currentColors.background;
                     }}
                   >
                     <FiMessageCircle />
-                    Enter Chat
+                    <span className="text-sm font-medium">Enter Chat</span>
                   </button>
                 </div>
               </div>
