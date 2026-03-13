@@ -4,6 +4,7 @@ import Logout from "../component/logout";
 import { useSpace } from "../../contexts/space/useSpace";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 import { toast } from "react-toastify";
+import * as XLSX from "xlsx";
 
 const ProfGradeRecordPage = () => {
   const {
@@ -104,6 +105,57 @@ const ProfGradeRecordPage = () => {
   const handleCancelEdit = () => {
     setEditingStudent(null);
     setEditForm({ prelim: "", midterm: "", prefinal: "", finals: "" });
+  };
+
+  const handleExportToExcel = () => {
+    try {
+      // Prepare data for export
+      const exportData = filteredAndSortedStudents.map((student) => {
+        const grades = student?.grades || {};
+        const finalAverage = calculateFinalAverage(grades);
+        const passFailStatus = getPassFailStatus(grades);
+        
+        return {
+          "Student Name": formatName(student.fullname),
+          "Prelim": getGradeDisplay(grades, "prelim"),
+          "Midterm": getGradeDisplay(grades, "midterm"),
+          "Pre-Final": getGradeDisplay(grades, "prefinals"),
+          "Final": getGradeDisplay(grades, "finals"),
+          "Final Average": finalAverage,
+          "Remarks": passFailStatus,
+        };
+      });
+
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Grades");
+
+      // Auto-size columns
+      const colWidths = [
+        { wch: 25 }, // Student Name
+        { wch: 10 }, // Prelim
+        { wch: 10 }, // Midterm
+        { wch: 10 }, // Pre-Final
+        { wch: 10 }, // Final
+        { wch: 12 }, // Final Average
+        { wch: 10 }, // Remarks
+      ];
+      ws["!cols"] = colWidths;
+
+      // Generate filename with course name and date
+      const courseName = selectedSubject.space_name.replace(/[^a-zA-Z0-9]/g, "_");
+      const date = new Date().toISOString().split("T")[0];
+      const filename = `${courseName}_Grades_${date}.xlsx`;
+
+      // Download the file
+      XLSX.writeFile(wb, filename);
+      
+      toast.success("Grades exported successfully!");
+    } catch (error) {
+      console.error("Error exporting grades:", error);
+      toast.error("Failed to export grades. Please try again.");
+    }
   };
 
   const handleInputChange = (field, value) => {
@@ -479,6 +531,26 @@ const ProfGradeRecordPage = () => {
                     🔍
                   </span>
                 </div>
+
+                {/* Export Button */}
+                <button
+                  onClick={handleExportToExcel}
+                  className="px-4 py-2 rounded-lg focus:outline-none flex items-center gap-2 transition-colors"
+                  style={{
+                    backgroundColor: isDarkMode ? "#059669" : "#10b981",
+                    border: `1px solid ${isDarkMode ? "#059669" : "#10b981"}`,
+                    color: "white",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? "#047857" : "#059669";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = isDarkMode ? "#059669" : "#10b981";
+                  }}
+                >
+                  <span>📊</span>
+                  <span>Export to Excel</span>
+                </button>
 
                 {/* Sort Dropdown */}
                 <div className="relative">
