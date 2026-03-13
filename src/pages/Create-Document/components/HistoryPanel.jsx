@@ -313,7 +313,17 @@ const HistoryPanel = ({ isOpen, onClose, onRevert, isSidebar = false }) => {
                                       </span>
                                     </div>
                                     
-                                    <div className="text-xs" style={{ color: currentColors.textSecondary }}>
+                                    <div 
+                                      className="text-xs overflow-hidden"
+                                      style={{ 
+                                        color: currentColors.textSecondary,
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                        textOverflow: 'ellipsis',
+                                        lineHeight: '1.4'
+                                      }}
+                                    >
                                       {getContentPreview(entry.content)}
                                     </div>
                                   </div>
@@ -555,7 +565,17 @@ const HistoryPanel = ({ isOpen, onClose, onRevert, isSidebar = false }) => {
                                       )}
                                     </div>
                                     
-                                    <div className="text-sm" style={{ color: currentColors.textSecondary }}>
+                                    <div 
+                                      className="text-sm overflow-hidden"
+                                      style={{ 
+                                        color: currentColors.textSecondary,
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                        textOverflow: 'ellipsis',
+                                        lineHeight: '1.4'
+                                      }}
+                                    >
                                       {getContentPreview(entry.content)}
                                     </div>
                                   </div>

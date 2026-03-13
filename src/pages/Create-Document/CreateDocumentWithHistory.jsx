@@ -112,7 +112,7 @@ const CreateDocumentContent = () => {
   useEffect(() => {
     // Add initial empty content to history for new documents
     if (!file_uuid && lastContentRef.current === "") {
-      const initialContent = "<p>Start typing to create your document...</p>";
+      const initialContent = "<p></p>";
       addToHistory(initialContent, {
         author: user?.first_name || user?.name || 'Anonymous User',
         description: 'New document created'
@@ -410,7 +410,7 @@ const CreateDocumentContent = () => {
                     onInput={(e) => handleEditorUpdate(e.target.innerHTML)}
                     suppressContentEditableWarning
                   >
-                    <p>Start typing to create your document...</p>
+                    <p></p>
                   </div>
                 )}
               </div>
