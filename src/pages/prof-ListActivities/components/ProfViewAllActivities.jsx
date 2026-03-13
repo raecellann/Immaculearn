@@ -63,8 +63,14 @@ const ProfViewAllActivityPage = () => {
   const otherTasks = sortedTasks.filter(task => task.task_category !== 'quiz' && task.task_category !== 'individual-activity');
 
   const getStatusColor = (task) => {
-    // Check if task has been answered
-    if (task.has_answered) {
+    // Check if task has been answered OR if status is Done/Completed
+    const isCompleted = task.has_answered || 
+                        task.task_status === "Done" || 
+                        task.task_status === "done" || 
+                        task.task_status === "completed" || 
+                        task.task_status === "Completed";
+    
+    if (isCompleted) {
       return "bg-green-500/20 text-[#10E164] border-[#00B865]";
     }
     
@@ -222,7 +228,12 @@ const ProfViewAllActivityPage = () => {
                         <tr key={task.task_id} className="border-b" style={{ borderColor: currentColors.border }}>
                           <td className="py-4 px-4">
                             <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(task)}`}>
-                              {task.has_answered ? 'Completed' : new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
+                              {task.has_answered || 
+                               task.task_status === "Done" || 
+                               task.task_status === "done" || 
+                               task.task_status === "completed" || 
+                               task.task_status === "Completed" ? 'Completed' : 
+                               new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
                             </span>
                           </td>
                           <td className="py-4 px-4">
@@ -271,7 +282,12 @@ const ProfViewAllActivityPage = () => {
                                        getStatusColor(task).includes('red') ? (isDarkMode ? '#dc2626' : '#dc2626') :
                                        (isDarkMode ? '#0066d2' : '#2563eb')
                           }}>
-                            {task.has_answered ? 'Completed' : new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
+                            {task.has_answered || 
+                               task.task_status === "Done" || 
+                               task.task_status === "done" || 
+                               task.task_status === "completed" || 
+                               task.task_status === "Completed" ? 'Completed' : 
+                               new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
                           </span>
                         </div>
                         
@@ -334,7 +350,12 @@ const ProfViewAllActivityPage = () => {
                         <tr key={task.task_id} className="border-b" style={{ borderColor: currentColors.border }}>
                           <td className="py-4 px-4">
                             <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(task)}`}>
-                              {task.has_answered ? 'Completed' : new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
+                              {task.has_answered || 
+                               task.task_status === "Done" || 
+                               task.task_status === "done" || 
+                               task.task_status === "completed" || 
+                               task.task_status === "Completed" ? 'Completed' : 
+                               new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
                             </span>
                           </td>
                           <td className="py-4 px-4">
@@ -383,7 +404,12 @@ const ProfViewAllActivityPage = () => {
                                        getStatusColor(task).includes('red') ? (isDarkMode ? '#dc2626' : '#dc2626') :
                                        (isDarkMode ? '#0066d2' : '#2563eb')
                           }}>
-                            {task.has_answered ? 'Completed' : new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
+                            {task.has_answered || 
+                               task.task_status === "Done" || 
+                               task.task_status === "done" || 
+                               task.task_status === "completed" || 
+                               task.task_status === "Completed" ? 'Completed' : 
+                               new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
                           </span>
                         </div>
                         
@@ -446,7 +472,12 @@ const ProfViewAllActivityPage = () => {
                         <tr key={task.task_id} className="border-b" style={{ borderColor: currentColors.border }}>
                           <td className="py-4 px-4">
                             <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(task)}`}>
-                              {task.has_answered ? 'Completed' : new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
+                              {task.has_answered || 
+                               task.task_status === "Done" || 
+                               task.task_status === "done" || 
+                               task.task_status === "completed" || 
+                               task.task_status === "Completed" ? 'Completed' : 
+                               new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
                             </span>
                           </td>
                           <td className="py-4 px-4">

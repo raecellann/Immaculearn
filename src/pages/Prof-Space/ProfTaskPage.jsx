@@ -1029,8 +1029,16 @@ const ProfTaskPage = () => {
   // Task status styles - colored text only
   const statusStyles = {
     Done: "text-green-600",
+    done: "text-green-600",
+    completed: "text-green-600",
+    Completed: "text-green-600",
     "In Progress": "text-blue-600",
+    "in-progress": "text-blue-600",
+    "in_progress": "text-blue-600",
     Missing: "text-red-600",
+    missing: "text-red-600",
+    Overdue: "text-orange-600",
+    overdue: "text-orange-600",
   };
 
   // Function to determine quiz status for professor
@@ -1040,12 +1048,20 @@ const ProfTaskPage = () => {
     const now = new Date();
     const dueDate = task.task_due ? new Date(task.task_due) : null;
     
-    // If quiz has due date and it's passed
+    // If quiz has due date and it's passed, mark as Done
     if (dueDate && now > dueDate) {
       return "Done";
     }
     
-    // If quiz is posted and due date not passed
+    // If task is already marked as done in any format, keep it as done
+    if (task.task_status === "Done" || 
+        task.task_status === "done" || 
+        task.task_status === "completed" || 
+        task.task_status === "Completed") {
+      return "Done";
+    }
+    
+    // If quiz is posted and due date not passed, keep as In Progress
     return "In Progress";
   };
 
