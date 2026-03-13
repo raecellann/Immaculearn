@@ -360,11 +360,8 @@ const LandingPage = () => {
             absolute 
             top-[480px] 
             sm:top-[640px] 
-            
             md:top-[560px]   /* TABLET FIX */
-            md:left-0        /* TABLET FIX */
-
-            left-0 sm:left-[200px] 
+            left-0           /* CONSISTENT POSITIONING */
             z-40
           "
         >
@@ -567,7 +564,8 @@ const LandingPage = () => {
 
       {/* BENEFITS SECTION */}
       <section id="benefits" className="w-full bg-[#FDFBEE] 
-      py-8 sm:py-12 md:py-14 lg:py-16 
+      pt-24 sm:pt-32 md:pt-40 lg:pt-16 
+      pb-8 sm:pb-12 md:pb-14 lg:pb-16 
       px-4 sm:px-8 md:px-12 lg:px-24 
       relative">
         <div className="mb-6 w-max">

@@ -240,7 +240,7 @@ const LoginPage = () => {
       <div className="text-center mb-8">
         <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mt-8">
           Log in with{" "}
-          <span className="text-green-600 font-bold">ImmacuLearn</span> Today!
+          <span className="text-blue-600 font-bold" style={{ color: "#1D4ED8" }}>ImmacuLearn</span> Today!
         </h2>
         <p className="text-gray-800 text-sm md:text-base mt-2 font-medium">
           Experience a smarter way to learn and achieve your goals effortlessly.
@@ -250,9 +250,16 @@ const LoginPage = () => {
       {/* Login Form Box */}
       <div className="bg-white shadow-lg rounded-lg p-8 md:p-10 w-full max-w-md relative z-10 border border-gray-200">
         {/* Logo */}
-        <div className="flex flex-col items-center mb-6">
-          <h3 className="text-2xl font-bold text-green-700">ImmacuLearn</h3>
-          <p className="text-gray-600 text-sm">Log in to continue</p>
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="flex flex-col items-center">
+            <h3 className="text-2xl font-bold" style={{ color: "#1D4ED8" }}>ImmacuLearn</h3>
+            <p className="text-gray-600 text-sm">Log in to continue</p>
+          </div>
+          <img 
+            src="https://res.cloudinary.com/dpxfbom0j/image/upload/v1768808239/book-pen_nb81th.svg" 
+            alt="ImmacuLearn Logo" 
+            className="w-20 h-20 object-contain"
+          />
         </div>
 
         {/* Form */}
