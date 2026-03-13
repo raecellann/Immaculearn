@@ -40,8 +40,9 @@ async function createCustomServer() {
 
   // Remove the XHR header check or make it optional
   app.use("/v1", (req, res, next) => {
+    if (req.method === "GET") return next();
     if (req.headers["x-requested-with"] !== "XMLHttpRequest") {
-      return res.status(403).json({ success: false, message: "Forbidden. 🙂" });
+      return res.status(403).json({ success: false, message: "Forbidden." });
     }
     next();
   });
@@ -51,7 +52,9 @@ async function createCustomServer() {
       target: apiTarget,
       changeOrigin: true,
       pathFilter: "/v1",
-      cookieDomainRewrite: "",
+      cookieDomainRewrite: {
+        "*": "",
+      },
       on: {
         proxyReq: (proxyReq) => {
           proxyReq.setHeader("apikey", process.env.API_KEY);
