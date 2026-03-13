@@ -1553,7 +1553,7 @@ const UserPage = () => {
                 <div className="lg:hidden mb-6">
                   <div
                     className={`
-                    bg-white rounded-xl border cursor-text transition
+                    bg-white rounded-xl border cursor-text transition overflow-y-auto resize-none
                     border-black
                     hover:border-black
                   `}
@@ -1604,6 +1604,7 @@ const UserPage = () => {
                         editor
                         w-full
                         min-h-[40px]
+                        max-h-[80px]
                         bg-white
                         text-black
                         text-sm
@@ -1611,7 +1612,10 @@ const UserPage = () => {
                         pr-4
                         py-2
                         outline-none
+                        break-words
+                        overflow-y-auto
                       "
+                        style={{ wordBreak: "break-word", overflowWrap: "break-word", maxWidth: "100%" }}
                       />
 
                       {/* ACTIONS */}
@@ -1858,7 +1862,7 @@ const UserPage = () => {
                 <div className="hidden lg:block">
                   <div
                     className={`
-                    bg-white rounded-xl border cursor-text transition
+                    bg-white rounded-xl border cursor-text transition overflow-y-auto resize-none
                     ${isFocused ? "border-black" : "border-black"}
                     hover:border-black
                   `}
@@ -1917,7 +1921,10 @@ const UserPage = () => {
                         pr-4
                         py-2
                         outline-none
+                        break-words
+                        overflow-hidden
                       "
+                        style={{ wordBreak: "break-word", overflowWrap: "break-word", maxWidth: "100%" }}
                       />
 
                       {/* ACTIONS */}
@@ -2026,7 +2033,7 @@ const UserPage = () => {
                           {/* Avatar */}
                           {post.profile_pic ? (
                             <div
-                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-y-auto resize-none flex items-center justify-center flex-shrink-0"
                               style={{
                                 backgroundColor: currentColors.surface,
                                 borderColor: currentColors.border,
@@ -2144,7 +2151,7 @@ const UserPage = () => {
 
                                           {comment.profile_pic ? (
                                             <div
-                                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-y-auto resize-none flex items-center justify-center flex-shrink-0"
                                               style={{
                                                 backgroundColor:
                                                   currentColors.surface,
@@ -2230,7 +2237,7 @@ const UserPage = () => {
                                   </div> */}
                                   {user?.profile_pic ? (
                                     <div
-                                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
+                                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-y-auto resize-none flex items-center justify-center flex-shrink-0"
                                       style={{
                                         backgroundColor: currentColors.surface,
                                       }}
@@ -2483,7 +2490,7 @@ const UserPage = () => {
         {/* UPLOAD STATUS MODAL */}
         {showUploadModal && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto resize-none flex flex-col">
               {/* Header */}
               <div className="p-4 border-b border-gray-700 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-white">
@@ -2782,7 +2789,7 @@ const UserPage = () => {
       {/* COVER PHOTO EDITOR MODAL */}
       {showCoverPhotoEditor && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto resize-none flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">
@@ -2879,7 +2886,7 @@ const UserPage = () => {
                   <p className="text-sm font-medium text-white mb-3">
                     Position Image
                   </p>
-                  <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
+                  <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-y-auto resize-none">
                     <div
                       ref={coverPhotoEditorRef}
                       className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
@@ -2929,7 +2936,7 @@ const UserPage = () => {
       {/* COVER PHOTO CONFIRMATION DIALOG */}
       {showCoverPhotoConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-hidden">
+          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-y-auto resize-none">
             {/* Header */}
             <div className="p-4 border-b border-gray-700">
               <h2 className="text-lg font-semibold text-white">

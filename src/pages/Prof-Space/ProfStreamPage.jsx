@@ -1436,7 +1436,7 @@ const ProfStreamPage = () => {
                 <div className="lg:hidden mb-6">
                   <div
                     className={`
-                            bg-white rounded-xl border cursor-text transition
+                            bg-white rounded-xl border cursor-text transition overflow-hidden
                             ${isFocused ? "border-black" : "border-black"}
                             hover:border-black
                           `}
@@ -1486,6 +1486,7 @@ const ProfStreamPage = () => {
                                   editor
                                   w-full
                                   min-h-[40px]
+                                  max-h-[80px]
                                   bg-white
                                   text-black
                                   text-sm
@@ -1493,7 +1494,10 @@ const ProfStreamPage = () => {
                                   pr-4
                                   py-2
                                   outline-none
+                                  break-words
+                                  overflow-y-auto
                                 "
+                        style={{ wordBreak: "break-word", overflowWrap: "break-word", maxWidth: "100%" }}
                       />
 
                       {/* ACTIONS */}
@@ -1735,7 +1739,7 @@ const ProfStreamPage = () => {
                 <div className="hidden lg:block mb-6">
                   <div
                     className={`
-                            bg-white rounded-xl border cursor-text transition
+                            bg-white rounded-xl border cursor-text transition overflow-hidden
                             ${isFocused ? "border-black" : "border-black"}
                             hover:border-black
                           `}
@@ -1794,7 +1798,10 @@ const ProfStreamPage = () => {
                                 pr-4
                                 py-2
                                 outline-none
+                                break-words
+                                overflow-hidden
                               "
+                        style={{ wordBreak: "break-word", overflowWrap: "break-word", maxWidth: "100%" }}
                       />
 
                       {/* ACTIONS */}
