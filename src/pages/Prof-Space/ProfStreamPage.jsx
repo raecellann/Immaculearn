@@ -289,6 +289,27 @@ const ProfStreamPage = () => {
   );
 
   console.log("CORRENT", currentSpace);
+  // DEBUG: Identify correct field names for schedule/section
+  if (currentSpace) {
+    console.log("=== SPACE FIELDS ===", Object.keys(currentSpace));
+    console.log("=== SCHEDULE FIELDS ===", {
+      space_schedule: currentSpace.space_schedule,
+      schedule: currentSpace.schedule,
+      class_schedule: currentSpace.class_schedule,
+      space_day: currentSpace.space_day,
+      space_time: currentSpace.space_time,
+    });
+    console.log("=== SECTION FIELDS ===", {
+      space_section: currentSpace.space_section,
+      section: currentSpace.section,
+      class_section: currentSpace.class_section,
+      section_name: currentSpace.section_name,
+      course_section: currentSpace.course_section,
+      subject_section: currentSpace.subject_section,
+      space_block: currentSpace.space_block,
+      block: currentSpace.block,
+    });
+  }
 
   // console.log(userSpaces);
   // console.log(courseSpaces);
@@ -1152,6 +1173,7 @@ const ProfStreamPage = () => {
         </div>
 
         {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
+        {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
         <div
           className="lg:hidden px-4 py-3 border-b"
           style={{
@@ -1167,12 +1189,13 @@ const ProfStreamPage = () => {
               </span>
               <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
                 {currentSpace?.space_schedule ||
-                  `${currentSpace?.space_day || ""} ${currentSpace?.space_time || ""}`.trim() ||
                   currentSpace?.schedule ||
                   currentSpace?.class_schedule ||
-                  (currentSpace?.space_type === "course"
-                    ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
-                    : "Flexible schedule"
+                  (currentSpace?.space_day && currentSpace?.space_time
+                    ? `${currentSpace.space_day} ${currentSpace.space_time}`
+                    : currentSpace?.space_day
+                      ? `${currentSpace.space_day} — No time set`
+                      : "No schedule set"
                   )
                 }
               </span>
@@ -1188,7 +1211,11 @@ const ProfStreamPage = () => {
                   currentSpace?.section ||
                   currentSpace?.class_section ||
                   currentSpace?.section_name ||
-                  "—"
+                  currentSpace?.course_section ||
+                  currentSpace?.subject_section ||
+                  currentSpace?.space_block ||
+                  currentSpace?.block ||
+                  "N/A"
                 }
               </span>
             </div>
@@ -1209,6 +1236,7 @@ const ProfStreamPage = () => {
             </div>
           </div>
         </div>
+        )}
 
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
@@ -1286,6 +1314,7 @@ const ProfStreamPage = () => {
               )}
 
               {/* SPACE INFO SECTION - Right Side */}
+              {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
               <div 
                 className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
                 style={{
@@ -1349,6 +1378,7 @@ const ProfStreamPage = () => {
                   </div>
                 </div>
               </div>
+              )}
             </div>
           </div>
 
