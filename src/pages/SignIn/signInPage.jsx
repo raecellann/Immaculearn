@@ -115,7 +115,7 @@ const LoginPage = () => {
 
     const popup = window.open(
       baseUrl,
-      "oauthPopup",
+      "oauth",
       `width=500,height=600,top=${(screen.height - 600) / 2},left=${(screen.width - 500) / 2},resizable=yes,scrollbars=yes`,
     );
 
