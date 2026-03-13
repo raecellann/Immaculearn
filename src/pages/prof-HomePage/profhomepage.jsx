@@ -10,6 +10,7 @@ import {
   FileText,
   Calendar,
   MoreVertical,
+  ChevronRight,
 } from "lucide-react";
 import { useUser } from "../../contexts/user/useUser";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -26,6 +27,8 @@ import { DeleteConfirmationDialog } from "../component/SweetAlert";
 import ArchiveClassAlert from "../component/ArchiveClassAlert";
 import { toast } from "react-toastify";
 import { departmentOptions } from "../component/enumOptions";
+import { spaceService } from "../../services/spaceService";
+import { useQuery } from "@tanstack/react-query";
 
 // Helper function to get course name from code
 const getCourseName = (courseCode) => {
@@ -47,6 +50,37 @@ const ProfHomePage = () => {
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const navigate = useNavigate();
+
+  // Fetch tasks deployed by professor
+  const {
+    data: tasksData,
+    isLoading: isLoadingTasks,
+    error: tasksError,
+  } = useQuery({
+    queryKey: ["professorTasks"],
+    queryFn: () => spaceService.getAllUploadedTasks(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  const professorTasks = tasksData?.data || [];
+
+  // Filter tasks to exclude completed or overdue tasks
+  const filteredProfessorTasks = useMemo(() => {
+    if (!professorTasks || professorTasks.length === 0) return [];
+    
+    const now = new Date();
+    return professorTasks.filter(task => {
+      // Check if task is completed
+      const isCompleted = task.task_status === 'completed' || task.status === 'completed';
+      
+      // Check if task is overdue
+      const isOverdue = task.due_date && new Date(task.due_date) < now;
+      
+      // Return only tasks that are not completed and not overdue
+      return !isCompleted && !isOverdue;
+    });
+  }, [professorTasks]);
 
   // Cover photos state
   const [spaceCoverPhotos, setSpaceCoverPhotos] = useState({});
@@ -173,13 +207,6 @@ const ProfHomePage = () => {
   useEffect(() => {
     const loadCoverPhotos = () => {
       const allSpaces = [...(userSpaces || []), ...(courseSpaces || [])];
-      
-      // Debug: Log course spaces data structure
-      if (courseSpaces && courseSpaces.length > 0) {
-        console.log("Course space structure:", Object.keys(courseSpaces[0]));
-        console.log("Course space data:", courseSpaces[0]);
-      }
-
       const coverPhotos = {};
       allSpaces.forEach((space) => {
         if (space && space.space_uuid) {
@@ -247,7 +274,6 @@ const ProfHomePage = () => {
       setShowDeleteConfirm(null);
       setShowMenu(null);
     } catch (error) {
-      console.error("Failed to delete space:", error);
       toast.error("Failed to delete space. Please try again.");
     }
   };
@@ -274,7 +300,6 @@ const ProfHomePage = () => {
         `Class "${dialogMessage.space_name}" has been archived successfully!`
       );
     } catch (error) {
-      console.error("Failed to archive class:", error);
       toast.error("Failed to archive class. Please try again.");
     }
   };
@@ -551,26 +576,163 @@ const ProfHomePage = () => {
                   border: "none",
                 }}
               >
-                <div className="text-center py-8">
-                  <Calendar
-                    className="w-12 h-12 mx-auto mb-4"
-                    style={{ color: "white" }}
-                  />
-                  <p className="text-sm" style={{ color: "white" }}>
-                    No student activities
-                  </p>
-                  <p
-                    className="text-xs mt-2"
-                    style={{ color: "white" }}
-                  >
-                    Check your calendar to monitor student task submissions and progress
-                  </p>
-                  <div className="mt-6">
-                    <Button2
-                      text="Go to Calendar"
-                      onClick={() => navigate("/prof/calendar")}
-                    />
-                  </div>
+                <div className="text-left py-4">
+                  {isLoadingTasks ? (
+                    <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        <div>
+                          <p 
+                            className="text-sm font-medium mb-1"
+                            style={{ color: "white" }}
+                          >
+                            Loading tasks...
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : filteredProfessorTasks.length > 0 ? (
+                    <>
+                      <div className="space-y-3">
+                        {filteredProfessorTasks.slice(0, 3).map((task) => (
+                          <div
+                            key={task.task_id || task.id}
+                            className="p-3 rounded-lg border hover:shadow-md transition-all duration-200 cursor-pointer hover:scale-[1.02]"
+                            style={{
+                              backgroundColor: isDarkMode
+                                ? "rgba(30, 36, 46, 0.9)"
+                                : "rgba(255, 255, 255, 0.95)",
+                              borderColor: isDarkMode ? currentColors.border : "rgb(229, 231, 235)",
+                              borderWidth: "1px",
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const spaceId = task.space_uuid || task.space?.space_uuid;
+                              if (spaceId) {
+                                navigate(`/task/space/${spaceId}`);
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                const spaceId = task.space_uuid || task.space?.space_uuid;
+                                if (spaceId) {
+                                  navigate(`/task/space/${spaceId}`);
+                                }
+                              }
+                            }}
+                          >
+                            <div className="flex items-center justify-between gap-3 pointer-events-none">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <div 
+                                  className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                    task.task_status === "completed"
+                                      ? "bg-green-500"
+                                      : task.task_status === "in_progress"
+                                      ? "bg-yellow-500"
+                                      : "bg-blue-500"
+                                  }`}
+                                ></div>
+                                <div className="flex-1 min-w-0">
+                                  <p
+                                    className="text-sm font-semibold truncate"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    {task.task_title || task.title || "Untitled Task"}
+                                  </p>
+                                  <p
+                                    className="text-xs truncate mt-1"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    {task.task_description || task.description || "No description"}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 flex-shrink-0 pointer-events-none">
+                                {task.due_date && (
+                                  <div className="flex items-center gap-1">
+                                    <svg 
+                                      className="w-3 h-3" 
+                                      style={{ color: currentColors.textSecondary }}
+                                      fill="none" 
+                                      stroke="currentColor" 
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        strokeWidth={2} 
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                                      />
+                                    </svg>
+                                    <p
+                                      className="text-xs font-medium"
+                                      style={{
+                                        color: currentColors.textSecondary,
+                                      }}
+                                    >
+                                      {new Date(task.due_date).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                )}
+                                <span
+                                  className="text-xs px-2 py-1 rounded-full flex-shrink-0"
+                                  style={{
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    color: 'white'
+                                  }}
+                                >
+                                  {task.space_name || task.space?.space_name || 'Unknown Space'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {filteredProfessorTasks.length > 3 && (
+                        <div className="flex justify-start mt-4">
+                          <button
+                            onClick={() => navigate('/prof/list-activity')}
+                            className="text-sm font-medium hover:underline transition-colors"
+                            style={{ color: "white" }}
+                          >
+                            View All Tasks →
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "transparent" }}>
+                      <div className="flex flex-col items-center gap-3">
+                        <Calendar size={32} style={{ color: "white" }} />
+                        <div>
+                          <p
+                            className="text-sm "
+                            style={{  color: "white" }}
+                          >
+                            No tasks deployed
+                          </p>
+                          <p 
+                            className="text-xs mt-2"
+                            style={{ color: "rgba(255, 255, 255, 0.8)"  }}
+                          >
+                            Tasks you create and assign will appear here
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <Button2
+                          text="Go to Calendar"
+                          onClick={() => navigate("/prof/calendar")}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -891,7 +1053,6 @@ const ProfHomePage = () => {
                                     • {
                                       (() => {
                                         const studentCount = space.members?.filter(member => member.role !== 'owner' && member.role !== 'professor').length || 0;
-                                        console.log(`Space ${space.space_name} - Total members: ${space.members?.length || 0}, Students: ${studentCount}`, space.members);
                                         return studentCount;
                                       })()
                                     } Students
@@ -993,26 +1154,124 @@ const ProfHomePage = () => {
               <h4 className="font-semibold mb-3" style={{ color: "white" }}>
                 Task Deployed:
               </h4>
-              <div className="text-center py-8">
-                <Calendar
-                  className="w-12 h-12 mx-auto mb-4"
-                  style={{ color: "white" }}
-                />
-                <p className="text-sm" style={{ color: "white" }}>
-                  No student activities
-                </p>
-                <p
-                  className="text-xs mt-2"
-                  style={{ color: "white" }}
-                >
-                  Check your calendar to monitor student task submissions and progress
-                </p>
-                <div className="mt-6">
-                  <Button2
-                    text="Go to Calendar"
-                    onClick={() => navigate("/prof/calendar")}
-                  />
-                </div>
+              <div className="text-center py-4">
+                {isLoadingTasks ? (
+                  <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                      <div>
+                        <p 
+                          className="text-sm font-medium mb-1"
+                          style={{ color: "white" }}
+                        >
+                          Loading tasks...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : filteredProfessorTasks.length > 0 ? (
+                  <>
+                  <div className="space-y-3">
+                      {filteredProfessorTasks.slice(0, 3).map((task) => (
+                        <div
+                          key={task.task_id || task.id}
+                          className="p-4 rounded-lg border hover:shadow-md transition-all duration-200"
+                          style={{
+                            backgroundColor: isDarkMode
+                              ? "rgba(30, 36, 46, 0.9)"
+                              : "rgba(255, 255, 255, 0.95)",
+                            borderColor: isDarkMode ? currentColors.border : "rgb(229, 231, 235)",
+                            borderWidth: "1px",
+                          }}
+                        >
+                          {/* Title + Status row */}
+                          <div className="flex items-start gap-2 mb-2 flex-wrap">
+                            <p
+                              className="text-sm font-semibold leading-snug break-words"
+                              style={{ color: currentColors.text }}
+                            >
+                              {task.task_title || task.title || "Untitled Task"}
+                            </p>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 self-center ${
+                                task.task_status === "completed"
+                                  ? "bg-green-100 text-green-700"
+                                  : task.task_status === "in_progress"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-blue-100 text-blue-700"
+                              }`}
+                            >
+                              {(task.task_status || task.status || "in progress")?.replace("_", " ")}
+                            </span>
+                          </div>
+
+                          {/* Due date row */}
+                          {task.due_date && (
+                            <div className="flex items-center gap-1">
+                              <svg
+                                className="w-3 h-3 flex-shrink-0"
+                                style={{ color: currentColors.textSecondary }}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                              <p
+                                className="text-xs"
+                                style={{ color: currentColors.textSecondary }}
+                              >
+                                {new Date(task.due_date).toLocaleDateString()}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {filteredProfessorTasks.length > 3 && (
+                      <div className="flex justify-start mt-4">
+                        <button
+                          onClick={() => navigate('/prof/list-activity')}
+                          className="text-sm font-medium hover:underline transition-colors"
+                          style={{ color: "white" }}
+                        >
+                          View All Tasks →
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-6 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "transparent" }}>
+                    <div className="flex flex-col items-center gap-3">
+                      <Calendar size={32} style={{ color: "white" }} />
+                      <div>
+                        <p
+                          className="text-sm "
+                          style={{  color: "white" }}
+                        >
+                          No tasks deployed
+                        </p>
+                        <p 
+                          className="text-xs mt-2"
+                          style={{ color: "rgba(255, 255, 255, 0.8)"  }}
+                        >
+                          Tasks you create and assign will appear here
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <Button2
+                        text="Go to Calendar"
+                        onClick={() => navigate("/prof/calendar")}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1062,7 +1321,6 @@ const ProfHomePage = () => {
                   </button>
                   <button
                     onClick={() => {
-                      console.log("Space left:", showLeaveConfirm);
                       setShowLeaveConfirm(null);
                       setShowMenu(null);
                     }}
