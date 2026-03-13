@@ -1034,7 +1034,7 @@ const ProfTaskPage = () => {
     Completed: "text-green-600",
     "In Progress": "text-blue-600",
     "in-progress": "text-blue-600",
-    "in_progress": "text-blue-600",
+    in_progress: "text-blue-600",
     Missing: "text-red-600",
     missing: "text-red-600",
     Overdue: "text-orange-600",
@@ -1044,23 +1044,25 @@ const ProfTaskPage = () => {
   // Function to determine quiz status for professor
   const getQuizStatusForProfessor = (task) => {
     if (task.task_category !== "quiz") return task.task_status;
-    
+
     const now = new Date();
     const dueDate = task.task_due ? new Date(task.task_due) : null;
-    
+
     // If quiz has due date and it's passed, mark as Done
     if (dueDate && now > dueDate) {
       return "Done";
     }
-    
+
     // If task is already marked as done in any format, keep it as done
-    if (task.task_status === "Done" || 
-        task.task_status === "done" || 
-        task.task_status === "completed" || 
-        task.task_status === "Completed") {
+    if (
+      task.task_status === "Done" ||
+      task.task_status === "done" ||
+      task.task_status === "completed" ||
+      task.task_status === "Completed"
+    ) {
       return "Done";
     }
-    
+
     // If quiz is posted and due date not passed, keep as In Progress
     return "In Progress";
   };
@@ -1140,9 +1142,12 @@ const ProfTaskPage = () => {
                         {task.task_title}
                       </span>
                     </div>
-                    <span className={`text-xs font-medium ${
-                      statusStyles[getQuizStatusForProfessor(task)] || 'text-gray-500'
-                    }`}>
+                    <span
+                      className={`text-xs font-medium ${
+                        statusStyles[getQuizStatusForProfessor(task)] ||
+                        "text-gray-500"
+                      }`}
+                    >
                       {getQuizStatusForProfessor(task)}
                     </span>
                   </div>
@@ -1271,7 +1276,8 @@ const ProfTaskPage = () => {
                       )}
                       <span
                         className={`text-xs font-medium ${
-                          statusStyles[getQuizStatusForProfessor(task)] || 'text-gray-500'
+                          statusStyles[getQuizStatusForProfessor(task)] ||
+                          "text-gray-500"
                         }`}
                       >
                         {getQuizStatusForProfessor(task)}
@@ -1370,65 +1376,67 @@ const ProfTaskPage = () => {
                           )}
                         </>
                       )}
-                      {task.task_category === "individual-activity" && !task.isLocal && (
-                        <>
-                          <ButtonComponent
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleEditTask(task);
-                            }}
-                            style={{
-                              backgroundColor: "#22c55e",
-                              borderColor: "#22c55e",
-                              padding: "0.3em 0.8em",
-                              fontSize: "0.75rem",
-                              borderRadius: "6px",
-                              flex: 1,
-                              marginRight: "0.5rem",
-                            }}
-                          >
-                            Edit Activity
-                          </ButtonComponent>
-                          <ButtonComponent
+                      {task.task_category === "individual-activity" &&
+                        !task.isLocal && (
+                          <>
+                            <ButtonComponent
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleEditTask(task);
+                              }}
+                              style={{
+                                backgroundColor: "#22c55e",
+                                borderColor: "#22c55e",
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: 1,
+                                marginRight: "0.5rem",
+                              }}
+                            >
+                              Edit Activity
+                            </ButtonComponent>
+                            <ButtonComponent
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handlePreviewTask(task);
+                              }}
+                              style={{
+                                backgroundColor: currentColors.accent,
+                                borderColor: currentColors.accent,
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: 1,
+                              }}
+                            >
+                              View Details
+                            </ButtonComponent>
+                          </>
+                        )}
+                      {task.task_category === "individual-activity" &&
+                        task.isLocal && (
+                          <a
+                            href="#"
                             onClick={(e) => {
                               e.preventDefault();
                               handlePreviewTask(task);
                             }}
+                            className="text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex-1"
                             style={{
-                              backgroundColor: currentColors.accent,
-                              borderColor: currentColors.accent,
-                              padding: "0.3em 0.8em",
-                              fontSize: "0.75rem",
-                              borderRadius: "6px",
-                              flex: 1,
+                              backgroundColor: "#2563eb",
+                              color: "white",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.backgroundColor = "#1d4ed8";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = "#2563eb";
                             }}
                           >
-                            View Details
-                          </ButtonComponent>
-                        </>
-                      )}
-                      {task.task_category === "individual-activity" && task.isLocal && (
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handlePreviewTask(task);
-                          }}
-                          className="text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex-1"
-                          style={{
-                            backgroundColor: "#2563eb",
-                            color: "white",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = "#1d4ed8";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = "#2563eb";
-                          }}
-                        >
-                          Preview
-                        </a>
-                      )}
+                            Preview
+                          </a>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -1499,7 +1507,7 @@ const ProfTaskPage = () => {
   const handleResponseSummary = async (task) => {
     setSelectedQuizForSummary(task);
     setShowResponseSummary(true);
-    
+
     // Mock data for demonstration - replace with actual API call
     const mockSummaryData = {
       quizTitle: task.task_title || "Quiz",
@@ -1514,47 +1522,72 @@ const ProfTaskPage = () => {
           questionText: "What is the capital of France?",
           correctAnswer: "Paris",
           incorrectAnswers: {
-            "London": 5,
-            "Berlin": 3,
-            "Madrid": 2
+            London: 5,
+            Berlin: 3,
+            Madrid: 2,
           },
           correctCount: 15,
-          incorrectCount: 10
+          incorrectCount: 10,
         },
         {
           questionId: 2,
           questionText: "Which planet is known as the Red Planet?",
           correctAnswer: "Mars",
           incorrectAnswers: {
-            "Venus": 4,
-            "Jupiter": 3,
-            "Saturn": 2
+            Venus: 4,
+            Jupiter: 3,
+            Saturn: 2,
           },
           correctCount: 16,
-          incorrectCount: 9
+          incorrectCount: 9,
         },
         {
           questionId: 3,
           questionText: "What is 2 + 2?",
           correctAnswer: "4",
           incorrectAnswers: {
-            "3": 3,
-            "5": 2,
-            "22": 1
+            3: 3,
+            5: 2,
+            22: 1,
           },
           correctCount: 19,
-          incorrectCount: 6
-        }
+          incorrectCount: 6,
+        },
       ],
       studentResults: [
-        { name: "Alice Johnson", score: 85, status: "passed", answers: ["Paris", "Mars", "4"] },
-        { name: "Bob Smith", score: 92, status: "passed", answers: ["Paris", "Mars", "4"] },
-        { name: "Charlie Brown", score: 65, status: "failed", answers: ["London", "Mars", "4"] },
-        { name: "Diana Prince", score: 78, status: "passed", answers: ["Paris", "Venus", "4"] },
-        { name: "Edward Norton", score: 58, status: "failed", answers: ["Berlin", "Mars", "3"] }
-      ]
+        {
+          name: "Alice Johnson",
+          score: 85,
+          status: "passed",
+          answers: ["Paris", "Mars", "4"],
+        },
+        {
+          name: "Bob Smith",
+          score: 92,
+          status: "passed",
+          answers: ["Paris", "Mars", "4"],
+        },
+        {
+          name: "Charlie Brown",
+          score: 65,
+          status: "failed",
+          answers: ["London", "Mars", "4"],
+        },
+        {
+          name: "Diana Prince",
+          score: 78,
+          status: "passed",
+          answers: ["Paris", "Venus", "4"],
+        },
+        {
+          name: "Edward Norton",
+          score: 58,
+          status: "failed",
+          answers: ["Berlin", "Mars", "3"],
+        },
+      ],
     };
-    
+
     setResponseSummaryData(mockSummaryData);
   };
 
@@ -1860,64 +1893,78 @@ const ProfTaskPage = () => {
 
         {/* MOBILE/TABLET SPACE INFO OVERLAY */}
         <div className="md:hidden">
-          <div 
+          <div
             className="absolute top-4 right-2 left-2 p-2 rounded-lg border z-10"
             style={{
               backgroundColor: currentColors.surface + "CC", // Add 80% opacity
               borderColor: currentColors.border + "CC", // Add 80% opacity to border
-              backdropFilter: "blur(8px)"
+              backdropFilter: "blur(8px)",
             }}
           >
             <div className="grid grid-cols-1 gap-1">
               {/* Schedule */}
               <div>
-                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
+                <h3
+                  className="font-semibold text-[0.55rem] mb-0.5"
+                  style={{ color: currentColors.text }}
+                >
                   Schedule
                 </h3>
-                <p className="text-[0.55rem]" style={{ color: currentColors.textSecondary }}>
-                  {currentSpace?.space_schedule || 
-                   `${currentSpace?.space_day || "Mon"} ${currentSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
-                   currentSpace?.schedule ||
-                   currentSpace?.class_schedule ||
-                   (currentSpace?.space_type === "course" 
+                <p
+                  className="text-[0.55rem]"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_schedule ||
+                    `${currentSpace?.space_day || "Mon"} ${currentSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
+                    currentSpace?.schedule ||
+                    currentSpace?.class_schedule ||
+                    (currentSpace?.space_type === "course"
                       ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
-                      : "Flexible schedule"
-                    )
-                  }
+                      : "Flexible schedule")}
                 </p>
               </div>
 
               {/* Section */}
               <div>
-                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
+                <h3
+                  className="font-semibold text-[0.55rem] mb-0.5"
+                  style={{ color: currentColors.text }}
+                >
                   Section
                 </h3>
-                <p className="text-[0.55rem]" style={{ color: currentColors.textSecondary }}>
-                  {(currentSpace?.space_section && currentSpace.space_section.charAt(0)) || 
-                   (currentSpace?.section && currentSpace.section.charAt(0)) ||
-                   (currentSpace?.class_section && currentSpace.class_section.charAt(0)) ||
-                   (currentSpace?.section_name && currentSpace.section_name.charAt(0)) ||
-                   (currentSpace?.space_day && currentSpace.space_day.charAt(0)) ||
-                   (currentSpace?.space_type === "course" 
-                      ? "G"
-                      : "G"
-                    )
-                  }
+                <p
+                  className="text-[0.55rem]"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {(currentSpace?.space_section &&
+                    currentSpace.space_section.charAt(0)) ||
+                    (currentSpace?.section && currentSpace.section.charAt(0)) ||
+                    (currentSpace?.class_section &&
+                      currentSpace.class_section.charAt(0)) ||
+                    (currentSpace?.section_name &&
+                      currentSpace.section_name.charAt(0)) ||
+                    (currentSpace?.space_day &&
+                      currentSpace.space_day.charAt(0)) ||
+                    (currentSpace?.space_type === "course" ? "G" : "G")}
                 </p>
               </div>
 
               {/* Description */}
               <div>
-                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
+                <h3
+                  className="font-semibold text-[0.55rem] mb-0.5"
+                  style={{ color: currentColors.text }}
+                >
                   Description
                 </h3>
-                <p className="text-[0.55rem] line-clamp-3" style={{ color: currentColors.textSecondary }}>
-                  {currentSpace?.space_description || 
-                    (currentSpace?.space_type === "course" 
+                <p
+                  className="text-[0.55rem] line-clamp-3"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_description ||
+                    (currentSpace?.space_type === "course"
                       ? "Course space for lectures, assignments, and discussions."
-                      : "Collaborative space for sharing ideas and resources."
-                    )
-                  }
+                      : "Collaborative space for sharing ideas and resources.")}
                 </p>
               </div>
             </div>
@@ -1979,65 +2026,80 @@ const ProfTaskPage = () => {
               )}
 
               {/* SPACE INFO SECTION - Right Side */}
-              <div 
+              <div
                 className="absolute top-4 right-4 p-4 rounded-lg border z-10"
                 style={{
                   backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
                   borderColor: currentColors.border + "CC", // Add 80% opacity to border
                   maxWidth: "1000px",
-                  backdropFilter: "blur(8px)" // Add subtle blur for better readability
+                  backdropFilter: "blur(8px)", // Add subtle blur for better readability
                 }}
               >
                 <div className="grid grid-cols-3 gap-2">
                   {/* Schedule */}
                   <div>
-                    <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                    <h3
+                      className="font-semibold text-sm mb-2"
+                      style={{ color: currentColors.text }}
+                    >
                       Schedule
                     </h3>
-                    <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                      {currentSpace?.space_schedule || 
-                       `${currentSpace?.space_day || "Mon"} ${currentSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
-                       currentSpace?.schedule ||
-                       currentSpace?.class_schedule ||
-                       (currentSpace?.space_type === "course" 
+                    <p
+                      className="text-sm"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      {currentSpace?.space_schedule ||
+                        `${currentSpace?.space_day || "Mon"} ${currentSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
+                        currentSpace?.schedule ||
+                        currentSpace?.class_schedule ||
+                        (currentSpace?.space_type === "course"
                           ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
-                          : "Flexible schedule"
-                        )
-                      }
+                          : "Flexible schedule")}
                     </p>
                   </div>
 
                   {/* Section */}
                   <div>
-                    <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                    <h3
+                      className="font-semibold text-sm mb-2"
+                      style={{ color: currentColors.text }}
+                    >
                       Section
                     </h3>
-                    <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                      {(currentSpace?.space_section && currentSpace.space_section.charAt(0)) || 
-                       (currentSpace?.section && currentSpace.section.charAt(0)) ||
-                       (currentSpace?.class_section && currentSpace.class_section.charAt(0)) ||
-                       (currentSpace?.section_name && currentSpace.section_name.charAt(0)) ||
-                       (currentSpace?.space_day && currentSpace.space_day.charAt(0)) ||
-                       (currentSpace?.space_type === "course" 
-                          ? "G"
-                          : "G"
-                        )
-                      }
+                    <p
+                      className="text-sm"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      {(currentSpace?.space_section &&
+                        currentSpace.space_section.charAt(0)) ||
+                        (currentSpace?.section &&
+                          currentSpace.section.charAt(0)) ||
+                        (currentSpace?.class_section &&
+                          currentSpace.class_section.charAt(0)) ||
+                        (currentSpace?.section_name &&
+                          currentSpace.section_name.charAt(0)) ||
+                        (currentSpace?.space_day &&
+                          currentSpace.space_day.charAt(0)) ||
+                        (currentSpace?.space_type === "course" ? "G" : "G")}
                     </p>
                   </div>
 
                   {/* Description */}
                   <div>
-                    <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                    <h3
+                      className="font-semibold text-sm mb-2"
+                      style={{ color: currentColors.text }}
+                    >
                       Description
                     </h3>
-                    <p className="text-sm line-clamp-3" style={{ color: currentColors.textSecondary }}>
-                      {currentSpace?.space_description || 
-                        (currentSpace?.space_type === "course" 
+                    <p
+                      className="text-sm line-clamp-3"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      {currentSpace?.space_description ||
+                        (currentSpace?.space_type === "course"
                           ? "Course space for lectures, assignments, and discussions."
-                          : "Collaborative space for sharing ideas and resources."
-                        )
-                      }
+                          : "Collaborative space for sharing ideas and resources.")}
                     </p>
                   </div>
                 </div>
@@ -2243,7 +2305,6 @@ const ProfTaskPage = () => {
                   </div>
                 </div>
               )}
-
             </div>
           ) : showTaskTypeSelection ? (
             /* ================= TASK TYPE SELECTION ================= */
@@ -2309,7 +2370,13 @@ const ProfTaskPage = () => {
 
                     {/* Group Activity Card - DISABLED */}
                     <div
-                      className="bg-[#1a1d24] rounded-lg p-6 cursor-not-allowed opacity-50 transition-all border border-gray-700"
+                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                      onClick={() => {
+                        setSelectedTaskType("group-activity");
+                        setTaskCategory("group-activity");
+                        setShowTaskTypeSelection(false);
+                        setIsCreatingTask(true);
+                      }}
                     >
                       <div className="text-center">
                         <div className="text-4xl mb-4">👥</div>
@@ -2325,7 +2392,13 @@ const ProfTaskPage = () => {
 
                     {/* Exam Card - DISABLED */}
                     <div
-                      className="bg-[#1a1d24] rounded-lg p-6 cursor-not-allowed opacity-50 transition-all border border-gray-700"
+                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                      onClick={() => {
+                        setSelectedTaskType("exam");
+                        setTaskCategory("exam");
+                        setShowTaskTypeSelection(false);
+                        setIsCreatingTask(true);
+                      }}
                     >
                       <div className="text-center">
                         <div className="text-4xl mb-4">📋</div>
@@ -2455,12 +2528,12 @@ const ProfTaskPage = () => {
       {/* RESPONSE SUMMARY MODAL */}
       {showResponseSummary && responseSummaryData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div 
+          <div
             className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4"
             style={{ backgroundColor: currentColors.surface }}
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 
+              <h2
                 className="text-2xl font-bold"
                 style={{ color: currentColors.text }}
               >
@@ -2477,29 +2550,41 @@ const ProfTaskPage = () => {
 
             {/* Overview Statistics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg" style={{ backgroundColor: currentColors.accent + '20' }}>
-                <div className="text-2xl font-bold text-blue-600" style={{ color: currentColors.accent }}>
+              <div
+                className="bg-blue-50 p-4 rounded-lg"
+                style={{ backgroundColor: currentColors.accent + "20" }}
+              >
+                <div
+                  className="text-2xl font-bold text-blue-600"
+                  style={{ color: currentColors.accent }}
+                >
                   {responseSummaryData.totalStudents}
                 </div>
                 <div className="text-sm text-gray-600">Total Students</div>
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{responseSummaryData.passedStudents}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {responseSummaryData.passedStudents}
+                </div>
                 <div className="text-sm text-gray-600">Passed</div>
               </div>
               <div className="bg-red-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-red-600">{responseSummaryData.failedStudents}</div>
+                <div className="text-2xl font-bold text-red-600">
+                  {responseSummaryData.failedStudents}
+                </div>
                 <div className="text-sm text-gray-600">Failed</div>
               </div>
               <div className="bg-yellow-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-yellow-600">{responseSummaryData.passRate}%</div>
+                <div className="text-2xl font-bold text-yellow-600">
+                  {responseSummaryData.passRate}%
+                </div>
                 <div className="text-sm text-gray-600">Pass Rate</div>
               </div>
             </div>
 
             {/* Question Analysis */}
             <div className="mb-6">
-              <h3 
+              <h3
                 className="text-lg font-semibold mb-4"
                 style={{ color: currentColors.text }}
               >
@@ -2507,37 +2592,51 @@ const ProfTaskPage = () => {
               </h3>
               <div className="space-y-4">
                 {responseSummaryData.questionAnalysis.map((question) => (
-                  <div 
-                    key={question.questionId} 
+                  <div
+                    key={question.questionId}
                     className="border rounded-lg p-4"
                     style={{ borderColor: currentColors.border }}
                   >
                     <div className="mb-2">
-                      <span 
+                      <span
                         className="font-medium"
                         style={{ color: currentColors.text }}
                       >
                         Q{question.questionId}:
                       </span>
-                      <span className="ml-2" style={{ color: currentColors.text }}>
+                      <span
+                        className="ml-2"
+                        style={{ color: currentColors.text }}
+                      >
                         {question.questionText}
                       </span>
                     </div>
                     <div className="mb-2">
-                      <span className="text-sm text-green-600 font-medium">Correct: {question.correctAnswer}</span>
+                      <span className="text-sm text-green-600 font-medium">
+                        Correct: {question.correctAnswer}
+                      </span>
                       <span className="ml-4 text-sm text-blue-600">
                         ({question.correctCount} students)
                       </span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-red-600 font-medium">Common incorrect answers:</span>
+                      <span className="text-red-600 font-medium">
+                        Common incorrect answers:
+                      </span>
                       <div className="mt-1 space-y-1">
-                        {Object.entries(question.incorrectAnswers).map(([answer, count]) => (
-                          <div key={answer} className="flex items-center gap-2">
-                            <span className="text-red-500">• {answer}</span>
-                            <span className="text-gray-500">({count} students)</span>
-                          </div>
-                        ))}
+                        {Object.entries(question.incorrectAnswers).map(
+                          ([answer, count]) => (
+                            <div
+                              key={answer}
+                              className="flex items-center gap-2"
+                            >
+                              <span className="text-red-500">• {answer}</span>
+                              <span className="text-gray-500">
+                                ({count} students)
+                              </span>
+                            </div>
+                          ),
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2547,7 +2646,7 @@ const ProfTaskPage = () => {
 
             {/* Student Results */}
             <div>
-              <h3 
+              <h3
                 className="text-lg font-semibold mb-4"
                 style={{ color: currentColors.text }}
               >
@@ -2556,34 +2655,68 @@ const ProfTaskPage = () => {
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr style={{ backgroundColor: currentColors.accent + '20' }}>
-                      <th className="border p-2 text-left" style={{ borderColor: currentColors.border }}>Student Name</th>
-                      <th className="border p-2 text-center" style={{ borderColor: currentColors.border }}>Score</th>
-                      <th className="border p-2 text-center" style={{ borderColor: currentColors.border }}>Status</th>
+                    <tr
+                      style={{ backgroundColor: currentColors.accent + "20" }}
+                    >
+                      <th
+                        className="border p-2 text-left"
+                        style={{ borderColor: currentColors.border }}
+                      >
+                        Student Name
+                      </th>
+                      <th
+                        className="border p-2 text-center"
+                        style={{ borderColor: currentColors.border }}
+                      >
+                        Score
+                      </th>
+                      <th
+                        className="border p-2 text-center"
+                        style={{ borderColor: currentColors.border }}
+                      >
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {responseSummaryData.studentResults.map((student, index) => (
-                      <tr key={index}>
-                        <td className="border p-2" style={{ borderColor: currentColors.border, color: currentColors.text }}>
-                          {student.name}
-                        </td>
-                        <td className="border p-2 text-center" style={{ borderColor: currentColors.border, color: currentColors.text }}>
-                          {student.score}%
-                        </td>
-                        <td className="border p-2 text-center" style={{ borderColor: currentColors.border }}>
-                          <span 
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              student.status === 'passed' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                            }`}
+                    {responseSummaryData.studentResults.map(
+                      (student, index) => (
+                        <tr key={index}>
+                          <td
+                            className="border p-2"
+                            style={{
+                              borderColor: currentColors.border,
+                              color: currentColors.text,
+                            }}
                           >
-                            {student.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                            {student.name}
+                          </td>
+                          <td
+                            className="border p-2 text-center"
+                            style={{
+                              borderColor: currentColors.border,
+                              color: currentColors.text,
+                            }}
+                          >
+                            {student.score}%
+                          </td>
+                          <td
+                            className="border p-2 text-center"
+                            style={{ borderColor: currentColors.border }}
+                          >
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-medium ${
+                                student.status === "passed"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {student.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ),
+                    )}
                   </tbody>
                 </table>
               </div>

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { FiArrowLeft, FiUsers, FiFilePlus } from "react-icons/fi";
 import { useNavigate } from "react-router";
+import { useFile } from "../../../contexts/file/fileContextProvider";
 
 const GroupActivityBuilder = ({
   currentColors,
@@ -10,17 +11,18 @@ const GroupActivityBuilder = ({
   isLoading = false,
 }) => {
   const navigate = useNavigate();
+  const { resources } = useFile();
   const [activityTitle, setActivityTitle] = useState("");
   const [instruction, setInstruction] = useState("");
   const [score, setScore] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [selectedLesson, setSelectedLesson] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
   const getLocalDateTimeMin = () => {
     const now = new Date();
     const tzOffsetMs = now.getTimezoneOffset() * 60000;
     return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 16);
   };
-
-  const [estimatedTime, setEstimatedTime] = useState("");
   const [groupSize, setGroupSize] = useState("3");
   const [allowSelfGrouping, setAllowSelfGrouping] = useState(false);
   const [peerEvaluation, setPeerEvaluation] = useState(false);
@@ -30,7 +32,7 @@ const GroupActivityBuilder = ({
   // Group management state
   const [showManualGroups, setShowManualGroups] = useState(false);
   const [showGenerateGroups, setShowGenerateGroups] = useState(false);
-  const [numberOfGroups, setNumberOfGroups] = useState(1);
+  const [numberOfGroups, setNumberOfGroups] = useState(2);
   const [groups, setGroups] = useState([
     {
       id: 1,
@@ -58,6 +60,9 @@ const GroupActivityBuilder = ({
     "Maria Garcia",
     "David Martinez",
     "Jennifer Lopez",
+    "Marko Lopez",
+    "Issaac Lopez",
+    "Martha Lopez",
   ];
 
   React.useEffect(() => {
@@ -83,7 +88,7 @@ const GroupActivityBuilder = ({
       }
     } else {
       const input = document.getElementById("groups-input");
-      const numGroups = parseInt(input.value) || 1;
+      const numGroups = parseInt(input.value) || 2;
       setNumberOfGroups(numGroups);
       setGroupCreationMethod("manual");
 
@@ -102,7 +107,7 @@ const GroupActivityBuilder = ({
 
   const handleGenerateGroups = () => {
     const input = document.getElementById("groups-input");
-    const numGroups = parseInt(input.value) || 1;
+    const numGroups = parseInt(input.value) || 2;
     setNumberOfGroups(numGroups);
     shuffleGroups(numGroups);
     setShowGenerateGroups(true);
@@ -113,6 +118,25 @@ const GroupActivityBuilder = ({
       () => Math.random() - 0.5,
     );
     const totalMembers = shuffledMembers.length;
+
+    // Check if group size constraints can be satisfied
+    const maxGroupSize = Math.ceil(totalMembers / numGroups);
+    const minGroupSize = Math.floor(totalMembers / numGroups);
+
+    if (maxGroupSize > 10) {
+      alert(
+        `With ${numGroups} groups, some groups would have more than 10 members. Please increase the number of groups.`,
+      );
+      return;
+    }
+
+    if (minGroupSize < 2 && totalMembers >= numGroups * 2) {
+      // Only show warning if we have enough students to potentially meet min requirement
+      console.warn(
+        `Some groups may have fewer than 2 members. Consider reducing the number of groups.`,
+      );
+    }
+
     const baseMembersPerGroup = Math.floor(totalMembers / numGroups);
     const remainder = totalMembers % numGroups;
 
@@ -163,6 +187,21 @@ const GroupActivityBuilder = ({
   const saveGroup = (groupId) => {
     const group = groups.find((g) => g.id === groupId);
     const validMembers = group.members.filter((member) => member.trim());
+
+    // Check group size constraints (min 2, max 10)
+    const leaderCount = group.leader?.trim() ? 1 : 0;
+    const totalSize = leaderCount + validMembers.length;
+
+    if (totalSize < 2) {
+      alert("Group must have at least 2 members (leader + members)");
+      return;
+    }
+
+    if (totalSize > 10) {
+      alert("Group cannot have more than 10 members (leader + members)");
+      return;
+    }
+
     console.log(
       `Group ${groupId} saved with leader: ${group.leader}, members:`,
       validMembers,
@@ -184,6 +223,21 @@ const GroupActivityBuilder = ({
       return;
     }
 
+    // Check group size constraints (min 2, max 10)
+    const currentGroupSize = activeGroupData.leader?.trim() ? 1 : 0;
+    const currentMembersCount = activeGroupData.members.filter((m) =>
+      m?.trim(),
+    ).length;
+    const totalCurrentSize = currentGroupSize + currentMembersCount;
+
+    if (totalCurrentSize >= 10) {
+      console.log(
+        "Cannot add member: Group has reached maximum size of 10 members",
+      );
+      alert("Group has reached maximum size of 10 members");
+      return;
+    }
+
     const updatedGroups = [...groups];
     const activeGroupDataUpdated = updatedGroups[activeGroup - 1];
 
@@ -202,6 +256,14 @@ const GroupActivityBuilder = ({
       if (firstEmptyIndex !== -1) {
         activeGroupMembers[firstEmptyIndex] = memberName;
       } else {
+        // Check if adding this member would exceed max size
+        if (totalCurrentSize + 1 > 10) {
+          console.log(
+            "Cannot add member: Group would exceed maximum size of 10 members",
+          );
+          alert("Group would exceed maximum size of 10 members");
+          return;
+        }
         activeGroupMembers.push(memberName);
         activeGroupMembers.push("");
       }
@@ -232,32 +294,163 @@ const GroupActivityBuilder = ({
     return getAssignedMembers().has(memberName);
   };
 
+  const editGroup = (groupId) => {
+    const updatedGroups = [...groups];
+    const group = updatedGroups[groupId - 1];
+
+    // Store original data for potential restoration
+    if (group.isSaved) {
+      group.originalData = {
+        leader: group.leader,
+        members: [...group.members],
+      };
+    }
+
+    group.showInputs = true;
+    group.isSaved = false;
+    setGroups(updatedGroups);
+  };
+
+  const removeMemberFromGroup = (groupId, memberIndex) => {
+    const updatedGroups = [...groups];
+    const group = updatedGroups[groupId - 1];
+
+    // Remove the member at the specified index
+    group.members.splice(memberIndex, 1);
+
+    // Ensure there's always at least one empty member input
+    if (group.members.length === 0) {
+      group.members.push("");
+    }
+
+    setGroups(updatedGroups);
+  };
+
+  const resetGroupInputs = (groupId) => {
+    const updatedGroups = [...groups];
+    const group = updatedGroups[groupId - 1];
+
+    // If it was previously saved, restore original data
+    if (group.wasPreviouslySaved && group.originalData) {
+      group.leader = group.originalData.leader;
+      group.members = [...group.originalData.members];
+      delete group.originalData;
+    } else {
+      // Reset to empty state for new groups
+      group.leader = "";
+      group.members = [""];
+    }
+
+    group.showInputs = false;
+    group.isSaved = false;
+    setGroups(updatedGroups);
+  };
+
+  const addMemberFromAvailable = (memberName) => {
+    addMemberToGroup(memberName);
+  };
+
+  const getMemberRole = (memberName) => {
+    for (const group of groups) {
+      if (group.leader && group.leader.trim() === memberName.trim()) {
+        return "leader";
+      }
+      if (
+        group.members.some(
+          (member) => member && member.trim() === memberName.trim(),
+        )
+      ) {
+        return "member";
+      }
+    }
+    return null;
+  };
+
+  const validateFields = () => {
+    const errors = {};
+
+    if (!activityTitle.trim()) {
+      errors.activityTitle = true;
+    }
+
+    if (!instruction.trim()) {
+      errors.instruction = true;
+    }
+
+    if (!score.trim()) {
+      errors.score = true;
+    }
+
+    if (!dueDate) {
+      errors.dueDate = true;
+    }
+
+    if (!selectedLesson) {
+      errors.selectedLesson = true;
+    }
+
+    // Check if groups are configured but have unassigned students
+    if (
+      groupsConfigured &&
+      getAssignedMembers().size < availableMembers.length
+    ) {
+      errors.unassignedStudents = true;
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSave = (status) => {
+    if (!validateFields()) {
+      return;
+    }
+
+    // Transform groups data to match required format
+    const groupsPayload =
+      groupsConfigured && groups.length > 0
+        ? groups
+            .filter(
+              (g) => g.leader?.trim() || g.members?.some((m) => m?.trim()),
+            )
+            .map((group, index) => {
+              const members = [];
+
+              // Add leader if exists
+              if (group.leader?.trim()) {
+                members.push({
+                  account_id: 1, // This should be replaced with actual account ID lookup
+                  role: "leader",
+                });
+              }
+
+              // Add members if they exist
+              group.members
+                .filter((member) => member?.trim())
+                .forEach((member) => {
+                  members.push({
+                    account_id: 1, // This should be replaced with actual account ID lookup
+                    role: "member",
+                  });
+                });
+
+              return {
+                group: group.id,
+                group_name: `Group ${group.id}`,
+                members: members,
+              };
+            })
+        : [];
+
     const activityData = {
-      title: activityTitle,
-      instruction,
-      score: Number(score),
-      dueDate,
-      estimatedTime,
-      groupSize: Number(groupSize),
-      allowSelfGrouping,
-      peerEvaluation,
-      groupsConfigured,
-      groupsData:
-        groupsConfigured && groups.length > 0
-          ? groups
-              .filter(
-                (g) => g.leader?.trim() || g.members?.some((m) => m?.trim()),
-              )
-              .map((group, index) => ({
-                group_name: `Group_${index + 1}`,
-                leader_id: group.leader?.trim() || null,
-                members: group.members
-                  .filter((member) => member?.trim())
-                  .map((member) => member.trim()),
-              }))
-          : null,
-      category: "group-activity",
+      task_category: "group-activity",
+      space_uuid: null, // This should be replaced with actual space UUID
+      task_title: activityTitle,
+      due_date: dueDate,
+      task_score: Number(score),
+      lesson_id: selectedLesson ? parseInt(selectedLesson) : null,
+      task_instruction: instruction,
+      groups: groupsPayload,
     };
 
     if (status === "published") {
@@ -310,320 +503,400 @@ const GroupActivityBuilder = ({
           </h1>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* LEFT SECTION */}
-          <div className="flex-1 flex flex-col gap-4">
-            <label
-              className="font-semibold text-lg"
-              style={{ color: currentColors.text }}
-            >
-              Activity Title: <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={activityTitle}
-              onChange={(e) => setActivityTitle(e.target.value)}
-              className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: currentColors.border,
-              }}
-              placeholder="Enter activity title"
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label
-                  className="font-semibold"
-                  style={{ color: currentColors.text }}
-                >
-                  Score: <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={score}
-                  onChange={(e) => setScore(e.target.value)}
-                  className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
-                  style={{
-                    backgroundColor: currentColors.background,
-                    color: currentColors.text,
-                    borderColor: currentColors.border,
-                  }}
-                  placeholder="Enter score"
-                  min="0"
-                />
-              </div>
-
-              <div>
-                <label
-                  className="font-semibold"
-                  style={{ color: currentColors.text }}
-                >
-                  Est. Time (min):
-                </label>
-                <input
-                  type="text"
-                  value={estimatedTime}
-                  onChange={(e) => setEstimatedTime(e.target.value)}
-                  className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
-                  style={{
-                    backgroundColor: currentColors.background,
-                    color: currentColors.text,
-                    borderColor: currentColors.border,
-                  }}
-                  placeholder="e.g., 45"
-                />
-              </div>
+        {/* BASIC INFO */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="space-y-4">
+            <div>
+              <label
+                className="block font-semibold mb-2"
+                style={{ color: currentColors.text }}
+              >
+                Activity Title: <span className="text-red-500">*</span>
+              </label>
+              {validationErrors.activityTitle && (
+                <p className="text-red-500 text-xs sm:text-sm mb-1">
+                  Please enter an activity title
+                </p>
+              )}
+              <input
+                type="text"
+                value={activityTitle}
+                onChange={(e) => {
+                  setActivityTitle(e.target.value);
+                  if (validationErrors.activityTitle) {
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      activityTitle: false,
+                    }));
+                  }
+                }}
+                className={`w-full rounded-lg px-4 py-2 outline-none border ${
+                  validationErrors.activityTitle ? "border-red-500" : ""
+                }`}
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: validationErrors.activityTitle
+                    ? "#ef4444"
+                    : currentColors.border,
+                }}
+                placeholder="Enter activity title"
+              />
             </div>
 
-            <div className="mt-4">
+            <div>
               <label
-                className="font-semibold"
+                className="block font-semibold mb-2"
+                style={{ color: currentColors.text }}
+              >
+                Score: <span className="text-red-500">*</span>
+              </label>
+              {validationErrors.score && (
+                <p className="text-red-500 text-xs sm:text-sm mb-1">
+                  Please enter a score
+                </p>
+              )}
+              <input
+                type="text"
+                value={score}
+                onChange={(e) => {
+                  setScore(e.target.value);
+                  if (validationErrors.score) {
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      score: false,
+                    }));
+                  }
+                }}
+                className={`w-full rounded-lg px-4 py-2 outline-none border ${
+                  validationErrors.score ? "border-red-500" : ""
+                }`}
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  borderColor: validationErrors.score
+                    ? "#ef4444"
+                    : currentColors.border,
+                }}
+                placeholder="Enter score"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label
+                className="block font-semibold mb-2"
                 style={{ color: currentColors.text }}
               >
                 Due Date: <span className="text-red-500">*</span>
               </label>
+              {validationErrors.dueDate && (
+                <p className="text-red-500 text-xs sm:text-sm mb-1">
+                  Please select a due date
+                </p>
+              )}
               <input
                 type="datetime-local"
                 value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="rounded-lg px-4 py-2 outline-none border transition-colors w-full"
+                onChange={(e) => {
+                  setDueDate(e.target.value);
+                  if (validationErrors.dueDate) {
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      dueDate: false,
+                    }));
+                  }
+                }}
+                className={`w-full rounded-lg px-4 py-2 outline-none border ${
+                  validationErrors.dueDate ? "border-red-500" : ""
+                }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: currentColors.border,
+                  borderColor: validationErrors.dueDate
+                    ? "#ef4444"
+                    : currentColors.border,
                 }}
                 min={getLocalDateTimeMin()}
               />
             </div>
 
-            {/* INSTRUCTION */}
-            <label
-              className="font-semibold"
-              style={{ color: currentColors.text }}
-            >
-              Instructions (optional)
-            </label>
-
-            <div
-              className="rounded-lg border transition-colors"
-              style={{
-                backgroundColor: currentColors.background,
-                borderColor: currentColors.border,
-              }}
-            >
-              <div
-                ref={instructionRef}
-                contentEditable
-                className="min-h-[140px] px-4 py-3 outline-none"
+            <div>
+              <label
+                className="block font-semibold mb-2"
+                style={{ color: currentColors.text }}
+              >
+                Connect to Lesson: <span className="text-red-500">*</span>
+              </label>
+              {validationErrors.selectedLesson && (
+                <p className="text-red-500 text-xs sm:text-sm mb-1">
+                  Please select a lesson
+                </p>
+              )}
+              <select
+                value={selectedLesson}
+                onChange={(e) => {
+                  setSelectedLesson(e.target.value);
+                  if (validationErrors.selectedLesson) {
+                    setValidationErrors((prev) => ({
+                      ...prev,
+                      selectedLesson: false,
+                    }));
+                  }
+                }}
+                className={`w-full rounded-lg px-4 py-2 outline-none border ${
+                  validationErrors.selectedLesson ? "border-red-500" : ""
+                }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
+                  borderColor: validationErrors.selectedLesson
+                    ? "#ef4444"
+                    : currentColors.border,
                 }}
-                suppressContentEditableWarning
-              />
+                required
+              >
+                <option value="">Select a lesson...</option>
+                {resources.map((lesson) => (
+                  <option key={lesson.lesson_id} value={lesson.lesson_id}>
+                    {lesson.lesson_name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
+        </div>
 
-          {/* RIGHT SECTION */}
-          <div className="flex-1 flex flex-col gap-4 mt-6 lg:mt-0">
-            {/* GROUP SETTINGS */}
+        {/* INSTRUCTION */}
+        <div className="mb-8">
+          <label
+            className="block font-semibold mb-2"
+            style={{ color: currentColors.text }}
+          >
+            Instructions: <span className="text-red-500">*</span>
+          </label>
+          {validationErrors.instruction && (
+            <p className="text-red-500 text-xs sm:text-sm mb-1">
+              Please enter instructions for the activity
+            </p>
+          )}
+          <div
+            className={`rounded-lg border transition-colors ${
+              validationErrors.instruction ? "border-red-500" : ""
+            }`}
+            style={{
+              backgroundColor: currentColors.background,
+              borderColor: validationErrors.instruction
+                ? "#ef4444"
+                : currentColors.border,
+            }}
+          >
+            <div
+              ref={instructionRef}
+              contentEditable
+              className="min-h-[140px] px-4 py-3 outline-none"
+              style={{
+                backgroundColor: currentColors.background,
+                color: currentColors.text,
+              }}
+              suppressContentEditableWarning
+              onInput={() => {
+                setInstruction(instructionRef.current.innerHTML);
+                if (validationErrors.instruction) {
+                  setValidationErrors((prev) => ({
+                    ...prev,
+                    instruction: false,
+                  }));
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        {/* GROUP MANAGEMENT SECTION */}
+        {!allowSelfGrouping && (
+          <div className="mb-8">
             <div
               className="p-4 rounded-lg"
               style={{ backgroundColor: currentColors.background }}
             >
               <h3
-                className="font-semibold mb-4 flex items-center gap-2"
+                className="font-semibold mb-4"
                 style={{ color: currentColors.text }}
               >
-                <FiUsers /> Group Settings
+                Group Management
               </h3>
 
-              <div className="space-y-3">
-                <div>
-                  <label
-                    className="block text-sm mb-2"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    Group Size:
-                  </label>
-                  <select
-                    value={groupSize}
-                    onChange={(e) => setGroupSize(e.target.value)}
-                    className="w-full rounded px-3 py-2 outline-none border text-sm"
-                    style={{
-                      backgroundColor: currentColors.surface,
-                      color: currentColors.text,
-                      borderColor: currentColors.border,
-                    }}
-                  >
-                    <option value="2">2 members</option>
-                    <option value="3">3 members</option>
-                    <option value="4">4 members</option>
-                    <option value="5">5 members</option>
-                    <option value="6">6 members</option>
-                  </select>
-                </div>
-
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={allowSelfGrouping}
-                    onChange={(e) => setAllowSelfGrouping(e.target.checked)}
-                    className="w-4 h-4 mr-3"
-                  />
-                  <span style={{ color: currentColors.text }}>
-                    Allow students to form their own groups
-                  </span>
-                </label>
-
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={peerEvaluation}
-                    onChange={(e) => setPeerEvaluation(e.target.checked)}
-                    className="w-4 h-4 mr-3"
-                  />
-                  <span style={{ color: currentColors.text }}>
-                    Enable peer evaluation
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* GROUP MANAGEMENT */}
-            {!allowSelfGrouping && (
-              <div
-                className="p-4 rounded-lg"
-                style={{ backgroundColor: currentColors.background }}
-              >
-                <h3
-                  className="font-semibold mb-4"
-                  style={{ color: currentColors.text }}
-                >
-                  Group Management
-                </h3>
-
-                {groupsConfigured ? (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span
-                        className="text-sm"
-                        style={{ color: currentColors.text }}
-                      >
-                        Groups configured (
-                        {
-                          groups.filter(
-                            (g) =>
-                              g.leader?.trim() ||
-                              g.members?.some((m) => m?.trim()),
-                          ).length
-                        }
-                        )
-                      </span>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
-                          onClick={() => {
-                            setGroups([
-                              {
-                                id: 1,
-                                members: [],
-                                leader: "",
-                                showInputs: false,
-                                isSaved: false,
-                                wasPreviouslySaved: false,
-                              },
-                            ]);
-                            setGroupsConfigured(false);
-                            setGroupCreationMethod(null);
-                          }}
-                        >
-                          Reset
-                        </button>
-                        <button
-                          type="button"
-                          className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                          onClick={handleManualGroups}
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <label
-                        className="text-sm"
-                        style={{ color: currentColors.text }}
-                      >
-                        Number of groups:
-                      </label>
-                      <div
-                        className="flex items-center rounded-lg border"
-                        style={{
-                          backgroundColor: currentColors.background,
-                          borderColor: currentColors.border,
-                        }}
-                      >
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
-                          onClick={() => {
-                            const input =
-                              document.getElementById("groups-input");
-                            if (input.value > 1)
-                              input.value = parseInt(input.value) - 1;
-                          }}
-                        >
-                          -
-                        </button>
-                        <input
-                          id="groups-input"
-                          type="number"
-                          className="bg-transparent w-12 text-center outline-none text-sm"
-                          style={{ color: currentColors.text }}
-                          defaultValue={1}
-                          min="1"
-                        />
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
-                          onClick={() => {
-                            const input =
-                              document.getElementById("groups-input");
-                            input.value = parseInt(input.value) + 1;
-                          }}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
+              {groupsConfigured ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span
+                      className="text-sm"
+                      style={{ color: currentColors.text }}
+                    >
+                      Groups configured (
+                      {
+                        groups.filter(
+                          (g) =>
+                            g.leader?.trim() ||
+                            g.members?.some((m) => m?.trim()),
+                        ).length
+                      }
+                      )
+                    </span>
                     <div className="flex gap-2">
                       <button
                         type="button"
                         className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
-                        onClick={handleManualGroups}
+                        onClick={() => {
+                          setGroups([
+                            {
+                              id: 1,
+                              members: [],
+                              leader: "",
+                              showInputs: false,
+                              isSaved: false,
+                              wasPreviouslySaved: false,
+                            },
+                          ]);
+                          setGroupsConfigured(false);
+                          setGroupCreationMethod(null);
+                        }}
                       >
-                        Manual
+                        Reset
                       </button>
                       <button
                         type="button"
                         className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                        onClick={handleGenerateGroups}
+                        onClick={handleManualGroups}
                       >
-                        Auto-generate
+                        Edit
                       </button>
                     </div>
                   </div>
-                )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <label
+                      className="text-sm"
+                      style={{ color: currentColors.text }}
+                    >
+                      Number of groups:
+                    </label>
+                    <div
+                      className="flex items-center rounded-lg border"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        borderColor: currentColors.border,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
+                        onClick={() => {
+                          const input = document.getElementById("groups-input");
+                          if (input.value > 2)
+                            input.value = parseInt(input.value) - 1;
+                        }}
+                      >
+                        -
+                      </button>
+                      <input
+                        id="groups-input"
+                        type="number"
+                        className="bg-transparent w-12 text-center outline-none text-sm"
+                        style={{ color: currentColors.text }}
+                        defaultValue={2}
+                        min="2"
+                        max="10"
+                      />
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
+                        onClick={() => {
+                          const input = document.getElementById("groups-input");
+                          const currentValue = parseInt(input.value);
+                          if (currentValue < 10) {
+                            input.value = currentValue + 1;
+                          }
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      Max: 10 groups
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
+                      onClick={handleManualGroups}
+                    >
+                      Manual
+                    </button>
+                    <button
+                      type="button"
+                      className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                      onClick={handleGenerateGroups}
+                    >
+                      Auto-generate
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* GENERATED GROUPS CARDS */}
+            {groupsConfigured && groups.length > 0 && (
+              <div className="mt-6">
+                <h4
+                  className="font-semibold mb-4"
+                  style={{ color: currentColors.text }}
+                >
+                  Generated Groups
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {groups
+                    .filter(
+                      (g) =>
+                        g.leader?.trim() || g.members?.some((m) => m?.trim()),
+                    )
+                    .map((group, index) => (
+                      <div
+                        key={group.id}
+                        className="border rounded-lg p-4"
+                        style={{
+                          borderColor: currentColors.border,
+                          backgroundColor: currentColors.background,
+                        }}
+                      >
+                        <div className="text-blue-500 font-semibold text-sm mb-2">
+                          Group {group.id}
+                        </div>
+                        <div className="text-xs space-y-1">
+                          <div style={{ color: currentColors.text }}>
+                            <span className="font-medium">Leader:</span>{" "}
+                            {group.leader || "Not assigned"}
+                          </div>
+                          <div style={{ color: currentColors.text }}>
+                            <span className="font-medium">Members:</span>{" "}
+                            {group.members
+                              .filter((m) => m?.trim())
+                              .join(", ") || "No members"}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
           </div>
-        </div>
+        )}
 
         {/* ACTION BUTTONS */}
         <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-8">
@@ -686,91 +959,473 @@ const GroupActivityBuilder = ({
       {/* MANUAL GROUPS MODAL */}
       {showManualGroups && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+          <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">
-                Manual Groups ({numberOfGroups}{" "}
-                {numberOfGroups === 1 ? "Group" : "Groups"})
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold text-white">
+                  Manual Groups({numberOfGroups}{" "}
+                  {numberOfGroups === 1 ? "Group" : "Groups"})
+                </h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (numberOfGroups > 2) {
+                        const newNumGroups = numberOfGroups - 1;
+                        setNumberOfGroups(newNumGroups);
+
+                        // Remove the last group if it exists and has no data
+                        const updatedGroups = [...groups];
+                        if (updatedGroups.length > newNumGroups) {
+                          const lastGroup =
+                            updatedGroups[updatedGroups.length - 1];
+                          if (
+                            !lastGroup.leader.trim() &&
+                            !lastGroup.members.some((m) => m.trim())
+                          ) {
+                            updatedGroups.pop();
+                            if (activeGroup > updatedGroups.length) {
+                              setActiveGroup(updatedGroups.length);
+                            }
+                          }
+                        }
+                        setGroups(updatedGroups);
+                      }
+                    }}
+                    disabled={numberOfGroups <= 2}
+                    className={`w-6 h-6 rounded flex items-center justify-center text-sm font-medium transition ${
+                      numberOfGroups <= 2
+                        ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                        : "bg-gray-600 text-white hover:bg-gray-500"
+                    }`}
+                  >
+                    -
+                  </button>
+                  <span className="text-white font-medium min-w-[1.5rem] text-center text-sm">
+                    {numberOfGroups}
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (numberOfGroups < 10) {
+                        const newNumGroups = numberOfGroups + 1;
+                        setNumberOfGroups(newNumGroups);
+
+                        // Add a new empty group
+                        const updatedGroups = [...groups];
+                        updatedGroups.push({
+                          id: newNumGroups,
+                          members: [""],
+                          leader: "",
+                          showInputs: false,
+                          isSaved: false,
+                          wasPreviouslySaved: false,
+                        });
+                        setGroups(updatedGroups);
+                      }
+                    }}
+                    disabled={numberOfGroups >= 10}
+                    className={`w-6 h-6 rounded flex items-center justify-center text-sm font-medium transition ${
+                      numberOfGroups >= 10
+                        ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                        : "bg-gray-600 text-white hover:bg-gray-500"
+                    }`}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
               <button
                 onClick={() => setShowManualGroups(false)}
-                className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400"
+                className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
               >
                 ×
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-              {groups.map((group) => (
-                <div key={group.id} className="bg-[#23272F] rounded-lg p-4">
-                  <h3 className="font-semibold text-white mb-3">
-                    Group {group.id}
-                  </h3>
+            <div className="flex flex-col md:flex-row lg:flex-row gap-6">
+              {/* Groups - Left side for tablet and larger */}
+              <div className="flex-1 md:order-1 lg:order-1 order-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {groups.map((group) => (
+                    <div
+                      key={group.id}
+                      className={`bg-[#23272F] rounded-lg p-4 cursor-pointer transition-all ${
+                        activeGroup === group.id
+                          ? "ring-2 ring-blue-500"
+                          : "hover:bg-[#2a2f38]"
+                      }`}
+                      onClick={() => {
+                        // Reset the previously active group if it was in edit mode and not saved
+                        if (activeGroup && activeGroup !== group.id) {
+                          const prevGroup = groups.find(
+                            (g) => g.id === activeGroup,
+                          );
+                          if (
+                            prevGroup &&
+                            prevGroup.showInputs &&
+                            !prevGroup.isSaved
+                          ) {
+                            const updatedGroups = [...groups];
 
-                  {!group.showInputs ? (
-                    <button
-                      onClick={() => toggleGroupInputs(group.id)}
-                      className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                    >
-                      Add Members
-                    </button>
-                  ) : (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm text-gray-300 mb-1">
-                          Leader:
-                        </label>
-                        <input
-                          type="text"
-                          value={group.leader}
-                          onChange={(e) =>
-                            handleGroupLeaderChange(group.id, e.target.value)
-                          }
-                          placeholder="Enter leader name"
-                          className="w-full bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-300 mb-1">
-                          Members:
-                        </label>
-                        {group.members.map((member, index) => (
-                          <input
-                            key={index}
-                            type="text"
-                            value={member}
-                            onChange={(e) =>
-                              handleGroupMemberChange(
-                                group.id,
-                                index,
-                                e.target.value,
-                              )
+                            // If it was a previously saved group, restore original data and set as saved
+                            if (
+                              prevGroup.wasPreviouslySaved &&
+                              prevGroup.originalData
+                            ) {
+                              updatedGroups[activeGroup - 1].leader =
+                                prevGroup.originalData.leader;
+                              updatedGroups[activeGroup - 1].members = [
+                                ...prevGroup.originalData.members,
+                              ];
+                              updatedGroups[activeGroup - 1].showInputs = false;
+                              updatedGroups[activeGroup - 1].isSaved = true;
+                              delete updatedGroups[activeGroup - 1]
+                                .originalData;
+                            } else {
+                              // For new groups, reset to empty state
+                              updatedGroups[activeGroup - 1].leader = "";
+                              updatedGroups[activeGroup - 1].members = [""];
+                              updatedGroups[activeGroup - 1].showInputs = false;
+                              updatedGroups[activeGroup - 1].isSaved = false;
                             }
-                            placeholder="Enter member name"
-                            className="w-full bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 mb-2"
-                          />
-                        ))}
+
+                            setGroups(updatedGroups);
+                          }
+                        }
+
+                        setActiveGroup(group.id);
+                      }}
+                    >
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-semibold text-white">
+                          Group {group.id}
+                        </h3>
+                        {group.showInputs && group.wasPreviouslySaved && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const updatedGroups = [...groups];
+
+                              // Restore original data if it exists
+                              if (updatedGroups[group.id - 1].originalData) {
+                                updatedGroups[group.id - 1].leader =
+                                  updatedGroups[
+                                    group.id - 1
+                                  ].originalData.leader;
+                                updatedGroups[group.id - 1].members = [
+                                  ...updatedGroups[group.id - 1].originalData
+                                    .members,
+                                ];
+                                delete updatedGroups[group.id - 1].originalData;
+                              }
+
+                              updatedGroups[group.id - 1].showInputs = false;
+                              updatedGroups[group.id - 1].isSaved = true;
+                              setGroups(updatedGroups);
+                            }}
+                            className="text-gray-400 text-xl bg-transparent border-none outline-none hover:bg-transparent hover:text-red-400 focus:outline-none focus:ring-0"
+                          >
+                            ×
+                          </button>
+                        )}
                       </div>
-                      <button
-                        onClick={() => saveGroup(group.id)}
-                        className="w-full px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
-                      >
-                        Save Group
-                      </button>
+
+                      {/* Show saved group content */}
+                      {group.isSaved ? (
+                        <div className="space-y-2">
+                          {group.leader && group.leader.trim() && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium text-yellow-400">
+                                Leader:
+                              </span>
+                              <span className="text-sm text-white">
+                                {group.leader}
+                              </span>
+                            </div>
+                          )}
+                          {group.members.filter((m) => m.trim()).length > 0 && (
+                            <div>
+                              <span className="text-xs font-medium text-green-400">
+                                Members:
+                              </span>
+                              <div className="mt-1 space-y-1">
+                                {group.members
+                                  .filter((m) => m.trim())
+                                  .map((member, index) => (
+                                    <div
+                                      key={index}
+                                      className="text-sm text-white pl-2"
+                                    >
+                                      • {member}
+                                    </div>
+                                  ))}
+                              </div>
+                            </div>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              editGroup(group.id);
+                            }}
+                            className="w-full px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm mt-3"
+                          >
+                            Edit Group
+                          </button>
+                        </div>
+                      ) : (
+                        /* Show input fields for unsaved groups */
+                        <>
+                          {!group.showInputs ? (
+                            // Show Add People button when inputs are hidden
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleGroupInputs(group.id);
+                              }}
+                              className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                            >
+                              Add People
+                            </button>
+                          ) : (
+                            // Show input fields when inputs are visible
+                            <>
+                              {/* Leader Field */}
+                              <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                  Leader:
+                                </label>
+                                <div
+                                  className="flex gap-2 items-center"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <input
+                                    type="text"
+                                    value={group.leader}
+                                    onChange={(e) =>
+                                      handleGroupLeaderChange(
+                                        group.id,
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="Enter leader name"
+                                    className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
+                                  />
+                                  {group.leader.trim() && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const updatedGroups = [...groups];
+                                        updatedGroups[group.id - 1].leader = "";
+                                        setGroups(updatedGroups);
+                                      }}
+                                      disabled={
+                                        group.members.filter((member) =>
+                                          member.trim(),
+                                        ).length > 0
+                                      }
+                                      className={`px-2 py-1 text-xs rounded flex-shrink-0 ${
+                                        group.members.filter((member) =>
+                                          member.trim(),
+                                        ).length > 0
+                                          ? "bg-gray-500 text-gray-300 cursor-not-allowed"
+                                          : "bg-red-600 text-white hover:bg-red-700"
+                                      }`}
+                                    >
+                                      ×
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Members Field */}
+                              <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                  Members:
+                                </label>
+                                <div className="space-y-2 mb-3">
+                                  {group.members.map((member, memberIndex) => (
+                                    <div
+                                      key={memberIndex}
+                                      className="flex gap-2 items-center"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <input
+                                        type="text"
+                                        value={member}
+                                        onChange={(e) =>
+                                          handleGroupMemberChange(
+                                            group.id,
+                                            memberIndex,
+                                            e.target.value,
+                                          )
+                                        }
+                                        placeholder="Enter member name"
+                                        className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
+                                      />
+                                      {member.trim() && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeMemberFromGroup(
+                                              group.id,
+                                              memberIndex,
+                                            );
+                                          }}
+                                          className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs flex-shrink-0"
+                                        >
+                                          ×
+                                        </button>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Save Group button */}
+                              <div className="flex gap-2">
+                                {!group.wasPreviouslySaved && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      resetGroupInputs(group.id);
+                                    }}
+                                    className="flex-1 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                                  >
+                                    Cancel
+                                  </button>
+                                )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    saveGroup(group.id);
+                                  }}
+                                  disabled={
+                                    !group.leader.trim() &&
+                                    group.members.filter((member) =>
+                                      member.trim(),
+                                    ).length === 0
+                                  }
+                                  className={`${group.wasPreviouslySaved ? "w-full" : "flex-1"} px-3 py-2 text-sm rounded ${
+                                    !group.leader.trim() &&
+                                    group.members.filter((member) =>
+                                      member.trim(),
+                                    ).length === 0
+                                      ? "bg-gray-500 text-gray-300 cursor-not-allowed"
+                                      : "bg-blue-600 text-white hover:bg-blue-700"
+                                  }`}
+                                >
+                                  Save Group
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      )}
+
+                      {/* Show member count for inactive groups */}
+                      {activeGroup !== group.id &&
+                        !group.isSaved &&
+                        group.members.filter((m) => m.trim()).length > 0 && (
+                          <div className="text-gray-400 text-sm">
+                            {group.members.filter((m) => m.trim()).length}{" "}
+                            members
+                          </div>
+                        )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Available Students - Right side for tablet and larger */}
+              <div className="lg:w-80 md:w-72 sm:w-64 bg-[#23272F] rounded-lg p-4 h-fit max-h-[300px] md:max-h-[280px] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:order-2 lg:order-2 order-1">
+                <h3 className="font-semibold text-white mb-4">
+                  Available Students (
+                  {availableMembers.length - getAssignedMembers().size})
+                </h3>
+                <div className="space-y-2">
+                  {availableMembers
+                    .slice(0, availableMembers.length)
+                    .map((member, index) => {
+                      const isAssigned = isMemberAssigned(member);
+                      const role = getMemberRole(member);
+                      return (
+                        <div
+                          key={index}
+                          className={`rounded p-3 text-white text-sm transition cursor-pointer ${
+                            isAssigned
+                              ? "bg-[#1a1f29] opacity-50 cursor-not-allowed"
+                              : "bg-[#161A20] hover:bg-[#1a1f29]"
+                          }`}
+                          onClick={() =>
+                            !isAssigned && addMemberFromAvailable(member)
+                          }
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className={isAssigned ? "line-through" : ""}>
+                              {member}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  role === "leader"
+                                    ? "bg-yellow-500"
+                                    : role === "member"
+                                      ? "bg-green-500"
+                                      : "bg-green-500"
+                                }`}
+                              ></div>
+                              <span className="text-xs text-gray-400">
+                                {role === "leader"
+                                  ? "Leader"
+                                  : role === "member"
+                                    ? "Member"
+                                    : "Click to add"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
             </div>
 
-            <div className="flex justify-end">
+            <div
+              className={`flex  ${validationErrors.unassignedStudents ? "justify-between" : "justify-end"}  items-center mt-6`}
+            >
+              {validationErrors.unassignedStudents && (
+                <div className="flex-1 p-3 bg-red-100 border border-red-400 rounded-lg mr-4">
+                  <p className="text-red-700 text-sm">
+                    Please assign all available students to groups before
+                    saving.
+                    {availableMembers.length - getAssignedMembers().size}{" "}
+                    student(s) still unassigned.
+                  </p>
+                </div>
+              )}
               <button
                 onClick={() => {
+                  // Clear any existing validation errors first
+                  setValidationErrors({});
+
+                  // Check if all students are assigned
+                  if (getAssignedMembers().size < availableMembers.length) {
+                    setValidationErrors({ unassignedStudents: true });
+                    return;
+                  }
+
+                  // Save all groups with their leaders and members
+                  const groupsData = groups.map((group) => ({
+                    groupId: group.id,
+                    leader: group.leader.trim(),
+                    members: group.members.filter((member) => member.trim()), // Remove empty members
+                  }));
+                  console.log("All groups saved:", groupsData);
+                  // Here you would send this data to your backend
                   setGroupsConfigured(true);
                   setGroupCreationMethod("manual");
                   setShowManualGroups(false);
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700`}
               >
                 Save Groups
               </button>
@@ -781,43 +1436,97 @@ const GroupActivityBuilder = ({
 
       {/* GENERATE GROUPS MODAL */}
       {showGenerateGroups && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-[#1E222A] rounded-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl max-h-[90vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-bold text-white">
                 Generate Groups ({numberOfGroups}{" "}
                 {numberOfGroups === 1 ? "Group" : "Groups"})
               </h2>
               <button
                 onClick={() => setShowGenerateGroups(false)}
-                className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400"
+                className="text-gray-400 text-xl sm:text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0 p-1"
               >
                 ×
               </button>
             </div>
 
-            <div className="mb-6">
-              <p className="text-gray-300 text-sm mb-4">
+            <div className="mb-4 sm:mb-6">
+              <p className="text-gray-300 text-sm sm:text-base mb-3 sm:mb-4">
                 The system will automatically generate {numberOfGroups} groups
                 and randomly assign students to them.
               </p>
 
-              <div className="bg-[#23272F] rounded-lg p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="bg-[#23272F] rounded-lg p-3 sm:p-4">
+                <div className="flex justify-between items-center mb-2 sm:mb-3">
+                  <h3 className="font-semibold text-white text-sm sm:text-base">
+                    Generated Groups Preview:
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        if (numberOfGroups > 2) {
+                          const newNumGroups = numberOfGroups - 1;
+                          setNumberOfGroups(newNumGroups);
+                          shuffleGroups(newNumGroups);
+                        }
+                      }}
+                      disabled={numberOfGroups <= 2}
+                      className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
+                        numberOfGroups <= 2
+                          ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                          : "bg-gray-600 text-white hover:bg-gray-500"
+                      }`}
+                    >
+                      -
+                    </button>
+                    <span className="text-white font-medium min-w-[2rem] text-center">
+                      {numberOfGroups}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (numberOfGroups < 10) {
+                          const newNumGroups = numberOfGroups + 1;
+                          setNumberOfGroups(newNumGroups);
+                          shuffleGroups(newNumGroups);
+                        }
+                      }}
+                      disabled={numberOfGroups >= 10}
+                      className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
+                        numberOfGroups >= 10
+                          ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                          : "bg-gray-600 text-white hover:bg-gray-500"
+                      }`}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
                   {generatedGroupsPreview.map((group, index) => (
-                    <div key={index} className="bg-[#161A20] rounded p-3">
-                      <div className="text-blue-400 font-semibold text-sm mb-2">
+                    <div
+                      key={index}
+                      className="bg-[#161A20] rounded p-2 sm:p-3"
+                    >
+                      <div className="text-blue-400 font-semibold text-xs sm:text-sm mb-1 sm:mb-2">
                         Group {group.id}
                       </div>
-                      <div className="text-xs space-y-1">
+                      <div className="text-xs space-y-0.5 sm:space-y-1">
                         <div className="text-yellow-400">
-                          <span className="font-medium">Leader:</span>{" "}
-                          {group.leader}
+                          <span className="font-medium">Leader:</span>
+                          <span className="block xs:inline xs:ml-1">
+                            {group.leader}
+                          </span>
                         </div>
                         <div className="text-green-400">
-                          <span className="font-medium">Members:</span>{" "}
-                          {group.members.join(", ")}
+                          <span className="font-medium">Members:</span>
+                          <span className="block xs:inline xs:ml-1">
+                            {group.members.join(", ")}
+                          </span>
                         </div>
+                      </div>
+                      <div className="text-gray-500 text-xs mt-1 sm:mt-2">
+                        Auto-assigned
                       </div>
                     </div>
                   ))}
@@ -825,21 +1534,26 @@ const GroupActivityBuilder = ({
               </div>
             </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end">
               <button
                 onClick={() => shuffleGroups(numberOfGroups)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                className="mr-2 px-3 sm:px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm sm:text-base font-medium"
               >
                 Shuffle
               </button>
               <button
                 onClick={() => {
+                  // Use the shuffled groups
                   setGroups(generatedGroupsPreview);
                   setGroupsConfigured(true);
                   setGroupCreationMethod("generate");
+                  console.log(
+                    `Generated ${numberOfGroups} groups:`,
+                    generatedGroupsPreview,
+                  );
                   setShowGenerateGroups(false);
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:text-base font-medium"
               >
                 Confirm Generate
               </button>
