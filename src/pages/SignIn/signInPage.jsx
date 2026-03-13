@@ -119,8 +119,15 @@ const LoginPage = () => {
       `width=500,height=600,top=${(screen.height - 600) / 2},left=${(screen.width - 500) / 2},resizable=yes,scrollbars=yes`,
     );
 
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      config.APP_URL, // production
+    ];
+
     const messageHandler = async (event) => {
-      if (event.origin !== window.location.origin) return;
+      console.log("HELLOOOOO", event.origin, window.location.origin);
+      if (!allowedOrigins.includes(event.origin)) return;
 
       if (event.data.type === "OAUTH_SUCCESS") {
         const { role, needsOnboarding, token } = event.data;
@@ -161,7 +168,7 @@ const LoginPage = () => {
 
     const handleMessage = (event) => {
       if (
-        event.origin !== "https://localhost:5173" &&
+        event.origin !== "http://localhost:5173" &&
         event.origin !== config.APP_URL
       )
         return;
