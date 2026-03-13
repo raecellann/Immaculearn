@@ -1046,7 +1046,7 @@ const ProfTaskPage = () => {
     if (task.task_category !== "quiz") return task.task_status;
 
     const now = new Date();
-    const dueDate = task.task_due ? new Date(task.task_due) : null;
+    const dueDate = task.due_date ? new Date(task.due_date) : task.task_due ? new Date(task.task_due) : null;
 
     // If quiz has due date and it's passed, mark as Done
     if (dueDate && now > dueDate) {
@@ -1064,6 +1064,30 @@ const ProfTaskPage = () => {
     }
 
     // If quiz is posted and due date not passed, keep as In Progress
+    return "In Progress";
+  };
+
+  // Function to determine individual activity status for professor
+  const getIndividualActivityStatusForProfessor = (task) => {
+    const now = new Date();
+    const dueDate = task.due_date ? new Date(task.due_date) : task.task_due ? new Date(task.task_due) : null;
+
+    // If task is already marked as done in any format, keep it as done
+    if (
+      task.task_status === "Done" ||
+      task.task_status === "done" ||
+      task.task_status === "completed" ||
+      task.task_status === "Completed"
+    ) {
+      return "Done";
+    }
+
+    // If activity has due date and it's passed, mark as Done
+    if (dueDate && now > dueDate) {
+      return "Done";
+    }
+
+    // If activity is posted and due date not passed, keep as In Progress
     return "In Progress";
   };
 
@@ -1144,11 +1168,21 @@ const ProfTaskPage = () => {
                     </div>
                     <span
                       className={`text-xs font-medium ${
-                        statusStyles[getQuizStatusForProfessor(task)] ||
+                        statusStyles[
+                          task.task_category === "quiz"
+                            ? getQuizStatusForProfessor(task)
+                            : task.task_category === "individual-activity"
+                            ? getIndividualActivityStatusForProfessor(task)
+                            : task.task_status || "active"
+                        ] ||
                         "text-gray-500"
                       }`}
                     >
-                      {getQuizStatusForProfessor(task)}
+                      {task.task_category === "quiz"
+                        ? getQuizStatusForProfessor(task)
+                        : task.task_category === "individual-activity"
+                        ? getIndividualActivityStatusForProfessor(task)
+                        : task.task_status || "active"}
                     </span>
                   </div>
                   <p
@@ -1276,11 +1310,21 @@ const ProfTaskPage = () => {
                       )}
                       <span
                         className={`text-xs font-medium ${
-                          statusStyles[getQuizStatusForProfessor(task)] ||
+                          statusStyles[
+                            task.task_category === "quiz"
+                              ? getQuizStatusForProfessor(task)
+                              : task.task_category === "individual-activity"
+                              ? getIndividualActivityStatusForProfessor(task)
+                              : task.task_status || "active"
+                          ] ||
                           "text-gray-500"
                         }`}
                       >
-                        {getQuizStatusForProfessor(task)}
+                        {task.task_category === "quiz"
+                          ? getQuizStatusForProfessor(task)
+                          : task.task_category === "individual-activity"
+                          ? getIndividualActivityStatusForProfessor(task)
+                          : task.task_status || "active"}
                       </span>
                     </div>
                   </div>
