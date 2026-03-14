@@ -1046,7 +1046,11 @@ const ProfTaskPage = () => {
     if (task.task_category !== "quiz") return task.task_status;
 
     const now = new Date();
-    const dueDate = task.due_date ? new Date(task.due_date) : task.task_due ? new Date(task.task_due) : null;
+    const dueDate = task.due_date
+      ? new Date(task.due_date)
+      : task.task_due
+        ? new Date(task.task_due)
+        : null;
 
     // If quiz has due date and it's passed, mark as Done
     if (dueDate && now > dueDate) {
@@ -1070,7 +1074,11 @@ const ProfTaskPage = () => {
   // Function to determine individual activity status for professor
   const getIndividualActivityStatusForProfessor = (task) => {
     const now = new Date();
-    const dueDate = task.due_date ? new Date(task.due_date) : task.task_due ? new Date(task.task_due) : null;
+    const dueDate = task.due_date
+      ? new Date(task.due_date)
+      : task.task_due
+        ? new Date(task.task_due)
+        : null;
 
     // If task is already marked as done in any format, keep it as done
     if (
@@ -1172,17 +1180,16 @@ const ProfTaskPage = () => {
                           task.task_category === "quiz"
                             ? getQuizStatusForProfessor(task)
                             : task.task_category === "individual-activity"
-                            ? getIndividualActivityStatusForProfessor(task)
-                            : task.task_status || "active"
-                        ] ||
-                        "text-gray-500"
+                              ? getIndividualActivityStatusForProfessor(task)
+                              : task.task_status || "active"
+                        ] || "text-gray-500"
                       }`}
                     >
                       {task.task_category === "quiz"
                         ? getQuizStatusForProfessor(task)
                         : task.task_category === "individual-activity"
-                        ? getIndividualActivityStatusForProfessor(task)
-                        : task.task_status || "active"}
+                          ? getIndividualActivityStatusForProfessor(task)
+                          : task.task_status || "active"}
                     </span>
                   </div>
                   <p
@@ -1314,17 +1321,16 @@ const ProfTaskPage = () => {
                             task.task_category === "quiz"
                               ? getQuizStatusForProfessor(task)
                               : task.task_category === "individual-activity"
-                              ? getIndividualActivityStatusForProfessor(task)
-                              : task.task_status || "active"
-                          ] ||
-                          "text-gray-500"
+                                ? getIndividualActivityStatusForProfessor(task)
+                                : task.task_status || "active"
+                          ] || "text-gray-500"
                         }`}
                       >
                         {task.task_category === "quiz"
                           ? getQuizStatusForProfessor(task)
                           : task.task_category === "individual-activity"
-                          ? getIndividualActivityStatusForProfessor(task)
-                          : task.task_status || "active"}
+                            ? getIndividualActivityStatusForProfessor(task)
+                            : task.task_status || "active"}
                       </span>
                     </div>
                   </div>
@@ -1695,6 +1701,7 @@ const ProfTaskPage = () => {
           <IndividualActivityPreview
             taskData={task.rawData || task}
             currentColors={currentColors}
+            onEditQuiz={handleEditTask}
           />
         );
       case "group-activity":

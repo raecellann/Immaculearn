@@ -3,26 +3,31 @@ import { useNavigate, useParams } from "react-router";
 import { FiSun, FiMoon } from "react-icons/fi";
 import Sidebar from "../component/sidebar";
 import Logout from "../component/logout";
-import EditorHeader from "./components/EditorHeader";
-import MobileHeader from "./components/MobileHeader";
-import CollaborativeEditor from "./components/CollaborativeEditor";
-import TiptapToolbar from "./components/TiptapToolbar";
-import HistoryPanel from "./components/HistoryPanel";
+import EditorHeader from "./components-old/EditorHeader";
+import MobileHeader from "./components-old/MobileHeader";
+import CollaborativeEditor from "./components-old/CollaborativeEditor";
+import TiptapToolbar from "./components-old/TiptapToolbar";
+import { useTheme } from "./contexts-old/ThemeContext";
+import useYDoc from "../../hooks/useYdoc";
+
 import { useUser } from "../../contexts/user/useUser";
 import { useFileManager } from "../../hooks/useFileManager";
-import { useTheme } from "./contexts/ThemeContext";
-import { HistoryProvider, useHistory } from "./contexts/HistoryContext";
 
-import useYDoc from "../../hooks/useYdoc";
-import Toolbar from "./components/Toolbar";
+import Toolbar from "./components-old/Toolbar";
 import { useSpace } from "../../contexts/space/useSpace";
 
 const CreateDocumentPage = () => {
   const navigate = useNavigate();
   const { user } = useUser();
-  const { space_uuid, file_uuid, file_name, group_id } = useParams();
+  const { space_uuid, file_uuid, file_name } = useParams();
   const { isDarkMode, colors, toggleTheme } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
+  const roomId = `${space_uuid}-1`;
+
+  const { ydoc, provider, ytext, isSynced } = useYDoc(
+    "bf284888-1e98-11f1-95af-c03532821bd5",
+    1,
+  );
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -100,13 +105,10 @@ const CreateDocumentPage = () => {
     return colors[userId % colors.length];
   };
 
-  // === Use Yjs Hook ===
-  const { ydoc, provider, isSynced } = useYDoc(space_uuid, group_id || file_uuid);
-
   // === Update connected users from awareness ===
   const updateUsers = useCallback(() => {
-    if (!provider?.awareness) return;
-    const states = Array.from(provider.awareness.getStates().entries() || []);
+    if (!awarenessRef.current) return;
+    const states = Array.from(awarenessRef.current.getStates().entries() || []);
     const users = states.map(([clientId, state]) =>
       state.user
         ? {
@@ -123,10 +125,21 @@ const CreateDocumentPage = () => {
     setConnectedUsers(users);
   }, [user?.id]);
 
-  // === Initialize awareness and user state ===
+  // === Initialize Yjs + WebSocket Provider ===
   useEffect(() => {
-    if (!provider || !user) return;
+    if (!file_uuid || !user || typeof window === "undefined") return;
 
+    console.log("Initializing Yjs document for file:", file_uuid);
+
+    const ydoc = new Y.Doc();
+    const provider = new WebsocketProvider(
+      "ws://localhost:3000/crdt",
+      file_uuid,
+      ydoc,
+    );
+
+    ydocRef.current = ydoc;
+    providerRef.current = provider;
     awarenessRef.current = provider.awareness;
 
     // Set local awareness state
@@ -140,8 +153,8 @@ const CreateDocumentPage = () => {
       },
     };
 
-    provider.awareness.setLocalState(localUserState);
-    provider.awareness.on("change", updateUsers);
+    awarenessRef.current.setLocalState(localUserState);
+    awarenessRef.current.on("change", updateUsers);
 
     // WebSocket status listener
     provider.on("status", (event) => {
@@ -150,7 +163,7 @@ const CreateDocumentPage = () => {
       setIsOnline(connected);
       if (connected) {
         setCollaborationEnabled(true);
-        provider.awareness.setLocalState(localUserState);
+        awarenessRef.current.setLocalState(localUserState);
         updateUsers();
       }
     });
@@ -175,16 +188,17 @@ const CreateDocumentPage = () => {
       setIsOnline(false);
     });
 
+    // Cleanup on unmount
     return () => {
-      provider.awareness?.off("change", updateUsers);
+      console.log("Cleaning up Yjs document");
+      awarenessRef.current?.off("change", updateUsers);
+      provider.disconnect();
+      ydoc.destroy();
+      setConnectedUsers([]);
+      setCollaborationEnabled(false);
+      setIsOnline(false);
     };
-  }, [provider, user, updateUsers]);
-
-  // Update refs when ydoc or provider changes
-  useEffect(() => {
-    ydocRef.current = ydoc;
-    providerRef.current = provider;
-  }, [ydoc, provider]);
+  }, [file_uuid, user, updateUsers]);
 
   // === Editor ref ===
   const setEditorReference = useCallback((editor) => {
@@ -324,8 +338,9 @@ const CreateDocumentPage = () => {
             <div className="w-full max-w-full">
               <CollaborativeEditor
                 ref={setEditorReference}
-                ydoc={ydocRef.current}
-                provider={providerRef.current}
+                ydoc={ydoc}
+                provider={provider}
+                ytext={ytext} // ← important: this is what the editor binds to
                 user={{
                   id: user?.id,
                   name: user?.name,
@@ -336,9 +351,6 @@ const CreateDocumentPage = () => {
                 }}
                 onUpdate={handleEditorUpdate}
                 initialContent={file?.content || ""}
-                paperSize={paperSize}
-                margins={margins}
-                fontFamily={fontFamily}
               />
             </div>
           </div>

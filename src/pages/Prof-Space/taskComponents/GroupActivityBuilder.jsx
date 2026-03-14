@@ -1,7 +1,8 @@
 import React, { useState, useRef } from "react";
 import { FiArrowLeft, FiUsers, FiFilePlus } from "react-icons/fi";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useFile } from "../../../contexts/file/fileContextProvider";
+import { useSpace } from "../../../contexts/space/useSpace";
 
 const GroupActivityBuilder = ({
   currentColors,
@@ -11,7 +12,9 @@ const GroupActivityBuilder = ({
   isLoading = false,
 }) => {
   const navigate = useNavigate();
+  const { space_uuid } = useParams();
   const { resources } = useFile();
+  const { userSpaces, courseSpaces, friendSpaces } = useSpace();
   const [activityTitle, setActivityTitle] = useState("");
   const [instruction, setInstruction] = useState("");
   const [score, setScore] = useState("");
@@ -48,22 +51,34 @@ const GroupActivityBuilder = ({
   const [groupCreationMethod, setGroupCreationMethod] = useState(null);
   const [generatedGroupsPreview, setGeneratedGroupsPreview] = useState([]);
 
-  // Example available members
-  const availableMembers = [
-    "John Smith",
-    "Emily Johnson",
-    "Michael Brown",
-    "Sarah Davis",
-    "James Wilson",
-    "Lisa Anderson",
-    "Robert Taylor",
-    "Maria Garcia",
-    "David Martinez",
-    "Jennifer Lopez",
-    "Marko Lopez",
-    "Issaac Lopez",
-    "Martha Lopez",
+  // Get current space and its members
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(courseSpaces || []),
+    ...(friendSpaces || []),
   ];
+  const currentSpace = allSpaces.find(
+    (space) => space.space_uuid === space_uuid,
+  );
+
+  // Extract member names from space members (excluding creators/admins, focusing on students)
+  const availableMembers =
+    currentSpace?.members
+      .filter((member) => member.role !== "creator") // Filter out creators/admins
+      .map((member) => member.full_name)
+      .filter((name) => name && name.trim()) || [];
+
+  // Handle case where space is not found or has no student members
+  React.useEffect(() => {
+    if (!currentSpace) {
+      console.warn("Space not found for UUID:", space_uuid);
+    } else if (availableMembers.length === 0) {
+      console.warn(
+        "No student members found in space:",
+        currentSpace.space_name,
+      );
+    }
+  }, [currentSpace, availableMembers, space_uuid]);
 
   React.useEffect(() => {
     if (instructionRef.current) {
@@ -114,6 +129,20 @@ const GroupActivityBuilder = ({
   };
 
   const shuffleGroups = (numGroups) => {
+    // Check if there are any members to shuffle
+    if (availableMembers.length === 0) {
+      alert("No student members available in this space to create groups.");
+      return;
+    }
+
+    // Check if we have enough members for 1 leader + 1 member per group
+    if (availableMembers.length < numGroups * 2) {
+      alert(
+        `Not enough students for ${numGroups} groups. Each group needs 1 leader + 1 member (${numGroups * 2} students required, but only ${availableMembers.length} available).`,
+      );
+      return;
+    }
+
     const shuffledMembers = [...availableMembers].sort(
       () => Math.random() - 0.5,
     );
@@ -121,7 +150,6 @@ const GroupActivityBuilder = ({
 
     // Check if group size constraints can be satisfied
     const maxGroupSize = Math.ceil(totalMembers / numGroups);
-    const minGroupSize = Math.floor(totalMembers / numGroups);
 
     if (maxGroupSize > 10) {
       alert(
@@ -130,28 +158,24 @@ const GroupActivityBuilder = ({
       return;
     }
 
-    if (minGroupSize < 2 && totalMembers >= numGroups * 2) {
-      // Only show warning if we have enough students to potentially meet min requirement
-      console.warn(
-        `Some groups may have fewer than 2 members. Consider reducing the number of groups.`,
-      );
-    }
-
-    const baseMembersPerGroup = Math.floor(totalMembers / numGroups);
-    const remainder = totalMembers % numGroups;
+    // Distribute members to ensure exactly 1 leader + 1 member minimum per group
+    const baseMembersPerGroup = Math.floor(
+      (totalMembers - numGroups) / numGroups,
+    ); // Subtract leaders first
+    const remainder = (totalMembers - numGroups) % numGroups;
 
     const newGroups = Array.from({ length: numGroups }, (_, index) => {
       const membersCount = baseMembersPerGroup + (index < remainder ? 1 : 0);
 
       let startIndex = 0;
       for (let i = 0; i < index; i++) {
-        startIndex += baseMembersPerGroup + (i < remainder ? 1 : 0);
+        startIndex += 1 + baseMembersPerGroup + (i < remainder ? 1 : 0); // 1 for leader + members
       }
-      const endIndex = startIndex + membersCount;
+      const endIndex = startIndex + 1 + membersCount; // 1 for leader + members
 
       const groupMembers = shuffledMembers.slice(startIndex, endIndex);
       const leader = groupMembers[0] || "";
-      const members = groupMembers.slice(1);
+      const members = groupMembers.slice(1, 1 + membersCount); // Ensure exactly membersCount members
 
       return {
         id: index + 1,
@@ -188,12 +212,17 @@ const GroupActivityBuilder = ({
     const group = groups.find((g) => g.id === groupId);
     const validMembers = group.members.filter((member) => member.trim());
 
-    // Check group size constraints (min 2, max 10)
+    // Check group size constraints (exactly 1 leader + 1 member minimum)
     const leaderCount = group.leader?.trim() ? 1 : 0;
     const totalSize = leaderCount + validMembers.length;
 
-    if (totalSize < 2) {
-      alert("Group must have at least 2 members (leader + members)");
+    if (leaderCount === 0) {
+      alert("Group must have exactly 1 leader");
+      return;
+    }
+
+    if (validMembers.length === 0) {
+      alert("Group must have exactly 1 member");
       return;
     }
 
@@ -223,7 +252,7 @@ const GroupActivityBuilder = ({
       return;
     }
 
-    // Check group size constraints (min 2, max 10)
+    // Check group size constraints (exactly 1 leader + 1 member minimum)
     const currentGroupSize = activeGroupData.leader?.trim() ? 1 : 0;
     const currentMembersCount = activeGroupData.members.filter((m) =>
       m?.trim(),
@@ -248,28 +277,68 @@ const GroupActivityBuilder = ({
       activeGroupDataUpdated.leader = memberName;
       console.log(`Added "${memberName}" as leader of Group ${activeGroup}`);
     } else {
-      const activeGroupMembers = activeGroupDataUpdated.members;
-      const firstEmptyIndex = activeGroupMembers.findIndex(
-        (member) => !member || member.trim() === "",
-      );
+      // Check if this would exceed the 1 member minimum requirement
+      if (currentMembersCount >= 1) {
+        // Find a group with only 1 member to add the extra member
+        const targetGroup = updatedGroups.find((group, index) => {
+          if (group.id === activeGroup) return false;
+          const membersCount = group.members.filter((m) => m?.trim()).length;
+          return membersCount === 0 && group.leader?.trim(); // Has leader but no members
+        });
 
-      if (firstEmptyIndex !== -1) {
-        activeGroupMembers[firstEmptyIndex] = memberName;
-      } else {
-        // Check if adding this member would exceed max size
-        if (totalCurrentSize + 1 > 10) {
-          console.log(
-            "Cannot add member: Group would exceed maximum size of 10 members",
+        if (targetGroup) {
+          const firstEmptyIndex = targetGroup.members.findIndex(
+            (member) => !member || member.trim() === "",
           );
-          alert("Group would exceed maximum size of 10 members");
-          return;
+          if (firstEmptyIndex !== -1) {
+            targetGroup.members[firstEmptyIndex] = memberName;
+          } else {
+            targetGroup.members.push(memberName);
+          }
+          console.log(
+            `Added "${memberName}" to Group ${targetGroup.id} as member (redistributed from Group ${activeGroup})`,
+          );
+        } else {
+          const activeGroupMembers = activeGroupDataUpdated.members;
+          const firstEmptyIndex = activeGroupMembers.findIndex(
+            (member) => !member || member.trim() === "",
+          );
+
+          if (firstEmptyIndex !== -1) {
+            activeGroupMembers[firstEmptyIndex] = memberName;
+          } else {
+            // Check if adding this member would exceed max size
+            if (totalCurrentSize + 1 > 10) {
+              console.log(
+                "Cannot add member: Group would exceed maximum size of 10 members",
+              );
+              alert("Group would exceed maximum size of 10 members");
+              return;
+            }
+            activeGroupMembers.push(memberName);
+            activeGroupMembers.push("");
+          }
+          console.log(
+            `Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`,
+          );
         }
-        activeGroupMembers.push(memberName);
-        activeGroupMembers.push("");
+      } else {
+        // Add as first member
+        const activeGroupMembers = activeGroupDataUpdated.members;
+        const firstEmptyIndex = activeGroupMembers.findIndex(
+          (member) => !member || member.trim() === "",
+        );
+
+        if (firstEmptyIndex !== -1) {
+          activeGroupMembers[firstEmptyIndex] = memberName;
+        } else {
+          activeGroupMembers.push(memberName);
+          activeGroupMembers.push("");
+        }
+        console.log(
+          `Added "${memberName}" to Group ${activeGroup} as first member`,
+        );
       }
-      console.log(
-        `Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`,
-      );
     }
 
     setGroups(updatedGroups);
@@ -350,6 +419,70 @@ const GroupActivityBuilder = ({
     addMemberToGroup(memberName);
   };
 
+  const handleDistributeEqually = () => {
+    // Get unassigned students
+    const assignedMembers = getAssignedMembers();
+    const unassignedStudents = availableMembers.filter(
+      (student) => !assignedMembers.has(student),
+    );
+
+    if (unassignedStudents.length === 0) {
+      alert("All students are already assigned to groups.");
+      return;
+    }
+
+    // Check if we have enough students for minimum requirement
+    const minRequiredStudents = numberOfGroups * 2; // 1 leader + 1 member per group
+    if (unassignedStudents.length < minRequiredStudents) {
+      alert(
+        `Not enough unassigned students for equal distribution. Need at least ${minRequiredStudents} students (${numberOfGroups} groups × 2), but only ${unassignedStudents.length} available.`,
+      );
+      return;
+    }
+
+    // Shuffle unassigned students for random distribution
+    const shuffledStudents = [...unassignedStudents].sort(
+      () => Math.random() - 0.5,
+    );
+
+    // Calculate base distribution and remainder
+    const baseStudentsPerGroup = Math.floor(
+      shuffledStudents.length / numberOfGroups,
+    );
+    const remainder = shuffledStudents.length % numberOfGroups;
+
+    // Create updated groups with equal distribution
+    const updatedGroups = groups.map((group, index) => {
+      const studentsForThisGroup =
+        baseStudentsPerGroup + (index < remainder ? 1 : 0);
+      const startIndex =
+        index * baseStudentsPerGroup + Math.min(index, remainder);
+      const endIndex = startIndex + studentsForThisGroup;
+
+      const groupStudents = shuffledStudents.slice(startIndex, endIndex);
+
+      // Ensure 1 leader + 1 member minimum
+      if (groupStudents.length >= 2) {
+        return {
+          ...group,
+          leader: groupStudents[0] || group.leader,
+          members: [
+            ...groupStudents.slice(1),
+            ...Array(Math.max(0, studentsForThisGroup - 1)).fill(""),
+          ],
+          isSaved: true,
+          showInputs: false,
+        };
+      } else {
+        // Keep existing group data if not enough students for this group
+        return group;
+      }
+    });
+
+    setGroups(updatedGroups);
+    console.log("Distributed students equally:", updatedGroups);
+  };
+
   const getMemberRole = (memberName) => {
     for (const group of groups) {
       if (group.leader && group.leader.trim() === memberName.trim()) {
@@ -392,6 +525,7 @@ const GroupActivityBuilder = ({
     // Check if groups are configured but have unassigned students
     if (
       groupsConfigured &&
+      availableMembers.length > 0 && // Only validate if there are members to assign
       getAssignedMembers().size < availableMembers.length
     ) {
       errors.unassignedStudents = true;
@@ -399,6 +533,14 @@ const GroupActivityBuilder = ({
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  // Helper function to get account ID by member name
+  const getAccountIdByName = (memberName) => {
+    const member = currentSpace?.members?.find(
+      (m) => m.full_name === memberName && m.role !== 'creator'
+    );
+    return member?.account_id || null;
   };
 
   const handleSave = (status) => {
@@ -418,20 +560,26 @@ const GroupActivityBuilder = ({
 
               // Add leader if exists
               if (group.leader?.trim()) {
-                members.push({
-                  account_id: 1, // This should be replaced with actual account ID lookup
-                  role: "leader",
-                });
+                const leaderAccountId = getAccountIdByName(group.leader.trim());
+                if (leaderAccountId) {
+                  members.push({
+                    account_id: leaderAccountId,
+                    role: "leader",
+                  });
+                }
               }
 
               // Add members if they exist
               group.members
                 .filter((member) => member?.trim())
                 .forEach((member) => {
-                  members.push({
-                    account_id: 1, // This should be replaced with actual account ID lookup
-                    role: "member",
-                  });
+                  const memberAccountId = getAccountIdByName(member.trim());
+                  if (memberAccountId) {
+                    members.push({
+                      account_id: memberAccountId,
+                      role: "member",
+                    });
+                  }
                 });
 
               return {
@@ -444,7 +592,7 @@ const GroupActivityBuilder = ({
 
     const activityData = {
       task_category: "group-activity",
-      space_uuid: null, // This should be replaced with actual space UUID
+      space_uuid: space_uuid, // Use actual space UUID from params
       task_title: activityTitle,
       due_date: dueDate,
       task_score: Number(score),
@@ -557,10 +705,17 @@ const GroupActivityBuilder = ({
                 </p>
               )}
               <input
-                type="text"
+                type="number"
                 value={score}
                 onChange={(e) => {
-                  setScore(e.target.value);
+                  const value = e.target.value;
+                  // Only allow whole numbers (non-negative integers)
+                  if (
+                    value === "" ||
+                    (/^\d+$/.test(value) && parseInt(value) >= 0)
+                  ) {
+                    setScore(value);
+                  }
                   if (validationErrors.score) {
                     setValidationErrors((prev) => ({
                       ...prev,
@@ -580,6 +735,7 @@ const GroupActivityBuilder = ({
                 }}
                 placeholder="Enter score"
                 min="0"
+                step="1"
               />
             </div>
           </div>
@@ -815,14 +971,35 @@ const GroupActivityBuilder = ({
                       />
                       <button
                         type="button"
-                        className="px-2 py-1 text-gray-400 hover:text-white transition text-sm"
                         onClick={() => {
                           const input = document.getElementById("groups-input");
                           const currentValue = parseInt(input.value);
-                          if (currentValue < 10) {
+                          // Check if we have enough members for new group (1 leader + 1 member)
+                          if (
+                            currentValue < 10 &&
+                            availableMembers.length >= (currentValue + 1) * 2
+                          ) {
                             input.value = currentValue + 1;
                           }
                         }}
+                        disabled={
+                          availableMembers.length <
+                          (parseInt(
+                            document.getElementById("groups-input")?.value || 2,
+                          ) +
+                            1) *
+                            2
+                        }
+                        className={`px-2 py-1 text-sm transition ${
+                          availableMembers.length <
+                          (parseInt(
+                            document.getElementById("groups-input")?.value || 2,
+                          ) +
+                            1) *
+                            2
+                            ? "text-gray-600 cursor-not-allowed"
+                            : "text-gray-400 hover:text-white"
+                        }`}
                       >
                         +
                       </button>
@@ -1005,7 +1182,10 @@ const GroupActivityBuilder = ({
                   </span>
                   <button
                     onClick={() => {
-                      if (numberOfGroups < 10) {
+                      if (
+                        numberOfGroups < 10 &&
+                        availableMembers.length >= (numberOfGroups + 1) * 2
+                      ) {
                         const newNumGroups = numberOfGroups + 1;
                         setNumberOfGroups(newNumGroups);
 
@@ -1022,9 +1202,13 @@ const GroupActivityBuilder = ({
                         setGroups(updatedGroups);
                       }
                     }}
-                    disabled={numberOfGroups >= 10}
+                    disabled={
+                      numberOfGroups >= 10 ||
+                      availableMembers.length < (numberOfGroups + 1) * 2
+                    }
                     className={`w-6 h-6 rounded flex items-center justify-center text-sm font-medium transition ${
-                      numberOfGroups >= 10
+                      numberOfGroups >= 10 ||
+                      availableMembers.length < (numberOfGroups + 1) * 2
                         ? "bg-gray-700 text-gray-500 cursor-not-allowed"
                         : "bg-gray-600 text-white hover:bg-gray-500"
                     }`}
@@ -1341,51 +1525,44 @@ const GroupActivityBuilder = ({
                   Available Students (
                   {availableMembers.length - getAssignedMembers().size})
                 </h3>
-                <div className="space-y-2">
-                  {availableMembers
-                    .slice(0, availableMembers.length)
-                    .map((member, index) => {
-                      const isAssigned = isMemberAssigned(member);
-                      const role = getMemberRole(member);
-                      return (
-                        <div
-                          key={index}
-                          className={`rounded p-3 text-white text-sm transition cursor-pointer ${
-                            isAssigned
-                              ? "bg-[#1a1f29] opacity-50 cursor-not-allowed"
-                              : "bg-[#161A20] hover:bg-[#1a1f29]"
-                          }`}
-                          onClick={() =>
-                            !isAssigned && addMemberFromAvailable(member)
-                          }
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className={isAssigned ? "line-through" : ""}>
-                              {member}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`w-2 h-2 rounded-full ${
-                                  role === "leader"
-                                    ? "bg-yellow-500"
-                                    : role === "member"
-                                      ? "bg-green-500"
-                                      : "bg-green-500"
-                                }`}
-                              ></div>
-                              <span className="text-xs text-gray-400">
-                                {role === "leader"
-                                  ? "Leader"
-                                  : role === "member"
-                                    ? "Member"
-                                    : "Click to add"}
-                              </span>
+                {availableMembers.length === 0 ? (
+                  <div className="text-gray-400 text-sm text-center py-4">
+                    {currentSpace
+                      ? "No student members found in this space."
+                      : "Loading space data..."}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {availableMembers
+                      .filter((member) => !isMemberAssigned(member)) // Only show unassigned students
+                      .map((member, index) => {
+                        return (
+                          <div
+                            key={index}
+                            className="rounded p-3 text-white text-sm transition cursor-pointer bg-[#161A20] hover:bg-[#1a1f29]"
+                            onClick={() => addMemberFromAvailable(member)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span>{member}</span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                <span className="text-xs text-gray-400">
+                                  Click to add
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                </div>
+                        );
+                      })}
+                    {availableMembers.filter(
+                      (member) => !isMemberAssigned(member),
+                    ).length === 0 && (
+                      <div className="text-gray-400 text-sm text-center py-4">
+                        All students are assigned to groups
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1402,33 +1579,44 @@ const GroupActivityBuilder = ({
                   </p>
                 </div>
               )}
-              <button
-                onClick={() => {
-                  // Clear any existing validation errors first
-                  setValidationErrors({});
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDistributeEqually}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                >
+                  Distribute Equally
+                </button>
+                <button
+                  onClick={() => {
+                    // Clear any existing validation errors first
+                    setValidationErrors({});
 
-                  // Check if all students are assigned
-                  if (getAssignedMembers().size < availableMembers.length) {
-                    setValidationErrors({ unassignedStudents: true });
-                    return;
-                  }
+                    // Check if all students are assigned (only if there are members)
+                    if (
+                      availableMembers.length > 0 &&
+                      getAssignedMembers().size < availableMembers.length
+                    ) {
+                      setValidationErrors({ unassignedStudents: true });
+                      return;
+                    }
 
-                  // Save all groups with their leaders and members
-                  const groupsData = groups.map((group) => ({
-                    groupId: group.id,
-                    leader: group.leader.trim(),
-                    members: group.members.filter((member) => member.trim()), // Remove empty members
-                  }));
-                  console.log("All groups saved:", groupsData);
-                  // Here you would send this data to your backend
-                  setGroupsConfigured(true);
-                  setGroupCreationMethod("manual");
-                  setShowManualGroups(false);
-                }}
-                className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700`}
-              >
-                Save Groups
-              </button>
+                    // Save all groups with their leaders and members
+                    const groupsData = groups.map((group) => ({
+                      groupId: group.id,
+                      leader: group.leader.trim(),
+                      members: group.members.filter((member) => member.trim()), // Remove empty members
+                    }));
+                    console.log("All groups saved:", groupsData);
+                    // Here you would send this data to your backend
+                    setGroupsConfigured(true);
+                    setGroupCreationMethod("manual");
+                    setShowManualGroups(false);
+                  }}
+                  className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700`}
+                >
+                  Save Groups
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1485,15 +1673,22 @@ const GroupActivityBuilder = ({
                     </span>
                     <button
                       onClick={() => {
-                        if (numberOfGroups < 10) {
+                        if (
+                          numberOfGroups < 10 &&
+                          availableMembers.length >= (numberOfGroups + 1) * 2
+                        ) {
                           const newNumGroups = numberOfGroups + 1;
                           setNumberOfGroups(newNumGroups);
                           shuffleGroups(newNumGroups);
                         }
                       }}
-                      disabled={numberOfGroups >= 10}
+                      disabled={
+                        numberOfGroups >= 10 ||
+                        availableMembers.length < (numberOfGroups + 1) * 2
+                      }
                       className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
-                        numberOfGroups >= 10
+                        numberOfGroups >= 10 ||
+                        availableMembers.length < (numberOfGroups + 1) * 2
                           ? "bg-gray-700 text-gray-500 cursor-not-allowed"
                           : "bg-gray-600 text-white hover:bg-gray-500"
                       }`}

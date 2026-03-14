@@ -11,12 +11,14 @@ import UserPeoplePage from "../pages/UserSpace/UserPeoplePage.jsx";
 import FormBuilderPage from "../pages/UserSpace/AdminSpacePages/FormBuilderPage.jsx";
 import SpacePage from "../pages/Space/SpacePage.jsx";
 import CreateSpaceAdmin from "../pages/CreateSpace-Admin/CreateSpace-Admin.jsx";
-import CreateDocumentPage from "../pages/Create-Document/CreateDocumentWithHistory.jsx";
+// import CreateDocumentPage from "../pages/Create-Document/CreateDocumentWithHistory.jsx";
+import CreateDocumentPage from "../pages/Create-Document/CreateDocument-old.jsx";
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 import TaskBuilder from "../pages/EXAMPLE_PAGE/builder.jsx";
 import TaskPreview from "../pages/EXAMPLE_PAGE/preview.jsx";
-import { ThemeProvider } from "../pages/Create-Document/contexts/ThemeContext.jsx";
+// import { ThemeProvider } from "../pages/Create-Document/contexts/ThemeContext.jsx";
+import { ThemeProvider } from "../pages/Create-Document/contexts-old/ThemeContext.jsx";
 export const SpaceRoutes = [
   {
     key: "/space",
