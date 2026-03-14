@@ -4,8 +4,9 @@ import { useUser } from "../../../contexts/user/useUser";
 import { useTasks } from "../../../hooks/useTasks";
 import ProfSidebar from "../../component/profsidebar";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
-import { FiX, FiUser, FiCheck, FiX as FiXIcon, FiBarChart2, FiArrowLeft } from "react-icons/fi";
+import { FiX, FiUser, FiCheck, FiX as FiXIcon, FiBarChart2, FiArrowLeft, FiDownload } from "react-icons/fi";
 import { useSpace } from "../../../contexts/space/useSpace";
+import * as XLSX from "xlsx";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -316,6 +317,54 @@ const ResponseSummaryPage = () => {
     }
   }, [task_id, space_uuid, currentTask, allUserCompletedTask, allUserCompletedTaskLoading, realStudentData, realQuestions]);
 
+  const exportToExcel = () => {
+    if (!responseSummaryData) return;
+
+    const wb = XLSX.utils.book_new();
+
+    // ── Sheet 1: Overview ──
+    const overviewData = [
+      ["Quiz Title", responseSummaryData.quizTitle || "Quiz"],
+      ["Total Students", responseSummaryData.totalStudents],
+      ["Passed", responseSummaryData.passedStudents],
+      ["Failed", responseSummaryData.failedStudents],
+      ["Pass Rate", `${responseSummaryData.passRate}%`],
+    ];
+    const overviewSheet = XLSX.utils.aoa_to_sheet(overviewData);
+    overviewSheet["!cols"] = [{ wch: 20 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, overviewSheet, "Overview");
+
+    // ── Sheet 2: Student Results ──
+    const studentHeaders = [["Student Name", "Score (%)", "Status"]];
+    const studentRows = (responseSummaryData.studentResults || []).map((s) => [
+      s.name,
+      s.score,
+      s.status,
+    ]);
+    const studentSheet = XLSX.utils.aoa_to_sheet([...studentHeaders, ...studentRows]);
+    studentSheet["!cols"] = [{ wch: 30 }, { wch: 15 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, studentSheet, "Student Results");
+
+    // ── Sheet 3: Question Analysis ──
+    const qaHeaders = [["Question ID", "Question", "Correct Answer", "Correct Responses", "Incorrect Responses", "Common Mistakes"]];
+    const qaRows = (responseSummaryData.questionAnalysis || []).map((q) => [
+      q.questionId,
+      q.questionText,
+      q.correctAnswer,
+      q.correctCount,
+      q.incorrectCount,
+      Object.entries(q.incorrectAnswers || {})
+        .map(([ans, cnt]) => `${ans}: ${cnt}`)
+        .join(", ") || "None",
+    ]);
+    const qaSheet = XLSX.utils.aoa_to_sheet([...qaHeaders, ...qaRows]);
+    qaSheet["!cols"] = [{ wch: 15 }, { wch: 40 }, { wch: 20 }, { wch: 20 }, { wch: 22 }, { wch: 40 }];
+    XLSX.utils.book_append_sheet(wb, qaSheet, "Question Analysis");
+
+    const filename = `Response_Summary_${(responseSummaryData.quizTitle || "Quiz").replace(/\s+/g, "_")}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    XLSX.writeFile(wb, filename);
+  };
+
   const formatDueDate = (dueDate) => {
     if (!dueDate) return "No due date set";
     try {
@@ -400,75 +449,90 @@ const ResponseSummaryPage = () => {
               Back to Quiz Details
             </button>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold mt-4">
-            Response Summary - {responseSummaryData?.quizTitle || 'Quiz'}
-          </h1>
+          <div className="flex items-center justify-between mt-4 gap-3 flex-wrap">
+            <h1 className="text-xl sm:text-2xl font-bold">
+              Response Summary - {responseSummaryData?.quizTitle || 'Quiz'}
+            </h1>
+            <button
+              onClick={exportToExcel}
+              disabled={!responseSummaryData}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: "linear-gradient(135deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
+                color: "white",
+                border: "none",
+              }}
+            >
+              <FiDownload size={16} />
+              Export to Excel
+            </button>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <div className="flex-1 p-3 sm:p-6 lg:p-8 overflow-y-auto">
           {/* Overview Statistics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
             <div 
-              className="rounded-xl p-6 border shadow-sm"
+              className="rounded-xl p-4 sm:p-6 border shadow-sm"
               style={{
                 background: "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
                 borderColor: 'rgba(0,191,255,0.3)',
                 color: '#FFFFFF'
               }}
             >
-              <div className="text-3xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
+              <div className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#FFFFFF' }}>
                 {responseSummaryData?.totalStudents}
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.9)' }}>Total Students</div>
+              <div className="text-xs sm:text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Total Students</div>
             </div>
             <div 
-              className="rounded-xl p-6 border shadow-sm"
+              className="rounded-xl p-4 sm:p-6 border shadow-sm"
               style={{
                 background: "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
                 borderColor: 'rgba(0,191,255,0.3)',
                 color: '#FFFFFF'
               }}
             >
-              <div className="text-3xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
+              <div className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#FFFFFF' }}>
                 {responseSummaryData?.passedStudents}
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.9)' }}>Passed</div>
+              <div className="text-xs sm:text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Passed</div>
             </div>
             <div 
-              className="rounded-xl p-6 border shadow-sm"
+              className="rounded-xl p-4 sm:p-6 border shadow-sm"
               style={{
                 background: "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
                 borderColor: 'rgba(0,191,255,0.3)',
                 color: '#FFFFFF'
               }}
             >
-              <div className="text-3xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
+              <div className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#FFFFFF' }}>
                 {responseSummaryData?.failedStudents}
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.9)' }}>Failed</div>
+              <div className="text-xs sm:text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Failed</div>
             </div>
             <div 
-              className="rounded-xl p-6 border shadow-sm"
+              className="rounded-xl p-4 sm:p-6 border shadow-sm"
               style={{
                 background: "linear-gradient(159deg, rgba(0,0,128,1) 0%, rgba(0,191,255,1) 100%)",
                 borderColor: 'rgba(0,191,255,0.3)',
                 color: '#FFFFFF'
               }}
             >
-              <div className="text-3xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
+              <div className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2" style={{ color: '#FFFFFF' }}>
                 {responseSummaryData?.passRate}%
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.9)' }}>Pass Rate</div>
+              <div className="text-xs sm:text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>Pass Rate</div>
             </div>
           </div>
 
           {/* Question Analysis */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-6" style={{ color: currentColors.text }}>
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6" style={{ color: currentColors.text }}>
               Question Analysis - Response Distribution
             </h2>
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
               {responseSummaryData?.questionAnalysis?.map((question, index) => {
                 const realQuestion = realQuestions.find(q => 
                   (q.question_id && q.question_id === question.questionId) || 
@@ -479,148 +543,192 @@ const ResponseSummaryPage = () => {
                 return (
                   <div 
                     key={question.questionId} 
-                    className="rounded-xl p-5 sm:p-6 border shadow-sm"
+                    className="rounded-xl p-4 sm:p-5 sm:p-6 border shadow-sm"
                     style={{
                       backgroundColor: currentColors.surface,
                       borderColor: currentColors.border,
                       color: currentColors.text
                     }}
                   >
-                    <div className="mb-6">
+                    <div className="mb-4 sm:mb-6">
                       <span 
-                        className="font-medium text-lg"
+                        className="font-medium text-base sm:text-lg"
                         style={{ color: currentColors.text }}
                       >
                         Q{question.questionId}:
                       </span>
-                      <span className="ml-2 text-lg" style={{ color: currentColors.text }}>
+                      <span className="ml-2 text-base sm:text-lg break-words" style={{ color: currentColors.text }}>
                         {question.questionText}
                       </span>
                     </div>
                     
                     {chartData && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Pie Chart - Admin Dashboard Style */}
-                        <div 
-                          className="rounded-xl border shadow-sm"
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        {/* Pie Chart + inline legend - left side */}
+                        <div
+                          className="rounded-xl border shadow-sm flex-shrink-0 w-full sm:w-auto"
                           style={{
                             backgroundColor: currentColors.surface,
-                            borderColor: currentColors.border
+                            borderColor: currentColors.border,
                           }}
                         >
-                          <div 
-                            className="p-4 border-b"
+                          <div
+                            className="px-4 py-3 border-b"
                             style={{ borderColor: currentColors.border }}
                           >
-                            <h4 
-                              className="text-sm font-semibold uppercase tracking-wider"
+                            <h4
+                              className="text-xs font-semibold uppercase tracking-wider"
                               style={{ color: currentColors.textSecondary }}
                             >
                               Response Distribution
                             </h4>
                           </div>
-                          <div className="p-4" style={{ height: 300 }}>
-                            <Pie data={chartData} options={chartOptions} />
+                          <div className="p-4 flex flex-col sm:flex-row items-center gap-4">
+                            {/* Pie chart — no built-in legend */}
+                            <div className="flex-shrink-0 relative" style={{ width: 220, height: 220, overflow: 'hidden' }}>
+                              <Pie
+                                data={chartData}
+                                options={{
+                                  ...chartOptions,
+                                  responsive: true,
+                                  maintainAspectRatio: false,
+                                  layout: {
+                                    padding: 10,
+                                  },
+                                  plugins: {
+                                    ...chartOptions.plugins,
+                                    legend: { display: false },
+                                  },
+                                }}
+                              />
+                            </div>
+                            {/* Custom legend — choices on the right */}
+                            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                              {chartData.labels.map((label, i) => (
+                                <div key={i} className="flex items-center gap-2 min-w-0">
+                                  <span
+                                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                    style={{ backgroundColor: chartData.datasets[0].backgroundColor[i] }}
+                                  />
+                                  <span
+                                    className="text-xs break-words flex-1"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    {label}
+                                  </span>
+                                  <span
+                                    className="text-xs font-semibold flex-shrink-0"
+                                    style={{ color: currentColors.textSecondary }}
+                                  >
+                                    {chartData.datasets[0].data[i]}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                        
-                        {/* Statistics */}
-                        <div className="space-y-4">
-                          <div 
-                            className="rounded-lg p-4"
+
+                        {/* Right side — Statistics + Common Mistakes */}
+                        <div className="flex flex-col gap-3 flex-1 min-w-0">
+                          {/* Statistics */}
+                          <div
+                            className="rounded-xl border p-4"
                             style={{
-                              backgroundColor: isDarkMode ? '#374151' : '#F9FAFB',
-                              color: currentColors.text
+                              backgroundColor: isDarkMode ? '#1e2330' : '#F9FAFB',
+                              borderColor: currentColors.border,
                             }}
                           >
-                            <h4 
-                              className="text-sm font-semibold uppercase tracking-wider mb-3"
+                            <h4
+                              className="text-xs font-bold uppercase tracking-wider mb-3"
                               style={{ color: currentColors.textSecondary }}
                             >
                               Statistics
                             </h4>
                             <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span 
-                                  className="text-sm font-medium"
-                                  style={{ color: '#10B981' }}
-                                >
-                                  Correct Answer:
+                              <div className="flex justify-between items-center gap-2">
+                                <span className="text-sm font-medium" style={{ color: '#10B981' }}>
+                                  Correct Answer
                                 </span>
-                                <span className="text-sm font-medium" style={{ color: currentColors.text }}>
+                                <span
+                                  className="text-sm font-bold px-2 py-0.5 rounded"
+                                  style={{
+                                    color: '#10B981',
+                                    backgroundColor: isDarkMode ? '#064e3b' : '#D1FAE5',
+                                  }}
+                                >
                                   {question.correctAnswer}
                                 </span>
                               </div>
-                              <div className="flex justify-between items-center">
-                                <span 
-                                  className="text-sm"
-                                  style={{ color: '#3B82F6' }}
-                                >
-                                  Correct Responses:
+                              <div className="flex justify-between items-center gap-2">
+                                <span className="text-sm" style={{ color: '#3B82F6' }}>
+                                  Correct Responses
                                 </span>
-                                <span className="text-sm font-medium" style={{ color: currentColors.text }}>
-                                  {question.correctCount} students
+                                <span className="text-sm font-semibold" style={{ color: currentColors.text }}>
+                                  {question.correctCount} student{question.correctCount !== 1 ? 's' : ''}
                                 </span>
                               </div>
-                              <div className="flex justify-between items-center">
-                                <span 
-                                  className="text-sm"
-                                  style={{ color: '#F43F5E' }}
-                                >
-                                  Incorrect Responses:
+                              <div className="flex justify-between items-center gap-2">
+                                <span className="text-sm" style={{ color: '#F43F5E' }}>
+                                  Incorrect Responses
                                 </span>
-                                <span className="text-sm font-medium" style={{ color: currentColors.text }}>
-                                  {question.incorrectCount} students
+                                <span className="text-sm font-semibold" style={{ color: currentColors.text }}>
+                                  {question.incorrectCount} student{question.incorrectCount !== 1 ? 's' : ''}
                                 </span>
                               </div>
                             </div>
                           </div>
-                          
-                          <div 
-                            className="rounded-lg p-4"
-                            style={{
-                              backgroundColor: isDarkMode ? '#450A0A' : '#FEF2F2',
-                              color: currentColors.text
-                            }}
-                          >
-                            <h4 
-                              className="text-sm font-semibold uppercase tracking-wider mb-3"
-                              style={{ color: '#F43F5E' }}
-                            >
-                              Common Mistakes
-                            </h4>
-                            <div className="space-y-2">
-                              {Object.entries(question.incorrectAnswers).map(([answer, count]) => (
-                                <div key={answer} className="flex justify-between items-center">
-                                  <span 
-                                    className="text-sm"
-                                    style={{ color: '#F43F5E' }}
-                                  >
-                                    • {answer}
-                                  </span>
-                                  <span 
-                                    className="text-xs px-2 py-1 rounded"
-                                    style={{
-                                      color: currentColors.textSecondary,
-                                      backgroundColor: isDarkMode ? '#374151' : '#F3F4F6'
-                                    }}
-                                  >
-                                    {count} students
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                            
-                            {Object.keys(question.incorrectAnswers).length === 0 && (
-                              <div 
-                                className="text-sm font-medium flex items-center gap-2"
-                                style={{ color: '#10B981' }}
+
+                          {/* Common Mistakes — green if all correct, red if there are mistakes */}
+                          {(() => {
+                            const allCorrect = Object.keys(question.incorrectAnswers).length === 0;
+                            return (
+                              <div
+                                className="rounded-xl border p-4 flex-1"
+                                style={{
+                                  backgroundColor: allCorrect
+                                    ? (isDarkMode ? '#052e16' : '#F0FDF4')
+                                    : (isDarkMode ? '#2d0a0a' : '#FEF2F2'),
+                                  borderColor: allCorrect
+                                    ? (isDarkMode ? '#166534' : '#bbf7d0')
+                                    : (isDarkMode ? '#7f1d1d' : '#fecaca'),
+                                }}
                               >
-                                <span style={{ color: '#10B981' }}>✓</span>
-                                All students answered correctly!
+                                <h4
+                                  className="text-xs font-bold uppercase tracking-wider mb-3"
+                                  style={{ color: allCorrect ? '#10B981' : '#F43F5E' }}
+                                >
+                                  Common Mistakes
+                                </h4>
+                                {allCorrect ? (
+                                  <div className="flex items-center gap-2">
+                                    <span style={{ color: '#10B981' }}>✓</span>
+                                    <span className="text-sm font-medium" style={{ color: '#10B981' }}>
+                                      All students answered correctly.
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {Object.entries(question.incorrectAnswers).map(([answer, count]) => (
+                                      <div key={answer} className="flex justify-between items-center gap-2">
+                                        <span className="text-sm break-words flex-1" style={{ color: '#F43F5E' }}>
+                                          • {answer}
+                                        </span>
+                                        <span
+                                          className="text-xs px-2 py-0.5 rounded flex-shrink-0"
+                                          style={{
+                                            color: currentColors.textSecondary,
+                                            backgroundColor: isDarkMode ? '#374151' : '#F3F4F6',
+                                          }}
+                                        >
+                                          {count} student{count !== 1 ? 's' : ''}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     )}
@@ -630,9 +738,8 @@ const ResponseSummaryPage = () => {
             </div>
           </div>
 
-          {/* Student Results */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-6" style={{ color: currentColors.text }}>
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6" style={{ color: currentColors.text }}>
               Student Results
             </h2>
             <div 
@@ -653,19 +760,19 @@ const ResponseSummaryPage = () => {
                       }}
                     >
                       <th 
-                        className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider"
+                        className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium uppercase tracking-wider"
                         style={{ color: currentColors.textSecondary }}
                       >
                         Student Name
                       </th>
                       <th 
-                        className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider"
+                        className="px-3 sm:px-6 py-3 sm:py-4 text-center text-xs font-medium uppercase tracking-wider"
                         style={{ color: currentColors.textSecondary }}
                       >
                         Score
                       </th>
                       <th 
-                        className="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider"
+                        className="px-3 sm:px-6 py-3 sm:py-4 text-center text-xs font-medium uppercase tracking-wider"
                         style={{ color: currentColors.textSecondary }}
                       >
                         Status
@@ -688,15 +795,15 @@ const ResponseSummaryPage = () => {
                           e.currentTarget.style.backgroundColor = currentColors.surface;
                         }}
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" style={{ color: currentColors.text }}>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium break-words max-w-[100px] sm:max-w-none" style={{ color: currentColors.text }}>
                           {student.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center" style={{ color: currentColors.text }}>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-center" style={{ color: currentColors.text }}>
                           {student.score}%
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                           <span 
-                            className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                            className="px-2 sm:px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
                             style={{
                               backgroundColor: student.status === 'passed' 
                                 ? (isDarkMode ? '#065F46' : '#D1FAE5')
