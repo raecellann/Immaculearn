@@ -461,74 +461,76 @@ const ProfPeoplePage = () => {
           )}
         </div>
 
-        {/* MOBILE/TABLET SPACE INFO OVERLAY */}
-        <div className="md:hidden">
-          <div 
-            className="absolute top-4 right-2 left-2 p-2 rounded-lg border z-10"
-            style={{
-              backgroundColor: currentColors.surface + "CC", // Add 80% opacity
-              borderColor: currentColors.border + "CC", // Add 80% opacity to border
-              backdropFilter: "blur(8px)"
-            }}
-          >
-            <div className="grid grid-cols-1 gap-1">
-              {/* Schedule */}
-              <div>
-                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
-                  Schedule
-                </h3>
-                <p className="text-[0.55rem]" style={{ color: currentColors.textSecondary }}>
-                  {activeSpace?.space_schedule || 
-                   `${activeSpace?.space_day || "Mon"} ${activeSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
-                   activeSpace?.schedule ||
-                   activeSpace?.class_schedule ||
-                   (activeSpace?.space_type === "course" 
-                      ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
-                      : "Flexible schedule"
-                    )
-                  }
-                </p>
-              </div>
+        {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
+        {(activeSpace?.space_type === "course" || activeSpace?.space_day || activeSpace?.space_section || activeSpace?.space_schedule) && (
+        <div
+          className="lg:hidden px-4 py-3 border-b"
+          style={{
+            backgroundColor: currentColors.surface + "CC", // Add 80% opacity
+            borderColor: currentColors.border + "CC", // Add 80% opacity to border
+            backdropFilter: "blur(8px)"
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            {/* Schedule */}
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
+                Schedule
+              </span>
+              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
+                {activeSpace?.space_schedule ||
+                  activeSpace?.schedule ||
+                  activeSpace?.class_schedule ||
+                  (activeSpace?.space_day && activeSpace?.space_time
+                    ? `${activeSpace.space_day} ${activeSpace.space_time}`
+                    : activeSpace?.space_day
+                      ? `${activeSpace.space_day} — No time set`
+                      : "No schedule set"
+                  )
+                }
+              </span>
+            </div>
 
-              {/* Section */}
-              <div>
-                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
-                  Section
-                </h3>
-                <p className="text-[0.55rem]" style={{ color: currentColors.textSecondary }}>
-                  {(activeSpace?.space_section && activeSpace.space_section.charAt(0)) || 
-                   (activeSpace?.section && activeSpace.section.charAt(0)) ||
-                   (activeSpace?.class_section && activeSpace.class_section.charAt(0)) ||
-                   (activeSpace?.section_name && activeSpace.section_name.charAt(0)) ||
-                   (activeSpace?.space_day && activeSpace.space_day.charAt(0)) ||
-                   (activeSpace?.space_type === "course" 
-                      ? "G"
-                      : "G"
-                    )
-                  }
-                </p>
-              </div>
+            {/* Section */}
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
+                Section
+              </span>
+              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
+                {activeSpace?.space_section ||
+                  activeSpace?.section ||
+                  activeSpace?.class_section ||
+                  activeSpace?.section_name ||
+                  activeSpace?.course_section ||
+                  activeSpace?.subject_section ||
+                  activeSpace?.space_block ||
+                  activeSpace?.block ||
+                  "N/A"
+                }
+              </span>
+            </div>
 
-              {/* Description */}
-              <div>
-                <h3 className="font-semibold text-[0.55rem] mb-0.5" style={{ color: currentColors.text }}>
-                  Description
-                </h3>
-                <p className="text-[0.55rem] line-clamp-3" style={{ color: currentColors.textSecondary }}>
-                  {activeSpace?.space_description || 
-                    (activeSpace?.space_type === "course" 
-                      ? "Course space for lectures, assignments, and discussions."
-                      : "Collaborative space for sharing ideas and resources."
-                    )
-                  }
-                </p>
-              </div>
+            {/* Description */}
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
+                Description
+              </span>
+              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
+                {activeSpace?.space_description || 
+                  (activeSpace?.space_type === "course" 
+                    ? "Course space for lectures, assignments, and discussions."
+                    : "Collaborative space for sharing ideas and resources."
+                  )
+                }
+              </span>
             </div>
           </div>
         </div>
+        )}
 
         {/* DESKTOP SPACE INFO OVERLAY */}
-        <div className="hidden md:block">
+        {(activeSpace?.space_type === "course" || activeSpace?.space_day || activeSpace?.space_section || activeSpace?.space_schedule) && (
+        <div className="hidden lg:block">
           <div 
             className="absolute top-4 right-4 p-4 rounded-lg border z-10"
             style={{
@@ -545,13 +547,14 @@ const ProfPeoplePage = () => {
                   Schedule
                 </h3>
                 <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                  {activeSpace?.space_schedule || 
-                   `${activeSpace?.space_day || "Mon"} ${activeSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
-                   activeSpace?.schedule ||
-                   activeSpace?.class_schedule ||
-                   (activeSpace?.space_type === "course" 
-                      ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
-                      : "Flexible schedule"
+                  {activeSpace?.space_schedule ||
+                    activeSpace?.schedule ||
+                    activeSpace?.class_schedule ||
+                    (activeSpace?.space_day && activeSpace?.space_time
+                      ? `${activeSpace.space_day} ${activeSpace.space_time}`
+                      : activeSpace?.space_day
+                        ? `${activeSpace.space_day} — No time set`
+                        : "No schedule set"
                     )
                   }
                 </p>
@@ -563,15 +566,15 @@ const ProfPeoplePage = () => {
                   Section
                 </h3>
                 <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                  {(activeSpace?.space_section && activeSpace.space_section.charAt(0)) || 
-                   (activeSpace?.section && activeSpace.section.charAt(0)) ||
-                   (activeSpace?.class_section && activeSpace.class_section.charAt(0)) ||
-                   (activeSpace?.section_name && activeSpace.section_name.charAt(0)) ||
-                   (activeSpace?.space_day && activeSpace.space_day.charAt(0)) ||
-                   (activeSpace?.space_type === "course" 
-                      ? "G"
-                      : "G"
-                    )
+                  {activeSpace?.space_section ||
+                    activeSpace?.section ||
+                    activeSpace?.class_section ||
+                    activeSpace?.section_name ||
+                    activeSpace?.course_section ||
+                    activeSpace?.subject_section ||
+                    activeSpace?.space_block ||
+                    activeSpace?.block ||
+                    "N/A"
                   }
                 </p>
               </div>
@@ -593,6 +596,7 @@ const ProfPeoplePage = () => {
             </div>
           </div>
         </div>
+        )}
 
         {/* PAGE HEADER */}
         <div className="p-4 sm:p-6">
