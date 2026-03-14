@@ -1242,9 +1242,9 @@ const ProfStreamPage = () => {
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
             <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
-            <div className="flex items-center gap-4 mt-0">
+            <div className="flex items-center gap-2 mt-2">
               <span
-                className="text-sm"
+                className="text-xs"
                 style={{ color: currentColors.textSecondary }}
               >
                 (
@@ -1255,18 +1255,18 @@ const ProfStreamPage = () => {
               </span>
               {isOwnerSpace && (
                 <>
-                  <div onClick={handleInviteMember} className="mt-2">
+                  <div onClick={handleInviteMember}>
                     <Button text="Add Member" />
                   </div>
-                  <div onClick={handlePendingInvitations} className="relative mt-2">
+                  <div onClick={handlePendingInvitations} className="relative">
                     <Button text="Pending Invites" />
                     {pendingInvitesCount > 0 && (
-                      <span className="absolute top-1 -right-1 bg-red-500 text-white text-sm rounded-full w-6 h-6 flex items-center justify-center">
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                         {pendingInvitesCount}
                       </span>
                     )}
                   </div>
-                  <div onClick={handleDeleteRoom} className="mt-2">
+                  <div onClick={handleDeleteRoom}>
                     <Button
                       text={
                         currentSpace?.space_type === "course" ||

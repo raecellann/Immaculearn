@@ -375,42 +375,119 @@ const CreateDocumentContent = () => {
               windowWidth={windowWidth}
             />
 
-            {/* Editor area - Centered */}
-            <div className={`flex justify-center items-start py-3 sm:py-4 md:py-6 px-2 sm:px-4 md:px-6 lg:px-8 min-h-[calc(100vh-180px)] sm:min-h-[calc(100vh-200px)] flex-1 transition-all duration-300 ease-in-out ${showHistory ? 'max-w-none' : ''}`}>
-              <div className={`w-full transition-all duration-300 ease-in-out ${showHistory ? 'max-w-6xl' : 'max-w-4xl'}`}>
+            {/* ── Editor canvas (Google Docs style) ── */}
+            {/*
+              Layout layers:
+              1. Canvas   — full-width grey background, scrollable, provides breathing room
+              2. Page     — white A4 card, fixed width, min-height (never fixed height),
+                            owns all margins (padding). Grows downward with content.
+              3. Editor   — fills the page, no sizing of its own.
+
+              The repeating-linear-gradient draws a faint rule every A4 height,
+              giving the visual illusion of page breaks without splitting the DOM.
+            */}
+            <div
+              className="flex-1 flex justify-center items-start overflow-y-auto"
+              style={{
+                backgroundColor: isDarkMode ? '#1e1e1e' : '#e8e8e8',
+                padding: '32px 16px',
+              }}
+            >
+              <div
+                className={`w-full transition-all duration-300 ease-in-out ${showHistory ? 'max-w-5xl' : 'max-w-3xl'}`}
+              >
                 {file_uuid ? (
-                  <CollaborativeEditor
-                    ref={setEditorReference}
-                    ydoc={ydocRef.current}
-                    provider={providerRef.current}
-                    user={{
-                      id: user?.id,
-                      name: user?.name,
-                      color: getUserColor(user?.id),
-                      avatar: user?.profile_pic || `https://i.pravatar.cc/40?u=${user?.id}`
-                    }}
-                    onUpdate={handleEditorUpdate}
-                    initialContent={file?.content || ""}
-                    paperSize={paperSize}
-                    margins={margins}
-                    fontFamily={fontFamily}
-                  />
-                ) : (
+                  // ── Page shell for CollaborativeEditor ──
                   <div
-                    ref={setEditorReference}
-                    contentEditable
-                    className="w-full min-h-[500px] p-6 rounded-lg border-2 focus:outline-none"
                     style={{
-                      backgroundColor: currentColors.surface,
-                      borderColor: currentColors.border,
-                      color: currentColors.text,
-                      fontFamily: fontFamily,
-                      ...paperSize
+                      width: paperSize.width || '8.27in',
+                      minHeight: paperSize.height || '11.69in',
+                      maxWidth: '100%',
+                      margin: '0 auto',
+                      backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
+                      boxShadow: isDarkMode
+                        ? '0 2px 8px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.4)'
+                        : '0 2px 8px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.08)',
+                      borderRadius: '2px',
+                      // Margins live here as padding — editor inside gets no padding
+                      padding: `${margins.top || '1in'} ${margins.right || '1in'} ${margins.bottom || '1in'} ${margins.left || '1in'}`,
+                      boxSizing: 'border-box',
+                      // Page-break guide lines drawn every A4 height
+                      backgroundImage: `repeating-linear-gradient(
+                        to bottom,
+                        transparent,
+                        transparent calc(${paperSize.height || '11.69in'} - 1px),
+                        ${isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)'} calc(${paperSize.height || '11.69in'} - 1px),
+                        ${isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)'} ${paperSize.height || '11.69in'}
+                      )`,
+                      backgroundAttachment: 'local',
                     }}
-                    onInput={(e) => handleEditorUpdate(e.target.innerHTML)}
-                    suppressContentEditableWarning
                   >
-                    <p></p>
+                    <CollaborativeEditor
+                      ref={setEditorReference}
+                      ydoc={ydocRef.current}
+                      provider={providerRef.current}
+                      user={{
+                        id: user?.id,
+                        name: user?.name,
+                        color: getUserColor(user?.id),
+                        avatar: user?.profile_pic || `https://i.pravatar.cc/40?u=${user?.id}`
+                      }}
+                      onUpdate={handleEditorUpdate}
+                      initialContent={file?.content || ""}
+                      fontFamily={fontFamily}
+                    />
+                  </div>
+                ) : (
+                  // ── Page shell for standalone contentEditable ──
+                  <div
+                    style={{
+                      width: paperSize.width || '8.27in',
+                      minHeight: paperSize.height || '11.69in',
+                      maxWidth: '100%',
+                      margin: '0 auto',
+                      backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
+                      boxShadow: isDarkMode
+                        ? '0 2px 8px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.4)'
+                        : '0 2px 8px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.08)',
+                      borderRadius: '2px',
+                      padding: `${margins.top || '1in'} ${margins.right || '1in'} ${margins.bottom || '1in'} ${margins.left || '1in'}`,
+                      boxSizing: 'border-box',
+                      backgroundImage: `repeating-linear-gradient(
+                        to bottom,
+                        transparent,
+                        transparent calc(${paperSize.height || '11.69in'} - 1px),
+                        ${isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)'} calc(${paperSize.height || '11.69in'} - 1px),
+                        ${isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)'} ${paperSize.height || '11.69in'}
+                      )`,
+                      backgroundAttachment: 'local',
+                    }}
+                  >
+                    <div
+                      ref={setEditorReference}
+                      contentEditable
+                      suppressContentEditableWarning
+                      onInput={(e) => handleEditorUpdate(e.target.innerHTML)}
+                      style={{
+                        width: '100%',
+                        minHeight: 'calc(11.69in - 2in)',
+                        outline: 'none',
+                        border: 'none',
+                        background: 'transparent',
+                        padding: 0,
+                        margin: 0,
+                        color: currentColors.text,
+                        fontFamily: fontFamily,
+                        fontSize: '11pt',
+                        lineHeight: '1.6',
+                        boxSizing: 'border-box',
+                        overflowWrap: 'break-word',
+                        wordBreak: 'break-word',
+                        cursor: 'text',
+                      }}
+                    >
+                      <p></p>
+                    </div>
                   </div>
                 )}
               </div>
