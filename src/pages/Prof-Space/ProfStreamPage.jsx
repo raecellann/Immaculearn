@@ -1188,16 +1188,22 @@ const ProfStreamPage = () => {
                 Schedule
               </span>
               <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_schedule ||
-                  currentSpace?.schedule ||
-                  currentSpace?.class_schedule ||
-                  (currentSpace?.space_day && currentSpace?.space_time
-                    ? `${currentSpace.space_day} ${currentSpace.space_time}`
-                    : currentSpace?.space_day
-                      ? `${currentSpace.space_day} — No time set`
-                      : "No schedule set"
-                  )
-                }
+                {currentSpace?.space_day || "TBD"} (
+                {currentSpace?.space_time_start ? new Date(
+                  `2000-01-01T${currentSpace.space_time_start}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"}{" "}
+                -{" "}
+                {currentSpace?.space_time_end ? new Date(
+                  `2000-01-01T${currentSpace.space_time_end}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"})
               </span>
             </div>
 
@@ -1331,15 +1337,22 @@ const ProfStreamPage = () => {
                       Schedule
                     </h3>
                     <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                      {currentSpace?.space_schedule || 
-                       `${currentSpace?.space_day || "Mon"} ${currentSpace?.space_time || "2:00 PM - 4:00 PM"}` ||
-                       currentSpace?.schedule ||
-                       currentSpace?.class_schedule ||
-                       (currentSpace?.space_type === "course" 
-                          ? "Mon, Wed, Fri 2:00 PM - 4:00 PM"
-                          : "Flexible schedule"
-                        )
-                      }
+                      {currentSpace?.space_day || "TBD"} (
+                      {currentSpace?.space_time_start ? new Date(
+                        `2000-01-01T${currentSpace.space_time_start}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      }) : "TBD"}{" "}
+                      -{" "}
+                      {currentSpace?.space_time_end ? new Date(
+                        `2000-01-01T${currentSpace.space_time_end}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      }) : "TBD"})
                     </p>
                   </div>
 
@@ -1349,15 +1362,15 @@ const ProfStreamPage = () => {
                       Section
                     </h3>
                     <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                      {(currentSpace?.space_section && currentSpace.space_section.charAt(0)) || 
-                       (currentSpace?.section && currentSpace.section.charAt(0)) ||
-                       (currentSpace?.class_section && currentSpace.class_section.charAt(0)) ||
-                       (currentSpace?.section_name && currentSpace.section_name.charAt(0)) ||
-                       (currentSpace?.space_day && currentSpace.space_day.charAt(0)) ||
-                       (currentSpace?.space_type === "course" 
-                          ? "G"
-                          : "G"
-                        )
+                      {currentSpace?.space_section ||
+                       currentSpace?.section ||
+                       currentSpace?.class_section ||
+                       currentSpace?.section_name ||
+                       currentSpace?.course_section ||
+                       currentSpace?.subject_section ||
+                       currentSpace?.space_block ||
+                       currentSpace?.block ||
+                       "N/A"
                       }
                     </p>
                   </div>

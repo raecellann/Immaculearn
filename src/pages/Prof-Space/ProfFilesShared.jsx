@@ -947,16 +947,22 @@ const ProfFilesShared = () => {
                 Schedule
               </span>
               <span className="text-xs flex-1 break-words" style={{ color: c.textSecondary }}>
-                {currentSpace?.space_schedule ||
-                  currentSpace?.schedule ||
-                  currentSpace?.class_schedule ||
-                  (currentSpace?.space_day && currentSpace?.space_time
-                    ? `${currentSpace.space_day} ${currentSpace.space_time}`
-                    : currentSpace?.space_day
-                      ? `${currentSpace.space_day} — No time set`
-                      : "No schedule set"
-                  )
-                }
+                {currentSpace?.space_day || "TBD"} (
+                {currentSpace?.space_time_start ? new Date(
+                  `2000-01-01T${currentSpace.space_time_start}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"}{" "}
+                -{" "}
+                {currentSpace?.space_time_end ? new Date(
+                  `2000-01-01T${currentSpace.space_time_end}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"})
               </span>
             </div>
 
@@ -1073,16 +1079,22 @@ const ProfFilesShared = () => {
                     Schedule
                   </h3>
                   <p className="text-sm" style={{ color: c.textSecondary }}>
-                    {currentSpace?.space_schedule ||
-                      currentSpace?.schedule ||
-                      currentSpace?.class_schedule ||
-                      (currentSpace?.space_day && currentSpace?.space_time
-                        ? `${currentSpace.space_day} ${currentSpace.space_time}`
-                        : currentSpace?.space_day
-                          ? `${currentSpace.space_day} — No time set`
-                          : "No schedule set"
-                      )
-                    }
+                    {currentSpace?.space_day || "TBD"} (
+                    {currentSpace?.space_time_start ? new Date(
+                      `2000-01-01T${currentSpace.space_time_start}`,
+                    ).toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    }) : "TBD"}{" "}
+                    -{" "}
+                    {currentSpace?.space_time_end ? new Date(
+                      `2000-01-01T${currentSpace.space_time_end}`,
+                    ).toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    }) : "TBD"})
                   </p>
                 </div>
 
