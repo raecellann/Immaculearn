@@ -216,8 +216,6 @@ const QuizBuilder = ({
     { value: "multiple-choice", label: "Multiple Choice" },
     { value: "true-false", label: "True/False" },
     { value: "identification", label: "Identification" },
-    { value: "enumeration", label: "Enumeration" },
-    { value: "short-answer", label: "Short Answer" },
   ];
 
   const addQuestion = () => {
@@ -547,97 +545,6 @@ const QuizBuilder = ({
           </div>
         );
 
-      case "enumeration":
-        return (
-          <div className="space-y-2">
-            {validationErrors[`correctAnswer_${question.id}`] && (
-              <p className="text-red-500 text-xs sm:text-sm mb-2">
-                Please provide at least one answer
-              </p>
-            )}
-            <div
-              className="text-xs sm:text-sm"
-              style={{ color: currentColors.textSecondary }}
-            >
-              Correct answers (comma-separated):
-            </div>
-            <textarea
-              value={
-                Array.isArray(question.correctAnswer)
-                  ? question.correctAnswer.join(", ")
-                  : question.correctAnswer || ""
-              }
-              onChange={(e) => {
-                updateQuestion(
-                  question.id,
-                  "correctAnswer",
-                  e.target.value.split(",").map((a) => a.trim()),
-                );
-                if (validationErrors[`correctAnswer_${question.id}`]) {
-                  setValidationErrors((prev) => ({
-                    ...prev,
-                    [`correctAnswer_${question.id}`]: false,
-                  }));
-                }
-              }}
-              placeholder="Answer 1, Answer 2, Answer 3..."
-              className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm h-16 sm:h-20 resize-none ${
-                validationErrors[`correctAnswer_${question.id}`]
-                  ? "border-red-500"
-                  : ""
-              }`}
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: validationErrors[`correctAnswer_${question.id}`]
-                  ? "#ef4444"
-                  : currentColors.border,
-              }}
-            />
-          </div>
-        );
-
-      case "short-answer":
-        return (
-          <div className="space-y-2">
-            {validationErrors[`correctAnswer_${question.id}`] && (
-              <p className="text-red-500 text-xs sm:text-sm mb-2">
-                Please provide a sample answer
-              </p>
-            )}
-            <div
-              className="text-xs sm:text-sm"
-              style={{ color: currentColors.textSecondary }}
-            >
-              Sample correct answer (for grading reference):
-            </div>
-            <textarea
-              value={question.correctAnswer || ""}
-              onChange={(e) => {
-                updateQuestion(question.id, "correctAnswer", e.target.value);
-                if (validationErrors[`correctAnswer_${question.id}`]) {
-                  setValidationErrors((prev) => ({
-                    ...prev,
-                    [`correctAnswer_${question.id}`]: false,
-                  }));
-                }
-              }}
-              placeholder="Enter sample answer or key points..."
-              className={`w-full rounded-lg px-2.5 sm:px-3 py-2 outline-none border text-xs sm:text-sm h-16 sm:h-20 resize-none ${
-                validationErrors[`correctAnswer_${question.id}`]
-                  ? "border-red-500"
-                  : ""
-              }`}
-              style={{
-                backgroundColor: currentColors.background,
-                color: currentColors.text,
-                borderColor: validationErrors[`correctAnswer_${question.id}`]
-                  ? "#ef4444"
-                  : currentColors.border,
-              }}
-            />
-          </div>
-        );
 
       default:
         return null;
@@ -682,18 +589,6 @@ const QuizBuilder = ({
         (!question.correctAnswers ||
           question.correctAnswers.length === 0 ||
           !question.correctAnswers.some((answer) => answer?.trim()))
-      ) {
-        errors[`correctAnswer_${question.id}`] = true;
-      } else if (
-        question.type === "enumeration" &&
-        (!question.correctAnswer ||
-          question.correctAnswer.length === 0 ||
-          question.correctAnswer.every((ans) => !ans.trim()))
-      ) {
-        errors[`correctAnswer_${question.id}`] = true;
-      } else if (
-        question.type === "short-answer" &&
-        !question.correctAnswer?.trim()
       ) {
         errors[`correctAnswer_${question.id}`] = true;
       }
