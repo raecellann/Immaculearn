@@ -78,16 +78,20 @@ const ActivityDetailsPage = () => {
       try {
         setLoading(true);
         
-        // Get uploaded tasks from the useTasks hook
+        // Get uploaded tasks from the useTasks hook - same as ProfViewActivity
         const taskData = uploadedTasksQuery?.data || [];
         const uploadedTask = Array.isArray(taskData)
           ? taskData
           : taskData?.data || [];
         
-        // Find task by task_id
+        // Find task by task_id - same logic as ProfViewActivity
         let foundTask = uploadedTask.find(task => 
-          task.task_id === task_id || task.id === task_id
+          Number(task.task_id) === Number(task_id)
         );
+        
+        console.log("Found task:", foundTask);
+        console.log("All task fields:", Object.keys(foundTask || {}));
+        console.log("Score field:", foundTask?.score, foundTask?.task_score, foundTask?.total_score);
         
         // If not found in uploaded tasks, try localStorage for backwards compatibility
         if (!foundTask) {
@@ -113,15 +117,7 @@ const ActivityDetailsPage = () => {
           };
         }
         
-        // Normalize fields: builder saves `title`, `dueDate`, and `score`
-        // while ActivityDetailsPage expects `task_title`, `due_date`, and `score`
-        if (foundTask.title && !foundTask.task_title) {
-          foundTask.task_title = foundTask.title;
-        }
-        if (foundTask.dueDate && !foundTask.due_date) {
-          foundTask.due_date = foundTask.dueDate;
-        }
-        
+        console.log("Final task data:", foundTask);
         setTask(foundTask);
         setLoading(false);
       } catch (err) {
@@ -314,18 +310,13 @@ const ActivityDetailsPage = () => {
                   <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
                     Category: <span style={{ opacity: 1 }}>{getCategoryDisplay(task.task_category)}</span>
                   </p>
-                  <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
-                    Total Score: <span style={{ opacity: 1 }}>{task.score != null ? `${task.score} points` : "Not set"}</span>
-                  </p>
-                  {task.instruction && (
-                    <div className="text-xs sm:text-sm flex flex-col gap-1 sm:gap-2" style={{ opacity: 0.7 }}>
-                      <span>Instructions:</span>
-                      <div 
-                        style={{ opacity: 1 }} 
-                        className="break-words text-sm sm:text-base leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: task.instruction }}
-                      />
-                    </div>
+                  {(task.instruction || task.task_instruction) && (
+                    <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
+                      Instructions:{" "}
+                      <span style={{ opacity: 1 }} className="break-words">
+                        {task.instruction || task.task_instruction}
+                      </span>
+                    </p>
                   )}
                 </div>
               </div>
