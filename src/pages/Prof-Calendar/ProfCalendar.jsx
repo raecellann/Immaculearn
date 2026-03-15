@@ -135,9 +135,6 @@ const ProfCalendarPage = () => {
         allSpaces.find((s) => s.space_id === task.space_id)?.space_name ||
         "Unknown Space",
       type: "Assignment", // Default type since Task interface doesn't have this field
-      studentsCount:
-        allSpaces.find((s) => s.space_id === task.space_id)?.members?.length -
-          1 || 0,
       yearLevel:
         allSpaces.find((s) => s.space_id === task.space_id)?.space_yr_lvl ||
         "N/A",
@@ -284,12 +281,12 @@ const ProfCalendarPage = () => {
           }}
           onMouseEnter={(e) => {
             if (!isToday && !isSelected) {
-              e.target.style.backgroundColor = currentColors.hover;
+              e.currentTarget.style.backgroundColor = "rgba(59,130,246,0.12)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isToday && !isSelected) {
-              e.target.style.backgroundColor = "transparent";
+              e.currentTarget.style.backgroundColor = "transparent";
             }
           }}
         >
@@ -303,7 +300,7 @@ const ProfCalendarPage = () => {
             {dayActivities.slice(0, 2).map((activity, index) => (
               <div
                 key={index}
-                className={`text-xs px-1 py-0.5 rounded truncate ${getPriorityColor(activity.priority)}`}
+                className="text-xs px-1 py-0.5 rounded truncate bg-blue-100 text-blue-800"
               >
                 {activity.title}
               </div>
@@ -668,11 +665,6 @@ const ProfCalendarPage = () => {
                                     </div>
                                     <div className="flex items-center gap-2 mt-2">
                                       <span
-                                        className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(activity.priority)}`}
-                                      >
-                                        {activity.priority}
-                                      </span>
-                                      <span
                                         className="text-xs"
                                         style={{
                                           color: currentColors.textSecondary,
@@ -692,8 +684,7 @@ const ProfCalendarPage = () => {
                                           color: currentColors.textSecondary,
                                         }}
                                       >
-                                        {activity.subject} •{" "}
-                                        {activity.yearLevel}
+                                        {activity.subject}
                                       </p>
                                       <span
                                         className="text-xs"
@@ -761,11 +752,6 @@ const ProfCalendarPage = () => {
                                 </div>
                                 <div className="flex items-center gap-2 mt-2">
                                   <span
-                                    className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(activity.priority)}`}
-                                  >
-                                    {activity.priority}
-                                  </span>
-                                  <span
                                     className="text-xs"
                                     style={{
                                       color: currentColors.textSecondary,
@@ -785,8 +771,19 @@ const ProfCalendarPage = () => {
                                       color: currentColors.textSecondary,
                                     }}
                                   >
-                                    {activity.subject} • {activity.yearLevel}
+                                    {activity.subject}
                                   </p>
+                                  <span
+                                    className="text-xs"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    Due:{" "}
+                                    {new Date(
+                                      activity.dueDate,
+                                    ).toLocaleDateString()}
+                                  </span>
                                 </div>
                               </div>
                             </div>
