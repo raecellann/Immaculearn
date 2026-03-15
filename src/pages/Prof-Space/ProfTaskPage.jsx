@@ -1186,22 +1186,22 @@ const ProfTaskPage = () => {
               >
                 {/* Mobile and Tablet Layout */}
                 <div className="sm:hidden">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-2 flex-1">
+                  <div className="flex justify-between items-start gap-3 mb-3">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       {task.isLocal && (
-                        <span className="text-xs bg-green-500 text-white px-2 py-1 rounded">
+                        <span className="text-xs bg-green-500 text-white px-2 py-1 rounded shrink-0">
                           Local
                         </span>
                       )}
                       <span
-                        className="text-sm font-semibold"
+                        className="text-sm font-semibold break-words"
                         style={{ color: currentColors.text }}
                       >
                         {task.task_title}
                       </span>
                     </div>
                     <span
-                      className={`text-xs font-medium ${
+                      className={`text-xs font-medium shrink-0 ${
                         statusStyles[
                           task.task_category === "quiz"
                             ? getQuizStatusForProfessor(task)
@@ -1224,7 +1224,16 @@ const ProfTaskPage = () => {
                   >
                     Deadline:{" "}
                     <span style={{ color: currentColors.text }}>
-                      {task.due_date}
+                      {task.due_date
+                        ? new Date(task.due_date).toLocaleString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })
+                        : "No deadline"}
                     </span>
                   </p>
                   {!task.isLocal && openIndex === originalIndex && (

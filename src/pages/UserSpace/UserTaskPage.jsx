@@ -255,8 +255,6 @@ const UserTaskPage = () => {
   // Handle pending view score when studentResponseData becomes available
   useEffect(() => {
     if (pendingViewScoreTask && studentResponseData?.success) {
-      console.log("Student response data is now available, showing score");
-
       const taskWithScoreData = {
         ...pendingViewScoreTask,
         task_title:
@@ -270,8 +268,6 @@ const UserTaskPage = () => {
         score: studentResponseData?.data?.score || 0,
         total_score: studentResponseData?.data?.total_items_score || 0,
       };
-
-      console.log("Task with score data:", taskWithScoreData);
 
       // Open ViewScore modal
       setViewScoreTask(taskWithScoreData);
@@ -652,17 +648,11 @@ const UserTaskPage = () => {
   };
 
   const handleViewScore = (task) => {
-    console.log("Original task:", task);
-
     const currentTaskId = Number(task?.task_id);
     setTaskId(currentTaskId);
 
-    console.log("taskId:", currentTaskId);
-    console.log("studentResponseData:", studentResponseData);
-
     // Check if studentResponseData is successful
     if (!studentResponseData?.success) {
-      console.log("Waiting for student response data...");
       setPendingViewScoreTask(task);
       return;
     }
@@ -679,8 +669,6 @@ const UserTaskPage = () => {
       score: studentResponseData?.data?.score || 0,
       total_score: studentResponseData?.data?.total_items_score || 0,
     };
-
-    console.log("Task with score data:", taskWithScoreData);
 
     // Open ViewScore modal
     setViewScoreTask(taskWithScoreData);
@@ -1013,16 +1001,8 @@ const UserTaskPage = () => {
   // Task status styles - colored text only
   const statusStyles = {
     Done: "text-green-600",
-    done: "text-green-600",
-    completed: "text-green-600",
-    Completed: "text-green-600",
     "In Progress": "text-blue-600",
-    "in-progress": "text-blue-600",
-    in_progress: "text-blue-600",
     Missing: "text-red-600",
-    missing: "text-red-600",
-    Overdue: "text-orange-600",
-    overdue: "text-orange-600",
   };
 
   // Function to determine quiz status for students
@@ -1030,38 +1010,36 @@ const UserTaskPage = () => {
     if (task.task_category !== "quiz") return task.task_status;
 
     const now = new Date();
-    const dueDate = task.task_due ? new Date(task.task_due) : null;
+    const dueDate = task.due_date ? new Date(task.due_date) : null;
 
     // If student has answered the quiz
     if (task.has_answered) {
       return "Done";
     }
 
-    // If quiz has due date and it's passed
+    // If due date has passed and student hasn't taken the quiz
     if (dueDate && now > dueDate) {
       return "Missing";
     }
 
-    // If student hasn't taken the quiz yet and due date not passed
     return "In Progress";
   };
 
   // Function to determine individual activity status for students
   const getIndividualActivityStatusForStudent = (task) => {
     const now = new Date();
-    const dueDate = task.task_due ? new Date(task.task_due) : null;
+    const dueDate = task.due_date ? new Date(task.due_date) : null;
 
     // If student has completed the activity
     if (task.has_answered) {
       return "Done";
     }
 
-    // If activity has due date and it's passed
+    // If due date has passed and student hasn't submitted
     if (dueDate && now > dueDate) {
       return "Missing";
     }
 
-    // If activity is posted and due date not passed, keep as In Progress
     return "In Progress";
   };
 
@@ -1071,11 +1049,45 @@ const UserTaskPage = () => {
 
     if (categoryTasks.length === 0) return null;
 
-    // Limit all categories to 3 tasks and add See More button if needed
+    // Sort: soonest deadline first, completed tasks pushed to the bottom
+    const sortedTasks = [...categoryTasks].sort((a, b) => {
+      const getStatus = (task) =>
+        task.task_category === "quiz"
+          ? getQuizStatusForStudent(task)
+          : task.task_category === "individual-activity"
+            ? getIndividualActivityStatusForStudent(task)
+            : task.task_status || "In Progress";
+
+      const isDone = (status) => status === "Done";
+
+      const aDone = isDone(getStatus(a));
+      const bDone = isDone(getStatus(b));
+
+      if (aDone && !bDone) return 1;
+      if (!aDone && bDone) return -1;
+
+      const aDate = a.due_date ? new Date(a.due_date).getTime() : Infinity;
+      const bDate = b.due_date ? new Date(b.due_date).getTime() : Infinity;
+      return aDate - bDate;
+    });
+
+    // Separate incomplete vs completed — only show incomplete in the top 3
+    const getTaskStatus = (task) =>
+      task.task_category === "quiz"
+        ? getQuizStatusForStudent(task)
+        : task.task_category === "individual-activity"
+          ? getIndividualActivityStatusForStudent(task)
+          : task.task_status || "In Progress";
+
+    // Only show "In Progress" tasks in the top 3 — Missing/Done are hidden from recent view
+    // but still accessible via "See more tasks"
+    const activeTasks = sortedTasks.filter((task) => getTaskStatus(task) === "In Progress");
+
     const isQuizCategory = category === "quiz";
     const isIndividualActivityCategory = category === "individual-activity";
-    const displayedTasks = categoryTasks.slice(0, 3);
-    const hasMoreTasks = categoryTasks.length > 3;
+    const displayedTasks = activeTasks.slice(0, 3);
+    // Show "See more" if there are more total tasks beyond what is displayed
+    const hasMoreTasks = categoryTasks.length > displayedTasks.length;
 
     return (
       <div className="mb-8">
@@ -1161,7 +1173,14 @@ const UserTaskPage = () => {
                   >
                     Deadline:{" "}
                     <span style={{ color: currentColors.text }}>
-                      {task.due_date}
+                      {new Date(task.due_date).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                     </span>
                   </p>
                   {!task.isLocal && openIndex === originalIndex && (
@@ -1237,36 +1256,88 @@ const UserTaskPage = () => {
                         Take Activity
                       </button>
                     )}
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePreviewTask(task);
-                      }}
-                      className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        task.isLocal && (task.task_category === "quiz" || task.task_category === "individual-activity")
-                          ? "flex-1"
-                          : "block w-full"
-                      }`}
-                      style={{
-                        backgroundColor: task.isLocal
-                          ? "#2563eb"
-                          : currentColors.accent,
-                        color: "white",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = task.isLocal
-                          ? "#1d4ed8"
-                          : "#1d4ed8";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = task.isLocal
-                          ? "#2563eb"
-                          : currentColors.accent;
-                      }}
-                    >
-                      {task.isLocal ? "Preview" : "View Details"}
-                    </a>
+                    {!task.isLocal && task.task_category === "quiz" && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setTaskId(task?.id);
+                          task?.has_answered
+                            ? handleViewScore(task)
+                            : handleTakeQuiz(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: task.has_answered
+                            ? "#6b7280"
+                            : "#10B981",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#4b5563"
+                            : "#059669";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#6b7280"
+                            : "#10B981";
+                        }}
+                      >
+                        {task.has_answered ? "View Score" : "Take Quiz"}
+                      </button>
+                    )}
+                    {!task.isLocal && task.task_category === "individual-activity" && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setTaskId(task?.id);
+                          task?.has_answered
+                            ? handleViewScore(task)
+                            : handleTakeActivity(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: task.has_answered
+                            ? "#6b7280"
+                            : "#10B981",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#4b5563"
+                            : "#059669";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#6b7280"
+                            : "#10B981";
+                        }}
+                      >
+                        {task.has_answered ? "View Score" : "Take Activity"}
+                      </button>
+                    )}
+                    {task.isLocal && (
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePreviewTask(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: "#2563eb",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#1d4ed8";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "#2563eb";
+                        }}
+                      >
+                        Preview
+                      </a>
+                    )}
                     {!task.isLocal && (
                       <a
                         href="#"
@@ -1274,16 +1345,16 @@ const UserTaskPage = () => {
                           e.preventDefault();
                           handleSeeActivity(task);
                         }}
-                        className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full mt-2"
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                         style={{
-                          backgroundColor: "#10B981",
+                          backgroundColor: currentColors.accent,
                           color: "white",
                         }}
                         onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = "#059669";
+                          e.target.style.backgroundColor = "#1d4ed8";
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = "#10B981";
+                          e.target.style.backgroundColor = currentColors.accent;
                         }}
                       >
                         See Activity
@@ -1367,11 +1438,7 @@ const UserTaskPage = () => {
                                 padding: "0.3em 0.8em",
                                 fontSize: "0.75rem",
                                 borderRadius: "6px",
-                                flex: "none",
-                                width: "auto",
-                                minWidth: "80px",
-                                margin: "0 auto",
-                                display: "block",
+                                flex: 1,
                               }}
                             >
                               {task.has_answered ? "View Score" : "Take Quiz"}
@@ -1425,11 +1492,7 @@ const UserTaskPage = () => {
                                 padding: "0.3em 0.8em",
                                 fontSize: "0.75rem",
                                 borderRadius: "6px",
-                                flex: "none",
-                                width: "auto",
-                                minWidth: "80px",
-                                margin: "0 auto",
-                                display: "block",
+                                flex: 1,
                               }}
                             >
                               {task.has_answered ? "View Score" : "Take Activity"}
@@ -1466,15 +1529,13 @@ const UserTaskPage = () => {
                             handleSeeActivity(task);
                           }}
                           style={{
-                            backgroundColor: "#10B981",
-                            borderColor: "#10B981",
+                            backgroundColor: currentColors.accent,
+                            borderColor: currentColors.accent,
                             padding: "0.3em 0.8em",
                             fontSize: "0.75rem",
                             borderRadius: "6px",
-                            flex: "none",
-                            width: "auto",
-                            minWidth: "80px",
-                            marginLeft: "0.5rem",
+                            flex: isOwnerSpace ? "none" : 1,
+                            width: isOwnerSpace ? "auto" : undefined,
                           }}
                         >
                           See Activity
