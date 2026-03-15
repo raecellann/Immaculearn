@@ -1264,7 +1264,7 @@ const UserPage = () => {
     <div
       className="flex min-h-screen font-sans"
       style={{
-        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+        backgroundColor: isDarkMode ? "#121821" : currentColors.background,
         color: currentColors.text,
       }}
     >

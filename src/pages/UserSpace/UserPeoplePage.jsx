@@ -304,7 +304,7 @@ const UserPeoplePage = () => {
       <div
         className="flex items-center justify-center min-h-screen"
         style={{
-          backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+          backgroundColor: isDarkMode ? "#121821" : currentColors.background,
           color: currentColors.text,
         }}
       >
@@ -341,7 +341,7 @@ const UserPeoplePage = () => {
     <div
       className="flex min-h-screen font-sans"
       style={{
-        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+        backgroundColor: isDarkMode ? "#121821" : currentColors.background,
         color: currentColors.text,
       }}
     >
