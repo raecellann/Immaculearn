@@ -1013,8 +1013,16 @@ const UserTaskPage = () => {
   // Task status styles - colored text only
   const statusStyles = {
     Done: "text-green-600",
+    done: "text-green-600",
+    completed: "text-green-600",
+    Completed: "text-green-600",
     "In Progress": "text-blue-600",
+    "in-progress": "text-blue-600",
+    in_progress: "text-blue-600",
     Missing: "text-red-600",
+    missing: "text-red-600",
+    Overdue: "text-orange-600",
+    overdue: "text-orange-600",
   };
 
   // Function to determine quiz status for students
@@ -1038,20 +1046,36 @@ const UserTaskPage = () => {
     return "In Progress";
   };
 
+  // Function to determine individual activity status for students
+  const getIndividualActivityStatusForStudent = (task) => {
+    const now = new Date();
+    const dueDate = task.task_due ? new Date(task.task_due) : null;
+
+    // If student has completed the activity
+    if (task.has_answered) {
+      return "Done";
+    }
+
+    // If activity has due date and it's passed
+    if (dueDate && now > dueDate) {
+      return "Missing";
+    }
+
+    // If activity is posted and due date not passed, keep as In Progress
+    return "In Progress";
+  };
+
   // TaskSection component for reusable task sections
   const TaskSection = ({ category, emoji, title, tasks }) => {
     const categoryTasks = filterTasksByCategory(tasks, category);
 
     if (categoryTasks.length === 0) return null;
 
-    // For quiz and individual-activity categories, limit to 3 tasks and add See More button
+    // Limit all categories to 3 tasks and add See More button if needed
     const isQuizCategory = category === "quiz";
     const isIndividualActivityCategory = category === "individual-activity";
-    const shouldLimit = isQuizCategory || isIndividualActivityCategory;
-    const displayedTasks = shouldLimit
-      ? categoryTasks.slice(0, 3)
-      : categoryTasks;
-    const hasMoreTasks = shouldLimit && categoryTasks.length > 3;
+    const displayedTasks = categoryTasks.slice(0, 3);
+    const hasMoreTasks = categoryTasks.length > 3;
 
     return (
       <div className="mb-8">
@@ -1115,11 +1139,20 @@ const UserTaskPage = () => {
                     </div>
                     <span
                       className={`text-xs font-medium ${
-                        statusStyles[getQuizStatusForStudent(task)] ||
-                        "text-gray-500"
+                        statusStyles[
+                          task.task_category === "quiz"
+                            ? getQuizStatusForStudent(task)
+                            : task.task_category === "individual-activity"
+                              ? getIndividualActivityStatusForStudent(task)
+                              : task.task_status || "In Progress"
+                        ] || "text-gray-500"
                       }`}
                     >
-                      {getQuizStatusForStudent(task)}
+                      {task.task_category === "quiz"
+                        ? getQuizStatusForStudent(task)
+                        : task.task_category === "individual-activity"
+                          ? getIndividualActivityStatusForStudent(task)
+                          : task.task_status || "In Progress"}
                     </span>
                   </div>
                   <p
@@ -1234,6 +1267,28 @@ const UserTaskPage = () => {
                     >
                       {task.isLocal ? "Preview" : "View Details"}
                     </a>
+                    {!task.isLocal && (
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSeeActivity(task);
+                        }}
+                        className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full mt-2"
+                        style={{
+                          backgroundColor: "#10B981",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#059669";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "#10B981";
+                        }}
+                      >
+                        See Activity
+                      </a>
+                    )}
                   </div>
                 </div>
 
@@ -1248,11 +1303,20 @@ const UserTaskPage = () => {
                       )}
                       <span
                         className={`text-sm font-medium ${
-                          statusStyles[getQuizStatusForStudent(task)] ||
-                          "text-gray-500"
+                          statusStyles[
+                            task.task_category === "quiz"
+                              ? getQuizStatusForStudent(task)
+                              : task.task_category === "individual-activity"
+                                ? getIndividualActivityStatusForStudent(task)
+                                : task.task_status || "In Progress"
+                          ] || "text-gray-500"
                         }`}
                       >
-                        {getQuizStatusForStudent(task)}
+                        {task.task_category === "quiz"
+                          ? getQuizStatusForStudent(task)
+                          : task.task_category === "individual-activity"
+                            ? getIndividualActivityStatusForStudent(task)
+                            : task.task_status || "In Progress"}
                       </span>
                     </div>
                   </div>
@@ -1278,7 +1342,7 @@ const UserTaskPage = () => {
                     })}
                   </div>
                   <div className="col-span-1">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 justify-center">
                       {task.task_category === "quiz" && (
                         <>
                           {!isOwnerSpace ? (
@@ -1395,6 +1459,27 @@ const UserTaskPage = () => {
                           )}
                         </>
                       )}
+                      {!task.isLocal && (
+                        <ButtonComponent
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleSeeActivity(task);
+                          }}
+                          style={{
+                            backgroundColor: "#10B981",
+                            borderColor: "#10B981",
+                            padding: "0.3em 0.8em",
+                            fontSize: "0.75rem",
+                            borderRadius: "6px",
+                            flex: "none",
+                            width: "auto",
+                            minWidth: "80px",
+                            marginLeft: "0.5rem",
+                          }}
+                        >
+                          See Activity
+                        </ButtonComponent>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1403,16 +1488,16 @@ const UserTaskPage = () => {
           })}
         </div>
 
-        {/* See More Button for Quiz and Individual Activity Categories */}
-        {shouldLimit && hasMoreTasks && (
+        {/* See More Button for all categories when > 3 tasks */}
+        {hasMoreTasks && (
           <div className="mt-4 text-right">
             <ButtonComponent
               onClick={() => {
-                // Navigate to ViewAllTaskPage with current space context
+                // Navigate to ViewAllTaskPage with space parameters
                 const spaceId = space_uuid;
                 const spaceName = currentSpace?.space_name;
                 if (spaceId && spaceName) {
-                  navigate(`/task/${spaceId}/${encodeURIComponent(spaceName)}`);
+                  navigate(`/tasks/all/${spaceId}/${encodeURIComponent(spaceName)}`);
                 } else {
                   console.warn("No space ID or name found for navigation");
                 }
@@ -1425,7 +1510,7 @@ const UserTaskPage = () => {
                 borderRadius: "6px",
               }}
             >
-              See More {isQuizCategory ? "Quizzes" : "Individual Activities"}
+              See more tasks
             </ButtonComponent>
           </div>
         )}
@@ -1437,6 +1522,15 @@ const UserTaskPage = () => {
   const handlePreviewTask = (task) => {
     setPreviewTask(task);
     setShowPreview(true);
+  };
+
+  // Handle see activity - Navigate to activity details page
+  const handleSeeActivity = (task) => {
+    const taskTitle = task.task_title || task.title || "Untitled Task";
+    const encodedTaskTitle = encodeURIComponent(taskTitle);
+    navigate(
+      `/user/activity/${space_uuid}/${encodeURIComponent(space_name)}/${task.task_id || task.id}/${encodedTaskTitle}`,
+    );
   };
 
   const handleClosePreview = () => {
@@ -1933,22 +2027,21 @@ const UserTaskPage = () => {
           {!isCreatingTask && !showTaskTypeSelection ? (
             /* ================= TASKS LIST VIEW WITH SECTIONS ================= */
             <div className="max-w-5xl mx-auto">
-              {isOwnerSpace && (
-                <button
-                  className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
-                  onClick={() => {
-                    setSelectedTaskType("group-activity");
-                    setTaskCategory("group-activity");
-                    setIsCreatingTask(true);
-                  }}
-                >
-                  <FiFileText size={16} />
-                  Create Task
-                </button>
-              )}
-
-              <div className="mb-6">
+              <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>
+                {isOwnerSpace && (
+                  <button
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                    onClick={() => {
+                      setSelectedTaskType("group-activity");
+                      setTaskCategory("group-activity");
+                      setIsCreatingTask(true);
+                    }}
+                  >
+                    <FiFileText size={16} />
+                    Create Task
+                  </button>
+                )}
               </div>
 
               {/* TASK SECTIONS */}

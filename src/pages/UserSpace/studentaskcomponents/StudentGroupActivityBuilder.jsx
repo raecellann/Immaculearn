@@ -11,6 +11,7 @@ const StudentGroupActivityBuilder = ({
   const [activityTitle, setActivityTitle] = useState('');
   const [instruction, setInstruction] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [score, setScore] = useState('');
   
   const instructionRef = useRef(null);
 
@@ -150,6 +151,7 @@ const StudentGroupActivityBuilder = ({
       title: activityTitle,
       instruction,
       dueDate,
+      score,
       groupsConfigured,
       groupsData: groupsConfigured && groups.length > 0 ? groups.filter(g => g.leader?.trim() || g.members?.some(m => m?.trim())).map((group, index) => ({
         group_name: `Group_${index + 1}`,
@@ -278,6 +280,24 @@ const StudentGroupActivityBuilder = ({
                 borderColor: currentColors.border
               }}
               min={new Date().toISOString().split('T')[0]}
+            />
+
+            {/* TOTAL SCORE */}
+            <label className="font-semibold" style={{ color: currentColors.text }}>
+              Total Score: <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              value={score}
+              onChange={(e) => setScore(e.target.value)}
+              className="rounded-lg px-4 py-2 outline-none border transition-colors"
+              style={{
+                backgroundColor: currentColors.background,
+                color: currentColors.text,
+                borderColor: currentColors.border
+              }}
+              placeholder="e.g. 100"
+              min="1"
             />
 
             {/* GROUP MANAGEMENT */}

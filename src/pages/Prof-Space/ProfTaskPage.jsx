@@ -1784,9 +1784,36 @@ const ProfTaskPage = () => {
   // Combine API tasks with localStorage tasks
   const allTasks = [...(uploadedTask || [])];
 
+  // Sort tasks: soonest upcoming due date first, then overdue (most recently expired first), then no date
+  const sortTasksByDueDate = (tasks) => {
+    const now = new Date();
+    return [...tasks].sort((a, b) => {
+      const dateA = a.due_date ? new Date(a.due_date) : a.task_due ? new Date(a.task_due) : null;
+      const dateB = b.due_date ? new Date(b.due_date) : b.task_due ? new Date(b.task_due) : null;
+
+      const aIsUpcoming = dateA && dateA >= now;
+      const bIsUpcoming = dateB && dateB >= now;
+      const aIsOverdue = dateA && dateA < now;
+      const bIsOverdue = dateB && dateB < now;
+
+      // Both upcoming: soonest first
+      if (aIsUpcoming && bIsUpcoming) return dateA - dateB;
+      // Both overdue: most recently expired first
+      if (aIsOverdue && bIsOverdue) return dateB - dateA;
+      // Upcoming always before overdue
+      if (aIsUpcoming && bIsOverdue) return -1;
+      if (aIsOverdue && bIsUpcoming) return 1;
+      // No date goes to the bottom
+      if (dateA && !dateB) return -1;
+      if (!dateA && dateB) return 1;
+      return 0;
+    });
+  };
+
   // Filter tasks by category
   const filterTasksByCategory = (tasks, category) => {
-    return tasks.filter((task) => task.task_category === category);
+    const filtered = tasks.filter((task) => task.task_category === category);
+    return sortTasksByDueDate(filtered);
   };
 
   // Get task counts by category
