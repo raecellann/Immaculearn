@@ -299,24 +299,7 @@ const LandingPage = () => {
           </p>
 
           <div className="mt-4 flex justify-start">
-            <Link to="login">
-              <div className="inline-flex items-center gap-2 px-3 py-2 border-2 border-white text-white font-bold text-[12px] sm:text-[12px] md:text-[14px] rounded-lg cursor-pointer hover:bg-white hover:text-black transition duration-300">
-                <span className="inline">Create account now</span>{" "}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-3 w-3 sm:h-4 w-4 md:h-5 sm:w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 12h14M12 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </Link>
+            
           </div>
         </div>
       </div>
@@ -671,40 +654,9 @@ const LandingPage = () => {
           </div>
         </div>
 
-        <div className="absolute right-10 bottom-4 hidden lg:block text-xs text-gray-600">
-          Scroll down for more information ↻
-        </div>
       </section>
 
-      {/* ====================== SIGN-UP SECTION (above footer) ====================== */}
-      <section className="w-full bg-[#FDFBEE] py-8 sm:py-12 lg:py-16 px-4 sm:px-10 lg:px-20 flex justify-center">
-        <div className="p-6 sm:p-8 lg:p-10 max-w-2xl lg:max-w-3xl w-full text-center">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-black">
-            GET STARTED WITH <span className="text-[#1D4ED8]">IMMACULEARN</span>{" "}
-            TODAY
-          </h2>
-
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-4 sm:mt-6">
-            <InputField
-              placeholder="Email"
-              className="w-full sm:w-80 md:w-96 lg:w-[450px] h-10 sm:h-12 bg-white border-2 border-black rounded-lg px-3 sm:px-4 text-sm sm:text-base"
-            />
-
-            <Button
-              className="px-2 sm:px-3 lg:px-4 py-1 sm:py-2 font-semibold shadow text-xs sm:text-sm"
-              style={{
-                background: "#4D9BEF",
-                color: "white",
-                borderRadius: "8px",
-                minWidth: "120px",
-                fontSize: "0.85rem",
-              }}
-            >
-              Create account for free!
-            </Button>
-          </div>
-        </div>
-      </section>
+      
 
       {/* ====================== FOOTER SECTION ====================== */}
       <div className="w-full mt-10 sm:mt-16 lg:mt-20 relative">

@@ -1048,7 +1048,7 @@ const ProfHomePage = () => {
                                   >
                                     Prof.{" "}
                                     {capitalizeWords(
-                                      space.professor?.name.split(" ")[0],
+                                      space.professor?.first_name,
                                     ) || "Unknown"}{" "}
                                     • {
                                       (() => {
