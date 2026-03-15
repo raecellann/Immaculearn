@@ -703,6 +703,20 @@ const ProfTaskPage = () => {
   const handleUpload = async (status_type, taskData) => {
     let payload;
 
+    // Block deploying/publishing if the due date has already passed
+    if (status_type === "uploaded") {
+      const taskDueDate = taskData?.due_date || taskData?.task_due;
+      if (taskDueDate) {
+        const due = new Date(taskDueDate);
+        if (due < new Date()) {
+          toast.error(
+            "This task cannot be deployed because the due date has already passed. Please update the due date to a future date.",
+          );
+          return;
+        }
+      }
+    }
+
     try {
       if (status_type === "uploaded") {
         await uploadTaskMutation.mutateAsync({
@@ -729,6 +743,18 @@ const ProfTaskPage = () => {
   };
 
   const handleUpdateTask = async (taskData) => {
+    // Block deploy/update if the due date has already passed
+    const taskDueDate = taskData?.due_date || taskData?.task_due;
+    if (taskDueDate) {
+      const due = new Date(taskDueDate);
+      if (due < new Date()) {
+        toast.error(
+          "This task cannot be deployed because the due date has already passed. Please update the due date to a future date.",
+        );
+        return;
+      }
+    }
+
     updateTaskByTaskIdMutation.mutate(
       { taskData },
       {
