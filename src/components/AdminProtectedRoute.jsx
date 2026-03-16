@@ -8,9 +8,7 @@ const AdminProtectedRoute = ({ children }) => {
   const location = useLocation();
 
   // Show loading during auth check
-  console.log("AdminProtectedRoute:", { isLoading, isAuthenticated });
   if (isLoading) {
-    console.log("AdminProtectedRoute: Showing loading");
     return (
       <div className="flex h-screen justify-center items-center">
         <MainLoading />
@@ -20,12 +18,10 @@ const AdminProtectedRoute = ({ children }) => {
 
   // Only redirect if user is not authenticated
   if (!isAuthenticated) {
-    console.log("AdminProtectedRoute: Redirecting to login");
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
   // If authenticated, render children
-  console.log("AdminProtectedRoute: Authenticated, rendering children");
   return children;
 };
 

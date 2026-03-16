@@ -129,8 +129,6 @@ const CreateDocumentPage = () => {
   useEffect(() => {
     if (!file_uuid || !user || typeof window === "undefined") return;
 
-    console.log("Initializing Yjs document for file:", file_uuid);
-
     const ydoc = new Y.Doc();
     const provider = new WebsocketProvider(
       "ws://localhost:3000/crdt",
@@ -159,7 +157,6 @@ const CreateDocumentPage = () => {
     // WebSocket status listener
     provider.on("status", (event) => {
       const connected = event.status === "connected";
-      console.log("WebSocket status:", event.status);
       setIsOnline(connected);
       if (connected) {
         setCollaborationEnabled(true);
@@ -170,7 +167,6 @@ const CreateDocumentPage = () => {
 
     // Sync event
     provider.on("sync", (isSynced) => {
-      console.log("Document synced:", isSynced);
       if (isSynced) {
         setCollaborationEnabled(true);
         updateUsers();
@@ -179,7 +175,6 @@ const CreateDocumentPage = () => {
 
     // Connection status
     provider.on("connection-close", () => {
-      console.log("Connection closed");
       setIsOnline(false);
     });
 
@@ -190,7 +185,6 @@ const CreateDocumentPage = () => {
 
     // Cleanup on unmount
     return () => {
-      console.log("Cleaning up Yjs document");
       awarenessRef.current?.off("change", updateUsers);
       provider.disconnect();
       ydoc.destroy();
@@ -243,9 +237,9 @@ const CreateDocumentPage = () => {
   }, []);
 
   // Handle format changes
-  const handleFormatChange = (format) => {
-    console.log("Format changed:", format);
-  };
+  // const handleFormatChange = (format) => {
+  //   console.log("Format changed:", format);
+  // };
 
   return (
     <div

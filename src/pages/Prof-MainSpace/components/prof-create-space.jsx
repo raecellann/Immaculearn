@@ -74,7 +74,6 @@ const ProfCreateSpace = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  
   const colorOptions = [
     "linear-gradient(45deg, #FFC107, #FF5722)",
     "linear-gradient(45deg, #3F51B5, #2196F3)",
@@ -98,18 +97,15 @@ const ProfCreateSpace = () => {
   // Word count handler
   const handleShortDescriptionChange = (e) => {
     const text = e.target.value;
-    console.log("Description input changed:", text);
     const words = text
       .trim()
       .split(/\s+/)
       .filter((word) => word.length > 0);
     const count = words.length;
-    console.log("Word count:", count);
 
     if (count <= 100) {
       setDescription(text);
       setWordCount(count);
-      console.log("Description state set to:", text);
     }
 
     // Clear description error when user starts typing
@@ -165,14 +161,11 @@ const ProfCreateSpace = () => {
 
     try {
       setIsLoading(true);
-      console.log("Current description state:", description);
-      console.log("Current wordCount:", wordCount);
       const spaceData = {
         space_name: spaceName,
         space_description: description || "",
         space_cover: coverImage,
       };
-      console.log("Space data being sent:", spaceData);
       const result = await createSpace(spaceData);
       if (result.success) {
         const space_uuid = result.space_uuid;

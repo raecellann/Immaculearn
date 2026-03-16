@@ -26,17 +26,19 @@ const ProfNotificationPage = () => {
   const [ShowPendingSpaceInvitation, setShowPendingSpaceInvitation] =
     useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [selectedFilter, setSelectedFilter] = useState(location.state?.filter || "all");
+  const [selectedFilter, setSelectedFilter] = useState(
+    location.state?.filter || "all",
+  );
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
-  
+
   // Use global notification count hook
-  const { 
-    unreadNotificationsCount, 
-    schoolAnnouncements, 
-    viewedAnnouncements, 
+  const {
+    unreadNotificationsCount,
+    schoolAnnouncements,
+    viewedAnnouncements,
     markAnnouncementAsViewed,
-    isLoading 
-  } = useNotificationCount('PROFESSOR');
+    isLoading,
+  } = useNotificationCount("PROFESSOR");
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -86,13 +88,13 @@ const ProfNotificationPage = () => {
       queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     });
 
-    socket.on("connect", () => {
-      console.log("Connected to WebSocket for professor notifications");
-    });
+    // socket.on("connect", () => {
+    //   console.log("Connected to WebSocket for professor notifications");
+    // });
 
-    socket.on("disconnect", () => {
-      console.log("Disconnected from WebSocket");
-    });
+    // socket.on("disconnect", () => {
+    //   console.log("Disconnected from WebSocket");
+    // });
 
     return () => {
       socket.disconnect();
@@ -240,9 +242,7 @@ const ProfNotificationPage = () => {
     >
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
-        <Sidebar 
-          onLogoutClick={() => setShowLogout(true)} 
-        />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MOBILE OVERLAY */}
@@ -262,9 +262,7 @@ const ProfNotificationPage = () => {
           color: currentColors.text,
         }}
       >
-        <Sidebar 
-          onLogoutClick={() => setShowLogout(true)} 
-        />
+        <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
 
       {/* MAIN */}
@@ -547,11 +545,14 @@ const ProfNotificationPage = () => {
                     And {pendingSpaceInvitation?.length - 2} more...
                   </p>
                 )}
-                {(!pendingSpaceInvitation || pendingSpaceInvitation.length === 0) && (
+                {(!pendingSpaceInvitation ||
+                  pendingSpaceInvitation.length === 0) && (
                   <p
                     className="text-sm text-center py-4"
                     style={{
-                      color: isDarkMode ? currentColors.textSecondary : "#666666",
+                      color: isDarkMode
+                        ? currentColors.textSecondary
+                        : "#666666",
                     }}
                   >
                     No space invitations available
@@ -598,11 +599,16 @@ const ProfNotificationPage = () => {
 
                 {/* Display announcements */}
                 {isLoading ? (
-                  <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                  <div
+                    className="mt-3 p-8 rounded-lg border text-center"
+                    style={{
+                      borderColor: isDarkMode ? currentColors.border : "black",
+                    }}
+                  >
                     <div className="flex flex-col items-center gap-3">
                       <FiBell size={40} className="text-gray-400" />
                       <div>
-                        <p 
+                        <p
                           className="text-sm font-medium mb-1"
                           style={{ color: isDarkMode ? "white" : "black" }}
                         >
@@ -612,19 +618,28 @@ const ProfNotificationPage = () => {
                     </div>
                   </div>
                 ) : schoolAnnouncements.length === 0 ? (
-                  <div className="mt-3 p-8 rounded-lg border text-center" style={{ borderColor: isDarkMode ? currentColors.border : "black" }}>
+                  <div
+                    className="mt-3 p-8 rounded-lg border text-center"
+                    style={{
+                      borderColor: isDarkMode ? currentColors.border : "black",
+                    }}
+                  >
                     <div className="flex flex-col items-center gap-3">
                       <FiBell size={40} className="text-gray-400" />
                       <div>
-                        <p 
+                        <p
                           className="text-sm font-medium mb-1"
                           style={{ color: isDarkMode ? "white" : "black" }}
                         >
                           No announcements yet
                         </p>
-                        <p 
+                        <p
                           className="text-xs"
-                          style={{ color: isDarkMode ? currentColors.textSecondary : "#666666" }}
+                          style={{
+                            color: isDarkMode
+                              ? currentColors.textSecondary
+                              : "#666666",
+                          }}
                         >
                           Admin hasn't posted any announcements at the moment
                         </p>
@@ -633,91 +648,114 @@ const ProfNotificationPage = () => {
                   </div>
                 ) : (
                   <>
-                    {schoolAnnouncements.slice(0, selectedFilter === "announcements" ? schoolAnnouncements.length : 3).map((announcement) => (
-                      <div
-                        key={announcement.announce_id}
-                        className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-                        style={{
-                          backgroundColor: isDarkMode
-                            ? "rgba(31, 41, 55, 0.8)"
-                            : "rgba(255, 255, 255, 0.9)",
-                          backdropFilter: isDarkMode ? "blur(10px)" : "none",
-                          borderColor: isDarkMode
-                            ? "rgb(75, 85, 99)"
-                            : "rgb(229, 231, 235)",
-                          borderWidth: "1px",
-                        }}
-                        onClick={() => handleAnnouncementClick(announcement)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              {!viewedAnnouncements.has(announcement.announce_id) && (
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: isDarkMode ? "#3B82F6" : "#2563EB" }}></div>
-                              )}
+                    {schoolAnnouncements
+                      .slice(
+                        0,
+                        selectedFilter === "announcements"
+                          ? schoolAnnouncements.length
+                          : 3,
+                      )
+                      .map((announcement) => (
+                        <div
+                          key={announcement.announce_id}
+                          className="mt-3 p-4 rounded-lg border cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                          style={{
+                            backgroundColor: isDarkMode
+                              ? "rgba(31, 41, 55, 0.8)"
+                              : "rgba(255, 255, 255, 0.9)",
+                            backdropFilter: isDarkMode ? "blur(10px)" : "none",
+                            borderColor: isDarkMode
+                              ? "rgb(75, 85, 99)"
+                              : "rgb(229, 231, 235)",
+                            borderWidth: "1px",
+                          }}
+                          onClick={() => handleAnnouncementClick(announcement)}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                {!viewedAnnouncements.has(
+                                  announcement.announce_id,
+                                ) && (
+                                  <div
+                                    className="w-2 h-2 rounded-full"
+                                    style={{
+                                      backgroundColor: isDarkMode
+                                        ? "#3B82F6"
+                                        : "#2563EB",
+                                    }}
+                                  ></div>
+                                )}
+                                <p
+                                  className="text-sm font-semibold"
+                                  style={{
+                                    color: isDarkMode ? "white" : "#1F2937",
+                                  }}
+                                >
+                                  {announcement.title}
+                                </p>
+                              </div>
                               <p
-                                className="text-sm font-semibold"
-                                style={{ color: isDarkMode ? "white" : "#1F2937" }}
-                              >
-                                {announcement.title}
-                              </p>
-                            </div>
-                            <p
-                              className="text-sm leading-relaxed mb-3"
-                              style={{
-                                color: isDarkMode
-                                  ? "rgba(229, 231, 235, 0.9)"
-                                  : "#4B5563",
-                                lineHeight: "1.5",
-                              }}
-                            >
-                              {announcement.content}
-                            </p>
-                            <div className="flex items-center gap-2">
-                              <svg 
-                                className="w-4 h-4" 
-                                style={{ color: isDarkMode ? "#9CA3AF" : "#6B7280" }}
-                                fill="none" 
-                                stroke="currentColor" 
-                                viewBox="0 0 24 24"
-                              >
-                                <path 
-                                  strokeLinecap="round" 
-                                  strokeLinejoin="round" 
-                                  strokeWidth={2} 
-                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
-                                />
-                              </svg>
-                              <p
-                                className="text-xs font-medium"
+                                className="text-sm leading-relaxed mb-3"
                                 style={{
                                   color: isDarkMode
-                                    ? "#9CA3AF"
-                                    : "#6B7280",
+                                    ? "rgba(229, 231, 235, 0.9)"
+                                    : "#4B5563",
+                                  lineHeight: "1.5",
                                 }}
                               >
-                                {new Date(announcement.created_at).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric'
-                                })}
+                                {announcement.content}
                               </p>
+                              <div className="flex items-center gap-2">
+                                <svg
+                                  className="w-4 h-4"
+                                  style={{
+                                    color: isDarkMode ? "#9CA3AF" : "#6B7280",
+                                  }}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
+                                </svg>
+                                <p
+                                  className="text-xs font-medium"
+                                  style={{
+                                    color: isDarkMode ? "#9CA3AF" : "#6B7280",
+                                  }}
+                                >
+                                  {new Date(
+                                    announcement.created_at,
+                                  ).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  })}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                    {schoolAnnouncements.length > 3 && selectedFilter !== "announcements" && (
-                      <div className="mt-4 flex justify-end">
-                        <button
-                          onClick={() => setSelectedFilter("announcements")}
-                          className="px-4 py-2 text-sm hover:underline transition-colors"
-                          style={{ color: isDarkMode ? "#60A5FA" : "#007AFF" }}
-                        >
-                          View All Announcements
-                        </button>
-                      </div>
-                    )}
+                      ))}
+                    {schoolAnnouncements.length > 3 &&
+                      selectedFilter !== "announcements" && (
+                        <div className="mt-4 flex justify-end">
+                          <button
+                            onClick={() => setSelectedFilter("announcements")}
+                            className="px-4 py-2 text-sm hover:underline transition-colors"
+                            style={{
+                              color: isDarkMode ? "#60A5FA" : "#007AFF",
+                            }}
+                          >
+                            View All Announcements
+                          </button>
+                        </div>
+                      )}
                   </>
                 )}
               </div>
@@ -864,17 +902,28 @@ const ProfNotificationPage = () => {
                 : "rgba(255, 255, 255, 0.98)",
               backdropFilter: "blur(20px)",
               border: "1px solid",
-              borderColor: isDarkMode ? "rgb(75, 85, 99)" : "rgb(229, 231, 235)",
+              borderColor: isDarkMode
+                ? "rgb(75, 85, 99)"
+                : "rgb(229, 231, 235)",
             }}
           >
             {/* Header */}
             <div
               className="p-6 border-b flex justify-between items-start"
-              style={{ borderColor: isDarkMode ? "rgb(55, 65, 81)" : "rgb(229, 231, 235)" }}
+              style={{
+                borderColor: isDarkMode
+                  ? "rgb(55, 65, 81)"
+                  : "rgb(229, 231, 235)",
+              }}
             >
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: isDarkMode ? "#3B82F6" : "#2563EB" }}></div>
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{
+                      backgroundColor: isDarkMode ? "#3B82F6" : "#2563EB",
+                    }}
+                  ></div>
                   <h2
                     className="text-xl font-bold"
                     style={{ color: isDarkMode ? "white" : "#1F2937" }}
@@ -883,28 +932,30 @@ const ProfNotificationPage = () => {
                   </h2>
                 </div>
                 <div className="flex items-center gap-2">
-                  <svg 
-                    className="w-4 h-4" 
+                  <svg
+                    className="w-4 h-4"
                     style={{ color: isDarkMode ? "#9CA3AF" : "#6B7280" }}
-                    fill="none" 
-                    stroke="currentColor" 
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
                   <p
                     className="text-sm font-medium"
                     style={{ color: isDarkMode ? "#9CA3AF" : "#6B7280" }}
                   >
-                    {new Date(selectedAnnouncement.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
+                    {new Date(
+                      selectedAnnouncement.created_at,
+                    ).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
                     })}
                   </p>
                 </div>
@@ -927,52 +978,60 @@ const ProfNotificationPage = () => {
                     ? "rgba(17, 24, 39, 0.5)"
                     : "rgba(249, 250, 251, 0.8)",
                   border: "1px solid",
-                  borderColor: isDarkMode ? "rgb(55, 65, 81)" : "rgb(229, 231, 235)",
+                  borderColor: isDarkMode
+                    ? "rgb(55, 65, 81)"
+                    : "rgb(229, 231, 235)",
                   fontSize: "16px",
                   lineHeight: "1.7",
                 }}
               >
                 <p
                   className="text-base"
-                  style={{ color: isDarkMode ? "rgba(229, 231, 235, 0.95)" : "#374151" }}
+                  style={{
+                    color: isDarkMode ? "rgba(229, 231, 235, 0.95)" : "#374151",
+                  }}
                 >
                   {selectedAnnouncement.content}
                 </p>
 
                 {/* Display images if available */}
-                {selectedAnnouncement.images && selectedAnnouncement.images.length > 0 && (
-                        <div className="mb-6">
-                          <h3 className="font-semibold mb-4 flex items-center gap-2 text-gray-900">
-                            <ImageIcon className="w-5 h-5" />
-                            Images
-                          </h3>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {selectedAnnouncement.images.map((image, index) => (
-                              <div key={index} className="relative group">
-                                <div className="aspect-video w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                                  <img
-                                    src={image}
-                                    alt={`Announcement image ${index + 1}`}
-                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                    onClick={() => window.open(image, "_blank")}
-                                    style={{ cursor: "pointer" }}
-                                  />
-                                </div>
-                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300 rounded-lg pointer-events-none" />
-                              </div>
-                            ))}
+                {selectedAnnouncement.images &&
+                  selectedAnnouncement.images.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="font-semibold mb-4 flex items-center gap-2 text-gray-900">
+                        <ImageIcon className="w-5 h-5" />
+                        Images
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {selectedAnnouncement.images.map((image, index) => (
+                          <div key={index} className="relative group">
+                            <div className="aspect-video w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                              <img
+                                src={image}
+                                alt={`Announcement image ${index + 1}`}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                onClick={() => window.open(image, "_blank")}
+                                style={{ cursor: "pointer" }}
+                              />
+                            </div>
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300 rounded-lg pointer-events-none" />
                           </div>
-                        </div>
-                      )}
+                        ))}
+                      </div>
+                    </div>
+                  )}
               </div>
             </div>
 
             {/* Footer */}
             <div
               className="p-4 border-t"
-              style={{ borderColor: isDarkMode ? "rgb(55, 65, 81)" : "rgb(229, 231, 235)" }}
-            >
-            </div>
+              style={{
+                borderColor: isDarkMode
+                  ? "rgb(55, 65, 81)"
+                  : "rgb(229, 231, 235)",
+              }}
+            ></div>
           </div>
         </div>
       )}

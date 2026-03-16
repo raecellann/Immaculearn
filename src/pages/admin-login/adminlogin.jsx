@@ -18,9 +18,8 @@ const AdminLogin = () => {
 
   // Check if already authenticated and redirect to dashboard
   useEffect(() => {
-    if (isAuthenticated && admin?.role === 'Admin') {
-      console.log('Redirecting to admin/dashboard...');
-      navigate('/admin/dashboard');
+    if (isAuthenticated && admin?.role === "Admin") {
+      navigate("/admin/dashboard");
     }
   }, [isAuthenticated, admin, navigate]);
 
@@ -31,23 +30,23 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate email
     if (!email) {
       toast.error("Email is required");
       setEmailError(true);
       return;
     }
-    
+
     if (!validateEmail(email)) {
       toast.error("Please enter a valid email address");
       setEmailError(true);
       return;
     }
-    
+
     // Call login function from context
     const success = await login(email, password);
-    
+
     if (success) {
       toast.success("Login successful");
       // Navigation will be handled by the useEffect above
@@ -85,7 +84,10 @@ const AdminLogin = () => {
 
       <div className="text-center mb-8">
         <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mt-8">
-          Admin Login to <span className="font-bold" style={{ color: "#1D4ED8" }}>ImmacuLearn</span>
+          Admin Login to{" "}
+          <span className="font-bold" style={{ color: "#1D4ED8" }}>
+            ImmacuLearn
+          </span>
         </h2>
         <p className="text-gray-800 text-sm md:text-base mt-2 font-medium">
           Access the admin dashboard to manage the platform.
@@ -95,7 +97,9 @@ const AdminLogin = () => {
       <div className="bg-white shadow-lg rounded-lg p-8 md:p-10 w-full max-w-md relative z-10 border border-gray-200">
         <div className="flex items-center justify-center gap-3 mb-6">
           <div className="flex flex-col items-center">
-            <h3 className="text-2xl font-bold" style={{ color: "#1D4ED8" }}>ImmacuLearn Admin</h3>
+            <h3 className="text-2xl font-bold" style={{ color: "#1D4ED8" }}>
+              ImmacuLearn Admin
+            </h3>
             <p className="text-gray-600 text-sm">Log in to continue</p>
           </div>
           <img
@@ -123,11 +127,13 @@ const AdminLogin = () => {
                 borderColor: emailError ? "#ef4444" : "#000",
                 boxShadow: emailError
                   ? "2.5px 3px 0 #ef4444"
-                  : "2.5px 3px 0 #000"
+                  : "2.5px 3px 0 #000",
               }}
             />
             {emailError && (
-              <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>
+              <p className="text-red-500 text-sm mt-1">
+                Please enter a valid email address
+              </p>
             )}
           </div>
 
@@ -157,8 +163,6 @@ const AdminLogin = () => {
           </Button>
         </form>
 
-
-      
         <p className="text-center text-gray-600 text-sm mt-4">
           Contact your system administrator for access.
         </p>

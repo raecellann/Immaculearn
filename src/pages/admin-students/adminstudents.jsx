@@ -1,14 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../component/adminsidebar";
-import { Menu, CheckCircle, Upload, X, FileText, UserPlus, Download } from "lucide-react";
-import * as XLSX from 'xlsx';
+import {
+  Menu,
+  CheckCircle,
+  Upload,
+  X,
+  FileText,
+  UserPlus,
+  Download,
+} from "lucide-react";
+import * as XLSX from "xlsx";
 import { useNavigate } from "react-router";
 
 import { capitalizeWords } from "../../utils/capitalizeFirstLetter";
 import Logout from "../component/logout";
 import { adminDashboardService } from "../../adminServices/adminDashboard";
 import { toast } from "react-toastify";
-import { genderOptions, yearLevelOptions, departmentOptions } from "../component/enumOptions";
+import {
+  genderOptions,
+  yearLevelOptions,
+  departmentOptions,
+} from "../component/enumOptions";
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
@@ -33,25 +45,27 @@ const AdminStudents = () => {
   // Helper functions to get display names
   const getGenderName = (code) => {
     if (code === null || code === undefined) {
-      return '-';
+      return "-";
     }
-    const gender = genderOptions.find(option => option.code === code);
-    return gender ? gender.name : '-';
+    const gender = genderOptions.find((option) => option.code === code);
+    return gender ? gender.name : "-";
   };
 
   const getYearLevelName = (code) => {
     if (code === null || code === undefined) {
-      return '-';
+      return "-";
     }
     // Convert to string to ensure proper comparison
     const codeStr = String(code);
-    const yearLevel = yearLevelOptions.find(option => option.code === codeStr);
-    return yearLevel ? yearLevel.name : '-'; // Return '-' if not found
+    const yearLevel = yearLevelOptions.find(
+      (option) => option.code === codeStr,
+    );
+    return yearLevel ? yearLevel.name : "-"; // Return '-' if not found
   };
 
   // Manual student entry form state
   const [newStudent, setNewStudent] = useState({
-    email: ''
+    email: "",
   });
   const [emailError, setEmailError] = useState(false);
 
@@ -61,45 +75,46 @@ const AdminStudents = () => {
 
   /* NAVIGATION FUNCTIONS */
   const navigateToDashboard = () => {
-    navigate('/admin/dashboard');
+    navigate("/admin/dashboard");
   };
 
   const navigateToTeachers = () => {
-    navigate('/admin/teachers');
+    navigate("/admin/teachers");
   };
 
   useEffect(() => {
-  const fetchStudents = async () => {
-    const res = await adminDashboardService.getAllStudentEmails();
+    const fetchStudents = async () => {
+      const res = await adminDashboardService.getAllStudentEmails();
 
-    if (res.success && res.data?.students) {
-      setStudents(
-        res.data.students.map((student, index) => ({
-          id: student.student_id ?? `temp-${index}`,
-          firstName: capitalizeWords(student.student_fn) || '-',
-          lastName: capitalizeWords(student.student_ln) || '-',
-          email: student.email || '-',
-          gender: getGenderName(student.student_gender) || '-',
-          course: student.student_course || '-',
-          yearLevel: getYearLevelName(student.student_yr_lvl) || '-',
-        }))
-      );
-    } else {
-      console.error(res.message);
-    }
-  };
+      if (res.success && res.data?.students) {
+        setStudents(
+          res.data.students.map((student, index) => ({
+            id: student.student_id ?? `temp-${index}`,
+            firstName: capitalizeWords(student.student_fn) || "-",
+            lastName: capitalizeWords(student.student_ln) || "-",
+            email: student.email || "-",
+            gender: getGenderName(student.student_gender) || "-",
+            course: student.student_course || "-",
+            yearLevel: getYearLevelName(student.student_yr_lvl) || "-",
+          })),
+        );
+      } else {
+        console.error(res.message);
+      }
+    };
 
-  fetchStudents();
-}, []);
-
+    fetchStudents();
+  }, []);
 
   /* ================= SEARCH & FILTER ================= */
 
   // Get unique courses from departmentOptions
-  const uniqueCourses = departmentOptions.map(dept => dept.code).sort();
+  const uniqueCourses = departmentOptions.map((dept) => dept.code).sort();
 
   const filteredStudents = students.filter((student) => {
-    const matchesSearch = student.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = student.email
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     const matchesCourse = !selectedCourse || student.course === selectedCourse;
     return matchesSearch && matchesCourse;
   });
@@ -107,49 +122,73 @@ const AdminStudents = () => {
   // Sorting logic
   const sortedStudents = [...filteredStudents].sort((a, b) => {
     // Check for missing or empty data and push to end
-    const aHasMissingData = !a.lastName || a.lastName === '-' || !a.firstName || a.firstName === '-' || !a.gender || a.gender === '-' || !a.course || a.course === '-' || !a.yearLevel || a.yearLevel === '-';
-    const bHasMissingData = !b.lastName || b.lastName === '-' || !b.firstName || b.firstName === '-' || !b.gender || b.gender === '-' || !b.course || b.course === '-' || !b.yearLevel || b.yearLevel === '-';
-    
+    const aHasMissingData =
+      !a.lastName ||
+      a.lastName === "-" ||
+      !a.firstName ||
+      a.firstName === "-" ||
+      !a.gender ||
+      a.gender === "-" ||
+      !a.course ||
+      a.course === "-" ||
+      !a.yearLevel ||
+      a.yearLevel === "-";
+    const bHasMissingData =
+      !b.lastName ||
+      b.lastName === "-" ||
+      !b.firstName ||
+      b.firstName === "-" ||
+      !b.gender ||
+      b.gender === "-" ||
+      !b.course ||
+      b.course === "-" ||
+      !b.yearLevel ||
+      b.yearLevel === "-";
+
     // If both have missing data or both have complete data, sort normally
     if (aHasMissingData === bHasMissingData) {
       if (sortBy === "lastName") {
         // Handle missing names in sorting
-        const aName = (a.lastName && a.lastName !== '-') ? a.lastName : '';
-        const bName = (b.lastName && b.lastName !== '-') ? b.lastName : '';
-        return sortOrder === "asc" 
+        const aName = a.lastName && a.lastName !== "-" ? a.lastName : "";
+        const bName = b.lastName && b.lastName !== "-" ? b.lastName : "";
+        return sortOrder === "asc"
           ? aName.localeCompare(bName)
           : bName.localeCompare(aName);
       } else if (sortBy === "yearLevel") {
         const yearOrder = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
-        const aIndex = a.yearLevel === '-' ? -1 : yearOrder.indexOf(a.yearLevel);
-        const bIndex = b.yearLevel === '-' ? -1 : yearOrder.indexOf(b.yearLevel);
+        const aIndex =
+          a.yearLevel === "-" ? -1 : yearOrder.indexOf(a.yearLevel);
+        const bIndex =
+          b.yearLevel === "-" ? -1 : yearOrder.indexOf(b.yearLevel);
         return sortOrder === "asc" ? aIndex - bIndex : bIndex - aIndex;
       } else if (sortBy === "gender") {
-        const aGender = (a.gender && a.gender !== '-') ? a.gender : '';
-        const bGender = (b.gender && b.gender !== '-') ? b.gender : '';
+        const aGender = a.gender && a.gender !== "-" ? a.gender : "";
+        const bGender = b.gender && b.gender !== "-" ? b.gender : "";
         return sortOrder === "asc"
           ? aGender.localeCompare(bGender)
           : bGender.localeCompare(aGender);
       } else if (sortBy === "course") {
-        const aCourse = (a.course && a.course !== '-') ? a.course : '';
-        const bCourse = (b.course && b.course !== '-') ? b.course : '';
+        const aCourse = a.course && a.course !== "-" ? a.course : "";
+        const bCourse = b.course && b.course !== "-" ? b.course : "";
         return sortOrder === "asc"
           ? aCourse.localeCompare(bCourse)
           : bCourse.localeCompare(aCourse);
       }
       return 0;
     }
-    
+
     // If one has missing data, put it at the end
     return aHasMissingData ? 1 : -1;
   });
 
   // Pagination logic
   const totalPages = Math.ceil(sortedStudents.length / itemsPerPage);
-  const paginatedStudents = viewAll ? sortedStudents : sortedStudents.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const paginatedStudents = viewAll
+    ? sortedStudents
+    : sortedStudents.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage,
+      );
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -181,58 +220,54 @@ const AdminStudents = () => {
   const parseFile = (file) => {
     const reader = new FileReader();
     const fileName = file.name.toLowerCase();
-    
+
     reader.onload = (e) => {
       try {
         let data = [];
-        
-        if (fileName.endsWith('.csv')) {
+
+        if (fileName.endsWith(".csv")) {
           // Handle CSV files
           const text = e.target.result;
           data = parseCSV(text);
-        } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        } else if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
           // Handle Excel files
           const binaryData = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(binaryData, { type: 'array' });
+          const workbook = XLSX.read(binaryData, { type: "array" });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           data = XLSX.utils.sheet_to_json(worksheet);
         }
-        
-        
+
         // Process the parsed data to extract Gmail addresses
-        console.log('Raw parsed data:', data);
-        console.log('Available columns:', data.length > 0 ? Object.keys(data[0]) : 'No data');
-        
-        const mappedData = data.map(row => {
-          // Look through all values in the row to find any @gmail.com email
-          let gmailEmail = '';
-          Object.values(row).forEach(value => {
-            const strValue = String(value).trim();
-            if (strValue.endsWith('@gmail.com')) {
-              gmailEmail = strValue;
-            }
+
+        const mappedData = data
+          .map((row) => {
+            // Look through all values in the row to find any @gmail.com email
+            let gmailEmail = "";
+            Object.values(row).forEach((value) => {
+              const strValue = String(value).trim();
+              if (strValue.endsWith("@gmail.com")) {
+                gmailEmail = strValue;
+              }
+            });
+
+            return {
+              email: gmailEmail,
+            };
+          })
+          .filter((item) => {
+            const isValid = item.email && item.email.endsWith("@gmail.com");
+            return isValid;
           });
-          
-          console.log('Row:', row, 'Found gmail:', gmailEmail);
-          return {
-            email: gmailEmail
-          };
-        }).filter(item => {
-          const isValid = item.email && item.email.endsWith('@gmail.com');
-          console.log('Filtered item:', item, 'Valid:', isValid);
-          return isValid;
-        });
-        
-        console.log('Final mapped data:', mappedData);
+
         setImportPreview(mappedData);
       } catch (error) {
-        console.error('Error parsing file:', error);
-        alert('Error parsing file. Please check the file format.');
+        console.error("Error parsing file:", error);
+        alert("Error parsing file. Please check the file format.");
       }
     };
-    
-    if (fileName.endsWith('.csv')) {
+
+    if (fileName.endsWith(".csv")) {
       reader.readAsText(file);
     } else {
       reader.readAsArrayBuffer(file);
@@ -240,77 +275,75 @@ const AdminStudents = () => {
   };
 
   const parseCSV = (text) => {
-    const lines = text.split('\n').filter(line => line.trim());
+    const lines = text.split("\n").filter((line) => line.trim());
     if (lines.length < 2) return [];
-    
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+
+    const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));
     const data = [];
-    
+
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+      const values = lines[i].split(",").map((v) => v.trim().replace(/"/g, ""));
       if (values.length >= headers.length) {
         const row = {};
         headers.forEach((header, index) => {
-          row[header] = values[index] || '';
+          row[header] = values[index] || "";
         });
         data.push(row);
       }
     }
-    
+
     return data;
   };
 
   const handleImportStudents = async () => {
-  if (!importFile) {
-    toast.error("CSV or Excel file is required");
-    return;
-  }
-
-  try {
-    const res = await adminDashboardService.bulkRegisterStudentFile(importFile);
-
-    if (!res.success) {
-      alert(res.message);
+    if (!importFile) {
+      toast.error("CSV or Excel file is required");
       return;
     }
 
-    setShowImportModal(false);
-    setImportFile(null);
-    setImportPreview([]);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    try {
+      const res =
+        await adminDashboardService.bulkRegisterStudentFile(importFile);
 
-    toast.success(`Successfully imported ${res.data.total} students!`);
-    
-    // Refresh data after import
-    const refreshRes = await adminDashboardService.getAllStudentEmails();
-    if (refreshRes.success && refreshRes.data?.students) {
-      setStudents(
-        refreshRes.data.students.map((student, index) => ({
-          id: student.student_id ?? `temp-${index}`,
-          firstName: student.student_fn,
-          lastName: student.student_ln,
-          email: student.email,
-          gender: getGenderName(student.student_gender),
-          course: student.student_course,
-          yearLevel: getYearLevelName(student.student_yr_lvl)
-        }))
-      );
+      if (!res.success) {
+        alert(res.message);
+        return;
+      }
+
+      setShowImportModal(false);
+      setImportFile(null);
+      setImportPreview([]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      toast.success(`Successfully imported ${res.data.total} students!`);
+
+      // Refresh data after import
+      const refreshRes = await adminDashboardService.getAllStudentEmails();
+      if (refreshRes.success && refreshRes.data?.students) {
+        setStudents(
+          refreshRes.data.students.map((student, index) => ({
+            id: student.student_id ?? `temp-${index}`,
+            firstName: student.student_fn,
+            lastName: student.student_ln,
+            email: student.email,
+            gender: getGenderName(student.student_gender),
+            course: student.student_course,
+            yearLevel: getYearLevelName(student.student_yr_lvl),
+          })),
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      toast.err("Failed to import students");
     }
-  } catch (err) {
-    console.error(err);
-    toast.err("Failed to import students");
-  }
-};
-
-
-
+  };
 
   const handleCancelImport = () => {
     setShowImportModal(false);
     setImportFile(null);
     setImportPreview([]);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -322,106 +355,118 @@ const AdminStudents = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setNewStudent(prev => ({
+    setNewStudent((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
     // Clear error when user starts typing again
-    if (name === 'email' && emailError) {
+    if (name === "email" && emailError) {
       setEmailError(false);
     }
   };
 
   const handleAddStudent = async () => {
-  if (isAddingStudent) return; // Prevent multiple clicks
-  
-  if (!newStudent.email) {
-    toast.error("Email is required");
-    return;
-  }
+    if (isAddingStudent) return; // Prevent multiple clicks
 
-  // Split emails by comma and trim whitespace
-  const emails = newStudent.email.split(',').map(email => email.trim()).filter(email => email);
-  
-  // Remove duplicates while preserving order
-  const uniqueEmails = [...new Set(emails)];
-  
-  // Validate each email
-  const invalidEmails = uniqueEmails.filter(email => !validateEmail(email));
-  const validEmails = uniqueEmails.filter(email => validateEmail(email));
-  
-  if (invalidEmails.length > 0) {
-    toast.error(`Only Gmail addresses are allowed. Invalid: ${invalidEmails.join(', ')}`);
-    setEmailError(true);
-    return;
-  }
-
-  setIsAddingStudent(true); // Set loading state
-  
-  try {
-    const res = await adminDashboardService.registerStudentEmail({
-      email: validEmails.join(', '), // Send only valid emails as comma-separated string
-    });
-
-    if (!res.success) {
-      toast.error(res.message);
-      setIsAddingStudent(false); // Reset loading state
+    if (!newStudent.email) {
+      toast.error("Email is required");
       return;
     }
 
-    setNewStudent({ email: "" });
-    setEmailError(false);
-    setShowAddModal(false);
-    toast.success(`Successfully added ${validEmails.length} student${validEmails.length > 1 ? 's' : ''}`);
-    
-    // Refresh data after adding
-    const refreshRes = await adminDashboardService.getAllStudentEmails();
-    if (refreshRes.success && refreshRes.data?.students) {
-      setStudents(
-        refreshRes.data.students.map((student, index) => ({
-          id: student.student_id ?? `temp-${index}`,
-          firstName: capitalizeWords(student.student_fn) || '-',
-          lastName: capitalizeWords(student.student_ln) || '-',
-          email: student.email || '-',
-          gender: getGenderName(student.student_gender) || '-',
-          course: student.student_course || '-',
-          yearLevel: getYearLevelName(student.student_yr_lvl) || '-',
-        }))
-      );
-    }
-  } catch (err) {
-    console.error(err);
-    toast.error("Something went wrong");
-  } finally {
-    setIsAddingStudent(false); // Reset loading state
-  }
-};
+    // Split emails by comma and trim whitespace
+    const emails = newStudent.email
+      .split(",")
+      .map((email) => email.trim())
+      .filter((email) => email);
 
-// Function to get and validate emails for preview
-const getEmailPreview = () => {
-  if (!newStudent.email) return [];
-  
-  const emails = newStudent.email.split(',').map(email => email.trim()).filter(email => email);
-  
-  // Remove duplicates while preserving order
-  const uniqueEmails = [...new Set(emails)];
-  
-  const validEmails = uniqueEmails.filter(email => validateEmail(email));
-  const invalidEmails = uniqueEmails.filter(email => !validateEmail(email));
-  
-  return { validEmails, invalidEmails, totalEmails: uniqueEmails, duplicatesRemoved: emails.length - uniqueEmails.length };
-};
+    // Remove duplicates while preserving order
+    const uniqueEmails = [...new Set(emails)];
+
+    // Validate each email
+    const invalidEmails = uniqueEmails.filter((email) => !validateEmail(email));
+    const validEmails = uniqueEmails.filter((email) => validateEmail(email));
+
+    if (invalidEmails.length > 0) {
+      toast.error(
+        `Only Gmail addresses are allowed. Invalid: ${invalidEmails.join(", ")}`,
+      );
+      setEmailError(true);
+      return;
+    }
+
+    setIsAddingStudent(true); // Set loading state
+
+    try {
+      const res = await adminDashboardService.registerStudentEmail({
+        email: validEmails.join(", "), // Send only valid emails as comma-separated string
+      });
+
+      if (!res.success) {
+        toast.error(res.message);
+        setIsAddingStudent(false); // Reset loading state
+        return;
+      }
+
+      setNewStudent({ email: "" });
+      setEmailError(false);
+      setShowAddModal(false);
+      toast.success(
+        `Successfully added ${validEmails.length} student${validEmails.length > 1 ? "s" : ""}`,
+      );
+
+      // Refresh data after adding
+      const refreshRes = await adminDashboardService.getAllStudentEmails();
+      if (refreshRes.success && refreshRes.data?.students) {
+        setStudents(
+          refreshRes.data.students.map((student, index) => ({
+            id: student.student_id ?? `temp-${index}`,
+            firstName: capitalizeWords(student.student_fn) || "-",
+            lastName: capitalizeWords(student.student_ln) || "-",
+            email: student.email || "-",
+            gender: getGenderName(student.student_gender) || "-",
+            course: student.student_course || "-",
+            yearLevel: getYearLevelName(student.student_yr_lvl) || "-",
+          })),
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong");
+    } finally {
+      setIsAddingStudent(false); // Reset loading state
+    }
+  };
+
+  // Function to get and validate emails for preview
+  const getEmailPreview = () => {
+    if (!newStudent.email) return [];
+
+    const emails = newStudent.email
+      .split(",")
+      .map((email) => email.trim())
+      .filter((email) => email);
+
+    // Remove duplicates while preserving order
+    const uniqueEmails = [...new Set(emails)];
+
+    const validEmails = uniqueEmails.filter((email) => validateEmail(email));
+    const invalidEmails = uniqueEmails.filter((email) => !validateEmail(email));
+
+    return {
+      validEmails,
+      invalidEmails,
+      totalEmails: uniqueEmails,
+      duplicatesRemoved: emails.length - uniqueEmails.length,
+    };
+  };
 
   const handleDeleteStudent = async (studentEmail) => {
-    console.log('Deleting student with email:', studentEmail);
     try {
       const res = await adminDashboardService.deleteStudent(studentEmail);
-      console.log('Delete response:', res);
-      
+
       if (res.success) {
         // Refresh data after deletion
         const refreshRes = await adminDashboardService.getAllStudentEmails();
-        console.log('Refresh response:', refreshRes);
         if (refreshRes.success && refreshRes.data?.students) {
           setStudents(
             refreshRes.data.students.map((student, index) => ({
@@ -431,8 +476,8 @@ const getEmailPreview = () => {
               email: student.email,
               gender: getGenderName(student.student_gender),
               course: student.student_course,
-              yearLevel: getYearLevelName(student.student_yr_lvl)
-            }))
+              yearLevel: getYearLevelName(student.student_yr_lvl),
+            })),
           );
         }
         toast.success("Student deleted successfully");
@@ -440,7 +485,7 @@ const getEmailPreview = () => {
         toast.error(res.message || "Failed to delete student");
       }
     } catch (err) {
-      console.error('Delete error:', err);
+      console.error("Delete error:", err);
       toast.error("Something went wrong");
     }
     setShowDeleteConfirm(null);
@@ -449,8 +494,8 @@ const getEmailPreview = () => {
   const handleCancelAdd = () => {
     setShowAddModal(false);
     setNewStudent({
-      name: '',
-      email: ''
+      name: "",
+      email: "",
     });
     setEmailError(false);
   };
@@ -461,12 +506,12 @@ const getEmailPreview = () => {
     try {
       // Create data for export - only include emails
       const exportData = filteredStudents.map((student, index) => ({
-        'No.': index + 1,
-        'Email': student.email,
-        'Name': `${student.firstName} ${student.lastName}`.trim(),
-        'Course': student.course,
-        'Year Level': student.yearLevel,
-        'Gender': student.gender
+        "No.": index + 1,
+        Email: student.email,
+        Name: `${student.firstName} ${student.lastName}`.trim(),
+        Course: student.course,
+        "Year Level": student.yearLevel,
+        Gender: student.gender,
       }));
 
       // Create workbook and worksheet
@@ -475,7 +520,7 @@ const getEmailPreview = () => {
       XLSX.utils.book_append_sheet(wb, ws, "Students Email List");
 
       // Generate filename with current date
-      const date = new Date().toISOString().split('T')[0];
+      const date = new Date().toISOString().split("T")[0];
       const filename = `students_email_list_${date}.xlsx`;
 
       // Download the file
@@ -507,7 +552,6 @@ const getEmailPreview = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50 text-gray-900">
-
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <AdminSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -531,7 +575,6 @@ const getEmailPreview = () => {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
-
         {/* MOBILE HEADER */}
         <div
           className={`lg:hidden bg-white p-4 border-b border-gray-200 flex items-center gap-4 fixed top-0 left-0 right-0 z-30 transition-transform duration-300 ${
@@ -552,12 +595,11 @@ const getEmailPreview = () => {
 
         {/* CONTENT */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-
           {/* DESKTOP TITLE */}
           <h1 className="hidden lg:block text-2xl font-bold mb-6">
             Students List
           </h1>
-          
+
           {/* DESKTOP BUTTONS */}
           <div className="hidden lg:flex justify-between items-center mb-6">
             <div className="flex gap-3 items-center">
@@ -569,7 +611,9 @@ const getEmailPreview = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
+                <span className="absolute left-3 top-2.5 text-gray-500">
+                  🔍
+                </span>
               </div>
             </div>
             <div className="flex gap-3">
@@ -604,23 +648,29 @@ const getEmailPreview = () => {
                 className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
               >
                 <option value="">All Courses</option>
-                {uniqueCourses.map(course => (
-                  <option key={course} value={course}>{course}</option>
+                {uniqueCourses.map((course) => (
+                  <option key={course} value={course}>
+                    {course}
+                  </option>
                 ))}
               </select>
-              <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+              <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
+                ▼
+              </span>
             </div>
             <div className="relative">
               <select
                 value={`${sortBy}-${sortOrder}`}
                 onChange={(e) => {
-                  const [sort, order] = e.target.value.split('-');
+                  const [sort, order] = e.target.value.split("-");
                   setSortBy(sort);
                   setSortOrder(order);
                 }}
                 disabled={!selectedCourse}
                 className={`px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10 ${
-                  !selectedCourse ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
+                  !selectedCourse
+                    ? "opacity-50 cursor-not-allowed bg-gray-100"
+                    : ""
                 }`}
               >
                 <option value="lastName-asc">Ascending A-Z</option>
@@ -630,7 +680,9 @@ const getEmailPreview = () => {
                 <option value="gender-asc">Gender F-M</option>
                 <option value="gender-desc">Gender M-F</option>
               </select>
-              <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+              <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
+                ▼
+              </span>
             </div>
           </div>
 
@@ -646,7 +698,9 @@ const getEmailPreview = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
                   />
-                  <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
+                  <span className="absolute left-3 top-2.5 text-gray-500">
+                    🔍
+                  </span>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -681,23 +735,29 @@ const getEmailPreview = () => {
                   className="px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
                 >
                   <option value="">All Courses</option>
-                  {uniqueCourses.map(course => (
-                    <option key={course} value={course}>{course}</option>
+                  {uniqueCourses.map((course) => (
+                    <option key={course} value={course}>
+                      {course}
+                    </option>
                   ))}
                 </select>
-                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
+                  ▼
+                </span>
               </div>
               <div className="relative">
                 <select
                   value={`${sortBy}-${sortOrder}`}
                   onChange={(e) => {
-                    const [sort, order] = e.target.value.split('-');
+                    const [sort, order] = e.target.value.split("-");
                     setSortBy(sort);
                     setSortOrder(order);
                   }}
                   disabled={!selectedCourse}
                   className={`px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10 ${
-                    !selectedCourse ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
+                    !selectedCourse
+                      ? "opacity-50 cursor-not-allowed bg-gray-100"
+                      : ""
                   }`}
                 >
                   <option value="lastName-asc">Ascending A-Z</option>
@@ -707,7 +767,9 @@ const getEmailPreview = () => {
                   <option value="gender-asc">Gender F-M</option>
                   <option value="gender-desc">Gender M-F</option>
                 </select>
-                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
+                  ▼
+                </span>
               </div>
             </div>
           </div>
@@ -749,7 +811,9 @@ const getEmailPreview = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
+                <span className="absolute left-3 top-2.5 text-gray-500">
+                  🔍
+                </span>
               </div>
               <div className="relative max-w-sm">
                 <select
@@ -758,23 +822,29 @@ const getEmailPreview = () => {
                   className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10"
                 >
                   <option value="">All Courses</option>
-                  {uniqueCourses.map(course => (
-                    <option key={course} value={course}>{course}</option>
+                  {uniqueCourses.map((course) => (
+                    <option key={course} value={course}>
+                      {course}
+                    </option>
                   ))}
                 </select>
-                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
+                  ▼
+                </span>
               </div>
               <div className="relative max-w-sm">
                 <select
                   value={`${sortBy}-${sortOrder}`}
                   onChange={(e) => {
-                    const [sort, order] = e.target.value.split('-');
+                    const [sort, order] = e.target.value.split("-");
                     setSortBy(sort);
                     setSortOrder(order);
                   }}
                   disabled={!selectedCourse}
                   className={`w-full px-4 py-2 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-900 appearance-none pr-10 ${
-                    !selectedCourse ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
+                    !selectedCourse
+                      ? "opacity-50 cursor-not-allowed bg-gray-100"
+                      : ""
                   }`}
                 >
                   <option value="lastName-asc">Ascending A-Z</option>
@@ -784,30 +854,30 @@ const getEmailPreview = () => {
                   <option value="gender-asc">Gender F-M</option>
                   <option value="gender-desc">Gender M-F</option>
                 </select>
-                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">▼</span>
+                <span className="absolute right-3 top-2.5 text-gray-500 pointer-events-none">
+                  ▼
+                </span>
               </div>
             </div>
           </div>
 
           {/* MOBILE / TABLET */}
           <div className="flex flex-col gap-4 lg:hidden">
-            {(viewAll ? sortedStudents : sortedStudents.slice(0, itemsPerPage)).map((student) => (
+            {(viewAll
+              ? sortedStudents
+              : sortedStudents.slice(0, itemsPerPage)
+            ).map((student) => (
               <div
                 key={student.id}
                 className="bg-white p-5 rounded-xl border border-gray-200"
               >
                 <h2 className="font-semibold text-base mb-1 text-gray-900">
-                  {capitalizeWords(student.firstName)} {capitalizeWords(student.lastName)}
+                  {capitalizeWords(student.firstName)}{" "}
+                  {capitalizeWords(student.lastName)}
                 </h2>
-                <p className="text-sm text-gray-600 mb-1">
-                  {student.email}
-                </p>
-                <p className="text-sm text-gray-600 mb-1">
-                  {student.gender}
-                </p>
-                <p className="text-sm text-gray-600 mb-1">
-                  {student.course}
-                </p>
+                <p className="text-sm text-gray-600 mb-1">{student.email}</p>
+                <p className="text-sm text-gray-600 mb-1">{student.gender}</p>
+                <p className="text-sm text-gray-600 mb-1">{student.course}</p>
                 <p className="text-sm text-gray-600 mb-3">
                   {student.yearLevel}
                 </p>
@@ -826,7 +896,8 @@ const getEmailPreview = () => {
             {sortedStudents.length > itemsPerPage && !viewAll && (
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-sm text-gray-600">
-                  Showing 1-{Math.min(itemsPerPage, sortedStudents.length)} of {sortedStudents.length} students
+                  Showing 1-{Math.min(itemsPerPage, sortedStudents.length)} of{" "}
+                  {sortedStudents.length} students
                 </div>
                 <button
                   onClick={handleViewAll}
@@ -852,7 +923,10 @@ const getEmailPreview = () => {
           <div className="hidden lg:block bg-white p-6 rounded-xl border border-gray-200">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-gray-600 border-b-2" style={{ borderColor: '#22282fff' }}>
+                <tr
+                  className="text-gray-600 border-b-2"
+                  style={{ borderColor: "#22282fff" }}
+                >
                   <th className="py-3">Last Name</th>
                   <th className="py-3">First Name</th>
                   <th className="py-3">Email</th>
@@ -867,17 +941,20 @@ const getEmailPreview = () => {
                 {paginatedStudents.map((student) => (
                   <tr
                     key={student.id}
-                    className="border-b hover:bg-gray-50" style={{ borderColor: '#22282fff' }}
+                    className="border-b hover:bg-gray-50"
+                    style={{ borderColor: "#22282fff" }}
                   >
-
-                    <td className="py-4 text-sm">{capitalizeWords(student.lastName)}</td>
-                    <td className="py-4 text-sm">{capitalizeWords(student.firstName)}</td>
+                    <td className="py-4 text-sm">
+                      {capitalizeWords(student.lastName)}
+                    </td>
+                    <td className="py-4 text-sm">
+                      {capitalizeWords(student.firstName)}
+                    </td>
                     <td className="py-4 text-sm">{student.email}</td>
                     <td className="py-4 text-sm">{student.gender}</td>
                     <td className="py-4 text-sm">{student.course}</td>
                     <td className="py-4 text-sm">{student.yearLevel}</td>
-                    
-                   
+
                     <td className="py-4">
                       <button
                         onClick={() => setShowDeleteConfirm(student.email)}
@@ -890,12 +967,16 @@ const getEmailPreview = () => {
                 ))}
               </tbody>
             </table>
-            
+
             {/* Pagination Controls */}
             {sortedStudents.length > itemsPerPage && (
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-sm text-gray-600">
-                  Showing {viewAll ? sortedStudents.length : `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, sortedStudents.length)}`} of {sortedStudents.length} students
+                  Showing{" "}
+                  {viewAll
+                    ? sortedStudents.length
+                    : `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, sortedStudents.length)}`}{" "}
+                  of {sortedStudents.length} students
                 </div>
                 <div className="flex items-center gap-2">
                   {!viewAll ? (
@@ -936,7 +1017,6 @@ const getEmailPreview = () => {
               </div>
             )}
           </div>
-
         </div>
       </div>
 
@@ -945,7 +1025,9 @@ const getEmailPreview = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Import Students from Excel</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                Import Students from Excel
+              </h2>
               <button
                 onClick={handleCancelImport}
                 className="text-gray-600 hover:text-gray-900"
@@ -983,7 +1065,9 @@ const getEmailPreview = () => {
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-blue-400" />
                   <div>
-                    <p className="text-gray-900 font-medium">{importFile.name}</p>
+                    <p className="text-gray-900 font-medium">
+                      {importFile.name}
+                    </p>
                     <p className="text-gray-600 text-sm">
                       {(importFile.size / 1024).toFixed(2)} KB
                     </p>
@@ -1024,12 +1108,17 @@ const getEmailPreview = () => {
 
             {/* Excel Format Instructions */}
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-gray-900 font-medium mb-2">Excel Format Required:</h3>
+              <h3 className="text-gray-900 font-medium mb-2">
+                Excel Format Required:
+              </h3>
               <p className="text-gray-700 text-sm mb-2">
-                Your Excel / CSV file should have the following column in the first row:
+                Your Excel / CSV file should have the following column in the
+                first row:
               </p>
               <ul className="text-gray-600 text-sm space-y-1">
-                <li>• Gmail (Gmail only — must end with <b>@gmail.com</b>)</li>
+                <li>
+                  • Gmail (Gmail only — must end with <b>@gmail.com</b>)
+                </li>
               </ul>
             </div>
 
@@ -1058,7 +1147,9 @@ const getEmailPreview = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Add New Student</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                Add New Student
+              </h2>
               <button
                 onClick={handleCancelAdd}
                 className="text-gray-600 hover:text-gray-900"
@@ -1069,7 +1160,6 @@ const getEmailPreview = () => {
 
             {/* Student Form */}
             <div className="space-y-4">
-
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1081,17 +1171,19 @@ const getEmailPreview = () => {
                   value={newStudent.email}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 bg-white border rounded-lg text-gray-900 focus:outline-none focus:border-blue-500 ${
-                    emailError ? 'border-red-500' : 'border-gray-300'
+                    emailError ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="student@gmail.com, student2@gmail.com, student3@gmail.com"
                   style={{
-                    WebkitTextFillColor: 'gray-900',
-                    WebkitBoxShadow: '0 0 0 1000px white inset',
-                    transition: 'background-color 0s',
+                    WebkitTextFillColor: "gray-900",
+                    WebkitBoxShadow: "0 0 0 1000px white inset",
+                    transition: "background-color 0s",
                   }}
                 />
                 {emailError && (
-                  <p className="text-red-500 text-sm mt-1">Only Gmail addresses are allowed (@gmail.com)</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    Only Gmail addresses are allowed (@gmail.com)
+                  </p>
                 )}
                 <p className="text-gray-500 text-xs mt-1">
                   Enter multiple Gmail addresses separated by commas
@@ -1106,22 +1198,29 @@ const getEmailPreview = () => {
                   </label>
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 max-h-40 overflow-y-auto">
                     {(() => {
-                      const { validEmails, invalidEmails, totalEmails, duplicatesRemoved } = getEmailPreview();
+                      const {
+                        validEmails,
+                        invalidEmails,
+                        totalEmails,
+                        duplicatesRemoved,
+                      } = getEmailPreview();
                       return (
                         <div className="space-y-2">
                           {totalEmails.length > 0 && (
                             <div className="text-sm">
                               <span className="font-medium text-gray-700">
-                                Total: {totalEmails.length} email{totalEmails.length > 1 ? 's' : ''}
+                                Total: {totalEmails.length} email
+                                {totalEmails.length > 1 ? "s" : ""}
                               </span>
                               {duplicatesRemoved > 0 && (
                                 <span className="text-orange-600 ml-2">
-                                  (Removed {duplicatesRemoved} duplicate{duplicatesRemoved > 1 ? 's' : ''})
+                                  (Removed {duplicatesRemoved} duplicate
+                                  {duplicatesRemoved > 1 ? "s" : ""})
                                 </span>
                               )}
                             </div>
                           )}
-                          
+
                           {validEmails.length > 0 && (
                             <div>
                               <div className="text-xs font-medium text-green-700 mb-1">
@@ -1129,14 +1228,17 @@ const getEmailPreview = () => {
                               </div>
                               <div className="space-y-1">
                                 {validEmails.map((email, index) => (
-                                  <div key={index} className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                                  <div
+                                    key={index}
+                                    className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded"
+                                  >
                                     {email}
                                   </div>
                                 ))}
                               </div>
                             </div>
                           )}
-                          
+
                           {invalidEmails.length > 0 && (
                             <div>
                               <div className="text-xs font-medium text-red-700 mb-1">
@@ -1144,7 +1246,10 @@ const getEmailPreview = () => {
                               </div>
                               <div className="space-y-1">
                                 {invalidEmails.map((email, index) => (
-                                  <div key={index} className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                                  <div
+                                    key={index}
+                                    className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded"
+                                  >
                                     {email}
                                   </div>
                                 ))}
@@ -1171,12 +1276,12 @@ const getEmailPreview = () => {
                 onClick={handleAddStudent}
                 disabled={isAddingStudent}
                 className={`px-4 py-2 rounded-lg transition-colors ${
-                  isAddingStudent 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-green-600 hover:bg-green-700 text-white'
+                  isAddingStudent
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 text-white"
                 }`}
               >
-                {isAddingStudent ? 'Adding...' : 'Add Student'}
+                {isAddingStudent ? "Adding..." : "Add Student"}
               </button>
             </div>
           </div>
@@ -1187,9 +1292,12 @@ const getEmailPreview = () => {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-md border border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Delete Student Account</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Delete Student Account
+            </h2>
             <p className="text-gray-700 mb-6">
-              Are you sure you want to delete this student account? This action cannot be undone.
+              Are you sure you want to delete this student account? This action
+              cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button

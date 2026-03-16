@@ -355,9 +355,6 @@ const ChatList = () => {
       if (file.type.startsWith("image/")) {
         // Send image message
         sendImageMessage(file);
-      } else {
-        // Handle other file types if needed
-        console.log("Non-image file uploaded:", file);
       }
     }
   };

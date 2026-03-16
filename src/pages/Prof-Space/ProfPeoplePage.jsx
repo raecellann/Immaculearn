@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import ProfSidebar from "../component/profsidebar";
-import { FiMenu, FiX, FiChevronLeft, FiUpload, FiMessageSquare } from "react-icons/fi";
+import {
+  FiMenu,
+  FiX,
+  FiChevronLeft,
+  FiUpload,
+  FiMessageSquare,
+} from "react-icons/fi";
 import Logout from "../component/logout";
 import DeleteButton from "../component/DeleteButton";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -13,7 +19,14 @@ import { toast } from "react-toastify";
 const ProfPeoplePage = () => {
   const { user } = useUser();
   const { addNotification } = useNotification();
-  const { userSpaces, courseSpaces, removeUserFromSpace, userSpacesLoading, courseSpacesLoading, isLoading } = useSpace();
+  const {
+    userSpaces,
+    courseSpaces,
+    removeUserFromSpace,
+    userSpacesLoading,
+    courseSpacesLoading,
+    isLoading,
+  } = useSpace();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
   const navigate = useNavigate();
@@ -127,7 +140,9 @@ const ProfPeoplePage = () => {
         "image/webp",
       ];
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
+        toast.error(
+          "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        );
         return;
       }
 
@@ -157,7 +172,7 @@ const ProfPeoplePage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Check if it's a gradient or an image
-    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+    if (coverPhotoUrl && coverPhotoUrl.includes("gradient")) {
       // For gradients, save directly without canvas transformations
       // Backend will handle saving the space_cover
       setShowCoverPhotoEditor(false);
@@ -321,8 +336,6 @@ const ProfPeoplePage = () => {
   const isClassroomSpace = activeSpace.space_type === "course";
   const adviserInfo = isClassroomSpace ? activeSpace?.professor : creator;
 
-  console.log(activeSpace);
-
   const handleRemoveMember = (member) => {
     setMemberToRemove(member);
     setShowRemoveWarning(true);
@@ -414,7 +427,7 @@ const ProfPeoplePage = () => {
         >
           {coverPhotoUrl ? (
             <>
-              {coverPhotoUrl.includes('gradient') ? (
+              {coverPhotoUrl.includes("gradient") ? (
                 <div
                   className="w-full h-full"
                   style={{ background: coverPhotoUrl }}
@@ -462,122 +475,67 @@ const ProfPeoplePage = () => {
         </div>
 
         {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
-        {(activeSpace?.space_type === "course" || activeSpace?.space_day || activeSpace?.space_section || activeSpace?.space_schedule) && (
-        <div
-          className="lg:hidden px-4 py-3 border-b"
-          style={{
-            backgroundColor: currentColors.surface + "CC", // Add 80% opacity
-            borderColor: currentColors.border + "CC", // Add 80% opacity to border
-            backdropFilter: "blur(8px)"
-          }}
-        >
-          <div className="flex flex-col gap-2">
-            {/* Schedule */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Schedule
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {activeSpace?.space_day || "TBD"} (
-                {activeSpace?.space_time_start ? new Date(
-                  `2000-01-01T${activeSpace.space_time_start}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"}{" "}
-                -{" "}
-                {activeSpace?.space_time_end ? new Date(
-                  `2000-01-01T${activeSpace.space_time_end}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"})
-              </span>
-            </div>
-
-            {/* Section */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Section
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {activeSpace?.space_section ||
-                  activeSpace?.section ||
-                  activeSpace?.class_section ||
-                  activeSpace?.section_name ||
-                  activeSpace?.course_section ||
-                  activeSpace?.subject_section ||
-                  activeSpace?.space_block ||
-                  activeSpace?.block ||
-                  "N/A"
-                }
-              </span>
-            </div>
-
-            {/* Description */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Description
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {activeSpace?.space_description || 
-                  (activeSpace?.space_type === "course" 
-                    ? "Course space for lectures, assignments, and discussions."
-                    : "Collaborative space for sharing ideas and resources."
-                  )
-                }
-              </span>
-            </div>
-          </div>
-        </div>
-        )}
-
-        {/* DESKTOP SPACE INFO OVERLAY */}
-        {(activeSpace?.space_type === "course" || activeSpace?.space_day || activeSpace?.space_section || activeSpace?.space_schedule) && (
-        <div className="hidden lg:block">
-          <div 
-            className="absolute top-4 right-4 p-4 rounded-lg border z-10"
+        {(activeSpace?.space_type === "course" ||
+          activeSpace?.space_day ||
+          activeSpace?.space_section ||
+          activeSpace?.space_schedule) && (
+          <div
+            className="lg:hidden px-4 py-3 border-b"
             style={{
-              backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+              backgroundColor: currentColors.surface + "CC", // Add 80% opacity
               borderColor: currentColors.border + "CC", // Add 80% opacity to border
-              maxWidth: "1000px",
-              backdropFilter: "blur(8px)" // Add subtle blur for better readability
+              backdropFilter: "blur(8px)",
             }}
           >
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col gap-2">
               {/* Schedule */}
-              <div>
-                <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
                   Schedule
-                </h3>
-                <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
                   {activeSpace?.space_day || "TBD"} (
-                  {activeSpace?.space_time_start ? new Date(
-                    `2000-01-01T${activeSpace.space_time_start}`,
-                  ).toLocaleTimeString([], {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  }) : "TBD"}{" "}
+                  {activeSpace?.space_time_start
+                    ? new Date(
+                        `2000-01-01T${activeSpace.space_time_start}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}{" "}
                   -{" "}
-                  {activeSpace?.space_time_end ? new Date(
-                    `2000-01-01T${activeSpace.space_time_end}`,
-                  ).toLocaleTimeString([], {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  }) : "TBD"})
-                </p>
+                  {activeSpace?.space_time_end
+                    ? new Date(
+                        `2000-01-01T${activeSpace.space_time_end}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}
+                  )
+                </span>
               </div>
 
               {/* Section */}
-              <div>
-                <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
                   Section
-                </h3>
-                <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
                   {activeSpace?.space_section ||
                     activeSpace?.section ||
                     activeSpace?.class_section ||
@@ -586,28 +544,129 @@ const ProfPeoplePage = () => {
                     activeSpace?.subject_section ||
                     activeSpace?.space_block ||
                     activeSpace?.block ||
-                    "N/A"
-                  }
-                </p>
+                    "N/A"}
+                </span>
               </div>
 
               {/* Description */}
-              <div>
-                <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
                   Description
-                </h3>
-                <p className="text-sm line-clamp-3" style={{ color: currentColors.textSecondary }}>
-                  {activeSpace?.space_description || 
-                    (activeSpace?.space_type === "course" 
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {activeSpace?.space_description ||
+                    (activeSpace?.space_type === "course"
                       ? "Course space for lectures, assignments, and discussions."
-                      : "Collaborative space for sharing ideas and resources."
-                    )
-                  }
-                </p>
+                      : "Collaborative space for sharing ideas and resources.")}
+                </span>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* DESKTOP SPACE INFO OVERLAY */}
+        {(activeSpace?.space_type === "course" ||
+          activeSpace?.space_day ||
+          activeSpace?.space_section ||
+          activeSpace?.space_schedule) && (
+          <div className="hidden lg:block">
+            <div
+              className="absolute top-4 right-4 p-4 rounded-lg border z-10"
+              style={{
+                backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+                borderColor: currentColors.border + "CC", // Add 80% opacity to border
+                maxWidth: "1000px",
+                backdropFilter: "blur(8px)", // Add subtle blur for better readability
+              }}
+            >
+              <div className="grid grid-cols-3 gap-2">
+                {/* Schedule */}
+                <div>
+                  <h3
+                    className="font-semibold text-sm mb-2"
+                    style={{ color: currentColors.text }}
+                  >
+                    Schedule
+                  </h3>
+                  <p
+                    className="text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {activeSpace?.space_day || "TBD"} (
+                    {activeSpace?.space_time_start
+                      ? new Date(
+                          `2000-01-01T${activeSpace.space_time_start}`,
+                        ).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "TBD"}{" "}
+                    -{" "}
+                    {activeSpace?.space_time_end
+                      ? new Date(
+                          `2000-01-01T${activeSpace.space_time_end}`,
+                        ).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "TBD"}
+                    )
+                  </p>
+                </div>
+
+                {/* Section */}
+                <div>
+                  <h3
+                    className="font-semibold text-sm mb-2"
+                    style={{ color: currentColors.text }}
+                  >
+                    Section
+                  </h3>
+                  <p
+                    className="text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {activeSpace?.space_section ||
+                      activeSpace?.section ||
+                      activeSpace?.class_section ||
+                      activeSpace?.section_name ||
+                      activeSpace?.course_section ||
+                      activeSpace?.subject_section ||
+                      activeSpace?.space_block ||
+                      activeSpace?.block ||
+                      "N/A"}
+                  </p>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <h3
+                    className="font-semibold text-sm mb-2"
+                    style={{ color: currentColors.text }}
+                  >
+                    Description
+                  </h3>
+                  <p
+                    className="text-sm line-clamp-3"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {activeSpace?.space_description ||
+                      (activeSpace?.space_type === "course"
+                        ? "Course space for lectures, assignments, and discussions."
+                        : "Collaborative space for sharing ideas and resources.")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* PAGE HEADER */}
@@ -655,8 +714,8 @@ const ProfPeoplePage = () => {
                   />
                   <span className="font-medium">
                     {adviserInfo.account_id === user.id
-                      ? `${user?.name?.split(' ')[0] || 'You'} ${user?.name?.split(' ')[1]?.[0] ? user.name.split(' ')[1][0] + '.' : ''}`
-                      : (adviserInfo.name || adviserInfo.full_name)}
+                      ? `${user?.name?.split(" ")[0] || "You"} ${user?.name?.split(" ")[1]?.[0] ? user.name.split(" ")[1][0] + "." : ""}`
+                      : adviserInfo.name || adviserInfo.full_name}
                   </span>
                 </div>
               </div>
@@ -695,20 +754,20 @@ const ProfPeoplePage = () => {
                     {isOwner && member.account_id !== user.id && (
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => navigate('/prof/chats')}
+                          onClick={() => navigate("/prof/chats")}
                           className="p-2 rounded-lg transition-colors"
                           style={{
-                            backgroundColor: '#3B82F6',
-                            color: '#FFFFFF',
-                            border: '1px solid #3B82F6'
+                            backgroundColor: "#3B82F6",
+                            color: "#FFFFFF",
+                            border: "1px solid #3B82F6",
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#2563EB';
-                            e.target.style.borderColor = '#2563EB';
+                            e.target.style.backgroundColor = "#2563EB";
+                            e.target.style.borderColor = "#2563EB";
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#3B82F6';
-                            e.target.style.borderColor = '#3B82F6';
+                            e.target.style.backgroundColor = "#3B82F6";
+                            e.target.style.borderColor = "#3B82F6";
                           }}
                           title="Message"
                         >
@@ -757,14 +816,18 @@ const ProfPeoplePage = () => {
                 onClick={cancelRemoveMember}
                 className="px-4 py-2 rounded-lg transition-colors"
                 style={{
-                  backgroundColor: isDarkMode ? '#4B5563' : '#D1D5DB',
-                  color: isDarkMode ? '#FFFFFF' : '#111827',
+                  backgroundColor: isDarkMode ? "#4B5563" : "#D1D5DB",
+                  color: isDarkMode ? "#FFFFFF" : "#111827",
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = isDarkMode ? '#6B7280' : '#9CA3AF';
+                  e.target.style.backgroundColor = isDarkMode
+                    ? "#6B7280"
+                    : "#9CA3AF";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = isDarkMode ? '#4B5563' : '#D1D5DB';
+                  e.target.style.backgroundColor = isDarkMode
+                    ? "#4B5563"
+                    : "#D1D5DB";
                 }}
               >
                 Cancel
@@ -801,7 +864,9 @@ const ProfPeoplePage = () => {
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Gradient Options */}
               <div className="mb-6">
-                <p className="text-sm font-medium text-white mb-3">Color & Gradient</p>
+                <p className="text-sm font-medium text-white mb-3">
+                  Color & Gradient
+                </p>
                 <div className="grid grid-cols-4 gap-2">
                   {colorOptions.map((color, i) => (
                     <div
@@ -822,7 +887,7 @@ const ProfPeoplePage = () => {
               </div>
 
               {/* Upload Option (only show when gradient is selected) */}
-              {coverPhotoUrl && coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && coverPhotoUrl.includes("gradient") && (
                 <div className="mb-4 flex justify-center">
                   <button
                     onClick={() => coverPhotoInputRef.current?.click()}
@@ -835,9 +900,11 @@ const ProfPeoplePage = () => {
               )}
 
               {/* Image Positioning (only show if it's an image, not gradient) */}
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <div className="mb-6">
-                  <p className="text-sm font-medium text-white mb-3">Position Image</p>
+                  <p className="text-sm font-medium text-white mb-3">
+                    Position Image
+                  </p>
                   <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                     <div
                       ref={coverPhotoEditorRef}
@@ -872,7 +939,7 @@ const ProfPeoplePage = () => {
               >
                 Cancel
               </button>
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <button
                   onClick={handleCoverPhotoSave}
                   className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"

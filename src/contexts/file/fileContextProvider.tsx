@@ -64,7 +64,6 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
   } = useQuery({
     queryKey: ["get-list-resources-by-space-uuid", spaceUuid],
     queryFn: async () => {
-      console.log("Query executing for space_uuid:", spaceUuid);
       return await fileService.getListResourceBySpaceUUID(spaceUuid);
     },
     enabled: isAuthenticated && !!spaceUuid,
@@ -84,17 +83,6 @@ export const FileProvider: React.FC<FileProviderProps> = ({ children }) => {
         : "Failed to fetch resources",
     );
   }
-
-  console.log("Query state:", {
-    isAuthenticated,
-    urlSpaceUuid,
-    currentSpaceUuid: currentSpace?.space_uuid,
-    spaceUuid,
-    enabled: isAuthenticated && !!spaceUuid,
-    resourcesLoading,
-    resourcesCount: resources.length,
-    hasError: !!resourcesError,
-  });
 
   const uploadResource = useCallback(
     async (

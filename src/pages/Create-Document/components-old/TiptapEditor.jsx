@@ -263,8 +263,6 @@ const TiptapEditor = forwardRef(
           cursor: currentState?.user?.cursor || null,
         },
       });
-
-      console.log("Updated user info in awareness:", user);
     }, [provider, user?.id, user?.name, user?.color, user?.avatar]);
 
     // Periodically update cursor position and keep connection alive
@@ -324,8 +322,6 @@ const TiptapEditor = forwardRef(
 
     useEffect(() => {
       // if (!editor || !initialContent) return;
-
-      console.log(editor?.getHTML());
 
       // Only set initial content if editor is empty
       if (editor?.isEmpty) {

@@ -63,7 +63,11 @@ const ProfChatPage = () => {
   const currentConversationColor =
     conversationColors[activeSpaceUuid] || colorOptions[0];
 
-  const allSpaces = [...(userSpaces || []),...(courseSpaces || []), ...(friendSpaces || [])];
+  const allSpaces = [
+    ...(userSpaces || []),
+    ...(courseSpaces || []),
+    ...(friendSpaces || []),
+  ];
 
   // Filter only course spaces for the Courses section
   const courseSpacesOnly = useMemo(() => {
@@ -280,13 +284,13 @@ const ProfChatPage = () => {
   // Send message helper with profanity filtering
   const handleSend = () => {
     if (!input.trim()) return;
-    
+
     // Additional check to prevent sending profanity
     if (hasProfanity) return;
-    
+
     // Check for profanity and censor if found
     const censoredMessage = profanityFilter.censorText(input);
-    
+
     // Send the censored message
     sendMessage(censoredMessage);
     setInput("");
@@ -301,9 +305,6 @@ const ProfChatPage = () => {
       if (file.type.startsWith("image/")) {
         // Send image message
         sendImageMessage(file);
-      } else {
-        // Handle other file types if needed
-        console.log("Non-image file uploaded:", file);
       }
     }
   };
@@ -341,14 +342,14 @@ const ProfChatPage = () => {
   useEffect(() => {
     const handleStorageChange = (e) => {
       // Check if the changed key is a cover photo
-      if (e.key && e.key.startsWith('coverPhoto_')) {
+      if (e.key && e.key.startsWith("coverPhoto_")) {
         // Force re-render by incrementing the trigger
-        setCoverPhotoUpdateTrigger(prev => prev + 1);
+        setCoverPhotoUpdateTrigger((prev) => prev + 1);
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   // Message status icon
@@ -366,7 +367,13 @@ const ProfChatPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+    <div
+      className="flex min-h-screen font-sans"
+      style={{
+        backgroundColor: currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <ProfSidebar />
@@ -386,14 +393,17 @@ const ProfChatPage = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           backgroundColor: currentColors.surface,
-          color: currentColors.text
+          color: currentColors.text,
         }}
       >
         <ProfSidebar />
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ maxHeight: '100vh' }}>
+      <div
+        className="flex-1 flex flex-col overflow-hidden"
+        style={{ maxHeight: "100vh" }}
+      >
         {/* Mobile + Tablet Header */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
@@ -402,7 +412,7 @@ const ProfChatPage = () => {
           style={{
             backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
             borderColor: isDarkMode ? "#374151" : currentColors.border,
-            color: isDarkMode ? "white" : currentColors.text
+            color: isDarkMode ? "white" : currentColors.text,
           }}
         >
           <div className="p-4 flex items-center gap-4">
@@ -439,21 +449,30 @@ const ProfChatPage = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-5 pr-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                   style={{
-                    backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6',
+                    backgroundColor: isDarkMode ? "#1f2937" : "#f3f4f6",
                     color: currentColors.text,
-                    border: isDarkMode ? 'none' : '1px solid black'
+                    border: isDarkMode ? "none" : "1px solid black",
                   }}
                 />
-                <FiSearch className="absolute right-3 top-3" style={{ color: currentColors.textSecondary }} />
+                <FiSearch
+                  className="absolute right-3 top-3"
+                  style={{ color: currentColors.textSecondary }}
+                />
               </div>
             </div>
 
             {/* PEOPLE */}
-            <div className="rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar" style={{ 
-              backgroundColor: currentColors.surface,
-              border: isDarkMode ? 'none' : '1px solid black'
-            }}>
-              <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>
+            <div
+              className="rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 overflow-y-auto max-h-48 custom-scrollbar"
+              style={{
+                backgroundColor: currentColors.surface,
+                border: isDarkMode ? "none" : "1px solid black",
+              }}
+            >
+              <h2
+                className="font-semibold text-sm mb-3"
+                style={{ color: currentColors.textSecondary }}
+              >
                 Students
               </h2>
               {uniqueMembers
@@ -471,14 +490,15 @@ const ProfChatPage = () => {
                       }}
                       className="flex items-center gap-3 py-3 rounded-lg cursor-pointer transition-colors"
                       style={{
-                        backgroundColor: 'transparent',
-                        color: currentColors.text
+                        backgroundColor: "transparent",
+                        color: currentColors.text,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                        e.currentTarget.style.backgroundColor =
+                          currentColors.hover;
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.backgroundColor = "transparent";
                       }}
                     >
                       <div className="relative">
@@ -491,10 +511,16 @@ const ProfChatPage = () => {
                         ></div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm truncate" style={{ color: currentColors.text }}>
+                        <p
+                          className="font-semibold text-sm truncate"
+                          style={{ color: currentColors.text }}
+                        >
                           {m.full_name}
                         </p>
-                        <p className="text-xs" style={{ color: currentColors.textSecondary }}>
+                        <p
+                          className="text-xs"
+                          style={{ color: currentColors.textSecondary }}
+                        >
                           {participantStatus}
                         </p>
                       </div>
@@ -504,11 +530,17 @@ const ProfChatPage = () => {
             </div>
 
             {/* GROUPS */}
-            <div className="rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar" style={{ 
-              backgroundColor: currentColors.surface,
-              border: isDarkMode ? 'none' : '1px solid black'
-            }}>
-              <h2 className="font-semibold text-sm mb-3" style={{ color: currentColors.textSecondary }}>
+            <div
+              className="rounded-xl p-3 sm:p-4 overflow-y-auto max-h-80 custom-scrollbar"
+              style={{
+                backgroundColor: currentColors.surface,
+                border: isDarkMode ? "none" : "1px solid black",
+              }}
+            >
+              <h2
+                className="font-semibold text-sm mb-3"
+                style={{ color: currentColors.textSecondary }}
+              >
                 Courses
               </h2>
               {courseSpacesOnly.map((space) => (
@@ -520,14 +552,14 @@ const ProfChatPage = () => {
                   }}
                   className="flex items-center gap-3 py-3 rounded-lg cursor-pointer transition-colors"
                   style={{
-                    backgroundColor: 'transparent',
-                    color: currentColors.text
+                    backgroundColor: "transparent",
+                    color: currentColors.text,
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = currentColors.hover;
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
                   <div className="relative">
@@ -544,10 +576,16 @@ const ProfChatPage = () => {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate" style={{ color: currentColors.text }}>
+                    <p
+                      className="font-semibold text-sm truncate"
+                      style={{ color: currentColors.text }}
+                    >
                       {space.space_name}
                     </p>
-                    <p className="text-xs" style={{ color: currentColors.textSecondary }}>
+                    <p
+                      className="text-xs"
+                      style={{ color: currentColors.textSecondary }}
+                    >
                       {getOnlineCountForSpace(space)} online •{" "}
                       {space.members?.length || 0} members
                     </p>
@@ -562,23 +600,29 @@ const ProfChatPage = () => {
             className={`${showMobileChat ? "block" : "hidden lg:block"} flex-1 rounded-xl flex flex-col h-full pr-4 overflow-hidden`}
             style={{
               backgroundColor: currentColors.surface,
-              border: isDarkMode ? 'none' : '1px solid black',
-              maxHeight: '100vh'
+              border: isDarkMode ? "none" : "1px solid black",
+              maxHeight: "100vh",
             }}
           >
             {!activeSpaceUuid ? (
               <div className="flex-1 flex items-center justify-center min-h-[400px] mt-16">
-                <div className="text-center text-lg" style={{ color: currentColors.textSecondary }}>
+                <div
+                  className="text-center text-lg"
+                  style={{ color: currentColors.textSecondary }}
+                >
                   Select a chat to start messaging
                 </div>
               </div>
             ) : (
               <>
                 {/* Fixed Header - Always Visible */}
-                <div className="p-3 sm:p-4 border-b flex justify-between items-center relative rounded-t-xl sticky top-0 z-10" style={{ 
-                  backgroundColor: currentColors.surface,
-                  borderColor: currentColors.border
-                }}>
+                <div
+                  className="p-3 sm:p-4 border-b flex justify-between items-center relative rounded-t-xl sticky top-0 z-10"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.border,
+                  }}
+                >
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setShowMobileChat(false)}
@@ -600,9 +644,11 @@ const ProfChatPage = () => {
                                 activeSpaceUuid,
                             )?.profile_pic ||
                             // For group chat, show group cover from localStorage or server data
-                            getSpaceCoverPhoto(uniqueSpaces.find(
-                              (s) => s.space_uuid === activeSpaceUuid,
-                            )) ||
+                            getSpaceCoverPhoto(
+                              uniqueSpaces.find(
+                                (s) => s.space_uuid === activeSpaceUuid,
+                              ),
+                            ) ||
                             "/default-avatar.png"
                           }
                           className="w-10 h-10 rounded-full"
@@ -612,7 +658,10 @@ const ProfChatPage = () => {
                         ></div>
                       </div>
                       <div>
-                        <h2 className="font-semibold truncate" style={{ color: currentColors.text }}>
+                        <h2
+                          className="font-semibold truncate"
+                          style={{ color: currentColors.text }}
+                        >
                           {activeSpace?.space_name || "Chat"}
                         </h2>
                         <p className={`text-xs ${statusColorClass}`}>
@@ -632,22 +681,27 @@ const ProfChatPage = () => {
 
                     {/* Dropdown Menu */}
                     {showDropdown && (
-                      <div className="absolute right-0 mt-2 w-44 sm:w-48 rounded-lg shadow-lg border z-50" style={{
-                        backgroundColor: currentColors.surface,
-                        borderColor: currentColors.border
-                      }}>
+                      <div
+                        className="absolute right-0 mt-2 w-44 sm:w-48 rounded-lg shadow-lg border z-50"
+                        style={{
+                          backgroundColor: currentColors.surface,
+                          borderColor: currentColors.border,
+                        }}
+                      >
                         <button
                           onClick={handleThemeChange}
                           className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm rounded-t-lg flex items-center gap-3 transition-colors"
                           style={{
                             color: currentColors.textSecondary,
-                            backgroundColor: 'transparent'
+                            backgroundColor: "transparent",
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = currentColors.hover;
+                            e.currentTarget.style.backgroundColor =
+                              currentColors.hover;
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.backgroundColor =
+                              "transparent";
                           }}
                         >
                           <FiSettings className="text-sm" />
@@ -664,8 +718,8 @@ const ProfChatPage = () => {
                   style={{
                     msOverflowStyle: "none",
                     scrollbarWidth: "none",
-                    maxHeight: 'calc(100vh - 180px)',
-                    minHeight: '200px'
+                    maxHeight: "calc(100vh - 180px)",
+                    minHeight: "200px",
                   }}
                 >
                   {Object.entries(messagesByDate).map(
@@ -673,9 +727,12 @@ const ProfChatPage = () => {
                       <div key={dateLabel}>
                         {/* Date Separator */}
                         <div className="flex items-center justify-center py-2">
-                          <div className="text-xs px-3 py-1" style={{
-                            color: currentColors.textSecondary
-                          }}>
+                          <div
+                            className="text-xs px-3 py-1"
+                            style={{
+                              color: currentColors.textSecondary,
+                            }}
+                          >
                             {dateLabel}
                           </div>
                         </div>
@@ -688,7 +745,7 @@ const ProfChatPage = () => {
                             m.from === "me" && i === dateMessages.length - 1;
                           const nextMessage = dateMessages[i + 1];
                           const prevMessage = dateMessages[i - 1];
-                          
+
                           // Optimized avatar logic for large group chats (10+ participants)
                           let shouldShowAvatar = false;
                           if (m.from === "them") {
@@ -698,10 +755,11 @@ const ProfChatPage = () => {
                             } else {
                               // Show avatar only if previous message was from different sender
                               // This works for any number of participants
-                              shouldShowAvatar = prevMessage.senderId !== m.senderId;
+                              shouldShowAvatar =
+                                prevMessage.senderId !== m.senderId;
                             }
                           }
-                          
+
                           // Optimized time logic for large group chats
                           let shouldShowTime = false;
                           if (m.from === "me") {
@@ -711,7 +769,8 @@ const ProfChatPage = () => {
                             } else {
                               // Show time only if next message is from different sender
                               // This works for any number of participants
-                              shouldShowTime = nextMessage.senderId !== m.senderId;
+                              shouldShowTime =
+                                nextMessage.senderId !== m.senderId;
                             }
                           }
 
@@ -719,9 +778,12 @@ const ProfChatPage = () => {
                             <React.Fragment key={m.id}>
                               {showUnreadSeparator && (
                                 <div className="flex items-center justify-center py-2">
-                                  <div className="text-xs px-3 py-1" style={{
-                                    color: currentColors.textSecondary
-                                  }}>
+                                  <div
+                                    className="text-xs px-3 py-1"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
                                     Unread messages
                                   </div>
                                 </div>
@@ -784,13 +846,19 @@ const ProfChatPage = () => {
                 </div>
 
                 {/* Fixed Input - Always Visible */}
-                <div className="p-2 sm:p-3 md:p-4 border-t rounded-b-xl sticky bottom-0 relative" style={{ 
-                  backgroundColor: currentColors.surface,
-                  borderColor: currentColors.border
-                }}>
-                  <div className="flex gap-2 sm:gap-3 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center" style={{
-                    backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6'
-                  }}>
+                <div
+                  className="p-2 sm:p-3 md:p-4 border-t rounded-b-xl sticky bottom-0 relative"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.border,
+                  }}
+                >
+                  <div
+                    className="flex gap-2 sm:gap-3 rounded-full px-2 sm:px-3 md:px-4 py-2 sm:py-3 items-center"
+                    style={{
+                      backgroundColor: isDarkMode ? "#1f2937" : "#f3f4f6",
+                    }}
+                  >
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -813,30 +881,40 @@ const ProfChatPage = () => {
                       className="flex-1 bg-transparent outline-none text-sm sm:text-base"
                       style={{
                         color: currentColors.text,
-                        placeholderColor: currentColors.textSecondary
+                        placeholderColor: currentColors.textSecondary,
                       }}
                       placeholder="Type your message here..."
                     />
                     <button
                       onClick={handleSend}
-                      className={`transition-colors p-1 sm:p-0 bg-transparent border-none ${hasProfanity ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      style={{ color: hasProfanity ? '#9ca3af' : '#3b82f6' }}
+                      className={`transition-colors p-1 sm:p-0 bg-transparent border-none ${hasProfanity ? "opacity-50 cursor-not-allowed" : ""}`}
+                      style={{ color: hasProfanity ? "#9ca3af" : "#3b82f6" }}
                       disabled={!input.trim() || hasProfanity}
                     >
                       <FiSend />
                     </button>
                   </div>
-                  
+
                   {/* Profanity Warning - Absolute Position */}
                   {hasProfanity && (
-                    <div className="absolute -top-12 left-3 right-3 px-3 py-2 rounded-lg text-xs flex items-center gap-2 animate-pulse lg:-top-12" style={{
-                      backgroundColor: isDarkMode ? '#dc2626' : '#ef4444',
-                      color: 'white',
-                      zIndex: 10
-                    }}>
+                    <div
+                      className="absolute -top-12 left-3 right-3 px-3 py-2 rounded-lg text-xs flex items-center gap-2 animate-pulse lg:-top-12"
+                      style={{
+                        backgroundColor: isDarkMode ? "#dc2626" : "#ef4444",
+                        color: "white",
+                        zIndex: 10,
+                      }}
+                    >
                       <span>🚫</span>
-                      <span className="hidden sm:inline"><strong>Content Warning:</strong> Your message contains inappropriate language and will be automatically censored to maintain a respectful chat environment.</span>
-                      <span className="sm:hidden"><strong>Warning:</strong> Message contains inappropriate language and will be censored.</span>
+                      <span className="hidden sm:inline">
+                        <strong>Content Warning:</strong> Your message contains
+                        inappropriate language and will be automatically
+                        censored to maintain a respectful chat environment.
+                      </span>
+                      <span className="sm:hidden">
+                        <strong>Warning:</strong> Message contains inappropriate
+                        language and will be censored.
+                      </span>
                     </div>
                   )}
                 </div>
@@ -849,11 +927,19 @@ const ProfChatPage = () => {
       {/* Color Picker Dialog */}
       {showColorPicker && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="rounded-xl p-6 w-80 max-w-[90%] border" style={{
-            backgroundColor: currentColors.surface,
-            borderColor: currentColors.border
-          }}>
-            <h3 className="font-semibold mb-4" style={{ color: currentColors.text }}>Choose Chat Color</h3>
+          <div
+            className="rounded-xl p-6 w-80 max-w-[90%] border"
+            style={{
+              backgroundColor: currentColors.surface,
+              borderColor: currentColors.border,
+            }}
+          >
+            <h3
+              className="font-semibold mb-4"
+              style={{ color: currentColors.text }}
+            >
+              Choose Chat Color
+            </h3>
             <div className="grid grid-cols-4 gap-3 mb-4">
               {colorOptions.map((color) => (
                 <button
@@ -869,15 +955,18 @@ const ProfChatPage = () => {
               ))}
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm" style={{ color: currentColors.textSecondary }}>
+              <span
+                className="text-sm"
+                style={{ color: currentColors.textSecondary }}
+              >
                 Selected: {currentConversationColor?.name}
               </span>
               <button
                 onClick={() => setShowColorPicker(false)}
                 className="px-4 py-2 rounded-lg transition-colors"
                 style={{
-                  backgroundColor: isDarkMode ? '#4b5563' : '#6b7280',
-                  color: 'white'
+                  backgroundColor: isDarkMode ? "#4b5563" : "#6b7280",
+                  color: "white",
                 }}
               >
                 Cancel

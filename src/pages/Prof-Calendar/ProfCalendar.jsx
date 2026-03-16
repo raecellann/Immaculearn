@@ -27,8 +27,6 @@ const ProfCalendarPage = () => {
     allUploadedTasksLoading,
   } = useSpace();
 
-  console.log(allUploadedTasks)
-
   const allSpaces = [...(userSpaces || []), ...(courseSpaces || [])];
 
   // const {
@@ -70,9 +68,7 @@ const ProfCalendarPage = () => {
   // Manual refresh function
   const refreshSpaces = () => {
     setRefreshKey((prev) => prev + 1);
-    console.log("Manual refresh triggered"); // Debug log
   };
-
 
   // Handler for when a new task is created from the modal
   const handleTaskCreate = (newTask) => {
@@ -119,7 +115,6 @@ const ProfCalendarPage = () => {
 
   // Map Task data to calendar activity structure
   const mapTaskToActivity = (task) => {
-    console.log(task.due_date);
     return {
       id: task.task_id,
       title: task.task_title,

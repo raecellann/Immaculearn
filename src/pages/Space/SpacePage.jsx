@@ -13,7 +13,6 @@ import { SpaceCover } from "../component/spaceCover";
 import { DeleteConfirmationDialog } from "../component/SweetAlert";
 import { toast } from "react-toastify";
 
-
 const SpacePage = () => {
   const { user } = useUser();
   const {
@@ -50,7 +49,6 @@ const SpacePage = () => {
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
   };
-
 
   // Load cover photos from localStorage for all spaces
   useEffect(() => {
@@ -112,11 +110,14 @@ const SpacePage = () => {
   const handleDeleteSpace = async () => {
     try {
       const spaceUuid = showDeleteConfirm;
-      const space = userSpaces.find(s => s.space_uuid === spaceUuid) || 
-                   friendSpaces.find(s => s.space_uuid === spaceUuid) ||
-                   courseSpaces.find(s => s.space_uuid === spaceUuid);
+      const space =
+        userSpaces.find((s) => s.space_uuid === spaceUuid) ||
+        friendSpaces.find((s) => s.space_uuid === spaceUuid) ||
+        courseSpaces.find((s) => s.space_uuid === spaceUuid);
       await deleteSpace(spaceUuid);
-      toast.success(`Space "${space?.space_name || 'Unknown'}" has been deleted successfully!`);
+      toast.success(
+        `Space "${space?.space_name || "Unknown"}" has been deleted successfully!`,
+      );
       setShowDeleteConfirm(null);
       setShowMenu(null);
     } catch (error) {
@@ -128,11 +129,14 @@ const SpacePage = () => {
   const handleLeaveSpace = async () => {
     try {
       const spaceUuid = showLeaveConfirm;
-      const space = userSpaces.find(s => s.space_uuid === spaceUuid) || 
-                   friendSpaces.find(s => s.space_uuid === spaceUuid) ||
-                   courseSpaces.find(s => s.space_uuid === spaceUuid);
+      const space =
+        userSpaces.find((s) => s.space_uuid === spaceUuid) ||
+        friendSpaces.find((s) => s.space_uuid === spaceUuid) ||
+        courseSpaces.find((s) => s.space_uuid === spaceUuid);
       await leaveSpace(spaceUuid);
-      toast.success(`You have left "${space?.space_name || 'Unknown'}" space successfully!`);
+      toast.success(
+        `You have left "${space?.space_name || "Unknown"}" space successfully!`,
+      );
       setShowLeaveConfirm(null);
       setShowMenu(null);
     } catch (error) {
@@ -361,7 +365,7 @@ const SpacePage = () => {
 
                 <Button
                   onClick={() => navigate("/space/create")}
-                  style={{borderColor: "white" }}
+                  style={{ borderColor: "white" }}
                 >
                   Create Space
                 </Button>
@@ -625,13 +629,16 @@ const SpacePage = () => {
                             {course.professor &&
                               `Prof. ${capitalizeWords(course.professor?.name.split(" ")[0])}`}
                           </span>
-                          <br></br>• {
-                            (() => {
-                              const studentCount = course.members?.filter(member => member.role !== 'owner' && member.role !== 'professor').length || 0;
-                              console.log(`Space ${course.space_name} - Total members: ${course.members?.length || 0}, Students: ${studentCount}`, course.members);
-                              return studentCount;
-                            })()
-                          }{" "}
+                          <br></br>•{" "}
+                          {(() => {
+                            const studentCount =
+                              course.members?.filter(
+                                (member) =>
+                                  member.role !== "owner" &&
+                                  member.role !== "professor",
+                              ).length || 0;
+                            return studentCount;
+                          })()}{" "}
                           Students
                         </p>
                         <p

@@ -8,7 +8,6 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
   const { questionnaire, setTaskId } = useSpace();
-  console.log(questionnaire);
 
   const [userAnswers, setUserAnswers] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);

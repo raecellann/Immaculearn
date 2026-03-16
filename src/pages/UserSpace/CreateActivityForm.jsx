@@ -18,13 +18,14 @@ const CreateActivityForm = () => {
   const [dueDate, setDueDate] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [taskCategory, setTaskCategory] = useState("individual-activity");
-  const [criteria, setCriteria] = useState([{ id: 1, name: "", description: "", points: "" }]);
+  const [criteria, setCriteria] = useState([
+    { id: 1, name: "", description: "", points: "" },
+  ]);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showCriteriaSection, setShowCriteriaSection] = useState(false);
-  
+
   const fileInputRef = useRef(null);
   const instructionRef = useRef(null);
-
 
   // Task categories
   const taskCategories = [
@@ -36,40 +37,140 @@ const CreateActivityForm = () => {
   // Criteria templates
   const criteriaTemplates = {
     essay: [
-      { name: "Content Quality", description: "Clarity, coherence, and depth of analysis", points: "30" },
-      { name: "Research & Evidence", description: "Use of credible sources and proper citation", points: "25" },
-      { name: "Organization", description: "Logical structure and flow of ideas", points: "20" },
-      { name: "Grammar & Style", description: "Proper grammar, spelling, and academic writing style", points: "15" },
-      { name: "Originality", description: "Original thinking and avoidance of plagiarism", points: "10" }
+      {
+        name: "Content Quality",
+        description: "Clarity, coherence, and depth of analysis",
+        points: "30",
+      },
+      {
+        name: "Research & Evidence",
+        description: "Use of credible sources and proper citation",
+        points: "25",
+      },
+      {
+        name: "Organization",
+        description: "Logical structure and flow of ideas",
+        points: "20",
+      },
+      {
+        name: "Grammar & Style",
+        description: "Proper grammar, spelling, and academic writing style",
+        points: "15",
+      },
+      {
+        name: "Originality",
+        description: "Original thinking and avoidance of plagiarism",
+        points: "10",
+      },
     ],
     research: [
-      { name: "Research Question", description: "Clarity and significance of research question", points: "20" },
-      { name: "Methodology", description: "Appropriate research methods and design", points: "25" },
-      { name: "Data Analysis", description: "Proper analysis and interpretation of data", points: "25" },
-      { name: "Literature Review", description: "Comprehensive review of relevant literature", points: "20" },
-      { name: "Conclusions", description: "Logical conclusions based on findings", points: "10" }
+      {
+        name: "Research Question",
+        description: "Clarity and significance of research question",
+        points: "20",
+      },
+      {
+        name: "Methodology",
+        description: "Appropriate research methods and design",
+        points: "25",
+      },
+      {
+        name: "Data Analysis",
+        description: "Proper analysis and interpretation of data",
+        points: "25",
+      },
+      {
+        name: "Literature Review",
+        description: "Comprehensive review of relevant literature",
+        points: "20",
+      },
+      {
+        name: "Conclusions",
+        description: "Logical conclusions based on findings",
+        points: "10",
+      },
     ],
     presentation: [
-      { name: "Content", description: "Relevance and accuracy of content", points: "30" },
-      { name: "Organization", description: "Clear structure and logical flow", points: "20" },
-      { name: "Visual Aids", description: "Quality and effectiveness of visual materials", points: "20" },
-      { name: "Delivery", description: "Clarity, confidence, and engagement", points: "20" },
-      { name: "Time Management", description: "Appropriate pacing and time allocation", points: "10" }
+      {
+        name: "Content",
+        description: "Relevance and accuracy of content",
+        points: "30",
+      },
+      {
+        name: "Organization",
+        description: "Clear structure and logical flow",
+        points: "20",
+      },
+      {
+        name: "Visual Aids",
+        description: "Quality and effectiveness of visual materials",
+        points: "20",
+      },
+      {
+        name: "Delivery",
+        description: "Clarity, confidence, and engagement",
+        points: "20",
+      },
+      {
+        name: "Time Management",
+        description: "Appropriate pacing and time allocation",
+        points: "10",
+      },
     ],
     project: [
-      { name: "Functionality", description: "Code works as intended without errors", points: "30" },
-      { name: "Code Quality", description: "Clean, readable, and well-structured code", points: "25" },
-      { name: "Documentation", description: "Clear and comprehensive documentation", points: "20" },
-      { name: "Innovation", description: "Creative solutions and original thinking", points: "15" },
-      { name: "Testing", description: "Thorough testing and error handling", points: "10" }
+      {
+        name: "Functionality",
+        description: "Code works as intended without errors",
+        points: "30",
+      },
+      {
+        name: "Code Quality",
+        description: "Clean, readable, and well-structured code",
+        points: "25",
+      },
+      {
+        name: "Documentation",
+        description: "Clear and comprehensive documentation",
+        points: "20",
+      },
+      {
+        name: "Innovation",
+        description: "Creative solutions and original thinking",
+        points: "15",
+      },
+      {
+        name: "Testing",
+        description: "Thorough testing and error handling",
+        points: "10",
+      },
     ],
     creative: [
-      { name: "Creativity", description: "Originality and innovative thinking", points: "30" },
-      { name: "Technical Skill", description: "Execution and technical proficiency", points: "25" },
-      { name: "Composition", description: "Balance, harmony, and visual appeal", points: "20" },
-      { name: "Concept", description: "Clarity and strength of concept", points: "15" },
-      { name: "Effort", description: "Time and effort invested in the work", points: "10" }
-    ]
+      {
+        name: "Creativity",
+        description: "Originality and innovative thinking",
+        points: "30",
+      },
+      {
+        name: "Technical Skill",
+        description: "Execution and technical proficiency",
+        points: "25",
+      },
+      {
+        name: "Composition",
+        description: "Balance, harmony, and visual appeal",
+        points: "20",
+      },
+      {
+        name: "Concept",
+        description: "Clarity and strength of concept",
+        points: "15",
+      },
+      {
+        name: "Effort",
+        description: "Time and effort invested in the work",
+        points: "10",
+      },
+    ],
   };
 
   const handleFileClick = () => {
@@ -86,18 +187,18 @@ const CreateActivityForm = () => {
 
   const extractTextFromFile = async (file) => {
     try {
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-      let extractedText = '';
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+      let extractedText = "";
 
-      if (fileExtension === 'pdf') {
+      if (fileExtension === "pdf") {
         extractedText = await extractTextFromPDF(file);
-      } else if (['doc', 'docx'].includes(fileExtension)) {
+      } else if (["doc", "docx"].includes(fileExtension)) {
         extractedText = await extractTextFromDocx(file);
-      } else if (['ppt', 'pptx'].includes(fileExtension)) {
+      } else if (["ppt", "pptx"].includes(fileExtension)) {
         extractedText = await extractTextFromPptx(file);
-      } else if (['xls', 'xlsx'].includes(fileExtension)) {
+      } else if (["xls", "xlsx"].includes(fileExtension)) {
         extractedText = await extractTextFromExcel(file);
-      } else if (['txt', 'text'].includes(fileExtension)) {
+      } else if (["txt", "text"].includes(fileExtension)) {
         extractedText = await extractTextFromText(file);
       }
 
@@ -108,7 +209,7 @@ const CreateActivityForm = () => {
         }
       }
     } catch (error) {
-      console.error('Error extracting text from file:', error);
+      console.error("Error extracting text from file:", error);
     }
   };
 
@@ -152,21 +253,21 @@ const CreateActivityForm = () => {
       id: Date.now(),
       name: "",
       description: "",
-      points: ""
+      points: "",
     };
     setCriteria([...criteria, newCriteria]);
   };
 
   const removeCriteria = (id) => {
     if (criteria.length > 1) {
-      setCriteria(criteria.filter(c => c.id !== id));
+      setCriteria(criteria.filter((c) => c.id !== id));
     }
   };
 
   const updateCriteria = (id, field, value) => {
-    setCriteria(criteria.map(c => 
-      c.id === id ? { ...c, [field]: value } : c
-    ));
+    setCriteria(
+      criteria.map((c) => (c.id === id ? { ...c, [field]: value } : c)),
+    );
   };
 
   const getTotalCriteriaPoints = () => {
@@ -183,7 +284,7 @@ const CreateActivityForm = () => {
         id: Date.now() + index,
         name: criterion.name,
         description: criterion.description,
-        points: criterion.points
+        points: criterion.points,
       }));
       setCriteria(newCriteria);
       setShowTemplates(false);
@@ -195,10 +296,8 @@ const CreateActivityForm = () => {
     setCriteria([{ id: 1, name: "", description: "", points: "" }]);
   };
 
-
   useEffect(() => {
-    const stored = localStorage.getItem("saved-form")
-    console.log(stored)
+    const stored = localStorage.getItem("saved-form");
 
     if (stored) {
       try {
@@ -212,11 +311,10 @@ const CreateActivityForm = () => {
           }
         }, 0);
       } catch (error) {
-        console.error('Error parsing saved form data:', error);
+        console.error("Error parsing saved form data:", error);
       }
     }
-
-  }, [])
+  }, []);
 
   // Sync instruction state with contentEditable ref
   useEffect(() => {
@@ -224,14 +322,14 @@ const CreateActivityForm = () => {
       const handleInput = () => {
         setInstruction(instructionRef.current.innerHTML);
       };
-      
+
       instructionRef.current.addEventListener("input", handleInput);
-      
+
       // Update innerHTML when instruction state changes
       if (instruction !== instructionRef.current.innerHTML) {
         instructionRef.current.innerHTML = instruction;
       }
-      
+
       return () => {
         instructionRef.current?.removeEventListener("input", handleInput);
       };
@@ -239,7 +337,13 @@ const CreateActivityForm = () => {
   }, [instruction]);
 
   return (
-    <div className="font-sans p-4 sm:p-6 md:p-8" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
+    <div
+      className="font-sans p-4 sm:p-6 md:p-8"
+      style={{
+        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* COVER */}
       <div className="relative mb-6">
         <img
@@ -247,20 +351,33 @@ const CreateActivityForm = () => {
           className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-b-xl"
           alt="cover"
         />
-        <div className="absolute inset-0 rounded-b-xl" style={{ 
-          backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.2)'
-        }} />
+        <div
+          className="absolute inset-0 rounded-b-xl"
+          style={{
+            backgroundColor: isDarkMode
+              ? "rgba(0, 0, 0, 0.5)"
+              : "rgba(0, 0, 0, 0.2)",
+          }}
+        />
         <div className="absolute top-0 left-0 z-10">
-          <div className="px-6 sm:px-10 py-3 rounded-br-[1rem] text-xl sm:text-2xl font-extrabold" 
-               style={{ backgroundColor: currentColors.text, color: 'white' }}>
+          <div
+            className="px-6 sm:px-10 py-3 rounded-br-[1rem] text-xl sm:text-2xl font-extrabold"
+            style={{ backgroundColor: currentColors.text, color: "white" }}
+          >
             Zeldrick's Space
           </div>
         </div>
       </div>
 
       {/* FORM CARD */}
-      <div className="max-w-6xl mx-auto rounded-xl shadow-lg p-4 sm:p-6 md:p-8" 
-           style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}>
+      <div
+        className="max-w-6xl mx-auto rounded-xl shadow-lg p-4 sm:p-6 md:p-8"
+        style={{
+          backgroundColor: currentColors.surface,
+          borderColor: currentColors.border,
+          border: "1px solid",
+        }}
+      >
         <div className="flex flex-col lg:flex-row gap-6">
           {/* LEFT */}
           <div className="flex-1 flex flex-col gap-4">
@@ -272,7 +389,10 @@ const CreateActivityForm = () => {
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
               className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
-              style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
               placeholder="Enter activity title"
             />
 
@@ -293,26 +413,39 @@ const CreateActivityForm = () => {
             </select>
 
             {/* Instruction */}
-            <label className="font-semibold">
-              Instruction (optional)
-            </label>
-            <div className="rounded-lg border focus-within:border-blue-500"
-                 style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+            <label className="font-semibold">Instruction (optional)</label>
+            <div
+              className="rounded-lg border focus-within:border-blue-500"
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
+            >
               <div
                 ref={instructionRef}
                 contentEditable
                 className="min-h-[140px] px-4 py-3 outline-none"
                 suppressContentEditableWarning
               />
-                      <div className="border-t" style={{ borderColor: currentColors.border }} />
-              <div className="flex gap-4 px-4 py-2" style={{ color: currentColors.textSecondary }}>
+              <div
+                className="border-t"
+                style={{ borderColor: currentColors.border }}
+              />
+              <div
+                className="flex gap-4 px-4 py-2"
+                style={{ color: currentColors.textSecondary }}
+              >
                 <button
                   type="button"
                   onClick={() => applyFormat("bold")}
                   className="transition-colors"
                   style={{ color: currentColors.textSecondary }}
-                  onMouseEnter={(e) => e.target.style.color = currentColors.text}
-                  onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                  onMouseEnter={(e) =>
+                    (e.target.style.color = currentColors.text)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.color = currentColors.textSecondary)
+                  }
                 >
                   <FiBold />
                 </button>
@@ -322,8 +455,12 @@ const CreateActivityForm = () => {
                   onClick={() => applyFormat("italic")}
                   className="transition-colors"
                   style={{ color: currentColors.textSecondary }}
-                  onMouseEnter={(e) => e.target.style.color = currentColors.text}
-                  onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                  onMouseEnter={(e) =>
+                    (e.target.style.color = currentColors.text)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.color = currentColors.textSecondary)
+                  }
                 >
                   <FiItalic />
                 </button>
@@ -333,8 +470,12 @@ const CreateActivityForm = () => {
                   onClick={() => applyFormat("underline")}
                   className="transition-colors"
                   style={{ color: currentColors.textSecondary }}
-                  onMouseEnter={(e) => e.target.style.color = currentColors.text}
-                  onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                  onMouseEnter={(e) =>
+                    (e.target.style.color = currentColors.text)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.color = currentColors.textSecondary)
+                  }
                 >
                   <FiUnderline />
                 </button>
@@ -350,15 +491,26 @@ const CreateActivityForm = () => {
               <div
                 onClick={handleFileClick}
                 className="border border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition"
-                style={{ borderColor: currentColors.border, backgroundColor: currentColors.surface }}
-                onMouseEnter={(e) => e.target.style.borderColor = currentColors.accent}
-                onMouseLeave={(e) => e.target.style.borderColor = currentColors.border}
+                style={{
+                  borderColor: currentColors.border,
+                  backgroundColor: currentColors.surface,
+                }}
+                onMouseEnter={(e) =>
+                  (e.target.style.borderColor = currentColors.accent)
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.borderColor = currentColors.border)
+                }
               >
                 <FiUploadCloud
                   size={36}
-                  className="mb-3" style={{ color: currentColors.textSecondary }}
+                  className="mb-3"
+                  style={{ color: currentColors.textSecondary }}
                 />
-                <p className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
+                <p
+                  className="text-sm mb-2"
+                  style={{ color: currentColors.textSecondary }}
+                >
                   {selectedFile
                     ? selectedFile.name
                     : "Choose a file or drag & drop it here."}
@@ -393,7 +545,10 @@ const CreateActivityForm = () => {
               value={score}
               onChange={(e) => setScore(e.target.value)}
               className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
-              style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
               placeholder="Enter score (e.g., 100)"
               min="0"
             />
@@ -406,7 +561,10 @@ const CreateActivityForm = () => {
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
-              style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
               min={new Date().toISOString().split("T")[0]}
             />
 
@@ -419,9 +577,16 @@ const CreateActivityForm = () => {
                     type="button"
                     onClick={() => setShowTemplates(!showTemplates)}
                     className="px-3 py-1 text-sm rounded-md transition"
-                    style={{ backgroundColor: currentColors.accent, color: 'white' }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#9333ea'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}
+                    style={{
+                      backgroundColor: currentColors.accent,
+                      color: "white",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.target.style.backgroundColor = "#9333ea")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.target.style.backgroundColor = currentColors.accent)
+                    }
                   >
                     Use Template
                   </button>
@@ -429,9 +594,16 @@ const CreateActivityForm = () => {
                     type="button"
                     onClick={() => setShowCriteriaSection(!showCriteriaSection)}
                     className="px-3 py-1 text-sm rounded-md transition"
-                    style={{ backgroundColor: currentColors.accent, color: 'white' }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}
+                    style={{
+                      backgroundColor: currentColors.accent,
+                      color: "white",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.target.style.backgroundColor = "#1d4ed8")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.target.style.backgroundColor = currentColors.accent)
+                    }
                   >
                     {showCriteriaSection ? "Hide" : "Manual"} Criteria
                   </button>
@@ -440,17 +612,31 @@ const CreateActivityForm = () => {
 
               {/* Template Selection */}
               {showTemplates && (
-                <div className="rounded-lg p-4 border" 
-                     style={{ backgroundColor: currentColors.surface, borderColor: currentColors.accent }}>
+                <div
+                  className="rounded-lg p-4 border"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.accent,
+                  }}
+                >
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-semibold" style={{ color: currentColors.accent }}>Choose a Template:</h4>
+                    <h4
+                      className="text-sm font-semibold"
+                      style={{ color: currentColors.accent }}
+                    >
+                      Choose a Template:
+                    </h4>
                     <button
                       type="button"
                       onClick={() => setShowTemplates(false)}
                       className="transition-colors"
                       style={{ color: currentColors.textSecondary }}
-                      onMouseEnter={(e) => e.target.style.color = currentColors.text}
-                      onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                      onMouseEnter={(e) =>
+                        (e.target.style.color = currentColors.text)
+                      }
+                      onMouseLeave={(e) =>
+                        (e.target.style.color = currentColors.textSecondary)
+                      }
                     >
                       <FiX size={18} />
                     </button>
@@ -458,144 +644,295 @@ const CreateActivityForm = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={() => applyTemplate('essay')}
+                      onClick={() => applyTemplate("essay")}
                       className="p-3 rounded-lg transition text-left border"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = currentColors.hover;
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = currentColors.surface;
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                     >
-                      <div className="font-medium" style={{ color: currentColors.text }}>📝 Essay</div>
-                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For written essays and compositions</div>
+                      <div
+                        className="font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        📝 Essay
+                      </div>
+                      <div
+                        className="text-xs"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        For written essays and compositions
+                      </div>
                     </button>
                     <button
                       type="button"
-                      onClick={() => applyTemplate('research')}
+                      onClick={() => applyTemplate("research")}
                       className="p-3 rounded-lg transition text-left border"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = currentColors.hover;
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = currentColors.surface;
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                     >
-                      <div className="font-medium" style={{ color: currentColors.text }}>🔬 Research Paper</div>
-                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For academic research and analysis</div>
+                      <div
+                        className="font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        🔬 Research Paper
+                      </div>
+                      <div
+                        className="text-xs"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        For academic research and analysis
+                      </div>
                     </button>
                     <button
                       type="button"
-                      onClick={() => applyTemplate('presentation')}
+                      onClick={() => applyTemplate("presentation")}
                       className="p-3 rounded-lg transition text-left border"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = currentColors.hover;
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = currentColors.surface;
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                     >
-                      <div className="font-medium" style={{ color: currentColors.text }}>🎤 Presentation</div>
-                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For oral presentations and demos</div>
+                      <div
+                        className="font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        🎤 Presentation
+                      </div>
+                      <div
+                        className="text-xs"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        For oral presentations and demos
+                      </div>
                     </button>
                     <button
                       type="button"
-                      onClick={() => applyTemplate('project')}
+                      onClick={() => applyTemplate("project")}
                       className="p-3 rounded-lg transition text-left border"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = currentColors.hover;
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = currentColors.surface;
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                     >
-                      <div className="font-medium" style={{ color: currentColors.text }}>💻 Project</div>
-                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For coding and development projects</div>
+                      <div
+                        className="font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        💻 Project
+                      </div>
+                      <div
+                        className="text-xs"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        For coding and development projects
+                      </div>
                     </button>
                     <button
                       type="button"
-                      onClick={() => applyTemplate('creative')}
+                      onClick={() => applyTemplate("creative")}
                       className="p-3 rounded-lg transition text-left border"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = currentColors.hover;
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = currentColors.surface;
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                     >
                       <div className="font-medium text-white">🎨 Creative</div>
-                      <div className="text-xs text-gray-400">For artistic and creative works</div>
+                      <div className="text-xs text-gray-400">
+                        For artistic and creative works
+                      </div>
                     </button>
                     <button
                       type="button"
-                      onClick={() => applyTemplate('case-study')}
+                      onClick={() => applyTemplate("case-study")}
                       className="p-3 rounded-lg transition text-left border"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
-                      onMouseEnter={(e) => { e.target.style.backgroundColor = currentColors.hover; e.target.style.borderColor = currentColors.accent; }}
-                      onMouseLeave={(e) => { e.target.style.backgroundColor = currentColors.surface; e.target.style.borderColor = currentColors.border; }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = currentColors.hover;
+                        e.target.style.borderColor = currentColors.accent;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = currentColors.surface;
+                        e.target.style.borderColor = currentColors.border;
+                      }}
                     >
-                      <div className="font-medium" style={{ color: currentColors.text }}>📊 Case Study</div>
-                      <div className="text-xs" style={{ color: currentColors.textSecondary }}>For business case studies and analysis</div>
+                      <div
+                        className="font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        📊 Case Study
+                      </div>
+                      <div
+                        className="text-xs"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        For business case studies and analysis
+                      </div>
                     </button>
                     <button
                       type="button"
                       onClick={clearCriteria}
                       className="p-3 bg-red-900/30 rounded-lg hover:bg-red-900/50 transition text-left border border-red-600/50 hover:border-red-500"
                     >
-                      <div className="font-medium text-red-400">🗑️ Clear All</div>
-                      <div className="text-xs text-red-300">Remove all criteria</div>
+                      <div className="font-medium text-red-400">
+                        🗑️ Clear All
+                      </div>
+                      <div className="text-xs text-red-300">
+                        Remove all criteria
+                      </div>
                     </button>
                   </div>
                 </div>
               )}
 
               {showCriteriaSection && (
-                <div className="rounded-lg p-4 max-h-[300px] overflow-y-auto" 
-                     style={{ backgroundColor: currentColors.surface }}>
+                <div
+                  className="rounded-lg p-4 max-h-[300px] overflow-y-auto"
+                  style={{ backgroundColor: currentColors.surface }}
+                >
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-semibold" style={{ color: currentColors.accent }}>
-                      {criteria.some(c => c.name.trim()) ? "Current Criteria:" : "Add Your Criteria:"}
+                    <h4
+                      className="text-sm font-semibold"
+                      style={{ color: currentColors.accent }}
+                    >
+                      {criteria.some((c) => c.name.trim())
+                        ? "Current Criteria:"
+                        : "Add Your Criteria:"}
                     </h4>
-                    {criteria.some(c => c.name.trim()) && (
+                    {criteria.some((c) => c.name.trim()) && (
                       <button
                         type="button"
                         onClick={() => setShowTemplates(true)}
                         className="text-xs transition-colors"
                         style={{ color: currentColors.accent }}
-                        onMouseEnter={(e) => e.target.style.color = '#a78bfa'}
-                        onMouseLeave={(e) => e.target.style.color = currentColors.accent}
+                        onMouseEnter={(e) => (e.target.style.color = "#a78bfa")}
+                        onMouseLeave={(e) =>
+                          (e.target.style.color = currentColors.accent)
+                        }
                       >
                         Change Template
                       </button>
                     )}
                   </div>
-                  
+
                   <div className="space-y-3">
                     {criteria.map((criterion, index) => (
-                      <div className="rounded-lg p-3 border" 
-                           style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+                      <div
+                        className="rounded-lg p-3 border"
+                        style={{
+                          backgroundColor: currentColors.surface,
+                          borderColor: currentColors.border,
+                        }}
+                      >
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium" style={{ color: currentColors.accent }}>Criteria {index + 1}</span>
+                          <span
+                            className="text-sm font-medium"
+                            style={{ color: currentColors.accent }}
+                          >
+                            Criteria {index + 1}
+                          </span>
                           {criteria.length > 1 && (
                             <button
                               type="button"
                               onClick={() => removeCriteria(criterion.id)}
                               className="text-sm transition-colors"
-                              style={{ color: '#ef4444' }}
-                              onMouseEnter={(e) => e.target.style.color = '#f87171'}
-                              onMouseLeave={(e) => e.target.style.color = '#ef4444'}
+                              style={{ color: "#ef4444" }}
+                              onMouseEnter={(e) =>
+                                (e.target.style.color = "#f87171")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.target.style.color = "#ef4444")
+                              }
                             >
                               Remove
                             </button>
                           )}
                         </div>
-                        
+
                         <input
                           type="text"
                           value={criterion.name}
-                          onChange={(e) => updateCriteria(criterion.id, 'name', e.target.value)}
+                          onChange={(e) =>
+                            updateCriteria(criterion.id, "name", e.target.value)
+                          }
                           placeholder="Criteria name (e.g., Content Quality)"
                           className="w-full bg-[#1E222A] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500"
                         />
-                        
+
                         <textarea
                           value={criterion.description}
-                          onChange={(e) => updateCriteria(criterion.id, 'description', e.target.value)}
+                          onChange={(e) =>
+                            updateCriteria(
+                              criterion.id,
+                              "description",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Description (optional)"
                           rows={2}
                           className="w-full rounded px-3 py-2 text-sm outline-none border focus:border-blue-500 resize-none"
-                          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, color: currentColors.text }}
+                          style={{
+                            backgroundColor: currentColors.surface,
+                            borderColor: currentColors.border,
+                            color: currentColors.text,
+                          }}
                         />
-                        
+
                         <input
                           type="number"
                           value={criterion.points}
-                          onChange={(e) => updateCriteria(criterion.id, 'points', e.target.value)}
+                          onChange={(e) =>
+                            updateCriteria(
+                              criterion.id,
+                              "points",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Points"
                           min="0"
                           step="0.5"
@@ -603,7 +940,7 @@ const CreateActivityForm = () => {
                         />
                       </div>
                     ))}
-                    
+
                     <button
                       type="button"
                       onClick={addCriteria}
@@ -620,16 +957,29 @@ const CreateActivityForm = () => {
 
         {/* ACTIONS */}
         <div className="flex justify-end gap-4 mt-8">
-          <button className="px-6 py-2 rounded-lg transition" 
-                  style={{ backgroundColor: currentColors.textSecondary, color: 'white' }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.text}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.textSecondary}>
+          <button
+            className="px-6 py-2 rounded-lg transition"
+            style={{
+              backgroundColor: currentColors.textSecondary,
+              color: "white",
+            }}
+            onMouseEnter={(e) =>
+              (e.target.style.backgroundColor = currentColors.text)
+            }
+            onMouseLeave={(e) =>
+              (e.target.style.backgroundColor = currentColors.textSecondary)
+            }
+          >
             Save as Draft
           </button>
-          <button className="px-6 py-2 rounded-lg transition" 
-                  style={{ backgroundColor: currentColors.accent, color: 'white' }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}>
+          <button
+            className="px-6 py-2 rounded-lg transition"
+            style={{ backgroundColor: currentColors.accent, color: "white" }}
+            onMouseEnter={(e) => (e.target.style.backgroundColor = "#1d4ed8")}
+            onMouseLeave={(e) =>
+              (e.target.style.backgroundColor = currentColors.accent)
+            }
+          >
             Publish Activity
           </button>
         </div>

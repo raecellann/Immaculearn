@@ -100,7 +100,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const createAccount = async (payload: any): Promise<boolean> => {
     const tempToken = sessionStorage.getItem("tempToken");
 
-    console.log(tempToken);
     if (!tempToken) return false;
     try {
       setIsLoading(true);
@@ -127,7 +126,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   };
 
   // Login function
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<void> => {
     try {
       setIsLoading(true);
       const response = await api.post(
@@ -139,13 +138,13 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       if (response.data.success) {
         // Fetch user profile after login
         await checkAuth();
-        return true;
+        return response.data;
       }
 
-      return false;
+      return response.data;
     } catch (err) {
       console.error("Login error:", err);
-      return false;
+      return;
     } finally {
       setIsLoading(false);
     }
@@ -208,7 +207,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     try {
       const response = await api.get(`/post/${space_uuid}`);
 
-      console.log(response.data);
       return response.data;
     } catch (error: any) {
       console.error("Get post error:", error);

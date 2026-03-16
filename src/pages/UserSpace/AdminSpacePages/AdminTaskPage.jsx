@@ -45,7 +45,6 @@ const AdminTaskPage = () => {
   const currentSpace = allSpaces.find(
     (space) => space.space_uuid === space_uuid,
   );
-  console.log("ACTIVE", currentSpace);
 
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
   const isOwnerSpace = currentSpace?.creator === user?.id;
@@ -450,7 +449,6 @@ const AdminTaskPage = () => {
   // Missing functions implementation
   const handleStatusChange = (index, newStatus) => {
     // This would update the task status in the backend
-    console.log(`Updating task ${index} status to ${newStatus}`);
     // Implementation would depend on your API structure
   };
 
@@ -623,9 +621,17 @@ const AdminTaskPage = () => {
     const file = event.target.files[0];
     if (file) {
       // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
+        toast.error(
+          "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        );
         return;
       }
 
@@ -655,40 +661,43 @@ const AdminTaskPage = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Create canvas to apply transformations
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = new Image();
-    
+
     img.onload = () => {
       // Set canvas size to cover photo dimensions
       canvas.width = 1200;
       canvas.height = 400;
-      
+
       // Calculate scale to cover the entire canvas
-      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const scale = Math.max(
+        canvas.width / img.width,
+        canvas.height / img.height,
+      );
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
-      
+
       // Calculate position based on user vertical positioning
       const x = (canvas.width - scaledWidth) / 2;
       const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-      
+
       // Draw the image with transformations
       ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-      
+
       // Convert to data URL and update
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setCoverPhotoUrl(dataUrl);
-      
+
       // Save to localStorage
       localStorage.setItem(`coverPhoto_${space_uuid}`, dataUrl);
-      
+
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       toast.success("Cover photo updated successfully!");
     };
-    
+
     img.src = coverPhotoUrl;
   };
 
@@ -703,7 +712,7 @@ const AdminTaskPage = () => {
     setCoverPhotoUrl(previousCoverPhotoUrl);
     setCoverPhotoPosition(50);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -713,7 +722,7 @@ const AdminTaskPage = () => {
     setCoverPhotoUrl(gradient);
     setShowCoverPhotoEditor(false); // Close editor since gradients don't need positioning
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -727,12 +736,15 @@ const AdminTaskPage = () => {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    
+
     const deltaY = e.clientY - dragStartY;
     const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
     const positionChange = (deltaY / containerHeight) * 100;
-    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
-    
+    const newPosition = Math.max(
+      0,
+      Math.min(100, dragStartPosition - positionChange),
+    );
+
     setCoverPhotoPosition(newPosition);
   };
 
@@ -745,13 +757,13 @@ const AdminTaskPage = () => {
     if (isDragging) {
       const handleGlobalMouseMove = (e) => handleMouseMove(e);
       const handleGlobalMouseUp = () => handleMouseUp();
-      
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-      
+
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+      document.addEventListener("mouseup", handleGlobalMouseUp);
+
       return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleGlobalMouseUp);
+        document.removeEventListener("mousemove", handleGlobalMouseMove);
+        document.removeEventListener("mouseup", handleGlobalMouseUp);
       };
     }
   }, [isDragging, dragStartY, dragStartPosition]);
@@ -772,14 +784,20 @@ const AdminTaskPage = () => {
   }, [coverPhotoUrl, space_uuid, showCoverPhotoEditor]);
 
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: isDarkMode ? "#161A20" : currentColors.background, color: currentColors.text }}>
+    <div
+      className="flex min-h-screen font-sans"
+      style={{
+        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       <div className="hidden lg:block">
         <Sidebar onLogoutClick={() => setShowLogout(true)} />
       </div>
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 z-40 md:block lg:hidden"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
@@ -798,7 +816,10 @@ const AdminTaskPage = () => {
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
-          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+          style={{
+            backgroundColor: currentColors.surface,
+            borderColor: currentColors.border,
+          }}
         >
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
@@ -811,21 +832,21 @@ const AdminTaskPage = () => {
         </div>
         <div className="lg:hidden h-16" />
         {/* ================= COVER ================= */}
-        <div 
+        <div
           className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
           onClick={handleCoverPhotoClick}
         >
           {coverPhotoUrl ? (
             <>
-              {coverPhotoUrl.includes('gradient') ? (
+              {coverPhotoUrl.includes("gradient") ? (
                 <div
                   className="w-full h-full"
                   style={{ background: coverPhotoUrl }}
                 />
               ) : (
-                <img 
-                  src={coverPhotoUrl} 
-                  alt="Space Cover" 
+                <img
+                  src={coverPhotoUrl}
+                  alt="Space Cover"
                   className="w-full h-full object-cover"
                 />
               )}
@@ -884,7 +905,10 @@ const AdminTaskPage = () => {
                 </>
               )}
               {isFriendSpace && (
-                <div className="flex items-center gap-2 p-2 rounded-md" style={{ backgroundColor: currentColors.surface }}>
+                <div
+                  className="flex items-center gap-2 p-2 rounded-md"
+                  style={{ backgroundColor: currentColors.surface }}
+                >
                   <span className="text-xs text-blue-400 break-all">
                     {currentSpace?.space_link || "Loading..."}
                   </span>
@@ -897,7 +921,7 @@ const AdminTaskPage = () => {
                       e.target.style.color = currentColors.text;
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = 'transparent';
+                      e.target.style.backgroundColor = "transparent";
                       e.target.style.color = currentColors.textSecondary;
                     }}
                     title="Copy to clipboard"
@@ -916,7 +940,10 @@ const AdminTaskPage = () => {
                 >
                   Stream
                 </button>
-                <button className="font-semibold border-b-2 pb-2" style={{ borderColor: currentColors.text }}>
+                <button
+                  className="font-semibold border-b-2 pb-2"
+                  style={{ borderColor: currentColors.text }}
+                >
                   Tasks
                 </button>
                 <button
@@ -959,7 +986,10 @@ const AdminTaskPage = () => {
               {isOwnerSpace && (
                 <button
                   className="ml-auto px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
-                  style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                  style={{
+                    backgroundColor: currentColors.accent,
+                    color: "white",
+                  }}
                   onClick={() => setIsCreatingTask(true)}
                 >
                   <FiFileText size={16} />
@@ -988,8 +1018,12 @@ const AdminTaskPage = () => {
                         key={index}
                         className="border-b hover:transition-colors"
                         style={{ borderColor: currentColors.border }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        onMouseEnter={(e) =>
+                          (e.target.style.backgroundColor = currentColors.hover)
+                        }
+                        onMouseLeave={(e) =>
+                          (e.target.style.backgroundColor = "transparent")
+                        }
                       >
                         <td className="py-3 px-4">
                           <div className="relative inline-block">
@@ -998,15 +1032,22 @@ const AdminTaskPage = () => {
                                 setOpenIndex(openIndex === index ? null : index)
                               }
                               className={`px-4 py-1 rounded-full text-sm ${statusStyles[task.task_status]}`}
-                              style={{ backgroundColor: currentColors.text, color: 'white' }}
+                              style={{
+                                backgroundColor: currentColors.text,
+                                color: "white",
+                              }}
                             >
                               {task.task_status} ▼
                             </button>
 
                             {openIndex === index && (
-                              <div 
+                              <div
                                 className="absolute left-0 mt-2 w-44 rounded-lg p-3 z-50 shadow-lg"
-                                style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}
+                                style={{
+                                  backgroundColor: currentColors.surface,
+                                  borderColor: currentColors.border,
+                                  border: "1px solid",
+                                }}
                               >
                                 <div className="flex flex-col gap-2">
                                   {Object.keys(statusStyles).map((st) => (
@@ -1016,7 +1057,10 @@ const AdminTaskPage = () => {
                                         handleStatusChange(index, st)
                                       }
                                       className={`w-full text-center px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 whitespace-nowrap`}
-                                      style={{ backgroundColor: currentColors.text, color: 'white' }}
+                                      style={{
+                                        backgroundColor: currentColors.text,
+                                        color: "white",
+                                      }}
                                     >
                                       {st}
                                     </button>
@@ -1049,7 +1093,10 @@ const AdminTaskPage = () => {
                         <td className="py-3 px-4">
                           <MainButton
                             className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium"
-                      style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                            style={{
+                              backgroundColor: currentColors.accent,
+                              color: "white",
+                            }}
                             onClick={() =>
                               navigate(
                                 `/task/${currentSpace?.space_uuid}/${currentSpace?.space_name}/${task.task_title}`,
@@ -1071,7 +1118,10 @@ const AdminTaskPage = () => {
                   <div
                     key={index}
                     className="border rounded-xl p-4"
-                    style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      borderColor: currentColors.border,
+                    }}
                   >
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-2">
@@ -1089,7 +1139,10 @@ const AdminTaskPage = () => {
                           setOpenIndex(openIndex === index ? null : index)
                         }
                         className={`px-3 py-1 rounded-full text-xs ${statusStyles[task.task_status]}`}
-                        style={{ backgroundColor: currentColors.text, color: 'white' }}
+                        style={{
+                          backgroundColor: currentColors.text,
+                          color: "white",
+                        }}
                       >
                         {task.task_status}
                       </button>
@@ -1125,7 +1178,10 @@ const AdminTaskPage = () => {
                       <a
                         href="/prof-task-view"
                         className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium"
-                      style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                        style={{
+                          backgroundColor: currentColors.accent,
+                          color: "white",
+                        }}
                       >
                         View Details
                       </a>
@@ -1161,13 +1217,22 @@ const AdminTaskPage = () => {
                           key={index}
                           className="border-b hover:transition-colors"
                           style={{ borderColor: currentColors.border }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                          onMouseEnter={(e) =>
+                            (e.target.style.backgroundColor =
+                              currentColors.hover)
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.backgroundColor = "transparent")
+                          }
                         >
                           <td className="py-3 px-4">
                             <span
                               className="px-6 py-1 rounded-full text-sm font-bold min-w-[120px] text-center"
-                              style={{ backgroundColor: currentColors.text, color: currentColors.textSecondary, border: `2px solid ${currentColors.border}` }}
+                              style={{
+                                backgroundColor: currentColors.text,
+                                color: currentColors.textSecondary,
+                                border: `2px solid ${currentColors.border}`,
+                              }}
                             >
                               Draft
                             </span>
@@ -1189,7 +1254,10 @@ const AdminTaskPage = () => {
                             <a
                               href="/prof-task-view"
                               className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium"
-                      style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                              style={{
+                                backgroundColor: currentColors.accent,
+                                color: "white",
+                              }}
                             >
                               View Details
                             </a>
@@ -1205,15 +1273,24 @@ const AdminTaskPage = () => {
                     <div
                       key={index}
                       className="border rounded-xl p-4"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
                     >
                       <div className="flex justify-between items-center mb-3">
                         <p className="text-sm font-semibold">
                           {draft.task_title}
                         </p>
 
-                        <span className="px-3 py-1 rounded-full text-xs border-2 font-bold"
-                          style={{ backgroundColor: currentColors.text, color: currentColors.textSecondary, borderColor: currentColors.border }}>
+                        <span
+                          className="px-3 py-1 rounded-full text-xs border-2 font-bold"
+                          style={{
+                            backgroundColor: currentColors.text,
+                            color: currentColors.textSecondary,
+                            borderColor: currentColors.border,
+                          }}
+                        >
                           Draft
                         </span>
                       </div>
@@ -1229,7 +1306,10 @@ const AdminTaskPage = () => {
                         <a
                           href="/prof-task-view"
                           className="block w-full text-center px-4 py-2 rounded-lg text-sm font-medium"
-                      style={{ backgroundColor: currentColors.accent, color: 'white' }}
+                          style={{
+                            backgroundColor: currentColors.accent,
+                            color: "white",
+                          }}
                         >
                           View Details
                         </a>
@@ -1245,9 +1325,16 @@ const AdminTaskPage = () => {
               <div className="flex justify-end mb-6">
                 <button
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow"
-                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'white' }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'}
+                  style={{
+                    backgroundColor: "rgba(0, 0, 0, 0.7)",
+                    color: "white",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.target.style.backgroundColor = "rgba(0, 0, 0, 0.9)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.backgroundColor = "rgba(0, 0, 0, 0.7)")
+                  }
                   onClick={() => {
                     resetTaskForm();
                     setIsCreatingTask(false);
@@ -1258,8 +1345,14 @@ const AdminTaskPage = () => {
                   <span className="sm:hidden">Back</span>
                 </button>
               </div>
-              <div className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8" 
-                   style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}>
+              <div
+                className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8"
+                style={{
+                  backgroundColor: currentColors.surface,
+                  borderColor: currentColors.border,
+                  border: "1px solid",
+                }}
+              >
                 <div className="flex flex-col lg:flex-row gap-6">
                   <div className="flex-1 flex flex-col gap-4">
                     <label className="font-semibold text-lg">
@@ -1271,7 +1364,10 @@ const AdminTaskPage = () => {
                       value={taskTitle}
                       onChange={(e) => setTaskTitle(e.target.value)}
                       className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
                       placeholder="Enter task title"
                     />
 
@@ -1283,7 +1379,10 @@ const AdminTaskPage = () => {
                       value={taskCategory}
                       onChange={(e) => setTaskCategory(e.target.value)}
                       className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500 w-full"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
                     >
                       {taskCategories.map((category) => (
                         <option key={category.value} value={category.value}>
@@ -1296,8 +1395,13 @@ const AdminTaskPage = () => {
                     <label className="font-semibold">
                       Instruction (optional)
                     </label>
-                    <div className="rounded-lg border focus-within:border-blue-500"
-                         style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+                    <div
+                      className="rounded-lg border focus-within:border-blue-500"
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
+                    >
                       <div
                         ref={instructionRef}
                         contentEditable
@@ -1305,15 +1409,25 @@ const AdminTaskPage = () => {
                         style={{ color: currentColors.text }}
                         suppressContentEditableWarning
                       />
-                      <div className="border-t" style={{ borderColor: currentColors.border }} />
-                      <div className="flex gap-4 px-4 py-2" style={{ color: currentColors.textSecondary }}>
+                      <div
+                        className="border-t"
+                        style={{ borderColor: currentColors.border }}
+                      />
+                      <div
+                        className="flex gap-4 px-4 py-2"
+                        style={{ color: currentColors.textSecondary }}
+                      >
                         <button
                           type="button"
                           onClick={() => applyFormat("bold")}
                           className="transition-colors"
                           style={{ color: currentColors.textSecondary }}
-                          onMouseEnter={(e) => e.target.style.color = currentColors.text}
-                          onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                          onMouseEnter={(e) =>
+                            (e.target.style.color = currentColors.text)
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.color = currentColors.textSecondary)
+                          }
                         >
                           <FiBold />
                         </button>
@@ -1323,8 +1437,12 @@ const AdminTaskPage = () => {
                           onClick={() => applyFormat("italic")}
                           className="transition-colors"
                           style={{ color: currentColors.textSecondary }}
-                          onMouseEnter={(e) => e.target.style.color = currentColors.text}
-                          onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                          onMouseEnter={(e) =>
+                            (e.target.style.color = currentColors.text)
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.color = currentColors.textSecondary)
+                          }
                         >
                           <FiItalic />
                         </button>
@@ -1334,8 +1452,12 @@ const AdminTaskPage = () => {
                           onClick={() => applyFormat("underline")}
                           className="transition-colors"
                           style={{ color: currentColors.textSecondary }}
-                          onMouseEnter={(e) => e.target.style.color = currentColors.text}
-                          onMouseLeave={(e) => e.target.style.color = currentColors.textSecondary}
+                          onMouseEnter={(e) =>
+                            (e.target.style.color = currentColors.text)
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.color = currentColors.textSecondary)
+                          }
                         >
                           <FiUnderline />
                         </button>
@@ -1352,7 +1474,10 @@ const AdminTaskPage = () => {
                       value={score}
                       onChange={(e) => handleScoreChange(e.target.value)}
                       className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
                       placeholder="Enter score"
                     />
                     {score && criteria.length > 0 && (
@@ -1371,7 +1496,10 @@ const AdminTaskPage = () => {
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
                       className="rounded-lg px-4 py-2 outline-none border focus:border-blue-500"
-                      style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
                     />
 
                     <label className="font-semibold">File (optional)</label>
@@ -1380,9 +1508,19 @@ const AdminTaskPage = () => {
                         <button
                           onClick={() => fileInputRef.current?.click()}
                           className="px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                          style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border, border: '1px solid' }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.hover}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.surface}
+                          style={{
+                            backgroundColor: currentColors.surface,
+                            borderColor: currentColors.border,
+                            border: "1px solid",
+                          }}
+                          onMouseEnter={(e) =>
+                            (e.target.style.backgroundColor =
+                              currentColors.hover)
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.backgroundColor =
+                              currentColors.surface)
+                          }
                         >
                           <FiUploadCloud size={16} />
                           Choose File
@@ -1713,14 +1851,7 @@ const AdminTaskPage = () => {
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                     onClick={() => {
                       // Handle task creation logic here
-                      console.log("Creating task:", {
-                        taskTitle,
-                        instruction,
-                        score,
-                        dueDate,
-                        taskCategory,
-                        criteria,
-                      });
+
                       setIsCreatingTask(false);
                     }}
                   >
@@ -1810,7 +1941,9 @@ const AdminTaskPage = () => {
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Gradient Options */}
               <div className="mb-6">
-                <p className="text-sm font-medium text-white mb-3">Color & Gradient</p>
+                <p className="text-sm font-medium text-white mb-3">
+                  Color & Gradient
+                </p>
                 <div className="grid grid-cols-4 gap-2">
                   {colorOptions.map((color, i) => (
                     <div
@@ -1824,18 +1957,20 @@ const AdminTaskPage = () => {
               </div>
 
               {/* Image Positioning (only show if it's an image, not gradient) */}
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <div className="mb-6">
-                  <p className="text-sm font-medium text-white mb-3">Position Image</p>
+                  <p className="text-sm font-medium text-white mb-3">
+                    Position Image
+                  </p>
                   <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                     <div
                       ref={coverPhotoEditorRef}
-                      className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                      className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
                       style={{
                         backgroundImage: `url(${coverPhotoUrl})`,
-                        backgroundSize: 'cover',
+                        backgroundSize: "cover",
                         backgroundPosition: `center ${coverPhotoPosition}%`,
-                        backgroundRepeat: 'no-repeat',
+                        backgroundRepeat: "no-repeat",
                       }}
                       onMouseDown={handleMouseDown}
                     />
@@ -1861,7 +1996,7 @@ const AdminTaskPage = () => {
               >
                 Cancel
               </button>
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <button
                   onClick={handleCoverPhotoSave}
                   className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"

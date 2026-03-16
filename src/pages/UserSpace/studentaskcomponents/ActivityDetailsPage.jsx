@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../component/sidebar";
 import { useParams, useNavigate } from "react-router";
-import { FiArrowLeft, FiCalendar, FiUsers, FiClock, FiFileText, FiCheckCircle, FiDownload } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiCalendar,
+  FiUsers,
+  FiClock,
+  FiFileText,
+  FiCheckCircle,
+  FiDownload,
+} from "react-icons/fi";
 import { useTasks } from "../../../hooks/useTasks";
 import { useUser } from "../../../contexts/user/useUser";
 import { useSpace } from "../../../contexts/space/useSpace";
@@ -19,13 +27,11 @@ const ActivityDetailsPage = () => {
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
   // Use useTasks hook to get uploaded tasks
-  const {
-    uploadedTasksQuery,
-  } = useTasks(space_uuid);
+  const { uploadedTasksQuery } = useTasks(space_uuid);
 
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  
+
   // sticky header scroll state
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -51,7 +57,7 @@ const ActivityDetailsPage = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [isAuthenticated, navigate]);
 
@@ -77,33 +83,29 @@ const ActivityDetailsPage = () => {
     const fetchTaskDetails = async () => {
       try {
         setLoading(true);
-        
+
         // Get uploaded tasks from the useTasks hook - same as ProfViewActivity
         const taskData = uploadedTasksQuery?.data || [];
         const uploadedTask = Array.isArray(taskData)
           ? taskData
           : taskData?.data || [];
-        
+
         // Find task by task_id - same logic as ProfViewActivity
-        let foundTask = uploadedTask.find(task => 
-          Number(task.task_id) === Number(task_id)
+        let foundTask = uploadedTask.find(
+          (task) => Number(task.task_id) === Number(task_id),
         );
-        
-        console.log("Found task:", foundTask);
-        console.log("All task fields:", Object.keys(foundTask || {}));
-        console.log("Score field:", foundTask?.score, foundTask?.task_score, foundTask?.total_score);
-        
+
         // If not found in uploaded tasks, try localStorage for backwards compatibility
         if (!foundTask) {
           const storedTasks = localStorage.getItem("quizTask");
           if (storedTasks) {
             const parsedTasks = JSON.parse(storedTasks);
-            foundTask = parsedTasks.find(task => 
-              task.task_id === task_id || task.id === task_id
+            foundTask = parsedTasks.find(
+              (task) => task.task_id === task_id || task.id === task_id,
             );
           }
         }
-        
+
         // If still not found, create placeholder
         if (!foundTask) {
           foundTask = {
@@ -113,11 +115,10 @@ const ActivityDetailsPage = () => {
             instruction: "",
             score: null,
             due_date: null,
-            attachments: []
+            attachments: [],
           };
         }
-        
-        console.log("Final task data:", foundTask);
+
         setTask(foundTask);
         setLoading(false);
       } catch (err) {
@@ -146,12 +147,12 @@ const ActivityDetailsPage = () => {
     if (!dueDate) return "No due date set";
     try {
       const date = new Date(dueDate);
-      return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
       return "Invalid date";
@@ -160,29 +161,35 @@ const ActivityDetailsPage = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'submitted':
-        return 'text-green-600 dark:text-green-400';
-      case 'graded':
-        return 'text-blue-600 dark:text-blue-400';
+      case "submitted":
+        return "text-green-600 dark:text-green-400";
+      case "graded":
+        return "text-blue-600 dark:text-blue-400";
       default:
-        return 'text-gray-600 dark:text-gray-400';
+        return "text-gray-600 dark:text-gray-400";
     }
   };
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'submitted':
-        return 'Submitted';
-      case 'graded':
-        return 'Graded';
+      case "submitted":
+        return "Submitted";
+      case "graded":
+        return "Graded";
       default:
-        return 'Not Submitted';
+        return "Not Submitted";
     }
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+      <div
+        className="flex min-h-screen"
+        style={{
+          backgroundColor: currentColors.background,
+          color: currentColors.text,
+        }}
+      >
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -195,7 +202,13 @@ const ActivityDetailsPage = () => {
 
   if (error) {
     return (
-      <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+      <div
+        className="flex min-h-screen"
+        style={{
+          backgroundColor: currentColors.background,
+          color: currentColors.text,
+        }}
+      >
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
@@ -210,7 +223,13 @@ const ActivityDetailsPage = () => {
 
   if (!task) {
     return (
-      <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+      <div
+        className="flex min-h-screen"
+        style={{
+          backgroundColor: currentColors.background,
+          color: currentColors.text,
+        }}
+      >
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <p className="mb-4">Activity not found</p>
@@ -224,8 +243,13 @@ const ActivityDetailsPage = () => {
   }
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
-
+    <div
+      className="flex min-h-screen"
+      style={{
+        backgroundColor: currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -250,7 +274,6 @@ const ActivityDetailsPage = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col relative">
-
         {/* 🔥 Sticky Mobile Header */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
@@ -259,7 +282,7 @@ const ActivityDetailsPage = () => {
           style={{
             backgroundColor: currentColors.surface,
             borderColor: currentColors.border,
-            color: currentColors.text
+            color: currentColors.text,
           }}
         >
           <div className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
@@ -270,13 +293,14 @@ const ActivityDetailsPage = () => {
             >
               ☰
             </button>
-            <h1 className="text-sm sm:text-base md:text-lg font-bold truncate">{task.task_title || 'Activity Details'}</h1>
+            <h1 className="text-sm sm:text-base md:text-lg font-bold truncate">
+              {task.task_title || "Activity Details"}
+            </h1>
           </div>
         </div>
 
         {/* 🔽 Added spacing here (pt-16 sm:pt-20 lg:pt-10) */}
         <div className="flex-1 p-3 sm:p-4 md:p-6 lg:p-10 pt-16 sm:pt-20 lg:pt-10 overflow-y-auto">
-        
           {/* Back Button */}
           <div className="mb-3 sm:mb-4 flex items-center">
             <button
@@ -289,29 +313,50 @@ const ActivityDetailsPage = () => {
           </div>
 
           {/* Task Information */}
-          <div className="p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-lg max-w-4xl sm:max-w-5xl mx-auto" style={{ 
-            backgroundColor: currentColors.surface,
-            border: `1px solid ${currentColors.border}`
-          }}>
-
-            <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 font-inter">Task Information:</h2>
-            <hr className="mb-3 sm:mb-4" style={{ borderColor: currentColors.border }} />
+          <div
+            className="p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-lg max-w-4xl sm:max-w-5xl mx-auto"
+            style={{
+              backgroundColor: currentColors.surface,
+              border: `1px solid ${currentColors.border}`,
+            }}
+          >
+            <h2 className="text-sm sm:text-base lg:text-lg font-semibold mb-3 sm:mb-4 font-inter">
+              Task Information:
+            </h2>
+            <hr
+              className="mb-3 sm:mb-4"
+              style={{ borderColor: currentColors.border }}
+            />
 
             <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8 lg:mb-10">
-              
               <div className="space-y-2 sm:space-y-3">
                 <p className="font-semibold font-inter text-lg sm:text-xl md:text-2xl lg:text-3xl leading-tight">
                   {task.task_title}
                 </p>
                 <div className="space-y-1 sm:space-y-2">
-                  <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
-                    Due Date: <span style={{ opacity: 1 }}>{formatDueDate(task.due_date)}</span>
+                  <p
+                    className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10"
+                    style={{ opacity: 0.7 }}
+                  >
+                    Due Date:{" "}
+                    <span style={{ opacity: 1 }}>
+                      {formatDueDate(task.due_date)}
+                    </span>
                   </p>
-                  <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
-                    Category: <span style={{ opacity: 1 }}>{getCategoryDisplay(task.task_category)}</span>
+                  <p
+                    className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10"
+                    style={{ opacity: 0.7 }}
+                  >
+                    Category:{" "}
+                    <span style={{ opacity: 1 }}>
+                      {getCategoryDisplay(task.task_category)}
+                    </span>
                   </p>
                   {(task.instruction || task.task_instruction) && (
-                    <p className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10" style={{ opacity: 0.7 }}>
+                    <p
+                      className="text-xs sm:text-sm flex flex-col sm:flex-row gap-1 sm:gap-2 md:gap-10"
+                      style={{ opacity: 0.7 }}
+                    >
                       Instructions:{" "}
                       <span style={{ opacity: 1 }} className="break-words">
                         {task.instruction || task.task_instruction}
@@ -320,7 +365,6 @@ const ActivityDetailsPage = () => {
                   )}
                 </div>
               </div>
-
             </div>
 
             {/* Attachments */}
@@ -335,22 +379,34 @@ const ActivityDetailsPage = () => {
                     <div
                       key={index}
                       className="flex items-center justify-between p-3 rounded-lg border"
-                      style={{ 
+                      style={{
                         backgroundColor: currentColors.background,
-                        borderColor: currentColors.border
+                        borderColor: currentColors.border,
                       }}
                     >
                       <div className="flex items-center space-x-3">
-                        <FiFileText style={{ color: currentColors.textSecondary }} />
+                        <FiFileText
+                          style={{ color: currentColors.textSecondary }}
+                        />
                         <div>
-                          <p style={{ color: currentColors.text }} className="font-medium">{attachment.name}</p>
-                          <p style={{ color: currentColors.textSecondary }} className="text-sm">{attachment.size}</p>
+                          <p
+                            style={{ color: currentColors.text }}
+                            className="font-medium"
+                          >
+                            {attachment.name}
+                          </p>
+                          <p
+                            style={{ color: currentColors.textSecondary }}
+                            className="text-sm"
+                          >
+                            {attachment.size}
+                          </p>
                         </div>
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(attachment.url, '_blank')}
+                        onClick={() => window.open(attachment.url, "_blank")}
                         className="flex items-center gap-2"
                       >
                         <FiDownload />
@@ -378,7 +434,6 @@ const ActivityDetailsPage = () => {
                 Back to Tasks
               </Button>
             </div>
-
           </div>
         </div>
       </div>

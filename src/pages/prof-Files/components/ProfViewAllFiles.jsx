@@ -18,8 +18,12 @@ const ProfViewFiles = () => {
 
   const navigate = useNavigate();
   const { isAuthenticated } = useUser();
-  const { userSpaces, courseSpaces, friendSpaces, isLoading: spaceLoading } =
-    useSpace();
+  const {
+    userSpaces,
+    courseSpaces,
+    friendSpaces,
+    isLoading: spaceLoading,
+  } = useSpace();
 
   const { space_uuid, space_name } = useParams();
 
@@ -28,26 +32,23 @@ const ProfViewFiles = () => {
     ...(courseSpaces || []),
     ...(friendSpaces || []),
   ];
-  
+
   // Remove duplicates by space_id
   const uniqueSpaces = allSpaces.filter(
     (space, index, self) =>
-      index === self.findIndex(s => s.space_id === space.space_id)
+      index === self.findIndex((s) => s.space_id === space.space_id),
   );
-  
+
   const currentSpace = uniqueSpaces.find(
-    (space) => space.space_uuid === space_uuid
+    (space) => space.space_uuid === space_uuid,
   );
 
   // Safe display name (database first, URL fallback)
   const displayName =
-    currentSpace?.space_name ||
-    decodeURIComponent(space_name || "");
+    currentSpace?.space_name || decodeURIComponent(space_name || "");
 
   const { resources } = useFile();
   const files = resources || [];
-  
-  console.log(files)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -78,7 +79,10 @@ const ProfViewFiles = () => {
 
   if (spaceLoading) {
     return (
-      <div className="flex h-screen justify-center items-center" style={{ color: currentColors.text }}>
+      <div
+        className="flex h-screen justify-center items-center"
+        style={{ color: currentColors.text }}
+      >
         Loading spaces...
       </div>
     );
@@ -86,7 +90,10 @@ const ProfViewFiles = () => {
 
   if (!currentSpace) {
     return (
-      <div className="flex h-screen justify-center items-center" style={{ color: currentColors.text }}>
+      <div
+        className="flex h-screen justify-center items-center"
+        style={{ color: currentColors.text }}
+      >
         Space not found.
       </div>
     );
@@ -105,7 +112,13 @@ const ProfViewFiles = () => {
   /* ================= UI ================= */
 
   return (
-    <div className="flex min-h-screen font-sans" style={{ backgroundColor: currentColors.background, color: currentColors.text }}>
+    <div
+      className="flex min-h-screen font-sans"
+      style={{
+        backgroundColor: currentColors.background,
+        color: currentColors.text,
+      }}
+    >
       {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block">
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -125,7 +138,7 @@ const ProfViewFiles = () => {
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
           backgroundColor: currentColors.surface,
-          color: currentColors.text
+          color: currentColors.text,
         }}
       >
         <ProfSidebar onLogoutClick={() => setShowLogout(true)} />
@@ -141,7 +154,7 @@ const ProfViewFiles = () => {
           style={{
             backgroundColor: currentColors.surface,
             borderColor: currentColors.border,
-            color: currentColors.text
+            color: currentColors.text,
           }}
         >
           <div className="p-4 flex items-center gap-4">
@@ -158,7 +171,10 @@ const ProfViewFiles = () => {
 
         {/* PAGE CONTENT */}
         <div className="flex-1 p-4 lg:p-10 overflow-y-auto pt-20 sm:pt-24 lg:pt-10">
-          <h1 className="hidden lg:block text-4xl font-bold text-center mb-10" style={{ color: currentColors.text }}>
+          <h1
+            className="hidden lg:block text-4xl font-bold text-center mb-10"
+            style={{ color: currentColors.text }}
+          >
             {space_name} Files
           </h1>
 
@@ -168,8 +184,12 @@ const ProfViewFiles = () => {
                 onClick={() => navigate(-1)}
                 className="bg-transparent border-none p-2 text-lg font-medium transition-colors"
                 style={{ color: currentColors.textSecondary }}
-                onMouseEnter={(e) => e.currentTarget.style.color = currentColors.text}
-                onMouseLeave={(e) => e.currentTarget.style.color = currentColors.textSecondary}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.color = currentColors.text)
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.color = currentColors.textSecondary)
+                }
               >
                 ← Back
               </button>
@@ -178,11 +198,14 @@ const ProfViewFiles = () => {
             {/* ================= MOBILE (CARD VIEW) ================= */}
             <div className="flex flex-col gap-4 block md:hidden">
               {files.length === 0 && (
-                <div className="rounded-lg p-6 text-center border" style={{
-                  backgroundColor: currentColors.surface,
-                  borderColor: currentColors.border,
-                  color: currentColors.textSecondary
-                }}>
+                <div
+                  className="rounded-lg p-6 text-center border"
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    borderColor: currentColors.border,
+                    color: currentColors.textSecondary,
+                  }}
+                >
                   <div>No File Found.</div>
                 </div>
               )}
@@ -192,37 +215,48 @@ const ProfViewFiles = () => {
                   className="rounded-lg p-4 flex flex-col gap-3 border"
                   style={{
                     backgroundColor: currentColors.surface,
-                    borderColor: currentColors.border
+                    borderColor: currentColors.border,
                   }}
                 >
-                  <p className="text-sm font-medium" style={{ color: '#10B981' }}>
-                    ● {file.lesson_name || 'No Lesson'}
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: "#10B981" }}
+                  >
+                    ● {file.lesson_name || "No Lesson"}
                   </p>
 
-                  <p className="font-medium break-words" style={{ color: '#3B82F6' }}>
+                  <p
+                    className="font-medium break-words"
+                    style={{ color: "#3B82F6" }}
+                  >
                     {formatFileTitle(file.file_name)}
                   </p>
 
                   <p className="text-sm">
-                    <span style={{ color: currentColors.textSecondary }}>Date Posted:</span>{" "}
+                    <span style={{ color: currentColors.textSecondary }}>
+                      Date Posted:
+                    </span>{" "}
                     {file.created_at}
                   </p>
 
-                  
                   <div className="flex items-center justify-between">
-                    <span 
+                    <span
                       onClick={() =>
                         navigate(
-                          `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}`
+                          `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}`,
                         )
                       }
                       className="px-3 py-1 text-xs rounded-md cursor-pointer transition"
                       style={{
-                        backgroundColor: '#3B82F6',
-                        color: 'white'
+                        backgroundColor: "#3B82F6",
+                        color: "white",
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#2563EB")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#3B82F6")
+                      }
                     >
                       View File
                     </span>
@@ -232,22 +266,56 @@ const ProfViewFiles = () => {
             </div>
 
             {/* ================= TABLET (RESPONSIVE TABLE VIEW) ================= */}
-            <div className="hidden md:block lg:hidden rounded-lg overflow-hidden" style={{
-              backgroundColor: currentColors.surface
-            }}>
+            <div
+              className="hidden md:block lg:hidden rounded-lg overflow-hidden"
+              style={{
+                backgroundColor: currentColors.surface,
+              }}
+            >
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[500px] border-collapse">
                   <thead>
-                    <tr className="border-b text-left" style={{ borderColor: currentColors.border }}>
-                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Lesson Name</th>
-                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Name</th>
-                      
-                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Type</th>
-                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Date</th>
-                      <th className="px-4 py-3 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Action</th>
+                    <tr
+                      className="border-b text-left"
+                      style={{ borderColor: currentColors.border }}
+                    >
+                      <th
+                        className="px-4 py-3 text-xs uppercase"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        Lesson Name
+                      </th>
+                      <th
+                        className="px-4 py-3 text-xs uppercase"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        File Name
+                      </th>
+
+                      <th
+                        className="px-4 py-3 text-xs uppercase"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        File Type
+                      </th>
+                      <th
+                        className="px-4 py-3 text-xs uppercase"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        Date
+                      </th>
+                      <th
+                        className="px-4 py-3 text-xs uppercase"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        Action
+                      </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y" style={{ borderColor: currentColors.border }}>
+                  <tbody
+                    className="divide-y"
+                    style={{ borderColor: currentColors.border }}
+                  >
                     {files.length === 0 && (
                       <tr>
                         <td
@@ -263,40 +331,67 @@ const ProfViewFiles = () => {
                       <tr
                         key={file.file_id || `file-${index}`}
                         className="transition"
-                        style={{ backgroundColor: 'transparent' }}
+                        style={{ backgroundColor: "transparent" }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = currentColors.hover;
+                          e.currentTarget.style.backgroundColor =
+                            currentColors.hover;
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.backgroundColor = "transparent";
                         }}
                       >
                         <td className="px-4 py-3">
-                          <span className="text-xs" style={{ color: currentColors.text }}>{file.lesson_name || 'No Lesson'}</span>
+                          <span
+                            className="text-xs"
+                            style={{ color: currentColors.text }}
+                          >
+                            {file.lesson_name || "No Lesson"}
+                          </span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-medium text-sm truncate max-w-[200px]" title={formatFileTitle(file.file_name)} style={{ color: currentColors.text }}>
+                          <div
+                            className="font-medium text-sm truncate max-w-[200px]"
+                            title={formatFileTitle(file.file_name)}
+                            style={{ color: currentColors.text }}
+                          >
                             {formatFileTitle(file.file_name)}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm" style={{ color: currentColors.textSecondary }}>
-                          {file.file_name?.split('.').pop()?.toUpperCase() || 'Unknown'}
+                        <td
+                          className="px-4 py-3 text-sm"
+                          style={{ color: currentColors.textSecondary }}
+                        >
+                          {file.file_name?.split(".").pop()?.toUpperCase() ||
+                            "Unknown"}
                         </td>
-                        <td className="px-4 py-3 text-sm" style={{ color: currentColors.textSecondary }}>
+                        <td
+                          className="px-4 py-3 text-sm"
+                          style={{ color: currentColors.textSecondary }}
+                        >
                           {new Date(file.created_at).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-3">
-                          <span 
+                          <span
                             onClick={() =>
                               navigate(
                                 // /files/:space_name/:space_uuid/:orig_file_name/:file_id
-                                `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}` 
+                                `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}`,
                               )
                             }
-                            className="px-2 py-1 text-xs rounded-md cursor-pointer transition" style={{
-                              backgroundColor: '#3B82F6',
-                              color: 'white'
-                            }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}>
+                            className="px-2 py-1 text-xs rounded-md cursor-pointer transition"
+                            style={{
+                              backgroundColor: "#3B82F6",
+                              color: "white",
+                            }}
+                            onMouseEnter={(e) =>
+                              (e.currentTarget.style.backgroundColor =
+                                "#2563EB")
+                            }
+                            onMouseLeave={(e) =>
+                              (e.currentTarget.style.backgroundColor =
+                                "#3B82F6")
+                            }
+                          >
                             View
                           </span>
                         </td>
@@ -308,20 +403,49 @@ const ProfViewFiles = () => {
             </div>
 
             {/* ================= LAPTOP & DESKTOP (TABLE VIEW) ================= */}
-            <div className="hidden lg:block rounded-lg overflow-hidden" style={{
-              backgroundColor: currentColors.surface
-            }}>
+            <div
+              className="hidden lg:block rounded-lg overflow-hidden"
+              style={{
+                backgroundColor: currentColors.surface,
+              }}
+            >
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b text-left" style={{ borderColor: currentColors.border }}>
-                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Lesson Name</th>
-                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>File Name</th>
-                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Date Posted</th>
-                    <th className="px-6 py-4 text-xs uppercase" style={{ color: currentColors.textSecondary }}>Action</th>
+                  <tr
+                    className="border-b text-left"
+                    style={{ borderColor: currentColors.border }}
+                  >
+                    <th
+                      className="px-6 py-4 text-xs uppercase"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Lesson Name
+                    </th>
+                    <th
+                      className="px-6 py-4 text-xs uppercase"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      File Name
+                    </th>
+                    <th
+                      className="px-6 py-4 text-xs uppercase"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Date Posted
+                    </th>
+                    <th
+                      className="px-6 py-4 text-xs uppercase"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Action
+                    </th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y" style={{ borderColor: currentColors.border }}>
+                <tbody
+                  className="divide-y"
+                  style={{ borderColor: currentColors.border }}
+                >
                   {files.length === 0 && (
                     <tr>
                       <td
@@ -338,35 +462,56 @@ const ProfViewFiles = () => {
                     <tr
                       key={file.file_id || `file-${index}`}
                       className="transition"
-                      style={{ backgroundColor: 'transparent' }}
+                      style={{ backgroundColor: "transparent" }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = currentColors.hover;
+                        e.currentTarget.style.backgroundColor =
+                          currentColors.hover;
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.backgroundColor = "transparent";
                       }}
                     >
-                      <td className="px-6 py-4 font-medium" style={{ color: currentColors.text }}>{file.lesson_name || 'No Lesson'}</td>
-                      
-                      <td className="px-6 py-4 font-medium" style={{ color: currentColors.text }}>{formatFileTitle(file.file_name)}</td>
-                      <td className="px-6 py-4 text-sm" style={{ color: currentColors.textSecondary }}>
+                      <td
+                        className="px-6 py-4 font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        {file.lesson_name || "No Lesson"}
+                      </td>
+
+                      <td
+                        className="px-6 py-4 font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        {formatFileTitle(file.file_name)}
+                      </td>
+                      <td
+                        className="px-6 py-4 text-sm"
+                        style={{ color: currentColors.textSecondary }}
+                      >
                         {new Date(file.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
-                        <span 
+                        <span
                           onClick={() =>
                             navigate(
-                              `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}` 
+                              `/prof/files/${encodeURIComponent(space_name)}/${space_uuid}/${encodeURIComponent(file.file_name)}/${file.file_id}`,
                             )
                           }
-                          className="px-2 py-1 text-xs rounded-md cursor-pointer transition" style={{
-                            backgroundColor: '#3B82F6',
-                            color: 'white'
-                          }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3B82F6'}>
+                          className="px-2 py-1 text-xs rounded-md cursor-pointer transition"
+                          style={{
+                            backgroundColor: "#3B82F6",
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.backgroundColor = "#2563EB")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.backgroundColor = "#3B82F6")
+                          }
+                        >
                           View
                         </span>
                       </td>
-
                     </tr>
                   ))}
                 </tbody>

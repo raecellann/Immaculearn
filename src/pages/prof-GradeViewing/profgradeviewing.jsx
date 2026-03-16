@@ -89,8 +89,6 @@ const ProfGradeRecordPage = () => {
       finals: parseFloat(normalizeGrade(editForm.finals)) || 0,
     };
 
-    console.log(gradesData);
-
     try {
       updateStudentGrades.mutate(gradesData);
       setEditingStudent(null);
@@ -114,15 +112,15 @@ const ProfGradeRecordPage = () => {
         const grades = student?.grades || {};
         const finalAverage = calculateFinalAverage(grades);
         const passFailStatus = getPassFailStatus(grades);
-        
+
         return {
           "Student Name": formatName(student.fullname),
-          "Prelim": getGradeDisplay(grades, "prelim"),
-          "Midterm": getGradeDisplay(grades, "midterm"),
+          Prelim: getGradeDisplay(grades, "prelim"),
+          Midterm: getGradeDisplay(grades, "midterm"),
           "Pre-Final": getGradeDisplay(grades, "prefinals"),
-          "Final": getGradeDisplay(grades, "finals"),
+          Final: getGradeDisplay(grades, "finals"),
           "Final Average": finalAverage,
-          "Remarks": passFailStatus,
+          Remarks: passFailStatus,
         };
       });
 
@@ -144,13 +142,16 @@ const ProfGradeRecordPage = () => {
       ws["!cols"] = colWidths;
 
       // Generate filename with course name and date
-      const courseName = selectedSubject.space_name.replace(/[^a-zA-Z0-9]/g, "_");
+      const courseName = selectedSubject.space_name.replace(
+        /[^a-zA-Z0-9]/g,
+        "_",
+      );
       const date = new Date().toISOString().split("T")[0];
       const filename = `${courseName}_Grades_${date}.xlsx`;
 
       // Download the file
       XLSX.writeFile(wb, filename);
-      
+
       toast.success("Grades exported successfully!");
     } catch (error) {
       console.error("Error exporting grades:", error);
@@ -542,10 +543,14 @@ const ProfGradeRecordPage = () => {
                     color: "white",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = isDarkMode ? "#047857" : "#059669";
+                    e.currentTarget.style.backgroundColor = isDarkMode
+                      ? "#047857"
+                      : "#059669";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = isDarkMode ? "#059669" : "#10b981";
+                    e.currentTarget.style.backgroundColor = isDarkMode
+                      ? "#059669"
+                      : "#10b981";
                   }}
                 >
                   <span>📊</span>
@@ -747,7 +752,10 @@ const ProfGradeRecordPage = () => {
                                 Final:{" "}
                                 {getGradeDisplay(student?.grades, "finals")}
                               </p>
-                              {student?.grades?.finals && student?.grades.finals !== "-" && student?.grades.finals !== "N/A" && student?.grades.finals !== "" ? (
+                              {student?.grades?.finals &&
+                              student?.grades.finals !== "-" &&
+                              student?.grades.finals !== "N/A" &&
+                              student?.grades.finals !== "" ? (
                                 <>
                                   <p
                                     style={{
@@ -1055,7 +1063,10 @@ const ProfGradeRecordPage = () => {
                                             "finals",
                                           )}
                                         </td>
-                                        {student?.grades?.finals && student?.grades.finals !== "-" && student?.grades.finals !== "N/A" && student?.grades.finals !== "" ? (
+                                        {student?.grades?.finals &&
+                                        student?.grades.finals !== "-" &&
+                                        student?.grades.finals !== "N/A" &&
+                                        student?.grades.finals !== "" ? (
                                           <>
                                             <td
                                               className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"

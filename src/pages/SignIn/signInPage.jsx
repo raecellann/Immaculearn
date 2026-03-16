@@ -94,6 +94,8 @@ const LoginPage = () => {
         return;
       }
 
+      toast.success("Successfully Log in!");
+
       if (data.role === "student") {
         navigate(`/home`);
       } else if (data.role === "professor") {
@@ -127,7 +129,6 @@ const LoginPage = () => {
     ];
 
     const messageHandler = async (event) => {
-      console.log("HELLOOOOO", event.origin, window.location.origin);
       if (!allowedOrigins.includes(event.origin)) return;
 
       if (event.data.type === "OAUTH_SUCCESS") {

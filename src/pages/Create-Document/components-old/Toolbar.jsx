@@ -274,7 +274,6 @@ const Toolbar = ({
   };
 
   const handleImageAction = (action) => {
-    console.log(`Image action: ${action}`);
     setIsImageDropdownOpen(false);
   };
 

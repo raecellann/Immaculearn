@@ -231,11 +231,6 @@ const GroupActivityBuilder = ({
       return;
     }
 
-    console.log(
-      `Group ${groupId} saved with leader: ${group.leader}, members:`,
-      validMembers,
-    );
-
     const updatedGroups = [...groups];
     updatedGroups[groupId - 1].isSaved = true;
     updatedGroups[groupId - 1].showInputs = false;
@@ -246,9 +241,6 @@ const GroupActivityBuilder = ({
   const addMemberToGroup = (memberName) => {
     const activeGroupData = groups[activeGroup - 1];
     if (!activeGroupData.showInputs) {
-      console.log(
-        'Cannot add member: Group inputs are not visible. Click "Add People" first.',
-      );
       return;
     }
 
@@ -260,9 +252,6 @@ const GroupActivityBuilder = ({
     const totalCurrentSize = currentGroupSize + currentMembersCount;
 
     if (totalCurrentSize >= 10) {
-      console.log(
-        "Cannot add member: Group has reached maximum size of 10 members",
-      );
       alert("Group has reached maximum size of 10 members");
       return;
     }
@@ -275,7 +264,6 @@ const GroupActivityBuilder = ({
       activeGroupDataUpdated.leader.trim() === ""
     ) {
       activeGroupDataUpdated.leader = memberName;
-      console.log(`Added "${memberName}" as leader of Group ${activeGroup}`);
     } else {
       // Check if this would exceed the 1 member minimum requirement
       if (currentMembersCount >= 1) {
@@ -295,9 +283,6 @@ const GroupActivityBuilder = ({
           } else {
             targetGroup.members.push(memberName);
           }
-          console.log(
-            `Added "${memberName}" to Group ${targetGroup.id} as member (redistributed from Group ${activeGroup})`,
-          );
         } else {
           const activeGroupMembers = activeGroupDataUpdated.members;
           const firstEmptyIndex = activeGroupMembers.findIndex(
@@ -309,18 +294,12 @@ const GroupActivityBuilder = ({
           } else {
             // Check if adding this member would exceed max size
             if (totalCurrentSize + 1 > 10) {
-              console.log(
-                "Cannot add member: Group would exceed maximum size of 10 members",
-              );
               alert("Group would exceed maximum size of 10 members");
               return;
             }
             activeGroupMembers.push(memberName);
             activeGroupMembers.push("");
           }
-          console.log(
-            `Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`,
-          );
         }
       } else {
         // Add as first member
@@ -335,9 +314,6 @@ const GroupActivityBuilder = ({
           activeGroupMembers.push(memberName);
           activeGroupMembers.push("");
         }
-        console.log(
-          `Added "${memberName}" to Group ${activeGroup} as first member`,
-        );
       }
     }
 
@@ -480,7 +456,6 @@ const GroupActivityBuilder = ({
     });
 
     setGroups(updatedGroups);
-    console.log("Distributed students equally:", updatedGroups);
   };
 
   const getMemberRole = (memberName) => {
@@ -538,7 +513,7 @@ const GroupActivityBuilder = ({
   // Helper function to get account ID by member name
   const getAccountIdByName = (memberName) => {
     const member = currentSpace?.members?.find(
-      (m) => m.full_name === memberName && m.role !== 'creator'
+      (m) => m.full_name === memberName && m.role !== "creator",
     );
     return member?.account_id || null;
   };
@@ -1606,7 +1581,6 @@ const GroupActivityBuilder = ({
                       leader: group.leader.trim(),
                       members: group.members.filter((member) => member.trim()), // Remove empty members
                     }));
-                    console.log("All groups saved:", groupsData);
                     // Here you would send this data to your backend
                     setGroupsConfigured(true);
                     setGroupCreationMethod("manual");
@@ -1742,10 +1716,7 @@ const GroupActivityBuilder = ({
                   setGroups(generatedGroupsPreview);
                   setGroupsConfigured(true);
                   setGroupCreationMethod("generate");
-                  console.log(
-                    `Generated ${numberOfGroups} groups:`,
-                    generatedGroupsPreview,
-                  );
+
                   setShowGenerateGroups(false);
                 }}
                 className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:text-base font-medium"

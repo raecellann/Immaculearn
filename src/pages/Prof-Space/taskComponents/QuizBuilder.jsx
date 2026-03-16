@@ -87,8 +87,6 @@ const QuizBuilder = ({
       setShowCorrectAnswers(taskData.show_correct_answers || false);
       setSelectedLesson(taskData.lesson_id || "");
 
-      console.log(questionnaireEditData);
-
       // Use questionnaireEditData if available
       if (questionnaireEditData && Array.isArray(questionnaireEditData)) {
         const parsedQuestions = questionnaireEditData
@@ -545,7 +543,6 @@ const QuizBuilder = ({
           </div>
         );
 
-
       default:
         return null;
     }
@@ -759,7 +756,6 @@ const QuizBuilder = ({
     }
 
     // alert(JSON.stringify(taskData));
-    console.log(taskData);
     onUpdate(taskData);
   };
 
@@ -1163,11 +1159,9 @@ const QuizBuilder = ({
             >
               Confirm Quiz Update
             </h3>
-            <p
-              className="mb-6"
-              style={{ color: currentColors.textSecondary }}
-            >
-              Are you sure you want to update this quiz? This will modify the existing quiz and students may see the changes immediately.
+            <p className="mb-6" style={{ color: currentColors.textSecondary }}>
+              Are you sure you want to update this quiz? This will modify the
+              existing quiz and students may see the changes immediately.
             </p>
             <div className="flex gap-3 justify-end">
               <button

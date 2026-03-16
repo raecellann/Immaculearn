@@ -76,7 +76,7 @@ const ProfStreamPage = () => {
   const [hasProfanity, setHasProfanity] = useState(false);
   const messagesEndRef = useRef(null);
   const MAX_CHAR = 250;
-  
+
   const [showDeletePostDialog, setShowDeletePostDialog] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
 
@@ -288,28 +288,27 @@ const ProfStreamPage = () => {
     (space) => space.space_uuid === space_uuid,
   );
 
-  console.log("CORRENT", currentSpace);
   // DEBUG: Identify correct field names for schedule/section
-  if (currentSpace) {
-    console.log("=== SPACE FIELDS ===", Object.keys(currentSpace));
-    console.log("=== SCHEDULE FIELDS ===", {
-      space_schedule: currentSpace.space_schedule,
-      schedule: currentSpace.schedule,
-      class_schedule: currentSpace.class_schedule,
-      space_day: currentSpace.space_day,
-      space_time: currentSpace.space_time,
-    });
-    console.log("=== SECTION FIELDS ===", {
-      space_section: currentSpace.space_section,
-      section: currentSpace.section,
-      class_section: currentSpace.class_section,
-      section_name: currentSpace.section_name,
-      course_section: currentSpace.course_section,
-      subject_section: currentSpace.subject_section,
-      space_block: currentSpace.space_block,
-      block: currentSpace.block,
-    });
-  }
+  // if (currentSpace) {
+  //   console.log("=== SPACE FIELDS ===", Object.keys(currentSpace));
+  //   console.log("=== SCHEDULE FIELDS ===", {
+  //     space_schedule: currentSpace.space_schedule,
+  //     schedule: currentSpace.schedule,
+  //     class_schedule: currentSpace.class_schedule,
+  //     space_day: currentSpace.space_day,
+  //     space_time: currentSpace.space_time,
+  //   });
+  //   console.log("=== SECTION FIELDS ===", {
+  //     space_section: currentSpace.space_section,
+  //     section: currentSpace.section,
+  //     class_section: currentSpace.class_section,
+  //     section_name: currentSpace.section_name,
+  //     course_section: currentSpace.course_section,
+  //     subject_section: currentSpace.subject_section,
+  //     space_block: currentSpace.space_block,
+  //     block: currentSpace.block,
+  //   });
+  // }
 
   // console.log(userSpaces);
   // console.log(courseSpaces);
@@ -321,8 +320,6 @@ const ProfStreamPage = () => {
   const isFriendSpace = !isOwnerSpace;
 
   // Debug: Log currentSpace data to see available fields
-  console.log("CurrentSpace data:", currentSpace);
-  console.log("Available fields:", currentSpace ? Object.keys(currentSpace) : "No currentSpace");
 
   // Space name
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
@@ -350,57 +347,52 @@ const ProfStreamPage = () => {
     error: tasksError,
   } = useQuery({
     queryKey: ["tasks", currentSpace?.space_uuid],
-    queryFn: () => spaceService.getUploadedTasksBySpaceUUID(currentSpace?.space_uuid || ""),
+    queryFn: () =>
+      spaceService.getUploadedTasksBySpaceUUID(currentSpace?.space_uuid || ""),
     enabled: !!currentSpace?.space_uuid,
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const tasks = tasksData?.data || [];
-  
+
   // Filter in-progress tasks (exclude overdue and done tasks)
-  const inProgressTasks = tasks.filter(task => {
-    // Debug log to check task structure and dates
-    console.log('Task:', task);
-    console.log('Task status:', task.status || task.task_status);
-    console.log('Task due date:', task.due_date || task.task_due);
-    
-    // Check if task is done (multiple variations)
-    const isDone = task.status === "Done" || 
-                   task.status === "done" || 
-                   task.status === "completed" || 
-                   task.status === "Completed" ||
-                   task.task_status === "Done" ||
-                   task.task_status === "done" ||
-                   task.task_status === "completed" ||
-                   task.task_status === "Completed";
-    
-    // Check if task is overdue (check multiple date fields)
-    const dueDate = task.due_date || task.task_due || task.dueDate;
-    const now = new Date();
-    const isOverdue = dueDate && new Date(dueDate) < now;
-    
-    console.log('Is done?', isDone);
-    console.log('Is overdue?', isOverdue);
-    console.log('Due date:', dueDate);
-    console.log('Current date:', now);
-    
-    // Check if task is in-progress (multiple variations and fields)
-    const isInProgress = task.status === "In Progress" || 
-                         task.status === "in-progress" || 
-                         task.status === "in_progress" ||
-                         task.task_status === "In Progress" ||
-                         task.task_status === "in-progress" ||
-                         task.task_status === "in_progress" ||
-                         !task.status && !task.task_status; // No status at all
-    
-    // Include task if it's in-progress and not overdue and not done
-    const shouldShow = isInProgress && !isDone && !isOverdue;
-    
-    console.log('Should show in reminders?', shouldShow);
-    
-    return shouldShow;
-  }).slice(0, 3); // Limit to 3 tasks
+  const inProgressTasks = tasks
+    .filter((task) => {
+      // Debug log to check task structure and dates
+
+      // Check if task is done (multiple variations)
+      const isDone =
+        task.status === "Done" ||
+        task.status === "done" ||
+        task.status === "completed" ||
+        task.status === "Completed" ||
+        task.task_status === "Done" ||
+        task.task_status === "done" ||
+        task.task_status === "completed" ||
+        task.task_status === "Completed";
+
+      // Check if task is overdue (check multiple date fields)
+      const dueDate = task.due_date || task.task_due || task.dueDate;
+      const now = new Date();
+      const isOverdue = dueDate && new Date(dueDate) < now;
+
+      // Check if task is in-progress (multiple variations and fields)
+      const isInProgress =
+        task.status === "In Progress" ||
+        task.status === "in-progress" ||
+        task.status === "in_progress" ||
+        task.task_status === "In Progress" ||
+        task.task_status === "in-progress" ||
+        task.task_status === "in_progress" ||
+        (!task.status && !task.task_status); // No status at all
+
+      // Include task if it's in-progress and not overdue and not done
+      const shouldShow = isInProgress && !isDone && !isOverdue;
+
+      return shouldShow;
+    })
+    .slice(0, 3); // Limit to 3 tasks
 
   // Text formatting
   const applyFormat = (command) => {
@@ -602,7 +594,7 @@ const ProfStreamPage = () => {
 
   const handleConfirmDeletePost = async () => {
     if (!postToDelete) return;
-    
+
     try {
       const result = await postService.deletepost(postToDelete);
       if (result.success) {
@@ -624,7 +616,6 @@ const ProfStreamPage = () => {
     setShowDeletePostDialog(false);
     setPostToDelete(null);
   };
-  
 
   // Enter chat
   const handleEnterChat = () => {
@@ -679,7 +670,6 @@ const ProfStreamPage = () => {
   // Load saved cover photo from backend on component mount
   useEffect(() => {
     const savedCoverPhoto = currentSpace?.space_cover;
-    console.log("Loading cover photo:", savedCoverPhoto);
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }
@@ -996,13 +986,13 @@ const ProfStreamPage = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (activeDropdown && !event.target.closest('.dropdown-menu-container')) {
+      if (activeDropdown && !event.target.closest(".dropdown-menu-container")) {
         setActiveDropdown(null);
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, [activeDropdown]);
 
   // Loading state
@@ -1021,35 +1011,42 @@ const ProfStreamPage = () => {
     return <PageNotFound />;
   }
 
-
   const renderPostContent = (text) => {
-
     const youtubeRegex =
-    /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+))(?:\?[^&\s]*)?(?:&[^&\s]*)*/;
+      /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+))(?:\?[^&\s]*)?(?:&[^&\s]*)*/;
 
-  const match = text.match(youtubeRegex);
+    const match = text.match(youtubeRegex);
 
-  if (!match) return <p style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{text}</p>;
+    if (!match)
+      return (
+        <p style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>
+          {text}
+        </p>
+      );
 
-  const videoId = match[2];
-  const cleanText = text.replace(match[0], "").trim();
+    const videoId = match[2];
+    const cleanText = text.replace(match[0], "").trim();
 
-  return (
-    <div>
-      <p className="mb-3 whitespace-pre-wrap break-words" style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{cleanText}</p>
+    return (
+      <div>
+        <p
+          className="mb-3 whitespace-pre-wrap break-words"
+          style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+        >
+          {cleanText}
+        </p>
 
-      <div className="aspect-video w-full max-w-xl">
-        <iframe
-          className="w-full h-full rounded-lg"
-          src={`https://www.youtube.com/embed/${videoId}`}
-          title="YouTube video"
-          allowFullScreen
-        />
+        <div className="aspect-video w-full max-w-xl">
+          <iframe
+            className="w-full h-full rounded-lg"
+            src={`https://www.youtube.com/embed/${videoId}`}
+            title="YouTube video"
+            allowFullScreen
+          />
+        </div>
       </div>
-    </div>
-  );
-};
-
+    );
+  };
 
   return (
     <div
@@ -1173,75 +1170,98 @@ const ProfStreamPage = () => {
         </div>
 
         {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
-        {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
-        <div
-          className="lg:hidden px-4 py-3 border-b"
-          style={{
-            backgroundColor: currentColors.surface,
-            borderColor: currentColors.border,
-          }}
-        >
-          <div className="flex flex-col gap-2">
-            {/* Schedule */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Schedule
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_day || "TBD"} (
-                {currentSpace?.space_time_start ? new Date(
-                  `2000-01-01T${currentSpace.space_time_start}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"}{" "}
-                -{" "}
-                {currentSpace?.space_time_end ? new Date(
-                  `2000-01-01T${currentSpace.space_time_end}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"})
-              </span>
-            </div>
-
-            {/* Section */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Section
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_section ||
-                  currentSpace?.section ||
-                  currentSpace?.class_section ||
-                  currentSpace?.section_name ||
-                  currentSpace?.course_section ||
-                  currentSpace?.subject_section ||
-                  currentSpace?.space_block ||
-                  currentSpace?.block ||
-                  "N/A"
-                }
-              </span>
-            </div>
-
-            {/* Description */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Description
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_description ||
-                  (currentSpace?.space_type === "course"
-                    ? "Course space for lectures, assignments, and discussions."
-                    : "Collaborative space for sharing ideas and resources."
+        {(currentSpace?.space_type === "course" ||
+          currentSpace?.space_day ||
+          currentSpace?.space_section ||
+          currentSpace?.space_schedule) && (
+          <div
+            className="lg:hidden px-4 py-3 border-b"
+            style={{
+              backgroundColor: currentColors.surface,
+              borderColor: currentColors.border,
+            }}
+          >
+            <div className="flex flex-col gap-2">
+              {/* Schedule */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Schedule
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_day || "TBD"} (
+                  {currentSpace?.space_time_start
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_start}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}{" "}
+                  -{" "}
+                  {currentSpace?.space_time_end
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_end}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}
                   )
-                }
-              </span>
+                </span>
+              </div>
+
+              {/* Section */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Section
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_section ||
+                    currentSpace?.section ||
+                    currentSpace?.class_section ||
+                    currentSpace?.section_name ||
+                    currentSpace?.course_section ||
+                    currentSpace?.subject_section ||
+                    currentSpace?.space_block ||
+                    currentSpace?.block ||
+                    "N/A"}
+                </span>
+              </div>
+
+              {/* Description */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Description
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_description ||
+                    (currentSpace?.space_type === "course"
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources.")}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
         )}
 
         <div className="p-4 sm:p-6">
@@ -1320,77 +1340,100 @@ const ProfStreamPage = () => {
               )}
 
               {/* SPACE INFO SECTION - Right Side */}
-              {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
-              <div 
-                className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
-                style={{
-                  backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
-                  borderColor: currentColors.border + "CC", // Add 80% opacity to border
-                  maxWidth: "1000px",
-                  backdropFilter: "blur(8px)" // Add subtle blur for better readability
-                }}
-              >
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Schedule */}
-                  <div>
-                    <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
-                      Schedule
-                    </h3>
-                    <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                      {currentSpace?.space_day || "TBD"} (
-                      {currentSpace?.space_time_start ? new Date(
-                        `2000-01-01T${currentSpace.space_time_start}`,
-                      ).toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      }) : "TBD"}{" "}
-                      -{" "}
-                      {currentSpace?.space_time_end ? new Date(
-                        `2000-01-01T${currentSpace.space_time_end}`,
-                      ).toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      }) : "TBD"})
-                    </p>
-                  </div>
-
-                  {/* Section */}
-                  <div>
-                    <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
-                      Section
-                    </h3>
-                    <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                      {currentSpace?.space_section ||
-                       currentSpace?.section ||
-                       currentSpace?.class_section ||
-                       currentSpace?.section_name ||
-                       currentSpace?.course_section ||
-                       currentSpace?.subject_section ||
-                       currentSpace?.space_block ||
-                       currentSpace?.block ||
-                       "N/A"
-                      }
-                    </p>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
-                      Description
-                    </h3>
-                    <p className="text-sm line-clamp-3" style={{ color: currentColors.textSecondary }}>
-                      {currentSpace?.space_description || 
-                        (currentSpace?.space_type === "course" 
-                          ? "Course space for lectures, assignments, and discussions."
-                          : "Collaborative space for sharing ideas and resources."
+              {(currentSpace?.space_type === "course" ||
+                currentSpace?.space_day ||
+                currentSpace?.space_section ||
+                currentSpace?.space_schedule) && (
+                <div
+                  className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
+                  style={{
+                    backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+                    borderColor: currentColors.border + "CC", // Add 80% opacity to border
+                    maxWidth: "1000px",
+                    backdropFilter: "blur(8px)", // Add subtle blur for better readability
+                  }}
+                >
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Schedule */}
+                    <div>
+                      <h3
+                        className="font-semibold text-sm mb-2"
+                        style={{ color: currentColors.text }}
+                      >
+                        Schedule
+                      </h3>
+                      <p
+                        className="text-sm"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        {currentSpace?.space_day || "TBD"} (
+                        {currentSpace?.space_time_start
+                          ? new Date(
+                              `2000-01-01T${currentSpace.space_time_start}`,
+                            ).toLocaleTimeString([], {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                          : "TBD"}{" "}
+                        -{" "}
+                        {currentSpace?.space_time_end
+                          ? new Date(
+                              `2000-01-01T${currentSpace.space_time_end}`,
+                            ).toLocaleTimeString([], {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                          : "TBD"}
                         )
-                      }
-                    </p>
+                      </p>
+                    </div>
+
+                    {/* Section */}
+                    <div>
+                      <h3
+                        className="font-semibold text-sm mb-2"
+                        style={{ color: currentColors.text }}
+                      >
+                        Section
+                      </h3>
+                      <p
+                        className="text-sm"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        {currentSpace?.space_section ||
+                          currentSpace?.section ||
+                          currentSpace?.class_section ||
+                          currentSpace?.section_name ||
+                          currentSpace?.course_section ||
+                          currentSpace?.subject_section ||
+                          currentSpace?.space_block ||
+                          currentSpace?.block ||
+                          "N/A"}
+                      </p>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <h3
+                        className="font-semibold text-sm mb-2"
+                        style={{ color: currentColors.text }}
+                      >
+                        Description
+                      </h3>
+                      <p
+                        className="text-sm line-clamp-3"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        {currentSpace?.space_description ||
+                          (currentSpace?.space_type === "course"
+                            ? "Course space for lectures, assignments, and discussions."
+                            : "Collaborative space for sharing ideas and resources.")}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
               )}
             </div>
           </div>
@@ -1533,7 +1576,11 @@ const ProfStreamPage = () => {
                                   break-words
                                   overflow-y-auto
                                 "
-                        style={{ wordBreak: "break-word", overflowWrap: "break-word", maxWidth: "100%" }}
+                        style={{
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          maxWidth: "100%",
+                        }}
                       />
 
                       {/* ACTIONS */}
@@ -1594,11 +1641,14 @@ const ProfStreamPage = () => {
                 }}
               >
                 <h2 className="font-bold mb-3">Reminders</h2>
-                
+
                 {isLoadingTasks ? (
                   <div className="text-center py-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                    <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                    <p
+                      className="text-sm"
+                      style={{ color: currentColors.textSecondary }}
+                    >
                       Loading tasks...
                     </p>
                   </div>
@@ -1611,57 +1661,77 @@ const ProfStreamPage = () => {
                         style={{
                           backgroundColor: currentColors.background,
                         }}
-                        onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/tasks`)}
+                        onClick={() =>
+                          navigate(
+                            `/prof/space/${space_uuid}/${space_name}/tasks`,
+                          )
+                        }
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-sm truncate" style={{ color: currentColors.text }}>
-                              {task.title || task.task_title || 'Untitled Task'}
+                            <h3
+                              className="font-medium text-sm truncate"
+                              style={{ color: currentColors.text }}
+                            >
+                              {task.title || task.task_title || "Untitled Task"}
                             </h3>
                             <div className="flex items-center gap-2 mt-2">
-                              <span 
+                              <span
                                 className="text-xs px-1.5 py-0.5 rounded-full font-medium"
                                 style={{
-                                  backgroundColor: '#3b82f6',
-                                  color: 'white'
+                                  backgroundColor: "#3b82f6",
+                                  color: "white",
                                 }}
                               >
                                 In Progress
                               </span>
                               {task.due_date && (
-                                <span className="text-xs" style={{ color: currentColors.textSecondary }}>
-                                  Due: {new Date(task.due_date).toLocaleDateString()}
+                                <span
+                                  className="text-xs"
+                                  style={{ color: currentColors.textSecondary }}
+                                >
+                                  Due:{" "}
+                                  {new Date(task.due_date).toLocaleDateString()}
                                 </span>
                               )}
                             </div>
                           </div>
-                          <FiChevronRight size={14} style={{ color: currentColors.textSecondary }} />
+                          <FiChevronRight
+                            size={14}
+                            style={{ color: currentColors.textSecondary }}
+                          />
                         </div>
                       </div>
                     ))}
-                    
-                    {tasks.filter(task => {
-    // Check if task is done
-    const isDone = task.status === "Done" || 
-                   task.status === "done" || 
-                   task.status === "completed" || 
-                   task.status === "Completed";
-    
-    // Check if task is overdue
-    const isOverdue = task.due_date && new Date(task.due_date) < new Date();
-    
-    // Include task if it's in-progress and not overdue and not done
-    return (
-      (task.status === "In Progress" || 
-       task.status === "in-progress" || 
-       task.status === "in_progress" ||
-       !task.status) && // Include tasks without status as potential in-progress
-      !isDone && 
-      !isOverdue
-    );
-  }).length > 3 && (
+
+                    {tasks.filter((task) => {
+                      // Check if task is done
+                      const isDone =
+                        task.status === "Done" ||
+                        task.status === "done" ||
+                        task.status === "completed" ||
+                        task.status === "Completed";
+
+                      // Check if task is overdue
+                      const isOverdue =
+                        task.due_date && new Date(task.due_date) < new Date();
+
+                      // Include task if it's in-progress and not overdue and not done
+                      return (
+                        (task.status === "In Progress" ||
+                          task.status === "in-progress" ||
+                          task.status === "in_progress" ||
+                          !task.status) && // Include tasks without status as potential in-progress
+                        !isDone &&
+                        !isOverdue
+                      );
+                    }).length > 3 && (
                       <button
-                        onClick={() => navigate(`/prof/space/${space_uuid}/${space_name}/tasks`)}
+                        onClick={() =>
+                          navigate(
+                            `/prof/space/${space_uuid}/${space_name}/tasks`,
+                          )
+                        }
                         className="w-full text-center py-1.5 text-xs font-medium transition-colors rounded-lg"
                         style={{
                           backgroundColor: currentColors.background,
@@ -1671,39 +1741,47 @@ const ProfStreamPage = () => {
                           e.target.style.backgroundColor = currentColors.hover;
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = currentColors.background;
+                          e.target.style.backgroundColor =
+                            currentColors.background;
                         }}
                       >
-                        See All ({tasks.filter(task => {
-    // Debug log to check task structure
-    console.log('See All Task:', task);
-    
-    // Check if task is done (multiple variations)
-    const isDone = task.status === "Done" || 
-                   task.status === "done" || 
-                   task.status === "completed" || 
-                   task.status === "Completed" ||
-                   task.task_status === "Done" ||
-                   task.task_status === "done" ||
-                   task.task_status === "completed" ||
-                   task.task_status === "Completed";
-    
-    // Check if task is overdue (check multiple date fields)
-    const dueDate = task.due_date || task.task_due || task.dueDate;
-    const isOverdue = dueDate && new Date(dueDate) < new Date();
-    
-    // Check if task is in-progress (multiple variations and fields)
-    const isInProgress = task.status === "In Progress" || 
-                         task.status === "in-progress" || 
-                         task.status === "in_progress" ||
-                         task.task_status === "In Progress" ||
-                         task.task_status === "in-progress" ||
-                         task.task_status === "in_progress" ||
-                         !task.status && !task.task_status; // No status at All
-    
-    // Include task if it's in-progress and not overdue and not done
-    return isInProgress && !isDone && !isOverdue;
-  }).length} tasks)
+                        See All (
+                        {
+                          tasks.filter((task) => {
+                            // Debug log to check task structure
+
+                            // Check if task is done (multiple variations)
+                            const isDone =
+                              task.status === "Done" ||
+                              task.status === "done" ||
+                              task.status === "completed" ||
+                              task.status === "Completed" ||
+                              task.task_status === "Done" ||
+                              task.task_status === "done" ||
+                              task.task_status === "completed" ||
+                              task.task_status === "Completed";
+
+                            // Check if task is overdue (check multiple date fields)
+                            const dueDate =
+                              task.due_date || task.task_due || task.dueDate;
+                            const isOverdue =
+                              dueDate && new Date(dueDate) < new Date();
+
+                            // Check if task is in-progress (multiple variations and fields)
+                            const isInProgress =
+                              task.status === "In Progress" ||
+                              task.status === "in-progress" ||
+                              task.status === "in_progress" ||
+                              task.task_status === "In Progress" ||
+                              task.task_status === "in-progress" ||
+                              task.task_status === "in_progress" ||
+                              (!task.status && !task.task_status); // No status at All
+
+                            // Include task if it's in-progress and not overdue and not done
+                            return isInProgress && !isDone && !isOverdue;
+                          }).length
+                        }{" "}
+                        tasks)
                       </button>
                     )}
                   </div>
@@ -1727,7 +1805,10 @@ const ProfStreamPage = () => {
                         />
                       </svg>
                     </div>
-                    <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                    <p
+                      className="text-sm"
+                      style={{ color: currentColors.textSecondary }}
+                    >
                       No in-progress tasks
                     </p>
                     <p
@@ -1740,7 +1821,10 @@ const ProfStreamPage = () => {
                 )}
 
                 {/* CHAT - Reduced gap */}
-                <div className="flex justify-center mt-3 pt-3 border-t" style={{ borderColor: currentColors.border }}>
+                <div
+                  className="flex justify-center mt-3 pt-3 border-t"
+                  style={{ borderColor: currentColors.border }}
+                >
                   <button
                     onClick={() => {
                       setShowChatPopup(true);
@@ -1837,7 +1921,11 @@ const ProfStreamPage = () => {
                                 break-words
                                 overflow-hidden
                               "
-                        style={{ wordBreak: "break-word", overflowWrap: "break-word", maxWidth: "100%" }}
+                        style={{
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          maxWidth: "100%",
+                        }}
                       />
 
                       {/* ACTIONS */}
@@ -1978,15 +2066,20 @@ const ProfStreamPage = () => {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setActiveDropdown(
-                                    activeDropdown === post.post_id ? null : post.post_id
+                                    activeDropdown === post.post_id
+                                      ? null
+                                      : post.post_id,
                                   );
                                 }}
                                 className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 style={{ color: currentColors.textSecondary }}
                               >
-                                <FiMoreVertical size={16} className="transform rotate-90" />
+                                <FiMoreVertical
+                                  size={16}
+                                  className="transform rotate-90"
+                                />
                               </button>
-                              
+
                               {/* Dropdown menu */}
                               {activeDropdown === post.post_id && (
                                 <div className="dropdown-menu absolute right-0 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 min-w-32">
@@ -2002,7 +2095,7 @@ const ProfStreamPage = () => {
                                 </div>
                               )}
                             </div>
-                          )} 
+                          )}
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2">
                               <span
@@ -2020,12 +2113,14 @@ const ProfStreamPage = () => {
                             </div>
                             <div
                               className="whitespace-pre-wrap mb-3 text-sm break-words overflow-hidden"
-                              style={{ color: currentColors.text, wordBreak: "break-word", overflowWrap: "break-word" }}
+                              style={{
+                                color: currentColors.text,
+                                wordBreak: "break-word",
+                                overflowWrap: "break-word",
+                              }}
                             >
                               {renderPostContent(post.post_content)}
                             </div>
-
-
 
                             {/* Comment Button */}
                             <button
@@ -2938,17 +3033,16 @@ const ProfStreamPage = () => {
 
             {/* Content */}
             <div className="p-6">
-              <p
-                className="mb-4"
-                style={{ color: currentColors.text }}
-              >
-                Are you sure you want to delete this post? This action cannot be undone.
+              <p className="mb-4" style={{ color: currentColors.text }}>
+                Are you sure you want to delete this post? This action cannot be
+                undone.
               </p>
               <div
                 className="text-sm"
                 style={{ color: currentColors.textSecondary }}
               >
-                This will permanently remove the post and all its comments from the space.
+                This will permanently remove the post and all its comments from
+                the space.
               </div>
             </div>
 

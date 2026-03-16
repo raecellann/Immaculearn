@@ -63,7 +63,6 @@ const CalendarPage = () => {
   // Manual refresh function
   const refreshSpaces = () => {
     setRefreshKey((prev) => prev + 1);
-    console.log("Manual refresh triggered");
   };
 
   // Handler for when a new task is created from the modal
@@ -110,7 +109,6 @@ const CalendarPage = () => {
 
   // Map Task data to calendar activity structure
   const mapTaskToActivity = (task) => {
-    console.log(task.due_date);
     return {
       id: task.task_id,
       title: task.task_title,

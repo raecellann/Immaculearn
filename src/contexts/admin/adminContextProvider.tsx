@@ -25,11 +25,9 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   const updateAuthState = useCallback(
     (authenticated: boolean, adminData: Admin | null) => {
       try {
-        console.log("updateAuthState called:", { authenticated, adminData: !!adminData });
         setIsAuthenticated(authenticated);
         setAdmin(adminData);
         setIsLoading(false);
-        console.log("isLoading set to false in updateAuthState");
       } catch (error) {
         console.error("Error in updateAuthState:", error);
       }
@@ -39,34 +37,26 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   // Check authentication status
   const checkAuth = async (): Promise<boolean> => {
-    console.log("checkAuth called, isCheckingRef:", isCheckingRef.current);
     if (isCheckingRef.current) return isAuthenticated;
     isCheckingRef.current = true;
     setIsLoading(true);
-    console.log("isLoading set to true in checkAuth");
 
     try {
       // Try profile
       const profileRes = await adminApi.get("/admin/profile");
 
       if (profileRes.data?.success && profileRes.data?.data) {
-        console.log("Profile successful, updating auth state");
         updateAuthState(true, profileRes.data.data);
         return true;
       }
 
       throw new Error("No profile");
     } catch (error: any) {
-      
-      
-
       updateAuthState(false, null);
       return false;
     } finally {
-      console.log("checkAuth finally block");
       isCheckingRef.current = false;
       setIsLoading(false);
-      console.log("isLoading set to false in checkAuth finally");
     }
   };
 
