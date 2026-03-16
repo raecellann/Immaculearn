@@ -522,7 +522,7 @@ const ProfSpacePage = () => {
                     border: isDarkMode ? "1px solid white" : "1px solid black ",
                   }}
                 >
-                  Create Space
+                  Create Course Space
                 </Button>
               </div>
             </div>

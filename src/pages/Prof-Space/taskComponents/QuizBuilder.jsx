@@ -113,11 +113,11 @@ const QuizBuilder = ({
                 (choice) => choice.choice_answer || choice.answer_text || "",
               );
               parsed.correctAnswer = qData.choices.findIndex(
-                (choice) => choice.isRightAnswer || choice.is_correct,
+                (choice) => choice.is_right_answer || choice.is_correct,
               );
               if (parsed.correctAnswer === -1) parsed.correctAnswer = 0;
             }
-            // Handle true/false questions
+            // Handle true/false questions - FIXED HERE
             else if (
               qData.question_type === "true-false" &&
               qData.choices &&
@@ -126,10 +126,38 @@ const QuizBuilder = ({
               parsed.options = qData.choices.map(
                 (choice) => choice.choice_answer || choice.answer_text || "",
               );
-              parsed.correctAnswer = qData.choices.findIndex(
-                (choice) => choice.isRightAnswer || choice.is_correct,
+
+              // Find the correct answer and convert to string "true" or "false"
+              const correctAnswerIndex = qData.choices.findIndex(
+                (choice) => choice.is_right_answer || choice.is_correct,
               );
-              if (parsed.correctAnswer === -1) parsed.correctAnswer = 0;
+
+              if (correctAnswerIndex !== -1) {
+                // Check if the correct answer is "True" or "False" and set accordingly
+                const correctChoice = qData.choices[correctAnswerIndex];
+                const answerText = (
+                  correctChoice.choice_answer ||
+                  correctChoice.answer_text ||
+                  ""
+                ).toLowerCase();
+
+                if (
+                  answerText === "true" ||
+                  correctChoice.letter_identifier === "T"
+                ) {
+                  parsed.correctAnswer = "true";
+                } else if (
+                  answerText === "false" ||
+                  correctChoice.letter_identifier === "F"
+                ) {
+                  parsed.correctAnswer = "false";
+                } else {
+                  // Fallback to default
+                  parsed.correctAnswer = "true";
+                }
+              } else {
+                parsed.correctAnswer = "true"; // Default to true if no correct answer found
+              }
             }
             // Handle identification questions
             else if (qData.question_type === "identification") {
@@ -1161,7 +1189,7 @@ const QuizBuilder = ({
             </h3>
             <p className="mb-6" style={{ color: currentColors.textSecondary }}>
               Are you sure you want to update this quiz? This will modify the
-              existing quiz and students may see the changes immediately.
+              existing quiz and students responses will delete.
             </p>
             <div className="flex gap-3 justify-end">
               <button

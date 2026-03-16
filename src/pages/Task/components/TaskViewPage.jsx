@@ -11,17 +11,17 @@ const TaskViewPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [quizData, setQuizData] = useState(null);
   const navigate = useNavigate();
-  const { isAuthenticated } = useUser();
+  // const { isAuthenticated } = useUser();
   
   // sticky header scroll state
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     navigate('/login');
+  //   }
+  // }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     const handleScroll = () => {
