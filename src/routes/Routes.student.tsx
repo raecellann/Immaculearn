@@ -24,6 +24,7 @@ import SettingsSelectionPage from "../pages/SettingsSelection/settingsselectionp
 import SpaceSettingsPage from "../pages/SpaceSettings/spacesettingspage.jsx";
 import IndividualSpaceSettings from "../pages/SpaceSettings/individualspacesettings.jsx";
 import CreateDocumentPage from "../pages/Create-Document/CreateDocument.jsx";
+import ActivityDetailsPage from "../pages/UserSpace/studentaskcomponents/ActivityDetailsPage.jsx";
 
 const ChatRouteWrapper = () => {
 
@@ -68,6 +69,12 @@ export const StudentRoutes = [
 
     key: "/task",
     path: "/task/:space_uuid/:space_name",
+    element: <ViewAllTaskPage />,
+  },
+  {
+
+    key: "/tasks-all",
+    path: "/tasks/all/:space_uuid/:space_name",
     element: <ViewAllTaskPage />,
   },
   {
@@ -150,6 +157,15 @@ export const StudentRoutes = [
     element: (
       <ProtectedRoute>
         <CreateDocumentPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    key: "activity-details",
+    path: "/user/activity/:space_uuid/:space_name/:task_id/:task_title",
+    element: (
+      <ProtectedRoute>
+        <ActivityDetailsPage />
       </ProtectedRoute>
     ),
   },

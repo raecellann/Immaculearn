@@ -304,7 +304,7 @@ const UserPeoplePage = () => {
       <div
         className="flex items-center justify-center min-h-screen"
         style={{
-          backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+          backgroundColor: isDarkMode ? "#121821" : currentColors.background,
           color: currentColors.text,
         }}
       >
@@ -341,7 +341,7 @@ const UserPeoplePage = () => {
     <div
       className="flex min-h-screen font-sans"
       style={{
-        backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
+        backgroundColor: isDarkMode ? "#121821" : currentColors.background,
         color: currentColors.text,
       }}
     >
@@ -448,6 +448,153 @@ const UserPeoplePage = () => {
             />
           )}
         </div>
+
+        {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
+        {(activeSpace?.space_type === "course" || activeSpace?.space_day || activeSpace?.space_section || activeSpace?.space_schedule) && (
+        <div
+          className="lg:hidden px-4 py-3 border-b"
+          style={{
+            backgroundColor: currentColors.surface + "CC", // Add 80% opacity
+            borderColor: currentColors.border + "CC", // Add 80% opacity to border
+            backdropFilter: "blur(8px)"
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            {/* Schedule */}
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
+                Schedule
+              </span>
+              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
+                {activeSpace?.space_day || "TBD"} (
+                {activeSpace?.space_time_start ? new Date(
+                  `2000-01-01T${activeSpace.space_time_start}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"}{" "}
+                -{" "}
+                {activeSpace?.space_time_end ? new Date(
+                  `2000-01-01T${activeSpace.space_time_end}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"})
+              </span>
+            </div>
+
+            {/* Section */}
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
+                Section
+              </span>
+              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
+                {activeSpace?.space_section ||
+                 activeSpace?.section ||
+                 activeSpace?.class_section ||
+                 activeSpace?.section_name ||
+                 activeSpace?.course_section ||
+                 activeSpace?.subject_section ||
+                 activeSpace?.space_block ||
+                 activeSpace?.block ||
+                 "N/A"
+                }
+              </span>
+            </div>
+
+            {/* Description */}
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
+                Description
+              </span>
+              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
+                {activeSpace?.space_description || 
+                  (activeSpace?.space_type === "course" 
+                    ? "Course space for lectures, assignments, and discussions."
+                    : "Collaborative space for sharing ideas and resources."
+                  )
+                }
+              </span>
+            </div>
+          </div>
+        </div>
+        )}
+
+        {/* SPACE INFO OVERLAY - Desktop version */}
+        {(activeSpace?.space_type === "course" || activeSpace?.space_day || activeSpace?.space_section || activeSpace?.space_schedule) && (
+        <div 
+          className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
+          style={{
+            backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+            borderColor: currentColors.border + "CC", // Add 80% opacity to border
+            maxWidth: "1000px",
+            backdropFilter: "blur(8px)" // Add subtle blur for better readability
+          }}
+        >
+          <div className="grid grid-cols-3 gap-2">
+            {/* Schedule */}
+            <div>
+              <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                Schedule
+              </h3>
+              <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                {activeSpace?.space_day || "TBD"} (
+                {activeSpace?.space_time_start ? new Date(
+                  `2000-01-01T${activeSpace.space_time_start}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"}{" "}
+                -{" "}
+                {activeSpace?.space_time_end ? new Date(
+                  `2000-01-01T${activeSpace.space_time_end}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"})
+              </p>
+            </div>
+
+            {/* Section */}
+            <div>
+              <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                Section
+              </h3>
+              <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                {activeSpace?.space_section ||
+                 activeSpace?.section ||
+                 activeSpace?.class_section ||
+                 activeSpace?.section_name ||
+                 activeSpace?.course_section ||
+                 activeSpace?.subject_section ||
+                 activeSpace?.space_block ||
+                 activeSpace?.block ||
+                 "N/A"
+                }
+              </p>
+            </div>
+
+            {/* Description */}
+            <div>
+              <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                Description
+              </h3>
+              <p className="text-sm line-clamp-3" style={{ color: currentColors.textSecondary }}>
+                {activeSpace?.space_description || 
+                  (activeSpace?.space_type === "course" 
+                    ? "Course space for lectures, assignments, and discussions."
+                    : "Collaborative space for sharing ideas and resources."
+                  )
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+        )}
 
         {/* PAGE HEADER */}
         <div className="p-4 sm:p-6">

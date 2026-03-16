@@ -703,6 +703,20 @@ const ProfTaskPage = () => {
   const handleUpload = async (status_type, taskData) => {
     let payload;
 
+    // Block deploying/publishing if the due date has already passed
+    if (status_type === "uploaded") {
+      const taskDueDate = taskData?.due_date || taskData?.task_due;
+      if (taskDueDate) {
+        const due = new Date(taskDueDate);
+        if (due < new Date()) {
+          toast.error(
+            "This task cannot be deployed because the due date has already passed. Please update the due date to a future date.",
+          );
+          return;
+        }
+      }
+    }
+
     try {
       if (status_type === "uploaded") {
         await uploadTaskMutation.mutateAsync({
@@ -729,6 +743,18 @@ const ProfTaskPage = () => {
   };
 
   const handleUpdateTask = async (taskData) => {
+    // Block deploy/update if the due date has already passed
+    const taskDueDate = taskData?.due_date || taskData?.task_due;
+    if (taskDueDate) {
+      const due = new Date(taskDueDate);
+      if (due < new Date()) {
+        toast.error(
+          "This task cannot be deployed because the due date has already passed. Please update the due date to a future date.",
+        );
+        return;
+      }
+    }
+
     updateTaskByTaskIdMutation.mutate(
       { taskData },
       {
@@ -1160,22 +1186,22 @@ const ProfTaskPage = () => {
               >
                 {/* Mobile and Tablet Layout */}
                 <div className="sm:hidden">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-2 flex-1">
+                  <div className="flex justify-between items-start gap-3 mb-3">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       {task.isLocal && (
-                        <span className="text-xs bg-green-500 text-white px-2 py-1 rounded">
+                        <span className="text-xs bg-green-500 text-white px-2 py-1 rounded shrink-0">
                           Local
                         </span>
                       )}
                       <span
-                        className="text-sm font-semibold"
+                        className="text-sm font-semibold break-words"
                         style={{ color: currentColors.text }}
                       >
                         {task.task_title}
                       </span>
                     </div>
                     <span
-                      className={`text-xs font-medium ${
+                      className={`text-xs font-medium shrink-0 ${
                         statusStyles[
                           task.task_category === "quiz"
                             ? getQuizStatusForProfessor(task)
@@ -1198,7 +1224,16 @@ const ProfTaskPage = () => {
                   >
                     Deadline:{" "}
                     <span style={{ color: currentColors.text }}>
-                      {task.due_date}
+                      {task.due_date
+                        ? new Date(task.due_date).toLocaleString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })
+                        : "No deadline"}
                     </span>
                   </p>
                   {!task.isLocal && openIndex === originalIndex && (
@@ -1758,9 +1793,36 @@ const ProfTaskPage = () => {
   // Combine API tasks with localStorage tasks
   const allTasks = [...(uploadedTask || [])];
 
+  // Sort tasks: soonest upcoming due date first, then overdue (most recently expired first), then no date
+  const sortTasksByDueDate = (tasks) => {
+    const now = new Date();
+    return [...tasks].sort((a, b) => {
+      const dateA = a.due_date ? new Date(a.due_date) : a.task_due ? new Date(a.task_due) : null;
+      const dateB = b.due_date ? new Date(b.due_date) : b.task_due ? new Date(b.task_due) : null;
+
+      const aIsUpcoming = dateA && dateA >= now;
+      const bIsUpcoming = dateB && dateB >= now;
+      const aIsOverdue = dateA && dateA < now;
+      const bIsOverdue = dateB && dateB < now;
+
+      // Both upcoming: soonest first
+      if (aIsUpcoming && bIsUpcoming) return dateA - dateB;
+      // Both overdue: most recently expired first
+      if (aIsOverdue && bIsOverdue) return dateB - dateA;
+      // Upcoming always before overdue
+      if (aIsUpcoming && bIsOverdue) return -1;
+      if (aIsOverdue && bIsUpcoming) return 1;
+      // No date goes to the bottom
+      if (dateA && !dateB) return -1;
+      if (!dateA && dateB) return 1;
+      return 0;
+    });
+  };
+
   // Filter tasks by category
   const filterTasksByCategory = (tasks, category) => {
-    return tasks.filter((task) => task.task_category === category);
+    const filtered = tasks.filter((task) => task.task_category === category);
+    return sortTasksByDueDate(filtered);
   };
 
   // Get task counts by category

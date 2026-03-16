@@ -255,8 +255,6 @@ const UserTaskPage = () => {
   // Handle pending view score when studentResponseData becomes available
   useEffect(() => {
     if (pendingViewScoreTask && studentResponseData?.success) {
-      console.log("Student response data is now available, showing score");
-
       const taskWithScoreData = {
         ...pendingViewScoreTask,
         task_title:
@@ -270,8 +268,6 @@ const UserTaskPage = () => {
         score: studentResponseData?.data?.score || 0,
         total_score: studentResponseData?.data?.total_items_score || 0,
       };
-
-      console.log("Task with score data:", taskWithScoreData);
 
       // Open ViewScore modal
       setViewScoreTask(taskWithScoreData);
@@ -652,17 +648,11 @@ const UserTaskPage = () => {
   };
 
   const handleViewScore = (task) => {
-    console.log("Original task:", task);
-
     const currentTaskId = Number(task?.task_id);
     setTaskId(currentTaskId);
 
-    console.log("taskId:", currentTaskId);
-    console.log("studentResponseData:", studentResponseData);
-
     // Check if studentResponseData is successful
     if (!studentResponseData?.success) {
-      console.log("Waiting for student response data...");
       setPendingViewScoreTask(task);
       return;
     }
@@ -679,8 +669,6 @@ const UserTaskPage = () => {
       score: studentResponseData?.data?.score || 0,
       total_score: studentResponseData?.data?.total_items_score || 0,
     };
-
-    console.log("Task with score data:", taskWithScoreData);
 
     // Open ViewScore modal
     setViewScoreTask(taskWithScoreData);
@@ -1022,19 +1010,36 @@ const UserTaskPage = () => {
     if (task.task_category !== "quiz") return task.task_status;
 
     const now = new Date();
-    const dueDate = task.task_due ? new Date(task.task_due) : null;
+    const dueDate = task.due_date ? new Date(task.due_date) : null;
 
     // If student has answered the quiz
     if (task.has_answered) {
       return "Done";
     }
 
-    // If quiz has due date and it's passed
+    // If due date has passed and student hasn't taken the quiz
     if (dueDate && now > dueDate) {
       return "Missing";
     }
 
-    // If student hasn't taken the quiz yet and due date not passed
+    return "In Progress";
+  };
+
+  // Function to determine individual activity status for students
+  const getIndividualActivityStatusForStudent = (task) => {
+    const now = new Date();
+    const dueDate = task.due_date ? new Date(task.due_date) : null;
+
+    // If student has completed the activity
+    if (task.has_answered) {
+      return "Done";
+    }
+
+    // If due date has passed and student hasn't submitted
+    if (dueDate && now > dueDate) {
+      return "Missing";
+    }
+
     return "In Progress";
   };
 
@@ -1044,14 +1049,45 @@ const UserTaskPage = () => {
 
     if (categoryTasks.length === 0) return null;
 
-    // For quiz and individual-activity categories, limit to 3 tasks and add See More button
+    // Sort: soonest deadline first, completed tasks pushed to the bottom
+    const sortedTasks = [...categoryTasks].sort((a, b) => {
+      const getStatus = (task) =>
+        task.task_category === "quiz"
+          ? getQuizStatusForStudent(task)
+          : task.task_category === "individual-activity"
+            ? getIndividualActivityStatusForStudent(task)
+            : task.task_status || "In Progress";
+
+      const isDone = (status) => status === "Done";
+
+      const aDone = isDone(getStatus(a));
+      const bDone = isDone(getStatus(b));
+
+      if (aDone && !bDone) return 1;
+      if (!aDone && bDone) return -1;
+
+      const aDate = a.due_date ? new Date(a.due_date).getTime() : Infinity;
+      const bDate = b.due_date ? new Date(b.due_date).getTime() : Infinity;
+      return aDate - bDate;
+    });
+
+    // Separate incomplete vs completed — only show incomplete in the top 3
+    const getTaskStatus = (task) =>
+      task.task_category === "quiz"
+        ? getQuizStatusForStudent(task)
+        : task.task_category === "individual-activity"
+          ? getIndividualActivityStatusForStudent(task)
+          : task.task_status || "In Progress";
+
+    // Only show "In Progress" tasks in the top 3 — Missing/Done are hidden from recent view
+    // but still accessible via "See more tasks"
+    const activeTasks = sortedTasks.filter((task) => getTaskStatus(task) === "In Progress");
+
     const isQuizCategory = category === "quiz";
     const isIndividualActivityCategory = category === "individual-activity";
-    const shouldLimit = isQuizCategory || isIndividualActivityCategory;
-    const displayedTasks = shouldLimit
-      ? categoryTasks.slice(0, 3)
-      : categoryTasks;
-    const hasMoreTasks = shouldLimit && categoryTasks.length > 3;
+    const displayedTasks = activeTasks.slice(0, 3);
+    // Show "See more" if there are more total tasks beyond what is displayed
+    const hasMoreTasks = categoryTasks.length > displayedTasks.length;
 
     return (
       <div className="mb-8">
@@ -1115,11 +1151,20 @@ const UserTaskPage = () => {
                     </div>
                     <span
                       className={`text-xs font-medium ${
-                        statusStyles[getQuizStatusForStudent(task)] ||
-                        "text-gray-500"
+                        statusStyles[
+                          task.task_category === "quiz"
+                            ? getQuizStatusForStudent(task)
+                            : task.task_category === "individual-activity"
+                              ? getIndividualActivityStatusForStudent(task)
+                              : task.task_status || "In Progress"
+                        ] || "text-gray-500"
                       }`}
                     >
-                      {getQuizStatusForStudent(task)}
+                      {task.task_category === "quiz"
+                        ? getQuizStatusForStudent(task)
+                        : task.task_category === "individual-activity"
+                          ? getIndividualActivityStatusForStudent(task)
+                          : task.task_status || "In Progress"}
                     </span>
                   </div>
                   <p
@@ -1128,7 +1173,14 @@ const UserTaskPage = () => {
                   >
                     Deadline:{" "}
                     <span style={{ color: currentColors.text }}>
-                      {task.due_date}
+                      {new Date(task.due_date).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                     </span>
                   </p>
                   {!task.isLocal && openIndex === originalIndex && (
@@ -1204,36 +1256,110 @@ const UserTaskPage = () => {
                         Take Activity
                       </button>
                     )}
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePreviewTask(task);
-                      }}
-                      className={`text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        task.isLocal && (task.task_category === "quiz" || task.task_category === "individual-activity")
-                          ? "flex-1"
-                          : "block w-full"
-                      }`}
-                      style={{
-                        backgroundColor: task.isLocal
-                          ? "#2563eb"
-                          : currentColors.accent,
-                        color: "white",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = task.isLocal
-                          ? "#1d4ed8"
-                          : "#1d4ed8";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = task.isLocal
-                          ? "#2563eb"
-                          : currentColors.accent;
-                      }}
-                    >
-                      {task.isLocal ? "Preview" : "View Details"}
-                    </a>
+                    {!task.isLocal && task.task_category === "quiz" && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setTaskId(task?.id);
+                          task?.has_answered
+                            ? handleViewScore(task)
+                            : handleTakeQuiz(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: task.has_answered
+                            ? "#6b7280"
+                            : "#10B981",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#4b5563"
+                            : "#059669";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#6b7280"
+                            : "#10B981";
+                        }}
+                      >
+                        {task.has_answered ? "View Score" : "Take Quiz"}
+                      </button>
+                    )}
+                    {!task.isLocal && task.task_category === "individual-activity" && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setTaskId(task?.id);
+                          task?.has_answered
+                            ? handleViewScore(task)
+                            : handleTakeActivity(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: task.has_answered
+                            ? "#6b7280"
+                            : "#10B981",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#4b5563"
+                            : "#059669";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#6b7280"
+                            : "#10B981";
+                        }}
+                      >
+                        {task.has_answered ? "View Score" : "Take Activity"}
+                      </button>
+                    )}
+                    {task.isLocal && (
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePreviewTask(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: "#2563eb",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#1d4ed8";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "#2563eb";
+                        }}
+                      >
+                        Preview
+                      </a>
+                    )}
+                    {!task.isLocal && (
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleSeeActivity(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: currentColors.accent,
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#1d4ed8";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = currentColors.accent;
+                        }}
+                      >
+                        See Activity
+                      </a>
+                    )}
                   </div>
                 </div>
 
@@ -1248,11 +1374,20 @@ const UserTaskPage = () => {
                       )}
                       <span
                         className={`text-sm font-medium ${
-                          statusStyles[getQuizStatusForStudent(task)] ||
-                          "text-gray-500"
+                          statusStyles[
+                            task.task_category === "quiz"
+                              ? getQuizStatusForStudent(task)
+                              : task.task_category === "individual-activity"
+                                ? getIndividualActivityStatusForStudent(task)
+                                : task.task_status || "In Progress"
+                          ] || "text-gray-500"
                         }`}
                       >
-                        {getQuizStatusForStudent(task)}
+                        {task.task_category === "quiz"
+                          ? getQuizStatusForStudent(task)
+                          : task.task_category === "individual-activity"
+                            ? getIndividualActivityStatusForStudent(task)
+                            : task.task_status || "In Progress"}
                       </span>
                     </div>
                   </div>
@@ -1278,7 +1413,7 @@ const UserTaskPage = () => {
                     })}
                   </div>
                   <div className="col-span-1">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 justify-center">
                       {task.task_category === "quiz" && (
                         <>
                           {!isOwnerSpace ? (
@@ -1303,11 +1438,7 @@ const UserTaskPage = () => {
                                 padding: "0.3em 0.8em",
                                 fontSize: "0.75rem",
                                 borderRadius: "6px",
-                                flex: "none",
-                                width: "auto",
-                                minWidth: "80px",
-                                margin: "0 auto",
-                                display: "block",
+                                flex: 1,
                               }}
                             >
                               {task.has_answered ? "View Score" : "Take Quiz"}
@@ -1361,11 +1492,7 @@ const UserTaskPage = () => {
                                 padding: "0.3em 0.8em",
                                 fontSize: "0.75rem",
                                 borderRadius: "6px",
-                                flex: "none",
-                                width: "auto",
-                                minWidth: "80px",
-                                margin: "0 auto",
-                                display: "block",
+                                flex: 1,
                               }}
                             >
                               {task.has_answered ? "View Score" : "Take Activity"}
@@ -1395,6 +1522,25 @@ const UserTaskPage = () => {
                           )}
                         </>
                       )}
+                      {!task.isLocal && (
+                        <ButtonComponent
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleSeeActivity(task);
+                          }}
+                          style={{
+                            backgroundColor: currentColors.accent,
+                            borderColor: currentColors.accent,
+                            padding: "0.3em 0.8em",
+                            fontSize: "0.75rem",
+                            borderRadius: "6px",
+                            flex: isOwnerSpace ? "none" : 1,
+                            width: isOwnerSpace ? "auto" : undefined,
+                          }}
+                        >
+                          See Activity
+                        </ButtonComponent>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1403,16 +1549,16 @@ const UserTaskPage = () => {
           })}
         </div>
 
-        {/* See More Button for Quiz and Individual Activity Categories */}
-        {shouldLimit && hasMoreTasks && (
+        {/* See More Button for all categories when > 3 tasks */}
+        {hasMoreTasks && (
           <div className="mt-4 text-right">
             <ButtonComponent
               onClick={() => {
-                // Navigate to ViewAllTaskPage with current space context
+                // Navigate to ViewAllTaskPage with space parameters
                 const spaceId = space_uuid;
                 const spaceName = currentSpace?.space_name;
                 if (spaceId && spaceName) {
-                  navigate(`/task/${spaceId}/${encodeURIComponent(spaceName)}`);
+                  navigate(`/tasks/all/${spaceId}/${encodeURIComponent(spaceName)}`);
                 } else {
                   console.warn("No space ID or name found for navigation");
                 }
@@ -1425,7 +1571,7 @@ const UserTaskPage = () => {
                 borderRadius: "6px",
               }}
             >
-              See More {isQuizCategory ? "Quizzes" : "Individual Activities"}
+              See more tasks
             </ButtonComponent>
           </div>
         )}
@@ -1437,6 +1583,15 @@ const UserTaskPage = () => {
   const handlePreviewTask = (task) => {
     setPreviewTask(task);
     setShowPreview(true);
+  };
+
+  // Handle see activity - Navigate to activity details page
+  const handleSeeActivity = (task) => {
+    const taskTitle = task.task_title || task.title || "Untitled Task";
+    const encodedTaskTitle = encodeURIComponent(taskTitle);
+    navigate(
+      `/user/activity/${space_uuid}/${encodeURIComponent(space_name)}/${task.task_id || task.id}/${encodedTaskTitle}`,
+    );
   };
 
   const handleClosePreview = () => {
@@ -1808,6 +1963,153 @@ const UserTaskPage = () => {
           )}
         </div>
 
+        {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
+        {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
+        <div
+          className="lg:hidden px-4 py-3 border-b"
+          style={{
+            backgroundColor: currentColors.surface + "CC", // Add 80% opacity
+            borderColor: currentColors.border + "CC", // Add 80% opacity to border
+            backdropFilter: "blur(8px)"
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            {/* Schedule */}
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
+                Schedule
+              </span>
+              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
+                {currentSpace?.space_day || "TBD"} (
+                {currentSpace?.space_time_start ? new Date(
+                  `2000-01-01T${currentSpace.space_time_start}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"}{" "}
+                -{" "}
+                {currentSpace?.space_time_end ? new Date(
+                  `2000-01-01T${currentSpace.space_time_end}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"})
+              </span>
+            </div>
+
+            {/* Section */}
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
+                Section
+              </span>
+              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
+                {currentSpace?.space_section ||
+                 currentSpace?.section ||
+                 currentSpace?.class_section ||
+                 currentSpace?.section_name ||
+                 currentSpace?.course_section ||
+                 currentSpace?.subject_section ||
+                 currentSpace?.space_block ||
+                 currentSpace?.block ||
+                 "N/A"
+                }
+              </span>
+            </div>
+
+            {/* Description */}
+            <div className="flex items-start gap-2">
+              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
+                Description
+              </span>
+              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
+                {currentSpace?.space_description || 
+                  (currentSpace?.space_type === "course" 
+                    ? "Course space for lectures, assignments, and discussions."
+                    : "Collaborative space for sharing ideas and resources."
+                  )
+                }
+              </span>
+            </div>
+          </div>
+        </div>
+        )}
+
+        {/* SPACE INFO OVERLAY - Desktop version */}
+        {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
+        <div 
+          className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
+          style={{
+            backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+            borderColor: currentColors.border + "CC", // Add 80% opacity to border
+            maxWidth: "1000px",
+            backdropFilter: "blur(8px)" // Add subtle blur for better readability
+          }}
+        >
+          <div className="grid grid-cols-3 gap-2">
+            {/* Schedule */}
+            <div>
+              <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                Schedule
+              </h3>
+              <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                {currentSpace?.space_day || "TBD"} (
+                {currentSpace?.space_time_start ? new Date(
+                  `2000-01-01T${currentSpace.space_time_start}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"}{" "}
+                -{" "}
+                {currentSpace?.space_time_end ? new Date(
+                  `2000-01-01T${currentSpace.space_time_end}`,
+                ).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }) : "TBD"})
+              </p>
+            </div>
+
+            {/* Section */}
+            <div>
+              <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                Section
+              </h3>
+              <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                {currentSpace?.space_section ||
+                 currentSpace?.section ||
+                 currentSpace?.class_section ||
+                 currentSpace?.section_name ||
+                 currentSpace?.course_section ||
+                 currentSpace?.subject_section ||
+                 currentSpace?.space_block ||
+                 currentSpace?.block ||
+                 "N/A"
+                }
+              </p>
+            </div>
+
+            {/* Description */}
+            <div>
+              <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
+                Description
+              </h3>
+              <p className="text-sm line-clamp-3" style={{ color: currentColors.textSecondary }}>
+                {currentSpace?.space_description || 
+                  (currentSpace?.space_type === "course" 
+                    ? "Course space for lectures, assignments, and discussions."
+                    : "Collaborative space for sharing ideas and resources."
+                  )
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+        )}
+
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
@@ -1933,22 +2235,21 @@ const UserTaskPage = () => {
           {!isCreatingTask && !showTaskTypeSelection ? (
             /* ================= TASKS LIST VIEW WITH SECTIONS ================= */
             <div className="max-w-5xl mx-auto">
-              {isOwnerSpace && (
-                <button
-                  className="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium block mb-6 flex items-center gap-2"
-                  onClick={() => {
-                    setSelectedTaskType("group-activity");
-                    setTaskCategory("group-activity");
-                    setIsCreatingTask(true);
-                  }}
-                >
-                  <FiFileText size={16} />
-                  Create Task
-                </button>
-              )}
-
-              <div className="mb-6">
+              <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold">Assigned Tasks</h2>
+                {isOwnerSpace && (
+                  <button
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                    onClick={() => {
+                      setSelectedTaskType("group-activity");
+                      setTaskCategory("group-activity");
+                      setIsCreatingTask(true);
+                    }}
+                  >
+                    <FiFileText size={16} />
+                    Create Task
+                  </button>
+                )}
               </div>
 
               {/* TASK SECTIONS */}
