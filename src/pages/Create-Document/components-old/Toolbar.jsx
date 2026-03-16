@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   FiBold,
   FiItalic,
@@ -8,26 +8,17 @@ import {
   FiAlignRight,
   FiAlignJustify,
   FiChevronDown,
-  FiImage,
   FiList,
-  FiCrop,
-  FiRotateCw,
-  FiFile,
   FiColumns,
 } from "react-icons/fi";
 import { useTheme } from "../contexts-old/ThemeContext";
 
 const Toolbar = ({
   editorRef,
-  paperSize,
-  margins,
-  fontFamily,
   onFormatChange,
-  onPaperSizeChange,
   onMarginChange,
   onFontChange,
   isClient = true,
-  windowWidth = 1024,
 }) => {
   const { isDarkMode, colors } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
@@ -36,15 +27,10 @@ const Toolbar = ({
   const [selectedAlignment, setSelectedAlignment] = useState("left");
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const [selectedTextColor, setSelectedTextColor] = useState("default");
-  const [selectedHighlightColor, setSelectedHighlightColor] =
-    useState("transparent");
   const [isFontSizeDropdownOpen, setIsFontSizeDropdownOpen] = useState(false);
   const [selectedFontSize, setSelectedFontSize] = useState(16);
-  const [isImageDropdownOpen, setIsImageDropdownOpen] = useState(false);
-  const [isPaperSizeDropdownOpen, setIsPaperSizeDropdownOpen] = useState(false);
-  const [selectedPaperSize, setSelectedPaperSize] = useState("A4");
   const [isMarginDropdownOpen, setIsMarginDropdownOpen] = useState(false);
-  const [selectedMargin, setSelectedMargin] = useState("Normal");
+  const [, setSelectedMargin] = useState("Normal");
   const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false);
   const [selectedFont, setSelectedFont] = useState("Inter");
   const [isListDropdownOpen, setIsListDropdownOpen] = useState(false);
@@ -59,55 +45,21 @@ const Toolbar = ({
     setIsAlignmentDropdownOpen(false);
     setIsColorDropdownOpen(false);
     setIsFontSizeDropdownOpen(false);
-    setIsImageDropdownOpen(false);
-    setIsPaperSizeDropdownOpen(false);
     setIsMarginDropdownOpen(false);
     setIsFontDropdownOpen(false);
     setIsListDropdownOpen(false);
     if (!open) return;
     switch (name) {
-      case "alignment":
-        setIsAlignmentDropdownOpen(true);
-        break;
-      case "color":
-        setIsColorDropdownOpen(true);
-        break;
-      case "fontSize":
-        setIsFontSizeDropdownOpen(true);
-        break;
-      case "image":
-        setIsImageDropdownOpen(true);
-        break;
-      case "paperSize":
-        setIsPaperSizeDropdownOpen(true);
-        break;
-      case "margin":
-        setIsMarginDropdownOpen(true);
-        break;
-      case "font":
-        setIsFontDropdownOpen(true);
-        break;
-      case "list":
-        setIsListDropdownOpen(true);
-        break;
+      case "alignment":   setIsAlignmentDropdownOpen(true);  break;
+      case "color":       setIsColorDropdownOpen(true);      break;
+      case "fontSize":    setIsFontSizeDropdownOpen(true);   break;
+      case "margin":      setIsMarginDropdownOpen(true);     break;
+      case "font":        setIsFontDropdownOpen(true);       break;
+      case "list":        setIsListDropdownOpen(true);       break;
     }
   };
 
   // ── Config ────────────────────────────────────────────────────────────────
-  const paperSizes = {
-    Letter: { width: "8.5in", height: "11in" },
-    Tabloid: { width: "11in", height: "17in" },
-    Legal: { width: "8.5in", height: "14in" },
-    Statement: { width: "5.5in", height: "8.5in" },
-    Executive: { width: "7.25in", height: "10.5in" },
-    A3: { width: "11.69in", height: "16.53in" },
-    A4: { width: "8.27in", height: "11.69in" },
-    A5: { width: "5.83in", height: "8.27in" },
-    "B4 (JIS)": { width: "10.12in", height: "14.33in" },
-    "B5 (JIS)": { width: "7.16in", height: "10.12in" },
-    Custom: { width: "21cm", height: "29.7cm" },
-  };
-
   const marginOptions = {
     Normal: { top: "1in", right: "1in", bottom: "1in", left: "1in" },
     Narrow: { top: "0.5in", right: "0.5in", bottom: "0.5in", left: "0.5in" },
@@ -226,12 +178,6 @@ const Toolbar = ({
     setIsFontSizeDropdownOpen(false);
   };
 
-  const applyPaperSize = (name) => {
-    onPaperSizeChange?.(paperSizes[name]);
-    setSelectedPaperSize(name);
-    setIsPaperSizeDropdownOpen(false);
-  };
-
   const applyMargin = (name) => {
     onMarginChange?.(marginOptions[name]);
     setSelectedMargin(name);
@@ -247,35 +193,46 @@ const Toolbar = ({
 
   const applyList = (listType, style = null) => {
     if (!isClient || !editorRef?.current) return;
+
+    // focus() on the imperative handle puts cursor in the active page
     editorRef.current.focus();
-    if (!window.getSelection()?.rangeCount) return;
 
-    if (listType === "none") {
-      document.execCommand("formatBlock", false, "p");
-      document.execCommand("removeFormat", false, null);
-      document.execCommand("outdent", false, null);
-    } else if (listType === "bullet") {
-      document.execCommand("insertUnorderedList", false, null);
-      editorRef.current.querySelectorAll("ul").forEach((ul) => {
-        ul.style.listStyleType = "disc";
-        ul.style.marginLeft = "20px";
-      });
-    } else if (listType === "number") {
-      document.execCommand("insertOrderedList", false, null);
-      editorRef.current.querySelectorAll("ol").forEach((ol) => {
-        if (style) ol.style.listStyleType = style;
-        ol.style.marginLeft = "20px";
-      });
-    }
+    // Give the browser a tick to settle focus + selection before execCommand
     setTimeout(() => {
-      editorRef.current?.focus();
-      setIsListDropdownOpen(false);
-    }, 10);
-  };
+      // Ensure there is at least a collapsed range so execCommand works
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount === 0) {
+        const active = document.activeElement;
+        if (active && active.isContentEditable) {
+          const r = document.createRange();
+          r.setStart(active, 0);
+          r.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(r);
+        }
+      }
 
-  const handleImageAction = (action) => {
-    console.log(`Image action: ${action}`);
-    setIsImageDropdownOpen(false);
+      if (listType === "none") {
+        document.execCommand("formatBlock", false, "p");
+        document.execCommand("removeFormat", false, null);
+        document.execCommand("outdent", false, null);
+      } else if (listType === "bullet") {
+        document.execCommand("insertUnorderedList", false, null);
+        // Style lists inside the currently-focused page (not the imperative handle)
+        document.activeElement?.querySelectorAll?.("ul").forEach((ul) => {
+          ul.style.listStyleType = "disc";
+          ul.style.paddingLeft = "24px";
+        });
+      } else if (listType === "number") {
+        document.execCommand("insertOrderedList", false, null);
+        document.activeElement?.querySelectorAll?.("ol").forEach((ol) => {
+          if (style) ol.style.listStyleType = style;
+          ol.style.paddingLeft = "24px";
+        });
+      }
+
+      setIsListDropdownOpen(false);
+    }, 20);
   };
 
   // ── Style helpers ─────────────────────────────────────────────────────────
@@ -312,13 +269,15 @@ const Toolbar = ({
   );
 
   return (
-    /* Full-width, scrollable on small screens, items always centred */
+    /* Full-width toolbar — outer clips only x so dropdowns can open downward */
     <div
-      className="w-full border-b overflow-x-auto relative"
+      className="w-full border-b relative"
       style={{
         backgroundColor: currentColors.background,
         borderColor: currentColors.border,
         zIndex: 20,
+        overflowX: "clip",   /* clips x without creating a scroll container → y stays visible */
+        overflowY: "visible",
       }}
     >
       <div className="flex flex-nowrap items-center justify-center gap-2 px-4 py-2 min-w-max mx-auto">
@@ -384,7 +343,7 @@ const Toolbar = ({
 
           {isFontSizeDropdownOpen && (
             <div
-              className="absolute top-full mt-1 rounded shadow-lg z-10 w-44 max-h-52 overflow-y-auto"
+              className="absolute top-full mt-1 rounded shadow-lg z-50 w-44 max-h-52 overflow-y-auto"
               style={dropdownStyle}
             >
               {fontSizeOptions.map((size) => (
@@ -438,7 +397,7 @@ const Toolbar = ({
 
           {isAlignmentDropdownOpen && (
             <div
-              className="absolute top-full mt-1 rounded shadow-lg z-10 min-w-[140px]"
+              className="absolute top-full mt-1 rounded shadow-lg z-50 min-w-[140px]"
               style={dropdownStyle}
             >
               {[
@@ -492,7 +451,7 @@ const Toolbar = ({
 
           {isColorDropdownOpen && (
             <div
-              className="absolute top-full mt-2 rounded-xl shadow-lg z-20 p-4"
+              className="absolute top-full mt-2 rounded-xl shadow-lg z-50 p-4"
               style={{ ...dropdownStyle, minWidth: "200px" }}
             >
               <div
@@ -534,90 +493,6 @@ const Toolbar = ({
           )}
         </div>
 
-        <Divider />
-
-        {/* ── IMAGE ── */}
-        <div className="relative flex-shrink-0">
-          <div
-            className={triggerCls}
-            style={{ color: currentColors.text }}
-            onClick={() => handleDropdownToggle("image", !isImageDropdownOpen)}
-            title="Crop and Rotate"
-          >
-            <FiImage size={ICON} />
-            <FiChevronDown size={CHEVRON} />
-          </div>
-
-          {isImageDropdownOpen && (
-            <div
-              className="absolute top-full mt-1 rounded shadow-lg z-10 min-w-[120px]"
-              style={dropdownStyle}
-            >
-              {[
-                ["crop", <FiCrop size={14} />, "Crop"],
-                ["rotate", <FiRotateCw size={14} />, "Rotate"],
-              ].map(([action, icon, label]) => (
-                <div
-                  key={action}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded"
-                  style={{ color: currentColors.text }}
-                  onMouseDown={(e) =>
-                    handleMouseDown(e, () => handleImageAction(action))
-                  }
-                  onMouseEnter={hoverOn}
-                  onMouseLeave={hoverOff}
-                >
-                  {icon}
-                  <span className="text-sm">{label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* ── PAPER SIZE ── */}
-        <div className="relative flex-shrink-0">
-          <div
-            className={triggerCls}
-            style={{ color: currentColors.text }}
-            onClick={() =>
-              handleDropdownToggle("paperSize", !isPaperSizeDropdownOpen)
-            }
-            title="Paper Size"
-          >
-            <FiFile size={ICON} />
-            <FiChevronDown size={CHEVRON} />
-          </div>
-
-          {isPaperSizeDropdownOpen && (
-            <div
-              className="absolute top-full mt-1 rounded shadow-lg z-10 w-48"
-              style={dropdownStyle}
-            >
-              {Object.entries(paperSizes).map(([name, { width, height }]) => (
-                <div
-                  key={name}
-                  className="flex items-center justify-between px-3 py-2 cursor-pointer rounded"
-                  style={{ color: currentColors.text }}
-                  onMouseDown={(e) =>
-                    handleMouseDown(e, () => applyPaperSize(name))
-                  }
-                  onMouseEnter={hoverOn}
-                  onMouseLeave={hoverOff}
-                >
-                  <span className="text-sm">{name}</span>
-                  <span
-                    className="text-xs"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    {width} × {height}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* ── MARGINS ── */}
         <div className="relative flex-shrink-0">
           <div
@@ -634,7 +509,7 @@ const Toolbar = ({
 
           {isMarginDropdownOpen && (
             <div
-              className="absolute top-full mt-1 rounded shadow-lg z-10 w-48"
+              className="absolute top-full mt-1 rounded shadow-lg z-50 w-48"
               style={dropdownStyle}
             >
               {Object.entries(marginOptions).map(([name, m]) => (
@@ -682,7 +557,7 @@ const Toolbar = ({
 
           {isFontDropdownOpen && (
             <div
-              className="absolute top-full mt-1 rounded shadow-lg z-10 w-48"
+              className="absolute top-full mt-1 rounded shadow-lg z-50 w-48"
               style={dropdownStyle}
             >
               {fontOptions.map((font) => (
@@ -721,7 +596,7 @@ const Toolbar = ({
 
           {isListDropdownOpen && (
             <div
-              className="absolute top-full mt-1 rounded shadow-lg z-10 w-52"
+              className="absolute top-full mt-1 rounded shadow-lg z-50 w-52"
               style={dropdownStyle}
             >
               <div

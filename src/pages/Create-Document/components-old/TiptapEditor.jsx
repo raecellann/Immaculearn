@@ -14,7 +14,6 @@ import Highlight from "@tiptap/extension-highlight";
 import Underline from "@tiptap/extension-underline";
 import Color from "@tiptap/extension-color";
 import Collaboration from "@tiptap/extension-collaboration";
-import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import Placeholder from "@tiptap/extension-placeholder";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
@@ -31,6 +30,7 @@ const TiptapEditor = forwardRef(
       fontFamily,
       onUpdate,
       initialContent,
+      onEditorReady,
     },
     ref,
   ) => {
@@ -112,27 +112,6 @@ const TiptapEditor = forwardRef(
           document: ytext,
           field: "document",
         }),
-        CollaborationCursor.configure({
-          provider,
-          user: {
-            name: user?.name || "Anonymous",
-            color: user?.color || "#3b82f6",
-            avatar: user?.avatar,
-          },
-          render: (user) => {
-            const cursor = document.createElement("span");
-            cursor.classList.add("collaboration-cursor__caret");
-            cursor.setAttribute("style", `border-color: ${user.color}`);
-
-            const label = document.createElement("div");
-            label.classList.add("collaboration-cursor__label");
-            label.setAttribute("style", `background-color: ${user.color}`);
-            label.appendChild(document.createTextNode(user.name));
-            cursor.appendChild(label);
-
-            return cursor;
-          },
-        }),
       ];
     };
 
@@ -163,12 +142,6 @@ const TiptapEditor = forwardRef(
 
         ...getCollaborationExtensions(), // ✅ inject collaboration extensions here
 
-        ydoc && provider
-          ? Collaboration.configure({ document: ydoc.getText("document") })
-          : null,
-        ydoc && provider
-          ? CollaborationCursor.configure({ provider, user })
-          : null,
       ].filter(Boolean),
       content: initialContent || "",
       onUpdate: ({ editor }) => {
@@ -184,6 +157,12 @@ const TiptapEditor = forwardRef(
         },
       },
     });
+
+    // Notify parent when editor instance is ready
+    useEffect(() => {
+      if (editor) onEditorReady?.(editor);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editor]);
 
     // Helper function to update cursor position in awareness
     const updateCursorPosition = (editorInstance) => {

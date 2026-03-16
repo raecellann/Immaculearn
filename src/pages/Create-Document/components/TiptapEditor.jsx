@@ -23,7 +23,8 @@ const TiptapEditor = forwardRef(({
   margins,
   fontFamily,
   onUpdate,
-  initialContent
+  initialContent,
+  onEditorReady,
 }, ref) => {
 
   // Responsive: track viewport width to scale paper correctly
@@ -173,6 +174,12 @@ const TiptapEditor = forwardRef(({
       },
     },
   });
+
+  // Notify parent when editor instance is ready
+  useEffect(() => {
+    if (editor) onEditorReady?.(editor);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor]);
 
   // Helper function to update cursor position in awareness
   const updateCursorPosition = (editorInstance) => {

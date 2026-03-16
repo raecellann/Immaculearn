@@ -1,20 +1,16 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
-import { FiSun, FiMoon } from "react-icons/fi";
+import { FiArrowLeft, FiSun, FiMoon, FiCheck, FiSave, FiMenu } from "react-icons/fi";
 import Sidebar from "../component/sidebar";
-import Logout from "../component/logout";
 import EditorHeader from "./components-old/EditorHeader";
-import MobileHeader from "./components-old/MobileHeader";
-import CollaborativeEditor from "./components-old/CollaborativeEditor";
 import TiptapToolbar from "./components-old/TiptapToolbar";
 import { useTheme } from "./contexts-old/ThemeContext";
 import useYDoc from "../../hooks/useYdoc";
-
 import { useUser } from "../../contexts/user/useUser";
 import { useFileManager } from "../../hooks/useFileManager";
-
-import Toolbar from "./components-old/Toolbar";
 import { useSpace } from "../../contexts/space/useSpace";
+import TiptapEditor from "./components-old/TiptapEditor";
+import CollaborativeEditor from "./components-old/CollaborativeEditor";
 
 const CreateDocumentPage = () => {
   const navigate = useNavigate();
@@ -22,208 +18,151 @@ const CreateDocumentPage = () => {
   const { space_uuid, file_uuid, file_name } = useParams();
   const { isDarkMode, colors, toggleTheme } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
-  const roomId = `${space_uuid}-1`;
 
-  const { ydoc, provider, ytext, isSynced } = useYDoc(
+  const { ydoc, provider } = useYDoc(
     "bf284888-1e98-11f1-95af-c03532821bd5",
     1,
   );
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [showLogout, setShowLogout] = useState(false);
-  const headerRef = useRef(null);
-
-  // ✅ FilePage pattern — state-based hide-on-scroll sticky header
-  const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        setShowHeader(false); // scrolling down
-      } else {
-        setShowHeader(true); // scrolling up
-      }
-
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
 
   const { userSpaces, friendSpaces } = useSpace();
-
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
-  const currentSpace = allSpaces.find(
-    (space) => space.space_uuid === space_uuid,
-  );
+  const currentSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
 
   const { draft, list } = useFileManager(currentSpace?.space_id);
   const file = list.data?.find((f) => f.file_uuid === file_uuid) || {};
 
-  const [title, setTitle] = useState(file_name);
-  const [saveStatus, setSaveStatus] = useState("saved");
-  const [lastSaved, setLastSaved] = useState(null);
+  const [title, setTitle]                   = useState(file_name);
+  const [saveStatus, setSaveStatus]         = useState("saved");
+  const [lastSaved, setLastSaved]           = useState(null);
   const [connectedUsers, setConnectedUsers] = useState([]);
-  const [isOnline, setIsOnline] = useState(false);
+  const [isOnline, setIsOnline]             = useState(false);
   const [collaborationEnabled, setCollaborationEnabled] = useState(false);
 
-  const editorRef = useRef(null);
-  const [windowWidth, setWindowWidth] = useState(0);
-  const [paperSize, setPaperSize] = useState({
-    width: "8.27in",
-    height: "11.69in",
-  });
-  const [margins, setMargins] = useState({
-    top: "1in",
-    right: "1in",
-    bottom: "1in",
-    left: "1in",
-  });
-  const [fontFamily, setFontFamily] = useState("Inter");
-
+  const editorRef      = useRef(null);
   const saveTimeoutRef = useRef(null);
-  const ydocRef = useRef(null);
-  const providerRef = useRef(null);
-  const awarenessRef = useRef(null);
+  const awarenessRef   = useRef(null);
 
-  // === Generate consistent user color ===
-  const getUserColor = (userId) => {
-    const colors = [
-      "#3b82f6",
-      "#ef4444",
-      "#10b981",
-      "#f59e0b",
-      "#8b5cf6",
-      "#ec4899",
-      "#06b6d4",
-      "#84cc16",
-    ];
-    return colors[userId % colors.length];
+  // ── Tiptap editor instance (passed to toolbar) ────────────────────────────
+  const [tiptapEditor, setTiptapEditor] = useState(null);
+
+  // ── Toolbar state ─────────────────────────────────────────────────────────
+  const [selectedAlignment,      setSelectedAlignment]      = useState("left");
+  const [selectedTextColor,      setSelectedTextColor]      = useState("#000000");
+  const [selectedHighlightColor, setSelectedHighlightColor] = useState("#ffff00");
+  const [selectedFont,           setSelectedFont]           = useState("Inter");
+  const [selectedFontSize,       setSelectedFontSize]       = useState(12);
+
+  const [isAlignmentDropdownOpen,  setIsAlignmentDropdownOpen]  = useState(false);
+  const [isColorDropdownOpen,      setIsColorDropdownOpen]      = useState(false);
+  const [isFontDropdownOpen,       setIsFontDropdownOpen]       = useState(false);
+  const [isFontSizeDropdownOpen,   setIsFontSizeDropdownOpen]   = useState(false);
+  const [isListDropdownOpen,       setIsListDropdownOpen]       = useState(false);
+
+  // ── Toolbar handlers ──────────────────────────────────────────────────────
+  const applyBold      = () => tiptapEditor?.chain().focus().toggleBold().run();
+  const applyItalic    = () => tiptapEditor?.chain().focus().toggleItalic().run();
+  const applyUnderline = () => tiptapEditor?.chain().focus().toggleUnderline().run();
+
+  const applyAlignment = (align) => {
+    tiptapEditor?.chain().focus().setTextAlign(align).run();
+    setSelectedAlignment(align);
   };
 
-  // === Update connected users from awareness ===
+  const applyTextColor = (color) => {
+    tiptapEditor?.chain().focus().setColor(color).run();
+    setSelectedTextColor(color);
+  };
+
+  const applyHighlightColor = (color) => {
+    tiptapEditor?.chain().focus().setHighlight({ color }).run();
+    setSelectedHighlightColor(color);
+  };
+
+  const applyFontFamily = (font) => {
+    tiptapEditor?.chain().focus().setFontFamily(font).run();
+    setSelectedFont(font);
+  };
+
+  const applyFontSize = (size) => {
+    setSelectedFontSize(size);
+    try {
+      tiptapEditor?.chain().focus().setMark("textStyle", { fontSize: `${size}px` }).run();
+    } catch {
+      // fontSize extension not available; size shown in toolbar only
+    }
+  };
+
+  const applyList = (type) => {
+    if (type === "bullet") {
+      tiptapEditor?.chain().focus().toggleBulletList().run();
+    } else if (type === "number") {
+      tiptapEditor?.chain().focus().toggleOrderedList().run();
+    } else {
+      tiptapEditor?.chain().focus().liftListItem("listItem").run();
+    }
+  };
+
+  // ── Collaboration awareness ───────────────────────────────────────────────
+  const getUserColor = (userId) => {
+    const palette = ["#3b82f6","#ef4444","#10b981","#f59e0b","#8b5cf6","#ec4899","#06b6d4","#84cc16"];
+    return palette[userId % palette.length];
+  };
+
   const updateUsers = useCallback(() => {
     if (!awarenessRef.current) return;
     const states = Array.from(awarenessRef.current.getStates().entries() || []);
-    const users = states.map(([clientId, state]) =>
-      state.user
-        ? {
-            clientId,
-            id: state.user.id,
-            name: state.user.name,
-            color: state.user.color,
-            avatar: state.user.avatar,
-            cursor: state.user.cursor,
-          }
-        : null,
+    setConnectedUsers(
+      states
+        .map(([clientId, state]) =>
+          state.user
+            ? { clientId, id: state.user.id, name: state.user.name,
+                color: state.user.color, avatar: state.user.avatar }
+            : null,
+        )
+        .filter(Boolean),
     );
-    // Exclude current user
-    setConnectedUsers(users);
   }, [user?.id]);
 
-  // === Initialize Yjs + WebSocket Provider ===
   useEffect(() => {
-    if (!file_uuid || !user || typeof window === "undefined") return;
-
-    console.log("Initializing Yjs document for file:", file_uuid);
-
-    const ydoc = new Y.Doc();
-    const provider = new WebsocketProvider(
-      "ws://localhost:3000/crdt",
-      file_uuid,
-      ydoc,
-    );
-
-    ydocRef.current = ydoc;
-    providerRef.current = provider;
+    if (!file_uuid || !user || !provider) return;
     awarenessRef.current = provider.awareness;
-
-    // Set local awareness state
-    const localUserState = {
+    const localState = {
       user: {
-        id: user?.id,
-        name: user?.name,
-        color: getUserColor(user?.id),
+        id: user?.id, name: user?.name, color: getUserColor(user?.id),
         avatar: user?.profile_pic || `https://i.pravatar.cc/40?u=${user?.id}`,
         cursor: null,
       },
     };
-
-    awarenessRef.current.setLocalState(localUserState);
+    awarenessRef.current.setLocalState(localState);
     awarenessRef.current.on("change", updateUsers);
-
-    // WebSocket status listener
-    provider.on("status", (event) => {
-      const connected = event.status === "connected";
-      console.log("WebSocket status:", event.status);
-      setIsOnline(connected);
-      if (connected) {
-        setCollaborationEnabled(true);
-        awarenessRef.current.setLocalState(localUserState);
-        updateUsers();
-      }
+    provider.on("status", (e) => {
+      const ok = e.status === "connected";
+      setIsOnline(ok);
+      if (ok) { setCollaborationEnabled(true); awarenessRef.current.setLocalState(localState); updateUsers(); }
     });
-
-    // Sync event
-    provider.on("sync", (isSynced) => {
-      console.log("Document synced:", isSynced);
-      if (isSynced) {
-        setCollaborationEnabled(true);
-        updateUsers();
-      }
-    });
-
-    // Connection status
-    provider.on("connection-close", () => {
-      console.log("Connection closed");
-      setIsOnline(false);
-    });
-
-    provider.on("connection-error", (error) => {
-      console.error("Connection error:", error);
-      setIsOnline(false);
-    });
-
-    // Cleanup on unmount
+    provider.on("sync", (s) => { if (s) { setCollaborationEnabled(true); updateUsers(); } });
+    provider.on("connection-close", () => setIsOnline(false));
+    provider.on("connection-error",  () => setIsOnline(false));
     return () => {
-      console.log("Cleaning up Yjs document");
       awarenessRef.current?.off("change", updateUsers);
-      provider.disconnect();
-      ydoc.destroy();
-      setConnectedUsers([]);
-      setCollaborationEnabled(false);
-      setIsOnline(false);
+      setConnectedUsers([]); setCollaborationEnabled(false); setIsOnline(false);
     };
-  }, [file_uuid, user, updateUsers]);
+  }, [file_uuid, user, provider, updateUsers]);
 
-  // === Editor ref ===
-  const setEditorReference = useCallback((editor) => {
-    editorRef.current = editor;
-  }, []);
-
-  // === Editor update handler - for auto-save only ===
+  // ── Auto-save ─────────────────────────────────────────────────────────────
   const handleEditorUpdate = useCallback(
     (htmlContent) => {
       setSaveStatus("unsaved");
-
-      // Auto-save to backend (debounced)
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       saveTimeoutRef.current = setTimeout(async () => {
         if (!file?.file_id) return;
         try {
-          await draft.mutateAsync({
-            file_id: file.file_id,
-            content: htmlContent,
-            title,
-          });
+          await draft.mutateAsync({ file_id: file.file_id, content: htmlContent, title });
           setSaveStatus("saved");
           setLastSaved(new Date().toLocaleTimeString());
-        } catch (err) {
-          console.error("Save error:", err);
+        } catch {
           setSaveStatus("error");
         }
       }, 2000);
@@ -231,182 +170,198 @@ const CreateDocumentPage = () => {
     [file?.file_id, draft, title],
   );
 
-  useEffect(() => {
-    setWindowWidth(window.innerWidth);
+  // ── Save badge (mobile) ───────────────────────────────────────────────────
+  const SaveBadge = () => (
+    <div className="flex items-center gap-1 text-xs" style={{ color: currentColors.textSecondary }}>
+      {saveStatus === "saved"   && <><FiCheck size={12} className="text-green-500" /><span className="hidden sm:inline">Saved</span></>}
+      {saveStatus === "unsaved" && <><FiSave  size={12} className="text-gray-400"  /><span className="hidden sm:inline">Unsaved</span></>}
+      {saveStatus === "error"   && <span className="text-red-400">Error</span>}
+    </div>
+  );
 
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Handle format changes
-  const handleFormatChange = (format) => {
-    console.log("Format changed:", format);
-  };
+  const workspaceBg = isDarkMode ? "#3a3a3a" : "#e0e0e0";
 
   return (
-    <div
-      className="flex min-h-screen"
-      style={{ backgroundColor: currentColors.background }}
-    >
-      {/* Desktop Sidebar (Laptop & Desktop) */}
-      <div className="hidden lg:block">
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: currentColors.background }}>
+
+      {/* ── Desktop sidebar ───────────────────────────────────────────────── */}
+      <div className="hidden lg:flex flex-shrink-0">
         <Sidebar />
       </div>
 
-      {/* Mobile + Tablet Overlay */}
+      {/* ── Mobile sidebar overlay ────────────────────────────────────────── */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
-
-      {/* Mobile + Tablet Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-56 sm:w-64 z-50 transform transition-transform duration-300 lg:hidden
-        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300 lg:hidden
+          ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{ backgroundColor: currentColors.surface }}
       >
-        <div className="h-full overflow-y-auto">
-          <Sidebar />
-        </div>
+        <div className="h-full overflow-y-auto"><Sidebar /></div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* ✅ Sticky Mobile Header — FilePage pattern (hamburger + title, hide on scroll down) */}
-        <div
-          className={`lg:hidden fixed top-0 left-0 right-0 z-50 border-b
-          transition-transform duration-300
-          ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
-          style={{
-            backgroundColor: currentColors.background,
-            borderColor: currentColors.border,
-          }}
-        >
-          <div className="p-4 flex items-center gap-4">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="bg-transparent border-none text-2xl p-0"
-              style={{ color: currentColors.text }}
-            >
-              ☰
-            </button>
-            <h1
-              className="text-lg font-bold truncate"
-              style={{ color: currentColors.text }}
-            >
-              {title || "Document"}
-            </h1>
-          </div>
-        </div>
+      {/* ── Main content column ───────────────────────────────────────────── */}
+      <div className="flex-1 min-w-0 flex flex-col h-screen overflow-y-auto">
 
-        {/* CONTENT — pt-[60px] offsets the fixed mobile header, removed on lg+ */}
-        <div className="flex-1 overflow-y-auto pt-[60px] lg:pt-0">
-          {/* EditorHeader — desktop only (lg+) */}
-          <EditorHeader
-            navigate={navigate}
-            saveStatus={saveStatus}
-            lastSaved={lastSaved}
-            title={title}
-            setTitle={setTitle}
-            connectedUsers={connectedUsers}
-            isOnline={isOnline}
-            collaborationEnabled={collaborationEnabled}
-          />
+        {/* ── Sticky header block ───────────────────────────────────────── */}
+        <div className="sticky top-0 z-30 flex-shrink-0">
 
-          {/* Toolbar — responsive for all sizes */}
-          <Toolbar
-            editorRef={editorRef}
-            paperSize={paperSize}
-            margins={margins}
-            fontFamily={fontFamily}
-            onFormatChange={handleFormatChange}
-            onPaperSizeChange={(size) => setPaperSize(size)}
-            onMarginChange={(margin) => setMargins(margin)}
-            onFontChange={(font) => setFontFamily(font)}
-            isClient={typeof window !== "undefined"}
-            windowWidth={windowWidth}
-          />
+          {/* Mobile / Tablet header */}
+          <div
+            className="lg:hidden border-b"
+            style={{ backgroundColor: currentColors.background, borderColor: currentColors.border }}
+          >
+            <div className="flex items-center gap-2 px-3 py-2">
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="p-1.5 rounded-md flex-shrink-0"
+                style={{ color: currentColors.text }}
+              >
+                <FiMenu size={20} />
+              </button>
 
-          {/* Editor area */}
-          <div className="flex justify-center items-start py-3 sm:py-4 md:py-6 px-2 sm:px-4 md:px-6 lg:px-8 min-h-[calc(100vh-180px)] sm:min-h-[calc(100vh-200px)]">
-            <div className="w-full max-w-full">
-              <CollaborativeEditor
-                ref={setEditorReference}
-                ydoc={ydoc}
-                provider={provider}
-                ytext={ytext} // ← important: this is what the editor binds to
-                user={{
-                  id: user?.id,
-                  name: user?.name,
-                  color: getUserColor(user?.id),
-                  avatar:
-                    user?.profile_pic ||
-                    `https://i.pravatar.cc/40?u=${user?.id}`,
-                }}
-                onUpdate={handleEditorUpdate}
-                initialContent={file?.content || ""}
+              <button
+                onClick={() => navigate(-1)}
+                className="p-1.5 rounded-md flex-shrink-0"
+                style={{ color: currentColors.textSecondary }}
+              >
+                <FiArrowLeft size={18} />
+              </button>
+
+              <input
+                value={title || ""}
+                onChange={(e) => setTitle(e.target.value)}
+                className="flex-1 min-w-0 text-sm font-semibold bg-transparent outline-none truncate"
+                style={{ color: currentColors.text }}
+                placeholder="Document title…"
               />
+
+              <SaveBadge />
+
+              <button
+                onClick={toggleTheme}
+                className="p-1.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: currentColors.surface, color: currentColors.text,
+                         border: `1px solid ${currentColors.border}` }}
+              >
+                {isDarkMode ? <FiSun size={14} /> : <FiMoon size={14} />}
+              </button>
             </div>
           </div>
 
-          {/* Connected users floating panel */}
-          {collaborationEnabled && connectedUsers.length > 0 && (
-            <div className="fixed bottom-3 sm:bottom-4 right-2 sm:right-4 z-50">
-              <div
-                className="rounded-lg shadow-lg p-2 sm:p-3 max-w-[160px] sm:max-w-[200px] md:max-w-none"
-                style={{
-                  backgroundColor: currentColors.surface,
-                  border: `1px solid ${currentColors.border}`,
-                }}
-              >
-                <div
-                  className="text-xs mb-1.5 sm:mb-2 font-medium"
-                  style={{ color: currentColors.textSecondary }}
-                >
-                  <span className="hidden sm:inline">
-                    {connectedUsers.length}{" "}
-                    {connectedUsers.length === 1
-                      ? "other person"
-                      : "other people"}{" "}
-                    editing
-                  </span>
-                  <span className="sm:hidden">
-                    {connectedUsers.length}{" "}
-                    {connectedUsers.length === 1 ? "person" : "people"}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1.5 sm:gap-2">
-                  {connectedUsers.map((u) => (
-                    <div
-                      key={u.clientId}
-                      className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full"
-                      style={{ backgroundColor: currentColors.background }}
+          {/* Desktop EditorHeader */}
+          <div className="hidden lg:block">
+            <EditorHeader
+              navigate={navigate}
+              saveStatus={saveStatus}
+              lastSaved={lastSaved}
+              title={title}
+              setTitle={setTitle}
+              connectedUsers={connectedUsers}
+              isOnline={isOnline}
+              collaborationEnabled={collaborationEnabled}
+            />
+          </div>
+
+          {/* TiptapToolbar — all breakpoints */}
+          <TiptapToolbar
+            editor={tiptapEditor}
+            selectedAlignment={selectedAlignment}
+            selectedTextColor={selectedTextColor}
+            selectedHighlightColor={selectedHighlightColor}
+            selectedFont={selectedFont}
+            selectedFontSize={selectedFontSize}
+            applyAlignment={applyAlignment}
+            applyTextColor={applyTextColor}
+            applyHighlightColor={applyHighlightColor}
+            applyFontFamily={applyFontFamily}
+            applyFontSize={applyFontSize}
+            applyBold={applyBold}
+            applyItalic={applyItalic}
+            applyUnderline={applyUnderline}
+            applyList={applyList}
+            isAlignmentDropdownOpen={isAlignmentDropdownOpen}
+            isColorDropdownOpen={isColorDropdownOpen}
+            isFontDropdownOpen={isFontDropdownOpen}
+            isFontSizeDropdownOpen={isFontSizeDropdownOpen}
+            isListDropdownOpen={isListDropdownOpen}
+            setIsAlignmentDropdownOpen={setIsAlignmentDropdownOpen}
+            setIsColorDropdownOpen={setIsColorDropdownOpen}
+            setIsFontDropdownOpen={setIsFontDropdownOpen}
+            setIsFontSizeDropdownOpen={setIsFontSizeDropdownOpen}
+            setIsListDropdownOpen={setIsListDropdownOpen}
+          />
+        </div>
+
+        {/* ── Gray workspace with centered Tiptap editor ────────────────── */}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto"
+          style={{ backgroundColor: workspaceBg }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "32px 16px 48px",
+              minHeight: "100%",
+            }}
+          >
+            <CollaborativeEditor
+              ref={editorRef}
+              ydoc={ydoc}
+              provider={provider}
+              user={{
+                id: user?.id,
+                name: user?.name,
+                color: getUserColor(user?.id),
+                avatar: user?.profile_pic || `https://i.pravatar.cc/40?u=${user?.id}`,
+              }}
+              onUpdate={handleEditorUpdate}
+              initialContent={file?.content || ""}
+              onEditorReady={setTiptapEditor}
+            />
+          </div>
+        </div>
+
+        {/* ── Connected users floating badge ────────────────────────────── */}
+        {collaborationEnabled && connectedUsers.length > 0 && (
+          <div className="fixed bottom-4 right-3 sm:right-4 z-50">
+            <div
+              className="rounded-lg shadow-lg p-2 sm:p-3"
+              style={{ backgroundColor: currentColors.surface, border: `1px solid ${currentColors.border}` }}
+            >
+              <p className="text-xs mb-2 font-medium" style={{ color: currentColors.textSecondary }}>
+                {connectedUsers.length} {connectedUsers.length === 1 ? "person" : "people"} editing
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {connectedUsers.map((u) => (
+                  <div
+                    key={u.clientId}
+                    className="flex items-center gap-2 px-2 py-1 rounded-full"
+                    style={{ backgroundColor: currentColors.background }}
+                  >
+                    <img
+                      src={u.avatar} alt={u.name}
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 shrink-0"
+                      style={{ borderColor: u.color }}
+                    />
+                    <span
+                      className="text-xs font-medium truncate max-w-[90px]"
+                      style={{ color: currentColors.text }}
                     >
-                      <img
-                        src={u.avatar}
-                        alt={u.name}
-                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 shrink-0"
-                        style={{ borderColor: u.color }}
-                      />
-                      <span
-                        className="text-xs sm:text-sm font-medium truncate max-w-[80px] sm:max-w-[100px]"
-                        style={{ color: currentColors.text }}
-                      >
-                        {u.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                      {u.name}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

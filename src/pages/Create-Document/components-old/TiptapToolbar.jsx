@@ -1,28 +1,62 @@
-// components/TiptapToolbar.jsx
-import React from "react";
+// components-old/TiptapToolbar.jsx
+import React, { useRef, useEffect, useCallback } from "react";
 import {
-  FiBold,
-  FiItalic,
-  FiUnderline,
-  FiAlignLeft,
-  FiAlignCenter,
-  FiAlignRight,
-  FiAlignJustify,
-  FiChevronDown,
-  FiList,
+  FiBold, FiItalic, FiUnderline,
+  FiAlignLeft, FiAlignCenter, FiAlignRight, FiAlignJustify,
+  FiChevronDown, FiList,
 } from "react-icons/fi";
 
+// ── Fixed-position dropdown portal ───────────────────────────────────────────
+// Renders dropdown relative to the trigger button using position:fixed so it
+// is never clipped by any overflow/sticky ancestor.
+const Dropdown = ({ triggerRef, open, onClose, children }) => {
+  const dropRef = useRef(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (
+        dropRef.current && !dropRef.current.contains(e.target) &&
+        triggerRef.current && !triggerRef.current.contains(e.target)
+      ) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open, onClose, triggerRef]);
+
+  if (!open || !triggerRef.current) return null;
+
+  const rect = triggerRef.current.getBoundingClientRect();
+
+  return (
+    <div
+      ref={dropRef}
+      style={{
+        position: "fixed",
+        top: rect.bottom + 4,
+        left: rect.left,
+        zIndex: 9999,
+        background: "#ffffff",
+        border: "1px solid #d1d5db",
+        borderRadius: 8,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+        minWidth: 140,
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 const TiptapToolbar = ({
   editor,
   selectedAlignment,
   selectedTextColor,
-  selectedHighlightColor,
-  selectedFont,
   selectedFontSize,
   applyAlignment,
   applyTextColor,
-  applyHighlightColor,
-  applyFontFamily,
   applyFontSize,
   applyBold,
   applyItalic,
@@ -30,252 +64,198 @@ const TiptapToolbar = ({
   applyList,
   isAlignmentDropdownOpen,
   isColorDropdownOpen,
-  isFontDropdownOpen,
   isFontSizeDropdownOpen,
   isListDropdownOpen,
   setIsAlignmentDropdownOpen,
   setIsColorDropdownOpen,
-  setIsFontDropdownOpen,
   setIsFontSizeDropdownOpen,
   setIsListDropdownOpen,
 }) => {
+  // Refs for each trigger button
+  const fontSizeRef  = useRef(null);
+  const alignRef     = useRef(null);
+  const colorRef     = useRef(null);
+  const listRef      = useRef(null);
+
+  const closeAll = useCallback(() => {
+    setIsAlignmentDropdownOpen(false);
+    setIsColorDropdownOpen(false);
+    setIsFontSizeDropdownOpen(false);
+    setIsListDropdownOpen(false);
+  }, [setIsAlignmentDropdownOpen, setIsColorDropdownOpen, setIsFontSizeDropdownOpen, setIsListDropdownOpen]);
+
+  const toggle = (setter, current) => {
+    closeAll();
+    if (!current) setter(true);
+  };
+
   if (!editor) {
     return (
-      <div className="bg-[#EFEFEF] px-3 py-2 text-sm text-center">
-        Loading toolbar...
+      <div style={{ backgroundColor: "#f3f3f3", borderBottom: "1px solid #ddd", padding: "8px 16px", fontSize: 13, color: "#999" }}>
+        Loading editor…
       </div>
     );
   }
 
-  const isEditorActive = (format) => {
-    try {
-      return typeof editor.isActive === "function"
-        ? editor.isActive(format)
-        : false;
-    } catch {
-      return false;
-    }
+  const isActive = (fmt) => {
+    try { return typeof editor.isActive === "function" ? editor.isActive(fmt) : false; }
+    catch { return false; }
   };
 
-  // B/I/U are intentionally LARGER than the rest so they're clearly visible
-  const BIU_ICON = 22;
-  const ICON = 18;
-  const CHEVRON = 14;
+  const btnBase = {
+    display: "inline-flex", alignItems: "center", justifyContent: "center",
+    cursor: "pointer", border: "none", borderRadius: 5, padding: "6px 8px",
+    transition: "background 0.12s", background: "transparent", color: "#222",
+  };
 
-  // B/I/U button — bigger icon + bigger padding to match visual weight of other buttons
-  const biuCls = (active = false) =>
-    `flex-shrink-0 cursor-pointer p-2.5 rounded-md hover:bg-gray-200 transition-colors ${
-      active ? "text-blue-500 bg-blue-100" : "text-gray-800"
-    }`;
+  const biuBtn = (active) => ({
+    ...btnBase,
+    background: active ? "#dbeafe" : "transparent",
+    color: active ? "#2563eb" : "#222",
+  });
 
-  // Standard toolbar trigger button
-  const btnCls =
-    "flex-shrink-0 flex items-center gap-1 cursor-pointer p-2 rounded hover:bg-gray-200 transition-colors text-gray-800";
+  const Divider = () => (
+    <div style={{ width: 1, height: 20, background: "#d1d5db", margin: "0 3px", flexShrink: 0 }} />
+  );
 
-  const Divider = () => <div className="h-6 w-px bg-gray-400 flex-shrink-0" />;
+  const Item = ({ onClick, active, children }) => (
+    <div
+      onClick={onClick}
+      style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "8px 14px", cursor: "pointer", fontSize: 13,
+        background: active ? "#eff6ff" : "transparent",
+        color: active ? "#2563eb" : "#333",
+        whiteSpace: "nowrap",
+      }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.background = "#f5f5f5"; }}
+      onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
+    >
+      {children}
+    </div>
+  );
 
   return (
-    /* Full-width bar, scrollable on small screens, content always centred */
-    <div className="bg-[#EFEFEF] w-full border-b overflow-x-auto">
-      <div className="flex flex-nowrap items-center justify-center gap-2 px-4 py-2 min-w-max mx-auto">
-        {/* ── BOLD / ITALIC / UNDERLINE ── bigger icons, bigger padding ── */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
-          <FiBold
-            className={biuCls(isEditorActive("bold"))}
-            onClick={applyBold}
-            title="Bold"
-            size={BIU_ICON}
-          />
-          <FiItalic
-            className={biuCls(isEditorActive("italic"))}
-            onClick={applyItalic}
-            title="Italic"
-            size={BIU_ICON}
-          />
-          <FiUnderline
-            className={biuCls(isEditorActive("underline"))}
-            onClick={applyUnderline}
-            title="Underline"
-            size={BIU_ICON}
-          />
-        </div>
+    <div style={{ backgroundColor: "#f3f3f3", borderBottom: "1px solid #d1d5db", width: "100%", position: "relative" }}>
+      <div style={{
+        display: "flex", flexWrap: "nowrap", alignItems: "center",
+        justifyContent: "center", gap: 2, padding: "5px 12px",
+        overflowX: "auto", minWidth: "max-content", margin: "0 auto",
+      }}>
+
+        {/* ── B / I / U ── */}
+        <button style={biuBtn(isActive("bold"))} onClick={applyBold} title="Bold"><FiBold size={17} /></button>
+        <button style={biuBtn(isActive("italic"))} onClick={applyItalic} title="Italic"><FiItalic size={17} /></button>
+        <button style={biuBtn(isActive("underline"))} onClick={applyUnderline} title="Underline"><FiUnderline size={17} /></button>
 
         <Divider />
 
-        {/* ── FONT SIZE ── */}
-        <div className="relative flex-shrink-0">
-          <div
-            className={btnCls}
-            onClick={() => setIsFontSizeDropdownOpen(!isFontSizeDropdownOpen)}
-          >
-            <span className="text-sm font-medium min-w-[28px] text-center">
-              {selectedFontSize}
-            </span>
-            <FiChevronDown size={CHEVRON} />
+        {/* ── Font Size ── */}
+        <button
+          ref={fontSizeRef}
+          style={{ ...btnBase, gap: 3, minWidth: 50 }}
+          onClick={() => toggle(setIsFontSizeDropdownOpen, isFontSizeDropdownOpen)}
+        >
+          <span style={{ fontSize: 13, fontWeight: 500 }}>{selectedFontSize}</span>
+          <FiChevronDown size={11} />
+        </button>
+        <Dropdown triggerRef={fontSizeRef} open={isFontSizeDropdownOpen} onClose={() => setIsFontSizeDropdownOpen(false)}>
+          <div style={{ maxHeight: 220, overflowY: "auto", borderRadius: 8 }}>
+            {[8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72].map(s => (
+              <Item key={s} active={selectedFontSize === s} onClick={() => { applyFontSize(s); setIsFontSizeDropdownOpen(false); }}>
+                <span style={{ minWidth: 28 }}>{s}</span>
+              </Item>
+            ))}
           </div>
+        </Dropdown>
 
-          {isFontSizeDropdownOpen && (
-            <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-44 max-h-52 overflow-y-auto">
-              {[8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72].map(
-                (size) => (
-                  <div
-                    key={size}
-                    className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
-                    onClick={() => {
-                      applyFontSize(size);
-                      setIsFontSizeDropdownOpen(false);
-                    }}
-                  >
-                    <span
-                      className="font-medium w-4"
-                      style={{
-                        fontSize: `${Math.min(Math.max(size, 12), 20)}px`,
-                      }}
-                    >
-                      T
-                    </span>
-                    <span className="text-sm text-gray-600">{size}px</span>
-                  </div>
-                ),
-              )}
+        <Divider />
+
+        {/* ── Alignment ── */}
+        <button
+          ref={alignRef}
+          style={{ ...btnBase, gap: 3 }}
+          onClick={() => toggle(setIsAlignmentDropdownOpen, isAlignmentDropdownOpen)}
+          title="Alignment"
+        >
+          {selectedAlignment === "center"  ? <FiAlignCenter size={15} />  :
+           selectedAlignment === "right"   ? <FiAlignRight size={15} />   :
+           selectedAlignment === "justify" ? <FiAlignJustify size={15} /> :
+           <FiAlignLeft size={15} />}
+          <FiChevronDown size={11} />
+        </button>
+        <Dropdown triggerRef={alignRef} open={isAlignmentDropdownOpen} onClose={() => setIsAlignmentDropdownOpen(false)}>
+          {[
+            ["left",    <FiAlignLeft size={14} />,    "Left"],
+            ["center",  <FiAlignCenter size={14} />,  "Center"],
+            ["right",   <FiAlignRight size={14} />,   "Right"],
+            ["justify", <FiAlignJustify size={14} />, "Justify"],
+          ].map(([a, icon, label]) => (
+            <Item key={a} active={selectedAlignment === a} onClick={() => { applyAlignment(a); setIsAlignmentDropdownOpen(false); }}>
+              {icon}{label}
+            </Item>
+          ))}
+        </Dropdown>
+
+        <Divider />
+
+        {/* ── Text Color ── */}
+        <button
+          ref={colorRef}
+          style={{ ...btnBase, gap: 3 }}
+          onClick={() => toggle(setIsColorDropdownOpen, isColorDropdownOpen)}
+          title="Text Color"
+        >
+          <span style={{
+            display: "inline-block", width: 17, height: 17, borderRadius: 3,
+            border: "1.5px solid #aaa", backgroundColor: selectedTextColor || "#000",
+          }} />
+          <FiChevronDown size={11} />
+        </button>
+        <Dropdown triggerRef={colorRef} open={isColorDropdownOpen} onClose={() => setIsColorDropdownOpen(false)}>
+          <div style={{ padding: 12, minWidth: 192 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#888", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Text Color
             </div>
-          )}
-        </div>
-
-        <Divider />
-
-        {/* ── ALIGNMENT ── */}
-        <div className="relative flex-shrink-0">
-          <div
-            className={btnCls}
-            onClick={() => setIsAlignmentDropdownOpen(!isAlignmentDropdownOpen)}
-          >
-            {selectedAlignment === "left" && <FiAlignLeft size={ICON} />}
-            {selectedAlignment === "center" && <FiAlignCenter size={ICON} />}
-            {selectedAlignment === "right" && <FiAlignRight size={ICON} />}
-            {selectedAlignment === "justify" && <FiAlignJustify size={ICON} />}
-            <FiChevronDown size={CHEVRON} />
-          </div>
-
-          {isAlignmentDropdownOpen && (
-            <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[140px]">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 6 }}>
               {[
-                ["left", <FiAlignLeft size={14} />, "Left"],
-                ["center", <FiAlignCenter size={14} />, "Center"],
-                ["right", <FiAlignRight size={14} />, "Right"],
-                ["justify", <FiAlignJustify size={14} />, "Justify"],
-              ].map(([align, icon, label]) => (
-                <div
-                  key={align}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
-                  onClick={() => {
-                    applyAlignment(align);
-                    setIsAlignmentDropdownOpen(false);
+                ["Black",  "#000000"], ["White",  "#ffffff"], ["Red",    "#ef4444"],
+                ["Orange", "#f97316"], ["Yellow", "#eab308"], ["Green",  "#22c55e"],
+                ["Teal",   "#14b8a6"], ["Blue",   "#3b82f6"], ["Indigo", "#6366f1"],
+                ["Purple", "#a855f7"], ["Pink",   "#ec4899"], ["Gray",   "#6b7280"],
+              ].map(([label, val]) => (
+                <button
+                  key={val} title={label}
+                  style={{
+                    width: 26, height: 26, borderRadius: 4, cursor: "pointer",
+                    backgroundColor: val, border: selectedTextColor === val ? "2.5px solid #2563eb" : "1.5px solid #ccc",
+                    outline: "none",
                   }}
-                >
-                  {icon}
-                  <span className="text-sm">{label}</span>
-                </div>
+                  onClick={() => { applyTextColor(val); setIsColorDropdownOpen(false); }}
+                />
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        </Dropdown>
 
         <Divider />
 
-        {/* ── TEXT COLOR ── */}
-        <div className="relative flex-shrink-0">
-          <div
-            className={btnCls}
-            onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
-            title="Text Color"
-          >
-            {/* Colour swatch sized to match BIU visually */}
-            <div
-              className="w-5 h-5 rounded border border-gray-400"
-              style={{ backgroundColor: selectedTextColor }}
-            />
-            <FiChevronDown size={CHEVRON} />
-          </div>
+        {/* ── List ── */}
+        <button
+          ref={listRef}
+          style={{ ...btnBase, gap: 3 }}
+          onClick={() => toggle(setIsListDropdownOpen, isListDropdownOpen)}
+          title="Lists"
+        >
+          <FiList size={15} />
+          <FiChevronDown size={11} />
+        </button>
+        <Dropdown triggerRef={listRef} open={isListDropdownOpen} onClose={() => setIsListDropdownOpen(false)}>
+          <Item onClick={() => { applyList("bullet"); setIsListDropdownOpen(false); }}>• Bullet List</Item>
+          <Item onClick={() => { applyList("number"); setIsListDropdownOpen(false); }}>1. Numbered List</Item>
+          <Item onClick={() => { applyList("none");   setIsListDropdownOpen(false); }}>✕ Remove List</Item>
+        </Dropdown>
 
-          {isColorDropdownOpen && (
-            <div
-              className="absolute top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-20 p-4"
-              style={{ minWidth: "196px" }}
-            >
-              <div className="text-xs font-semibold text-gray-500 mb-3">
-                Text Color
-              </div>
-              <div className="grid grid-cols-4 gap-4">
-                {[
-                  "black",
-                  "green",
-                  "red",
-                  "blue",
-                  "gold",
-                  "orange",
-                  "purple",
-                  "pink",
-                  "brown",
-                  "teal",
-                  "navy",
-                  "gray",
-                ].map((color) => (
-                  <button
-                    key={color}
-                    title={color}
-                    className="w-8 h-8 rounded-md border-2 border-gray-300 transition-all hover:scale-110 hover:shadow-md"
-                    style={{
-                      backgroundColor: color,
-                      borderColor:
-                        selectedTextColor === color ? "#3b82f6" : "#d1d5db",
-                      outline:
-                        selectedTextColor === color
-                          ? "2px solid #3b82f6"
-                          : "none",
-                      outlineOffset: "2px",
-                    }}
-                    onClick={() => {
-                      applyTextColor(color);
-                      setIsColorDropdownOpen(false);
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <Divider />
-
-        {/* ── LIST ── */}
-        <div className="relative flex-shrink-0">
-          <div
-            className={btnCls}
-            onClick={() => setIsListDropdownOpen(!isListDropdownOpen)}
-            title="Lists"
-          >
-            <FiList size={ICON} />
-            <FiChevronDown size={CHEVRON} />
-          </div>
-
-          {isListDropdownOpen && (
-            <div className="absolute top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 w-52">
-              {["bullet", "number", "none"].map((type) => (
-                <div
-                  key={type}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
-                  onClick={() => {
-                    applyList(type);
-                    setIsListDropdownOpen(false);
-                  }}
-                >
-                  <span className="text-sm capitalize">{type}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

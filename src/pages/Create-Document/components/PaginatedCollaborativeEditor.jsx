@@ -1,12 +1,11 @@
-// components-old/CollaborativeEditor.jsx
+// PaginatedCollaborativeEditor.jsx
 // Microsoft Word-style paginated editor:
-//   • Long Bond paper (8.5×13in / 816×1248px at 96dpi)
 //   • All pages visible & editable simultaneously
-//   • Auto overflow/underflow between pages (max 50)
-//   • Gray workspace background, white pages with shadow
+//   • Auto overflow/underflow between pages
+//   • Gray workspace background, white A4 pages with shadow
 //   • Yjs collaborative sync
 
-import React, {
+import {
   forwardRef,
   useImperativeHandle,
   useEffect,
@@ -14,63 +13,61 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { useTheme } from "../contexts-old/ThemeContext";
+import { useTheme } from "../contexts/ThemeContext";
 
-// ─── Long Bond paper geometry (8.5×13in at 96dpi) ───────────────────────────
-const PAGE_W    = 816;              // px
-const PAGE_H    = 1248;             // px
-const MARGIN    = 96;               // px  (1 inch)
-const CONTENT_H = PAGE_H - MARGIN * 2; // 1056 px usable
-const MAX_PAGES = 50;
+// ─── Page geometry (A4 at 96 dpi) ────────────────────────────────────────────
+const PAGE_W = 794;   // px
+const PAGE_H = 1123;  // px
+const MARGIN = 96;    // px  (1 inch)
+const PRINT_H = PAGE_H - MARGIN * 2; // 931 px usable height per page
 
 const PAGE_SEP = "\n<!-- PAGE BREAK -->\n";
 
 let _nextId = 1;
 const newId = () => ++_nextId;
 
-// ─── Component ───────────────────────────────────────────────────────────────
-const CollaborativeEditor = forwardRef(
+// ─── Component ────────────────────────────────────────────────────────────────
+const PaginatedCollaborativeEditor = forwardRef(
   (
     {
       ydoc,
       provider,
       fontFamily,
-      margins,
       onUpdate,
       initialContent,
-      onEditorReady,
+      margins,
     },
-    ref,
+    ref
   ) => {
     const { isDarkMode } = useTheme();
 
     // pageIds drives how many <Page> elements React renders.
-    // Content lives in the DOM (uncontrolled) – only touched via refs.
+    // Content lives in the DOM (uncontrolled) – we only touch it via refs.
     const [pageIds, setPageIds] = useState(() => [newId()]);
     const [isSynced, setIsSynced] = useState(false);
 
-    const pageRefs    = useRef([]);       // contentEditable divs
-    const pageIdsRef  = useRef(pageIds);  // mirror for callbacks
+    const pageRefs = useRef([]); // contentEditable divs
+    const pageIdsRef = useRef(pageIds); // mirror for callbacks
     pageIdsRef.current = pageIds;
 
-    const isRemoteRef           = useRef(false);
-    const reflowTimer           = useRef(null);
-    const pendingNewPageContent = useRef(null);
+    const isRemoteRef = useRef(false);
+    const reflowTimer = useRef(null);
+    const pendingNewPageContent = useRef(null); // content to inject after new page renders
 
-    // ── Margin values ────────────────────────────────────────────────────────
+    // ── Margin values ──────────────────────────────────────────────────────────
     const mTop    = margins?.top    || "1in";
     const mRight  = margins?.right  || "1in";
     const mBottom = margins?.bottom || "1in";
     const mLeft   = margins?.left   || "1in";
 
-    // ── Responsive scale (fit page in workspace) ─────────────────────────────
+    // ── Responsive scale ───────────────────────────────────────────────────────
     const workspaceRef = useRef(null);
     const [scale, setScale] = useState(1);
 
     useEffect(() => {
       const calc = () => {
         if (!workspaceRef.current) return;
-        const avail = workspaceRef.current.offsetWidth - 32;
+        const avail = workspaceRef.current.offsetWidth - 48;
         setScale(avail < PAGE_W ? avail / PAGE_W : 1);
       };
       calc();
@@ -78,24 +75,28 @@ const CollaborativeEditor = forwardRef(
       return () => window.removeEventListener("resize", calc);
     }, []);
 
-    // ── Read all pages from DOM ───────────────────────────────────────────────
+    // ── Read all page HTML from DOM ────────────────────────────────────────────
     const domToString = useCallback(
       () =>
         pageRefs.current
           .filter(Boolean)
           .map((el) => el.innerHTML)
           .join(PAGE_SEP),
-      [],
+      []
     );
 
-    // ── Write content string into DOM ────────────────────────────────────────
+    // ── Write content string into DOM (splits by PAGE_SEP) ────────────────────
     const stringToDOM = useCallback((content) => {
-      const parts  = content ? content.split(PAGE_SEP) : [""];
-      const newIds = parts.map((_, i) => pageIdsRef.current[i] ?? newId());
+      const parts = content ? content.split(PAGE_SEP) : [""];
+
+      // Rebuild pageIds to match the number of parts
+      const newIds = parts.map(
+        (_, i) => pageIdsRef.current[i] ?? newId()
+      );
       pageIdsRef.current = newIds;
       setPageIds([...newIds]);
 
-      // Inject HTML after React renders the new page elements
+      // Inject content after render
       const htmlParts = parts;
       setTimeout(() => {
         htmlParts.forEach((html, i) => {
@@ -104,12 +105,12 @@ const CollaborativeEditor = forwardRef(
       }, 0);
     }, []);
 
-    // ── Sync DOM → Yjs ───────────────────────────────────────────────────────
+    // ── Sync changed DOM to Yjs ────────────────────────────────────────────────
     const syncToYjs = useCallback(() => {
       if (!ydoc || isRemoteRef.current) return;
       const ytext = ydoc.getText("document");
-      const next  = domToString();
-      const prev  = ytext.toString();
+      const next = domToString();
+      const prev = ytext.toString();
       if (next === prev) return;
 
       // Minimal diff
@@ -119,7 +120,8 @@ const CollaborativeEditor = forwardRef(
       while (
         e < Math.min(prev.length - s, next.length - s) &&
         prev[prev.length - 1 - e] === next[next.length - 1 - e]
-      ) e++;
+      )
+        e++;
 
       ydoc.transact(() => {
         if (prev.length - s - e > 0) ytext.delete(s, prev.length - s - e);
@@ -130,31 +132,13 @@ const CollaborativeEditor = forwardRef(
       onUpdate?.(next);
     }, [ydoc, domToString, onUpdate]);
 
-    // ── Overflow / underflow reflow ──────────────────────────────────────────
+    // ── Overflow / underflow reflow ────────────────────────────────────────────
     const reflow = useCallback(
       (startIndex = 0) => {
         const refs = pageRefs.current;
         const ids  = pageIdsRef.current;
 
-        // ── Save cursor before any DOM moves ─────────────────────────────
-        const sel = window.getSelection();
-        let savedRange = null;
-        if (sel && sel.rangeCount > 0) {
-          try { savedRange = sel.getRangeAt(0).cloneRange(); } catch {}
-        }
-
-        const restoreCursor = () => {
-          if (!savedRange) return;
-          try {
-            // Only restore if the saved nodes are still in the document
-            if (!document.contains(savedRange.startContainer)) return;
-            const s = window.getSelection();
-            s.removeAllRanges();
-            s.addRange(savedRange);
-          } catch {}
-        };
-
-        // Pass 1: push overflow blocks forward
+        // ── Pass 1: push overflow blocks forward ─────────────────────────────
         for (let i = startIndex; i < refs.length; i++) {
           const el = refs[i];
           if (!el) continue;
@@ -167,22 +151,19 @@ const CollaborativeEditor = forwardRef(
             const nextEl = refs[i + 1];
             if (nextEl) {
               nextEl.insertBefore(last, nextEl.firstChild);
-            } else if (ids.length < MAX_PAGES) {
+            } else {
               // Need a brand-new page
-              pendingNewPageContent.current = last.outerHTML;
+              const overflow = last.outerHTML;
+              pendingNewPageContent.current = overflow;
               const freshId = newId();
               pageIdsRef.current = [...ids, freshId];
               setPageIds([...pageIdsRef.current]);
-              return; // re-runs after render via useEffect below
-            } else {
-              // Max pages reached — put it back
-              el.appendChild(last);
-              break;
+              return; // will re-run after render via useEffect
             }
           }
         }
 
-        // Pass 2: pull underflow blocks backward
+        // ── Pass 2: pull underflow blocks backward ────────────────────────────
         for (let i = startIndex; i < refs.length - 1; i++) {
           const el     = refs[i];
           const nextEl = refs[i + 1];
@@ -192,6 +173,7 @@ const CollaborativeEditor = forwardRef(
             const first = nextEl.firstElementChild;
             el.appendChild(first);
             if (el.scrollHeight > el.clientHeight + 4) {
+              // Doesn't fit – put back
               el.removeChild(first);
               nextEl.insertBefore(first, nextEl.firstChild);
               break;
@@ -205,7 +187,7 @@ const CollaborativeEditor = forwardRef(
             refs.length > 1
           ) {
             pageIdsRef.current = pageIdsRef.current.filter(
-              (_, idx) => idx !== i + 1,
+              (_, idx) => idx !== i + 1
             );
             setPageIds([...pageIdsRef.current]);
             break;
@@ -213,9 +195,8 @@ const CollaborativeEditor = forwardRef(
         }
 
         syncToYjs();
-        restoreCursor();
       },
-      [syncToYjs],
+      [syncToYjs]
     );
 
     // After a new page is added, inject pending content
@@ -226,42 +207,40 @@ const CollaborativeEditor = forwardRef(
         if (lastEl) {
           lastEl.innerHTML = pendingNewPageContent.current;
           pendingNewPageContent.current = null;
+          // Check if the new page also overflows
           reflow(lastIdx);
         }
       }
     });
 
-    // ── Input handler ────────────────────────────────────────────────────────
+    // ── Input handler ──────────────────────────────────────────────────────────
     const handleInput = useCallback(
       (pageIndex) => {
         if (isRemoteRef.current) return;
         if (reflowTimer.current) clearTimeout(reflowTimer.current);
         reflowTimer.current = setTimeout(() => reflow(pageIndex), 200);
       },
-      [reflow],
+      [reflow]
     );
 
-    // ── Paste ────────────────────────────────────────────────────────────────
-    const handlePaste = useCallback(
-      (e, pageIndex) => {
-        e.preventDefault();
-        const text = e.clipboardData.getData("text/plain");
-        const sel  = window.getSelection();
-        if (!sel.rangeCount) return;
-        const range = sel.getRangeAt(0);
-        range.deleteContents();
-        const node = document.createTextNode(text);
-        range.insertNode(node);
-        range.setStartAfter(node);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
-        handleInput(pageIndex);
-      },
-      [handleInput],
-    );
+    // ── Paste ──────────────────────────────────────────────────────────────────
+    const handlePaste = useCallback((e, pageIndex) => {
+      e.preventDefault();
+      const text = e.clipboardData.getData("text/plain");
+      const sel  = window.getSelection();
+      if (!sel.rangeCount) return;
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      const node = document.createTextNode(text);
+      range.insertNode(node);
+      range.setStartAfter(node);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      handleInput(pageIndex);
+    }, [handleInput]);
 
-    // ── Keyboard shortcuts ───────────────────────────────────────────────────
+    // ── Key shortcuts ──────────────────────────────────────────────────────────
     const handleKeyDown = useCallback((e) => {
       if (e.ctrlKey || e.metaKey) {
         if (e.key === "b") { e.preventDefault(); document.execCommand("bold"); }
@@ -270,7 +249,7 @@ const CollaborativeEditor = forwardRef(
       }
     }, []);
 
-    // ── Yjs init ─────────────────────────────────────────────────────────────
+    // ── Yjs init ───────────────────────────────────────────────────────────────
     useEffect(() => {
       if (!ydoc || !provider) return;
 
@@ -307,21 +286,21 @@ const CollaborativeEditor = forwardRef(
       };
     }, [ydoc, provider, initialContent, stringToDOM]);
 
-    // Seed without Yjs
+    // Seed content when there's no Yjs
     useEffect(() => {
       if (!ydoc && initialContent) stringToDOM(initialContent);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // ── Imperative API ───────────────────────────────────────────────────────
+    // ── Imperative API ─────────────────────────────────────────────────────────
     useImperativeHandle(
       ref,
       () => ({
-        getHTML:      () => domToString(),
-        getText:      () => pageRefs.current.filter(Boolean).map((el) => el.innerText).join("\n\n"),
-        isEmpty:      () => pageRefs.current.filter(Boolean).every((el) => !el.innerHTML.trim()),
-        focus:        () => pageRefs.current[0]?.focus(),
-        setContent:   stringToDOM,
+        getHTML:   () => domToString(),
+        getText:   () => pageRefs.current.filter(Boolean).map((el) => el.innerText).join("\n\n"),
+        isEmpty:   () => pageRefs.current.filter(Boolean).every((el) => !el.innerHTML.trim()),
+        focus:     () => pageRefs.current[0]?.focus(),
+        setContent: stringToDOM,
         clearContent: () => stringToDOM(""),
         getTotalPages: () => pageIdsRef.current.length,
         commands: {
@@ -329,59 +308,10 @@ const CollaborativeEditor = forwardRef(
           focus: () => pageRefs.current[0]?.focus(),
         },
       }),
-      [domToString, stringToDOM],
+      [domToString, stringToDOM]
     );
 
-    // ── Notify parent with execCommand-based mock editor (Tiptap-compatible API) ──
-    useEffect(() => {
-      if (!onEditorReady) return;
-
-      const focusActive = () => {
-        const active = document.activeElement;
-        if (!active?.isContentEditable) pageRefs.current[0]?.focus();
-      };
-
-      const exec = (cmd, value = null) => {
-        focusActive();
-        document.execCommand(cmd, false, value);
-      };
-
-      // Chainable builder — mirrors tiptap's editor.chain().focus().toggleBold().run()
-      const makeChain = () => {
-        const chain = {
-          focus:            () => { focusActive(); return chain; },
-          toggleBold:       () => { exec("bold");            return chain; },
-          toggleItalic:     () => { exec("italic");          return chain; },
-          toggleUnderline:  () => { exec("underline");       return chain; },
-          setTextAlign:     (a) => {
-            const cmds = { left:"justifyLeft", center:"justifyCenter", right:"justifyRight", justify:"justifyFull" };
-            exec(cmds[a] || "justifyLeft");
-            return chain;
-          },
-          setColor:         (c) => { exec("foreColor", c);  return chain; },
-          setHighlight:     ()  => chain,
-          setFontFamily:    (f) => { exec("fontName", f);   return chain; },
-          setMark:          ()  => chain,
-          toggleBulletList: () => { exec("insertUnorderedList"); return chain; },
-          toggleOrderedList:() => { exec("insertOrderedList");   return chain; },
-          liftListItem:     () => { exec("outdent");         return chain; },
-          run: () => {},
-        };
-        return chain;
-      };
-
-      const mockEditor = {
-        chain:    makeChain,
-        isActive: (fmt) => {
-          try { return document.queryCommandState(fmt); } catch { return false; }
-        },
-      };
-
-      onEditorReady(mockEditor);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // ── Styles ───────────────────────────────────────────────────────────────
+    // ── Styles ────────────────────────────────────────────────────────────────
     const workspaceBg = isDarkMode ? "#3a3a3a" : "#e0e0e0";
     const pageFont    = fontFamily || 'Calibri, "Segoe UI", Arial, sans-serif';
 
@@ -390,49 +320,40 @@ const CollaborativeEditor = forwardRef(
         ref={workspaceRef}
         style={{
           backgroundColor: workspaceBg,
-          width:           "100%",
-          minHeight:       "100%",
-          padding:         "32px 16px 48px",
-          boxSizing:       "border-box",
-          overflowX:       "auto",
+          width: "100%",
+          minHeight: "100%",
+          padding: "32px 16px 48px",
+          boxSizing: "border-box",
+          overflowX: "auto",
         }}
       >
-        {/* Placeholder CSS */}
-        <style>{`
-          [data-placeholder]:empty::before {
-            content: attr(data-placeholder);
-            color: #9ca3af;
-            pointer-events: none;
-            position: absolute;
-          }
-        `}</style>
-
-        {/* ── Page stack ────────────────────────────────────────────────── */}
+        {/* ── Page stack ─────────────────────────────────────────────────── */}
         <div
           style={{
-            display:        "flex",
-            flexDirection:  "column",
-            alignItems:     "center",
-            gap:            `${Math.round(24 * scale)}px`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: `${Math.round(24 * scale)}px`,
           }}
         >
           {pageIds.map((pageId, pageIndex) => (
             <div
               key={pageId}
               style={{
-                width:      `${PAGE_W * scale}px`,
-                height:     `${PAGE_H * scale}px`,
-                position:   "relative",
+                width:    `${PAGE_W * scale}px`,
+                height:   `${PAGE_H * scale}px`,
+                position: "relative",
                 flexShrink: 0,
               }}
             >
-              {/* White paper sheet */}
+              {/* White paper */}
               <div
                 style={{
                   width:           `${PAGE_W}px`,
                   height:          `${PAGE_H}px`,
                   backgroundColor: "#ffffff",
-                  boxShadow:       "0 2px 8px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.10)",
+                  boxShadow:
+                    "0 1px 4px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10)",
                   position:        "absolute",
                   top:             0,
                   left:            0,
@@ -441,9 +362,11 @@ const CollaborativeEditor = forwardRef(
                   overflow:        "hidden",
                 }}
               >
-                {/* Editable text layer */}
+                {/* ── Editable text layer ─────────────────────────────── */}
                 <div
-                  ref={(el) => { pageRefs.current[pageIndex] = el; }}
+                  ref={(el) => {
+                    pageRefs.current[pageIndex] = el;
+                  }}
                   contentEditable
                   suppressContentEditableWarning
                   onInput={() => handleInput(pageIndex)}
@@ -455,7 +378,7 @@ const CollaborativeEditor = forwardRef(
                     top:          0,
                     left:         0,
                     width:        "100%",
-                    height:       `${CONTENT_H + MARGIN * 2}px`,
+                    height:       `${PRINT_H + MARGIN * 2}px`,
                     padding:      `${mTop} ${mRight} ${mBottom} ${mLeft}`,
                     fontFamily:   pageFont,
                     fontSize:     "11pt",
@@ -470,7 +393,7 @@ const CollaborativeEditor = forwardRef(
                   }}
                 />
 
-                {/* Margin guide (subtle dashed lines) */}
+                {/* ── Margin guides (subtle dotted lines) ────────────── */}
                 <div
                   style={{
                     position:      "absolute",
@@ -483,11 +406,11 @@ const CollaborativeEditor = forwardRef(
                   }}
                 />
 
-                {/* Page number */}
+                {/* ── Page number ──────────────────────────────────────── */}
                 <div
                   style={{
                     position:      "absolute",
-                    bottom:        "0.4in",
+                    bottom:        "0.35in",
                     left:          0,
                     right:         0,
                     textAlign:     "center",
@@ -505,22 +428,48 @@ const CollaborativeEditor = forwardRef(
           ))}
         </div>
 
-        {/* ── Bottom status bar ────────────────────────────────────────── */}
+        {/* ── Bottom toolbar ──────────────────────────────────────────────── */}
         <div
           style={{
             display:        "flex",
             alignItems:     "center",
             justifyContent: "space-between",
-            marginTop:      "20px",
+            marginTop:      "24px",
             maxWidth:       `${PAGE_W * scale}px`,
             marginLeft:     "auto",
             marginRight:    "auto",
           }}
         >
-          <span style={{ fontSize: "12px", color: "#888" }}>
-            {pageIds.length} / {MAX_PAGES} page{pageIds.length !== 1 ? "s" : ""}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button
+              onClick={() => {
+                pageIdsRef.current = [...pageIdsRef.current, newId()];
+                setPageIds([...pageIdsRef.current]);
+              }}
+              style={btnStyle}
+            >
+              + Add Page
+            </button>
 
+            {pageIds.length > 1 && (
+              <button
+                onClick={() => {
+                  pageIdsRef.current = pageIdsRef.current.slice(0, -1);
+                  pageRefs.current   = pageRefs.current.slice(0, -1);
+                  setPageIds([...pageIdsRef.current]);
+                }}
+                style={btnStyle}
+              >
+                − Remove Last
+              </button>
+            )}
+
+            <span style={{ fontSize: "12px", color: "#888" }}>
+              {pageIds.length} page{pageIds.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+
+          {/* Sync indicator */}
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <span
               style={{
@@ -528,8 +477,8 @@ const CollaborativeEditor = forwardRef(
                 height:          "8px",
                 borderRadius:    "50%",
                 display:         "inline-block",
-                flexShrink:      0,
                 backgroundColor: isSynced ? "#22c55e" : "#f59e0b",
+                flexShrink:      0,
               }}
             />
             <span style={{ fontSize: "12px", color: "#888" }}>
@@ -539,9 +488,21 @@ const CollaborativeEditor = forwardRef(
         </div>
       </div>
     );
-  },
+  }
 );
 
-CollaborativeEditor.displayName = "CollaborativeEditor";
+// Tiny shared button style
+const btnStyle = {
+  padding:         "4px 14px",
+  fontSize:        "12px",
+  backgroundColor: "#ffffff",
+  border:          "1px solid #cccccc",
+  borderRadius:    "3px",
+  cursor:          "pointer",
+  color:           "#333333",
+  boxShadow:       "0 1px 2px rgba(0,0,0,0.08)",
+};
 
-export default CollaborativeEditor;
+PaginatedCollaborativeEditor.displayName = "PaginatedCollaborativeEditor";
+
+export default PaginatedCollaborativeEditor;

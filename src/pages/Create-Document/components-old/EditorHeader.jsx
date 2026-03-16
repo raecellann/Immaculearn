@@ -151,7 +151,6 @@ const EditorHeader = ({
             color: currentColors.text,
           }}
           placeholder="Enter document title..."
-          placeholderTextColor={currentColors.textSecondary}
         />
       </div>
 
