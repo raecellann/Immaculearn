@@ -1275,7 +1275,6 @@ const ProfTaskPage = () => {
                             : "#10B981",
                           color: "white",
                         }}
-                        // disabled={task.has_answered ? true : false}
                         onMouseEnter={(e) => {
                           e.target.style.backgroundColor = "#059669";
                         }}
@@ -1305,7 +1304,72 @@ const ProfTaskPage = () => {
                           e.target.style.backgroundColor = "#22c55e";
                         }}
                       >
-                        Edit Quiz
+                        Edit
+                      </a>
+                    )}
+                    {task.isLocal && task.task_category === "group-activity" && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleEditTask(task);
+                        }}
+                        className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full"
+                        style={{
+                          backgroundColor: "#22c55e",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#1d9d3a";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "#22c55e";
+                        }}
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {task.task_category === "group-activity" && !task.isLocal && (
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleEditTask(task);
+                        }}
+                        className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full"
+                        style={{
+                          backgroundColor: "#22c55e",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#1d9d3a";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "#22c55e";
+                        }}
+                      >
+                        Edit
+                      </a>
+                    )}
+                    {task.task_category === "individual-activity" && !task.isLocal && (
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleEditTask(task);
+                        }}
+                        className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full"
+                        style={{
+                          backgroundColor: "#22c55e",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#1d9d3a";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "#22c55e";
+                        }}
+                      >
+                        Edit
                       </a>
                     )}
                     <a
@@ -1336,7 +1400,7 @@ const ProfTaskPage = () => {
                           : currentColors.accent;
                       }}
                     >
-                      {task.isLocal ? "Preview" : "View Details"}
+                      {task.isLocal ? "Preview" : "View"}
                     </a>
                   </div>
                 </div>
@@ -1500,6 +1564,67 @@ const ProfTaskPage = () => {
                           </>
                         )}
                       {task.task_category === "individual-activity" &&
+                        task.isLocal && (
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handlePreviewTask(task);
+                            }}
+                            className="text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex-1"
+                            style={{
+                              backgroundColor: "#2563eb",
+                              color: "white",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.backgroundColor = "#1d4ed8";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = "#2563eb";
+                            }}
+                          >
+                            Preview
+                          </a>
+                        )}
+                      {task.task_category === "group-activity" &&
+                        !task.isLocal && (
+                          <>
+                            <ButtonComponent
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleEditTask(task);
+                              }}
+                              style={{
+                                backgroundColor: "#22c55e",
+                                borderColor: "#22c55e",
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: 1,
+                                marginRight: "0.5rem",
+                              }}
+                            >
+                              Edit Activity
+                            </ButtonComponent>
+                            <ButtonComponent
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handlePreviewTask(task);
+                              }}
+                              style={{
+                                backgroundColor: currentColors.accent,
+                                borderColor: currentColors.accent,
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: 1,
+                              }}
+                            >
+                              View Details
+                            </ButtonComponent>
+                          </>
+                        )}
+                      {task.task_category === "group-activity" &&
                         task.isLocal && (
                           <a
                             href="#"
@@ -2328,13 +2453,16 @@ const ProfTaskPage = () => {
               {selectedTaskType === "group-activity" && (
                 <GroupActivityBuilder
                   currentColors={currentColors}
+                  editingTask={editingTask}
                   onBack={() => {
                     setIsCreatingTask(false);
                     setSelectedTaskType(null);
                     setShowTaskTypeSelection(false);
+                    setEditingTask(null);
                   }}
-                  onSave={(TaskData) => handleUpload("draft", TaskData)}
-                  onPublish={(TaskData) => handleUpload("uploaded", TaskData)}
+                  onSave={(taskData) => handleUpload("draft", taskData)}
+                  onPublish={(taskData) => handleUpload("uploaded", taskData)}
+                  onUpdate={(taskData) => handleUpdateTask(taskData)}
                   isLoading={
                     draftTaskMutation.isLoading || uploadTaskMutation.isLoading
                   }
@@ -2573,12 +2701,15 @@ const ProfTaskPage = () => {
               {selectedTaskType === "group-activity" && (
                 <GroupActivityBuilder
                   currentColors={currentColors}
+                  editingTask={editingTask}
                   onBack={() => {
                     setIsCreatingTask(false);
                     setSelectedTaskType(null);
                     setShowTaskTypeSelection(false);
+                    setEditingTask(null);
                   }}
                   onSave={(taskData) => handleUpload("draft", taskData)}
+                  onUpdate={(taskData) => handleUpdateTask(taskData)}
                   onPublish={(taskData) => handleUpload("uploaded", taskData)}
                   isLoading={
                     draftTaskMutation.isLoading || uploadTaskMutation.isLoading
