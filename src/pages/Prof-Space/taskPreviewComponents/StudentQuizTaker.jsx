@@ -56,17 +56,26 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const handleOptionClick = (questionId, choice_id) => {
     setUserAnswers((prev) => {
       const existingAnswerIndex = prev.findIndex(
-        (answer) => answer.question_id === questionId,
+        (answer) => Number(answer.question_id) === Number(questionId),
       );
 
       if (existingAnswerIndex !== -1) {
-        // Update existing answer
-        const updatedAnswers = [...prev];
-        updatedAnswers[existingAnswerIndex] = {
-          question_id: questionId,
-          choice_id: choice_id,
-        };
-        return updatedAnswers;
+        const existingAnswer = prev[existingAnswerIndex];
+        
+        // If clicking the same choice, remove the answer (deselect)
+        if (Number(existingAnswer.choice_id) === Number(choice_id)) {
+          const updatedAnswers = [...prev];
+          updatedAnswers.splice(existingAnswerIndex, 1);
+          return updatedAnswers;
+        } else {
+          // Update to different choice
+          const updatedAnswers = [...prev];
+          updatedAnswers[existingAnswerIndex] = {
+            question_id: questionId,
+            choice_id: choice_id,
+          };
+          return updatedAnswers;
+        }
       } else {
         // Add new answer
         return [...prev, { question_id: questionId, choice_id: choice_id }];
@@ -77,8 +86,18 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const handleTextAnswer = (questionId, answer) => {
     setUserAnswers((prev) => {
       const existingAnswerIndex = prev.findIndex(
-        (ans) => ans.question_id === questionId,
+        (ans) => Number(ans.question_id) === Number(questionId),
       );
+
+      // If answer is empty, remove the answer entirely
+      if (!answer || answer.trim() === '') {
+        if (existingAnswerIndex !== -1) {
+          const updatedAnswers = [...prev];
+          updatedAnswers.splice(existingAnswerIndex, 1);
+          return updatedAnswers;
+        }
+        return prev;
+      }
 
       if (existingAnswerIndex !== -1) {
         // Update existing answer
@@ -161,20 +180,20 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const isOptionSelected = (questionId, choiceId) => {
     return userAnswers.some(
       (answer) =>
-        answer.question_id === questionId && answer.choice_id === choiceId,
+        Number(answer.question_id) === Number(questionId) && Number(answer.choice_id) === Number(choiceId),
     );
   };
 
   const getTextAnswer = (questionId) => {
     const answer = userAnswers.find(
-      (ans) => ans.question_id === questionId && ans.text_answer,
+      (ans) => Number(ans.question_id) === Number(questionId) && ans.text_answer,
     );
     return answer ? answer.text_answer : "";
   };
 
   const hasTextAnswer = (questionId) => {
     return userAnswers.some(
-      (ans) => ans.question_id === questionId && ans.text_answer,
+      (ans) => Number(ans.question_id) === Number(questionId) && ans.text_answer && ans.text_answer.trim() !== '',
     );
   };
 
@@ -189,7 +208,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
   const getLetterBadgeClass = (selected) => {
     const base =
       "w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all";
-    if (selected) return `${base} bg-blue-600 border-blue-600 text-white`;
+    if (selected) return `${base} bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/50 ring-2 ring-blue-400/50`;
     return `${base} ${isDarkMode ? "border-gray-500 text-gray-400" : "border-gray-300 text-gray-500"}`;
   };
 
@@ -204,7 +223,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 className={getOptionClass(
                   isOptionSelected(
                     question.question_id,
-                    answer.letter_identifier,
+                    answer.choice_id,
                   ),
                 )}
                 onClick={() =>
@@ -216,7 +235,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                     className={getLetterBadgeClass(
                       isOptionSelected(
                         question.question_id,
-                        answer.letter_identifier,
+                        answer.choice_id,
                       ),
                     )}
                   >
@@ -230,12 +249,12 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 </div>
                 {isOptionSelected(
                   question.question_id,
-                  answer.letter_identifier,
+                  answer.choice_id,
                 ) && (
-                  <div style={{ color: currentColors.accent }}>
-                    <FiCheck size={20} />
-                  </div>
-                )}
+                    <div style={{ color: currentColors.accent }}>
+                      <FiCheck size={20} />
+                    </div>
+                  )}
               </div>
             ))}
           </div>
@@ -250,7 +269,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 className={getOptionClass(
                   isOptionSelected(
                     question.question_id,
-                    answer.letter_identifier,
+                    answer.choice_id,
                   ),
                 )}
                 onClick={() =>
@@ -261,7 +280,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                   className={getLetterBadgeClass(
                     isOptionSelected(
                       question.question_id,
-                      answer.letter_identifier,
+                      answer.choice_id,
                     ),
                   )}
                 >
@@ -274,12 +293,12 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 </div>
                 {isOptionSelected(
                   question.question_id,
-                  answer.letter_identifier,
+                  answer.choice_id,
                 ) && (
-                  <div style={{ color: currentColors.accent }}>
-                    <FiCheck size={20} />
-                  </div>
-                )}
+                    <div style={{ color: currentColors.accent }}>
+                      <FiCheck size={20} />
+                    </div>
+                  )}
               </div>
             ))}
           </div>
@@ -612,16 +631,16 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                       {userAnswers.some(
                         (answer) => answer.question_id === question.question_id,
                       ) && (
-                        <span
-                          className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"
-                          style={{
-                            backgroundColor: "rgba(16, 185, 129, 0.15)",
-                            color: "#10b981",
-                          }}
-                        >
-                          <FiCheck size={11} /> Answered
-                        </span>
-                      )}
+                          <span
+                            className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"
+                            style={{
+                              backgroundColor: "rgba(16, 185, 129, 0.15)",
+                              color: "#10b981",
+                            }}
+                          >
+                            <FiCheck size={11} /> Answered
+                          </span>
+                        )}
                     </div>
                     <h2
                       className="text-base sm:text-lg font-semibold leading-relaxed"
