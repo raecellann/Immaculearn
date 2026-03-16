@@ -536,21 +536,38 @@ const ProfGradeRecordPage = () => {
                 {/* Export Button */}
                 <button
                   onClick={handleExportToExcel}
-                  className="px-4 py-2 rounded-lg focus:outline-none flex items-center gap-2 transition-colors"
+                  disabled={filteredAndSortedStudents.length === 0}
+                  className={`px-4 py-2 rounded-lg focus:outline-none flex items-center gap-2 transition-colors ${
+                    filteredAndSortedStudents.length === 0
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
                   style={{
-                    backgroundColor: isDarkMode ? "#059669" : "#10b981",
-                    border: `1px solid ${isDarkMode ? "#059669" : "#10b981"}`,
-                    color: "white",
+                    backgroundColor: filteredAndSortedStudents.length === 0
+                      ? (isDarkMode ? "#374151" : "#d1d5db")
+                      : (isDarkMode ? "#059669" : "#10b981"),
+                    border: `1px solid ${
+                      filteredAndSortedStudents.length === 0
+                        ? (isDarkMode ? "#4b5563" : "#9ca3af")
+                        : (isDarkMode ? "#059669" : "#10b981")
+                    }`,
+                    color: filteredAndSortedStudents.length === 0
+                      ? (isDarkMode ? "#9ca3af" : "#6b7280")
+                      : "white",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = isDarkMode
-                      ? "#047857"
-                      : "#059669";
+                    if (filteredAndSortedStudents.length > 0) {
+                      e.currentTarget.style.backgroundColor = isDarkMode
+                        ? "#047857"
+                        : "#059669";
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = isDarkMode
-                      ? "#059669"
-                      : "#10b981";
+                    if (filteredAndSortedStudents.length > 0) {
+                      e.currentTarget.style.backgroundColor = isDarkMode
+                        ? "#059669"
+                        : "#10b981";
+                    }
                   }}
                 >
                   <span>📊</span>
@@ -560,12 +577,25 @@ const ProfGradeRecordPage = () => {
                 {/* Sort Dropdown */}
                 <div className="relative">
                   <button
-                    onClick={() => setShowSortDropdown(!showSortDropdown)}
-                    className="px-4 py-2 rounded-lg focus:outline-none flex items-center gap-2"
+                    onClick={() => filteredAndSortedStudents.length > 0 && setShowSortDropdown(!showSortDropdown)}
+                    disabled={filteredAndSortedStudents.length === 0}
+                    className={`px-4 py-2 rounded-lg focus:outline-none flex items-center gap-2 ${
+                      filteredAndSortedStudents.length === 0
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
                     style={{
-                      backgroundColor: currentColors.surface,
-                      border: `1px solid ${isDarkMode ? "#3B4457" : "black"}`,
-                      color: currentColors.text,
+                      backgroundColor: filteredAndSortedStudents.length === 0
+                        ? (isDarkMode ? "#374151" : "#d1d5db")
+                        : currentColors.surface,
+                      border: `1px solid ${
+                        filteredAndSortedStudents.length === 0
+                          ? (isDarkMode ? "#4b5563" : "#9ca3af")
+                          : (isDarkMode ? "#3B4457" : "black")
+                      }`,
+                      color: filteredAndSortedStudents.length === 0
+                        ? (isDarkMode ? "#9ca3af" : "#6b7280")
+                        : currentColors.text,
                     }}
                   >
                     <span>Sort: {sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
