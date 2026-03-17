@@ -1,5 +1,5 @@
 // components-old/TiptapToolbar.jsx
-import React, { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import {
   FiBold, FiItalic, FiUnderline,
   FiAlignLeft, FiAlignCenter, FiAlignRight, FiAlignJustify,
@@ -113,6 +113,14 @@ const TiptapToolbar = ({
   // Prevent toolbar clicks from stealing focus / losing editor selection
   const keepFocus = (e) => e.preventDefault();
 
+  // Must be before any early return — Rules of Hooks
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    const onSelectionChange = () => forceUpdate((n) => n + 1);
+    document.addEventListener("selectionchange", onSelectionChange);
+    return () => document.removeEventListener("selectionchange", onSelectionChange);
+  }, []);
+
   if (!editor) {
     return (
       <div style={{ backgroundColor: "#f3f3f3", borderBottom: "1px solid #ddd", padding: "8px 16px", fontSize: 13, color: "#999" }}>
@@ -136,6 +144,8 @@ const TiptapToolbar = ({
     ...btnBase,
     background: active ? "#dbeafe" : "transparent",
     color: active ? "#2563eb" : "#222",
+    fontWeight: active ? 700 : 400,
+    boxShadow: active ? "inset 0 -2px 0 0 #2563eb" : "none",
   });
 
   const Divider = () => (

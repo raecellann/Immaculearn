@@ -49,6 +49,7 @@ const CollaborativeEditor = forwardRef(
     // Content lives in the DOM (uncontrolled) – only touched via refs.
     const [pageIds, setPageIds] = useState(() => [newId()]);
     const [isSynced, setIsSynced] = useState(false);
+    const [activePageIndex, setActivePageIndex] = useState(0);
 
     const pageRefs    = useRef([]);       // contentEditable divs
     const pageIdsRef  = useRef(pageIds);  // mirror for callbacks
@@ -316,6 +317,58 @@ const CollaborativeEditor = forwardRef(
       // When the cursor is inside a font-size anchor span (zero-width space),
       // intercept the first real keystroke: replace \u200B with the actual
       // character so typed text stays inside the sized span.
+      // ── Cross-page cursor navigation ──────────────────────────────────────
+      const crossPage = (() => {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return false;
+        const range = sel.getRangeAt(0);
+        if (!range.collapsed) return false;
+
+        const pageEl    = e.target;
+        const pageIndex = pageRefs.current.indexOf(pageEl);
+        if (pageIndex < 0) return false;
+
+        const atBoundary = (toEnd) => {
+          const testRange = document.createRange();
+          testRange.selectNodeContents(pageEl);
+          testRange.collapse(!toEnd); // collapse(true)=start, collapse(false)=end
+          return range.compareBoundaryPoints(
+            toEnd ? Range.END_TO_END : Range.START_TO_START,
+            testRange
+          ) === 0;
+        };
+
+        const moveTo = (targetIndex, toEnd) => {
+          const target = pageRefs.current[targetIndex];
+          if (!target) return false;
+          target.focus();
+          const newRange = document.createRange();
+          newRange.selectNodeContents(target);
+          newRange.collapse(!toEnd);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+          setActivePageIndex(targetIndex);
+          return true;
+        };
+
+        // ArrowRight / ArrowDown at end of page → start of next page
+        if ((e.key === "ArrowRight" || e.key === "ArrowDown") &&
+            pageIndex < pageRefs.current.length - 1 && atBoundary(true)) {
+          e.preventDefault();
+          return moveTo(pageIndex + 1, false);
+        }
+
+        // ArrowLeft / ArrowUp / Backspace at start of page → end of previous page
+        if ((e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "Backspace") &&
+            pageIndex > 0 && atBoundary(false)) {
+          e.preventDefault();
+          return moveTo(pageIndex - 1, true);
+        }
+
+        return false;
+      })();
+      if (crossPage) return;
+
       if (e.key.length === 1 && !e.altKey) {
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0) {
@@ -646,6 +699,7 @@ const CollaborativeEditor = forwardRef(
                   ref={(el) => { pageRefs.current[pageIndex] = el; }}
                   contentEditable
                   suppressContentEditableWarning
+                  onFocus={() => setActivePageIndex(pageIndex)}
                   onInput={() => handleInput(pageIndex)}
                   onPaste={(e) => handlePaste(e, pageIndex)}
                   onKeyDown={handleKeyDown}
@@ -718,7 +772,9 @@ const CollaborativeEditor = forwardRef(
           }}
         >
           <span style={{ fontSize: "12px", color: "#888" }}>
-            {pageIds.length} / {MAX_PAGES} page{pageIds.length !== 1 ? "s" : ""}
+
+            {/* Active page indicator/ Page count */}
+            {activePageIndex + 1} / {pageIds.length} page{pageIds.length !== 1 ? "s" : ""}
           </span>
 
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>

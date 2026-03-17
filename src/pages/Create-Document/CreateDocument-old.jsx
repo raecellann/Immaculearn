@@ -9,7 +9,6 @@ import useYDoc from "../../hooks/useYdoc";
 import { useUser } from "../../contexts/user/useUser";
 import { useFileManager } from "../../hooks/useFileManager";
 import { useSpace } from "../../contexts/space/useSpace";
-import TiptapEditor from "./components-old/TiptapEditor";
 import CollaborativeEditor from "./components-old/CollaborativeEditor";
 
 const CreateDocumentPage = () => {
