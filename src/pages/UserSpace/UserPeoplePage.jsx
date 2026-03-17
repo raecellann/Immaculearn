@@ -289,8 +289,6 @@ const UserPeoplePage = () => {
     profile_pic: user.profile_pic,
     role: "creator",
   };
-
-  console.log(creator)
   const otherMembers =
     activeSpace?.members.filter((m) => m.role !== "creator") || [];
 

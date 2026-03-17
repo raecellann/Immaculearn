@@ -164,9 +164,11 @@ const UserPage = () => {
     (space) => space.space_uuid === space_uuid,
   );
 
-  if (currentSpace) {
-    setCurrentSpace(currentSpace);
-  }
+  useEffect(() => {
+    if (currentSpace) {
+      setCurrentSpace(currentSpace);
+    }
+  }, [currentSpace]);
 
   // Check if user is owner
   const isOwnerSpace = String(currentSpace?.creator) === String(user?.id);
