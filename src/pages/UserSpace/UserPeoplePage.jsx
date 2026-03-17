@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import Sidebar from "../component/sidebar";
-import { FiMenu, FiX, FiChevronLeft, FiUpload, FiMessageSquare } from "react-icons/fi";
+import {
+  FiMenu,
+  FiX,
+  FiChevronLeft,
+  FiUpload,
+  FiMessageSquare,
+} from "react-icons/fi";
 import Logout from "../component/logout";
 import DeleteButton from "../component/DeleteButton";
 import { useSpace } from "../../contexts/space/useSpace";
@@ -276,8 +282,6 @@ const UserPeoplePage = () => {
   ];
   const activeSpace = allSpaces.find((s) => s.space_uuid === space_uuid);
 
-  console.log("ACTIVE", activeSpace);
-
   // Separate creator/admin and other members
   const creator = activeSpace?.members.find((m) => m.role === "creator") || {
     account_id: user.id,
@@ -293,10 +297,7 @@ const UserPeoplePage = () => {
 
   // Determine if this is a classroom space and who should be displayed as adviser/admin
   const adviserInfo = activeSpace?.professor && creator;
-  const isAdmin = activeSpace?.creator === user?.id
-
-  console.log(user)
-
+  const isAdmin = activeSpace?.creator === user?.id;
 
   // Handle not found - moved after all hooks
   if (!activeSpace) {
@@ -312,8 +313,6 @@ const UserPeoplePage = () => {
       </div>
     );
   }
-
-  console.log(activeSpace);
 
   const handleRemoveMember = (member) => {
     setMemberToRemove(member);
@@ -449,6 +448,199 @@ const UserPeoplePage = () => {
           )}
         </div>
 
+        {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
+        {(activeSpace?.space_type === "course" ||
+          activeSpace?.space_day ||
+          activeSpace?.space_section ||
+          activeSpace?.space_schedule) && (
+          <div
+            className="lg:hidden px-4 py-3 border-b"
+            style={{
+              backgroundColor: currentColors.surface + "CC", // Add 80% opacity
+              borderColor: currentColors.border + "CC", // Add 80% opacity to border
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <div className="flex flex-col gap-2">
+              {/* Schedule */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Schedule
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {activeSpace?.space_day || "TBD"} (
+                  {activeSpace?.space_time_start
+                    ? new Date(
+                        `2000-01-01T${activeSpace.space_time_start}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}{" "}
+                  -{" "}
+                  {activeSpace?.space_time_end
+                    ? new Date(
+                        `2000-01-01T${activeSpace.space_time_end}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}
+                  )
+                </span>
+              </div>
+
+              {/* Section */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Section
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {activeSpace?.space_section ||
+                    activeSpace?.section ||
+                    activeSpace?.class_section ||
+                    activeSpace?.section_name ||
+                    activeSpace?.course_section ||
+                    activeSpace?.subject_section ||
+                    activeSpace?.space_block ||
+                    activeSpace?.block ||
+                    "N/A"}
+                </span>
+              </div>
+
+              {/* Description */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Description
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {activeSpace?.space_description ||
+                    (activeSpace?.space_type === "course"
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources.")}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SPACE INFO OVERLAY - Desktop version */}
+        {(activeSpace?.space_type === "course" ||
+          activeSpace?.space_day ||
+          activeSpace?.space_section ||
+          activeSpace?.space_schedule) && (
+          <div
+            className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
+            style={{
+              backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+              borderColor: currentColors.border + "CC", // Add 80% opacity to border
+              maxWidth: "1000px",
+              backdropFilter: "blur(8px)", // Add subtle blur for better readability
+            }}
+          >
+            <div className="grid grid-cols-3 gap-2">
+              {/* Schedule */}
+              <div>
+                <h3
+                  className="font-semibold text-sm mb-2"
+                  style={{ color: currentColors.text }}
+                >
+                  Schedule
+                </h3>
+                <p
+                  className="text-sm"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {activeSpace?.space_day || "TBD"} (
+                  {activeSpace?.space_time_start
+                    ? new Date(
+                        `2000-01-01T${activeSpace.space_time_start}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}{" "}
+                  -{" "}
+                  {activeSpace?.space_time_end
+                    ? new Date(
+                        `2000-01-01T${activeSpace.space_time_end}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}
+                  )
+                </p>
+              </div>
+
+              {/* Section */}
+              <div>
+                <h3
+                  className="font-semibold text-sm mb-2"
+                  style={{ color: currentColors.text }}
+                >
+                  Section
+                </h3>
+                <p
+                  className="text-sm"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {activeSpace?.space_section ||
+                    activeSpace?.section ||
+                    activeSpace?.class_section ||
+                    activeSpace?.section_name ||
+                    activeSpace?.course_section ||
+                    activeSpace?.subject_section ||
+                    activeSpace?.space_block ||
+                    activeSpace?.block ||
+                    "N/A"}
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3
+                  className="font-semibold text-sm mb-2"
+                  style={{ color: currentColors.text }}
+                >
+                  Description
+                </h3>
+                <p
+                  className="text-sm line-clamp-3"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {activeSpace?.space_description ||
+                    (activeSpace?.space_type === "course"
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources.")}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* PAGE HEADER */}
         <div className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-6">
@@ -473,7 +665,7 @@ const UserPeoplePage = () => {
           </div>
 
           {/* CREATOR / ADVISER SECTION */}
-          {(activeSpace) && (
+          {activeSpace && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-4">
                 {activeSpace?.professor ? "Adviser" : "Admin"}
@@ -483,40 +675,47 @@ const UserPeoplePage = () => {
                   <div className="flex items-center gap-4">
                     <img
                       src={
-                        activeSpace?.professor?.avatar || isAdmin && user?.profile_pic ||
+                        activeSpace?.professor?.avatar ||
+                        (isAdmin && user?.profile_pic) ||
                         "/src/assets/default-avatar.jpg"
                       }
-                      alt={activeSpace?.professor?.name || isAdmin && user?.last_name}
+                      alt={
+                        activeSpace?.professor?.name ||
+                        (isAdmin && user?.last_name)
+                      }
                       className="w-10 h-10 rounded-full"
                     />
                     <span className="font-medium">
-                      {capitalizeWords((activeSpace?.professor?.name || isAdmin && "You" || !isAdmin && `${user?.first_name + " " + user?.last_name}`))}
+                      {capitalizeWords(
+                        activeSpace?.professor?.name ||
+                          (isAdmin && "You") ||
+                          (!isAdmin &&
+                            `${user?.first_name + " " + user?.last_name}`),
+                      )}
                     </span>
                   </div>
-                  {
-                    !isAdmin && (
+                  {!isAdmin && (
                     <button
-                      onClick={() => navigate('/chatlist')}
+                      onClick={() => navigate("/chatlist")}
                       className="p-2 rounded-lg transition-colors"
                       style={{
-                        backgroundColor: '#3B82F6',
-                        color: '#FFFFFF',
-                        border: '1px solid #3B82F6'
+                        backgroundColor: "#3B82F6",
+                        color: "#FFFFFF",
+                        border: "1px solid #3B82F6",
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#2563EB';
-                        e.target.style.borderColor = '#2563EB';
+                        e.target.style.backgroundColor = "#2563EB";
+                        e.target.style.borderColor = "#2563EB";
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#3B82F6';
-                        e.target.style.borderColor = '#3B82F6';
+                        e.target.style.backgroundColor = "#3B82F6";
+                        e.target.style.borderColor = "#3B82F6";
                       }}
                       title="Message"
                     >
                       <FiMessageSquare size={16} />
                     </button>
-                    )
-                  }
+                  )}
                 </div>
               </div>
             </div>
@@ -548,35 +747,34 @@ const UserPeoplePage = () => {
                           : `${user?.name?.split(" ")[0] || "You"} ${user?.name?.split(" ")[1]?.[0] ? user.name.split(" ")[1][0] + "." : ""}`}
                       </span>
                     </div>
-                    {(isOwner && member.account_id !== user.id)  && (
+                    {isOwner && member.account_id !== user.id && (
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => navigate('/chatlist')}
+                          onClick={() => navigate("/chatlist")}
                           className="p-2 rounded-lg transition-colors"
                           style={{
-                            backgroundColor: '#3B82F6',
-                            color: '#FFFFFF',
-                            border: '1px solid #3B82F6'
+                            backgroundColor: "#3B82F6",
+                            color: "#FFFFFF",
+                            border: "1px solid #3B82F6",
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#2563EB';
-                            e.target.style.borderColor = '#2563EB';
+                            e.target.style.backgroundColor = "#2563EB";
+                            e.target.style.borderColor = "#2563EB";
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#3B82F6';
-                            e.target.style.borderColor = '#3B82F6';
+                            e.target.style.backgroundColor = "#3B82F6";
+                            e.target.style.borderColor = "#3B82F6";
                           }}
                           title="Message"
                         >
                           <FiMessageSquare size={16} />
                         </button>
-                        {
-                          ((!activeSpace?.professor || !member.role === "owner") && (
-                            <DeleteButton
+                        {(!activeSpace?.professor ||
+                          !member.role === "owner") && (
+                          <DeleteButton
                             onClick={() => handleRemoveMember(member)}
                           />
-                          ))
-                        } 
+                        )}
                       </div>
                     )}
                   </div>

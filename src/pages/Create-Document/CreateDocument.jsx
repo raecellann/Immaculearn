@@ -101,7 +101,10 @@ const CreateDocumentPage = () => {
   };
 
   // === Use Yjs Hook ===
-  const { ydoc, provider, isSynced } = useYDoc(space_uuid, group_id || file_uuid);
+  const { ydoc, provider, isSynced } = useYDoc(
+    space_uuid,
+    group_id || file_uuid,
+  );
 
   // === Update connected users from awareness ===
   const updateUsers = useCallback(() => {
@@ -146,7 +149,6 @@ const CreateDocumentPage = () => {
     // WebSocket status listener
     provider.on("status", (event) => {
       const connected = event.status === "connected";
-      console.log("WebSocket status:", event.status);
       setIsOnline(connected);
       if (connected) {
         setCollaborationEnabled(true);
@@ -157,7 +159,6 @@ const CreateDocumentPage = () => {
 
     // Sync event
     provider.on("sync", (isSynced) => {
-      console.log("Document synced:", isSynced);
       if (isSynced) {
         setCollaborationEnabled(true);
         updateUsers();
@@ -166,7 +167,6 @@ const CreateDocumentPage = () => {
 
     // Connection status
     provider.on("connection-close", () => {
-      console.log("Connection closed");
       setIsOnline(false);
     });
 
@@ -229,9 +229,9 @@ const CreateDocumentPage = () => {
   }, []);
 
   // Handle format changes
-  const handleFormatChange = (format) => {
-    console.log("Format changed:", format);
-  };
+  // const handleFormatChange = (format) => {
+  //   console.log("Format changed:", format);
+  // };
 
   return (
     <div

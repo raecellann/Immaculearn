@@ -56,10 +56,12 @@ const CreateDocumentContent = () => {
   const { userSpaces, friendSpaces } = useSpace();
 
   const allSpaces = [...(userSpaces || []), ...(friendSpaces || [])];
-  const currentSpace = allSpaces.find((space) => space.space_uuid === space_uuid);
+  const currentSpace = allSpaces.find(
+    (space) => space.space_uuid === space_uuid,
+  );
 
   const { draft, list } = useFileManager(currentSpace?.space_id);
-  const file = list.data?.find(f => f.file_uuid === file_uuid) || {};
+  const file = list.data?.find((f) => f.file_uuid === file_uuid) || {};
 
   const [title, setTitle] = useState(file_name);
   const [saveStatus, setSaveStatus] = useState("saved");
@@ -70,8 +72,16 @@ const CreateDocumentContent = () => {
 
   const editorRef = useRef(null);
   const [windowWidth, setWindowWidth] = useState(0);
-  const [paperSize, setPaperSize] = useState({ width: "8.27in", height: "11.69in" });
-  const [margins, setMargins] = useState({ top: "1in", right: "1in", bottom: "1in", left: "1in" });
+  const [paperSize, setPaperSize] = useState({
+    width: "8.27in",
+    height: "11.69in",
+  });
+  const [margins, setMargins] = useState({
+    top: "1in",
+    right: "1in",
+    bottom: "1in",
+    left: "1in",
+  });
   const [fontFamily, setFontFamily] = useState("Inter");
 
   const saveTimeoutRef = useRef(null);
@@ -83,8 +93,14 @@ const CreateDocumentContent = () => {
   // === Generate consistent user color ===
   const getUserColor = (userId) => {
     const colors = [
-      '#3b82f6', '#ef4444', '#10b981', '#f59e0b',
-      '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+      "#3b82f6",
+      "#ef4444",
+      "#10b981",
+      "#f59e0b",
+      "#8b5cf6",
+      "#ec4899",
+      "#06b6d4",
+      "#84cc16",
     ];
     return colors[userId % colors.length];
   };
@@ -94,17 +110,21 @@ const CreateDocumentContent = () => {
     if (!awarenessRef.current) return;
     const states = Array.from(awarenessRef.current.getStates().entries() || []);
     const users = states
-      .map(([clientId, state]) => state.user ? {
-        clientId,
-        id: state.user.id,
-        name: state.user.name,
-        color: state.user.color,
-        avatar: state.user.avatar,
-        cursor: state.user.cursor,
-      } : null)
+      .map(([clientId, state]) =>
+        state.user
+          ? {
+              clientId,
+              id: state.user.id,
+              name: state.user.name,
+              color: state.user.color,
+              avatar: state.user.avatar,
+              cursor: state.user.cursor,
+            }
+          : null,
+      )
       .filter(Boolean)
       // Exclude current user
-      .filter(user => user.id !== user?.id);
+      .filter((user) => user.id !== user?.id);
     setConnectedUsers(users);
   }, [user?.id]);
 
@@ -114,8 +134,8 @@ const CreateDocumentContent = () => {
     if (!file_uuid && lastContentRef.current === "") {
       const initialContent = "<p></p>";
       addToHistory(initialContent, {
-        author: user?.first_name || user?.name || 'Anonymous User',
-        description: 'New document created'
+        author: user?.first_name || user?.name || "Anonymous User",
+        description: "New document created",
       });
       lastContentRef.current = initialContent;
     }
@@ -125,8 +145,6 @@ const CreateDocumentContent = () => {
   useEffect(() => {
     if (!file_uuid || !user || typeof window === "undefined") return;
 
-    console.log('Initializing Yjs document for file:', file_uuid);
-
     const ydoc = new Y.Doc();
     const provider = new WebsocketProvider(
       "ws://localhost:3001/crdt",
@@ -134,8 +152,8 @@ const CreateDocumentContent = () => {
       ydoc,
       {
         connect: true,
-        params: { userId: user?.id, userName: user?.name }
-      }
+        params: { userId: user?.id, userName: user?.name },
+      },
     );
 
     ydocRef.current = ydoc;
@@ -159,7 +177,6 @@ const CreateDocumentContent = () => {
     // WebSocket status listener
     provider.on("status", (event) => {
       const connected = event.status === "connected";
-      console.log('WebSocket status:', event.status);
       setIsOnline(connected);
       if (connected) {
         setCollaborationEnabled(true);
@@ -170,18 +187,17 @@ const CreateDocumentContent = () => {
 
     // Sync event
     provider.on("sync", (isSynced) => {
-      console.log('Document synced:', isSynced);
       if (isSynced) {
         setCollaborationEnabled(true);
         updateUsers();
-        
+
         // Add initial content to history
-        const ytext = ydoc.getText('document');
+        const ytext = ydoc.getText("document");
         const content = ytext.toString();
         if (content && content !== lastContentRef.current) {
           addToHistory(content, {
-            author: user?.first_name || user?.name || 'Anonymous User',
-            description: 'Document loaded'
+            author: user?.first_name || user?.name || "Anonymous User",
+            description: "Document loaded",
           });
           lastContentRef.current = content;
         }
@@ -190,18 +206,16 @@ const CreateDocumentContent = () => {
 
     // Connection status
     provider.on("connection-close", () => {
-      console.log('Connection closed');
       setIsOnline(false);
     });
 
     provider.on("connection-error", (error) => {
-      console.error('Connection error:', error);
+      // console.error("Connection error:", error);
       setIsOnline(false);
     });
 
     // Cleanup on unmount
     return () => {
-      console.log('Cleaning up Yjs document');
       awarenessRef.current?.off("change", updateUsers);
       provider.disconnect();
       ydoc.destroy();
@@ -217,58 +231,72 @@ const CreateDocumentContent = () => {
   }, []);
 
   // === Editor update handler - for auto-save and history tracking ===
-  const handleEditorUpdate = useCallback((htmlContent) => {
-    setSaveStatus("unsaved");
+  const handleEditorUpdate = useCallback(
+    (htmlContent) => {
+      setSaveStatus("unsaved");
 
-    // Add to history if content changed significantly
-    if (htmlContent !== lastContentRef.current) {
-      addToHistory(htmlContent, {
-        author: user?.first_name || user?.name || 'Anonymous User',
-        description: 'Content updated'
-      });
-      lastContentRef.current = htmlContent;
-    }
-
-    // Auto-save to backend (debounced)
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(async () => {
-      if (!file?.file_id) return;
-      try {
-        await draft.mutateAsync({
-          file_id: file.file_id,
-          content: htmlContent,
-          title,
+      // Add to history if content changed significantly
+      if (htmlContent !== lastContentRef.current) {
+        addToHistory(htmlContent, {
+          author: user?.first_name || user?.name || "Anonymous User",
+          description: "Content updated",
         });
-        setSaveStatus("saved");
-        setLastSaved(new Date().toLocaleTimeString());
-      } catch (err) {
-        console.error('Save error:', err);
-        setSaveStatus("error");
+        lastContentRef.current = htmlContent;
       }
-    }, 2000);
-  }, [file?.file_id, draft, title, addToHistory, user?.first_name, user?.name, lastContentRef]);
+
+      // Auto-save to backend (debounced)
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(async () => {
+        if (!file?.file_id) return;
+        try {
+          await draft.mutateAsync({
+            file_id: file.file_id,
+            content: htmlContent,
+            title,
+          });
+          setSaveStatus("saved");
+          setLastSaved(new Date().toLocaleTimeString());
+        } catch (err) {
+          console.error("Save error:", err);
+          setSaveStatus("error");
+        }
+      }, 2000);
+    },
+    [
+      file?.file_id,
+      draft,
+      title,
+      addToHistory,
+      user?.first_name,
+      user?.name,
+      lastContentRef,
+    ],
+  );
 
   // === Handle history revert ===
-  const handleHistoryRevert = useCallback((historyId) => {
-    const entry = revertToHistory(historyId);
-    if (entry && editorRef.current) {
-      // Update editor content
-      editorRef.current.innerHTML = entry.content;
-      
-      // Update Yjs document
-      if (ydocRef.current) {
-        const ytext = ydocRef.current.getText('document');
-        ydocRef.current.transact(() => {
-          ytext.delete(0, ytext.length);
-          ytext.insert(0, entry.content);
-        }, 'history-revert');
+  const handleHistoryRevert = useCallback(
+    (historyId) => {
+      const entry = revertToHistory(historyId);
+      if (entry && editorRef.current) {
+        // Update editor content
+        editorRef.current.innerHTML = entry.content;
+
+        // Update Yjs document
+        if (ydocRef.current) {
+          const ytext = ydocRef.current.getText("document");
+          ydocRef.current.transact(() => {
+            ytext.delete(0, ytext.length);
+            ytext.insert(0, entry.content);
+          }, "history-revert");
+        }
+
+        // Update save status
+        setSaveStatus("unsaved");
+        lastContentRef.current = entry.content;
       }
-      
-      // Update save status
-      setSaveStatus("unsaved");
-      lastContentRef.current = entry.content;
-    }
-  }, [revertToHistory]);
+    },
+    [revertToHistory],
+  );
 
   useEffect(() => {
     setWindowWidth(window.innerWidth);
@@ -277,18 +305,18 @@ const CreateDocumentContent = () => {
       setWindowWidth(window.innerWidth);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Handle format changes
-  const handleFormatChange = (format) => {
-    console.log('Format changed:', format);
-  };
+  const handleFormatChange = (format) => {};
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: currentColors.background }}>
-
+    <div
+      className="flex min-h-screen"
+      style={{ backgroundColor: currentColors.background }}
+    >
       {/* Desktop Sidebar (Laptop & Desktop) */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -315,7 +343,6 @@ const CreateDocumentContent = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-
         {/* ✅ Sticky Mobile Header — FilePage pattern (hamburger + title, hide on scroll down) */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-50 border-b
@@ -345,9 +372,10 @@ const CreateDocumentContent = () => {
 
         {/* CONTENT — pt-[60px] offsets the fixed mobile header, removed on lg+ */}
         <div className="flex-1 flex pt-[60px] lg:pt-0 relative">
-
           {/* Main Content Area - Centered */}
-          <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${showHistory ? 'mr-0' : 'mx-auto'}`}>
+          <div
+            className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${showHistory ? "mr-0" : "mx-auto"}`}
+          >
             {/* EditorHeader — desktop only (lg+) */}
             <EditorHeader
               navigate={navigate}
@@ -371,7 +399,7 @@ const CreateDocumentContent = () => {
               onPaperSizeChange={(size) => setPaperSize(size)}
               onMarginChange={(margin) => setMargins(margin)}
               onFontChange={(font) => setFontFamily(font)}
-              isClient={typeof window !== 'undefined'}
+              isClient={typeof window !== "undefined"}
               windowWidth={windowWidth}
             />
 
@@ -389,38 +417,38 @@ const CreateDocumentContent = () => {
             <div
               className="flex-1 flex justify-center items-start overflow-y-auto"
               style={{
-                backgroundColor: isDarkMode ? '#1e1e1e' : '#e8e8e8',
-                padding: '32px 16px',
+                backgroundColor: isDarkMode ? "#1e1e1e" : "#e8e8e8",
+                padding: "32px 16px",
               }}
             >
               <div
-                className={`w-full transition-all duration-300 ease-in-out ${showHistory ? 'max-w-5xl' : 'max-w-3xl'}`}
+                className={`w-full transition-all duration-300 ease-in-out ${showHistory ? "max-w-5xl" : "max-w-3xl"}`}
               >
                 {file_uuid ? (
                   // ── Page shell for CollaborativeEditor ──
                   <div
                     style={{
-                      width: paperSize.width || '8.27in',
-                      minHeight: paperSize.height || '11.69in',
-                      maxWidth: '100%',
-                      margin: '0 auto',
-                      backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
+                      width: paperSize.width || "8.27in",
+                      minHeight: paperSize.height || "11.69in",
+                      maxWidth: "100%",
+                      margin: "0 auto",
+                      backgroundColor: isDarkMode ? "#2a2a2a" : "#ffffff",
                       boxShadow: isDarkMode
-                        ? '0 2px 8px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.4)'
-                        : '0 2px 8px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.08)',
-                      borderRadius: '2px',
+                        ? "0 2px 8px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.4)"
+                        : "0 2px 8px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.08)",
+                      borderRadius: "2px",
                       // Margins live here as padding — editor inside gets no padding
-                      padding: `${margins.top || '1in'} ${margins.right || '1in'} ${margins.bottom || '1in'} ${margins.left || '1in'}`,
-                      boxSizing: 'border-box',
+                      padding: `${margins.top || "1in"} ${margins.right || "1in"} ${margins.bottom || "1in"} ${margins.left || "1in"}`,
+                      boxSizing: "border-box",
                       // Page-break guide lines drawn every A4 height
                       backgroundImage: `repeating-linear-gradient(
                         to bottom,
                         transparent,
-                        transparent calc(${paperSize.height || '11.69in'} - 1px),
-                        ${isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)'} calc(${paperSize.height || '11.69in'} - 1px),
-                        ${isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)'} ${paperSize.height || '11.69in'}
+                        transparent calc(${paperSize.height || "11.69in"} - 1px),
+                        ${isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)"} calc(${paperSize.height || "11.69in"} - 1px),
+                        ${isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)"} ${paperSize.height || "11.69in"}
                       )`,
-                      backgroundAttachment: 'local',
+                      backgroundAttachment: "local",
                     }}
                   >
                     <CollaborativeEditor
@@ -431,7 +459,9 @@ const CreateDocumentContent = () => {
                         id: user?.id,
                         name: user?.name,
                         color: getUserColor(user?.id),
-                        avatar: user?.profile_pic || `https://i.pravatar.cc/40?u=${user?.id}`
+                        avatar:
+                          user?.profile_pic ||
+                          `https://i.pravatar.cc/40?u=${user?.id}`,
                       }}
                       onUpdate={handleEditorUpdate}
                       initialContent={file?.content || ""}
@@ -442,25 +472,25 @@ const CreateDocumentContent = () => {
                   // ── Page shell for standalone contentEditable ──
                   <div
                     style={{
-                      width: paperSize.width || '8.27in',
-                      minHeight: paperSize.height || '11.69in',
-                      maxWidth: '100%',
-                      margin: '0 auto',
-                      backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
+                      width: paperSize.width || "8.27in",
+                      minHeight: paperSize.height || "11.69in",
+                      maxWidth: "100%",
+                      margin: "0 auto",
+                      backgroundColor: isDarkMode ? "#2a2a2a" : "#ffffff",
                       boxShadow: isDarkMode
-                        ? '0 2px 8px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.4)'
-                        : '0 2px 8px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.08)',
-                      borderRadius: '2px',
-                      padding: `${margins.top || '1in'} ${margins.right || '1in'} ${margins.bottom || '1in'} ${margins.left || '1in'}`,
-                      boxSizing: 'border-box',
+                        ? "0 2px 8px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.4)"
+                        : "0 2px 8px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.08)",
+                      borderRadius: "2px",
+                      padding: `${margins.top || "1in"} ${margins.right || "1in"} ${margins.bottom || "1in"} ${margins.left || "1in"}`,
+                      boxSizing: "border-box",
                       backgroundImage: `repeating-linear-gradient(
                         to bottom,
                         transparent,
-                        transparent calc(${paperSize.height || '11.69in'} - 1px),
-                        ${isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)'} calc(${paperSize.height || '11.69in'} - 1px),
-                        ${isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)'} ${paperSize.height || '11.69in'}
+                        transparent calc(${paperSize.height || "11.69in"} - 1px),
+                        ${isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)"} calc(${paperSize.height || "11.69in"} - 1px),
+                        ${isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)"} ${paperSize.height || "11.69in"}
                       )`,
-                      backgroundAttachment: 'local',
+                      backgroundAttachment: "local",
                     }}
                   >
                     <div
@@ -469,21 +499,21 @@ const CreateDocumentContent = () => {
                       suppressContentEditableWarning
                       onInput={(e) => handleEditorUpdate(e.target.innerHTML)}
                       style={{
-                        width: '100%',
-                        minHeight: 'calc(11.69in - 2in)',
-                        outline: 'none',
-                        border: 'none',
-                        background: 'transparent',
+                        width: "100%",
+                        minHeight: "calc(11.69in - 2in)",
+                        outline: "none",
+                        border: "none",
+                        background: "transparent",
                         padding: 0,
                         margin: 0,
                         color: currentColors.text,
                         fontFamily: fontFamily,
-                        fontSize: '11pt',
-                        lineHeight: '1.6',
-                        boxSizing: 'border-box',
-                        overflowWrap: 'break-word',
-                        wordBreak: 'break-word',
-                        cursor: 'text',
+                        fontSize: "11pt",
+                        lineHeight: "1.6",
+                        boxSizing: "border-box",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word",
+                        cursor: "text",
                       }}
                     >
                       <p></p>
@@ -500,15 +530,23 @@ const CreateDocumentContent = () => {
                   className="rounded-lg shadow-lg p-2 sm:p-3 max-w-[160px] sm:max-w-[200px] md:max-w-none"
                   style={{
                     backgroundColor: currentColors.surface,
-                    border: `1px solid ${currentColors.border}`
+                    border: `1px solid ${currentColors.border}`,
                   }}
                 >
-                  <div className="text-xs mb-1.5 sm:mb-2 font-medium" style={{ color: currentColors.textSecondary }}>
+                  <div
+                    className="text-xs mb-1.5 sm:mb-2 font-medium"
+                    style={{ color: currentColors.textSecondary }}
+                  >
                     <span className="hidden sm:inline">
-                      {connectedUsers.length} {connectedUsers.length === 1 ? "other person" : "other people"} editing
+                      {connectedUsers.length}{" "}
+                      {connectedUsers.length === 1
+                        ? "other person"
+                        : "other people"}{" "}
+                      editing
                     </span>
                     <span className="sm:hidden">
-                      {connectedUsers.length} {connectedUsers.length === 1 ? "person" : "people"}
+                      {connectedUsers.length}{" "}
+                      {connectedUsers.length === 1 ? "person" : "people"}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1.5 sm:gap-2">
@@ -539,9 +577,12 @@ const CreateDocumentContent = () => {
           </div>
 
           {/* History Panel Sidebar - Right Side (Overlay) */}
-          <div className={`fixed right-0 top-0 h-full w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-40 ${
-            showHistory ? 'translate-x-0' : 'translate-x-full'
-          }`} style={{ backgroundColor: currentColors.surface }}>
+          <div
+            className={`fixed right-0 top-0 h-full w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-40 ${
+              showHistory ? "translate-x-0" : "translate-x-full"
+            }`}
+            style={{ backgroundColor: currentColors.surface }}
+          >
             <HistoryPanel
               isOpen={showHistory}
               onClose={() => setShowHistory(false)}

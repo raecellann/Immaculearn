@@ -155,7 +155,6 @@ class SpaceService {
         email: email,
       });
 
-      console.log(response.data);
       return response.data;
     } catch (error: any) {
       return {
@@ -394,10 +393,8 @@ class SpaceService {
 
   async deleteSpace(spaceUuid: string): Promise<ApiResponse> {
     try {
-      console.log(`SPACE UUID ${spaceUuid}`);
       const response = await api.delete<ApiResponse>(`/spaces/${spaceUuid}`);
 
-      console.log(response.data);
       return response.data;
     } catch (error: any) {
       return {
@@ -409,11 +406,8 @@ class SpaceService {
 
   async updateSpace(spaceUuid: string, spaceData: any): Promise<ApiResponse> {
     try {
-      console.log(`SPACE UUID ${spaceUuid}`);
-      console.log('SPACE DATA TO UPDATE:', spaceData);
       const response = await api.patch<ApiResponse>(`/spaces/${spaceUuid}`, spaceData);
 
-      console.log(response.data);
       return response.data;
     } catch (error: any) {
       return {
@@ -428,12 +422,10 @@ class SpaceService {
     userId: number,
   ): Promise<ApiResponse> {
     try {
-      console.log(`SPACE UUID ${space_id}`);
       const response = await api.delete<ApiResponse>(
         `/spaces/${space_id}/${userId}`,
       );
 
-      console.log(response.data);
       return response.data;
     } catch (error: any) {
       return {
@@ -603,9 +595,7 @@ class SpaceService {
 
   async getResponseByStudentIdAndTaskId(student_id: number, taskId: number) {
     try {
-      console.log(`Fetching response for student ${student_id}, task ${taskId}`);
       const response = await api.get(`/tasks/${taskId}/response/${student_id}`);
-      console.log('API response:', response.data);
       return response.data;
     } catch (err: any) {
       console.error('Error fetching student response:', err);

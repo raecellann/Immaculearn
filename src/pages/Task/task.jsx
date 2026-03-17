@@ -25,8 +25,6 @@ const TaskPage = () => {
     ...(courseSpaces || []).map((space) => space.space_uuid),
   ]);
 
-  console.log(allSpaces);
-
   // const allFriendSpaces = friendSpaces.filter(
   //   space => !allSpaces.has(space.space_id)
   // );
@@ -106,7 +104,7 @@ const TaskPage = () => {
           style={{
             backgroundColor: isDarkMode ? "#161A20" : currentColors.surface,
             borderColor: isDarkMode ? "#374151" : currentColors.border,
-            color: isDarkMode ? "white" : currentColors.text
+            color: isDarkMode ? "white" : currentColors.text,
           }}
         >
           <div className="p-4 flex items-center gap-4">
@@ -117,7 +115,12 @@ const TaskPage = () => {
             >
               ☰
             </button>
-            <h1 className="text-lg font-bold" style={{ color: currentColors.text }}>Tasks</h1>
+            <h1
+              className="text-lg font-bold"
+              style={{ color: currentColors.text }}
+            >
+              Tasks
+            </h1>
           </div>
         </div>
 
@@ -134,13 +137,18 @@ const TaskPage = () => {
                 <div
                   className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto"
                   style={{
-                    backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface,
+                    backgroundColor: isDarkMode
+                      ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                      : currentColors.surface,
                     color: currentColors.textSecondary,
                     borderColor: isDarkMode ? currentColors.border : "black",
                   }}
                 >
                   <div className="flex items-center justify-center gap-3">
-                    <FiFolder className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                    <FiFolder
+                      className="w-10 h-10"
+                      style={{ color: currentColors.textSecondary }}
+                    />
                     <span>No space task yet</span>
                   </div>
                 </div>
@@ -182,13 +190,18 @@ const TaskPage = () => {
                 <div
                   className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto"
                   style={{
-                    backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface,
+                    backgroundColor: isDarkMode
+                      ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                      : currentColors.surface,
                     color: currentColors.textSecondary,
                     borderColor: isDarkMode ? currentColors.border : "black",
                   }}
                 >
                   <div className="flex items-center justify-center gap-3">
-                    <FiBook className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                    <FiBook
+                      className="w-10 h-10"
+                      style={{ color: currentColors.textSecondary }}
+                    />
                     <span>No course space task yet</span>
                   </div>
                 </div>
@@ -230,13 +243,18 @@ const TaskPage = () => {
                 <div
                   className="rounded-xl p-8 text-center border border-dashed max-w-xl mx-auto"
                   style={{
-                    backgroundColor: isDarkMode ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))" : currentColors.surface,
+                    backgroundColor: isDarkMode
+                      ? "rgb(30 36 46 / var(--tw-bg-opacity, 1))"
+                      : currentColors.surface,
                     color: currentColors.textSecondary,
                     borderColor: isDarkMode ? currentColors.border : "black",
                   }}
                 >
                   <div className="flex items-center justify-center gap-3">
-                    <FiUsers className="w-10 h-10" style={{ color: currentColors.textSecondary }} />
+                    <FiUsers
+                      className="w-10 h-10"
+                      style={{ color: currentColors.textSecondary }}
+                    />
                     <span>No friends space task yet</span>
                   </div>
                 </div>

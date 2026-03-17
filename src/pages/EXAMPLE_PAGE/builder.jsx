@@ -43,7 +43,6 @@ export default function TaskBuilder() {
   const currentSpace = allSpaces.find(
     (space) => space.space_uuid === space_uuid,
   );
-  console.log("ACTIVE", currentSpace);
 
   const spaceName = capitalizeWords(currentSpace?.space_name) + "'s Space";
   const isOwnerSpace = currentSpace?.creator === user?.id;
@@ -60,7 +59,7 @@ export default function TaskBuilder() {
   // Quiz/Activity items state
   const [itemsCount, setItemsCount] = useState(1);
   const [items, setItems] = useState([
-    { id: 1, text: "", type: "multiple_choice", points: 1, options: [] }
+    { id: 1, text: "", type: "multiple_choice", points: 1, options: [] },
   ]);
 
   // Quiz configuration state
@@ -68,7 +67,7 @@ export default function TaskBuilder() {
   const [customConfig, setCustomConfig] = useState({
     multipleChoice: 0,
     identification: 0,
-    essay: 0
+    essay: 0,
   });
 
   // Group activity members state
@@ -79,7 +78,7 @@ export default function TaskBuilder() {
   const [groupConfig, setGroupConfig] = useState("all_essay"); // all_essay, all_identification, custom
   const [groupCustomConfig, setGroupCustomConfig] = useState({
     essay: 0,
-    identification: 0
+    identification: 0,
   });
 
   // Criteria management state
@@ -92,17 +91,17 @@ export default function TaskBuilder() {
   // Load task data from localStorage on component mount
   useEffect(() => {
     try {
-      const storedData = localStorage.getItem('taskPreviewData');
+      const storedData = localStorage.getItem("taskPreviewData");
       if (storedData) {
         const parsedData = JSON.parse(storedData);
-        
+
         // Restore task data from localStorage
         setTaskTitle(parsedData.title || "");
         setInstruction(parsedData.description || "");
         setTaskCategory(parsedData.type || "activity");
         setScore(parsedData.total_score?.toString() || "1");
         setDueDate(parsedData.due_date || "");
-        
+
         // Restore items if available
         if (parsedData.items && parsedData.items.length > 0) {
           const restoredItems = parsedData.items.map((item, index) => ({
@@ -110,45 +109,48 @@ export default function TaskBuilder() {
             text: item.question_text || "",
             type: item.question_type || "essay",
             points: item.points || 1,
-            options: item.options?.map(opt => ({
-              id: opt.id || index + 1,
-              text: opt.option_text || "",
-              is_correct: opt.is_correct || false
-            })) || []
+            options:
+              item.options?.map((opt) => ({
+                id: opt.id || index + 1,
+                text: opt.option_text || "",
+                is_correct: opt.is_correct || false,
+              })) || [],
           }));
           setItems(restoredItems);
           setItemsCount(restoredItems.length);
         }
-        
+
         // Restore criteria if available
         if (parsedData.criteria && parsedData.criteria.length > 0) {
-          const restoredCriteria = parsedData.criteria.map((criterion, index) => ({
-            id: index + 1,
-            name: criterion.criteria_name || "",
-            description: criterion.description || "",
-            points: criterion.max_score?.toString() || ""
-          }));
+          const restoredCriteria = parsedData.criteria.map(
+            (criterion, index) => ({
+              id: index + 1,
+              name: criterion.criteria_name || "",
+              description: criterion.description || "",
+              points: criterion.max_score?.toString() || "",
+            }),
+          );
           setCriteria(restoredCriteria);
         }
-        
+
         // Restore group members if available
-        if (parsedData.groupsData && parsedData.groupsData.length > 0) {
-          // Note: In a real app, you'd need to map member IDs back to member objects
-          // For now, we'll just show that there were members
-          console.log("Group data found:", parsedData.groupsData);
-        }
-        
+        // if (parsedData.groupsData && parsedData.groupsData.length > 0) {
+        //   // Note: In a real app, you'd need to map member IDs back to member objects
+        //   // For now, we'll just show that there were members
+        //   console.log("Group data found:", parsedData.groupsData);
+        // }
+
         // Restore quiz configuration if it's a quiz
-        if (parsedData.type === "quiz") {
-          // You could add logic to restore quiz configuration here
-          // For now, it will use default configuration
-        }
-        
+        // if (parsedData.type === "quiz") {
+        //   // You could add logic to restore quiz configuration here
+        //   // For now, it will use default configuration
+        // }
+
         // Restore group configuration if it's a group activity
-        if (parsedData.is_group_task) {
-          // You could add logic to restore group configuration here
-          // For now, it will use default configuration
-        }
+        // if (parsedData.is_group_task) {
+        //   // You could add logic to restore group configuration here
+        //   // For now, it will use default configuration
+        // }
       }
     } catch (error) {
       console.error("Error loading task data:", error);
@@ -428,7 +430,7 @@ export default function TaskBuilder() {
   const updateItemsCount = (count) => {
     const newCount = Math.max(1, parseInt(count) || 1);
     setItemsCount(newCount);
-    
+
     // Adjust items array based on quiz configuration
     const currentItems = [...items];
     if (newCount > currentItems.length) {
@@ -440,12 +442,15 @@ export default function TaskBuilder() {
           text: "",
           type: itemType,
           points: 1,
-          options: itemType === "multiple_choice" ? [
-            { id: 1, text: "", is_correct: false },
-            { id: 2, text: "", is_correct: false },
-            { id: 3, text: "", is_correct: false },
-            { id: 4, text: "", is_correct: false }
-          ] : []
+          options:
+            itemType === "multiple_choice"
+              ? [
+                  { id: 1, text: "", is_correct: false },
+                  { id: 2, text: "", is_correct: false },
+                  { id: 3, text: "", is_correct: false },
+                  { id: 4, text: "", is_correct: false },
+                ]
+              : [],
         });
       }
     } else {
@@ -458,7 +463,7 @@ export default function TaskBuilder() {
   // Get question type based on quiz configuration and index
   const getQuestionTypeForIndex = (index) => {
     if (taskCategory !== "quiz") return "essay";
-    
+
     switch (quizConfig) {
       case "all_multiple":
         return "multiple_choice";
@@ -481,7 +486,7 @@ export default function TaskBuilder() {
   // Update quiz configuration
   const updateQuizConfig = (config) => {
     setQuizConfig(config);
-    
+
     // Rebuild items array with new configuration
     const newItems = [];
     for (let i = 1; i <= itemsCount; i++) {
@@ -491,13 +496,15 @@ export default function TaskBuilder() {
         text: items[i - 1]?.text || "",
         type: itemType,
         points: items[i - 1]?.points || 1,
-        options: itemType === "multiple_choice" ? 
-          (items[i - 1]?.options || [
-            { id: 1, text: "", is_correct: false },
-            { id: 2, text: "", is_correct: false },
-            { id: 3, text: "", is_correct: false },
-            { id: 4, text: "", is_correct: false }
-          ]) : []
+        options:
+          itemType === "multiple_choice"
+            ? items[i - 1]?.options || [
+                { id: 1, text: "", is_correct: false },
+                { id: 2, text: "", is_correct: false },
+                { id: 3, text: "", is_correct: false },
+                { id: 4, text: "", is_correct: false },
+              ]
+            : [],
       });
     }
     setItems(newItems);
@@ -508,7 +515,7 @@ export default function TaskBuilder() {
     if (config === "all_multiple") return "multiple_choice";
     if (config === "all_identification") return "identification";
     if (config === "all_essay") return "essay";
-    
+
     // Custom configuration
     const mcCount = customConfig.multipleChoice;
     const idCount = customConfig.identification;
@@ -521,12 +528,13 @@ export default function TaskBuilder() {
   const updateCustomConfig = (field, value) => {
     const newConfig = { ...customConfig, [field]: parseInt(value) || 0 };
     setCustomConfig(newConfig);
-    
+
     // Update items count to match total
-    const total = newConfig.multipleChoice + newConfig.identification + newConfig.essay;
+    const total =
+      newConfig.multipleChoice + newConfig.identification + newConfig.essay;
     if (total > 0) {
       setItemsCount(total);
-      
+
       // Rebuild items array with correct types based on new custom config
       const newItems = [];
       for (let i = 1; i <= total; i++) {
@@ -538,19 +546,21 @@ export default function TaskBuilder() {
         } else {
           itemType = "essay";
         }
-        
+
         newItems.push({
           id: i,
           text: items[i - 1]?.text || "",
           type: itemType,
           points: items[i - 1]?.points || 1,
-          options: itemType === "multiple_choice" ? 
-            (items[i - 1]?.options || [
-              { id: 1, text: "", is_correct: false },
-              { id: 2, text: "", is_correct: false },
-              { id: 3, text: "", is_correct: false },
-              { id: 4, text: "", is_correct: false }
-            ]) : []
+          options:
+            itemType === "multiple_choice"
+              ? items[i - 1]?.options || [
+                  { id: 1, text: "", is_correct: false },
+                  { id: 2, text: "", is_correct: false },
+                  { id: 3, text: "", is_correct: false },
+                  { id: 4, text: "", is_correct: false },
+                ]
+              : [],
         });
       }
       setItems(newItems);
@@ -558,70 +568,80 @@ export default function TaskBuilder() {
   };
 
   const updateItem = (itemId, field, value) => {
-    setItems(items.map(item => 
-      item.id === itemId ? { ...item, [field]: value } : item
-    ));
+    setItems(
+      items.map((item) =>
+        item.id === itemId ? { ...item, [field]: value } : item,
+      ),
+    );
   };
 
   const addOption = (itemId) => {
-    setItems(items.map(item => {
-      if (item.id === itemId) {
-        const newOption = {
-          id: item.options.length + 1,
-          text: "",
-          is_correct: false
-        };
-        return { ...item, options: [...item.options, newOption] };
-      }
-      return item;
-    }));
+    setItems(
+      items.map((item) => {
+        if (item.id === itemId) {
+          const newOption = {
+            id: item.options.length + 1,
+            text: "",
+            is_correct: false,
+          };
+          return { ...item, options: [...item.options, newOption] };
+        }
+        return item;
+      }),
+    );
   };
 
   const updateOption = (itemId, optionId, field, value) => {
-    setItems(items.map(item => {
-      if (item.id === itemId) {
-        const updatedOptions = item.options.map(option =>
-          option.id === optionId ? { ...option, [field]: value } : option
-        );
-        return { ...item, options: updatedOptions };
-      }
-      return item;
-    }));
+    setItems(
+      items.map((item) => {
+        if (item.id === itemId) {
+          const updatedOptions = item.options.map((option) =>
+            option.id === optionId ? { ...option, [field]: value } : option,
+          );
+          return { ...item, options: updatedOptions };
+        }
+        return item;
+      }),
+    );
   };
 
   const removeOption = (itemId, optionId) => {
-    setItems(items.map(item => {
-      if (item.id === itemId) {
-        const updatedOptions = item.options.filter(option => option.id !== optionId);
-        return { ...item, options: updatedOptions };
-      }
-      return item;
-    }));
+    setItems(
+      items.map((item) => {
+        if (item.id === itemId) {
+          const updatedOptions = item.options.filter(
+            (option) => option.id !== optionId,
+          );
+          return { ...item, options: updatedOptions };
+        }
+        return item;
+      }),
+    );
   };
 
   // Group members management
   const addGroupMember = (member) => {
-    if (!groupMembers.find(m => m.id === member.id)) {
+    if (!groupMembers.find((m) => m.id === member.id)) {
       setGroupMembers([...groupMembers, member]);
     }
   };
 
   const removeGroupMember = (memberId) => {
-    setGroupMembers(groupMembers.filter(m => m.id !== memberId));
+    setGroupMembers(groupMembers.filter((m) => m.id !== memberId));
   };
 
   // Get available members from current space
   const getAvailableMembers = () => {
     if (!currentSpace?.members) return [];
-    return currentSpace.members.filter(member => 
-      !groupMembers.find(m => m.id === member.id)
+    return currentSpace.members.filter(
+      (member) => !groupMembers.find((m) => m.id === member.id),
     );
   };
 
   // Group activity configuration functions
   const updateGroupConfig = (config) => {
     setGroupConfig(config);
-    
+
     // Rebuild items array with new configuration
     const newItems = [];
     for (let i = 1; i <= itemsCount; i++) {
@@ -631,7 +651,7 @@ export default function TaskBuilder() {
         text: items[i - 1]?.text || "",
         type: itemType,
         points: items[i - 1]?.points || 1,
-        options: [] // Group activities don't have options
+        options: [], // Group activities don't have options
       });
     }
     setItems(newItems);
@@ -640,7 +660,7 @@ export default function TaskBuilder() {
   // Get group item type based on configuration and index
   const getGroupItemTypeForIndex = (index) => {
     if (taskCategory !== "project") return "essay";
-    
+
     switch (groupConfig) {
       case "all_essay":
         return "essay";
@@ -660,7 +680,7 @@ export default function TaskBuilder() {
   const getGroupItemTypeForIndexWithConfig = (index, config) => {
     if (config === "all_essay") return "essay";
     if (config === "all_identification") return "identification";
-    
+
     // Custom configuration
     const essayCount = groupCustomConfig.essay;
     if (index <= essayCount) return "essay";
@@ -671,12 +691,12 @@ export default function TaskBuilder() {
   const updateGroupCustomConfig = (field, value) => {
     const newConfig = { ...groupCustomConfig, [field]: parseInt(value) || 0 };
     setGroupCustomConfig(newConfig);
-    
+
     // Update items count to match total
     const total = newConfig.essay + newConfig.identification;
     if (total > 0) {
       setItemsCount(total);
-      
+
       // Rebuild items array with correct types based on new custom config
       const newItems = [];
       for (let i = 1; i <= total; i++) {
@@ -686,13 +706,13 @@ export default function TaskBuilder() {
         } else {
           itemType = "identification";
         }
-        
+
         newItems.push({
           id: i,
           text: items[i - 1]?.text || "",
           type: itemType,
           points: items[i - 1]?.points || 1,
-          options: []
+          options: [],
         });
       }
       setItems(newItems);
@@ -700,11 +720,11 @@ export default function TaskBuilder() {
   };
 
   // Missing functions implementation
-  const handleStatusChange = (index, newStatus) => {
-    // This would update the task status in the backend
-    console.log(`Updating task ${index} status to ${newStatus}`);
-    // Implementation would depend on your API structure
-  };
+  // const handleStatusChange = (index, newStatus) => {
+  //   // This would update the task status in the backend
+  //   console.log(`Updating task ${index} status to ${newStatus}`);
+  //   // Implementation would depend on your API structure
+  // };
 
   const applyTemplate = (templateType) => {
     const template = criteriaTemplates[templateType];
@@ -768,12 +788,12 @@ export default function TaskBuilder() {
 
     const pointsPerCriteria = Math.floor(score / criteria.length);
     const remainder = score % criteria.length;
-    
+
     const updatedCriteria = criteria.map((criterion, index) => ({
       ...criterion,
       points: (pointsPerCriteria + (index < remainder ? 1 : 0)).toString(),
     }));
-    
+
     setCriteria(updatedCriteria);
   };
 
@@ -820,7 +840,9 @@ export default function TaskBuilder() {
     setSelectedFile(null);
     setTaskCategory("activity");
     setItemsCount(1);
-    setItems([{ id: 1, text: "", type: "multiple_choice", points: 1, options: [] }]);
+    setItems([
+      { id: 1, text: "", type: "multiple_choice", points: 1, options: [] },
+    ]);
     setQuizConfig("all_multiple");
     setCustomConfig({ multipleChoice: 0, identification: 0, essay: 0 });
     setGroupConfig("all_essay");
@@ -892,7 +914,7 @@ export default function TaskBuilder() {
     try {
       // Determine if this is a group task based on category
       const isGroupTask = taskCategory === "project";
-      
+
       const taskData = {
         title: taskTitle,
         description: instruction,
@@ -902,32 +924,43 @@ export default function TaskBuilder() {
         due_date: dueDate,
         status: isDraft ? "draft" : "published",
         // Include items for quiz and activity
-        items: taskCategory !== "project" ? items.map(item => ({
-          question_text: item.text,
-          question_type: item.type,
-          points: item.points,
-          options: item.options.map(opt => ({
-            option_text: opt.text,
-            is_correct: opt.is_correct
-          }))
-        })) : [],
+        items:
+          taskCategory !== "project"
+            ? items.map((item) => ({
+                question_text: item.text,
+                question_type: item.type,
+                points: item.points,
+                options: item.options.map((opt) => ({
+                  option_text: opt.text,
+                  is_correct: opt.is_correct,
+                })),
+              }))
+            : [],
         // Include group members for group activity
-        groupsData: isGroupTask ? [{
-          group_name: `${taskTitle} Group`,
-          members: groupMembers.map(member => member.id)
-        }] : [],
-        criteria: criteria.map(c => ({
-          criteria_name: c.name,
-          description: c.description,
-          max_score: parseInt(c.points) || 0
-        })).filter(c => c.criteria_name.trim() !== "")
+        groupsData: isGroupTask
+          ? [
+              {
+                group_name: `${taskTitle} Group`,
+                members: groupMembers.map((member) => member.id),
+              },
+            ]
+          : [],
+        criteria: criteria
+          .map((c) => ({
+            criteria_name: c.name,
+            description: c.description,
+            max_score: parseInt(c.points) || 0,
+          }))
+          .filter((c) => c.criteria_name.trim() !== ""),
       };
 
       // Store task data in localStorage for preview
-      localStorage.setItem('taskPreviewData', JSON.stringify(taskData));
+      localStorage.setItem("taskPreviewData", JSON.stringify(taskData));
 
       // Display JSON data in alert for debugging
-      alert("Task Data to be submitted:\n\n" + JSON.stringify(taskData, null, 2));
+      alert(
+        "Task Data to be submitted:\n\n" + JSON.stringify(taskData, null, 2),
+      );
 
       if (isDraft) {
         await draftTaskMutation.mutateAsync({
@@ -945,10 +978,9 @@ export default function TaskBuilder() {
 
       // Reset form after successful submission
       resetTaskForm();
-      
+
       // Navigate back to tasks page
       navigate(`/space/${space_uuid}/${space_name}/tasks`);
-      
     } catch (error) {
       console.error("Error creating task:", error);
       toast.error("Failed to create task. Please try again.");
@@ -964,7 +996,7 @@ export default function TaskBuilder() {
 
     // Determine if this is a group task based on category
     const isGroupTask = taskCategory === "project";
-    
+
     const taskData = {
       title: taskTitle,
       description: instruction,
@@ -974,30 +1006,39 @@ export default function TaskBuilder() {
       due_date: dueDate,
       status: "preview",
       // Include items for quiz and activity
-      items: taskCategory !== "project" ? items.map(item => ({
-        question_text: item.text,
-        question_type: item.type,
-        points: item.points,
-        options: item.options.map(opt => ({
-          option_text: opt.text,
-          is_correct: opt.is_correct
-        }))
-      })) : [],
+      items:
+        taskCategory !== "project"
+          ? items.map((item) => ({
+              question_text: item.text,
+              question_type: item.type,
+              points: item.points,
+              options: item.options.map((opt) => ({
+                option_text: opt.text,
+                is_correct: opt.is_correct,
+              })),
+            }))
+          : [],
       // Include group members for group activity
-      groupsData: isGroupTask ? [{
-        group_name: `${taskTitle} Group`,
-        members: groupMembers.map(member => member.id)
-      }] : [],
-      criteria: criteria.map(c => ({
-        criteria_name: c.name,
-        description: c.description,
-        max_score: parseInt(c.points) || 0
-      })).filter(c => c.criteria_name.trim() !== "")
+      groupsData: isGroupTask
+        ? [
+            {
+              group_name: `${taskTitle} Group`,
+              members: groupMembers.map((member) => member.id),
+            },
+          ]
+        : [],
+      criteria: criteria
+        .map((c) => ({
+          criteria_name: c.name,
+          description: c.description,
+          max_score: parseInt(c.points) || 0,
+        }))
+        .filter((c) => c.criteria_name.trim() !== ""),
     };
 
     // Store task data in localStorage for preview
-    localStorage.setItem('taskPreviewData', JSON.stringify(taskData));
-    
+    localStorage.setItem("taskPreviewData", JSON.stringify(taskData));
+
     // Navigate to preview
     navigate(`/space/task-builder/preview`);
   };
@@ -1182,15 +1223,19 @@ export default function TaskBuilder() {
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-medium">
-                      {taskCategory === "quiz" ? "Quiz Configuration" : "Activity Items"}
+                      {taskCategory === "quiz"
+                        ? "Quiz Configuration"
+                        : "Activity Items"}
                     </h3>
                   </div>
 
                   {/* Quiz Configuration - Only for Quiz */}
                   {taskCategory === "quiz" && (
                     <div className="mb-6 p-4 bg-[#1E222A] border border-gray-600 rounded-lg">
-                      <h4 className="font-medium mb-3">Question Type Configuration:</h4>
-                      
+                      <h4 className="font-medium mb-3">
+                        Question Type Configuration:
+                      </h4>
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                         <button
                           onClick={() => updateQuizConfig("all_multiple")}
@@ -1200,7 +1245,9 @@ export default function TaskBuilder() {
                               : "border-gray-600 hover:border-gray-500"
                           }`}
                         >
-                          <div className="text-sm font-medium">All Multiple Choice</div>
+                          <div className="text-sm font-medium">
+                            All Multiple Choice
+                          </div>
                         </button>
                         <button
                           onClick={() => updateQuizConfig("all_identification")}
@@ -1210,7 +1257,9 @@ export default function TaskBuilder() {
                               : "border-gray-600 hover:border-gray-500"
                           }`}
                         >
-                          <div className="text-sm font-medium">All Identification</div>
+                          <div className="text-sm font-medium">
+                            All Identification
+                          </div>
                         </button>
                         <button
                           onClick={() => updateQuizConfig("all_essay")}
@@ -1237,41 +1286,64 @@ export default function TaskBuilder() {
                       {/* Custom Configuration */}
                       {quizConfig === "custom" && (
                         <div className="space-y-3">
-                          <h5 className="font-medium text-sm">Set number of questions per type:</h5>
+                          <h5 className="font-medium text-sm">
+                            Set number of questions per type:
+                          </h5>
                           <div className="grid grid-cols-3 gap-4">
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Multiple Choice</label>
+                              <label className="block text-xs text-gray-400 mb-1">
+                                Multiple Choice
+                              </label>
                               <input
                                 type="number"
                                 value={customConfig.multipleChoice}
-                                onChange={(e) => updateCustomConfig("multipleChoice", e.target.value)}
+                                onChange={(e) =>
+                                  updateCustomConfig(
+                                    "multipleChoice",
+                                    e.target.value,
+                                  )
+                                }
                                 className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
                                 min="0"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Identification</label>
+                              <label className="block text-xs text-gray-400 mb-1">
+                                Identification
+                              </label>
                               <input
                                 type="number"
                                 value={customConfig.identification}
-                                onChange={(e) => updateCustomConfig("identification", e.target.value)}
+                                onChange={(e) =>
+                                  updateCustomConfig(
+                                    "identification",
+                                    e.target.value,
+                                  )
+                                }
                                 className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
                                 min="0"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Essay</label>
+                              <label className="block text-xs text-gray-400 mb-1">
+                                Essay
+                              </label>
                               <input
                                 type="number"
                                 value={customConfig.essay}
-                                onChange={(e) => updateCustomConfig("essay", e.target.value)}
+                                onChange={(e) =>
+                                  updateCustomConfig("essay", e.target.value)
+                                }
                                 className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
                                 min="0"
                               />
                             </div>
                           </div>
                           <div className="text-sm text-gray-400">
-                            Total Questions: {customConfig.multipleChoice + customConfig.identification + customConfig.essay}
+                            Total Questions:{" "}
+                            {customConfig.multipleChoice +
+                              customConfig.identification +
+                              customConfig.essay}
                           </div>
                         </div>
                       )}
@@ -1326,7 +1398,7 @@ export default function TaskBuilder() {
                           bgColor = "bg-gray-700/30"; // light gray
                         }
                       }
-                      
+
                       return (
                         <div
                           key={item.id}
@@ -1334,33 +1406,43 @@ export default function TaskBuilder() {
                         >
                           <div className="flex items-center justify-between mb-3">
                             <h4 className="font-medium">
-                              {taskCategory === "quiz" ? 
-                                `Question ${index + 1} (${item.type.replace('_', ' ')})` : 
-                                `Item ${index + 1}`
-                              }
+                              {taskCategory === "quiz"
+                                ? `Question ${index + 1} (${item.type.replace("_", " ")})`
+                                : `Item ${index + 1}`}
                             </h4>
-                            {taskCategory === "quiz" && quizConfig !== "custom" && (
-                              <select
-                                value={item.type}
-                                onChange={(e) => updateItem(item.id, "type", e.target.value)}
-                                className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                              >
-                                <option value="multiple_choice">Multiple Choice</option>
-                                <option value="identification">Identification</option>
-                                <option value="essay">Essay</option>
-                                <option value="file_upload">File Upload</option>
-                              </select>
-                            )}
+                            {taskCategory === "quiz" &&
+                              quizConfig !== "custom" && (
+                                <select
+                                  value={item.type}
+                                  onChange={(e) =>
+                                    updateItem(item.id, "type", e.target.value)
+                                  }
+                                  className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                                >
+                                  <option value="multiple_choice">
+                                    Multiple Choice
+                                  </option>
+                                  <option value="identification">
+                                    Identification
+                                  </option>
+                                  <option value="essay">Essay</option>
+                                  <option value="file_upload">
+                                    File Upload
+                                  </option>
+                                </select>
+                              )}
                           </div>
 
                           <div className="space-y-3">
                             <textarea
                               value={item.text}
-                              onChange={(e) => updateItem(item.id, "text", e.target.value)}
+                              onChange={(e) =>
+                                updateItem(item.id, "text", e.target.value)
+                              }
                               className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                               placeholder={
-                                taskCategory === "quiz" 
-                                  ? item.type === "identification" 
+                                taskCategory === "quiz"
+                                  ? item.type === "identification"
                                     ? "Enter identification item/term..."
                                     : "Enter your question..."
                                   : "Enter item description..."
@@ -1369,68 +1451,98 @@ export default function TaskBuilder() {
                             />
 
                             <div className="flex items-center gap-3">
-                              <label className="text-sm font-medium">Points:</label>
+                              <label className="text-sm font-medium">
+                                Points:
+                              </label>
                               <input
                                 type="number"
                                 value={item.points}
-                                onChange={(e) => updateItem(item.id, "points", parseInt(e.target.value) || 0)}
+                                onChange={(e) =>
+                                  updateItem(
+                                    item.id,
+                                    "points",
+                                    parseInt(e.target.value) || 0,
+                                  )
+                                }
                                 className="w-20 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                                 min="1"
                               />
                             </div>
 
                             {/* Multiple Choice Options - Only for Multiple Choice Questions */}
-                            {taskCategory === "quiz" && item.type === "multiple_choice" && (
-                              <div className="space-y-2">
-                                <h5 className="font-medium text-sm">Options:</h5>
-                                {item.options.map((option, optIndex) => (
-                                  <div key={option.id} className="flex items-center gap-2">
-                                    <input
-                                      type="radio"
-                                      name={`correct-${item.id}`}
-                                      checked={option.is_correct}
-                                      onChange={() => {
-                                        // Set all options to false, then set this one to true
-                                        const updatedOptions = item.options.map(opt => ({
-                                          ...opt,
-                                          is_correct: opt.id === option.id
-                                        }));
-                                        updateItem(item.id, "options", updatedOptions);
-                                      }}
-                                      className="w-4"
-                                    />
-                                    <input
-                                      type="text"
-                                      value={option.text}
-                                      onChange={(e) => updateOption(item.id, option.id, "text", e.target.value)}
-                                      className="flex-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                                      placeholder={`Option ${optIndex + 1}`}
-                                    />
-                                    {item.options.length > 2 && (
-                                      <button
-                                        onClick={() => removeOption(item.id, option.id)}
-                                        className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-sm"
-                                      >
-                                        Remove
-                                      </button>
-                                    )}
-                                  </div>
-                                ))}
-                                <button
-                                  onClick={() => addOption(item.id)}
-                                  className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm"
-                                >
-                                  Add Option
-                                </button>
-                              </div>
-                            )}
+                            {taskCategory === "quiz" &&
+                              item.type === "multiple_choice" && (
+                                <div className="space-y-2">
+                                  <h5 className="font-medium text-sm">
+                                    Options:
+                                  </h5>
+                                  {item.options.map((option, optIndex) => (
+                                    <div
+                                      key={option.id}
+                                      className="flex items-center gap-2"
+                                    >
+                                      <input
+                                        type="radio"
+                                        name={`correct-${item.id}`}
+                                        checked={option.is_correct}
+                                        onChange={() => {
+                                          // Set all options to false, then set this one to true
+                                          const updatedOptions =
+                                            item.options.map((opt) => ({
+                                              ...opt,
+                                              is_correct: opt.id === option.id,
+                                            }));
+                                          updateItem(
+                                            item.id,
+                                            "options",
+                                            updatedOptions,
+                                          );
+                                        }}
+                                        className="w-4"
+                                      />
+                                      <input
+                                        type="text"
+                                        value={option.text}
+                                        onChange={(e) =>
+                                          updateOption(
+                                            item.id,
+                                            option.id,
+                                            "text",
+                                            e.target.value,
+                                          )
+                                        }
+                                        className="flex-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                                        placeholder={`Option ${optIndex + 1}`}
+                                      />
+                                      {item.options.length > 2 && (
+                                        <button
+                                          onClick={() =>
+                                            removeOption(item.id, option.id)
+                                          }
+                                          className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-sm"
+                                        >
+                                          Remove
+                                        </button>
+                                      )}
+                                    </div>
+                                  ))}
+                                  <button
+                                    onClick={() => addOption(item.id)}
+                                    className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm"
+                                  >
+                                    Add Option
+                                  </button>
+                                </div>
+                              )}
 
                             {/* Identification Type - Special Instructions */}
-                            {taskCategory === "quiz" && item.type === "identification" && (
-                              <div className="p-3 bg-gray-800 rounded text-sm text-gray-300">
-                                <strong>Identification Type:</strong> Students will identify or name the item/term provided.
-                              </div>
-                            )}
+                            {taskCategory === "quiz" &&
+                              item.type === "identification" && (
+                                <div className="p-3 bg-gray-800 rounded text-sm text-gray-300">
+                                  <strong>Identification Type:</strong> Students
+                                  will identify or name the item/term provided.
+                                </div>
+                              )}
                           </div>
                         </div>
                       );
@@ -1455,7 +1567,9 @@ export default function TaskBuilder() {
                   {/* Current Members */}
                   {groupMembers.length > 0 && (
                     <div className="mb-4 space-y-2">
-                      <h4 className="font-medium text-sm">Selected Members ({groupMembers.length}):</h4>
+                      <h4 className="font-medium text-sm">
+                        Selected Members ({groupMembers.length}):
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {groupMembers.map((member) => (
                           <div
@@ -1464,11 +1578,16 @@ export default function TaskBuilder() {
                           >
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                {member.name?.charAt(0)?.toUpperCase() || member.email?.charAt(0)?.toUpperCase()}
+                                {member.name?.charAt(0)?.toUpperCase() ||
+                                  member.email?.charAt(0)?.toUpperCase()}
                               </div>
                               <div>
-                                <div className="text-sm font-medium">{member.name || member.email}</div>
-                                <div className="text-xs text-gray-400">{member.email}</div>
+                                <div className="text-sm font-medium">
+                                  {member.name || member.email}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  {member.email}
+                                </div>
                               </div>
                             </div>
                             <button
@@ -1496,11 +1615,16 @@ export default function TaskBuilder() {
                             >
                               <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                  {member.name?.charAt(0)?.toUpperCase() || member.email?.charAt(0)?.toUpperCase()}
+                                  {member.name?.charAt(0)?.toUpperCase() ||
+                                    member.email?.charAt(0)?.toUpperCase()}
                                 </div>
                                 <div>
-                                  <div className="text-sm font-medium">{member.name || member.email}</div>
-                                  <div className="text-xs text-gray-400">{member.email}</div>
+                                  <div className="text-sm font-medium">
+                                    {member.name || member.email}
+                                  </div>
+                                  <div className="text-xs text-gray-400">
+                                    {member.email}
+                                  </div>
                                 </div>
                               </div>
                               <button
@@ -1514,7 +1638,8 @@ export default function TaskBuilder() {
                         </div>
                       ) : (
                         <p className="text-gray-400 text-center py-4">
-                          No available members to add. All space members are already in the group.
+                          No available members to add. All space members are
+                          already in the group.
                         </p>
                       )}
                     </div>
@@ -1523,13 +1648,17 @@ export default function TaskBuilder() {
                   {/* Group Activity Items Section */}
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-medium">Group Activity Items</h3>
+                      <h3 className="text-lg font-medium">
+                        Group Activity Items
+                      </h3>
                     </div>
 
                     {/* Group Activity Configuration */}
                     <div className="mb-6 p-4 bg-[#1E222A] border border-gray-600 rounded-lg">
-                      <h4 className="font-medium mb-3">Item Type Configuration:</h4>
-                      
+                      <h4 className="font-medium mb-3">
+                        Item Type Configuration:
+                      </h4>
+
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                         <button
                           onClick={() => updateGroupConfig("all_essay")}
@@ -1542,14 +1671,18 @@ export default function TaskBuilder() {
                           <div className="text-sm font-medium">All Essay</div>
                         </button>
                         <button
-                          onClick={() => updateGroupConfig("all_identification")}
+                          onClick={() =>
+                            updateGroupConfig("all_identification")
+                          }
                           className={`p-3 rounded-lg border-2 transition-all ${
                             groupConfig === "all_identification"
                               ? "border-blue-500 bg-blue-500/20"
                               : "border-gray-600 hover:border-gray-500"
                           }`}
                         >
-                          <div className="text-sm font-medium">All Identification</div>
+                          <div className="text-sm font-medium">
+                            All Identification
+                          </div>
                         </button>
                         <button
                           onClick={() => updateGroupConfig("custom")}
@@ -1566,31 +1699,49 @@ export default function TaskBuilder() {
                       {/* Custom Configuration */}
                       {groupConfig === "custom" && (
                         <div className="space-y-3">
-                          <h5 className="font-medium text-sm">Set number of items per type:</h5>
+                          <h5 className="font-medium text-sm">
+                            Set number of items per type:
+                          </h5>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Essay</label>
+                              <label className="block text-xs text-gray-400 mb-1">
+                                Essay
+                              </label>
                               <input
                                 type="number"
                                 value={groupCustomConfig.essay}
-                                onChange={(e) => updateGroupCustomConfig("essay", e.target.value)}
+                                onChange={(e) =>
+                                  updateGroupCustomConfig(
+                                    "essay",
+                                    e.target.value,
+                                  )
+                                }
                                 className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
                                 min="0"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Identification</label>
+                              <label className="block text-xs text-gray-400 mb-1">
+                                Identification
+                              </label>
                               <input
                                 type="number"
                                 value={groupCustomConfig.identification}
-                                onChange={(e) => updateGroupCustomConfig("identification", e.target.value)}
+                                onChange={(e) =>
+                                  updateGroupCustomConfig(
+                                    "identification",
+                                    e.target.value,
+                                  )
+                                }
                                 className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
                                 min="0"
                               />
                             </div>
                           </div>
                           <div className="text-sm text-gray-400">
-                            Total Items: {groupCustomConfig.essay + groupCustomConfig.identification}
+                            Total Items:{" "}
+                            {groupCustomConfig.essay +
+                              groupCustomConfig.identification}
                           </div>
                         </div>
                       )}
@@ -1623,7 +1774,7 @@ export default function TaskBuilder() {
                         } else if (item.type === "identification") {
                           bgColor = "bg-red-900/30"; // light red
                         }
-                        
+
                         return (
                           <div
                             key={item.id}
@@ -1636,11 +1787,15 @@ export default function TaskBuilder() {
                               {groupConfig !== "custom" && (
                                 <select
                                   value={item.type}
-                                  onChange={(e) => updateItem(item.id, "type", e.target.value)}
+                                  onChange={(e) =>
+                                    updateItem(item.id, "type", e.target.value)
+                                  }
                                   className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                                 >
                                   <option value="essay">Essay</option>
-                                  <option value="identification">Identification</option>
+                                  <option value="identification">
+                                    Identification
+                                  </option>
                                 </select>
                               )}
                             </div>
@@ -1648,10 +1803,12 @@ export default function TaskBuilder() {
                             <div className="space-y-3">
                               <textarea
                                 value={item.text}
-                                onChange={(e) => updateItem(item.id, "text", e.target.value)}
+                                onChange={(e) =>
+                                  updateItem(item.id, "text", e.target.value)
+                                }
                                 className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                                 placeholder={
-                                  item.type === "identification" 
+                                  item.type === "identification"
                                     ? "Enter group activity item/term..."
                                     : "Enter group activity description..."
                                 }
@@ -1659,11 +1816,19 @@ export default function TaskBuilder() {
                               />
 
                               <div className="flex items-center gap-3">
-                                <label className="text-sm font-medium">Points:</label>
+                                <label className="text-sm font-medium">
+                                  Points:
+                                </label>
                                 <input
                                   type="number"
                                   value={item.points}
-                                  onChange={(e) => updateItem(item.id, "points", parseFloat(e.target.value) || 0)}
+                                  onChange={(e) =>
+                                    updateItem(
+                                      item.id,
+                                      "points",
+                                      parseFloat(e.target.value) || 0,
+                                    )
+                                  }
                                   className="w-20 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                                   min="0"
                                   step="0.01"
@@ -1673,13 +1838,17 @@ export default function TaskBuilder() {
                               {/* Identification Type - Special Instructions */}
                               {item.type === "identification" && (
                                 <div className="p-3 bg-gray-800 rounded text-sm text-gray-300">
-                                  <strong>Identification Type:</strong> Group members will identify or name the item/term provided.
+                                  <strong>Identification Type:</strong> Group
+                                  members will identify or name the item/term
+                                  provided.
                                 </div>
                               )}
 
                               {/* Group Collaboration Note */}
                               <div className="p-3 bg-blue-900/20 border border-blue-700/30 rounded text-sm text-blue-300">
-                                <strong>Group Activity:</strong> This item will be completed collaboratively by all group members.
+                                <strong>Group Activity:</strong> This item will
+                                be completed collaboratively by all group
+                                members.
                               </div>
                             </div>
                           </div>
@@ -1861,7 +2030,7 @@ export default function TaskBuilder() {
                             updateCriteria(
                               criterion.id,
                               "description",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
@@ -1871,7 +2040,11 @@ export default function TaskBuilder() {
                           type="number"
                           value={criterion.points}
                           onChange={(e) =>
-                            updateCriteria(criterion.id, "points", e.target.value)
+                            updateCriteria(
+                              criterion.id,
+                              "points",
+                              e.target.value,
+                            )
                           }
                           className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                           placeholder="Points"
@@ -1916,7 +2089,9 @@ export default function TaskBuilder() {
                   </button>
                 </div>
                 <button
-                  onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}
+                  onClick={() =>
+                    navigate(`/space/${space_uuid}/${space_name}/tasks`)
+                  }
                   className="px-6 py-2 border border-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors"
                 >
                   Cancel

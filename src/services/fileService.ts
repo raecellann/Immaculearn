@@ -9,7 +9,6 @@ import {
 
 class FileService {
   async uploadResource(file: File, space_uuid: string, lesson_name: string): Promise<FileData> {
-    console.log(space_uuid);
     const formData = new FormData();
     formData.append("file", file); // MUST match upload.single("file")
     formData.append("space_uuid", space_uuid); // MUST match upload.single("file")
@@ -36,7 +35,6 @@ class FileService {
   async getListResourceBySpaceUUID(
     space_uuid: string | undefined,
   ): Promise<ResourceFile[]> {
-    console.log("Fetching resources for space_uuid:", space_uuid);
     
     if (!space_uuid) {
       console.error("No space_uuid provided");
@@ -48,7 +46,6 @@ class FileService {
         `/files/resources/${space_uuid}`,
       );
 
-      console.log("API response:", res);
 
       if (!res.data) {
         console.error("No data in response");
@@ -60,7 +57,6 @@ class FileService {
         throw new Error(res.data.message || "Get Resources failed");
       }
 
-      console.log("Successfully fetched resources:", res.data.data);
       return res.data.data;
     } catch (error) {
       console.error("Error in getListResourceBySpaceUUID:", error);
@@ -113,7 +109,6 @@ class FileService {
   }
 
   async uploadResources(file: File, space_uuid: string, lesson_name: string): Promise<FileData> {
-    console.log("Uploading to space:", space_uuid);
 
     if (!file) {
       throw new Error("No file provided");

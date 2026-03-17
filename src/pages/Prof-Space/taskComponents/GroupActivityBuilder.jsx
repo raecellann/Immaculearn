@@ -3,12 +3,15 @@ import { FiArrowLeft, FiUsers, FiFilePlus } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router";
 import { useFile } from "../../../contexts/file/fileContextProvider";
 import { useSpace } from "../../../contexts/space/useSpace";
+import { toast } from "react-toastify";
 
 const GroupActivityBuilder = ({
   currentColors,
   onBack,
   onSave,
   onPublish,
+  onUpdate,
+  editingTask,
   isLoading = false,
 }) => {
   const navigate = useNavigate();
@@ -50,6 +53,8 @@ const GroupActivityBuilder = ({
   const [groupsConfigured, setGroupsConfigured] = useState(false);
   const [groupCreationMethod, setGroupCreationMethod] = useState(null);
   const [generatedGroupsPreview, setGeneratedGroupsPreview] = useState([]);
+  const [showUpdateConfirmation, setShowUpdateConfirmation] = useState(false);
+  const [pendingUpdateData, setPendingUpdateData] = useState(null);
 
   // Get current space and its members
   const allSpaces = [
@@ -91,6 +96,34 @@ const GroupActivityBuilder = ({
       };
     }
   }, []);
+
+  // Populate form with editingTask data if available
+  React.useEffect(() => {
+    if (editingTask) {
+      // Basic task information
+      setActivityTitle(editingTask.task_title || editingTask.title || "");
+      setInstruction(editingTask.task_instruction || editingTask.instruction || "");
+      setScore(editingTask.task_score || editingTask.score || "");
+      setDueDate(editingTask.task_due || editingTask.due_date || "");
+      setSelectedLesson(editingTask.task_lesson || editingTask.lesson || "");
+      
+      // Group activity specific settings
+      setGroupSize(editingTask.group_size || "3");
+      setAllowSelfGrouping(editingTask.allow_self_grouping || false);
+      setPeerEvaluation(editingTask.peer_evaluation || false);
+      
+      // Groups data - handle different possible data structures
+      if (editingTask.groups && Array.isArray(editingTask.groups)) {
+        setGroups(editingTask.groups);
+        setGroupsConfigured(true);
+        setGroupCreationMethod(editingTask.group_creation_method || "manual");
+      } else if (editingTask.rawData && editingTask.rawData.groups) {
+        setGroups(editingTask.rawData.groups);
+        setGroupsConfigured(true);
+        setGroupCreationMethod(editingTask.rawData.group_creation_method || "manual");
+      }
+    }
+  }, [editingTask]);
 
   // Group management functions
   const handleManualGroups = () => {
@@ -231,11 +264,6 @@ const GroupActivityBuilder = ({
       return;
     }
 
-    console.log(
-      `Group ${groupId} saved with leader: ${group.leader}, members:`,
-      validMembers,
-    );
-
     const updatedGroups = [...groups];
     updatedGroups[groupId - 1].isSaved = true;
     updatedGroups[groupId - 1].showInputs = false;
@@ -246,9 +274,6 @@ const GroupActivityBuilder = ({
   const addMemberToGroup = (memberName) => {
     const activeGroupData = groups[activeGroup - 1];
     if (!activeGroupData.showInputs) {
-      console.log(
-        'Cannot add member: Group inputs are not visible. Click "Add People" first.',
-      );
       return;
     }
 
@@ -260,9 +285,6 @@ const GroupActivityBuilder = ({
     const totalCurrentSize = currentGroupSize + currentMembersCount;
 
     if (totalCurrentSize >= 10) {
-      console.log(
-        "Cannot add member: Group has reached maximum size of 10 members",
-      );
       alert("Group has reached maximum size of 10 members");
       return;
     }
@@ -275,7 +297,6 @@ const GroupActivityBuilder = ({
       activeGroupDataUpdated.leader.trim() === ""
     ) {
       activeGroupDataUpdated.leader = memberName;
-      console.log(`Added "${memberName}" as leader of Group ${activeGroup}`);
     } else {
       // Check if this would exceed the 1 member minimum requirement
       if (currentMembersCount >= 1) {
@@ -295,9 +316,6 @@ const GroupActivityBuilder = ({
           } else {
             targetGroup.members.push(memberName);
           }
-          console.log(
-            `Added "${memberName}" to Group ${targetGroup.id} as member (redistributed from Group ${activeGroup})`,
-          );
         } else {
           const activeGroupMembers = activeGroupDataUpdated.members;
           const firstEmptyIndex = activeGroupMembers.findIndex(
@@ -309,18 +327,12 @@ const GroupActivityBuilder = ({
           } else {
             // Check if adding this member would exceed max size
             if (totalCurrentSize + 1 > 10) {
-              console.log(
-                "Cannot add member: Group would exceed maximum size of 10 members",
-              );
               alert("Group would exceed maximum size of 10 members");
               return;
             }
             activeGroupMembers.push(memberName);
             activeGroupMembers.push("");
           }
-          console.log(
-            `Added "${memberName}" to Group ${activeGroup} as member at position ${firstEmptyIndex !== -1 ? firstEmptyIndex + 1 : activeGroupMembers.length}`,
-          );
         }
       } else {
         // Add as first member
@@ -335,9 +347,6 @@ const GroupActivityBuilder = ({
           activeGroupMembers.push(memberName);
           activeGroupMembers.push("");
         }
-        console.log(
-          `Added "${memberName}" to Group ${activeGroup} as first member`,
-        );
       }
     }
 
@@ -480,7 +489,6 @@ const GroupActivityBuilder = ({
     });
 
     setGroups(updatedGroups);
-    console.log("Distributed students equally:", updatedGroups);
   };
 
   const getMemberRole = (memberName) => {
@@ -538,7 +546,7 @@ const GroupActivityBuilder = ({
   // Helper function to get account ID by member name
   const getAccountIdByName = (memberName) => {
     const member = currentSpace?.members?.find(
-      (m) => m.full_name === memberName && m.role !== 'creator'
+      (m) => m.full_name === memberName && m.role !== "creator",
     );
     return member?.account_id || null;
   };
@@ -599,12 +607,32 @@ const GroupActivityBuilder = ({
       lesson_id: selectedLesson ? parseInt(selectedLesson) : null,
       task_instruction: instruction,
       groups: groupsPayload,
+      group_size: groupSize,
+      allow_self_grouping: allowSelfGrouping,
+      peer_evaluation: peerEvaluation,
+      group_creation_method: groupCreationMethod,
     };
 
-    if (status === "published") {
-      onPublish(activityData);
+    // If editing, include task_id and use onUpdate
+    if (editingTask) {
+      activityData.task_id = editingTask.task_id || editingTask.id;
+      if (onUpdate) {
+        setPendingUpdateData(activityData);
+        setShowUpdateConfirmation(true);
+      } else if (status === "published") {
+        onPublish(activityData);
+      } else {
+        onSave(activityData);
+      }
     } else {
-      onSave(activityData);
+      // New task - use original logic
+      if (status === "published") {
+        toast.success("Group activity published successfully!");
+        onPublish(activityData);
+      } else {
+        toast.success("Group activity saved as draft!");
+        onSave(activityData);
+      }
     }
   };
 
@@ -1096,25 +1124,27 @@ const GroupActivityBuilder = ({
           </button>
 
           <div className="flex gap-3 sm:gap-4">
+            {!editingTask && (
+              <button
+                className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
+                style={{
+                  backgroundColor: currentColors.surface,
+                  color: currentColors.text,
+                  border: `1px solid ${currentColors.border}`,
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = currentColors.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = currentColors.surface;
+                }}
+                onClick={() => handleSave("draft")}
+              >
+                {isLoading ? "Saving..." : "Save as Draft"}
+              </button>
+            )}
             <button
-              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
-              style={{
-                backgroundColor: currentColors.surface,
-                color: currentColors.text,
-                border: `1px solid ${currentColors.border}`,
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = currentColors.hover;
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = currentColors.surface;
-              }}
-              onClick={() => handleSave("draft")}
-            >
-              {isLoading ? "Saving..." : "Save as Draft"}
-            </button>
-            <button
-              className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
+              className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
               style={{
                 backgroundColor: "#2563eb",
                 color: "#ffffff",
@@ -1127,7 +1157,7 @@ const GroupActivityBuilder = ({
               }}
               onClick={() => handleSave("published")}
             >
-              {isLoading ? "Publishing..." : "Publish Activity"}
+              {isLoading ? "Publishing..." : (editingTask ? "Update & Publish" : "Publish Activity")}
             </button>
           </div>
         </div>
@@ -1606,7 +1636,6 @@ const GroupActivityBuilder = ({
                       leader: group.leader.trim(),
                       members: group.members.filter((member) => member.trim()), // Remove empty members
                     }));
-                    console.log("All groups saved:", groupsData);
                     // Here you would send this data to your backend
                     setGroupsConfigured(true);
                     setGroupCreationMethod("manual");
@@ -1742,15 +1771,64 @@ const GroupActivityBuilder = ({
                   setGroups(generatedGroupsPreview);
                   setGroupsConfigured(true);
                   setGroupCreationMethod("generate");
-                  console.log(
-                    `Generated ${numberOfGroups} groups:`,
-                    generatedGroupsPreview,
-                  );
+
                   setShowGenerateGroups(false);
                 }}
                 className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:text-base font-medium"
               >
                 Confirm Generate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {showUpdateConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div
+            className="rounded-lg p-6 max-w-md w-full"
+            style={{
+              backgroundColor: currentColors.surface,
+              border: `1px solid ${currentColors.border}`,
+            }}
+          >
+            <h3
+              className="text-lg font-semibold mb-4"
+              style={{ color: currentColors.text }}
+            >
+              Confirm Group Activity Update
+            </h3>
+            <p className="mb-6" style={{ color: currentColors.textSecondary }}>
+              Are you sure you want to update this group activity? This will modify the
+              existing activity and notify all enrolled students.
+            </p>
+            <div className="flex gap-3">
+              <button
+                className="px-4 py-2 rounded-lg font-medium text-sm transition-colors flex-1"
+                style={{
+                  backgroundColor: currentColors.surface,
+                  color: currentColors.text,
+                  border: `1px solid ${currentColors.border}`,
+                }}
+                onClick={() => {
+                  setShowUpdateConfirmation(false);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg font-medium text-sm text-white transition-colors flex-1"
+                style={{ backgroundColor: "#2563eb" }}
+                onClick={() => {
+                  setShowUpdateConfirmation(false);
+                  if (pendingUpdateData) {
+                    onUpdate(pendingUpdateData);
+                    setPendingUpdateData(null);
+                  }
+                }}
+              >
+                Update & Publish
               </button>
             </div>
           </div>

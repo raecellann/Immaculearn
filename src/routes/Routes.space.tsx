@@ -19,6 +19,8 @@ import TaskBuilder from "../pages/EXAMPLE_PAGE/builder.jsx";
 import TaskPreview from "../pages/EXAMPLE_PAGE/preview.jsx";
 // import { ThemeProvider } from "../pages/Create-Document/contexts/ThemeContext.jsx";
 import { ThemeProvider } from "../pages/Create-Document/contexts-old/ThemeContext.jsx";
+import EditorPage from "../pages/editor/tiptap.jsx";
+// import EditorPage from "../pages/tiptapEditor/EditorPage.jsx";
 export const SpaceRoutes = [
   {
     key: "/space",
@@ -108,5 +110,10 @@ export const SpaceRoutes = [
     key: "/task-builder-preview",
     path: "/space/task-builder/preview",
     element: <TaskPreview />,
+  },
+  {
+    key: "/editor",
+    path: "/editor",
+    element: <EditorPage />,
   },
 ];

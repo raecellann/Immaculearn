@@ -19,12 +19,10 @@ export default function useSocket() {
     setSocket(s);
 
     s.on("connect", () => {
-      console.log("✅ socket connected:", s.id);
       setIsConnected(true);
     });
 
     s.on("disconnect", () => {
-      console.log("❌ socket disconnected");
       setIsConnected(false);
     });
 

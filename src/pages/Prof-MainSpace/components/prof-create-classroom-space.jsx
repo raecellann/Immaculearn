@@ -259,7 +259,6 @@ const ProfCreateClassroomSpace = () => {
 
     try {
       setIsLoading(true);
-      console.log(timeSchedule);
       // Parse time schedule to get start and end times
       const timeParts = timeSchedule.split(" - ");
       const timeStart = timeParts[0] || "";
@@ -302,7 +301,6 @@ const ProfCreateClassroomSpace = () => {
 
       if (result.success) {
         const space_uuid = result?.space_uuid;
-        console.log(space_uuid);
         toast.success(`Course Space "${spaceName}" created successfully!`);
 
         // Save cover photo to localStorage for immediate display

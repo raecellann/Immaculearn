@@ -97,7 +97,6 @@ class AdminService {
         });
       }
 
-      console.log(formData)
 
       const response = await adminApi.post<ApiResponse<AnnouncementData>>(
         "/announce/create",

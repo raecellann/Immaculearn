@@ -8,7 +8,6 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
   const navigate = useNavigate();
 
   // Debug taskData structure
-  console.log("QuizPreview taskData:", taskData);
 
   // Parse questions from the task data
   const getQuestions = () => {
@@ -31,10 +30,6 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
   const hasMoreQuestions = allQuestions.length > 3;
 
   // Debug logging
-  console.log("QuizPreview Debug:");
-  console.log("- All questions count:", allQuestions.length);
-  console.log("- Has more questions:", hasMoreQuestions);
-  console.log("- First 3 questions:", allQuestions.slice(0, 3));
 
   const determineQuestionType = (answers) => {
     if (!answers || answers.length === 0) return "short-answer";
@@ -381,7 +376,6 @@ const QuizPreview = ({ taskData, currentColors, onEditQuiz }) => {
       {/* See More Button */}
       {hasMoreQuestions && (
         <div className="mt-6 text-center">
-          {console.log("Rendering See More button...")}
           <button
             onClick={() => {
               // Navigate to ViewAllTaskPage with current space context

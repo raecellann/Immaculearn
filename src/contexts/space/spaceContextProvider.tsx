@@ -328,7 +328,6 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
   };
 
-
   const updateSpace = async (spaceId: string, spaceData?: any) => {
     await spaceService.updateSpace(spaceId, spaceData);
     queryClient.invalidateQueries({ queryKey: ["userSpaces"] });
@@ -336,7 +335,6 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     queryClient.invalidateQueries({ queryKey: ["courseSpaces"] });
     if (currentSpace?.space_uuid === spaceId) setCurrentSpace(null);
   };
-  
 
   const removeUserFromSpace = async (spaceId: string, userId: number) => {
     await spaceService.removeUserFromSpace(spaceId, userId);
@@ -424,7 +422,6 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       spaces: Space[] | CourseSPace[],
       key: string,
     ) => {
-      console.log(spaces, spaceUuid);
       if (spaces?.some((s) => s.space_uuid === spaceUuid)) {
         queryClient.invalidateQueries({ queryKey: [key] });
       }
@@ -583,14 +580,10 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
   } = useQuery<TaskResultApiResponse>({
     queryKey: ["student-response-data", user?.id, taskId],
     queryFn: async () => {
-      console.log(
-        `Querying student response for user ${user?.id}, task ${taskId}`,
-      );
       const res = await spaceService.getResponseByStudentIdAndTaskId(
         Number(user?.id),
         taskId,
       );
-      console.log("Query result:", res);
       return res;
     },
     enabled: isAuthenticated && !!taskId && !!user?.id,
@@ -685,7 +678,6 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     });
 
     socket.on("accept_space_invitation", ({ space_id, owner_id }) => {
-      console.log("SPACE & OWNER ID", user?.id, owner_id);
       if (Number(owner_id) === Number(user?.id)) {
         const spaceIdNum = Number(space_id);
 
@@ -735,13 +727,13 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
       }
     });
 
-    socket.on("connect", () => {
-      console.log("Connected to WebSocket for space updates");
-    });
+    // socket.on("connect", () => {
+    //   console.log("Connected to WebSocket for space updates");
+    // });
 
-    socket.on("disconnect", () => {
-      console.log("Disconnected from WebSocket");
-    });
+    // socket.on("disconnect", () => {
+    //   console.log("Disconnected from WebSocket");
+    // });
 
     return () => {
       socket.disconnect();

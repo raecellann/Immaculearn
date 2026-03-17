@@ -45,6 +45,7 @@ import { timeAgo } from "../../utils/timeAgo.js";
 import isValidEmail from "../../utils/isValidEmail.js";
 import { useSpaceChat } from "../../hooks/useSpaceChat";
 import profanityFilter from "../../utils/profanityFilter";
+import { toast } from "react-toastify";
 
 const UserPage = () => {
   const { space_uuid, space_name } = useParams();
@@ -55,7 +56,6 @@ const UserPage = () => {
 
   // Add loading state for post creation
   const [isCreatingPost, setIsCreatingPost] = useState(false);
-  
 
   // State hooks - MUST BE AT THE TOP
   const [isFocused, setIsFocused] = useState(false);
@@ -162,15 +162,15 @@ const UserPage = () => {
   const isOwnerSpace = currentSpace?.creator === user?.id;
 
   // Debug logging
-  console.log("Debug info:", {
-    currentSpace: currentSpace,
-    user: user,
-    currentSpaceCreator: currentSpace?.creator,
-    userId: user?.id,
-    isOwnerSpace,
-    space_uuid,
-    space_name,
-  });
+  // console.log("Debug info:", {
+  //   currentSpace: currentSpace,
+  //   user: user,
+  //   currentSpaceCreator: currentSpace?.creator,
+  //   userId: user?.id,
+  //   isOwnerSpace,
+  //   space_uuid,
+  //   space_name,
+  // });
   // Sync active chat space UUID with URL params (only when it changes)
   // useEffect(() => {
   //   if (space_uuid && space_uuid !== activeChatSpaceUuid) {
@@ -181,8 +181,6 @@ const UserPage = () => {
   // Chat hook
   const { messages, sendMessage, spaceOnlineUsers, getOnlineCount } =
     useSpaceChat(activeChatSpaceUuid, user);
-
-  console.log("NEED FOR MESSAGE", activeChatSpaceUuid, user.id, messages);
 
   // Map messages to render-friendly format with date grouping
   const chatMessages = useMemo(() => {
@@ -263,56 +261,51 @@ const UserPage = () => {
     error: tasksError,
   } = useQuery({
     queryKey: ["tasks", currentSpace?.space_uuid],
-    queryFn: () => spaceService.getUploadedTasksBySpaceUUID(currentSpace?.space_uuid || ""),
+    queryFn: () =>
+      spaceService.getUploadedTasksBySpaceUUID(currentSpace?.space_uuid || ""),
     enabled: !!currentSpace?.space_uuid,
     staleTime: 5 * 60 * 1000, // 5 minutes
     cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const tasks = tasksData?.data || [];
-  
+
   // Filter in-progress tasks (exclude overdue and done tasks)
-  const inProgressTasks = tasks.filter(task => {
-    // Debug log to check task structure and dates
-    console.log('Task:', task);
-    console.log('Task status:', task.status || task.task_status);
-    console.log('Task due date:', task.due_date || task.task_due);
-    
-    // Check if task is done (multiple variations)
-    const isDone = task.status === "Done" || 
-                   task.status === "done" || 
-                   task.status === "completed" || 
-                   task.status === "Completed" ||
-                   task.task_status === "Done" ||
-                   task.task_status === "done" ||
-                   task.task_status === "completed" ||
-                   task.task_status === "Completed";
-    
-    // Check if task is overdue (check multiple date fields)
-    const dueDate = task.due_date || task.task_due || task.dueDate;
-    const isOverdue = dueDate && new Date(dueDate) < new Date();
-    
-    console.log('Is done?', isDone);
-    console.log('Is overdue?', isOverdue);
-    console.log('Due date:', dueDate);
-    console.log('Current date:', new Date());
-    
-    // Check if task is in-progress (multiple variations and fields)
-    const isInProgress = task.status === "In Progress" || 
-                         task.status === "in-progress" || 
-                         task.status === "in_progress" ||
-                         task.task_status === "In Progress" ||
-                         task.task_status === "in-progress" ||
-                         task.task_status === "in_progress" ||
-                         !task.status && !task.task_status; // No status at all
-    
-    // Include task if it's in-progress and not overdue and not done
-    const shouldShow = isInProgress && !isDone && !isOverdue;
-    
-    console.log('Should show in reminders?', shouldShow);
-    
-    return shouldShow;
-  }).slice(0, 3); // Limit to 3 tasks
+  const inProgressTasks = tasks
+    .filter((task) => {
+      // Debug log to check task structure and dates
+
+      // Check if task is done (multiple variations)
+      const isDone =
+        task.status === "Done" ||
+        task.status === "done" ||
+        task.status === "completed" ||
+        task.status === "Completed" ||
+        task.task_status === "Done" ||
+        task.task_status === "done" ||
+        task.task_status === "completed" ||
+        task.task_status === "Completed";
+
+      // Check if task is overdue (check multiple date fields)
+      const dueDate = task.due_date || task.task_due || task.dueDate;
+      const isOverdue = dueDate && new Date(dueDate) < new Date();
+
+      // Check if task is in-progress (multiple variations and fields)
+      const isInProgress =
+        task.status === "In Progress" ||
+        task.status === "in-progress" ||
+        task.status === "in_progress" ||
+        task.task_status === "In Progress" ||
+        task.task_status === "in-progress" ||
+        task.task_status === "in_progress" ||
+        (!task.status && !task.task_status); // No status at all
+
+      // Include task if it's in-progress and not overdue and not done
+      const shouldShow = isInProgress && !isDone && !isOverdue;
+
+      return shouldShow;
+    })
+    .slice(0, 3); // Limit to 3 tasks
 
   // Comments state
   const [expandedPosts, setExpandedPosts] = useState(new Set());
@@ -403,7 +396,6 @@ const UserPage = () => {
   useEffect(() => {
     const savedCoverPhoto = currentSpace?.space_cover;
 
-    console.log(savedCoverPhoto);
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }
@@ -691,7 +683,6 @@ const UserPage = () => {
   // Handle join requests
   const handleAcceptJoinRequest = async (userId) => {
     try {
-      console.log(userId);
       await acceptJoinRequest(userId, currentSpace?.space_uuid);
       toast.success("Member has been added to the space successfully.");
       // Immediately refetch to update the UI
@@ -930,7 +921,6 @@ const UserPage = () => {
     setShowChatPopup(false);
   };
 
-  
   // File validation
   const validateFile = (file) => {
     const validTypes = [
@@ -1070,7 +1060,6 @@ const UserPage = () => {
 
           if (gmailOnlyMembers.length < data.length) {
             const nonGmailCount = data.length - gmailOnlyMembers.length;
-            console.log(`Filtered out ${nonGmailCount} non-Gmail addresses`);
           }
 
           resolve(gmailOnlyMembers);
@@ -1233,32 +1222,41 @@ const UserPage = () => {
   };
 
   const renderPostContent = (text) => {
-
     const youtubeRegex =
-    /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+))(?:\?[^&\s]*)?(?:&[^&\s]*)*/;
+      /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+))(?:\?[^&\s]*)?(?:&[^&\s]*)*/;
 
-  const match = text.match(youtubeRegex);
+    const match = text.match(youtubeRegex);
 
-  if (!match) return <p style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{text}</p>;
+    if (!match)
+      return (
+        <p style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>
+          {text}
+        </p>
+      );
 
-  const videoId = match[2];
-  const cleanText = text.replace(match[0], "").trim();
+    const videoId = match[2];
+    const cleanText = text.replace(match[0], "").trim();
 
-  return (
-    <div>
-      <p className="mb-3 whitespace-pre-wrap break-words" style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>{cleanText}</p>
+    return (
+      <div>
+        <p
+          className="mb-3 whitespace-pre-wrap break-words"
+          style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+        >
+          {cleanText}
+        </p>
 
-      <div className="aspect-video w-full max-w-xl">
-        <iframe
-          className="w-full h-full rounded-lg"
-          src={`https://www.youtube.com/embed/${videoId}`}
-          title="YouTube video"
-          allowFullScreen
-        />
+        <div className="aspect-video w-full max-w-xl">
+          <iframe
+            className="w-full h-full rounded-lg"
+            src={`https://www.youtube.com/embed/${videoId}`}
+            title="YouTube video"
+            allowFullScreen
+          />
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
   return (
     <div
@@ -1378,6 +1376,198 @@ const UserPage = () => {
           )}
         </div>
 
+        {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
+        {(currentSpace?.space_type === "course" ||
+          currentSpace?.space_day ||
+          currentSpace?.space_section ||
+          currentSpace?.space_schedule) && (
+          <div
+            className="lg:hidden px-4 py-3 border-b"
+            style={{
+              backgroundColor: currentColors.surface + "CC", // Add 80% opacity
+              borderColor: currentColors.border + "CC", // Add 80% opacity to border
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <div className="flex flex-col gap-2">
+              {/* Schedule */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Schedule
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_day || "TBD"} (
+                  {currentSpace?.space_time_start
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_start}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}{" "}
+                  -{" "}
+                  {currentSpace?.space_time_end
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_end}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}
+                  )
+                </span>
+              </div>
+
+              {/* Section */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Section
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_section ||
+                    currentSpace?.section ||
+                    currentSpace?.class_section ||
+                    currentSpace?.section_name ||
+                    currentSpace?.course_section ||
+                    currentSpace?.subject_section ||
+                    currentSpace?.space_block ||
+                    currentSpace?.block ||
+                    "N/A"}
+                </span>
+              </div>
+
+              {/* Description */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Description
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_description ||
+                    (currentSpace?.space_type === "course"
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources.")}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {(currentSpace?.space_type === "course" ||
+          currentSpace?.space_day ||
+          currentSpace?.space_section ||
+          currentSpace?.space_schedule) && (
+          <div
+            className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
+            style={{
+              backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+              borderColor: currentColors.border + "CC", // Add 80% opacity to border
+              maxWidth: "1000px",
+              backdropFilter: "blur(8px)", // Add subtle blur for better readability
+            }}
+          >
+            <div className="grid grid-cols-3 gap-2">
+              {/* Schedule */}
+              <div>
+                <h3
+                  className="font-semibold text-sm mb-2"
+                  style={{ color: currentColors.text }}
+                >
+                  Schedule
+                </h3>
+                <p
+                  className="text-sm"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_day || "TBD"} (
+                  {currentSpace?.space_time_start
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_start}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}{" "}
+                  -{" "}
+                  {currentSpace?.space_time_end
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_end}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}
+                  )
+                </p>
+              </div>
+
+              {/* Section */}
+              <div>
+                <h3
+                  className="font-semibold text-sm mb-2"
+                  style={{ color: currentColors.text }}
+                >
+                  Section
+                </h3>
+                <p
+                  className="text-sm"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_section ||
+                    currentSpace?.section ||
+                    currentSpace?.class_section ||
+                    currentSpace?.section_name ||
+                    currentSpace?.course_section ||
+                    currentSpace?.subject_section ||
+                    currentSpace?.space_block ||
+                    currentSpace?.block ||
+                    "N/A"}
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3
+                  className="font-semibold text-sm mb-2"
+                  style={{ color: currentColors.text }}
+                >
+                  Description
+                </h3>
+                <p
+                  className="text-sm line-clamp-3"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_description ||
+                    (currentSpace?.space_type === "course"
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources.")}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="p-4 sm:p-6">
           {/* ================= DESKTOP TITLE ================= */}
           <div className="hidden md:block mb-8">
@@ -1455,13 +1645,7 @@ const UserPage = () => {
                 </button>
                 <button
                   onClick={() => {
-                    console.log("Tasks button clicked:", {
-                      isOwnerSpace,
-                      space_uuid,
-                      space_name,
-                    });
                     const targetRoute = `/space/${space_uuid}/${space_name}/tasks`;
-                    console.log("Navigating to:", targetRoute);
                     navigate(targetRoute);
                   }}
                 >
@@ -1615,7 +1799,11 @@ const UserPage = () => {
                         break-words
                         overflow-y-auto
                       "
-                        style={{ wordBreak: "break-word", overflowWrap: "break-word", maxWidth: "100%" }}
+                        style={{
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          maxWidth: "100%",
+                        }}
                       />
 
                       {/* ACTIONS */}
@@ -1673,13 +1861,14 @@ const UserPage = () => {
                 }}
               >
                 <h2 className="font-bold mb-3">Reminders</h2>
-                <div
-                  className="text-left py-3"
-                >
+                <div className="text-left py-3">
                   {isLoadingTasks ? (
                     <div className="flex flex-col itmakems-start justify-start py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mb-2"></div>
-                      <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                      <p
+                        className="text-sm"
+                        style={{ color: currentColors.textSecondary }}
+                      >
                         Loading tasks...
                       </p>
                     </div>
@@ -1693,103 +1882,137 @@ const UserPage = () => {
                             backgroundColor: currentColors.background,
                             borderColor: currentColors.border,
                           }}
-                          onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}
+                          onClick={() =>
+                            navigate(`/space/${space_uuid}/${space_name}/tasks`)
+                          }
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-medium text-sm truncate" style={{ color: currentColors.text }}>
-                                {task.title || task.task_title || 'Untitled Task'}
+                              <h3
+                                className="font-medium text-sm truncate"
+                                style={{ color: currentColors.text }}
+                              >
+                                {task.title ||
+                                  task.task_title ||
+                                  "Untitled Task"}
                               </h3>
                               <div className="flex items-center gap-2 mt-2">
-                                <span 
+                                <span
                                   className="text-xs px-1.5 py-0.5 rounded-full font-medium"
                                   style={{
-                                    backgroundColor: '#3b82f6',
-                                    color: 'white'
+                                    backgroundColor: "#3b82f6",
+                                    color: "white",
                                   }}
                                 >
                                   In Progress
                                 </span>
                                 {task.due_date && (
-                                  <span className="text-xs" style={{ color: currentColors.textSecondary }}>
-                                    Due: {new Date(task.due_date).toLocaleDateString()}
+                                  <span
+                                    className="text-xs"
+                                    style={{
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    Due:{" "}
+                                    {new Date(
+                                      task.due_date,
+                                    ).toLocaleDateString()}
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <FiChevronRight size={14} style={{ color: currentColors.textSecondary }} />
+                            <FiChevronRight
+                              size={14}
+                              style={{ color: currentColors.textSecondary }}
+                            />
                           </div>
                         </div>
                       ))}
-                      
-                      {tasks.filter(task => {
+
+                      {tasks.filter((task) => {
                         // Check if task is done (multiple variations)
-                        const isDone = task.status === "Done" || 
-                                       task.status === "done" || 
-                                       task.status === "completed" || 
-                                       task.status === "Completed" ||
-                                       task.task_status === "Done" ||
-                                       task.task_status === "done" ||
-                                       task.task_status === "completed" ||
-                                       task.task_status === "Completed";
-                        
+                        const isDone =
+                          task.status === "Done" ||
+                          task.status === "done" ||
+                          task.status === "completed" ||
+                          task.status === "Completed" ||
+                          task.task_status === "Done" ||
+                          task.task_status === "done" ||
+                          task.task_status === "completed" ||
+                          task.task_status === "Completed";
+
                         // Check if task is overdue (check multiple date fields)
-                        const dueDate = task.due_date || task.task_due || task.dueDate;
-                        const isOverdue = dueDate && new Date(dueDate) < new Date();
-                        
+                        const dueDate =
+                          task.due_date || task.task_due || task.dueDate;
+                        const isOverdue =
+                          dueDate && new Date(dueDate) < new Date();
+
                         // Check if task is in-progress (multiple variations and fields)
-                        const isInProgress = task.status === "In Progress" || 
-                                             task.status === "in-progress" || 
-                                             task.status === "in_progress" ||
-                                             task.task_status === "In Progress" ||
-                                             task.task_status === "in-progress" ||
-                                             task.task_status === "in_progress" ||
-                                             !task.status && !task.task_status; // No status at all
-                        
+                        const isInProgress =
+                          task.status === "In Progress" ||
+                          task.status === "in-progress" ||
+                          task.status === "in_progress" ||
+                          task.task_status === "In Progress" ||
+                          task.task_status === "in-progress" ||
+                          task.task_status === "in_progress" ||
+                          (!task.status && !task.task_status); // No status at all
+
                         // Include task if it's in-progress and not overdue and not done
                         return isInProgress && !isDone && !isOverdue;
                       }).length > 3 && (
                         <button
-                          onClick={() => navigate(`/space/${space_uuid}/${space_name}/tasks`)}
+                          onClick={() =>
+                            navigate(`/space/${space_uuid}/${space_name}/tasks`)
+                          }
                           className="w-full text-center py-1.5 text-xs font-medium transition-colors rounded-lg"
                           style={{
                             backgroundColor: currentColors.background,
                             color: currentColors.primary,
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = currentColors.hover;
+                            e.target.style.backgroundColor =
+                              currentColors.hover;
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = currentColors.background;
+                            e.target.style.backgroundColor =
+                              currentColors.background;
                           }}
                         >
-                          See All ({tasks.filter(task => {
-                        // Check if task is done (multiple variations)
-                        const isDone = task.status === "Done" || 
-                                       task.status === "done" || 
-                                       task.status === "completed" || 
-                                       task.status === "Completed" ||
-                                       task.task_status === "Done" ||
-                                       task.task_status === "done" ||
-                                       task.task_status === "completed" ||
-                                       task.task_status === "Completed";
-                        
-                        // Check if task is overdue (check multiple date fields)
-                        const dueDate = task.due_date || task.task_due || task.dueDate;
-                        const isOverdue = dueDate && new Date(dueDate) < new Date();
-                        
-                        // Check if task is in-progress (multiple variations and fields)
-                        const isInProgress = task.status === "In Progress" || 
-                                             task.status === "in-progress" || 
-                                             task.status === "in_progress" ||
-                                             task.task_status === "In Progress" ||
-                                             task.task_status === "in-progress" ||
-                                             task.task_status === "in_progress" ||
-                                             !task.status && !task.task_status; // No status at all
-                        
-                        // Include task if it's in-progress and not overdue and not done
-                        return isInProgress && !isDone && !isOverdue;
-                      }).length} tasks)
+                          See All (
+                          {
+                            tasks.filter((task) => {
+                              // Check if task is done (multiple variations)
+                              const isDone =
+                                task.status === "Done" ||
+                                task.status === "done" ||
+                                task.status === "completed" ||
+                                task.status === "Completed" ||
+                                task.task_status === "Done" ||
+                                task.task_status === "done" ||
+                                task.task_status === "completed" ||
+                                task.task_status === "Completed";
+
+                              // Check if task is overdue (check multiple date fields)
+                              const dueDate =
+                                task.due_date || task.task_due || task.dueDate;
+                              const isOverdue =
+                                dueDate && new Date(dueDate) < new Date();
+
+                              // Check if task is in-progress (multiple variations and fields)
+                              const isInProgress =
+                                task.status === "In Progress" ||
+                                task.status === "in-progress" ||
+                                task.status === "in_progress" ||
+                                task.task_status === "In Progress" ||
+                                task.task_status === "in-progress" ||
+                                task.task_status === "in_progress" ||
+                                (!task.status && !task.task_status); // No status at all
+
+                              // Include task if it's in-progress and not overdue and not done
+                              return isInProgress && !isDone && !isOverdue;
+                            }).length
+                          }{" "}
+                          tasks)
                         </button>
                       )}
                     </div>
@@ -1815,7 +2038,10 @@ const UserPage = () => {
                           </svg>
                         </div>
                       </div>
-                      <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+                      <p
+                        className="text-sm"
+                        style={{ color: currentColors.textSecondary }}
+                      >
                         No in-progress tasks
                       </p>
                       <p
@@ -1829,7 +2055,10 @@ const UserPage = () => {
                 </div>
 
                 {/* CHAT - Inside reminders section */}
-                <div className="flex justify-center mt-2 pt-2 border-t" style={{ borderColor: currentColors.border }}>
+                <div
+                  className="flex justify-center mt-2 pt-2 border-t"
+                  style={{ borderColor: currentColors.border }}
+                >
                   <button
                     onClick={() => {
                       setActiveChatSpaceUuid(space_uuid);
@@ -1924,7 +2153,11 @@ const UserPage = () => {
                         break-words
                         overflow-hidden
                       "
-                        style={{ wordBreak: "break-word", overflowWrap: "break-word", maxWidth: "100%" }}
+                        style={{
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          maxWidth: "100%",
+                        }}
                       />
 
                       {/* ACTIONS */}
@@ -2058,12 +2291,11 @@ const UserPage = () => {
                             </div>
                           )}
 
-
                           {isOwnerSpace && (
                             <DeleteButton
                               onClick={() => handleDeletePost(post.post_id)}
                             />
-                          )} 
+                          )}
 
                           {/* Post Content */}
                           <div className="flex-1 min-w-0">
@@ -2083,7 +2315,11 @@ const UserPage = () => {
                             </div>
                             <div
                               className="whitespace-pre-wrap mb-3 text-sm break-words overflow-hidden"
-                              style={{ color: currentColors.text, wordBreak: "break-word", overflowWrap: "break-word" }}
+                              style={{
+                                color: currentColors.text,
+                                wordBreak: "break-word",
+                                overflowWrap: "break-word",
+                              }}
                             >
                               {renderPostContent(post.post_content)}
                             </div>

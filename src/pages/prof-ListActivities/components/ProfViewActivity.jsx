@@ -28,8 +28,6 @@ const ProfViewActivityPage = () => {
   const { allUserCompletedTask, allUserCompletedTaskLoading, setTaskId } =
     useSpace();
 
-  console.log(allUserCompletedTask);
-
   if (task_id) {
     setTaskId(task_id);
   }
@@ -53,8 +51,6 @@ const ProfViewActivityPage = () => {
   const currentTask = uploadedTasks.find(
     (t) => Number(t.task_id) === Number(task_id),
   );
-
-  console.log(currentTask);
 
   // Decode URL parameters
   const decodedSpaceName = decodeURIComponent(space_name || "");

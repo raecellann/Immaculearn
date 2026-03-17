@@ -5,7 +5,12 @@ import { useUser } from "../../contexts/user/useUser";
 import { useSpaceTheme } from "../../contexts/theme/useSpaceTheme";
 
 const GradeViewing = () => {
-  const { courseSpaces, one_student_remarks, oneremarksLoading, setCurrentSpace } = useSpace();
+  const {
+    courseSpaces,
+    one_student_remarks,
+    oneremarksLoading,
+    setCurrentSpace,
+  } = useSpace();
   const { user } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
@@ -33,7 +38,6 @@ const GradeViewing = () => {
   }, []);
 
   const handleViewGrades = async (space) => {
-    console.log(space);
     setCurrentSpace(space);
     setSelectedSubject(space);
     setStudentGrades([]);
@@ -42,7 +46,9 @@ const GradeViewing = () => {
   useEffect(() => {
     if (!selectedSubject) return;
     if (oneremarksLoading) return;
-    setStudentGrades(Array.isArray(one_student_remarks) ? one_student_remarks : []);
+    setStudentGrades(
+      Array.isArray(one_student_remarks) ? one_student_remarks : [],
+    );
   }, [one_student_remarks, oneremarksLoading, selectedSubject]);
 
   // Get grade color based on value
@@ -56,7 +62,8 @@ const GradeViewing = () => {
   // Get display value for grade with N/A logic
   const getGradeDisplay = (grades, currentPeriod) => {
     // Check if any period has a grade
-    const hasAnyGrade = grades.prelim || grades.midterm || grades.prefinals || grades.finals;
+    const hasAnyGrade =
+      grades.prelim || grades.midterm || grades.prefinals || grades.finals;
 
     if (!hasAnyGrade) return "-";
 
@@ -69,8 +76,8 @@ const GradeViewing = () => {
 
   // Check if all four quarters are completed
   const areAllQuartersCompleted = (grades) => {
-    const quarters = ['prelim', 'midterm', 'prefinals', 'finals'];
-    return quarters.every(quarter => {
+    const quarters = ["prelim", "midterm", "prefinals", "finals"];
+    return quarters.every((quarter) => {
       const grade = grades[quarter];
       return grade && grade !== "-" && grade !== "N/A" && grade !== "";
     });
@@ -79,16 +86,20 @@ const GradeViewing = () => {
   // Calculate final average (college numerical grading scale)
   const calculateFinalAverage = (grades) => {
     if (!areAllQuartersCompleted(grades)) return "-";
-    
+
     const validGrades = [];
-    
+
     if (grades.prelim && grades.prelim !== "-" && grades.prelim !== "N/A") {
       validGrades.push(parseFloat(grades.prelim));
     }
     if (grades.midterm && grades.midterm !== "-" && grades.midterm !== "N/A") {
       validGrades.push(parseFloat(grades.midterm));
     }
-    if (grades.prefinals && grades.prefinals !== "-" && grades.prefinals !== "N/A") {
+    if (
+      grades.prefinals &&
+      grades.prefinals !== "-" &&
+      grades.prefinals !== "N/A"
+    ) {
       validGrades.push(parseFloat(grades.prefinals));
     }
     if (grades.finals && grades.finals !== "-" && grades.finals !== "N/A") {
@@ -96,18 +107,19 @@ const GradeViewing = () => {
     }
 
     if (validGrades.length === 0) return "-";
-    
-    const average = validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
-    
+
+    const average =
+      validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
+
     // If average is 3.5 or higher, mark as failed
     if (average >= 3.5) {
       return "5.00";
     }
-    
+
     const validGradeValues = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0];
     let closestGrade = validGradeValues[0];
     let minDiff = Math.abs(average - closestGrade);
-    
+
     for (const grade of validGradeValues) {
       const diff = Math.abs(average - grade);
       if (diff < minDiff) {
@@ -115,7 +127,7 @@ const GradeViewing = () => {
         closestGrade = grade;
       }
     }
-    
+
     return closestGrade.toFixed(2);
   };
 
@@ -124,10 +136,10 @@ const GradeViewing = () => {
   // Determine pass/fail status
   const getPassFailStatus = (grades) => {
     if (!areAllQuartersCompleted(grades)) return "-";
-    
+
     const average = calculateFinalAverage(grades);
     if (average === "-") return "-";
-    
+
     const numAverage = parseFloat(average);
     return numAverage <= 3.0 ? "PASSED" : "FAILED";
   };
@@ -145,12 +157,29 @@ const GradeViewing = () => {
     if (!fullName) return "";
     const parts = fullName.trim().split(/\s+/);
     if (parts.length === 1) return fullName;
-    
+
     // Handle common compound last names that start with lowercase particles
-    const compoundLastNames = ['de', 'del', 'de la', 'dela', 'delos', 'dos', 'da','san','santa', 'sta.', 'do', 'di', 'von', 'van', 'le', 'la'];
-    
+    const compoundLastNames = [
+      "de",
+      "del",
+      "de la",
+      "dela",
+      "delos",
+      "dos",
+      "da",
+      "san",
+      "santa",
+      "sta.",
+      "do",
+      "di",
+      "von",
+      "van",
+      "le",
+      "la",
+    ];
+
     let surnameEndIndex = parts.length - 1;
-    
+
     // Check if the second to last part is a compound last name particle
     if (parts.length >= 2) {
       const secondToLast = parts[parts.length - 2].toLowerCase();
@@ -158,10 +187,10 @@ const GradeViewing = () => {
         surnameEndIndex = parts.length - 2;
       }
     }
-    
-    const surname = parts.slice(surnameEndIndex).join(' ');
-    const givenNames = parts.slice(0, surnameEndIndex).join(' ');
-    
+
+    const surname = parts.slice(surnameEndIndex).join(" ");
+    const givenNames = parts.slice(0, surnameEndIndex).join(" ");
+
     return `${surname}, ${givenNames}`;
   };
 
@@ -435,7 +464,9 @@ const GradeViewing = () => {
                           <div
                             className="p-3 rounded-lg"
                             style={{
-                              backgroundColor: isDarkMode ? "#1F242D" : "#f8fafc",
+                              backgroundColor: isDarkMode
+                                ? "#1F242D"
+                                : "#f8fafc",
                             }}
                           >
                             <p
@@ -456,7 +487,9 @@ const GradeViewing = () => {
                           <div
                             className="p-3 rounded-lg col-span-2"
                             style={{
-                              backgroundColor: isDarkMode ? "#1F242D" : "#f8fafc",
+                              backgroundColor: isDarkMode
+                                ? "#1F242D"
+                                : "#f8fafc",
                             }}
                           >
                             <p

@@ -30,7 +30,6 @@ const LandingPage = () => {
   const run = async () => {
     const encrypted = await encryptData({ hello: "world" });
     const decrypted = await decryptData(encrypted);
-    console.log({ encrypted, decrypted });
   };
 
   run();
@@ -259,7 +258,8 @@ const LandingPage = () => {
               <Button
                 className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
                 style={{
-                  background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
+                  background:
+                    "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
                   borderRadius: "10px",
                   fontSize: "0.9rem sm:1rem",
                 }}
@@ -298,9 +298,7 @@ const LandingPage = () => {
             Connect with your classmates and teachers!
           </p>
 
-          <div className="mt-4 flex justify-start">
-            
-          </div>
+          <div className="mt-4 flex justify-start"></div>
         </div>
       </div>
 
@@ -390,7 +388,8 @@ const LandingPage = () => {
                 <Button
                   className="px-5 sm:px-6 py-3 shadow-lg text-sm sm:text-base"
                   style={{
-                    background: "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
+                    background:
+                      "linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)",
                     borderRadius: "10px",
                     fontSize: "0.9rem sm:1rem",
                   }}
@@ -546,11 +545,14 @@ const LandingPage = () => {
       </style>
 
       {/* BENEFITS SECTION */}
-      <section id="benefits" className="w-full bg-[#FDFBEE] 
+      <section
+        id="benefits"
+        className="w-full bg-[#FDFBEE] 
       pt-24 sm:pt-32 md:pt-40 lg:pt-16 
       pb-8 sm:pb-12 md:pb-14 lg:pb-16 
       px-4 sm:px-8 md:px-12 lg:px-24 
-      relative">
+      relative"
+      >
         <div className="mb-6 w-max">
           <div className="bg-[#FFE486] px-8 py-3 rounded-full shadow-md text-left border-2 border-black">
             <h2 className="text-xl md:text-2xl font-bold font-grotesque text-black">
@@ -565,11 +567,12 @@ const LandingPage = () => {
           className="absolute left-0 bottom-0 w-48 z-0 hidden lg:block"
         />
 
-        <div className="flex flex-col md:flex-row flex-wrap lg:flex-nowrap 
+        <div
+          className="flex flex-col md:flex-row flex-wrap lg:flex-nowrap 
         justify-start items-start 
         gap-6 md:gap-8 lg:gap-10 
-        relative z-10">
-
+        relative z-10"
+        >
           {/* LEFT COLUMN */}
           <div className="grid grid-cols-1 gap-5">
             {[
@@ -653,10 +656,7 @@ const LandingPage = () => {
             />
           </div>
         </div>
-
       </section>
-
-      
 
       {/* ====================== FOOTER SECTION ====================== */}
       <div className="w-full mt-10 sm:mt-16 lg:mt-20 relative">

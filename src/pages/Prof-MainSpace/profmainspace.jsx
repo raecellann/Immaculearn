@@ -23,8 +23,6 @@ const ProfSpacePage = () => {
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
-  console.log(courseSpaces);
-
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -42,8 +40,8 @@ const ProfSpacePage = () => {
 
   // Inject CSS animations for SSR compatibility
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const style = document.createElement('style');
+    if (typeof window !== "undefined") {
+      const style = document.createElement("style");
       style.textContent = `
         @keyframes fadeIn {
           from {
@@ -87,7 +85,7 @@ const ProfSpacePage = () => {
         }
       `;
       document.head.appendChild(style);
-      
+
       return () => {
         // Cleanup style element on unmount
         if (style.parentNode) {
@@ -97,8 +95,6 @@ const ProfSpacePage = () => {
     }
   }, []);
 
-  
-  
   // Load cover photos from localStorage
   useEffect(() => {
     const loadCoverPhotos = () => {
@@ -187,9 +183,11 @@ const ProfSpacePage = () => {
   const handleDeleteSpace = async () => {
     try {
       const spaceUuid = showDeleteConfirm;
-      const space = userSpaces.find(s => s.space_uuid === spaceUuid);
+      const space = userSpaces.find((s) => s.space_uuid === spaceUuid);
       await deleteSpace(spaceUuid);
-      toast.success(`Space "${space?.space_name || 'Unknown'}" has been deleted successfully!`);
+      toast.success(
+        `Space "${space?.space_name || "Unknown"}" has been deleted successfully!`,
+      );
       setShowDeleteConfirm(null);
       setShowMenu(null);
     } catch (error) {
@@ -213,11 +211,11 @@ const ProfSpacePage = () => {
     if (!dialogMessage || !showArchiveDialog) return;
 
     setShowArchiveDialog(false);
-    
+
     try {
       await setArchive(dialogMessage.space_uuid);
       toast.success(
-        `Class "${dialogMessage.space_name}" has been archived successfully!`
+        `Class "${dialogMessage.space_name}" has been archived successfully!`,
       );
     } catch (error) {
       console.error("Failed to archive class:", error);
@@ -520,9 +518,11 @@ const ProfSpacePage = () => {
                 <Button
                   onClick={() => navigate("/prof/spaces/classroom/create")}
                   className="px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm"
-                  style={{ border: isDarkMode ? "1px solid white" : "1px solid black " }}
+                  style={{
+                    border: isDarkMode ? "1px solid white" : "1px solid black ",
+                  }}
                 >
-                  Create Space
+                  Create Course Space
                 </Button>
               </div>
             </div>
@@ -533,8 +533,7 @@ const ProfSpacePage = () => {
                 0 ? (
                   filterCourseSpacesByYear(courseSpaces, yearFilter)
                     .slice(0, showAllCourseSpaces ? undefined : 9)
-                    .map(
-                      (space, index) => (
+                    .map((space, index) => (
                       <div
                         key={index}
                         className="group rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer relative hover-lift"
@@ -594,21 +593,32 @@ const ProfSpacePage = () => {
                             >
                               Prof.{" "}
                               {capitalizeWords(
-                                space.professor?.name?.split(" ")[0] || space.professor?.first_name || "Unknown",
+                                space.professor?.name?.split(" ")[0] ||
+                                  space.professor?.first_name ||
+                                  "Unknown",
                               )}{" "}
-                              • {
-                                (() => {
-                                  const studentCount = space.members?.filter(member => member.role !== 'owner' && member.role !== 'professor').length || 0;
-                                  console.log(`Space ${space.space_name} - Total members: ${space.members?.length || 0}, Students: ${studentCount}`, space.members);
-                                  return studentCount;
-                                })()
-                              }{" "}
-                              {
-                                (() => {
-                                  const studentCount = space.members?.filter(member => member.role !== 'owner' && member.role !== 'professor').length || 0;
-                                  return studentCount > 1 ? "Students" : "Student";
-                                })()
-                              }
+                              •{" "}
+                              {(() => {
+                                const studentCount =
+                                  space.members?.filter(
+                                    (member) =>
+                                      member.role !== "owner" &&
+                                      member.role !== "professor",
+                                  ).length || 0;
+
+                                return studentCount;
+                              })()}{" "}
+                              {(() => {
+                                const studentCount =
+                                  space.members?.filter(
+                                    (member) =>
+                                      member.role !== "owner" &&
+                                      member.role !== "professor",
+                                  ).length || 0;
+                                return studentCount > 1
+                                  ? "Students"
+                                  : "Student";
+                              })()}
                             </p>
                             <p
                               className="text-xs mt-1"
@@ -631,7 +641,8 @@ const ProfSpacePage = () => {
                                 hour: "numeric",
                                 minute: "2-digit",
                                 hour12: true,
-                              })})
+                              })}
+                              )
                             </p>
                             <p
                               className="text-xs mt-1"
@@ -639,29 +650,90 @@ const ProfSpacePage = () => {
                                 color: isDarkMode ? "#9ca3af" : "#666666",
                               }}
                             >
-                              {space.space_course ? (() => {
-                                const courseOptions = [
-                                  { code: "BSIT", name: "Bachelor of Science in Information Technology" },
-                                  { code: "BSCS", name: "Bachelor of Science in Computer Science" },
-                                  { code: "BSIS", name: "Bachelor of Science in Information Systems" },
-                                  { code: "BSA", name: "Bachelor of Science in Accountancy" },
-                                  { code: "BSBA", name: "Bachelor of Science in Business Administration" },
-                                  { code: "BSHM", name: "Bachelor of Science in Hospitality Management" },
-                                  { code: "BSTM", name: "Bachelor of Science in Tourism Management" },
-                                  { code: "BSP", name: "Bachelor of Science in Psychology" },
-                                  { code: "BSN", name: "Bachelor of Science in Nursing" },
-                                  { code: "BSED", name: "Bachelor of Secondary Education" },
-                                  { code: "BEED", name: "Bachelor of Elementary Education" },
-                                  { code: "BSA", name: "Bachelor of Science in Architecture" },
-                                  { code: "BSCE", name: "Bachelor of Science in Civil Engineering" },
-                                  { code: "BSEE", name: "Bachelor of Science in Electrical Engineering" },
-                                  { code: "BSME", name: "Bachelor of Science in Mechanical Engineering" },
-                                  { code: "BSECE", name: "Bachelor of Science in Electronics Engineering" },
-                                  { code: "BSIE", name: "Bachelor of Science in Industrial Engineering" }
-                                ];
-                                const course = courseOptions.find(option => option.code === space.space_course);
-                                return course ? course.name : space.space_course;
-                              })() : (space.course || space.department || space.space_department || "")}
+                              {space.space_course
+                                ? (() => {
+                                    const courseOptions = [
+                                      {
+                                        code: "BSIT",
+                                        name: "Bachelor of Science in Information Technology",
+                                      },
+                                      {
+                                        code: "BSCS",
+                                        name: "Bachelor of Science in Computer Science",
+                                      },
+                                      {
+                                        code: "BSIS",
+                                        name: "Bachelor of Science in Information Systems",
+                                      },
+                                      {
+                                        code: "BSA",
+                                        name: "Bachelor of Science in Accountancy",
+                                      },
+                                      {
+                                        code: "BSBA",
+                                        name: "Bachelor of Science in Business Administration",
+                                      },
+                                      {
+                                        code: "BSHM",
+                                        name: "Bachelor of Science in Hospitality Management",
+                                      },
+                                      {
+                                        code: "BSTM",
+                                        name: "Bachelor of Science in Tourism Management",
+                                      },
+                                      {
+                                        code: "BSP",
+                                        name: "Bachelor of Science in Psychology",
+                                      },
+                                      {
+                                        code: "BSN",
+                                        name: "Bachelor of Science in Nursing",
+                                      },
+                                      {
+                                        code: "BSED",
+                                        name: "Bachelor of Secondary Education",
+                                      },
+                                      {
+                                        code: "BEED",
+                                        name: "Bachelor of Elementary Education",
+                                      },
+                                      {
+                                        code: "BSA",
+                                        name: "Bachelor of Science in Architecture",
+                                      },
+                                      {
+                                        code: "BSCE",
+                                        name: "Bachelor of Science in Civil Engineering",
+                                      },
+                                      {
+                                        code: "BSEE",
+                                        name: "Bachelor of Science in Electrical Engineering",
+                                      },
+                                      {
+                                        code: "BSME",
+                                        name: "Bachelor of Science in Mechanical Engineering",
+                                      },
+                                      {
+                                        code: "BSECE",
+                                        name: "Bachelor of Science in Electronics Engineering",
+                                      },
+                                      {
+                                        code: "BSIE",
+                                        name: "Bachelor of Science in Industrial Engineering",
+                                      },
+                                    ];
+                                    const course = courseOptions.find(
+                                      (option) =>
+                                        option.code === space.space_course,
+                                    );
+                                    return course
+                                      ? course.name
+                                      : space.space_course;
+                                  })()
+                                : space.course ||
+                                  space.department ||
+                                  space.space_department ||
+                                  ""}
                             </p>
                           </div>
                         </div>
@@ -703,8 +775,7 @@ const ProfSpacePage = () => {
                           )}
                         </div>
                       </div>
-                    ),
-                  )
+                    ))
                 ) : (
                   <div
                     className="col-span-full p-4 rounded-lg text-center"
@@ -741,19 +812,24 @@ const ProfSpacePage = () => {
                 </div>
               )}
             </div>
-            
+
             {/* View All Spaces Button */}
-            {courseSpaces && courseSpaces.length > 0 && filterCourseSpacesByYear(courseSpaces, yearFilter)?.length > 9 && (
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => setShowAllCourseSpaces(!showAllCourseSpaces)}
-                  className="hover:underline text-base font-medium transition-colors"
-                  style={{ color: isDarkMode ? "#60A5FA" : currentColors.accent }}
-                >
-                  {showAllCourseSpaces ? "Show Less" : "View All Spaces"}
-                </button>
-              </div>
-            )}
+            {courseSpaces &&
+              courseSpaces.length > 0 &&
+              filterCourseSpacesByYear(courseSpaces, yearFilter)?.length >
+                9 && (
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={() => setShowAllCourseSpaces(!showAllCourseSpaces)}
+                    className="hover:underline text-base font-medium transition-colors"
+                    style={{
+                      color: isDarkMode ? "#60A5FA" : currentColors.accent,
+                    }}
+                  >
+                    {showAllCourseSpaces ? "Show Less" : "View All Spaces"}
+                  </button>
+                </div>
+              )}
           </div>
 
           {/* Delete Confirmation Dialog */}
@@ -761,7 +837,14 @@ const ProfSpacePage = () => {
             isOpen={!!showDeleteConfirm}
             onClose={() => setShowDeleteConfirm(null)}
             onConfirm={handleDeleteSpace}
-            space={userSpaces.find(s => s.space_uuid === showDeleteConfirm) || { space_name: "Unknown Space", members: [], files: [], tasks: [] }}
+            space={
+              userSpaces.find((s) => s.space_uuid === showDeleteConfirm) || {
+                space_name: "Unknown Space",
+                members: [],
+                files: [],
+                tasks: [],
+              }
+            }
           />
 
           {/* Leave Space Confirmation Dialog */}
@@ -799,7 +882,6 @@ const ProfSpacePage = () => {
                   <button
                     onClick={() => {
                       // Handle leave action here
-                      console.log("Space left:", showLeaveConfirm);
                       setShowLeaveConfirm(null);
                       setShowMenu(null);
                     }}
@@ -817,7 +899,14 @@ const ProfSpacePage = () => {
             isOpen={showArchiveDialog}
             onClose={handleCancelArchive}
             onConfirm={handleConfirmArchive}
-            space={dialogMessage || { space_name: "", members: [], files: [], tasks: [] }}
+            space={
+              dialogMessage || {
+                space_name: "",
+                members: [],
+                files: [],
+                tasks: [],
+              }
+            }
           />
         </div>
       </div>

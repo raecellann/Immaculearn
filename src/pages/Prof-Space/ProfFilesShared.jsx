@@ -28,7 +28,7 @@ const FILE_TYPE_ICONS = {
   pdf: "📕",
   txt: "📝",
   rtf: "📄",
-  
+
   // Spreadsheet files
   xls: "📗",
   xlsx: "📗",
@@ -36,18 +36,18 @@ const FILE_TYPE_ICONS = {
   xlt: "📗",
   xltx: "📗",
   csv: "📗",
-  
+
   // Presentation files
   ppt: "📙",
   pptx: "📙",
   pps: "📙",
   ppsx: "📙",
   pptm: "📙",
-  
+
   // PDF forms
   xfdf: "📕",
   fdf: "📕",
-  
+
   // Default for other files
   default: "📄",
 };
@@ -79,37 +79,53 @@ const formatSize = (bytes) => {
 const validateFileForUpload = (file, isOwnerOrProfessor) => {
   // Only validate if user is owner or professor
   if (!isOwnerOrProfessor) return { isValid: true };
-  
+
   // Allowed file extensions
   const allowedExtensions = [
-    'doc', 'docx', 'dot', 'dotx', 'docm',
-    'ppt', 'pptx', 'pps', 'ppsx', 'pptm',
-    'pdf', 'xfdf', 'fdf',
-    'xls', 'xlsx', 'xlsm', 'xlt', 'xltx', 'csv'
+    "doc",
+    "docx",
+    "dot",
+    "dotx",
+    "docm",
+    "ppt",
+    "pptx",
+    "pps",
+    "ppsx",
+    "pptm",
+    "pdf",
+    "xfdf",
+    "fdf",
+    "xls",
+    "xlsx",
+    "xlsm",
+    "xlt",
+    "xltx",
+    "csv",
   ];
-  
+
   // Maximum file size (50MB)
   const maxSize = 50 * 1024 * 1024;
-  
+
   // Get file extension
-  const fileExtension = file.name.split('.').pop().toLowerCase();
-  
+  const fileExtension = file.name.split(".").pop().toLowerCase();
+
   // Check file extension
   if (!allowedExtensions.includes(fileExtension)) {
     return {
       isValid: false,
-      error: 'Only documents, spreadsheets, and presentations are allowed (PDF, DOC, PPT, XLS, CSV)'
+      error:
+        "Only documents, spreadsheets, and presentations are allowed (PDF, DOC, PPT, XLS, CSV)",
     };
   }
-  
+
   // Check file size
   if (file.size > maxSize) {
     return {
       isValid: false,
-      error: 'File size must be less than 50MB'
+      error: "File size must be less than 50MB",
     };
   }
-  
+
   return { isValid: true };
 };
 
@@ -318,7 +334,6 @@ const ProfFilesShared = () => {
   // Load saved cover photo from backend on component mount
   useEffect(() => {
     const savedCoverPhoto = currentSpace?.space_cover;
-    console.log("Loading cover photo:", savedCoverPhoto);
     if (savedCoverPhoto) {
       setCoverPhotoUrl(savedCoverPhoto);
     }
@@ -334,12 +349,15 @@ const ProfFilesShared = () => {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    
+
     const deltaY = e.clientY - dragStartY;
     const containerHeight = coverPhotoEditorRef.current?.offsetHeight || 400;
     const positionChange = (deltaY / containerHeight) * 100;
-    const newPosition = Math.max(0, Math.min(100, dragStartPosition - positionChange));
-    
+    const newPosition = Math.max(
+      0,
+      Math.min(100, dragStartPosition - positionChange),
+    );
+
     setCoverPhotoPosition(newPosition);
   };
 
@@ -352,13 +370,13 @@ const ProfFilesShared = () => {
     if (isDragging) {
       const handleGlobalMouseMove = (e) => handleMouseMove(e);
       const handleGlobalMouseUp = () => handleMouseUp();
-      
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-      
+
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+      document.addEventListener("mouseup", handleGlobalMouseUp);
+
       return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleGlobalMouseUp);
+        document.removeEventListener("mousemove", handleGlobalMouseMove);
+        document.removeEventListener("mouseup", handleGlobalMouseUp);
       };
     }
   }, [isDragging, dragStartY, dragStartPosition]);
@@ -374,9 +392,17 @@ const ProfFilesShared = () => {
     const file = event.target.files[0];
     if (file) {
       // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!validTypes.includes(file.type)) {
-        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
+        toast.error(
+          "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+        );
         return;
       }
 
@@ -406,12 +432,12 @@ const ProfFilesShared = () => {
 
   const handleConfirmCoverPhoto = () => {
     // Check if it's a gradient or an image
-    if (coverPhotoUrl && coverPhotoUrl.includes('gradient')) {
+    if (coverPhotoUrl && coverPhotoUrl.includes("gradient")) {
       // For gradients, save directly without canvas transformations
       // Backend will handle saving the space_cover
       setShowCoverPhotoEditor(false);
       setShowCoverPhotoConfirm(false);
-      
+
       addNotification({
         type: "success",
         title: "Cover Photo Updated",
@@ -420,36 +446,39 @@ const ProfFilesShared = () => {
       });
     } else {
       // For images, create canvas to apply transformations
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
       const img = new Image();
-      
+
       img.onload = () => {
         // Set canvas size to cover photo dimensions
         canvas.width = 1200;
         canvas.height = 400;
-        
+
         // Calculate scale to cover the entire canvas
-        const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+        const scale = Math.max(
+          canvas.width / img.width,
+          canvas.height / img.height,
+        );
         const scaledWidth = img.width * scale;
         const scaledHeight = img.height * scale;
-        
+
         // Calculate position based on user vertical positioning
         const x = (canvas.width - scaledWidth) / 2;
         const y = (canvas.height - scaledHeight) * (coverPhotoPosition / 100);
-        
+
         // Draw the image with transformations
         ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-        
+
         // Convert to data URL and update
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
         setCoverPhotoUrl(dataUrl);
-        
+
         // Backend will handle saving the space_cover
-        
+
         setShowCoverPhotoEditor(false);
         setShowCoverPhotoConfirm(false);
-        
+
         addNotification({
           type: "success",
           title: "Cover Photo Updated",
@@ -457,7 +486,7 @@ const ProfFilesShared = () => {
           duration: 3000,
         });
       };
-      
+
       img.src = coverPhotoUrl;
     }
   };
@@ -473,7 +502,7 @@ const ProfFilesShared = () => {
     setCoverPhotoUrl(previousCoverPhotoUrl);
     setCoverPhotoPosition(50);
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -483,7 +512,7 @@ const ProfFilesShared = () => {
     setCoverPhotoUrl(gradient);
     setShowCoverPhotoConfirm(true); // Show confirmation dialog for gradients
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -493,7 +522,7 @@ const ProfFilesShared = () => {
     setCoverPhotoPosition(50);
     // Backend will handle removing the space_cover
     if (coverPhotoInputRef.current) {
-      coverPhotoInputRef.current.value = '';
+      coverPhotoInputRef.current.value = "";
     }
   };
 
@@ -530,7 +559,8 @@ const ProfFilesShared = () => {
     }
 
     // Check if user is owner or professor (in course space)
-    const isCourseSpace = currentSpace?.space_type === "course" || currentSpace?.space_day;
+    const isCourseSpace =
+      currentSpace?.space_type === "course" || currentSpace?.space_day;
     const isOwnerOrProfessor = isOwnerSpace || isCourseSpace;
 
     // Validate files if user is owner or professor
@@ -658,7 +688,6 @@ const ProfFilesShared = () => {
 
   const handleOpenFile = (file) =>
     navigate(
-         
       `/prof/space/${space_uuid}/${space_name}/files/${file.file_name}/${file.file_id}`,
     );
 
@@ -737,8 +766,9 @@ const ProfFilesShared = () => {
     if (!currentSpace) return;
 
     // Check if it's a course space
-    const isCourseSpace = currentSpace?.space_type === "course" || currentSpace?.space_day;
-    
+    const isCourseSpace =
+      currentSpace?.space_type === "course" || currentSpace?.space_day;
+
     if (isCourseSpace) {
       // Show archive confirmation dialog for course spaces
       setDialogMessage(currentSpace);
@@ -772,7 +802,9 @@ const ProfFilesShared = () => {
       // Use the archive function instead of delete
       await setArchive(currentSpace.space_uuid);
 
-      toast.success(`Class "${currentSpace.space_name}" has been archived successfully!`);
+      toast.success(
+        `Class "${currentSpace.space_name}" has been archived successfully!`,
+      );
 
       // Navigate to archive page after successful archiving
       navigate("/prof/archive");
@@ -877,21 +909,21 @@ const ProfFilesShared = () => {
         <div className="lg:hidden h-16" />
 
         {/* COVER */}
-        <div 
+        <div
           className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
           onClick={handleCoverPhotoClick}
         >
           {coverPhotoUrl ? (
             <>
-              {coverPhotoUrl.includes('gradient') ? (
+              {coverPhotoUrl.includes("gradient") ? (
                 <div
                   className="w-full h-full"
                   style={{ background: coverPhotoUrl }}
                 />
               ) : (
-                <img 
-                  src={coverPhotoUrl} 
-                  alt="Space Cover" 
+                <img
+                  src={coverPhotoUrl}
+                  alt="Space Cover"
                   className="w-full h-full object-cover"
                 />
               )}
@@ -931,76 +963,99 @@ const ProfFilesShared = () => {
         </div>
 
         {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
-        {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
-        <div
-          className="lg:hidden px-4 py-3 border-b"
-          style={{
-            backgroundColor: c.surface + "CC", // Add 80% opacity
-            borderColor: c.border + "CC", // Add 80% opacity to border
-            backdropFilter: "blur(8px)"
-          }}
-        >
-          <div className="flex flex-col gap-2">
-            {/* Schedule */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: c.text }}>
-                Schedule
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: c.textSecondary }}>
-                {currentSpace?.space_day || "TBD"} (
-                {currentSpace?.space_time_start ? new Date(
-                  `2000-01-01T${currentSpace.space_time_start}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"}{" "}
-                -{" "}
-                {currentSpace?.space_time_end ? new Date(
-                  `2000-01-01T${currentSpace.space_time_end}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"})
-              </span>
-            </div>
-
-            {/* Section */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: c.text }}>
-                Section
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: c.textSecondary }}>
-                {currentSpace?.space_section ||
-                  currentSpace?.section ||
-                  currentSpace?.class_section ||
-                  currentSpace?.section_name ||
-                  currentSpace?.course_section ||
-                  currentSpace?.subject_section ||
-                  currentSpace?.space_block ||
-                  currentSpace?.block ||
-                  "N/A"
-                }
-              </span>
-            </div>
-
-            {/* Description */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: c.text }}>
-                Description
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: c.textSecondary }}>
-                {currentSpace?.space_description || 
-                  (currentSpace?.space_type === "course" 
-                    ? "Course space for lectures, assignments, and discussions."
-                    : "Collaborative space for sharing ideas and resources."
+        {(currentSpace?.space_type === "course" ||
+          currentSpace?.space_day ||
+          currentSpace?.space_section ||
+          currentSpace?.space_schedule) && (
+          <div
+            className="lg:hidden px-4 py-3 border-b"
+            style={{
+              backgroundColor: c.surface + "CC", // Add 80% opacity
+              borderColor: c.border + "CC", // Add 80% opacity to border
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <div className="flex flex-col gap-2">
+              {/* Schedule */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: c.text }}
+                >
+                  Schedule
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: c.textSecondary }}
+                >
+                  {currentSpace?.space_day || "TBD"} (
+                  {currentSpace?.space_time_start
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_start}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}{" "}
+                  -{" "}
+                  {currentSpace?.space_time_end
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_end}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}
                   )
-                }
-              </span>
+                </span>
+              </div>
+
+              {/* Section */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: c.text }}
+                >
+                  Section
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: c.textSecondary }}
+                >
+                  {currentSpace?.space_section ||
+                    currentSpace?.section ||
+                    currentSpace?.class_section ||
+                    currentSpace?.section_name ||
+                    currentSpace?.course_section ||
+                    currentSpace?.subject_section ||
+                    currentSpace?.space_block ||
+                    currentSpace?.block ||
+                    "N/A"}
+                </span>
+              </div>
+
+              {/* Description */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: c.text }}
+                >
+                  Description
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: c.textSecondary }}
+                >
+                  {currentSpace?.space_description ||
+                    (currentSpace?.space_type === "course"
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources.")}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
         )}
 
         <div className="p-4 sm:p-6">
@@ -1024,7 +1079,14 @@ const ProfFilesShared = () => {
                     <Button text="Pending Invites" />
                   </div>
                   <div onClick={handleDeleteRoom}>
-                    <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
+                    <Button
+                      text={
+                        currentSpace?.space_type === "course" ||
+                        currentSpace?.space_day
+                          ? "Archive Class"
+                          : "Delete Room"
+                      }
+                    />
                   </div>
                 </>
               )}
@@ -1062,77 +1124,94 @@ const ProfFilesShared = () => {
             </div>
 
             {/* SPACE INFO SECTION - Right Side */}
-            {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
-            <div 
-              className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
-              style={{
-                backgroundColor: c.surface + "CC", // Add 80% opacity (CC in hex)
-                borderColor: c.border + "CC", // Add 80% opacity to border
-                maxWidth: "1000px",
-                backdropFilter: "blur(8px)" // Add subtle blur for better readability
-              }}
-            >
-              <div className="grid grid-cols-3 gap-2">
-                {/* Schedule */}
-                <div>
-                  <h3 className="font-semibold text-sm mb-2" style={{ color: c.text }}>
-                    Schedule
-                  </h3>
-                  <p className="text-sm" style={{ color: c.textSecondary }}>
-                    {currentSpace?.space_day || "TBD"} (
-                    {currentSpace?.space_time_start ? new Date(
-                      `2000-01-01T${currentSpace.space_time_start}`,
-                    ).toLocaleTimeString([], {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    }) : "TBD"}{" "}
-                    -{" "}
-                    {currentSpace?.space_time_end ? new Date(
-                      `2000-01-01T${currentSpace.space_time_end}`,
-                    ).toLocaleTimeString([], {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    }) : "TBD"})
-                  </p>
-                </div>
-
-                {/* Section */}
-                <div>
-                  <h3 className="font-semibold text-sm mb-2" style={{ color: c.text }}>
-                    Section
-                  </h3>
-                  <p className="text-sm" style={{ color: c.textSecondary }}>
-                    {currentSpace?.space_section ||
-                      currentSpace?.section ||
-                      currentSpace?.class_section ||
-                      currentSpace?.section_name ||
-                      currentSpace?.course_section ||
-                      currentSpace?.subject_section ||
-                      currentSpace?.space_block ||
-                      currentSpace?.block ||
-                      "N/A"
-                    }
-                  </p>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <h3 className="font-semibold text-sm mb-2" style={{ color: c.text }}>
-                    Description
-                  </h3>
-                  <p className="text-sm line-clamp-3" style={{ color: c.textSecondary }}>
-                    {currentSpace?.space_description || 
-                      (currentSpace?.space_type === "course" 
-                        ? "Course space for lectures, assignments, and discussions."
-                        : "Collaborative space for sharing ideas and resources."
+            {(currentSpace?.space_type === "course" ||
+              currentSpace?.space_day ||
+              currentSpace?.space_section ||
+              currentSpace?.space_schedule) && (
+              <div
+                className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
+                style={{
+                  backgroundColor: c.surface + "CC", // Add 80% opacity (CC in hex)
+                  borderColor: c.border + "CC", // Add 80% opacity to border
+                  maxWidth: "1000px",
+                  backdropFilter: "blur(8px)", // Add subtle blur for better readability
+                }}
+              >
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Schedule */}
+                  <div>
+                    <h3
+                      className="font-semibold text-sm mb-2"
+                      style={{ color: c.text }}
+                    >
+                      Schedule
+                    </h3>
+                    <p className="text-sm" style={{ color: c.textSecondary }}>
+                      {currentSpace?.space_day || "TBD"} (
+                      {currentSpace?.space_time_start
+                        ? new Date(
+                            `2000-01-01T${currentSpace.space_time_start}`,
+                          ).toLocaleTimeString([], {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true,
+                          })
+                        : "TBD"}{" "}
+                      -{" "}
+                      {currentSpace?.space_time_end
+                        ? new Date(
+                            `2000-01-01T${currentSpace.space_time_end}`,
+                          ).toLocaleTimeString([], {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true,
+                          })
+                        : "TBD"}
                       )
-                    }
-                  </p>
+                    </p>
+                  </div>
+
+                  {/* Section */}
+                  <div>
+                    <h3
+                      className="font-semibold text-sm mb-2"
+                      style={{ color: c.text }}
+                    >
+                      Section
+                    </h3>
+                    <p className="text-sm" style={{ color: c.textSecondary }}>
+                      {currentSpace?.space_section ||
+                        currentSpace?.section ||
+                        currentSpace?.class_section ||
+                        currentSpace?.section_name ||
+                        currentSpace?.course_section ||
+                        currentSpace?.subject_section ||
+                        currentSpace?.space_block ||
+                        currentSpace?.block ||
+                        "N/A"}
+                    </p>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <h3
+                      className="font-semibold text-sm mb-2"
+                      style={{ color: c.text }}
+                    >
+                      Description
+                    </h3>
+                    <p
+                      className="text-sm line-clamp-3"
+                      style={{ color: c.textSecondary }}
+                    >
+                      {currentSpace?.space_description ||
+                        (currentSpace?.space_type === "course"
+                          ? "Course space for lectures, assignments, and discussions."
+                          : "Collaborative space for sharing ideas and resources.")}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
             )}
           </div>
 
@@ -1193,7 +1272,14 @@ const ProfFilesShared = () => {
                 <Button text="Pending Invites" />
               </div>
               <div onClick={handleDeleteRoom}>
-                <Button text={currentSpace?.space_type === "course" || currentSpace?.space_day ? "Archive Class" : "Delete Room"} />
+                <Button
+                  text={
+                    currentSpace?.space_type === "course" ||
+                    currentSpace?.space_day
+                      ? "Archive Class"
+                      : "Delete Room"
+                  }
+                />
               </div>
             </div>
           )}
@@ -1451,7 +1537,9 @@ const ProfFilesShared = () => {
                                         color: c.textSecondary,
                                       }}
                                     >
-                                      {file.file_size ? `${(file.file_size / 1024).toFixed(2)} KB` : 'Unknown size'}
+                                      {file.file_size
+                                        ? `${(file.file_size / 1024).toFixed(2)} KB`
+                                        : "Unknown size"}
                                     </div>
                                     {/* Actions */}
                                     <div
@@ -1976,7 +2064,9 @@ const ProfFilesShared = () => {
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Change Cover Photo</h2>
+              <h2 className="text-lg font-semibold text-white">
+                Change Cover Photo
+              </h2>
               <button
                 onClick={handleCoverPhotoCancel}
                 className="text-gray-400 hover:text-white p-1 bg-transparent"
@@ -1989,7 +2079,9 @@ const ProfFilesShared = () => {
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Gradient Options */}
               <div className="mb-6">
-                <p className="text-sm font-medium text-white mb-3">Color & Gradient</p>
+                <p className="text-sm font-medium text-white mb-3">
+                  Color & Gradient
+                </p>
                 <div className="grid grid-cols-4 gap-2">
                   {colorOptions.map((color, i) => (
                     <div
@@ -2003,18 +2095,20 @@ const ProfFilesShared = () => {
               </div>
 
               {/* Image Positioning (only show if it's an image, not gradient) */}
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <div className="mb-6">
-                  <p className="text-sm font-medium text-white mb-3">Position Image</p>
+                  <p className="text-sm font-medium text-white mb-3">
+                    Position Image
+                  </p>
                   <div className="relative w-full h-48 bg-gray-800 rounded-lg overflow-hidden">
                     <div
                       ref={coverPhotoEditorRef}
-                      className={`relative w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+                      className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
                       style={{
                         backgroundImage: `url(${coverPhotoUrl})`,
-                        backgroundSize: 'cover',
+                        backgroundSize: "cover",
                         backgroundPosition: `center ${coverPhotoPosition}%`,
-                        backgroundRepeat: 'no-repeat',
+                        backgroundRepeat: "no-repeat",
                       }}
                       onMouseDown={handleMouseDown}
                     />
@@ -2040,7 +2134,7 @@ const ProfFilesShared = () => {
               >
                 Cancel
               </button>
-              {coverPhotoUrl && !coverPhotoUrl.includes('gradient') && (
+              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
                 <button
                   onClick={handleCoverPhotoSave}
                   className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
@@ -2059,13 +2153,16 @@ const ProfFilesShared = () => {
           <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-gray-700">
-              <h2 className="text-lg font-semibold text-white">Change Cover Photo?</h2>
+              <h2 className="text-lg font-semibold text-white">
+                Change Cover Photo?
+              </h2>
             </div>
 
             {/* Content */}
             <div className="p-4">
               <p className="text-gray-300">
-                Do you want to change the cover photo for this space with the image you uploaded?
+                Do you want to change the cover photo for this space with the
+                image you uploaded?
               </p>
             </div>
 
