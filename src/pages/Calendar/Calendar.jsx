@@ -94,7 +94,13 @@ const CalendarPage = () => {
   };
 
   const formatDate = (date) => {
-    return date.toISOString().split("T")[0];
+    return (
+      date.getFullYear() +
+      "-" +
+      String(date.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(date.getDate()).padStart(2, "0")
+    );
   };
 
   const getActivitiesForDate = (date) => {
@@ -102,7 +108,15 @@ const CalendarPage = () => {
     return allUploadedTasks?.filter((task) => {
       if (!task.due_date) return false;
       // Handle different date formats - ensure consistent comparison
-      const taskDueDate = new Date(task.due_date).toISOString().split("T")[0];
+      // console.log(task.due_date);
+      const taskDateObj = new Date(task.due_date);
+      const taskDueDate =
+        taskDateObj.getFullYear() +
+        "-" +
+        String(taskDateObj.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(taskDateObj.getDate()).padStart(2, "0");
+
       return taskDueDate === dateStr;
     });
   };
@@ -229,6 +243,8 @@ const CalendarPage = () => {
       );
       const dayTasks = getActivitiesForDate(date);
       const dayActivities = dayTasks.map(mapTaskToActivity);
+
+      // console.log(dayActivities);
       const isToday = date.toDateString() === today.toDateString();
       const isSelected = date.toDateString() === selectedDate.toDateString();
 

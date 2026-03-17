@@ -32,8 +32,6 @@ const QuizBuilder = ({
   const [selectedLesson, setSelectedLesson] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
   const [showUpdateConfirmation, setShowUpdateConfirmation] = useState(false);
-  const [showDeleteTestConfirmation, setShowDeleteTestConfirmation] = useState(false);
-  const [testToDelete, setTestToDelete] = useState(null);
 
   const getLocalDateTimeMin = () => {
     const now = new Date();
@@ -49,12 +47,7 @@ const QuizBuilder = ({
       options: ["", "", ""],
       correctAnswer: 0,
       points: 1,
-      testGroup: "Test I",
     },
-  ]);
-
-  const [testGroups, setTestGroups] = useState([
-    { id: "Test I", title: "Test I", questionCount: 0 },
   ]);
 
   // Populate form with editing task data
@@ -251,7 +244,7 @@ const QuizBuilder = ({
     { value: "identification", label: "Identification" },
   ];
 
-  const addQuestion = (testGroup = "Test I") => {
+  const addQuestion = () => {
     const newQuestion = {
       id: questions.length + 1,
       type: "multiple-choice",
@@ -260,119 +253,13 @@ const QuizBuilder = ({
       correctAnswer: 0,
       points: 1,
       correctAnswers: [""], // For identification type questions
-      testGroup,
     };
     setQuestions([...questions, newQuestion]);
-    updateTestGroupCounts();
   };
-
-  const addTestGroup = () => {
-    const testNumber = testGroups.length + 1;
-    const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
-    const newTestId = `Test ${romanNumerals[testNumber - 1] || testNumber}`;
-    const newTestGroup = { id: newTestId, title: newTestId, questionCount: 0 };
-    setTestGroups([...testGroups, newTestGroup]);
-  };
-
-  const removeTestGroup = (testGroupId) => {
-    const testGroup = testGroups.find(tg => tg.id === testGroupId);
-    const testQuestions = questions.filter(q => q.testGroup === testGroupId);
-    
-    if (testQuestions.length > 0) {
-      setTestToDelete({ id: testGroupId, title: testGroup.title, questionCount: testQuestions.length });
-      setShowDeleteTestConfirmation(true);
-    } else {
-      // If no questions, delete immediately and re-index
-      if (testGroups.length > 1) {
-        const updatedTestGroups = testGroups.filter(tg => tg.id !== testGroupId);
-        
-        // Re-index remaining test groups with proper Roman numerals
-        const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
-        const reindexedTestGroups = updatedTestGroups.map((tg, index) => {
-          const newTitle = `Test ${romanNumerals[index] || index + 1}`;
-          const newId = newTitle;
-          
-          // Update all questions in this test group to use the new test group ID
-          const updatedQuestions = questions.map(q => {
-            if (q.testGroup === tg.id) {
-              return { ...q, testGroup: newId };
-            }
-            return q;
-          });
-          
-          // Update questions state with the new test group assignments
-          setQuestions(updatedQuestions);
-          
-          return {
-            ...tg,
-            id: newId,
-            title: newTitle
-          };
-        });
-        
-        setTestGroups(reindexedTestGroups);
-        updateTestGroupCounts();
-      }
-    }
-  };
-
-  const confirmDeleteTest = () => {
-    if (testToDelete && testGroups.length > 1) {
-      // Remove the test group
-      const updatedTestGroups = testGroups.filter(tg => tg.id !== testToDelete.id);
-      
-      // Re-index remaining test groups with proper Roman numerals
-      const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
-      const reindexedTestGroups = updatedTestGroups.map((tg, index) => {
-        const newTitle = `Test ${romanNumerals[index] || index + 1}`;
-        const newId = newTitle;
-        
-        // Update all questions in this test group to use the new test group ID
-        const updatedQuestions = questions.map(q => {
-          if (q.testGroup === tg.id) {
-            return { ...q, testGroup: newId };
-          }
-          return q;
-        });
-        
-        // Update questions state with the new test group assignments
-        setQuestions(updatedQuestions);
-        
-        return {
-          ...tg,
-          id: newId,
-          title: newTitle
-        };
-      });
-      
-      setTestGroups(reindexedTestGroups);
-      updateTestGroupCounts();
-    }
-    setShowDeleteTestConfirmation(false);
-    setTestToDelete(null);
-  };
-
-  const cancelDeleteTest = () => {
-    setShowDeleteTestConfirmation(false);
-    setTestToDelete(null);
-  };
-
-  const updateTestGroupCounts = () => {
-    const updatedCounts = testGroups.map(tg => ({
-      ...tg,
-      questionCount: questions.filter(q => q.testGroup === tg.id).length
-    }));
-    setTestGroups(updatedCounts);
-  };
-
-  useEffect(() => {
-    updateTestGroupCounts();
-  }, [questions]);
 
   const removeQuestion = (id) => {
     if (questions.length > 1) {
       setQuestions(questions.filter((q) => q.id !== id));
-      updateTestGroupCounts();
     }
   };
 
@@ -747,7 +634,7 @@ const QuizBuilder = ({
       combinedDueDate = new Date(dueDate).toISOString();
     }
 
-    // Format questions according to the specified structure with test groups
+    // Format questions according to the specified structure
     const formattedQuestions = questions.map((question) => {
       const questionData = {
         question_type:
@@ -760,7 +647,6 @@ const QuizBuilder = ({
                 : question.type,
         question: question.question,
         point: question.points || 1,
-        test_group: question.testGroup || "Test I",
       };
 
       // Handle different question types
@@ -835,7 +721,7 @@ const QuizBuilder = ({
       combinedDueDate = new Date(dueDate).toISOString();
     }
 
-    // Format questions according to the specified structure with test groups
+    // Format questions according to the specified structure
     const formattedQuestions = questions.map((question) => {
       const questionData = {
         question_type:
@@ -848,7 +734,6 @@ const QuizBuilder = ({
                 : question.type,
         question: question.question,
         point: question.points || 1,
-        test_group: question.testGroup || "Test I",
       };
 
       // Handle different question types
@@ -1115,236 +1000,145 @@ const QuizBuilder = ({
 
         {/* QUESTIONS */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <h2
               className="text-xl font-semibold"
               style={{ color: currentColors.text }}
             >
               Questions
             </h2>
-            <button
-              type="button"
-              onClick={addTestGroup}
-              className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors"
-            >
-              <FiPlus size={14} /> Add Test
-            </button>
           </div>
 
-          {testGroups.map((testGroup, testIndex) => {
-            const testQuestions = questions.filter(q => q.testGroup === testGroup.id);
-            return (
-              <div key={testGroup.id} className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-lg border"
-                  style={{
-                    borderColor: currentColors.border,
-                    backgroundColor: currentColors.surface,
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <h3
-                      className="text-lg font-semibold"
+          {questions.map((question, index) => (
+            <div
+              key={question.id}
+              className="border rounded-lg p-4 sm:p-6"
+              style={{
+                borderColor: currentColors.border,
+                backgroundColor: currentColors.background,
+              }}
+            >
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <span
+                    className="font-semibold text-sm sm:text-base"
+                    style={{ color: currentColors.text }}
+                  >
+                    Q{index + 1}
+                  </span>
+                  <select
+                    value={question.type}
+                    onChange={(e) =>
+                      updateQuestion(question.id, "type", e.target.value)
+                    }
+                    className="rounded-lg px-3 py-1.5 outline-none border text-xs sm:text-sm w-full sm:w-auto"
+                    style={{
+                      backgroundColor: currentColors.surface,
+                      color: currentColors.text,
+                      borderColor: currentColors.border,
+                    }}
+                  >
+                    {questionTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-2">
+                    <label
+                      className="text-xs sm:text-sm"
                       style={{ color: currentColors.text }}
                     >
-                      {testGroup.title}
-                    </h3>
-                    <span
-                      className="px-2 py-1 rounded-full text-xs font-medium"
+                      Points:
+                    </label>
+                    <input
+                      type="number"
+                      value={question.points}
+                      onChange={(e) =>
+                        updateQuestion(
+                          question.id,
+                          "points",
+                          Number(e.target.value),
+                        )
+                      }
+                      className="w-14 sm:w-16 rounded px-2 py-1.5 outline-none border text-xs sm:text-sm text-center"
                       style={{
-                        backgroundColor: currentColors.background,
-                        color: currentColors.textSecondary,
-                        border: `1px solid ${currentColors.border}`,
-                      }}
-                    >
-                      {testQuestions.length} question{testQuestions.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={testGroup.id}
-                      onChange={(e) => {
-                        const newTestGroup = e.target.value;
-                        testQuestions.forEach(q => {
-                          updateQuestion(q.id, "testGroup", newTestGroup);
-                        });
-                      }}
-                      className="rounded-lg px-2 py-1 outline-none border text-xs"
-                      style={{
-                        backgroundColor: currentColors.background,
+                        backgroundColor: currentColors.surface,
                         color: currentColors.text,
                         borderColor: currentColors.border,
                       }}
-                    >
-                      {testGroups.map(tg => (
-                        <option key={tg.id} value={tg.id}>
-                          Move to {tg.title}
-                        </option>
-                      ))}
-                    </select>
-                    {testGroups.length > 1 && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => removeTestGroup(testGroup.id)}
-                          className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
-                          style={{
-                            backgroundColor: "transparent",
-                            border: `1px solid #dc2626`,
-                          }}
-                        >
-                          <FiTrash2 size={12} />
-                          Remove Test
-                        </button>
-                      </>
-                    )}
+                      min="1"
+                    />
                   </div>
                 </div>
-
-                {testQuestions.map((question, index) => (
-                  <div
-                    key={question.id}
-                    className="border rounded-lg p-4 sm:p-6 ml-4"
-                    style={{
-                      borderColor: currentColors.border,
-                      backgroundColor: currentColors.background,
-                    }}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0 mb-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                        <span
-                          className="font-semibold text-sm sm:text-base"
-                          style={{ color: currentColors.text }}
-                        >
-                          Q{index + 1}
-                        </span>
-                        <select
-                          value={question.type}
-                          onChange={(e) =>
-                            updateQuestion(question.id, "type", e.target.value)
-                          }
-                          className="rounded-lg px-3 py-1.5 outline-none border text-xs sm:text-sm w-full sm:w-auto"
-                          style={{
-                            backgroundColor: currentColors.surface,
-                            color: currentColors.text,
-                            borderColor: currentColors.border,
-                          }}
-                        >
-                          {questionTypes.map((type) => (
-                            <option key={type.value} value={type.value}>
-                              {type.label}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="flex items-center gap-2">
-                          <label
-                            className="text-xs sm:text-sm"
-                            style={{ color: currentColors.text }}
-                          >
-                            Points:
-                          </label>
-                          <input
-                            type="number"
-                            value={question.points}
-                            onChange={(e) =>
-                              updateQuestion(
-                                question.id,
-                                "points",
-                                Number(e.target.value),
-                              )
-                            }
-                            className="w-14 sm:w-16 rounded px-2 py-1.5 outline-none border text-xs sm:text-sm text-center"
-                            style={{
-                              backgroundColor: currentColors.surface,
-                              color: currentColors.text,
-                              borderColor: currentColors.border,
-                            }}
-                            min="1"
-                          />
-                        </div>
-                      </div>
-                      {questions.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeQuestion(question.id)}
-                          className="text-red-500 hover:text-red-400 p-1 sm:p-0 self-start sm:self-auto"
-                        >
-                          <FiTrash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="space-y-3 sm:space-y-4">
-                      {validationErrors[`question_${question.id}`] && (
-                        <p className="text-red-500 text-xs sm:text-sm mb-1">
-                          Please enter a question
-                        </p>
-                      )}
-                      <textarea
-                        value={question.question}
-                        onChange={(e) => {
-                          updateQuestion(question.id, "question", e.target.value);
-                          if (validationErrors[`question_${question.id}`]) {
-                            setValidationErrors((prev) => ({
-                              ...prev,
-                              [`question_${question.id}`]: false,
-                            }));
-                          }
-                        }}
-                        placeholder="Enter your question..."
-                        className={`w-full rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 outline-none border h-16 sm:h-20 text-sm resize-none ${
-                          validationErrors[`question_${question.id}`]
-                            ? "border-red-500"
-                            : ""
-                        }`}
-                        style={{
-                          backgroundColor: currentColors.surface,
-                          color: currentColors.text,
-                          borderColor: validationErrors[`question_${question.id}`]
-                            ? "#ef4444"
-                            : currentColors.border,
-                        }}
-                      />
-
-                      <div>
-                        <label
-                          className="block font-medium mb-2 sm:mb-3 text-xs sm:text-sm"
-                          style={{ color: currentColors.text }}
-                        >
-                          Correct Answer:
-                        </label>
-                        {renderQuestionInput(question)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                <div className="ml-4">
+                {questions.length > 1 && (
                   <button
                     type="button"
-                    onClick={() => addQuestion(testGroup.id)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                    onClick={() => removeQuestion(question.id)}
+                    className="text-red-500 hover:text-red-400 p-1 sm:p-0 self-start sm:self-auto"
                   >
-                    <FiPlus size={14} /> Add Question to {testGroup.title}
+                    <FiTrash2 size={16} />
                   </button>
+                )}
+              </div>
+
+              <div className="space-y-3 sm:space-y-4">
+                {validationErrors[`question_${question.id}`] && (
+                  <p className="text-red-500 text-xs sm:text-sm mb-1">
+                    Please enter a question
+                  </p>
+                )}
+                <textarea
+                  value={question.question}
+                  onChange={(e) => {
+                    updateQuestion(question.id, "question", e.target.value);
+                    if (validationErrors[`question_${question.id}`]) {
+                      setValidationErrors((prev) => ({
+                        ...prev,
+                        [`question_${question.id}`]: false,
+                      }));
+                    }
+                  }}
+                  placeholder="Enter your question..."
+                  className={`w-full rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 outline-none border h-16 sm:h-20 text-sm resize-none ${
+                    validationErrors[`question_${question.id}`]
+                      ? "border-red-500"
+                      : ""
+                  }`}
+                  style={{
+                    backgroundColor: currentColors.surface,
+                    color: currentColors.text,
+                    borderColor: validationErrors[`question_${question.id}`]
+                      ? "#ef4444"
+                      : currentColors.border,
+                  }}
+                />
+
+                <div>
+                  <label
+                    className="block font-medium mb-2 sm:mb-3 text-xs sm:text-sm"
+                    style={{ color: currentColors.text }}
+                  >
+                    Correct Answer:
+                  </label>
+                  {renderQuestionInput(question)}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
         {/* ADD QUESTION BUTTON */}
 
         {/* ACTION BUTTONS */}
         <div className="flex flex-col items-stretch sm:items-end gap-4 mt-6 sm:mt-8">
-          {testGroups.length > 0 && (
-            <button
-              type="button"
-              onClick={() => addQuestion(testGroups[0].id)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm sm:text-base hover:bg-blue-700 transition-colors w-full sm:w-auto"
-            >
-              <FiPlus size={16} /> Add Question to {testGroups[0].title}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={addQuestion}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm sm:text-base hover:bg-blue-700 transition-colors w-full sm:w-auto"
+          >
+            <FiPlus size={16} /> Add Question
+          </button>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
             <button
@@ -1420,53 +1214,6 @@ const QuizBuilder = ({
                 }}
               >
                 Yes, Update Quiz
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Test Confirmation Dialog */}
-      {showDeleteTestConfirmation && testToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div
-            className="rounded-lg p-6 max-w-md w-full"
-            style={{
-              backgroundColor: currentColors.surface,
-              borderColor: currentColors.border,
-            }}
-          >
-            <h3
-              className="text-lg font-semibold mb-4"
-              style={{ color: currentColors.text }}
-            >
-              Delete Test Confirmation
-            </h3>
-            <p className="mb-4" style={{ color: currentColors.textSecondary }}>
-              Are you sure you want to delete "{testToDelete.title}"? 
-              This action will also remove {testToDelete.questionCount} question{testToDelete.questionCount !== 1 ? 's' : ''} in this test.
-            </p>
-            <p className="mb-6 text-sm" style={{ color: currentColors.textSecondary }}>
-              <strong>Warning:</strong> This action cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                className="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-                style={{
-                  backgroundColor: currentColors.background,
-                  color: currentColors.text,
-                  border: `1px solid ${currentColors.border}`,
-                }}
-                onClick={cancelDeleteTest}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg font-medium text-sm text-white transition-colors"
-                style={{ backgroundColor: "#dc2626" }}
-                onClick={confirmDeleteTest}
-              >
-                Delete Test
               </button>
             </div>
           </div>
