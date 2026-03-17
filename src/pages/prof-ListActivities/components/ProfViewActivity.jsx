@@ -334,81 +334,134 @@ const ProfViewActivityPage = () => {
               </div>
             </div>
 
-            {/* Students Who Took Quiz Table */}
+            {/* Students Who Took Quiz / Groups Information */}
             <div className="mt-6 sm:mt-8">
               <div className="flex justify-between items-center mb-3 sm:mb-4">
                 <h3 className="text-sm sm:text-base font-semibold">
-                  Students Who Completed This Quiz:
+                  {currentTask?.task_category === 'group-activity' 
+                    ? 'Groups in This Activity:'
+                    : 'Students Who Completed This Quiz:'
+                  }
                 </h3>
-                <button
-                  onClick={handleResponseSummary}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  style={{
-                    backgroundColor: "#f59e0b",
-                    color: "white",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#d97706";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "#f59e0b";
-                  }}
-                >
-                  <FiBarChart2 size={16} />
-                  Response Summary
-                </button>
+                {currentTask?.task_category === 'group-activity' ? (
+                  <div 
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                    style={{
+                      backgroundColor: "#3b82f6",
+                      color: "white",
+                    }}
+                  >
+                    <FiUser size={16} />
+                    {allUserCompletedTask?.groups?.length || 0} Groups
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleResponseSummary}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    style={{
+                      backgroundColor: "#f59e0b",
+                      color: "white",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = "#d97706";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = "#f59e0b";
+                    }}
+                  >
+                    <FiBarChart2 size={16} />
+                    Response Summary
+                  </button>
+                )}
               </div>
 
               {/* Mobile Card View - For small screens */}
               <div className="block sm:hidden">
                 <div className="space-y-3">
-                  {allUserCompletedTask?.students?.map((student) => (
-                    <div
-                      key={student.account_id}
-                      className="rounded-lg border p-3 cursor-pointer transition-all hover:shadow-md"
-                      style={{
-                        backgroundColor: currentColors.background,
-                        borderColor: currentColors.border,
-                        transition: "background-color 0.2s ease",
-                      }}
-                      onClick={() => handleStudentClick(student)}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h4
-                          className="font-medium text-sm"
-                          style={{ color: currentColors.text }}
-                        >
-                          {student.student_name}
-                        </h4>
-                        <span
-                          className="text-xs px-2 py-1 rounded-full font-medium"
+                  {currentTask?.task_category === 'group-activity' 
+                    ? allUserCompletedTask?.groups?.map((group) => (
+                        <div
+                          key={group.group_id}
+                          className="rounded-lg border p-3 cursor-pointer transition-all hover:shadow-md"
                           style={{
-                            backgroundColor: currentColors.surface,
-                            color: currentColors.primary || currentColors.text,
+                            backgroundColor: currentColors.background,
+                            borderColor: currentColors.border,
+                            transition: "background-color 0.2s ease",
                           }}
                         >
-                          {student.score}/{student.total_items_score}
-                        </span>
-                      </div>
-                      <div
-                        className="text-xs"
-                        style={{ color: currentColors.textSecondary }}
-                      >
-                        Completed:{" "}
-                        {new Date(student.completed_at).toLocaleDateString()} at{" "}
-                        {new Date(student.completed_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </div>
-                      <div
-                        className="text-xs mt-1"
-                        style={{ color: currentColors.textSecondary }}
-                      >
-                        Click to view answers
-                      </div>
-                    </div>
-                  ))}
+                          <div className="flex justify-between items-start mb-2">
+                            <h4
+                              className="font-medium text-sm"
+                              style={{ color: currentColors.text }}
+                            >
+                              {group.group_name}
+                            </h4>
+                            <span
+                              className="text-xs px-2 py-1 rounded-full font-medium"
+                              style={{
+                                backgroundColor: currentColors.surface,
+                                color: currentColors.primary || currentColors.text,
+                              }}
+                            >
+                              {group.members?.length || 0} members
+                            </span>
+                          </div>
+                          <div
+                            className="text-xs"
+                            style={{ color: currentColors.textSecondary }}
+                          >
+                            Members: {group.members?.map(m => m.student_name).join(', ') || 'No members'}
+                          </div>
+                        </div>
+                      ))
+                    : allUserCompletedTask?.students?.map((student) => (
+                        <div
+                          key={student.account_id}
+                          className="rounded-lg border p-3 cursor-pointer transition-all hover:shadow-md"
+                          style={{
+                            backgroundColor: currentColors.background,
+                            borderColor: currentColors.border,
+                            transition: "background-color 0.2s ease",
+                          }}
+                          onClick={() => handleStudentClick(student)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <h4
+                              className="font-medium text-sm"
+                              style={{ color: currentColors.text }}
+                            >
+                              {student.student_name}
+                            </h4>
+                            <span
+                              className="text-xs px-2 py-1 rounded-full font-medium"
+                              style={{
+                                backgroundColor: currentColors.surface,
+                                color: currentColors.primary || currentColors.text,
+                              }}
+                            >
+                              {student.score}/{student.total_items_score}
+                            </span>
+                          </div>
+                          <div
+                            className="text-xs"
+                            style={{ color: currentColors.textSecondary }}
+                          >
+                            Completed:{" "}
+                            {new Date(student.completed_at).toLocaleDateString()} at{" "}
+                            {new Date(student.completed_at).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                          <div
+                            className="text-xs mt-1"
+                            style={{ color: currentColors.textSecondary }}
+                          >
+                            Click to view answers
+                          </div>
+                        </div>
+                      ))
+                  }
                 </div>
               </div>
 
@@ -430,105 +483,173 @@ const ProfViewActivityPage = () => {
                             borderBottom: `2px solid ${currentColors.border}`,
                           }}
                         >
-                          <tr>
-                            <th
-                              className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
-                              style={{ color: currentColors.text }}
-                            >
-                              Student Name
-                            </th>
-                            <th
-                              className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
-                              style={{ color: currentColors.text }}
-                            >
-                              Score
-                            </th>
-                            <th
-                              className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
-                              style={{ color: currentColors.text }}
-                            >
-                              Total Items
-                            </th>
-                            <th
-                              className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
-                              style={{ color: currentColors.text }}
-                            >
-                              Completed
-                            </th>
-                          </tr>
+                          {currentTask?.task_category === 'group-activity' ? (
+                            <tr>
+                              <th
+                                className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                              >
+                                Group Name
+                              </th>
+                              <th
+                                className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                              >
+                                Members
+                              </th>
+                              <th
+                                className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                              >
+                                Member Count
+                              </th>
+                            </tr>
+                          ) : (
+                            <tr>
+                              <th
+                                className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                              >
+                                Student Name
+                              </th>
+                              <th
+                                className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                              >
+                                Score
+                              </th>
+                              <th
+                                className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                              >
+                                Total Items
+                              </th>
+                              <th
+                                className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                              >
+                                Completed
+                              </th>
+                            </tr>
+                          )}
                         </thead>
                         <tbody
                           className="divide-y"
                           style={{ borderColor: currentColors.border }}
                         >
-                          {allUserCompletedTask?.students?.map((student) => (
-                            <tr
-                              key={student.account_id}
-                              className="cursor-pointer transition-all hover:shadow-md"
-                              style={{
-                                backgroundColor: currentColors.background,
-                                transition: "background-color 0.2s ease",
-                              }}
-                              onClick={() => handleStudentClick(student)}
-                            >
-                              <td
-                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
-                                style={{ color: currentColors.text }}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <div>
-                                    <div>{student.student_name}</div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td
-                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
-                                style={{ color: currentColors.text }}
-                              >
-                                <span
-                                  className="font-medium"
+                          {currentTask?.task_category === 'group-activity' 
+                            ? allUserCompletedTask?.groups?.map((group) => (
+                                <tr
+                                  key={group.group_id}
                                   style={{
-                                    color:
-                                      currentColors.primary ||
-                                      currentColors.text,
+                                    backgroundColor: currentColors.background,
+                                    transition: "background-color 0.2s ease",
                                   }}
                                 >
-                                  {student.score}
-                                </span>
-                              </td>
-                              <td
-                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
-                                style={{ color: currentColors.text }}
-                              >
-                                {student.total_items_score}
-                              </td>
-                              <td
-                                className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
-                                style={{ color: currentColors.text }}
-                              >
-                                <div>
-                                  <div>
-                                    {new Date(
-                                      student.completed_at,
-                                    ).toLocaleDateString()}
-                                  </div>
-                                  <div
-                                    className="text-xs"
-                                    style={{
-                                      color: currentColors.textSecondary,
-                                    }}
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
+                                    style={{ color: currentColors.text }}
                                   >
-                                    {new Date(
-                                      student.completed_at,
-                                    ).toLocaleTimeString([], {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
+                                    <div className="flex items-center gap-2">
+                                      <div>
+                                        <div>{group.group_name}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    <div className="text-xs">
+                                      {group.members?.map(m => m.student_name).join(', ') || 'No members'}
+                                    </div>
+                                  </td>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    <span
+                                      className="font-medium"
+                                      style={{
+                                        color:
+                                          currentColors.primary ||
+                                          currentColors.text,
+                                      }}
+                                    >
+                                      {group.members?.length || 0}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            : allUserCompletedTask?.students?.map((student) => (
+                                <tr
+                                  key={student.account_id}
+                                  className="cursor-pointer transition-all hover:shadow-md"
+                                  style={{
+                                    backgroundColor: currentColors.background,
+                                    transition: "background-color 0.2s ease",
+                                  }}
+                                  onClick={() => handleStudentClick(student)}
+                                >
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <div>
+                                        <div>{student.student_name}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    <span
+                                      className="font-medium"
+                                      style={{
+                                        color:
+                                          currentColors.primary ||
+                                          currentColors.text,
+                                      }}
+                                    >
+                                      {student.score}
+                                    </span>
+                                  </td>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    {student.total_items_score}
+                                  </td>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    <div>
+                                      <div>
+                                        {new Date(
+                                          student.completed_at,
+                                        ).toLocaleDateString()}
+                                      </div>
+                                      <div
+                                        className="text-xs"
+                                        style={{
+                                          color: currentColors.textSecondary,
+                                        }}
+                                      >
+                                        {new Date(
+                                          student.completed_at,
+                                        ).toLocaleTimeString([], {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))
+                          }
                         </tbody>
                       </table>
                     </div>

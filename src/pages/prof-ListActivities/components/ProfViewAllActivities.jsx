@@ -60,7 +60,8 @@ const ProfViewAllActivityPage = () => {
   });
   const quizTasks = sortedTasks.filter(task => task.task_category === 'quiz');
   const individualTasks = sortedTasks.filter(task => task.task_category === 'individual-activity');
-  const otherTasks = sortedTasks.filter(task => task.task_category !== 'quiz' && task.task_category !== 'individual-activity');
+  const groupTasks = sortedTasks.filter(task => task.task_category === 'group-activity');
+  const otherTasks = sortedTasks.filter(task => task.task_category !== 'quiz' && task.task_category !== 'individual-activity' && task.task_category !== 'group-activity');
 
   const getStatusColor = (task) => {
     // Check if task has been answered OR if status is Done/Completed
@@ -385,6 +386,128 @@ const ProfViewAllActivityPage = () => {
                 {/* Mobile/Tablet Cards for Individual Activities */}
                 <div className="lg:hidden space-y-3">
                   {individualTasks.map((task) => (
+                    <div key={task.task_id} className="rounded-xl p-4 border" style={{ 
+                      backgroundColor: currentColors.surface,
+                      borderColor: currentColors.border
+                    }}>
+                      <div className="flex flex-col space-y-3">
+                        {/* Header with Title and Status */}
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-semibold text-sm sm:text-base flex-1" style={{ color: currentColors.text }}>{task.task_title}</h3>
+                          <span className="inline-block px-3 py-1 rounded-full text-xs font-medium border w-fit" style={{
+                            backgroundColor: getStatusColor(task).includes('green') ? (isDarkMode ? 'rgba(16, 185, 100, 0.2)' : 'rgba(34, 197, 94, 0.2)') :
+                                           getStatusColor(task).includes('red') ? (isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.2)') :
+                                           (isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.2)'),
+                            color: getStatusColor(task).includes('green') ? (isDarkMode ? '#10e164' : '#22c55e') :
+                                   getStatusColor(task).includes('red') ? (isDarkMode ? '#ef4444' : '#ef4444') :
+                                   (isDarkMode ? '#4d9bef' : '#3b82f6'),
+                            borderColor: getStatusColor(task).includes('green') ? (isDarkMode ? '#00b865' : '#16a34a') :
+                                       getStatusColor(task).includes('red') ? (isDarkMode ? '#dc2626' : '#dc2626') :
+                                       (isDarkMode ? '#0066d2' : '#2563eb')
+                          }}>
+                            {task.has_answered || 
+                               task.task_status === "Done" || 
+                               task.task_status === "done" || 
+                               task.task_status === "completed" || 
+                               task.task_status === "Completed" ? 'Completed' : 
+                               new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
+                          </span>
+                        </div>
+                        
+                        {/* Deadline */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs">📅</span>
+                          <p className="text-xs sm:text-sm" style={{ color: currentColors.textSecondary }}>{formatDate(task.due_date)}</p>
+                        </div>
+                        
+                        {/* View Details Button */}
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => handleViewDetails(task)}
+                            className="px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium w-full sm:w-auto"
+                            style={{
+                              backgroundColor: isDarkMode ? '#1d4ed8' : '#2563eb',
+                              color: 'white'
+                            }}
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Group Activities Section */}
+            {groupTasks.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-2xl">👥</span>
+                  <h3 className="text-lg font-bold" style={{ color: currentColors.text }}>Group Activities</h3>
+                  <span className="text-sm px-2 py-1 rounded-full" style={{ 
+                    backgroundColor: currentColors.background,
+                    color: currentColors.textSecondary 
+                  }}>
+                    {groupTasks.length} {groupTasks.length === 1 ? 'activity' : 'activities'}
+                  </span>
+                </div>
+                
+                {/* Desktop Table for Group Activities */}
+                <div className="hidden lg:block overflow-x-auto rounded-xl border" style={{ 
+                  backgroundColor: currentColors.surface,
+                  borderColor: currentColors.border 
+                }}>
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b" style={{ borderColor: currentColors.border }}>
+                        <th className="text-left py-3 px-4 font-semibold text-sm" style={{ color: currentColors.textSecondary }}>Status</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm" style={{ color: currentColors.textSecondary }}>Activity Name</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm" style={{ color: currentColors.textSecondary }}>Deadline</th>
+                        <th className="text-center py-3 px-4 font-semibold text-sm" style={{ color: currentColors.textSecondary }}>Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupTasks.map((task) => (
+                        <tr key={task.task_id} className="border-b" style={{ borderColor: currentColors.border }}>
+                          <td className="py-4 px-4">
+                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(task)}`}>
+                              {task.has_answered || 
+                               task.task_status === "Done" || 
+                               task.task_status === "done" || 
+                               task.task_status === "completed" || 
+                               task.task_status === "Completed" ? 'Completed' : 
+                               new Date(task.due_date) < new Date() ? 'Closed' : 'Active'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4">
+                            <p className="font-medium text-sm" style={{ color: currentColors.text }}>{task.task_title}</p>
+                          </td>
+                          <td className="py-4 px-4">
+                            <p className="text-sm" style={{ color: currentColors.textSecondary }}>{formatDate(task.due_date)}</p>
+                          </td>
+                          <td className="py-4 px-4 text-center">
+                            <button
+                              onClick={() => handleViewDetails(task)}
+                              className="px-3 py-2 rounded-lg transition-colors text-xs font-medium"
+                              style={{
+                                backgroundColor: isDarkMode ? '#1d4ed8' : '#2563eb',
+                                color: 'white'
+                              }}
+                            >
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile/Tablet Cards for Group Activities */}
+                <div className="lg:hidden space-y-3">
+                  {groupTasks.map((task) => (
                     <div key={task.task_id} className="rounded-xl p-4 border" style={{ 
                       backgroundColor: currentColors.surface,
                       borderColor: currentColors.border
