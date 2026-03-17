@@ -289,6 +289,8 @@ const UserPeoplePage = () => {
     profile_pic: user.profile_pic,
     role: "creator",
   };
+
+  console.log(creator)
   const otherMembers =
     activeSpace?.members.filter((m) => m.role !== "creator") || [];
 
@@ -676,12 +678,13 @@ const UserPeoplePage = () => {
                     <img
                       src={
                         activeSpace?.professor?.avatar ||
-                        (isAdmin && user?.profile_pic) ||
+                        (isAdmin && creator?.profile_pic) ||
                         "/src/assets/default-avatar.jpg"
                       }
                       alt={
                         activeSpace?.professor?.name ||
-                        (isAdmin && user?.last_name)
+                        (isAdmin && creator?.full_name) ||
+                        "Admin"
                       }
                       className="w-10 h-10 rounded-full"
                     />
@@ -690,7 +693,7 @@ const UserPeoplePage = () => {
                         activeSpace?.professor?.name ||
                           (isAdmin && "You") ||
                           (!isAdmin &&
-                            `${user?.first_name + " " + user?.last_name}`),
+                            `${creator?.full_name}`),
                       )}
                     </span>
                   </div>
