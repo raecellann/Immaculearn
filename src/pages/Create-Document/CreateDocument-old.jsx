@@ -81,17 +81,41 @@ const CreateDocumentPage = () => {
   };
 
   const applyFontFamily = (font) => {
-    tiptapEditor?.chain().focus().setFontFamily(font).run();
     setSelectedFont(font);
+    editorRef.current?.setFontFamily?.(font);
   };
 
   const applyFontSize = (size) => {
     setSelectedFontSize(size);
-    try {
-      tiptapEditor?.chain().focus().setMark("textStyle", { fontSize: `${size}px` }).run();
-    } catch {
-      // fontSize extension not available; size shown in toolbar only
-    }
+    editorRef.current?.setFontSize?.(size);
+  };
+
+  const handleAddPage    = () => editorRef.current?.addPage?.();
+  const handleDeletePage = () => editorRef.current?.deletePage?.();
+
+  const handleDownload = () => {
+    const html    = editorRef.current?.getHTML?.() ?? "";
+    const docName = title || "document";
+    const content = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office'
+            xmlns:w='urn:schemas-microsoft-com:office:word'
+            xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>${docName}</title>
+          <style>
+            body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; margin: 1in; }
+          </style>
+        </head>
+        <body>${html}</body>
+      </html>`;
+    const blob = new Blob([content], { type: "application/msword" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `${docName}.doc`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const applyList = (type) => {
@@ -264,6 +288,7 @@ const CreateDocumentPage = () => {
               connectedUsers={connectedUsers}
               isOnline={isOnline}
               collaborationEnabled={collaborationEnabled}
+              onDownload={handleDownload}
             />
           </div>
 
@@ -284,6 +309,8 @@ const CreateDocumentPage = () => {
             applyItalic={applyItalic}
             applyUnderline={applyUnderline}
             applyList={applyList}
+            onAddPage={handleAddPage}
+            onDeletePage={handleDeletePage}
             isAlignmentDropdownOpen={isAlignmentDropdownOpen}
             isColorDropdownOpen={isColorDropdownOpen}
             isFontDropdownOpen={isFontDropdownOpen}

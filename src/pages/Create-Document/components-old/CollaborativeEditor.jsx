@@ -25,8 +25,9 @@ const MAX_PAGES = 50;
 
 const PAGE_SEP = "\n<!-- PAGE BREAK -->\n";
 
-let _nextId = 1;
-const newId = () => ++_nextId;
+// Use timestamp + random suffix so IDs stay unique across HMR module reloads
+// (a plain counter resets to 1 on reload while React preserves old state).
+const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 const CollaborativeEditor = forwardRef(
@@ -161,7 +162,49 @@ const CollaborativeEditor = forwardRef(
 
           while (el.scrollHeight > el.clientHeight + 4) {
             const last = el.lastElementChild;
-            if (!last) break;
+
+            if (!last) {
+              // ── Bare text nodes (no element children) ───────────────────
+              // Binary-search for how many characters fit on this page, then
+              // move the rest to the next page.
+              const fullText = el.innerText;
+              if (!fullText.trim()) break;
+
+              let lo = 0, hi = fullText.length;
+              while (lo < hi) {
+                const mid = Math.ceil((lo + hi) / 2);
+                el.innerText = fullText.slice(0, mid);
+                if (el.scrollHeight <= el.clientHeight + 4) lo = mid;
+                else hi = mid - 1;
+              }
+
+              // Nothing fits or everything fits — nothing to do
+              if (lo === 0 || lo >= fullText.length) {
+                el.innerText = fullText;
+                break;
+              }
+
+              const overflowText = fullText.slice(lo).replace(/^\s+/, "");
+              el.innerText = fullText.slice(0, lo);
+
+              if (!overflowText) break;
+
+              const nextEl = refs[i + 1];
+              if (nextEl) {
+                const existing = nextEl.innerHTML.trim();
+                nextEl.innerHTML = existing
+                  ? overflowText + "<br>" + existing
+                  : overflowText;
+              } else if (ids.length < MAX_PAGES) {
+                pendingNewPageContent.current = `<div>${overflowText}</div>`;
+                const freshId = newId();
+                pageIdsRef.current = [...ids, freshId];
+                setPageIds([...pageIdsRef.current]);
+                return;
+              }
+              break; // re-evaluate on next reflow cycle
+            }
+
             el.removeChild(last);
 
             const nextEl = refs[i + 1];
@@ -267,6 +310,35 @@ const CollaborativeEditor = forwardRef(
         if (e.key === "b") { e.preventDefault(); document.execCommand("bold"); }
         if (e.key === "i") { e.preventDefault(); document.execCommand("italic"); }
         if (e.key === "u") { e.preventDefault(); document.execCommand("underline"); }
+        return;
+      }
+
+      // When the cursor is inside a font-size anchor span (zero-width space),
+      // intercept the first real keystroke: replace \u200B with the actual
+      // character so typed text stays inside the sized span.
+      if (e.key.length === 1 && !e.altKey) {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          const node  = range.startContainer;
+          if (
+            node.nodeType === Node.TEXT_NODE &&
+            node.textContent === "\u200B" &&
+            range.startOffset === 1
+          ) {
+            e.preventDefault();
+            // Replace the zero-width space with the typed character in-place,
+            // keeping the cursor inside the span so subsequent chars land here.
+            node.textContent = e.key;
+            range.setStart(node, 1);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            // Trigger reflow / Yjs sync via the page's input handler.
+            const page = node.parentElement?.closest("[contenteditable='true']");
+            if (page) page.dispatchEvent(new Event("input", { bubbles: true }));
+          }
+        }
       }
     }, []);
 
@@ -324,12 +396,92 @@ const CollaborativeEditor = forwardRef(
         setContent:   stringToDOM,
         clearContent: () => stringToDOM(""),
         getTotalPages: () => pageIdsRef.current.length,
+        setFontFamily: (font) => {
+          const sel = window.getSelection();
+          if (!sel || sel.rangeCount === 0) return;
+          const range = sel.getRangeAt(0);
+
+          if (!range.collapsed) {
+            // Wrap selected text in a span with the chosen font
+            const span = document.createElement("span");
+            span.style.fontFamily = font;
+            span.appendChild(range.cloneContents());
+            range.deleteContents();
+            range.insertNode(span);
+            range.setStartAfter(span);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            for (let i = 0; i < pageRefs.current.length; i++) {
+              if (pageRefs.current[i]?.contains(span)) {
+                pageRefs.current[i].dispatchEvent(new Event("input", { bubbles: true }));
+                break;
+              }
+            }
+          } else {
+            // No selection — use execCommand which tracks pending font for next typed chars
+            const active = document.activeElement;
+            if (!active?.isContentEditable) {
+              for (const page of pageRefs.current) {
+                if (page) { page.focus(); break; }
+              }
+            }
+            document.execCommand("fontName", false, font);
+          }
+        },
+        setFontSize: (size) => {
+          const sel = window.getSelection();
+          if (!sel || sel.rangeCount === 0) return;
+          const range = sel.getRangeAt(0);
+          const span  = document.createElement("span");
+          span.style.fontSize = `${size}px`;
+
+          if (!range.collapsed) {
+            // Wrap the selected text
+            span.appendChild(range.cloneContents());
+            range.deleteContents();
+            range.insertNode(span);
+            range.setStartAfter(span);
+            range.collapse(true);
+          } else {
+            // No selection — anchor span so next typed chars inherit the size
+            span.appendChild(document.createTextNode("\u200B"));
+            range.insertNode(span);
+            range.setStart(span.firstChild, 1);
+            range.collapse(true);
+          }
+
+          sel.removeAllRanges();
+          sel.addRange(range);
+
+          for (let i = 0; i < pageRefs.current.length; i++) {
+            if (pageRefs.current[i]?.contains(span)) {
+              pageRefs.current[i].dispatchEvent(new Event("input", { bubbles: true }));
+              break;
+            }
+          }
+        },
+        addPage: () => {
+          if (pageIdsRef.current.length >= MAX_PAGES) return;
+          const freshId = newId();
+          pageIdsRef.current = [...pageIdsRef.current, freshId];
+          setPageIds([...pageIdsRef.current]);
+          setTimeout(() => syncToYjs(), 50);
+        },
+        deletePage: () => {
+          if (pageIdsRef.current.length <= 1) return;
+          pageRefs.current = pageRefs.current.slice(0, -1);
+          pageIdsRef.current = pageIdsRef.current.slice(0, -1);
+          setPageIds([...pageIdsRef.current]);
+          setTimeout(() => syncToYjs(), 50);
+        },
         commands: {
           setContent: stringToDOM,
           focus: () => pageRefs.current[0]?.focus(),
         },
       }),
-      [domToString, stringToDOM],
+      [domToString, stringToDOM, syncToYjs],
     );
 
     // ── Notify parent with execCommand-based mock editor (Tiptap-compatible API) ──
@@ -338,7 +490,16 @@ const CollaborativeEditor = forwardRef(
 
       const focusActive = () => {
         const active = document.activeElement;
-        if (!active?.isContentEditable) pageRefs.current[0]?.focus();
+        if (active?.isContentEditable) return; // already in editor, selection preserved
+        // Re-focus the page that owns the current selection
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          const container = sel.getRangeAt(0).commonAncestorContainer;
+          for (const page of pageRefs.current) {
+            if (page && page.contains(container)) { page.focus(); return; }
+          }
+        }
+        pageRefs.current[0]?.focus();
       };
 
       const exec = (cmd, value = null) => {
@@ -361,7 +522,46 @@ const CollaborativeEditor = forwardRef(
           setColor:         (c) => { exec("foreColor", c);  return chain; },
           setHighlight:     ()  => chain,
           setFontFamily:    (f) => { exec("fontName", f);   return chain; },
-          setMark:          ()  => chain,
+          setMark: (markType, attrs) => {
+            if (markType === "textStyle" && attrs?.fontSize) {
+              const sel = window.getSelection();
+              if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                const span = document.createElement("span");
+                span.style.fontSize = attrs.fontSize;
+
+                if (!range.collapsed) {
+                  // Wrap the selected text in the sized span
+                  span.appendChild(range.cloneContents());
+                  range.deleteContents();
+                  range.insertNode(span);
+                  range.setStartAfter(span);
+                  range.collapse(true);
+                } else {
+                  // No selection — insert an anchoring span so typed text
+                  // inherits the chosen size. Zero-width space keeps the
+                  // inline span alive; cursor lands after it.
+                  span.appendChild(document.createTextNode("\u200B"));
+                  range.insertNode(span);
+                  range.setStart(span.firstChild, 1);
+                  range.collapse(true);
+                }
+
+                sel.removeAllRanges();
+                sel.addRange(range);
+
+                // Trigger reflow + Yjs sync by firing an input event on the
+                // containing page div (avoids stale-closure issues with syncToYjs).
+                for (const page of pageRefs.current) {
+                  if (page?.contains(span)) {
+                    page.dispatchEvent(new Event("input", { bubbles: true }));
+                    break;
+                  }
+                }
+              }
+            }
+            return chain;
+          },
           toggleBulletList: () => { exec("insertUnorderedList"); return chain; },
           toggleOrderedList:() => { exec("insertOrderedList");   return chain; },
           liftListItem:     () => { exec("outdent");         return chain; },

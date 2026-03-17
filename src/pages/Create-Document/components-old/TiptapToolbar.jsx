@@ -3,16 +3,15 @@ import React, { useRef, useEffect, useCallback } from "react";
 import {
   FiBold, FiItalic, FiUnderline,
   FiAlignLeft, FiAlignCenter, FiAlignRight, FiAlignJustify,
-  FiChevronDown, FiList,
+  FiChevronDown, FiList, FiFilePlus, FiTrash2,
 } from "react-icons/fi";
 
 // ── Fixed-position dropdown portal ───────────────────────────────────────────
-// Renders dropdown relative to the trigger button using position:fixed so it
-// is never clipped by any overflow/sticky ancestor.
+// Renders relative to the trigger using position:fixed so it is never clipped
+// by any overflow/sticky ancestor.
 const Dropdown = ({ triggerRef, open, onClose, children }) => {
   const dropRef = useRef(null);
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e) => {
@@ -49,6 +48,24 @@ const Dropdown = ({ triggerRef, open, onClose, children }) => {
   );
 };
 
+// ── Dropdown item — uses onMouseDown+preventDefault to keep editor selection ─
+const Item = ({ onAction, active, children }) => (
+  <div
+    onMouseDown={(e) => { e.preventDefault(); onAction(); }}
+    style={{
+      display: "flex", alignItems: "center", gap: 8,
+      padding: "8px 14px", cursor: "pointer", fontSize: 13,
+      background: active ? "#eff6ff" : "transparent",
+      color: active ? "#2563eb" : "#333",
+      whiteSpace: "nowrap",
+    }}
+    onMouseEnter={e => { if (!active) e.currentTarget.style.background = "#f5f5f5"; }}
+    onMouseLeave={e => { e.currentTarget.style.background = active ? "#eff6ff" : "transparent"; }}
+  >
+    {children}
+  </div>
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 const TiptapToolbar = ({
   editor,
@@ -62,6 +79,8 @@ const TiptapToolbar = ({
   applyItalic,
   applyUnderline,
   applyList,
+  onAddPage,
+  onDeletePage,
   isAlignmentDropdownOpen,
   isColorDropdownOpen,
   isFontSizeDropdownOpen,
@@ -71,23 +90,28 @@ const TiptapToolbar = ({
   setIsFontSizeDropdownOpen,
   setIsListDropdownOpen,
 }) => {
-  // Refs for each trigger button
-  const fontSizeRef  = useRef(null);
-  const alignRef     = useRef(null);
-  const colorRef     = useRef(null);
-  const listRef      = useRef(null);
+  const fontSizeRef = useRef(null);
+  const alignRef    = useRef(null);
+  const colorRef    = useRef(null);
+  const listRef     = useRef(null);
 
   const closeAll = useCallback(() => {
     setIsAlignmentDropdownOpen(false);
     setIsColorDropdownOpen(false);
     setIsFontSizeDropdownOpen(false);
     setIsListDropdownOpen(false);
-  }, [setIsAlignmentDropdownOpen, setIsColorDropdownOpen, setIsFontSizeDropdownOpen, setIsListDropdownOpen]);
+  }, [
+    setIsAlignmentDropdownOpen, setIsColorDropdownOpen,
+    setIsFontSizeDropdownOpen, setIsListDropdownOpen,
+  ]);
 
   const toggle = (setter, current) => {
     closeAll();
     if (!current) setter(true);
   };
+
+  // Prevent toolbar clicks from stealing focus / losing editor selection
+  const keepFocus = (e) => e.preventDefault();
 
   if (!editor) {
     return (
@@ -118,35 +142,40 @@ const TiptapToolbar = ({
     <div style={{ width: 1, height: 20, background: "#d1d5db", margin: "0 3px", flexShrink: 0 }} />
   );
 
-  const Item = ({ onClick, active, children }) => (
-    <div
-      onClick={onClick}
-      style={{
-        display: "flex", alignItems: "center", gap: 8,
-        padding: "8px 14px", cursor: "pointer", fontSize: 13,
-        background: active ? "#eff6ff" : "transparent",
-        color: active ? "#2563eb" : "#333",
-        whiteSpace: "nowrap",
-      }}
-      onMouseEnter={e => { if (!active) e.currentTarget.style.background = "#f5f5f5"; }}
-      onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
-    >
-      {children}
-    </div>
-  );
-
   return (
-    <div style={{ backgroundColor: "#f3f3f3", borderBottom: "1px solid #d1d5db", width: "100%", position: "relative" }}>
+    <div style={{
+      backgroundColor: "#f3f3f3", borderBottom: "1px solid #d1d5db",
+      width: "100%", position: "relative",
+      overflowX: "auto", overflowY: "visible",
+    }}>
       <div style={{
         display: "flex", flexWrap: "nowrap", alignItems: "center",
         justifyContent: "center", gap: 2, padding: "5px 12px",
-        overflowX: "auto", minWidth: "max-content", margin: "0 auto",
+        minWidth: "max-content",
       }}>
 
         {/* ── B / I / U ── */}
-        <button style={biuBtn(isActive("bold"))} onClick={applyBold} title="Bold"><FiBold size={17} /></button>
-        <button style={biuBtn(isActive("italic"))} onClick={applyItalic} title="Italic"><FiItalic size={17} /></button>
-        <button style={biuBtn(isActive("underline"))} onClick={applyUnderline} title="Underline"><FiUnderline size={17} /></button>
+        <button
+          style={biuBtn(isActive("bold"))}
+          onMouseDown={(e) => { keepFocus(e); applyBold(); }}
+          title="Bold"
+        >
+          <FiBold size={17} />
+        </button>
+        <button
+          style={biuBtn(isActive("italic"))}
+          onMouseDown={(e) => { keepFocus(e); applyItalic(); }}
+          title="Italic"
+        >
+          <FiItalic size={17} />
+        </button>
+        <button
+          style={biuBtn(isActive("underline"))}
+          onMouseDown={(e) => { keepFocus(e); applyUnderline(); }}
+          title="Underline"
+        >
+          <FiUnderline size={17} />
+        </button>
 
         <Divider />
 
@@ -154,7 +183,8 @@ const TiptapToolbar = ({
         <button
           ref={fontSizeRef}
           style={{ ...btnBase, gap: 3, minWidth: 50 }}
-          onClick={() => toggle(setIsFontSizeDropdownOpen, isFontSizeDropdownOpen)}
+          onMouseDown={(e) => { keepFocus(e); toggle(setIsFontSizeDropdownOpen, isFontSizeDropdownOpen); }}
+          title="Font Size"
         >
           <span style={{ fontSize: 13, fontWeight: 500 }}>{selectedFontSize}</span>
           <FiChevronDown size={11} />
@@ -162,7 +192,7 @@ const TiptapToolbar = ({
         <Dropdown triggerRef={fontSizeRef} open={isFontSizeDropdownOpen} onClose={() => setIsFontSizeDropdownOpen(false)}>
           <div style={{ maxHeight: 220, overflowY: "auto", borderRadius: 8 }}>
             {[8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72].map(s => (
-              <Item key={s} active={selectedFontSize === s} onClick={() => { applyFontSize(s); setIsFontSizeDropdownOpen(false); }}>
+              <Item key={s} active={selectedFontSize === s} onAction={() => { applyFontSize(s); setIsFontSizeDropdownOpen(false); }}>
                 <span style={{ minWidth: 28 }}>{s}</span>
               </Item>
             ))}
@@ -175,23 +205,23 @@ const TiptapToolbar = ({
         <button
           ref={alignRef}
           style={{ ...btnBase, gap: 3 }}
-          onClick={() => toggle(setIsAlignmentDropdownOpen, isAlignmentDropdownOpen)}
+          onMouseDown={(e) => { keepFocus(e); toggle(setIsAlignmentDropdownOpen, isAlignmentDropdownOpen); }}
           title="Alignment"
         >
-          {selectedAlignment === "center"  ? <FiAlignCenter size={15} />  :
-           selectedAlignment === "right"   ? <FiAlignRight size={15} />   :
+          {selectedAlignment === "center"  ? <FiAlignCenter  size={15} /> :
+           selectedAlignment === "right"   ? <FiAlignRight   size={15} /> :
            selectedAlignment === "justify" ? <FiAlignJustify size={15} /> :
            <FiAlignLeft size={15} />}
           <FiChevronDown size={11} />
         </button>
         <Dropdown triggerRef={alignRef} open={isAlignmentDropdownOpen} onClose={() => setIsAlignmentDropdownOpen(false)}>
           {[
-            ["left",    <FiAlignLeft size={14} />,    "Left"],
-            ["center",  <FiAlignCenter size={14} />,  "Center"],
-            ["right",   <FiAlignRight size={14} />,   "Right"],
+            ["left",    <FiAlignLeft    size={14} />, "Left"],
+            ["center",  <FiAlignCenter  size={14} />, "Center"],
+            ["right",   <FiAlignRight   size={14} />, "Right"],
             ["justify", <FiAlignJustify size={14} />, "Justify"],
           ].map(([a, icon, label]) => (
-            <Item key={a} active={selectedAlignment === a} onClick={() => { applyAlignment(a); setIsAlignmentDropdownOpen(false); }}>
+            <Item key={a} active={selectedAlignment === a} onAction={() => { applyAlignment(a); setIsAlignmentDropdownOpen(false); }}>
               {icon}{label}
             </Item>
           ))}
@@ -203,7 +233,7 @@ const TiptapToolbar = ({
         <button
           ref={colorRef}
           style={{ ...btnBase, gap: 3 }}
-          onClick={() => toggle(setIsColorDropdownOpen, isColorDropdownOpen)}
+          onMouseDown={(e) => { keepFocus(e); toggle(setIsColorDropdownOpen, isColorDropdownOpen); }}
           title="Text Color"
         >
           <span style={{
@@ -225,13 +255,15 @@ const TiptapToolbar = ({
                 ["Purple", "#a855f7"], ["Pink",   "#ec4899"], ["Gray",   "#6b7280"],
               ].map(([label, val]) => (
                 <button
-                  key={val} title={label}
+                  key={val}
+                  title={label}
                   style={{
                     width: 26, height: 26, borderRadius: 4, cursor: "pointer",
-                    backgroundColor: val, border: selectedTextColor === val ? "2.5px solid #2563eb" : "1.5px solid #ccc",
+                    backgroundColor: val,
+                    border: selectedTextColor === val ? "2.5px solid #2563eb" : "1.5px solid #ccc",
                     outline: "none",
                   }}
-                  onClick={() => { applyTextColor(val); setIsColorDropdownOpen(false); }}
+                  onMouseDown={(e) => { keepFocus(e); applyTextColor(val); setIsColorDropdownOpen(false); }}
                 />
               ))}
             </div>
@@ -244,17 +276,39 @@ const TiptapToolbar = ({
         <button
           ref={listRef}
           style={{ ...btnBase, gap: 3 }}
-          onClick={() => toggle(setIsListDropdownOpen, isListDropdownOpen)}
+          onMouseDown={(e) => { keepFocus(e); toggle(setIsListDropdownOpen, isListDropdownOpen); }}
           title="Lists"
         >
           <FiList size={15} />
           <FiChevronDown size={11} />
         </button>
         <Dropdown triggerRef={listRef} open={isListDropdownOpen} onClose={() => setIsListDropdownOpen(false)}>
-          <Item onClick={() => { applyList("bullet"); setIsListDropdownOpen(false); }}>• Bullet List</Item>
-          <Item onClick={() => { applyList("number"); setIsListDropdownOpen(false); }}>1. Numbered List</Item>
-          <Item onClick={() => { applyList("none");   setIsListDropdownOpen(false); }}>✕ Remove List</Item>
+          <Item onAction={() => { applyList("bullet"); setIsListDropdownOpen(false); }}>• Bullet List</Item>
+          <Item onAction={() => { applyList("number"); setIsListDropdownOpen(false); }}>1. Numbered List</Item>
+          <Item onAction={() => { applyList("none");   setIsListDropdownOpen(false); }}>✕ Remove List</Item>
         </Dropdown>
+
+        <Divider />
+
+        {/* ── Add / Delete Page ── */}
+        <button
+          style={{ ...btnBase, gap: 4, color: "#16a34a" }}
+          onMouseDown={keepFocus}
+          onClick={onAddPage}
+          title="Add page"
+        >
+          <FiFilePlus size={15} />
+          <span style={{ fontSize: 12, fontWeight: 500 }}>Add page</span>
+        </button>
+        <button
+          style={{ ...btnBase, gap: 4, color: "#dc2626" }}
+          onMouseDown={keepFocus}
+          onClick={onDeletePage}
+          title="Delete page"
+        >
+          <FiTrash2 size={15} />
+          <span style={{ fontSize: 12, fontWeight: 500 }}>Delete page</span>
+        </button>
 
       </div>
     </div>

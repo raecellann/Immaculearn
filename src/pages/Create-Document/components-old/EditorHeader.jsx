@@ -18,6 +18,7 @@ const EditorHeader = ({
   connectedUsers = [],
   isOnline = false,
   collaborationEnabled = false,
+  onDownload,
 }) => {
   const { isDarkMode, toggleTheme, colors } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
