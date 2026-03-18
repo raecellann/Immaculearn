@@ -320,18 +320,7 @@ const PrivacyPolicy = () => {
                 <li><Link to="/terms" className="hover:underline text-black">Terms &amp; Conditions</Link></li>
               </ul>
             </div>
-            <div className="flex flex-col items-center w-full lg:w-auto lg:items-start">
-              <h4 className="font-bold text-lg mb-2 text-black">GitHub</h4>
-              <ul className="space-y-1 text-[10px] sm:text-sm lg:text-base text-center lg:text-left">
-                {["Wesmabe1129", "raecellann", "zjdelossantos", "nathanielfaborada"].map((u) => (
-                  <li key={u}>
-                    <a href={`https://github.com/${u}`} target="_blank" rel="noopener noreferrer" className="hover:underline text-black">
-                      {u}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            
           </div>
         </div>
       </div>
