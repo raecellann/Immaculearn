@@ -1,4 +1,3 @@
-import React from "react";
 import {
   FiArrowLeft,
   FiSave,
@@ -7,19 +6,19 @@ import {
   FiSun,
   FiMoon,
 } from "react-icons/fi";
+import { useNavigate } from "react-router";
 import { useTheme } from "../contexts-old/ThemeContext";
 
 const EditorHeader = ({
-  navigate,
   saveStatus,
   lastSaved,
   title,
-  setTitle,
   connectedUsers = [],
   isOnline = false,
   collaborationEnabled = false,
   onDownload,
 }) => {
+  const navigate = useNavigate();
   const { isDarkMode, toggleTheme, colors } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -45,7 +44,7 @@ const EditorHeader = ({
         <div
           className="flex items-center gap-1.5 text-sm cursor-pointer hover:opacity-80 transition-colors shrink-0"
           style={{ color: currentColors.textSecondary }}
-          onClick={() => navigate && navigate(-1)}
+          onClick={() => navigate(-1)}
         >
           <FiArrowLeft size={14} />
           <span>Back</span>
@@ -142,17 +141,12 @@ const EditorHeader = ({
         >
           Document Title
         </label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full max-w-2xl xl:max-w-3xl px-3 xl:px-5 py-2 xl:py-3 border-2 rounded-xl text-base xl:text-lg font-semibold focus:outline-none"
-          style={{
-            backgroundColor: currentColors.surface,
-            borderColor: currentColors.border,
-            color: currentColors.text,
-          }}
-          placeholder="Enter document title..."
-        />
+        <p
+          className="text-base xl:text-lg font-semibold"
+          style={{ color: currentColors.text }}
+        >
+          {title || "Untitled Document"}
+        </p>
       </div>
 
       {/* Active Editors */}

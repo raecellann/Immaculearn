@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { FiArrowLeft, FiSun, FiMoon, FiCheck, FiSave, FiMenu } from "react-icons/fi";
 import Sidebar from "../component/sidebar";
 import EditorHeader from "./components-old/EditorHeader";
@@ -13,6 +13,7 @@ import CollaborativeEditor from "./components-old/CollaborativeEditor";
 
 const CreateDocumentPage = () => {
   const navigate = useNavigate();
+  const { state: locationState } = useLocation();
   const { user } = useUser();
   const { space_uuid, file_uuid, file_name } = useParams();
   const { isDarkMode, colors, toggleTheme } = useTheme();
@@ -32,7 +33,7 @@ const CreateDocumentPage = () => {
   const { draft, list } = useFileManager(currentSpace?.space_id);
   const file = list.data?.find((f) => f.file_uuid === file_uuid) || {};
 
-  const [title, setTitle]                   = useState(file_name);
+  const [title]                             = useState(locationState?.documentTitle || file_name || "");
   const [saveStatus, setSaveStatus]         = useState("saved");
   const [lastSaved, setLastSaved]           = useState(null);
   const [connectedUsers, setConnectedUsers] = useState([]);
@@ -149,7 +150,7 @@ const CreateDocumentPage = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!file_uuid || !user || !provider) return;
+    if (!user || !provider) return;
     awarenessRef.current = provider.awareness;
     const localState = {
       user: {
@@ -160,6 +161,7 @@ const CreateDocumentPage = () => {
     };
     awarenessRef.current.setLocalState(localState);
     awarenessRef.current.on("change", updateUsers);
+    updateUsers();
     provider.on("status", (e) => {
       const ok = e.status === "connected";
       setIsOnline(ok);
@@ -168,11 +170,14 @@ const CreateDocumentPage = () => {
     provider.on("sync", (s) => { if (s) { setCollaborationEnabled(true); updateUsers(); } });
     provider.on("connection-close", () => setIsOnline(false));
     provider.on("connection-error",  () => setIsOnline(false));
+    // Set collaboration enabled immediately if provider is already connected
+    setCollaborationEnabled(true);
     return () => {
       awarenessRef.current?.off("change", updateUsers);
+      awarenessRef.current?.setLocalState(null);
       setConnectedUsers([]); setCollaborationEnabled(false); setIsOnline(false);
     };
-  }, [file_uuid, user, provider, updateUsers]);
+  }, [user, provider, updateUsers]);
 
   // ── Auto-save ─────────────────────────────────────────────────────────────
   const handleEditorUpdate = useCallback(
@@ -255,13 +260,12 @@ const CreateDocumentPage = () => {
                 <FiArrowLeft size={18} />
               </button>
 
-              <input
-                value={title || ""}
-                onChange={(e) => setTitle(e.target.value)}
-                className="flex-1 min-w-0 text-sm font-semibold bg-transparent outline-none truncate"
+              <span
+                className="flex-1 min-w-0 text-sm font-semibold truncate"
                 style={{ color: currentColors.text }}
-                placeholder="Document title…"
-              />
+              >
+                {title || "Untitled Document"}
+              </span>
 
               <SaveBadge />
 
@@ -279,11 +283,9 @@ const CreateDocumentPage = () => {
           {/* Desktop EditorHeader */}
           <div className="hidden lg:block">
             <EditorHeader
-              navigate={navigate}
               saveStatus={saveStatus}
               lastSaved={lastSaved}
               title={title}
-              setTitle={setTitle}
               connectedUsers={connectedUsers}
               isOnline={isOnline}
               collaborationEnabled={collaborationEnabled}
