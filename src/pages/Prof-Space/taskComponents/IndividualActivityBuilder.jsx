@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { FiArrowLeft, FiPlus, FiTrash2 } from 'react-icons/fi';
-import { useFile } from '../../../contexts/file/fileContextProvider';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import { FiArrowLeft, FiPlus, FiTrash2 } from "react-icons/fi";
+import { useFile } from "../../../contexts/file/fileContextProvider";
+import { toast } from "react-toastify";
 
-const IndividualActivityBuilder = ({ 
-  currentColors, 
+const IndividualActivityBuilder = ({
+  currentColors,
   editingTask,
-  onBack, 
-  onSave, 
+  onBack,
+  onSave,
   onUpdate,
   onPublish,
-  isLoading = false 
+  isLoading = false,
 }) => {
   const { resources } = useFile();
-  const [activityTitle, setActivityTitle] = useState('');
-  const [instruction, setInstruction] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [selectedLesson, setSelectedLesson] = useState('');
-  
+  const [activityTitle, setActivityTitle] = useState("");
+  const [instruction, setInstruction] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [selectedLesson, setSelectedLesson] = useState("");
+
   // Validation state
   const [errors, setErrors] = useState({
-    activityTitle: '',
-    dueDate: '',
-    selectedLesson: '',
-    questions: []
+    activityTitle: "",
+    dueDate: "",
+    selectedLesson: "",
+    questions: [],
   });
 
   const [showUpdateConfirmation, setShowUpdateConfirmation] = useState(false);
@@ -33,21 +33,21 @@ const IndividualActivityBuilder = ({
     const tzOffsetMs = now.getTimezoneOffset() * 60000;
     return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 16);
   };
-  
+
   const [questions, setQuestions] = useState([
     {
       id: 1,
-      question: '',
-      answer: '',
+      question: "",
+      answer: "",
       points: 5,
     },
   ]);
 
   // Initialize questions errors array
   useEffect(() => {
-    setErrors(prev => ({
+    setErrors((prev) => ({
       ...prev,
-      questions: questions.map(() => ({ question: '', answer: '' }))
+      questions: questions.map(() => ({ question: "", answer: "" })),
     }));
   }, [questions.length]);
 
@@ -57,27 +57,33 @@ const IndividualActivityBuilder = ({
       // Handle different possible data structures
       const taskData = editingTask.rawData || editingTask;
 
-      setActivityTitle(taskData.task_title || taskData.title || '');
-      setInstruction(taskData.task_instruction || taskData.instruction || '');
-      setDueDate(taskData.due_date || taskData.dueDate || '');
-      setSelectedLesson(taskData.selected_lesson || taskData.selectedLesson || '');
+      setActivityTitle(taskData.task_title || taskData.title || "");
+      setInstruction(taskData.task_instruction || taskData.instruction || "");
+      setDueDate(taskData.due_date || taskData.dueDate || "");
+      setSelectedLesson(
+        taskData.selected_lesson || taskData.selectedLesson || "",
+      );
 
       // Parse questions if they exist
       if (taskData.questions && Array.isArray(taskData.questions)) {
         const parsedQuestions = taskData.questions.map((q, index) => ({
           id: index + 1,
-          question: q.question || '',
-          answer: q.answer || q.correctAnswer || '',
+          question: q.question || "",
+          answer: q.answer || q.correctAnswer || "",
           points: q.points || 5,
         }));
-        setQuestions(parsedQuestions.length > 0 ? parsedQuestions : [
-          {
-            id: 1,
-            question: '',
-            answer: '',
-            points: 5,
-          }
-        ]);
+        setQuestions(
+          parsedQuestions.length > 0
+            ? parsedQuestions
+            : [
+                {
+                  id: 1,
+                  question: "",
+                  answer: "",
+                  points: 5,
+                },
+              ],
+        );
       }
     }
   }, [editingTask]);
@@ -85,39 +91,40 @@ const IndividualActivityBuilder = ({
   // Validation functions
   const validateForm = () => {
     const newErrors = {
-      activityTitle: '',
-      dueDate: '',
-      selectedLesson: '',
-      questions: questions.map(() => ({ question: '', answer: '' }))
+      activityTitle: "",
+      dueDate: "",
+      selectedLesson: "",
+      questions: questions.map(() => ({ question: "", answer: "" })),
     };
     let isValid = true;
 
     // Validate activity title
     if (!activityTitle.trim()) {
-      newErrors.activityTitle = 'Activity title is required';
+      newErrors.activityTitle = "Activity title is required";
       isValid = false;
     }
 
     // Validate due date
     if (!dueDate) {
-      newErrors.dueDate = 'Due date is required';
+      newErrors.dueDate = "Due date is required";
       isValid = false;
     }
 
     // Validate lesson selection
     if (!selectedLesson) {
-      newErrors.selectedLesson = 'Please select a lesson';
+      newErrors.selectedLesson = "Please select a lesson";
       isValid = false;
     }
 
     // Validate questions
     questions.forEach((question, index) => {
       if (!question.question.trim()) {
-        newErrors.questions[index].question = 'Question text is required';
+        newErrors.questions[index].question = "Question text is required";
         isValid = false;
       }
       if (!question.answer.trim()) {
-        newErrors.questions[index].answer = 'Answer is required for grading reference';
+        newErrors.questions[index].answer =
+          "Answer is required for grading reference";
         isValid = false;
       }
     });
@@ -127,16 +134,16 @@ const IndividualActivityBuilder = ({
   };
 
   const clearError = (field, questionIndex = null) => {
-    setErrors(prev => {
+    setErrors((prev) => {
       if (questionIndex !== null) {
         const newQuestions = [...prev.questions];
         newQuestions[questionIndex] = {
           ...newQuestions[questionIndex],
-          [field]: ''
+          [field]: "",
         };
         return { ...prev, questions: newQuestions };
       }
-      return { ...prev, [field]: '' };
+      return { ...prev, [field]: "" };
     });
   };
 
@@ -146,14 +153,11 @@ const IndividualActivityBuilder = ({
     0,
   );
 
-
-
-
   const addQuestion = () => {
     const newQuestion = {
       id: questions.length + 1,
-      question: '',
-      answer: '',
+      question: "",
+      answer: "",
       points: 5,
     };
     setQuestions([...questions, newQuestion]);
@@ -179,13 +183,13 @@ const IndividualActivityBuilder = ({
 
     // Format questions for individual activity
     const formattedQuestions = questions.map((question) => ({
-      question_type: 'individual-activity',
+      question_type: "individual-activity",
       question: question.question,
       point: question.points || 1,
       choices: [
         {
-          letter_identifier: 'A',
-          choice_answer: question.answer || '',
+          letter_identifier: "A",
+          choice_answer: question.answer || "",
           isRightAnswer: true,
         },
       ],
@@ -193,16 +197,16 @@ const IndividualActivityBuilder = ({
 
     const taskData = {
       task_id: editingTask?.task_id,
-      task_category: 'individual-activity',
+      task_category: "individual-activity",
       task_title: activityTitle,
       due_date: new Date(dueDate).toISOString(),
       task_instruction: instruction,
-      total_score: totalScore,
+      total_items_score: totalScore,
       lesson_id: selectedLesson ? parseInt(selectedLesson) : null,
       questions: formattedQuestions,
     };
 
-    if (status === 'published') {
+    if (status === "published") {
       if (editingTask) {
         onUpdate(taskData);
       } else {
@@ -216,19 +220,19 @@ const IndividualActivityBuilder = ({
   };
 
   const handleUpdateTask = () => {
-    handleSave('published');
+    handleSave("published");
   };
 
   const resetForm = () => {
-    setActivityTitle('');
-    setInstruction('');
-    setDueDate('');
-    setSelectedLesson('');
+    setActivityTitle("");
+    setInstruction("");
+    setDueDate("");
+    setSelectedLesson("");
     setQuestions([
       {
         id: 1,
-        question: '',
-        answer: '',
+        question: "",
+        answer: "",
         points: 1,
       },
     ]);
@@ -243,7 +247,7 @@ const IndividualActivityBuilder = ({
           style={{
             backgroundColor: currentColors.surface,
             color: currentColors.text,
-            border: `1px solid ${currentColors.border}`
+            border: `1px solid ${currentColors.border}`,
           }}
           onMouseEnter={(e) => {
             e.target.style.backgroundColor = currentColors.hover;
@@ -260,10 +264,21 @@ const IndividualActivityBuilder = ({
       </div>
 
       {/* ACTIVITY FORM */}
-      <div className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border" style={{ backgroundColor: currentColors.surface, borderColor: currentColors.border }}>
+      <div
+        className="rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border"
+        style={{
+          backgroundColor: currentColors.surface,
+          borderColor: currentColors.border,
+        }}
+      >
         <div className="flex items-center gap-3 mb-6">
           <div className="text-3xl">📄</div>
-          <h1 className="text-2xl font-bold" style={{ color: currentColors.text }}>Individual Activity Builder</h1>
+          <h1
+            className="text-2xl font-bold"
+            style={{ color: currentColors.text }}
+          >
+            Individual Activity Builder
+          </h1>
         </div>
 
         {/* BASIC INFO */}
@@ -281,20 +296,24 @@ const IndividualActivityBuilder = ({
                 value={activityTitle}
                 onChange={(e) => {
                   setActivityTitle(e.target.value);
-                  clearError('activityTitle');
+                  clearError("activityTitle");
                 }}
                 className={`w-full rounded-lg px-4 py-2 outline-none border ${
-                  errors.activityTitle ? 'border-red-500' : ''
+                  errors.activityTitle ? "border-red-500" : ""
                 }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: errors.activityTitle ? '#ef4444' : currentColors.border,
+                  borderColor: errors.activityTitle
+                    ? "#ef4444"
+                    : currentColors.border,
                 }}
                 placeholder="Enter activity title"
               />
               {errors.activityTitle && (
-                <p className="text-red-500 text-sm mt-1">{errors.activityTitle}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.activityTitle}
+                </p>
               )}
             </div>
 
@@ -332,15 +351,17 @@ const IndividualActivityBuilder = ({
                 value={dueDate}
                 onChange={(e) => {
                   setDueDate(e.target.value);
-                  clearError('dueDate');
+                  clearError("dueDate");
                 }}
                 className={`w-full rounded-lg px-4 py-2 outline-none border ${
-                  errors.dueDate ? 'border-red-500' : ''
+                  errors.dueDate ? "border-red-500" : ""
                 }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: errors.dueDate ? '#ef4444' : currentColors.border,
+                  borderColor: errors.dueDate
+                    ? "#ef4444"
+                    : currentColors.border,
                 }}
                 min={getLocalDateTimeMin()}
               />
@@ -360,15 +381,17 @@ const IndividualActivityBuilder = ({
                 value={selectedLesson}
                 onChange={(e) => {
                   setSelectedLesson(e.target.value);
-                  clearError('selectedLesson');
+                  clearError("selectedLesson");
                 }}
                 className={`w-full rounded-lg px-4 py-2 outline-none border ${
-                  errors.selectedLesson ? 'border-red-500' : ''
+                  errors.selectedLesson ? "border-red-500" : ""
                 }`}
                 style={{
                   backgroundColor: currentColors.background,
                   color: currentColors.text,
-                  borderColor: errors.selectedLesson ? '#ef4444' : currentColors.border,
+                  borderColor: errors.selectedLesson
+                    ? "#ef4444"
+                    : currentColors.border,
                 }}
                 required
               >
@@ -380,7 +403,9 @@ const IndividualActivityBuilder = ({
                 ))}
               </select>
               {errors.selectedLesson && (
-                <p className="text-red-500 text-sm mt-1">{errors.selectedLesson}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.selectedLesson}
+                </p>
               )}
             </div>
           </div>
@@ -416,7 +441,6 @@ const IndividualActivityBuilder = ({
             >
               Questions
             </h2>
-            
           </div>
 
           {questions.map((question, index) => (
@@ -486,20 +510,24 @@ const IndividualActivityBuilder = ({
                     value={question.question}
                     onChange={(e) => {
                       updateQuestion(question.id, "question", e.target.value);
-                      clearError('question', index);
+                      clearError("question", index);
                     }}
                     placeholder="Enter your question..."
                     className={`w-full rounded-lg px-4 py-3 outline-none border h-20 ${
-                      errors.questions[index]?.question ? 'border-red-500' : ''
+                      errors.questions[index]?.question ? "border-red-500" : ""
                     }`}
                     style={{
                       backgroundColor: currentColors.surface,
                       color: currentColors.text,
-                      borderColor: errors.questions[index]?.question ? '#ef4444' : currentColors.border,
+                      borderColor: errors.questions[index]?.question
+                        ? "#ef4444"
+                        : currentColors.border,
                     }}
                   />
                   {errors.questions[index]?.question && (
-                    <p className="text-red-500 text-sm mt-1">{errors.questions[index].question}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.questions[index].question}
+                    </p>
                   )}
                 </div>
 
@@ -514,27 +542,30 @@ const IndividualActivityBuilder = ({
                     value={question.answer}
                     onChange={(e) => {
                       updateQuestion(question.id, "answer", e.target.value);
-                      clearError('answer', index);
+                      clearError("answer", index);
                     }}
                     placeholder="Enter expected answer or key points..."
                     className={`w-full rounded-lg px-4 py-3 outline-none border h-20 ${
-                      errors.questions[index]?.answer ? 'border-red-500' : ''
+                      errors.questions[index]?.answer ? "border-red-500" : ""
                     }`}
                     style={{
                       backgroundColor: currentColors.surface,
                       color: currentColors.text,
-                      borderColor: errors.questions[index]?.answer ? '#ef4444' : currentColors.border,
+                      borderColor: errors.questions[index]?.answer
+                        ? "#ef4444"
+                        : currentColors.border,
                     }}
                   />
                   {errors.questions[index]?.answer && (
-                    <p className="text-red-500 text-sm mt-1">{errors.questions[index].answer}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.questions[index].answer}
+                    </p>
                   )}
                 </div>
               </div>
             </div>
           ))}
         </div>
-
 
         {/* ACTION BUTTONS */}
         <div className="flex flex-col items-end gap-4 mt-8">
@@ -545,33 +576,33 @@ const IndividualActivityBuilder = ({
           >
             <FiPlus size={16} /> Add Question
           </button>
-          
+
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
             <button
               className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
               style={{
-                backgroundColor: '#2563eb',
-                color: '#ffffff'
+                backgroundColor: "#2563eb",
+                color: "#ffffff",
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#1d4ed8';
+                e.target.style.backgroundColor = "#1d4ed8";
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#2563eb';
+                e.target.style.backgroundColor = "#2563eb";
               }}
               onClick={() => {
                 if (editingTask) {
                   setShowUpdateConfirmation(true);
                 } else {
-                  handleSave('published');
+                  handleSave("published");
                 }
               }}
             >
               {isLoading
-                ? 'Publishing...'
+                ? "Publishing..."
                 : editingTask
-                  ? 'Update and Publish'
-                  : 'Publish Activity'}
+                  ? "Update and Publish"
+                  : "Publish Activity"}
             </button>
           </div>
         </div>
@@ -594,11 +625,10 @@ const IndividualActivityBuilder = ({
             >
               Update and Publish Activity
             </h3>
-            <p
-              className="mb-6"
-              style={{ color: currentColors.textSecondary }}
-            >
-              Are you sure you want to update and publish this individual activity? This will make the changes visible to students immediately.
+            <p className="mb-6" style={{ color: currentColors.textSecondary }}>
+              Are you sure you want to update and publish this individual
+              activity? This will make the changes visible to students
+              immediately.
             </p>
             <div className="flex gap-3 justify-end">
               <button

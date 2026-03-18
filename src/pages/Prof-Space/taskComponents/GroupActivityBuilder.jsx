@@ -102,16 +102,18 @@ const GroupActivityBuilder = ({
     if (editingTask) {
       // Basic task information
       setActivityTitle(editingTask.task_title || editingTask.title || "");
-      setInstruction(editingTask.task_instruction || editingTask.instruction || "");
+      setInstruction(
+        editingTask.task_instruction || editingTask.instruction || "",
+      );
       setScore(editingTask.task_score || editingTask.score || "");
       setDueDate(editingTask.task_due || editingTask.due_date || "");
       setSelectedLesson(editingTask.task_lesson || editingTask.lesson || "");
-      
+
       // Group activity specific settings
       setGroupSize(editingTask.group_size || "3");
       setAllowSelfGrouping(editingTask.allow_self_grouping || false);
       setPeerEvaluation(editingTask.peer_evaluation || false);
-      
+
       // Groups data - handle different possible data structures
       if (editingTask.groups && Array.isArray(editingTask.groups)) {
         setGroups(editingTask.groups);
@@ -120,7 +122,9 @@ const GroupActivityBuilder = ({
       } else if (editingTask.rawData && editingTask.rawData.groups) {
         setGroups(editingTask.rawData.groups);
         setGroupsConfigured(true);
-        setGroupCreationMethod(editingTask.rawData.group_creation_method || "manual");
+        setGroupCreationMethod(
+          editingTask.rawData.group_creation_method || "manual",
+        );
       }
     }
   }, [editingTask]);
@@ -603,7 +607,7 @@ const GroupActivityBuilder = ({
       space_uuid: space_uuid, // Use actual space UUID from params
       task_title: activityTitle,
       due_date: dueDate,
-      task_score: Number(score),
+      total_items_score: Number(score),
       lesson_id: selectedLesson ? parseInt(selectedLesson) : null,
       task_instruction: instruction,
       groups: groupsPayload,
@@ -1157,7 +1161,11 @@ const GroupActivityBuilder = ({
               }}
               onClick={() => handleSave("published")}
             >
-              {isLoading ? "Publishing..." : (editingTask ? "Update & Publish" : "Publish Activity")}
+              {isLoading
+                ? "Publishing..."
+                : editingTask
+                  ? "Update & Publish"
+                  : "Publish Activity"}
             </button>
           </div>
         </div>
@@ -1800,8 +1808,8 @@ const GroupActivityBuilder = ({
               Confirm Group Activity Update
             </h3>
             <p className="mb-6" style={{ color: currentColors.textSecondary }}>
-              Are you sure you want to update this group activity? This will modify the
-              existing activity and notify all enrolled students.
+              Are you sure you want to update this group activity? This will
+              modify the existing activity and notify all enrolled students.
             </p>
             <div className="flex gap-3">
               <button
