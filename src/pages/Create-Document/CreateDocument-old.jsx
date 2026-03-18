@@ -15,7 +15,7 @@ const CreateDocumentPage = () => {
   const navigate = useNavigate();
   const { state: locationState } = useLocation();
   const { user } = useUser();
-  const { space_uuid, file_uuid, file_name } = useParams();
+  const { space_uuid, file_uuid, file_name, task_name, group_name } = useParams();
   const { isDarkMode, colors, toggleTheme } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
@@ -33,7 +33,7 @@ const CreateDocumentPage = () => {
   const { draft, list } = useFileManager(currentSpace?.space_id);
   const file = list.data?.find((f) => f.file_uuid === file_uuid) || {};
 
-  const [title]                             = useState(locationState?.documentTitle || file_name || "");
+  const [title]                             = useState(locationState?.documentTitle || file_name || `${task_name} - ${group_name}` || "");
   const [saveStatus, setSaveStatus]         = useState("saved");
   const [lastSaved, setLastSaved]           = useState(null);
   const [connectedUsers, setConnectedUsers] = useState([]);

@@ -9,6 +9,7 @@ import {
   FiFileText,
   FiCheckCircle,
   FiDownload,
+  FiUser,
 } from "react-icons/fi";
 import { useTasks } from "../../../hooks/useTasks";
 import { useUser } from "../../../contexts/user/useUser";
@@ -22,9 +23,13 @@ const ActivityDetailsPage = () => {
   const { space_uuid, space_name, task_id, task_title } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useUser();
-  const { space } = useSpace();
+  const { space, studentGroup, studentGroupLoading, setTaskId } = useSpace();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
+
+  if (task_id) {
+    setTaskId(task_id);
+  }
 
   // Use useTasks hook to get uploaded tasks
   const { uploadedTasksQuery } = useTasks(space_uuid);
@@ -141,6 +146,13 @@ const ActivityDetailsPage = () => {
     // Navigate to the activity taking page or open modal
     toast.info("Starting activity...");
     // You can implement the actual activity taking logic here
+  };
+
+  // Handle group card click - navigate to group-specific path
+  const handleGroupClick = (group) => {
+    navigate(
+      `/document/${space_uuid}/${encodeURIComponent(space_name)}/${encodeURIComponent(task.task_title)}/${task_id}/${encodeURIComponent(group.group_name)}/${group.group_id}`
+    );
   };
 
   const formatDueDate = (dueDate) => {
@@ -414,6 +426,214 @@ const ActivityDetailsPage = () => {
                       </Button>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Your Group Information - Only show for group activities */}
+            {task.task_category === "group-activity" && studentGroup && (
+              <div className="mt-6 sm:mt-8">
+                <div className="flex justify-between items-center mb-3 sm:mb-4">
+                  <h3 className="text-sm sm:text-base font-semibold">
+                    Your Group:
+                  </h3>
+                  <div
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
+                    style={{
+                      backgroundColor: "#3b82f6",
+                      color: "white",
+                    }}
+                  >
+                    <FiUser size={16} />
+                    {studentGroup.members?.length || 0} Members
+                  </div>
+                </div>
+
+                {/* Mobile Card View - For small screens */}
+                <div className="block sm:hidden">
+                  <div
+                    className="rounded-lg border p-3 cursor-pointer transition-all hover:shadow-md"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      borderColor: currentColors.border,
+                      transition: "background-color 0.2s ease",
+                    }}
+                    onClick={() => handleGroupClick(studentGroup)}
+                  >
+                    {/* Group Name */}
+                    <div className="mb-2">
+                      <h4
+                        className="font-semibold text-sm mb-2"
+                        style={{ color: currentColors.text }}
+                      >
+                        {studentGroup.group_name}
+                      </h4>
+                    </div>
+
+                    {/* Group Leader */}
+                    <div className="mb-2">
+                      <div
+                        className="text-xs font-medium mb-1"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        GROUP LEADER:
+                      </div>
+                      <div
+                        className="text-xs font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        {studentGroup.members?.find((m) => m.is_leader)
+                          ?.student_name || "No leader assigned"}
+                      </div>
+                    </div>
+
+                    {/* Members */}
+                    <div className="mb-2">
+                      <div
+                        className="text-xs font-medium mb-1"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        MEMBERS:
+                      </div>
+                      <div className="space-y-1">
+                        {studentGroup.members
+                          ?.filter((m) => !m.is_leader)
+                          .map((member, index) => (
+                            <div
+                              key={index}
+                              className="text-xs flex items-center gap-1"
+                              style={{ color: currentColors.text }}
+                            >
+                              <span className="text-xs">•</span>
+                              {member.student_name}
+                            </div>
+                          )) || (
+                            <div
+                              className="text-xs"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              No other members
+                            </div>
+                          )}
+                      </div>
+                    </div>
+
+                    {/* Member Count Badge */}
+                    <div className="flex justify-end">
+                      <span
+                        className="text-xs px-2 py-1 rounded-full font-medium"
+                        style={{
+                          backgroundColor: currentColors.surface,
+                          color:
+                            currentColors.primary || currentColors.text,
+                        }}
+                      >
+                        {studentGroup.members?.length || 0} members
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop View - For medium screens and up */}
+                <div className="hidden sm:block">
+                  <div
+                    className="rounded-lg border p-4 transition-all hover:shadow-md cursor-pointer max-w-md"
+                    style={{
+                      backgroundColor: currentColors.background,
+                      borderColor: currentColors.border,
+                    }}
+                    onClick={() => handleGroupClick(studentGroup)}
+                  >
+                    {/* Group Name */}
+                    <div className="mb-3">
+                      <h4
+                        className="font-semibold text-base mb-2"
+                        style={{ color: currentColors.text }}
+                      >
+                        {studentGroup.group_name}
+                      </h4>
+                    </div>
+
+                    {/* Group Leader */}
+                    <div className="mb-3">
+                      <div
+                        className="text-xs font-medium mb-1"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        GROUP LEADER:
+                      </div>
+                      <div
+                        className="text-sm font-medium"
+                        style={{ color: currentColors.text }}
+                      >
+                        {studentGroup.members?.find((m) => m.is_leader)
+                          ?.student_name || "No leader assigned"}
+                      </div>
+                    </div>
+
+                    {/* Members */}
+                    <div className="mb-3">
+                      <div
+                        className="text-xs font-medium mb-1"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        MEMBERS:
+                      </div>
+                      <div className="space-y-1">
+                        {studentGroup.members
+                          ?.filter((m) => !m.is_leader)
+                          .map((member, index) => (
+                            <div
+                              key={index}
+                              className="text-sm flex items-center gap-2"
+                              style={{ color: currentColors.text }}
+                            >
+                              <span className="text-xs">•</span>
+                              {member.student_name}
+                            </div>
+                          )) || (
+                            <div
+                              className="text-sm"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              No other members
+                            </div>
+                          )}
+                      </div>
+                    </div>
+
+                    {/* Member Count Badge */}
+                    <div className="flex justify-end">
+                      <span
+                        className="text-xs px-3 py-1 rounded-full font-medium"
+                        style={{
+                          backgroundColor: currentColors.surface,
+                          color:
+                            currentColors.primary || currentColors.text,
+                        }}
+                      >
+                        {studentGroup.members?.length || 0} members
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Empty state for group activities when user has no group */}
+            {task.task_category === "group-activity" && (!studentGroup || studentGroupLoading) && (
+              <div className="mt-6 sm:mt-8">
+                <div
+                  className="text-center py-8 sm:py-12"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">👥</div>
+                  <p className="text-sm sm:text-base">
+                    {studentGroupLoading ? "Loading your group information..." : "You haven't been assigned to a group yet."}
+                  </p>
+                  <p className="text-xs sm:text-sm mt-1">
+                    {studentGroupLoading ? "Please wait..." : "Check back later for group assignments."}
+                  </p>
                 </div>
               </div>
             )}
