@@ -162,7 +162,7 @@ const NotificationPage = () => {
 
   return (
     <div
-      className="flex font-sans min-h-screen"
+      className="flex font-sans min-h-screen w-full"
       style={{
         backgroundColor: isDarkMode ? "#161A20" : currentColors.background,
         color: currentColors.text,
@@ -198,7 +198,7 @@ const NotificationPage = () => {
       </div>
 
       {/* MAIN */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full min-w-0">
         {/* 🔥 Sticky Mobile Header */}
         <div
           className={`lg:hidden fixed top-0 left-0 right-0 z-30 border-b
@@ -230,7 +230,7 @@ const NotificationPage = () => {
         </div>
 
         {/* ✅ CONTENT */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto">
+        <div className="flex-1 p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 lg:pt-10 overflow-y-auto w-full">
           <h1
             className="hidden lg:block text-2xl lg:text-4xl font-bold text-center mb-6 lg:mb-10"
             style={{ color: currentColors.text }}
@@ -540,7 +540,7 @@ const NotificationPage = () => {
                                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#3B82F6" }}></div>
                               )}
                               <p
-                                className="text-sm font-semibold"
+                                className="text-sm font-semibold break-words overflow-wrap-anywhere"
                                 style={{ color: currentColors.text }}
                               >
                                 {announcement.title}
@@ -855,8 +855,8 @@ const NotificationPage = () => {
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#3B82F6" }}></div>
                   <h2
-                    className="text-xl font-bold"
-                    style={{ color: currentColors.text }}
+                    className="text-xl font-bold break-words overflow-wrap-anywhere"
+                    style={{ color: isDarkMode ? "white" : "#1F2937" }}
                   >
                     {selectedAnnouncement.title}
                   </h2>
