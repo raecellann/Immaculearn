@@ -10,6 +10,7 @@ import { useUser } from "../../contexts/user/useUser";
 import { useFileManager } from "../../hooks/useFileManager";
 import { useSpace } from "../../contexts/space/useSpace";
 import CollaborativeEditor from "./components-old/CollaborativeEditor";
+import ProfSidebar from "../component/profsidebar";
 
 const CreateDocumentPage = () => {
   const navigate = useNavigate();
@@ -214,7 +215,8 @@ const CreateDocumentPage = () => {
 
       {/* ── Desktop sidebar ───────────────────────────────────────────────── */}
       <div className="hidden lg:flex flex-shrink-0">
-        <Sidebar />
+        {user?.role === "professor" ? <ProfSidebar/> : <Sidebar />}
+        
       </div>
 
       {/* ── Mobile sidebar overlay ────────────────────────────────────────── */}
