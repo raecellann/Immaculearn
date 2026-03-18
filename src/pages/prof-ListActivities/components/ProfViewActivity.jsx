@@ -20,17 +20,29 @@ const ProfViewActivityPage = () => {
   const [quizData, setQuizData] = useState(null);
   const [showStudentAnswers, setShowStudentAnswers] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [groups, setGroups] = useState([]);
   const navigate = useNavigate();
   const { isAuthenticated } = useUser();
   const { isDarkMode, colors } = useSpaceTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
-  const { allUserCompletedTask, allUserCompletedTaskLoading, setTaskId } =
-    useSpace();
+  const {
+    allUserCompletedTask,
+    allUserCompletedTaskLoading,
+    groupsData,
+    groupsDataLoading,
+    setTaskId,
+  } = useSpace();
 
   if (task_id) {
     setTaskId(task_id);
   }
+
+
+  // useEffect(() => {
+  //   if (!groupsData || groupsData.length === 0) return;
+  //   setGroups(groupsData);
+  // }, [groupsData]);
 
   // Use useTasks hook to fetch tasks
   const { uploadedTasksQuery, draftedTasksQuery } = useTasks(space_uuid);
@@ -70,6 +82,13 @@ const ProfViewActivityPage = () => {
   const handleResponseSummary = () => {
     navigate(
       `/prof/response-summary/${space_uuid}/${encodeURIComponent(space_name)}/${encodeURIComponent(decodedTaskName)}/${task_id}`,
+    );
+  };
+
+  // Handle group card click - navigate to group-specific path
+  const handleGroupClick = (group) => {
+    navigate(
+      `/document/${space_uuid}/${encodeURIComponent(space_name)}/${encodeURIComponent(decodedTaskName)}/${task_id}/${encodeURIComponent(group.group_name)}/${group.group_id}`
     );
   };
 
@@ -144,37 +163,6 @@ const ProfViewActivityPage = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  // useEffect(() => {
-  //   // Fetch quiz data based on currentTask from useTasks
-
-  //   try {
-  //     // Use currentTask data if found
-  //     if (currentTask) {
-  //       console.log("Setting quiz data from currentTask:", currentTask);
-  //       setQuizData(currentTask);
-  //     } else {
-  //       // Fallback to localStorage for local tasks
-  //       const savedQuiz = localStorage.getItem("quizTask");
-  //       if (savedQuiz) {
-  //         const parsedQuiz = JSON.parse(savedQuiz);
-  //         console.log("Found saved quiz data:", parsedQuiz);
-
-  //         // Check if this quiz matches the current task_id
-  //         if (parsedQuiz.task_id === task_id || parsedQuiz.id === task_id) {
-  //           setQuizData(parsedQuiz);
-  //           console.log("Set quiz data from localStorage");
-  //         } else {
-  //           console.log("Saved quiz doesn't match current task_id");
-  //         }
-  //       }
-  //     }
-
-  //     // TODO: Add API call to fetch task data from backend using task_id if not found
-  //     // Example: fetchTaskData(task_id, space_uuid)
-  //   } catch (error) {
-  //     console.error("Error fetching quiz data:", error);
-  //   }
-  // }, [task_id, space_uuid, currentTask]);
 
   const formatDueDate = (dueDate) => {
     if (!dueDate) return "No due date set";
@@ -338,13 +326,12 @@ const ProfViewActivityPage = () => {
             <div className="mt-6 sm:mt-8">
               <div className="flex justify-between items-center mb-3 sm:mb-4">
                 <h3 className="text-sm sm:text-base font-semibold">
-                  {currentTask?.task_category === 'group-activity' 
-                    ? 'Groups in This Activity:'
-                    : 'Students Who Completed This Quiz:'
-                  }
+                  {currentTask?.task_category === "group-activity"
+                    ? "Groups in This Activity:"
+                    : "Students Who Completed This Quiz:"}
                 </h3>
-                {currentTask?.task_category === 'group-activity' ? (
-                  <div 
+                {currentTask?.task_category === "group-activity" ? (
+                  <div
                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
                     style={{
                       backgroundColor: "#3b82f6",
@@ -352,7 +339,7 @@ const ProfViewActivityPage = () => {
                     }}
                   >
                     <FiUser size={16} />
-                    {allUserCompletedTask?.groups?.length || 0} Groups
+                    {groupsData?.length || 0} Groups
                   </div>
                 ) : (
                   <button
@@ -378,47 +365,8 @@ const ProfViewActivityPage = () => {
               {/* Mobile Card View - For small screens */}
               <div className="block sm:hidden">
                 <div className="space-y-3">
-                  {currentTask?.task_category === 'group-activity' 
-                    ? [
-                      {
-                        group_id: 1,
-                        group_name: "Group 1",
-                        members: [
-                          { student_name: "John Smith", is_leader: true },
-                          { student_name: "Emily Johnson", is_leader: false },
-                          { student_name: "Michael Chen", is_leader: false },
-                          { student_name: "Sarah Williams", is_leader: false }
-                        ]
-                      },
-                      {
-                        group_id: 2,
-                        group_name: "Group 2",
-                        members: [
-                          { student_name: "David Martinez", is_leader: true },
-                          { student_name: "Lisa Anderson", is_leader: false },
-                          { student_name: "James Wilson", is_leader: false }
-                        ]
-                      },
-                      {
-                        group_id: 3,
-                        group_name: "Group 3",
-                        members: [
-                          { student_name: "Robert Taylor", is_leader: true },
-                          { student_name: "Maria Garcia", is_leader: false },
-                          { student_name: "Thomas Brown", is_leader: false },
-                          { student_name: "Jennifer Davis", is_leader: false },
-                          { student_name: "William Miller", is_leader: false }
-                        ]
-                      },
-                      {
-                        group_id: 4,
-                        group_name: "Group 4",
-                        members: [
-                          { student_name: "Christopher Lee", is_leader: true },
-                          { student_name: "Amanda White", is_leader: false }
-                        ]
-                      }
-                    ].map((group) => (
+                  {currentTask?.task_category === "group-activity"
+                    ? groupsData?.map((group) => (
                         <div
                           key={group.group_id}
                           className="rounded-lg border p-3 cursor-pointer transition-all hover:shadow-md"
@@ -427,6 +375,7 @@ const ProfViewActivityPage = () => {
                             borderColor: currentColors.border,
                             transition: "background-color 0.2s ease",
                           }}
+                          onClick={() => handleGroupClick(group)}
                         >
                           {/* Group Name */}
                           <div className="mb-2">
@@ -450,7 +399,8 @@ const ProfViewActivityPage = () => {
                               className="text-xs font-medium"
                               style={{ color: currentColors.text }}
                             >
-                              {group.members?.find(m => m.is_leader)?.student_name || 'No leader assigned'}
+                              {group.members?.find((m) => m.is_leader)
+                                ?.student_name || "No leader assigned"}
                             </div>
                           </div>
 
@@ -463,16 +413,25 @@ const ProfViewActivityPage = () => {
                               MEMBERS:
                             </div>
                             <div className="space-y-1">
-                              {group.members?.filter(m => !m.is_leader).map((member, index) => (
+                              {group.members
+                                ?.filter((m) => !m.is_leader)
+                                .map((member, index) => (
+                                  <div
+                                    key={index}
+                                    className="text-xs flex items-center gap-1"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    <span className="text-xs">•</span>
+                                    {member.student_name}
+                                  </div>
+                                )) || (
                                 <div
-                                  key={index}
-                                  className="text-xs flex items-center gap-1"
-                                  style={{ color: currentColors.text }}
+                                  className="text-xs"
+                                  style={{ color: currentColors.textSecondary }}
                                 >
-                                  <span className="text-xs">•</span>
-                                  {member.student_name}
+                                  No members
                                 </div>
-                              )) || <div className="text-xs" style={{ color: currentColors.textSecondary }}>No members</div>}
+                              )}
                             </div>
                           </div>
 
@@ -482,7 +441,8 @@ const ProfViewActivityPage = () => {
                               className="text-xs px-2 py-1 rounded-full font-medium"
                               style={{
                                 backgroundColor: currentColors.surface,
-                                color: currentColors.primary || currentColors.text,
+                                color:
+                                  currentColors.primary || currentColors.text,
                               }}
                             >
                               {group.members?.length || 0} members
@@ -512,7 +472,8 @@ const ProfViewActivityPage = () => {
                               className="text-xs px-2 py-1 rounded-full font-medium"
                               style={{
                                 backgroundColor: currentColors.surface,
-                                color: currentColors.primary || currentColors.text,
+                                color:
+                                  currentColors.primary || currentColors.text,
                               }}
                             >
                               {student.score}/{student.total_items_score}
@@ -523,11 +484,17 @@ const ProfViewActivityPage = () => {
                             style={{ color: currentColors.textSecondary }}
                           >
                             Completed:{" "}
-                            {new Date(student.completed_at).toLocaleDateString()} at{" "}
-                            {new Date(student.completed_at).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(
+                              student.completed_at,
+                            ).toLocaleDateString()}{" "}
+                            at{" "}
+                            {new Date(student.completed_at).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
                           </div>
                           <div
                             className="text-xs mt-1"
@@ -536,148 +503,120 @@ const ProfViewActivityPage = () => {
                             Click to view answers
                           </div>
                         </div>
-                      ))
-                  }
+                      ))}
                 </div>
               </div>
 
               {/* Desktop Table View - For medium screens and up */}
               <div className="hidden sm:block">
-                {currentTask?.task_category === 'group-activity' ? (
+                {currentTask?.task_category === "group-activity" ? (
                   <div>
                     {/* Group Activity - Grid of Group Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                       {/* Mock data for design demonstration */}
-                      {[
-                        {
-                          group_id: 1,
-                          group_name: "Group 1",
-                          members: [
-                            { student_name: "John Smith", is_leader: true },
-                            { student_name: "Emily Johnson", is_leader: false },
-                            { student_name: "Michael Chen", is_leader: false },
-                            { student_name: "Sarah Williams", is_leader: false }
-                          ]
-                        },
-                        {
-                          group_id: 2,
-                          group_name: "Group 2",
-                          members: [
-                            { student_name: "David Martinez", is_leader: true },
-                            { student_name: "Lisa Anderson", is_leader: false },
-                            { student_name: "James Wilson", is_leader: false }
-                          ]
-                        },
-                        {
-                          group_id: 3,
-                          group_name: "Group 3",
-                          members: [
-                            { student_name: "Robert Taylor", is_leader: true },
-                            { student_name: "Maria Garcia", is_leader: false },
-                            { student_name: "Thomas Brown", is_leader: false },
-                            { student_name: "Jennifer Davis", is_leader: false },
-                            { student_name: "William Miller", is_leader: false }
-                          ]
-                        },
-                        {
-                          group_id: 4,
-                          group_name: "Group 4",
-                          members: [
-                            { student_name: "Christopher Lee", is_leader: true },
-                            { student_name: "Amanda White", is_leader: false }
-                          ]
-                        }
-                      ].map((group) => (
-                      <div
-                        key={group.group_id}
-                        className="rounded-lg border p-4 transition-all hover:shadow-md"
-                        style={{
-                          backgroundColor: currentColors.background,
-                          borderColor: currentColors.border,
-                        }}
-                      >
-                        {/* Group Name */}
-                        <div className="mb-3">
-                          <h4
-                            className="font-semibold text-base mb-2"
-                            style={{ color: currentColors.text }}
-                          >
-                            {group.group_name}
-                          </h4>
-                        </div>
+                      {groupsData?.map((group) => (
+                        <div
+                          key={group.group_id}
+                          className="rounded-lg border p-4 transition-all hover:shadow-md cursor-pointer"
+                          style={{
+                            backgroundColor: currentColors.background,
+                            borderColor: currentColors.border,
+                          }}
+                          onClick={() => handleGroupClick(group)}
+                        >
+                          {/* Group Name */}
+                          <div className="mb-3">
+                            <h4
+                              className="font-semibold text-base mb-2"
+                              style={{ color: currentColors.text }}
+                            >
+                              {group.group_name}
+                            </h4>
+                          </div>
 
-                        {/* Group Leader */}
-                        <div className="mb-3">
-                          <div
-                            className="text-xs font-medium mb-1"
-                            style={{ color: currentColors.textSecondary }}
-                          >
-                            GROUP LEADER:
+                          {/* Group Leader */}
+                          <div className="mb-3">
+                            <div
+                              className="text-xs font-medium mb-1"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              GROUP LEADER:
+                            </div>
+                            <div
+                              className="text-sm font-medium"
+                              style={{ color: currentColors.text }}
+                            >
+                              {group.members?.find((m) => m.is_leader)
+                                ?.student_name || "No leader assigned"}
+                            </div>
                           </div>
-                          <div
-                            className="text-sm font-medium"
-                            style={{ color: currentColors.text }}
-                          >
-                            {group.members?.find(m => m.is_leader)?.student_name || 'No leader assigned'}
-                          </div>
-                        </div>
 
-                        {/* Members */}
-                        <div className="mb-3">
-                          <div
-                            className="text-xs font-medium mb-1"
-                            style={{ color: currentColors.textSecondary }}
-                          >
-                            MEMBERS:
+                          {/* Members */}
+                          <div className="mb-3">
+                            <div
+                              className="text-xs font-medium mb-1"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              MEMBERS:
+                            </div>
+                            <div className="space-y-1">
+                              {group.members
+                                ?.filter((m) => !m.is_leader)
+                                .map((member, index) => (
+                                  <div
+                                    key={index}
+                                    className="text-sm flex items-center gap-2"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    <span className="text-xs">•</span>
+                                    {member.student_name}
+                                  </div>
+                                )) || (
+                                <div
+                                  className="text-sm"
+                                  style={{ color: currentColors.textSecondary }}
+                                >
+                                  No members
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            {group.members?.filter(m => !m.is_leader).map((member, index) => (
-                              <div
-                                key={index}
-                                className="text-sm flex items-center gap-2"
-                                style={{ color: currentColors.text }}
-                              >
-                                <span className="text-xs">•</span>
-                                {member.student_name}
-                              </div>
-                            )) || <div className="text-sm" style={{ color: currentColors.textSecondary }}>No members</div>}
-                          </div>
-                        </div>
 
-                        {/* Member Count Badge */}
-                        <div className="flex justify-end">
-                          <span
-                            className="text-xs px-3 py-1 rounded-full font-medium"
-                            style={{
-                              backgroundColor: currentColors.surface,
-                              color: currentColors.primary || currentColors.text,
-                            }}
-                          >
-                            {group.members?.length || 0} members
-                          </span>
+                          {/* Member Count Badge */}
+                          <div className="flex justify-end">
+                            <span
+                              className="text-xs px-3 py-1 rounded-full font-medium"
+                              style={{
+                                backgroundColor: currentColors.surface,
+                                color:
+                                  currentColors.primary || currentColors.text,
+                              }}
+                            >
+                              {group.members?.length || 0} members
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* View All Groups Link - Only show if more than 3 groups */}
-                  {4 > 3 && (
-                    <div className="flex justify-end">
-                      <button
-                        className="text-sm font-medium transition-all hover:underline"
-                        style={{ color: "#3b82f6" }}
-                        onMouseEnter={(e) => {
-                          e.target.style.textDecoration = "underline";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.textDecoration = "none";
-                        }}
-                      >
-                        View All Groups
-                      </button>
+                      ))}
                     </div>
-                  )}
-                </div>
+
+                    {/* View All Groups Link - Only show if more than 3 groups */}
+                    {4 > 3 && (
+                      <div className="flex justify-end">
+                        <button
+                          className="text-sm font-medium transition-all hover:underline"
+                          style={{ color: "#3b82f6" }}
+                          onMouseEnter={(e) => {
+                            e.target.style.textDecoration = "underline";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.textDecoration = "none";
+                          }}
+                        >
+                          View All Groups
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   // Quiz Activity - Traditional Table View
                   <div className="overflow-x-auto -mx-3 sm:mx-0">

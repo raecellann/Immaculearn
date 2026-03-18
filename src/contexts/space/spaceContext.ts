@@ -16,6 +16,7 @@ import {
   UserCompletedTaskData,
   RespondentsTaskData,
   TaskResultApiResponse,
+  Group,
 } from "../../types/space";
 import { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
@@ -34,6 +35,8 @@ export interface SpaceContextType {
   allRespondentsInTask: RespondentsTaskData[];
   allRespondentsInTaskLoading: boolean;
 
+  groupsData: Group[];
+  groupsDataLoading: boolean;
 
   studentResponseData: TaskResultApiResponse;
   studentResponseDataLoading: boolean;

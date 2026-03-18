@@ -1233,7 +1233,14 @@ const ProfTaskPage = () => {
                   >
                     Deadline:{" "}
                     <span style={{ color: currentColors.text }}>
-                      {task.due_date
+                      {category === "exam" && task.due_date
+                        ? new Date(task.due_date).toLocaleString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "2-digit",
+                          })
+                        : "No deadline"}
+                      {category !== "exam" && task.due_date
                         ? new Date(task.due_date).toLocaleString("en-US", {
                             year: "numeric",
                             month: "long",
@@ -1456,7 +1463,9 @@ const ProfTaskPage = () => {
                               : task.task_category === "individual-activity"
                                 ? getIndividualActivityStatusForProfessor(task)
                                 : task.task_category === "exam"
-                                  ? getIndividualActivityStatusForProfessor(task)
+                                  ? getIndividualActivityStatusForProfessor(
+                                      task,
+                                    )
                                   : task.task_status || "active"
                           ] || "text-gray-500"
                         }`}
@@ -1483,14 +1492,32 @@ const ProfTaskPage = () => {
                     className="col-span-1"
                     style={{ color: currentColors.text }}
                   >
-                    {new Date(task.due_date).toLocaleString("en-US", {
+                    {/* {new Date(task.due_date).toLocaleString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "2-digit",
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: true,
-                    })}
+                    })} */}
+
+                    {task.task_category === "exam" &&
+                      task.due_date &&
+                      new Date(task.due_date).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "2-digit",
+                      })}
+                    {task.task_category !== "exam" &&
+                      task.due_date &&
+                      new Date(task.due_date).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                   </div>
                   <div className="col-span-1">
                     <div className="flex gap-2">

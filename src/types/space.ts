@@ -261,3 +261,22 @@ export interface TaskResultApiResponse {
     message?: string;
     data: TaskResultData;
 }
+
+
+
+export interface DisplayMember {
+  student_name: string;
+  is_leader: boolean;
+}
+
+export interface Group {
+  group_id: number;
+  group_name: string;
+  members: DisplayMember[];
+}
+
+export interface GetGroupsResponse {
+  success: boolean;
+  message?: string;
+  data: Group[];
+}

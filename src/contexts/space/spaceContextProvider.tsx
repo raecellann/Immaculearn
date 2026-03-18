@@ -17,6 +17,8 @@ import {
   UserCompletedTaskData,
   RespondentsTaskData,
   TaskResultApiResponse,
+  GetGroupsResponse,
+  Group,
 } from "../../types/space";
 import { useUser } from "../user/useUser";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -592,6 +594,20 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
     refetchOnReconnect: false,
   });
 
+  const { data: groupsData = [], isLoading: groupsDataLoading } = useQuery<
+    Group[]
+  >({
+    queryKey: ["groups-by-task", user?.id, taskId],
+    queryFn: async () => {
+      const res = await spaceService.getAllGroupsByTaskId(taskId);
+      return res.data || []; // Extract the data array from the API response
+    },
+    enabled: isAuthenticated && !!taskId && !!user?.id,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
   const { data: questionnaire = [], isLoading: questionnaireLoading } =
     useQuery({
       queryKey: ["questionnaire", taskId],
@@ -764,6 +780,9 @@ export const SpaceProvider: React.FC<SpaceProviderProps> = ({ children }) => {
 
     allRespondentsInTask,
     allRespondentsInTaskLoading,
+
+    groupsData,
+    groupsDataLoading,
 
     studentResponseData,
     studentResponseDataLoading,
