@@ -16,13 +16,13 @@ const CreateDocumentPage = () => {
   const navigate = useNavigate();
   const { state: locationState } = useLocation();
   const { user } = useUser();
-  const { space_uuid, file_uuid, file_name, task_name, group_name } = useParams();
+  const { space_uuid, file_uuid, file_name, task_name, group_name, group_id } = useParams();
   const { isDarkMode, colors, toggleTheme } = useTheme();
   const currentColors = isDarkMode ? colors.dark : colors.light;
 
   const { ydoc, provider } = useYDoc(
-    "bf284888-1e98-11f1-95af-c03532821bd5",
-    1,
+    space_uuid,
+    group_id,
   );
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
