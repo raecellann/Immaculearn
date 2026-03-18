@@ -605,6 +605,18 @@ class SpaceService {
     }
   }
 
+  async getGroupByTaskId(taskId: number) {
+    try {
+      const response = await api.get(`/tasks/${taskId}/group-activity/groups/student`);
+      return response.data;
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to update task status",
+      };
+    }
+  }
+
   async getResponseByStudentIdAndTaskId(student_id: number, taskId: number) {
     try {
       const response = await api.get(`/tasks/${taskId}/response/${student_id}`);

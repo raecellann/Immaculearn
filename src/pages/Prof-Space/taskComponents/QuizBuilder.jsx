@@ -684,7 +684,7 @@ const QuizBuilder = ({
       task_category: "quiz",
       task_title: quizTitle,
       task_instruction: instruction,
-      total_score: totalScore,
+      total_items_score: totalScore,
       lesson_id: selectedLesson ? parseInt(selectedLesson) : null,
       due_date: combinedDueDate,
       questions: formattedQuestions,

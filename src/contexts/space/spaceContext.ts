@@ -37,6 +37,9 @@ export interface SpaceContextType {
 
   groupsData: Group[];
   groupsDataLoading: boolean;
+  
+  studentGroup: Group[];
+  studentGroupLoading: boolean;
 
   studentResponseData: TaskResultApiResponse;
   studentResponseDataLoading: boolean;
