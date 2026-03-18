@@ -89,7 +89,7 @@ const AnnouncementDetail = ({
       </div>
 
       <div className="mb-6">
-        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere">
           {selectedAnnouncement.announcement_content ||
             selectedAnnouncement.content ||
             "No content available"}
@@ -148,12 +148,6 @@ const AnnouncementDetail = ({
           onClick={() => onDelete(selectedAnnouncement.announce_id)}
         >
           Delete
-        </Button>
-        <Button
-          className="w-full sm:w-auto bg-[#007AFF] hover:bg-blue-700 text-white px-4 py-2"
-          onClick={() => onEdit(selectedAnnouncement)}
-        >
-          Edit
         </Button>
       </div>
     </div>

@@ -148,7 +148,7 @@ const StudentAnnouncementByAdmin = () => {
                     </p>
                   </div>
                   <p
-                    className="text-sm leading-relaxed mb-3 line-clamp-3"
+                    className="text-sm leading-relaxed mb-3 line-clamp-3 break-words overflow-wrap-anywhere"
                     style={{
                       color: currentColors.textSecondary,
                       lineHeight: "1.5",
@@ -281,7 +281,7 @@ const StudentAnnouncementByAdmin = () => {
                 }}
               >
                 <p
-                  className="text-base"
+                  className="text-base break-words overflow-wrap-anywhere"
                   style={{ color: currentColors.text }}
                 >
                   {selectedAnnouncement.content}

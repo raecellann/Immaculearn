@@ -61,7 +61,7 @@ const AnnouncementList = ({
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-600 line-clamp-2 mb-4">{announcement.announcement_content || announcement.content}</p>
+                <p className="text-xs text-gray-600 line-clamp-2 mb-4 break-words overflow-wrap-anywhere">{announcement.announcement_content || announcement.content}</p>
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
@@ -106,7 +106,7 @@ const AnnouncementList = ({
                   </span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-3">{announcement.announcement_content || announcement.content}</p>
+              <p className="text-sm text-gray-600 mb-4 line-clamp-3 break-words overflow-wrap-anywhere">{announcement.announcement_content || announcement.content}</p>
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />

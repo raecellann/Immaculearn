@@ -696,7 +696,7 @@ const ProfNotificationPage = () => {
                                 </p>
                               </div>
                               <p
-                                className="text-sm leading-relaxed mb-3"
+                                className="text-sm leading-relaxed mb-3 break-words overflow-wrap-anywhere"
                                 style={{
                                   color: isDarkMode
                                     ? "rgba(229, 231, 235, 0.9)"
@@ -986,7 +986,7 @@ const ProfNotificationPage = () => {
                 }}
               >
                 <p
-                  className="text-base"
+                  className="text-base break-words overflow-wrap-anywhere"
                   style={{
                     color: isDarkMode ? "rgba(229, 231, 235, 0.95)" : "#374151",
                   }}
@@ -1069,8 +1069,8 @@ const ProfNotificationPage = () => {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {pendingSpaceInvitation?.length === 0 ? (
                 <p
-                  className="text-center py-4"
-                  style={{ color: currentColors.textSecondary }}
+                  className="text-base break-words overflow-wrap-anywhere"
+                  style={{ color: currentColors.text }}
                 >
                   No pending invitations
                 </p>
