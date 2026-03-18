@@ -9,6 +9,11 @@ const LandingPage = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // ── GitHub profiles ───────────────────────────────────────────────────────
+  const GITHUB_USERS = ["Wesmabe1129", "raecellann", "zjdelossantos", "nathanielfaborada"];
+  const [githubProfiles, setGithubProfiles] = useState([]);
+  const [profilesLoading, setProfilesLoading] = useState(true);
+
   const cardsData = [
     {
       front: "Real-time Collaboration",
@@ -87,7 +92,7 @@ const LandingPage = () => {
       { threshold: 0.3 },
     );
 
-    if (heroRef.current) heroObs.observe(heroRef.current);
+  if (heroRef.current) heroObs.observe(heroRef.current);
     if (heroImgRef.current) heroImgObs.observe(heroImgRef.current);
     if (featureTextRef.current) featureTextObs.observe(featureTextRef.current);
     if (featureCardsRef.current)
@@ -99,6 +104,26 @@ const LandingPage = () => {
       featureTextObs.disconnect();
       featureCardsObs.disconnect();
     };
+  }, []);
+
+  // ── Fetch GitHub profiles ─────────────────────────────────────────────────
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        const results = await Promise.all(
+          GITHUB_USERS.map((u) =>
+            fetch(`https://api.github.com/users/${u}`).then((r) => r.json()),
+          ),
+        );
+        setGithubProfiles(results);
+      } catch {
+        // silently fail
+      } finally {
+        setProfilesLoading(false);
+      }
+    };
+    fetchProfiles();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -658,6 +683,109 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* ====================== CONTACT US SECTION ====================== */}
+      <section
+        id="contact"
+        className="w-full bg-[#FDFBEE] pt-12 pb-16 px-4 sm:px-8 md:px-12 lg:px-24 relative"
+      >
+        {/* Yellow label */}
+        <div className="mb-8 w-max">
+          <div className="bg-[#FFE486] px-8 py-3 rounded-full shadow-md text-left border-2 border-black">
+            <h2 className="text-xl md:text-2xl font-bold font-grotesque text-black">
+              Meet the Developers
+            </h2>
+          </div>
+        </div>
+
+        <p className="text-gray-700 text-sm sm:text-base mb-10 max-w-2xl leading-relaxed">
+          We are a team of passionate developers who built ImmacuLearn to make
+          collaborative learning more accessible and organized.
+        </p>
+
+        {/* Profile Cards */}
+        {profilesLoading ? (
+          <div className="flex gap-4 flex-wrap">
+            {GITHUB_USERS.map((u) => (
+              <div
+                key={u}
+                className="bg-[#E8F1FA] rounded-2xl p-6 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)] animate-pulse"
+              >
+                <div className="w-20 h-20 rounded-full bg-blue-200 mx-auto mb-4" />
+                <div className="h-4 bg-blue-200 rounded w-3/4 mx-auto mb-2" />
+                <div className="h-3 bg-blue-100 rounded w-1/2 mx-auto" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {githubProfiles.map((profile) => (
+              <a
+                key={profile.login}
+                href={profile.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#E8F1FA] rounded-2xl p-6 shadow hover:scale-105 hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center group"
+              >
+                {/* Avatar */}
+                <div className="relative mb-4">
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.login}
+                    className="w-20 h-20 rounded-full border-4 border-white shadow-md group-hover:border-[#1D4ED8] transition-colors duration-300"
+                  />
+                  <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-400 border-2 border-white rounded-full" />
+                </div>
+
+                {/* Name */}
+                <h3 className="font-bold text-base text-black leading-tight">
+                  {profile.name || profile.login}
+                </h3>
+                <p className="text-xs text-[#1D4ED8] font-medium mb-2">@{profile.login}</p>
+
+                {/* Bio */}
+                {profile.bio && (
+                  <p className="text-xs text-gray-500 mb-4 line-clamp-2 leading-relaxed">
+                    {profile.bio}
+                  </p>
+                )}
+
+                {/* Stats */}
+                <div className="flex gap-4 mt-auto pt-3 border-t border-blue-200 w-full justify-center">
+                  <div className="text-center">
+                    <p className="font-bold text-sm text-[#1D4ED8]">{profile.public_repos}</p>
+                    <p className="text-[10px] text-gray-500">Repos</p>
+                  </div>
+                  <div className="w-px bg-blue-200" />
+                  <div className="text-center">
+                    <p className="font-bold text-sm text-[#1D4ED8]">{profile.followers}</p>
+                    <p className="text-[10px] text-gray-500">Followers</p>
+                  </div>
+                  {profile.location && (
+                    <>
+                      <div className="w-px bg-blue-200" />
+                      <div className="text-center">
+                        <p className="font-bold text-[10px] text-gray-600 truncate max-w-[60px]">
+                          {profile.location}
+                        </p>
+                        <p className="text-[10px] text-gray-500">Location</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* GitHub pill */}
+                <div
+                  className="mt-4 px-4 py-1.5 rounded-full text-xs font-semibold text-white transition-colors duration-300"
+                  style={{ background: "linear-gradient(180deg, #1D4ED8 0%, #3B82F6 100%)" }}
+                >
+                  View GitHub →
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+
       {/* ====================== FOOTER SECTION ====================== */}
       <div className="w-full mt-10 sm:mt-16 lg:mt-20 relative">
         {/* Background Image */}
@@ -718,52 +846,7 @@ const LandingPage = () => {
                 </li>
               </ul>
             </div>
-            {/* GITHUB USERNAMES */}
-            <div className="flex flex-col items-center w-full lg:w-auto lg:items-start">
-              <h4 className="font-bold text-lg mb-2 text-black">GitHub</h4>
-              <ul className=" space-y-1 text-[10px] sm:text-sm lg:text-base text-center lg:text-left">
-                <li>
-                  <a
-                    href="https://github.com/Wesmabe1129"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline text-black"
-                  >
-                    Wesmabe1129
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/raecellann"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline text-black"
-                  >
-                    raecellann
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/zjdelossantos"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline text-black"
-                  >
-                    zjdelossantos
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/nathanielfaborada"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline text-black"
-                  >
-                    nathanielfaborada
-                  </a>
-                </li>
-              </ul>
-            </div>
+            
           </div>
         </div>
       </div>
