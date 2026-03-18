@@ -706,6 +706,16 @@ const LandingPage = () => {
                     Log in
                   </Link>
                 </li>
+                <li>
+                  <Link to="/privacy-policy" className="hover:underline text-black">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="hover:underline text-black">
+                    Terms &amp; Conditions
+                  </Link>
+                </li>
               </ul>
             </div>
             {/* GITHUB USERNAMES */}

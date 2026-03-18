@@ -13,6 +13,8 @@ import { UserProvider } from "./contexts/user/userContextProvider.tsx";
 import { SpaceProvider } from "./contexts/space/spaceContextProvider.tsx";
 import { NotificationProvider } from "./contexts/notification/notificationContextProvider.tsx";
 import LandingPage from "./pages/Landing/landingPage.jsx";
+import PrivacyPolicy from "./pages/Legal/PrivacyPolicy.jsx";
+import TermsAndConditions from "./pages/Legal/TermsAndConditions.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import NotificationContainer from "./components/Notification/NotificationContainer.jsx";
 import { AdminProvider } from "./contexts/admin/adminContextProvider.tsx";
@@ -32,7 +34,9 @@ export default function Routes() {
     <NotificationProvider>
       <QueryClientProvider client={queryClient}>
         <ReactRoutes>
-          <Route key="landing" path="/" element={<LandingPage />} />,
+          <Route key="landing" path="/" element={<LandingPage />} />
+          <Route key="privacy" path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route key="terms" path="/terms" element={<TermsAndConditions />} />
           {/* Public/Auth routes - no SpaceProvider needed */}
           {/* {AuthRoutes.map(route => (
             <Route
