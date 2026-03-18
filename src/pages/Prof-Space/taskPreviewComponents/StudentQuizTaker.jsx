@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiArrowLeft, FiCheck } from "react-icons/fi";
 import { useSpaceTheme } from "../../../contexts/theme/useSpaceTheme";
 import { useSpace } from "../../../contexts/space/useSpace";
@@ -9,16 +9,132 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
   const { questionnaire, setTaskId } = useSpace();
 
+  const taskType = quizData?.task_category || quizData?.task_type || "quiz";
+  const isExam = taskType === "exam";
+  const isIndividualActivity = taskType === "individual-activity" || taskType === "individual_activity";
+
+
+  console.log(questionnaire)
+
+  // useEffect to monitor questionnaire data changes
+  useEffect(() => {
+    console.log('Questionnaire data updated:', questionnaire);
+
+    // You can add additional logic here when questionnaire data changes
+    // For example: update state, trigger actions, etc.
+
+  }, [questionnaire]);
+
+  // useEffect to process questions whenever questionnaire or quizData changes
+  useEffect(() => {
+    const questions = getQuestions();
+    const groupedQuestions = getGroupedQuestions();
+
+    console.log('Processed questions updated:', questions);
+    console.log('Processed grouped questions updated:', groupedQuestions);
+
+    // Update component state with processed data
+    setProcessedQuestions(questions);
+    setProcessedGroupedQuestions(groupedQuestions);
+
+  }, [questionnaire, quizData, isExam]);
+
+  // Determine task type for display
+
+  let displayType;
+  if (isExam) {
+    displayType = "Exam";
+  } else if (isIndividualActivity) {
+    displayType = "Individual Activity";
+  } else {
+    displayType = "Quiz";
+  }
+
   const [userAnswers, setUserAnswers] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [quizStarted, setQuizStarted] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [processedQuestions, setProcessedQuestions] = useState([]);
+  const [processedGroupedQuestions, setProcessedGroupedQuestions] = useState([]);
 
   // Parse questions from the task data
   const getQuestions = () => {
-    if (!questionnaire || questionnaire.length === 0) return [];
-    return questionnaire?.map((questionObj, index) => {
+
+    console.log('getQuestions called - questionnaire:', questionnaire)
+    console.log('getQuestions called - quizData:', quizData)
+    console.log('isExam:', isExam)
+
+    // For exams, try to get questions from different possible data structures
+    if (isExam) {
+      let examData = quizData;
+
+      // Check if quizData has rawData property
+      if (quizData && quizData.rawData) {
+        examData = quizData.rawData;
+        console.log('Using quizData.rawData for exam:', examData);
+      }
+
+      // Check if examData is the array of groups
+      if (examData && Array.isArray(examData)) {
+        const allQuestions = [];
+        examData.forEach(group => {
+          if (group.questions && Array.isArray(group.questions)) {
+            group.questions.forEach(question => {
+              allQuestions.push({
+                question_id: question?.question_id,
+                question: question?.question,
+                type: determineQuestionType(
+                  question?.choices || [],
+                  question?.question_type,
+                ),
+                answers: question?.choices || [],
+                point: question?.point || group.group_point || 0,
+                group_id: group.group_id,
+                group_name: group.group_name,
+                group_instruction: group.group_instruction,
+              });
+            });
+          }
+        });
+        console.log('Exam questions processed:', allQuestions);
+        return allQuestions;
+      }
+
+      // Check if examData has question_groups property
+      if (examData && examData.question_groups && Array.isArray(examData.question_groups)) {
+        const allQuestions = [];
+        examData.question_groups.forEach(group => {
+          if (group.questions && Array.isArray(group.questions)) {
+            group.questions.forEach(question => {
+              allQuestions.push({
+                question_id: question?.question_id,
+                question: question?.question,
+                type: determineQuestionType(
+                  question?.choices || [],
+                  question?.question_type,
+                ),
+                answers: question?.choices || [],
+                point: question?.point || group.group_point || 0,
+                group_id: group.group_id,
+                group_name: group.group_name,
+                group_instruction: group.group_instruction,
+              });
+            });
+          }
+        });
+        console.log('Exam questions from question_groups processed:', allQuestions);
+        return allQuestions;
+      }
+    }
+
+    // Regular quiz structure - use questionnaire as fallback
+    if (!questionnaire || questionnaire.length === 0) {
+      console.log('No questionnaire data available');
+      return [];
+    }
+
+    const regularQuestions = questionnaire?.map((questionObj, index) => {
       const question = questionObj;
       return {
         // id: index + 1,
@@ -32,6 +148,78 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
         point: questionnaire?.point,
       };
     });
+
+    console.log('Regular questions processed:', regularQuestions);
+    return regularQuestions;
+  };
+
+  // Get grouped questions for exam display
+  const getGroupedQuestions = () => {
+
+
+    if (!isExam) return [];
+
+    let examData = questionnaire;
+
+    // Check if quizData has rawData property
+    if (quizData && quizData.rawData) {
+      examData = quizData.rawData;
+      console.log('Using quizData.rawData for grouped questions:', examData);
+    }
+
+
+    // Check if examData is the array of groups
+    if (examData && Array.isArray(examData)) {
+      const groupedQuestions = examData.map(group => ({
+        group_id: group.group_id,
+        group_name: group.group_name,
+        group_instruction: group.group_instruction,
+        questions: group.questions ? group.questions.map(question => ({
+          question_id: question?.question_id,
+          question: question?.question,
+          type: determineQuestionType(
+            question?.choices || [],
+            question?.question_type,
+          ),
+          answers: question?.choices || [],
+          point: question?.point || group.group_point || 0,
+          group_id: group.group_id,
+          group_name: group.group_name,
+          group_instruction: group.group_instruction,
+        })) : []
+      }));
+
+      console.log('Grouped questions processed:', groupedQuestions);
+      return groupedQuestions;
+    }
+
+    // Check if examData has question_groups property
+    if (examData && examData.question_groups && Array.isArray(examData.question_groups)) {
+      const groupedQuestions = examData.question_groups.map(group => ({
+        group_id: group.group_id,
+        group_name: group.group_name,
+        group_instruction: group.group_instruction,
+        questions: group.questions ? group.questions.map(question => ({
+          question_id: question?.question_id,
+          question: question?.question,
+          type: determineQuestionType(
+            question?.choices || [],
+            question?.question_type,
+          ),
+          answers: question?.choices || [],
+          point: question?.point || group.group_point || 0,
+          group_id: group.group_id,
+          group_name: group.group_name,
+          group_instruction: group.group_instruction,
+        })) : []
+      }));
+
+      console.log('Grouped questions from question_groups processed:', groupedQuestions);
+      return groupedQuestions;
+    }
+
+    console.log('No valid exam data structure found for grouped questions');
+    return [];
   };
 
   const determineQuestionType = (answers, questionType) => {
@@ -61,7 +249,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
 
       if (existingAnswerIndex !== -1) {
         const existingAnswer = prev[existingAnswerIndex];
-        
+
         // If clicking the same choice, remove the answer (deselect)
         if (Number(existingAnswer.choice_id) === Number(choice_id)) {
           const updatedAnswers = [...prev];
@@ -138,10 +326,20 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
     onSubmit(formattedAnswers);
   };
 
-  const questions = getQuestions();
+  const questions = processedQuestions;
   const answeredQuestions = userAnswers.length;
+
+  // For exams, use grouped structure
+  const groupedQuestions = processedGroupedQuestions;
+  const displayQuestions = isExam ? groupedQuestions : questions;
+
+  // Calculate total questions for exam display
+  const totalQuestions = isExam && groupedQuestions.length > 0
+    ? groupedQuestions.reduce((total, group) => total + (group.questions?.length || 0), 0)
+    : questions.length;
+
   const progress =
-    questions.length > 0 ? (answeredQuestions / questions.length) * 100 : 0;
+    totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
 
   // Pagination: only if > 10 questions
   const usesPagination = questions.length > 10;
@@ -334,6 +532,86 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
     }
   };
 
+  // Render exam groups
+  const renderExamGroups = () => {
+    return groupedQuestions.map((group, groupIndex) => (
+      <div key={group.group_id} className="mb-8">
+        {/* Group Header */}
+        <div className="mb-6 p-4 rounded-xl" style={{
+          backgroundColor: isDarkMode ? "#1e293b" : "#f1f5f9",
+          border: `1px solid ${currentColors.border}`,
+        }}>
+          <h3 className="text-lg font-bold mb-2" style={{ color: currentColors.text }}>
+            {group.group_name}
+          </h3>
+          {group.group_instruction && (
+            <p className="text-sm" style={{ color: currentColors.textSecondary }}>
+              <b>{group.questions[0].type === "multiple-choice" ? "Multiple Choice" : group.questions[0].type === "true-false" ? "True or False" : "Identification"}: </b>{group.group_instruction}
+            </p>
+          )}
+        </div>
+
+        {/* Group Questions */}
+        <div className="space-y-6">
+          {group.questions.map((question, questionIndex) => (
+            <div
+              key={question.question_id}
+              className="p-5 sm:p-6 rounded-xl"
+              style={{
+                backgroundColor: currentColors.surface,
+                border: `1px solid ${currentColors.border}`,
+              }}
+            >
+              <div className="mb-4">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-bold tracking-wide"
+                    style={{
+                      backgroundColor: `${currentColors.accent}15`,
+                      color: currentColors.accent,
+                    }}
+                  >
+                    Question {questionIndex + 1}
+                  </span>
+                  <span
+                    className="px-3 py-1 rounded text-xs font-medium"
+                    style={{
+                      backgroundColor: isDarkMode ? "#2d3748" : "#f1f5f9",
+                      color: currentColors.textSecondary,
+                    }}
+                  >
+                    {question.point} pts
+                  </span>
+                  {userAnswers.some(
+                    (answer) => answer.question_id === question.question_id,
+                  ) && (
+                      <span
+                        className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"
+                        style={{
+                          backgroundColor: "rgba(16, 185, 129, 0.15)",
+                          color: "#10b981",
+                        }}
+                      >
+                        <FiCheck size={11} /> Answered
+                      </span>
+                    )}
+                </div>
+                <h4
+                  className="text-base font-semibold leading-relaxed"
+                  style={{ color: currentColors.text }}
+                >
+                  {question.question}
+                </h4>
+              </div>
+
+              {renderQuestion(question)}
+            </div>
+          ))}
+        </div>
+      </div>
+    ));
+  };
+
   // ── START SCREEN ───────────────────────────────────────────────────────
   if (!quizStarted) {
     return (
@@ -357,7 +635,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
               className="text-2xl sm:text-3xl font-bold mb-2"
               style={{ color: currentColors.text }}
             >
-              Quiz Ready
+              {displayType} Ready
             </h1>
             <p
               className="text-sm mb-5 sm:mb-6"
@@ -443,7 +721,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
               }}
             >
               <p className="text-sm" style={{ color: "#d97706" }}>
-                <strong>Important:</strong> Once you start the quiz, you can
+                <strong>Important:</strong> Once you start the {displayType.toLowerCase()}, you can
                 navigate freely between questions. Make sure you have a stable
                 internet connection and complete all questions before
                 submitting.
@@ -457,7 +735,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 onClick={handleStartQuiz}
                 className="w-full sm:w-auto px-8 py-3 rounded-xl font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-lg shadow-blue-600/25 text-sm sm:text-base"
               >
-                Start Quiz →
+                Start {displayType} →
               </button>
               <button
                 onClick={onExit}
@@ -474,7 +752,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                   (e.currentTarget.style.backgroundColor = "transparent")
                 }
               >
-                Exit Quiz
+                Exit {displayType}
               </button>
             </div>
           </div>
@@ -523,7 +801,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                   className="font-normal"
                   style={{ color: currentColors.textSecondary }}
                 >
-                  of {questions.length}
+                  of {totalQuestions}
                 </span>
               </h1>
               <p
@@ -531,7 +809,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 style={{ color: currentColors.textSecondary }}
               >
                 {answeredQuestions} answered ·{" "}
-                {questions.length - answeredQuestions} remaining
+                {totalQuestions - answeredQuestions} remaining
               </p>
             </div>
           </div>
@@ -594,137 +872,164 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
           >
             {/* ── SCROLLABLE QUESTIONS ── */}
             <div
-              className="overflow-y-auto"
+              className="overflow-y-auto p-5 sm:p-7 lg:p-8"
               style={{ maxHeight: "calc(100vh - 200px)" }}
             >
-              {paginatedQuestions.map((question, index) => (
-                <div
-                  key={question.question_id}
-                  className="p-5 sm:p-7 lg:p-8"
-                  style={{
-                    borderBottom:
-                      index !== paginatedQuestions.length - 1
-                        ? `1px solid ${currentColors.border}`
-                        : "none",
-                  }}
-                >
-                  <div className="mb-5">
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span
-                        className="px-3 py-1 rounded-full text-xs font-bold tracking-wide"
-                        style={{
-                          backgroundColor: `${currentColors.accent}15`,
-                          color: currentColors.accent,
-                        }}
+              {isExam ? (
+                renderExamGroups()
+              ) : (
+                paginatedQuestions.map((question, index) => (
+                  <div
+                    key={question.question_id}
+                    style={{
+                      borderBottom:
+                        index !== paginatedQuestions.length - 1
+                          ? `1px solid ${currentColors.border}`
+                          : "none",
+                      paddingBottom: index !== paginatedQuestions.length - 1 ? "2rem" : "0",
+                      marginBottom: index !== paginatedQuestions.length - 1 ? "2rem" : "0",
+                    }}
+                  >
+                    <div className="mb-5">
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <span
+                          className="px-3 py-1 rounded-full text-xs font-bold tracking-wide"
+                          style={{
+                            backgroundColor: `${currentColors.accent}15`,
+                            color: currentColors.accent,
+                          }}
+                        >
+                          Question {question.question_id}
+                        </span>
+                        <span
+                          className="px-3 py-1 rounded text-xs font-medium"
+                          style={{
+                            backgroundColor: isDarkMode ? "#2d3748" : "#f1f5f9",
+                            color: currentColors.textSecondary,
+                          }}
+                        >
+                          {questionnaire[index].point} pts
+                        </span>
+                        {userAnswers.some(
+                          (answer) => answer.question_id === question.question_id,
+                        ) && (
+                            <span
+                              className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"
+                              style={{
+                                backgroundColor: "rgba(16, 185, 129, 0.15)",
+                                color: "#10b981",
+                              }}
+                            >
+                              <FiCheck size={11} /> Answered
+                            </span>
+                          )}
+                      </div>
+                      <h2
+                        className="text-base sm:text-lg font-semibold leading-relaxed"
+                        style={{ color: currentColors.text }}
                       >
-                        Question {question.question_id}
-                      </span>
-                      <span
-                        className="px-3 py-1 rounded text-xs font-medium"
-                        style={{
-                          backgroundColor: isDarkMode ? "#2d3748" : "#f1f5f9",
-                          color: currentColors.textSecondary,
-                        }}
-                      >
-                        {questionnaire[index].point} pts
-                      </span>
-                      {userAnswers.some(
-                        (answer) => answer.question_id === question.question_id,
-                      ) && (
-                          <span
-                            className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"
-                            style={{
-                              backgroundColor: "rgba(16, 185, 129, 0.15)",
-                              color: "#10b981",
-                            }}
-                          >
-                            <FiCheck size={11} /> Answered
-                          </span>
-                        )}
+                        {question.question}
+                      </h2>
                     </div>
-                    <h2
-                      className="text-base sm:text-lg font-semibold leading-relaxed"
-                      style={{ color: currentColors.text }}
-                    >
-                      {question.question}
-                    </h2>
-                  </div>
 
-                  {renderQuestion(question)}
-                </div>
-              ))}
+                    {renderQuestion(question)}
+                  </div>
+                ))
+              )}
             </div>
 
             {/* ── NAVIGATION FOOTER ── */}
-            <div
-              className="px-4 sm:px-6 py-4"
-              style={{
-                borderTop: `1px solid ${currentColors.border}`,
-                backgroundColor: isDarkMode ? "#161A20" : "#f8fafc",
-              }}
-            >
-              {usesPagination ? (
-                /* > 10 questions: Prev / counter / Next — Next becomes Submit on last page */
-                <div className="flex items-center justify-between gap-3">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 0}
-                    className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{
-                      backgroundColor:
-                        currentPage === 0
-                          ? isDarkMode
-                            ? "#2d3748"
-                            : "#e2e8f0"
-                          : currentColors.accent,
-                      color:
-                        currentPage === 0
-                          ? currentColors.textSecondary
-                          : "#ffffff",
-                    }}
-                  >
-                    Prev
-                  </button>
+            {!isExam && (
+              <div
+                className="px-4 sm:px-6 py-4"
+                style={{
+                  borderTop: `1px solid ${currentColors.border}`,
+                  backgroundColor: isDarkMode ? "#161A20" : "#f8fafc",
+                }}
+              >
+                {usesPagination ? (
+                  /* > 10 questions: Prev / counter / Next — Next becomes Submit on last page */
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 0}
+                      className="px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{
+                        backgroundColor:
+                          currentPage === 0
+                            ? isDarkMode
+                              ? "#2d3748"
+                              : "#e2e8f0"
+                            : currentColors.accent,
+                        color:
+                          currentPage === 0
+                            ? currentColors.textSecondary
+                            : "#ffffff",
+                      }}
+                    >
+                      Prev
+                    </button>
 
-                  <span
-                    className="text-xs font-medium px-3 py-1 rounded-full"
-                    style={{
-                      backgroundColor: isDarkMode ? "#2d3748" : "#e2e8f0",
-                      color: currentColors.textSecondary,
-                    }}
-                  >
-                    Page {currentPage + 1} / {totalPages}
-                  </span>
+                    <span
+                      className="text-xs font-medium px-3 py-1 rounded-full"
+                      style={{
+                        backgroundColor: isDarkMode ? "#2d3748" : "#e2e8f0",
+                        color: currentColors.textSecondary,
+                      }}
+                    >
+                      Page {currentPage + 1} / {totalPages}
+                    </span>
 
-                  {currentPage === totalPages - 1 ? (
+                    {currentPage === totalPages - 1 ? (
+                      <button
+                        onClick={handleSubmit}
+                        className="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all shadow-lg shadow-green-600/25"
+                      >
+                        Submit
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-all text-white"
+                        style={{ backgroundColor: currentColors.accent }}
+                      >
+                        Next
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  /* ≤ 10 questions: just a centered Submit button */
+                  <div className="flex justify-center">
                     <button
                       onClick={handleSubmit}
-                      className="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all shadow-lg shadow-green-600/25"
+                      className="px-10 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all shadow-lg shadow-green-600/25"
                     >
                       Submit
                     </button>
-                  ) : (
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      className="px-4 py-2 rounded-lg text-sm font-medium transition-all text-white"
-                      style={{ backgroundColor: currentColors.accent }}
-                    >
-                      Next
-                    </button>
-                  )}
-                </div>
-              ) : (
-                /* ≤ 10 questions: just a centered Submit button */
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Exam Submit Button */}
+            {isExam && (
+              <div
+                className="px-4 sm:px-6 py-4"
+                style={{
+                  borderTop: `1px solid ${currentColors.border}`,
+                  backgroundColor: isDarkMode ? "#161A20" : "#f8fafc",
+                }}
+              >
                 <div className="flex justify-center">
                   <button
                     onClick={handleSubmit}
                     className="px-10 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all shadow-lg shadow-green-600/25"
                   >
-                    Submit
+                    Submit {displayType}
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -744,7 +1049,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
               className="text-xl font-bold mb-2 text-center"
               style={{ color: currentColors.text }}
             >
-              Submit Quiz?
+              Submit {displayType}?
             </h3>
             <p
               className="text-sm text-center mb-6 leading-relaxed"
@@ -756,10 +1061,10 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
               </strong>{" "}
               out of{" "}
               <strong style={{ color: currentColors.text }}>
-                {questions.length}
+                {totalQuestions}
               </strong>{" "}
               questions.
-              {answeredQuestions < questions.length &&
+              {answeredQuestions < totalQuestions &&
                 " Unanswered questions will be marked as incorrect."}
             </p>
 
@@ -786,7 +1091,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 }}
               >
                 <p className="text-2xl font-bold" style={{ color: "#ef4444" }}>
-                  {questions.length - answeredQuestions}
+                  {totalQuestions - answeredQuestions}
                 </p>
                 <p className="text-xs" style={{ color: "#dc2626" }}>
                   Unanswered
@@ -816,7 +1121,7 @@ const StudentQuizTaker = ({ quizData, onSubmit, onExit }) => {
                 onClick={confirmSubmit}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all"
               >
-                Submit Quiz
+                Submit {displayType}
               </button>
             </div>
           </div>

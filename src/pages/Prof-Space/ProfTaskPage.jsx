@@ -707,8 +707,11 @@ const ProfTaskPage = () => {
     if (status_type === "uploaded") {
       const taskDueDate = taskData?.due_date || taskData?.task_due;
       if (taskDueDate) {
-        const due = new Date(taskDueDate);
-        if (due < new Date()) {
+        const due = new Date(taskDueDate).toLocaleDateString();
+        const today = new Date().toLocaleDateString();
+        console.log(due, today);
+
+        if (due < today) {
           toast.error(
             "This task cannot be deployed because the due date has already passed. Please update the due date to a future date.",
           );
@@ -716,6 +719,8 @@ const ProfTaskPage = () => {
         }
       }
     }
+
+    console.log(taskData);
 
     try {
       if (status_type === "uploaded") {
@@ -1207,7 +1212,9 @@ const ProfTaskPage = () => {
                             ? getQuizStatusForProfessor(task)
                             : task.task_category === "individual-activity"
                               ? getIndividualActivityStatusForProfessor(task)
-                              : task.task_status || "active"
+                              : task.task_category === "exam"
+                                ? getIndividualActivityStatusForProfessor(task)
+                                : task.task_status || "active"
                         ] || "text-gray-500"
                       }`}
                     >
@@ -1215,7 +1222,9 @@ const ProfTaskPage = () => {
                         ? getQuizStatusForProfessor(task)
                         : task.task_category === "individual-activity"
                           ? getIndividualActivityStatusForProfessor(task)
-                          : task.task_status || "active"}
+                          : task.task_category === "exam"
+                            ? getIndividualActivityStatusForProfessor(task)
+                            : task.task_status || "active"}
                     </span>
                   </div>
                   <p
@@ -1307,50 +1316,75 @@ const ProfTaskPage = () => {
                         Edit
                       </a>
                     )}
-                    {task.isLocal && task.task_category === "group-activity" && (
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleEditTask(task);
-                        }}
-                        className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full"
-                        style={{
-                          backgroundColor: "#22c55e",
-                          color: "white",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = "#1d9d3a";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = "#22c55e";
-                        }}
-                      >
-                        Edit
-                      </button>
-                    )}
-                    {task.task_category === "group-activity" && !task.isLocal && (
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleEditTask(task);
-                        }}
-                        className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full"
-                        style={{
-                          backgroundColor: "#22c55e",
-                          color: "white",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = "#1d9d3a";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = "#22c55e";
-                        }}
-                      >
-                        Edit
-                      </a>
-                    )}
-                    {task.task_category === "individual-activity" && !task.isLocal && (
+                    {task.isLocal &&
+                      task.task_category === "group-activity" && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleEditTask(task);
+                          }}
+                          className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full"
+                          style={{
+                            backgroundColor: "#22c55e",
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#1d9d3a";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#22c55e";
+                          }}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    {task.task_category === "group-activity" &&
+                      !task.isLocal && (
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleEditTask(task);
+                          }}
+                          className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full"
+                          style={{
+                            backgroundColor: "#22c55e",
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#1d9d3a";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#22c55e";
+                          }}
+                        >
+                          Edit
+                        </a>
+                      )}
+                    {task.task_category === "individual-activity" &&
+                      !task.isLocal && (
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleEditTask(task);
+                          }}
+                          className="text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors block w-full"
+                          style={{
+                            backgroundColor: "#22c55e",
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#1d9d3a";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#22c55e";
+                          }}
+                        >
+                          Edit
+                        </a>
+                      )}
+                    {task.task_category === "exam" && !task.isLocal && (
                       <a
                         href="#"
                         onClick={(e) => {
@@ -1421,7 +1455,9 @@ const ProfTaskPage = () => {
                               ? getQuizStatusForProfessor(task)
                               : task.task_category === "individual-activity"
                                 ? getIndividualActivityStatusForProfessor(task)
-                                : task.task_status || "active"
+                                : task.task_category === "exam"
+                                  ? getIndividualActivityStatusForProfessor(task)
+                                  : task.task_status || "active"
                           ] || "text-gray-500"
                         }`}
                       >
@@ -1429,7 +1465,9 @@ const ProfTaskPage = () => {
                           ? getQuizStatusForProfessor(task)
                           : task.task_category === "individual-activity"
                             ? getIndividualActivityStatusForProfessor(task)
-                            : task.task_status || "active"}
+                            : task.task_category === "exam"
+                              ? getIndividualActivityStatusForProfessor(task)
+                              : task.task_status || "active"}
                       </span>
                     </div>
                   </div>
@@ -1647,6 +1685,65 @@ const ProfTaskPage = () => {
                             Preview
                           </a>
                         )}
+                      {task.task_category === "exam" && !task.isLocal && (
+                        <>
+                          <ButtonComponent
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleEditTask(task);
+                            }}
+                            style={{
+                              backgroundColor: "#22c55e",
+                              borderColor: "#22c55e",
+                              padding: "0.3em 0.8em",
+                              fontSize: "0.75rem",
+                              borderRadius: "6px",
+                              flex: 1,
+                              marginRight: "0.5rem",
+                            }}
+                          >
+                            Edit Exam
+                          </ButtonComponent>
+                          <ButtonComponent
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handlePreviewTask(task);
+                            }}
+                            style={{
+                              backgroundColor: currentColors.accent,
+                              borderColor: currentColors.accent,
+                              padding: "0.3em 0.8em",
+                              fontSize: "0.75rem",
+                              borderRadius: "6px",
+                              flex: 1,
+                            }}
+                          >
+                            View Details
+                          </ButtonComponent>
+                        </>
+                      )}
+                      {task.task_category === "exam" && task.isLocal && (
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePreviewTask(task);
+                          }}
+                          className="text-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex-1"
+                          style={{
+                            backgroundColor: "#2563eb",
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#1d4ed8";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#2563eb";
+                          }}
+                        >
+                          Preview
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1922,8 +2019,16 @@ const ProfTaskPage = () => {
   const sortTasksByDueDate = (tasks) => {
     const now = new Date();
     return [...tasks].sort((a, b) => {
-      const dateA = a.due_date ? new Date(a.due_date) : a.task_due ? new Date(a.task_due) : null;
-      const dateB = b.due_date ? new Date(b.due_date) : b.task_due ? new Date(b.task_due) : null;
+      const dateA = a.due_date
+        ? new Date(a.due_date)
+        : a.task_due
+          ? new Date(a.task_due)
+          : null;
+      const dateB = b.due_date
+        ? new Date(b.due_date)
+        : b.task_due
+          ? new Date(b.task_due)
+          : null;
 
       const aIsUpcoming = dateA && dateA >= now;
       const bIsUpcoming = dateB && dateB >= now;
@@ -2130,76 +2235,99 @@ const ProfTaskPage = () => {
         </div>
 
         {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
-        {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
-        <div
-          className="lg:hidden px-4 py-3 border-b"
-          style={{
-            backgroundColor: currentColors.surface + "CC", // Add 80% opacity
-            borderColor: currentColors.border + "CC", // Add 80% opacity to border
-            backdropFilter: "blur(8px)"
-          }}
-        >
-          <div className="flex flex-col gap-2">
-            {/* Schedule */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Schedule
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_day || "TBD"} (
-                {currentSpace?.space_time_start ? new Date(
-                  `2000-01-01T${currentSpace.space_time_start}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"}{" "}
-                -{" "}
-                {currentSpace?.space_time_end ? new Date(
-                  `2000-01-01T${currentSpace.space_time_end}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"})
-              </span>
-            </div>
-
-            {/* Section */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Section
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_section ||
-                  currentSpace?.section ||
-                  currentSpace?.class_section ||
-                  currentSpace?.section_name ||
-                  currentSpace?.course_section ||
-                  currentSpace?.subject_section ||
-                  currentSpace?.space_block ||
-                  currentSpace?.block ||
-                  "N/A"
-                }
-              </span>
-            </div>
-
-            {/* Description */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Description
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_description || 
-                  (currentSpace?.space_type === "course" 
-                    ? "Course space for lectures, assignments, and discussions."
-                    : "Collaborative space for sharing ideas and resources."
+        {(currentSpace?.space_type === "course" ||
+          currentSpace?.space_day ||
+          currentSpace?.space_section ||
+          currentSpace?.space_schedule) && (
+          <div
+            className="lg:hidden px-4 py-3 border-b"
+            style={{
+              backgroundColor: currentColors.surface + "CC", // Add 80% opacity
+              borderColor: currentColors.border + "CC", // Add 80% opacity to border
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <div className="flex flex-col gap-2">
+              {/* Schedule */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Schedule
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_day || "TBD"} (
+                  {currentSpace?.space_time_start
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_start}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}{" "}
+                  -{" "}
+                  {currentSpace?.space_time_end
+                    ? new Date(
+                        `2000-01-01T${currentSpace.space_time_end}`,
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "TBD"}
                   )
-                }
-              </span>
+                </span>
+              </div>
+
+              {/* Section */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Section
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_section ||
+                    currentSpace?.section ||
+                    currentSpace?.class_section ||
+                    currentSpace?.section_name ||
+                    currentSpace?.course_section ||
+                    currentSpace?.subject_section ||
+                    currentSpace?.space_block ||
+                    currentSpace?.block ||
+                    "N/A"}
+                </span>
+              </div>
+
+              {/* Description */}
+              <div className="flex items-start gap-2">
+                <span
+                  className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                  style={{ color: currentColors.text }}
+                >
+                  Description
+                </span>
+                <span
+                  className="text-xs flex-1 break-words"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  {currentSpace?.space_description ||
+                    (currentSpace?.space_type === "course"
+                      ? "Course space for lectures, assignments, and discussions."
+                      : "Collaborative space for sharing ideas and resources.")}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
         )}
 
         <div className="p-4 sm:p-6">
@@ -2257,93 +2385,100 @@ const ProfTaskPage = () => {
               )}
 
               {/* SPACE INFO SECTION - Right Side */}
-              {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
-              <div
-                className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
-                style={{
-                  backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
-                  borderColor: currentColors.border + "CC", // Add 80% opacity to border
-                  maxWidth: "1000px",
-                  backdropFilter: "blur(8px)", // Add subtle blur for better readability
-                }}
-              >
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Schedule */}
-                  <div>
-                    <h3
-                      className="font-semibold text-sm mb-2"
-                      style={{ color: currentColors.text }}
-                    >
-                      Schedule
-                    </h3>
-                    <p
-                      className="text-sm"
-                      style={{ color: currentColors.textSecondary }}
-                    >
-                      {currentSpace?.space_day || "TBD"} (
-                      {currentSpace?.space_time_start ? new Date(
-                        `2000-01-01T${currentSpace.space_time_start}`,
-                      ).toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      }) : "TBD"}{" "}
-                      -{" "}
-                      {currentSpace?.space_time_end ? new Date(
-                        `2000-01-01T${currentSpace.space_time_end}`,
-                      ).toLocaleTimeString([], {
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      }) : "TBD"})
-                    </p>
-                  </div>
+              {(currentSpace?.space_type === "course" ||
+                currentSpace?.space_day ||
+                currentSpace?.space_section ||
+                currentSpace?.space_schedule) && (
+                <div
+                  className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
+                  style={{
+                    backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+                    borderColor: currentColors.border + "CC", // Add 80% opacity to border
+                    maxWidth: "1000px",
+                    backdropFilter: "blur(8px)", // Add subtle blur for better readability
+                  }}
+                >
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Schedule */}
+                    <div>
+                      <h3
+                        className="font-semibold text-sm mb-2"
+                        style={{ color: currentColors.text }}
+                      >
+                        Schedule
+                      </h3>
+                      <p
+                        className="text-sm"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        {currentSpace?.space_day || "TBD"} (
+                        {currentSpace?.space_time_start
+                          ? new Date(
+                              `2000-01-01T${currentSpace.space_time_start}`,
+                            ).toLocaleTimeString([], {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                          : "TBD"}{" "}
+                        -{" "}
+                        {currentSpace?.space_time_end
+                          ? new Date(
+                              `2000-01-01T${currentSpace.space_time_end}`,
+                            ).toLocaleTimeString([], {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })
+                          : "TBD"}
+                        )
+                      </p>
+                    </div>
 
-                  {/* Section */}
-                  <div>
-                    <h3
-                      className="font-semibold text-sm mb-2"
-                      style={{ color: currentColors.text }}
-                    >
-                      Section
-                    </h3>
-                    <p
-                      className="text-sm"
-                      style={{ color: currentColors.textSecondary }}
-                    >
-                      {currentSpace?.space_section ||
-                        currentSpace?.section ||
-                        currentSpace?.class_section ||
-                        currentSpace?.section_name ||
-                        currentSpace?.course_section ||
-                        currentSpace?.subject_section ||
-                        currentSpace?.space_block ||
-                        currentSpace?.block ||
-                        "N/A"
-                      }
-                    </p>
-                  </div>
+                    {/* Section */}
+                    <div>
+                      <h3
+                        className="font-semibold text-sm mb-2"
+                        style={{ color: currentColors.text }}
+                      >
+                        Section
+                      </h3>
+                      <p
+                        className="text-sm"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        {currentSpace?.space_section ||
+                          currentSpace?.section ||
+                          currentSpace?.class_section ||
+                          currentSpace?.section_name ||
+                          currentSpace?.course_section ||
+                          currentSpace?.subject_section ||
+                          currentSpace?.space_block ||
+                          currentSpace?.block ||
+                          "N/A"}
+                      </p>
+                    </div>
 
-                  {/* Description */}
-                  <div>
-                    <h3
-                      className="font-semibold text-sm mb-2"
-                      style={{ color: currentColors.text }}
-                    >
-                      Description
-                    </h3>
-                    <p
-                      className="text-sm line-clamp-3"
-                      style={{ color: currentColors.textSecondary }}
-                    >
-                      {currentSpace?.space_description ||
-                        (currentSpace?.space_type === "course"
-                          ? "Course space for lectures, assignments, and discussions."
-                          : "Collaborative space for sharing ideas and resources.")}
-                    </p>
+                    {/* Description */}
+                    <div>
+                      <h3
+                        className="font-semibold text-sm mb-2"
+                        style={{ color: currentColors.text }}
+                      >
+                        Description
+                      </h3>
+                      <p
+                        className="text-sm line-clamp-3"
+                        style={{ color: currentColors.textSecondary }}
+                      >
+                        {currentSpace?.space_description ||
+                          (currentSpace?.space_type === "course"
+                            ? "Course space for lectures, assignments, and discussions."
+                            : "Collaborative space for sharing ideas and resources.")}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
               )}
             </div>
           </div>
@@ -2472,13 +2607,16 @@ const ProfTaskPage = () => {
               {selectedTaskType === "exam" && (
                 <ExamBuilder
                   currentColors={currentColors}
+                  editingTask={editingTask}
                   onBack={() => {
                     setIsCreatingTask(false);
                     setSelectedTaskType(null);
                     setShowTaskTypeSelection(false);
+                    setEditingTask(null);
                   }}
                   onSave={(TaskData) => handleUpload("draft", TaskData)}
                   onPublish={(TaskData) => handleUpload("uploaded", TaskData)}
+                  onUpdate={(taskData) => handleUpdateTask(taskData)}
                   isLoading={
                     draftTaskMutation.isLoading || uploadTaskMutation.isLoading
                   }

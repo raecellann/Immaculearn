@@ -1522,6 +1522,60 @@ const UserTaskPage = () => {
                           )}
                         </>
                       )}
+                      {task.task_category === "exam" && (
+                        <>
+                          {!isOwnerSpace ? (
+                            <ButtonComponent
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setTaskId(task?.id);
+
+                                if (task?.has_answered) {
+                                  handleViewScore(task);
+                                } else {
+                                  handleTakeActivity(task);
+                                }
+                              }}
+                              style={{
+                                backgroundColor: task.has_answered
+                                  ? "#6b7280"
+                                  : "#10B981",
+                                borderColor: task.has_answered
+                                  ? "#6b7280"
+                                  : "#10B981",
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: 1,
+                              }}
+                            >
+                              {task.has_answered ? "View Score" : "Take Exam"}
+                            </ButtonComponent>
+                          ) : (
+                            <ButtonComponent
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handlePreviewTask(task);
+                              }}
+                              style={{
+                                backgroundColor: task.isLocal
+                                  ? "#2563eb"
+                                  : currentColors.accent,
+                                borderColor: task.isLocal
+                                  ? "#2563eb"
+                                  : currentColors.accent,
+                                padding: "0.3em 0.8em",
+                                fontSize: "0.75rem",
+                                borderRadius: "6px",
+                                flex: task.isLocal ? 1 : "none",
+                                width: task.isLocal ? "auto" : "100%",
+                              }}
+                            >
+                              View Details
+                            </ButtonComponent>
+                          )}
+                        </>
+                      )}
                       {!task.isLocal && (
                         <ButtonComponent
                           onClick={(e) => {
