@@ -40,6 +40,7 @@ const ExamBuilder = ({
   const [showDeleteTestConfirmation, setShowDeleteTestConfirmation] =
     useState(false);
   const [testToDelete, setTestToDelete] = useState(null);
+  const [showUpdateConfirmation, setShowUpdateConfirmation] = useState(false);
 
   // Populate form with editing task data
   useEffect(() => {
@@ -1261,7 +1262,7 @@ const ExamBuilder = ({
               />
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1">
                 <label
                   className="block font-semibold mb-2"
@@ -1301,7 +1302,7 @@ const ExamBuilder = ({
                     }
                   }}
                   step="900"
-                  className="w-full rounded-lg px-4 py-2 outline-none border"
+                  className="w-full rounded-lg px-3 sm:px-4 py-2 outline-none border text-sm"
                   style={{
                     backgroundColor: currentColors.background,
                     color: currentColors.text,
@@ -1349,7 +1350,7 @@ const ExamBuilder = ({
                     }
                   }}
                   step="900"
-                  className="w-full rounded-lg px-4 py-2 outline-none border"
+                  className="w-full rounded-lg px-3 sm:px-4 py-2 outline-none border text-sm"
                   style={{
                     backgroundColor: currentColors.background,
                     color: currentColors.text,
@@ -1391,13 +1392,6 @@ const ExamBuilder = ({
             >
               Questions
             </h2>
-            <button
-              type="button"
-              onClick={addTestGroup}
-              className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors"
-            >
-              <FiPlus size={14} /> Add Test
-            </button>
           </div>
 
           {testGroups.map((testGroup, testIndex) => {
@@ -1413,31 +1407,32 @@ const ExamBuilder = ({
             return (
               <div key={testGroup.id} className="space-y-4">
                 <div
-                  className="flex items-center justify-between p-4 rounded-lg border"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border gap-3 sm:gap-0"
                   style={{
                     borderColor: currentColors.border,
                     backgroundColor: currentColors.surface,
                   }}
                 >
-                  <div className="flex items-center gap-3">
-                    <h3
-                      className="text-lg font-semibold"
-                      style={{ color: currentColors.text }}
-                    >
-                      {testGroup.title}
-                    </h3>
-                    <span
-                      className="px-2 py-1 rounded-full text-xs font-medium"
-                      style={{
-                        backgroundColor: currentColors.background,
-                        color: currentColors.textSecondary,
-                        border: `1px solid ${currentColors.border}`,
-                      }}
-                    >
-                      {testQuestions.length} question
-                      {testQuestions.length !== 1 ? "s" : ""}
-                    </span>
-                    {testQuestions.length > 0 && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                      <h3
+                        className="text-lg font-semibold"
+                        style={{ color: currentColors.text }}
+                      >
+                        {testGroup.title}
+                      </h3>
+                      <span
+                        className="px-2 py-1 rounded-full text-xs font-medium"
+                        style={{
+                          backgroundColor: currentColors.background,
+                          color: currentColors.textSecondary,
+                          border: `1px solid ${currentColors.border}`,
+                        }}
+                      >
+                        {testQuestions.length} question
+                        {testQuestions.length !== 1 ? "s" : ""}
+                      </span>
+                      {testQuestions.length > 0 && (
                       <span
                         className="px-2 py-1 rounded-full text-xs font-medium"
                         style={{
@@ -1535,44 +1530,23 @@ const ExamBuilder = ({
                         </select>
                       </div>
                     )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {/* <select
-                      value={testGroup.id}
-                      onChange={(e) => {
-                        const newTestGroup = e.target.value;
-                        testQuestions.forEach((q) => {
-                          updateQuestion(q.id, "testGroup", newTestGroup);
-                        });
-                      }}
-                      className="rounded-lg px-2 py-1 outline-none border text-xs"
-                      style={{
-                        backgroundColor: currentColors.background,
-                        color: currentColors.text,
-                        borderColor: currentColors.border,
-                      }}
-                    >
-                      {testGroups.map((tg) => (
-                        <option key={tg.id} value={tg.id}>
-                          Move to {tg.title}
-                        </option>
-                      ))}
-                    </select> */}
+                  <div className="flex items-center gap-2 justify-end">
                     {testGroups.length > 1 && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => removeTestGroup(testGroup.id)}
-                          className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
-                          style={{
-                            backgroundColor: "transparent",
-                            border: `1px solid #dc2626`,
-                          }}
-                        >
-                          <FiTrash2 size={12} />
-                          Remove Test
-                        </button>
-                      </>
+                      <button
+                        type="button"
+                        onClick={() => removeTestGroup(testGroup.id)}
+                        className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
+                        style={{
+                          backgroundColor: "transparent",
+                          border: `1px solid #dc2626`,
+                        }}
+                      >
+                        <FiTrash2 size={12} />
+                        <span className="hidden sm:inline">Remove Test</span>
+                        <span className="sm:hidden">Remove</span>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -1666,13 +1640,15 @@ const ExamBuilder = ({
                         </div>
                       </div>
                       {questions.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeQuestion(question.id)}
-                          className="text-red-500 hover:text-red-400 p-1 sm:p-0 self-start sm:self-auto"
-                        >
-                          <FiTrash2 size={16} />
-                        </button>
+                        <div className="flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => removeQuestion(question.id)}
+                            className="text-red-500 hover:text-red-400 p-1 sm:p-0"
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                        </div>
                       )}
                     </div>
 
@@ -1742,11 +1718,13 @@ const ExamBuilder = ({
         </div>
 
         {/* ACTION BUTTONS */}
-        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
-          {editingTask ? (
-            // Editing mode - show Update button
+        <div className="flex flex-col gap-3 sm:gap-4">
+          {/* Add Test Button - Mobile: Bottom, Tablet/Desktop: Above Publish/Update */}
+          <div className="flex justify-end">
             <button
-              className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+              type="button"
+              onClick={addTestGroup}
+              className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors text-center"
               style={{
                 backgroundColor: "#22c55e",
                 color: "#ffffff",
@@ -1757,30 +1735,34 @@ const ExamBuilder = ({
               onMouseLeave={(e) => {
                 e.target.style.backgroundColor = "#22c55e";
               }}
-              onClick={() => handleSave("updated")}
+            >
+              <FiPlus size={14} /> Add Test
+            </button>
+          </div>
+          
+          {/* Publish/Update Buttons */}
+          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
+          {editingTask ? (
+            // Editing mode - show Update button
+            <button
+              className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
+              style={{
+                backgroundColor: "#2563eb",
+                color: "#ffffff",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = "#1d4ed8";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = "#2563eb";
+              }}
+              onClick={() => setShowUpdateConfirmation(true)}
             >
               {isLoading ? "Updating..." : "Update Exam"}
             </button>
           ) : (
-            // Creating mode - show Save Draft and Publish buttons
+            // Creating mode - show Publish button only
             <>
-              <button
-                className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-                style={{
-                  backgroundColor: currentColors.surface,
-                  color: currentColors.text,
-                  border: `1px solid ${currentColors.border}`,
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = currentColors.hover;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = currentColors.surface;
-                }}
-                onClick={() => handleSave("draft")}
-              >
-                {isLoading ? "Saving..." : "Save as Draft"}
-              </button>
               <button
                 className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
                 style={{
@@ -1799,6 +1781,7 @@ const ExamBuilder = ({
               </button>
             </>
           )}
+          </div>
         </div>
       </div>
 
@@ -1847,6 +1830,58 @@ const ExamBuilder = ({
                 onClick={confirmDeleteTest}
               >
                 Delete Test
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Exam Confirmation Dialog */}
+      {showUpdateConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div
+            className="rounded-lg p-6 max-w-md w-full"
+            style={{
+              backgroundColor: currentColors.surface,
+              borderColor: currentColors.border,
+            }}
+          >
+            <h3
+              className="text-lg font-semibold mb-4"
+              style={{ color: currentColors.text }}
+            >
+              Update Exam Confirmation
+            </h3>
+            <p className="mb-4" style={{ color: currentColors.textSecondary }}>
+              Are you sure you want to update this exam? This will save all the changes you've made to the exam content and settings.
+            </p>
+            <p
+              className="mb-6 text-sm"
+              style={{ color: currentColors.textSecondary }}
+            >
+              <strong>Note:</strong> Students who haven't started the exam will see the updated version.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                className="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                style={{
+                  backgroundColor: currentColors.background,
+                  color: currentColors.text,
+                  border: `1px solid ${currentColors.border}`,
+                }}
+                onClick={() => setShowUpdateConfirmation(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg font-medium text-sm text-white transition-colors"
+                style={{ backgroundColor: "#2563eb" }}
+                onClick={() => {
+                  handleSave("updated");
+                  setShowUpdateConfirmation(false);
+                }}
+              >
+                Update Exam
               </button>
             </div>
           </div>
