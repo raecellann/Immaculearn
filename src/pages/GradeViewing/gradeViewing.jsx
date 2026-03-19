@@ -55,8 +55,8 @@ const GradeViewing = () => {
   const getGradeColor = (grade) => {
     if (!grade || grade === "-" || grade === "N/A") return currentColors.text;
     const numGrade = parseFloat(grade);
-    if (numGrade <= 3.0) return "#10b981"; // green for passing grades
-    return "#ef4444"; // red for failing grade (5.0)
+    if (numGrade >= 75) return "#10b981"; // green for passing grades (75 and above)
+    return "#ef4444"; // red for failing grades (below 75)
   };
 
   // Get display value for grade with N/A logic
@@ -71,7 +71,7 @@ const GradeViewing = () => {
     if (grades[currentPeriod]) return grades[currentPeriod];
 
     // If another period has a grade but current doesn't, show N/A
-    return "N/A";
+    return "";
   };
 
   // Check if all four quarters are completed
@@ -83,52 +83,27 @@ const GradeViewing = () => {
     });
   };
 
-  // Calculate final average (college numerical grading scale)
+  // Calculate final average (add 4 grades and divide by 4)
   const calculateFinalAverage = (grades) => {
     if (!areAllQuartersCompleted(grades)) return "-";
 
-    const validGrades = [];
+    const gradesArray = [
+      parseFloat(grades.prelim),
+      parseFloat(grades.midterm),
+      parseFloat(grades.prefinals),
+      parseFloat(grades.finals)
+    ];
 
-    if (grades.prelim && grades.prelim !== "-" && grades.prelim !== "N/A") {
-      validGrades.push(parseFloat(grades.prelim));
-    }
-    if (grades.midterm && grades.midterm !== "-" && grades.midterm !== "N/A") {
-      validGrades.push(parseFloat(grades.midterm));
-    }
-    if (
-      grades.prefinals &&
-      grades.prefinals !== "-" &&
-      grades.prefinals !== "N/A"
-    ) {
-      validGrades.push(parseFloat(grades.prefinals));
-    }
-    if (grades.finals && grades.finals !== "-" && grades.finals !== "N/A") {
-      validGrades.push(parseFloat(grades.finals));
-    }
+    // Check if all grades are valid numbers
+    if (gradesArray.some(grade => isNaN(grade))) return "-";
 
-    if (validGrades.length === 0) return "-";
-
-    const average =
-      validGrades.reduce((sum, grade) => sum + grade, 0) / validGrades.length;
-
-    // If average is 3.5 or higher, mark as failed
-    if (average >= 3.5) {
-      return "5.00";
-    }
-
-    const validGradeValues = [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0];
-    let closestGrade = validGradeValues[0];
-    let minDiff = Math.abs(average - closestGrade);
-
-    for (const grade of validGradeValues) {
-      const diff = Math.abs(average - grade);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestGrade = grade;
-      }
-    }
-
-    return closestGrade.toFixed(2);
+    const average = gradesArray.reduce((sum, grade) => sum + grade, 0) / 4;
+    
+    // Round up if the decimal part is .5 or greater
+    const roundedAverage = Math.ceil(average * 100) / 100;
+    const rounded = Math.round(roundedAverage);
+    
+    return rounded;
   };
 
   // Remove the conversion function since we're already using college scale
@@ -141,7 +116,11 @@ const GradeViewing = () => {
     if (average === "-") return "-";
 
     const numAverage = parseFloat(average);
-    return numAverage <= 3.0 ? "PASSED" : "FAILED";
+    
+    // Round to nearest whole number (rounds .5 up)
+    const roundedAverage = Math.round(numAverage);
+    
+    return roundedAverage >= 75 ? "PASSED" : "FAILED";
   };
 
   // Get color for pass/fail status
@@ -150,6 +129,32 @@ const GradeViewing = () => {
     if (status === "-") return currentColors.text;
     if (status === "PASSED") return "#10b981"; // green
     return "#ef4444"; // red
+  };
+
+  // Get numerical equivalent for display
+  const getNumericalEquivalent = (grades) => {
+    const finalAverage = calculateFinalAverage(grades);
+    if (finalAverage === "-") return "-";
+
+    const numAverage = parseFloat(finalAverage);
+
+    // round to 2 decimals first
+    const fixed = parseFloat(numAverage.toFixed(2));
+
+    // then round to whole number
+    const roundedAverage = Math.round(fixed);
+
+    // Convert final average (30-100) to college grade scale (1.00-5.00)
+    if (roundedAverage >= 98) return "1.00";
+    if (roundedAverage >= 95) return "1.25";
+    if (roundedAverage >= 92) return "1.50";
+    if (roundedAverage >= 89) return "1.75";
+    if (roundedAverage >= 86) return "2.00";
+    if (roundedAverage >= 83) return "2.25";
+    if (roundedAverage >= 80) return "2.50";
+    if (roundedAverage >= 77) return "2.75";
+    if (roundedAverage >= 75) return "3.00";
+    return "5.00"; // Failed
   };
 
   // Format name to show surname first, handling compound last names
@@ -473,7 +478,7 @@ const GradeViewing = () => {
                               className="text-xs"
                               style={{ color: currentColors.textSecondary }}
                             >
-                              Final Average
+                              Final Grade
                             </p>
                             <p
                               className="font-bold"
@@ -482,6 +487,29 @@ const GradeViewing = () => {
                               }}
                             >
                               {calculateFinalAverage(student?.grades)}
+                            </p>
+                          </div>
+                          <div
+                            className="p-3 rounded-lg"
+                            style={{
+                              backgroundColor: isDarkMode
+                                ? "#1F242D"
+                                : "#f8fafc",
+                            }}
+                          >
+                            <p
+                              className="text-xs"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              Numerical Equivalent
+                            </p>
+                            <p
+                              className="font-bold"
+                              style={{
+                                color: currentColors.text,
+                              }}
+                            >
+                              {getNumericalEquivalent(student?.grades)}
                             </p>
                           </div>
                           <div
@@ -585,7 +613,16 @@ const GradeViewing = () => {
                                 borderColor: currentColors.border,
                               }}
                             >
-                              Final Average
+                              Final Grade
+                            </th>
+                            <th
+                              className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold border-r"
+                              style={{
+                                color: currentColors.text,
+                                borderColor: currentColors.border,
+                              }}
+                            >
+                              Numerical Equivalent
                             </th>
                             <th
                               className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold"
@@ -679,6 +716,15 @@ const GradeViewing = () => {
                                     {calculateFinalAverage(student?.grades)}
                                   </td>
                                   <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                    style={{
+                                      borderColor: currentColors.border,
+                                      color: currentColors.text,
+                                    }}
+                                  >
+                                    {getNumericalEquivalent(student?.grades)}
+                                  </td>
+                                  <td
                                     className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center font-medium"
                                     style={{
                                       color: getPassFailColor(student?.grades),
@@ -690,6 +736,15 @@ const GradeViewing = () => {
                                 </>
                               ) : (
                                 <>
+                                  <td
+                                    className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
+                                    style={{
+                                      borderColor: currentColors.border,
+                                      color: currentColors.textSecondary,
+                                    }}
+                                  >
+                                    -
+                                  </td>
                                   <td
                                     className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-center border-r font-medium"
                                     style={{
