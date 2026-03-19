@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FiArrowLeft, FiPlus, FiTrash2 } from "react-icons/fi";
 import { useFile } from "../../../contexts/file/fileContextProvider";
 import { toast } from "react-toastify";
+import { useSpace } from "../../../contexts/space/useSpace";
 
 const IndividualActivityBuilder = ({
   currentColors,
@@ -12,6 +13,7 @@ const IndividualActivityBuilder = ({
   onPublish,
   isLoading = false,
 }) => {
+  const { questionnaireEditData, questionnaireEditDataLoading } = useSpace();
   const { resources } = useFile();
   const [activityTitle, setActivityTitle] = useState("");
   const [instruction, setInstruction] = useState("");
@@ -57,15 +59,58 @@ const IndividualActivityBuilder = ({
       // Handle different possible data structures
       const taskData = editingTask.rawData || editingTask;
 
+      // console.log(taskData);
+
       setActivityTitle(taskData.task_title || taskData.title || "");
       setInstruction(taskData.task_instruction || taskData.instruction || "");
-      setDueDate(taskData.due_date || taskData.dueDate || "");
-      setSelectedLesson(
-        taskData.selected_lesson || taskData.selectedLesson || "",
-      );
+      if (taskData.due_date) {
+        try {
+          const date = new Date(taskData.due_date);
+          const formatted =
+            date.getFullYear() +
+            "-" +
+            String(date.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(date.getDate()).padStart(2, "0") +
+            "T" +
+            String(date.getHours()).padStart(2, "0") +
+            ":" +
+            String(date.getMinutes()).padStart(2, "0");
 
-      // Parse questions if they exist
-      if (taskData.questions && Array.isArray(taskData.questions)) {
+          setDueDate(formatted);
+        } catch (error) {
+          setDueDate("");
+        }
+      } else {
+        setDueDate("");
+      }
+      setSelectedLesson(taskData.lesson_id || taskData.lesson_id || "");
+
+      console.log(questionnaireEditData)
+
+      // Use questionnaireEditData if available (for editing existing tasks)
+      if (questionnaireEditData && Array.isArray(questionnaireEditData)) {
+        const parsedQuestions = questionnaireEditData.map((q, index) => ({
+          id: q.question_id || index + 1,
+          question: q.question || "",
+          answer: q.identification_answer || q.expected_answer || "",
+          points: q.point || 5,
+        }));
+        setQuestions(
+          parsedQuestions.length > 0
+            ? parsedQuestions
+            : [
+                {
+                  id: 1,
+                  question: "",
+                  answer: "",
+                  points: 5,
+                },
+              ],
+        );
+      }
+      // Parse questions from taskData if questionnaireEditData is not available
+      else if (taskData.questions && Array.isArray(taskData.questions)) {
         const parsedQuestions = taskData.questions.map((q, index) => ({
           id: index + 1,
           question: q.question || "",
@@ -86,7 +131,7 @@ const IndividualActivityBuilder = ({
         );
       }
     }
-  }, [editingTask]);
+  }, [editingTask, questionnaireEditData]);
 
   // Validation functions
   const validateForm = () => {
@@ -175,6 +220,49 @@ const IndividualActivityBuilder = ({
     );
   };
 
+  const handleUpdateTask = (status) => {
+    // Validate form before updating
+    if (!validateForm()) {
+      return;
+    }
+
+    // Convert datetime-local to ISO string
+    let combinedDueDate = dueDate;
+    if (dueDate) {
+      combinedDueDate = new Date(dueDate).toISOString();
+    }
+
+    // Format questions for individual activity
+    const formattedQuestions = questions.map((question, index) => ({
+      question_type: "individual-activity",
+      question: question.question,
+      identification_answer: question.answer || "",
+      point: question.points || 5,
+      position: index + 1,
+      expected_count: 1,
+      choices: []
+    }));
+
+    // Create task object with the specified structure matching QuizBuilder
+    const taskData = {
+      task_id: editingTask?.task_id,
+      task_category: "individual-activity",
+      task_title: activityTitle,
+      task_instruction: instruction,
+      total_score: totalScore,
+      lesson_id: selectedLesson ? parseInt(selectedLesson) : null,
+      due_date: combinedDueDate,
+      questions: formattedQuestions,
+    };
+
+    // Add task ID if editing
+    if (editingTask && editingTask.task_id) {
+      taskData.task_id = editingTask.task_id;
+    }
+
+    onUpdate(taskData);
+  };
+
   const handleSave = (status) => {
     // Validate form before saving
     if (!validateForm()) {
@@ -182,17 +270,14 @@ const IndividualActivityBuilder = ({
     }
 
     // Format questions for individual activity
-    const formattedQuestions = questions.map((question) => ({
+    const formattedQuestions = questions.map((question, index) => ({
       question_type: "individual-activity",
       question: question.question,
-      point: question.points || 1,
-      choices: [
-        {
-          letter_identifier: "A",
-          choice_answer: question.answer || "",
-          isRightAnswer: true,
-        },
-      ],
+      identification_answer: question.answer || "",
+      point: question.points || 5,
+      position: index + 1,
+      expected_count: 1,
+      choices: []
     }));
 
     const taskData = {
@@ -219,10 +304,7 @@ const IndividualActivityBuilder = ({
     }
   };
 
-  const handleUpdateTask = () => {
-    handleSave("published");
-  };
-
+  
   const resetForm = () => {
     setActivityTitle("");
     setInstruction("");
@@ -442,7 +524,7 @@ const IndividualActivityBuilder = ({
               Questions
             </h2>
           </div>
-
+          {/* {console.log(questions)} */}
           {questions.map((question, index) => (
             <div
               key={question.id}

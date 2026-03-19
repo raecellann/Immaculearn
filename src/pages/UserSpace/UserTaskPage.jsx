@@ -1081,7 +1081,9 @@ const UserTaskPage = () => {
 
     // Only show "In Progress" tasks in the top 3 — Missing/Done are hidden from recent view
     // but still accessible via "See more tasks"
-    const activeTasks = sortedTasks.filter((task) => getTaskStatus(task) === "In Progress");
+    const activeTasks = sortedTasks.filter(
+      (task) => getTaskStatus(task) === "In Progress",
+    );
 
     const isQuizCategory = category === "quiz";
     const isIndividualActivityCategory = category === "individual-activity";
@@ -1233,29 +1235,30 @@ const UserTaskPage = () => {
                         Take Quiz
                       </button>
                     )}
-                    {task.isLocal && task.task_category === "individual-activity" && (
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleTakeActivity(task);
-                        }}
-                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                        style={{
-                          backgroundColor: task.has_answered
-                            ? "black"
-                            : "#10B981",
-                          color: "white",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = "#059669";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = "#10B981";
-                        }}
-                      >
-                        Take Activity
-                      </button>
-                    )}
+                    {task.isLocal &&
+                      task.task_category === "individual-activity" && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleTakeActivity(task);
+                          }}
+                          className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                          style={{
+                            backgroundColor: task.has_answered
+                              ? "black"
+                              : "#10B981",
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#059669";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#10B981";
+                          }}
+                        >
+                          Take Activity
+                        </button>
+                      )}
                     {!task.isLocal && task.task_category === "quiz" && (
                       <button
                         onClick={(e) => {
@@ -1286,36 +1289,37 @@ const UserTaskPage = () => {
                         {task.has_answered ? "View Score" : "Take Quiz"}
                       </button>
                     )}
-                    {!task.isLocal && task.task_category === "individual-activity" && (
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setTaskId(task?.id);
-                          task?.has_answered
-                            ? handleViewScore(task)
-                            : handleTakeActivity(task);
-                        }}
-                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                        style={{
-                          backgroundColor: task.has_answered
-                            ? "#6b7280"
-                            : "#10B981",
-                          color: "white",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = task.has_answered
-                            ? "#4b5563"
-                            : "#059669";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = task.has_answered
-                            ? "#6b7280"
-                            : "#10B981";
-                        }}
-                      >
-                        {task.has_answered ? "View Score" : "Take Activity"}
-                      </button>
-                    )}
+                    {!task.isLocal &&
+                      task.task_category === "individual-activity" && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setTaskId(task?.id);
+                            task?.has_answered
+                              ? handleViewScore(task)
+                              : handleTakeActivity(task);
+                          }}
+                          className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                          style={{
+                            backgroundColor: task.has_answered
+                              ? "#6b7280"
+                              : "#10B981",
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = task.has_answered
+                              ? "#4b5563"
+                              : "#059669";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = task.has_answered
+                              ? "#6b7280"
+                              : "#10B981";
+                          }}
+                        >
+                          {task.has_answered ? "View Score" : "Take Activity"}
+                        </button>
+                      )}
                     {task.isLocal && (
                       <a
                         href="#"
@@ -1495,7 +1499,9 @@ const UserTaskPage = () => {
                                 flex: 1,
                               }}
                             >
-                              {task.has_answered ? "View Score" : "Take Activity"}
+                              {task.has_answered
+                                ? "View Score"
+                                : "Take Activity"}
                             </ButtonComponent>
                           ) : (
                             <ButtonComponent
@@ -1612,7 +1618,9 @@ const UserTaskPage = () => {
                 const spaceId = space_uuid;
                 const spaceName = currentSpace?.space_name;
                 if (spaceId && spaceName) {
-                  navigate(`/tasks/all/${spaceId}/${encodeURIComponent(spaceName)}`);
+                  navigate(
+                    `/tasks/all/${spaceId}/${encodeURIComponent(spaceName)}`,
+                  );
                 } else {
                   console.warn("No space ID or name found for navigation");
                 }
@@ -1643,9 +1651,14 @@ const UserTaskPage = () => {
   const handleSeeActivity = (task) => {
     const taskTitle = task.task_title || task.title || "Untitled Task";
     const encodedTaskTitle = encodeURIComponent(taskTitle);
-    navigate(
-      `/user/activity/${space_uuid}/${encodeURIComponent(space_name)}/${task.task_id || task.id}/${encodedTaskTitle}`,
-    );
+
+    if (task.task_category === "group-activity") {
+      navigate(
+        `/user/activity/${space_uuid}/${encodeURIComponent(space_name)}/${task.task_id || task.id}/${encodedTaskTitle}`,
+      );
+    } else {
+      navigate(`/task/${space_uuid}/${encodeURIComponent(space_name)}`);
+    }
   };
 
   const handleClosePreview = () => {
@@ -1908,1779 +1921,1896 @@ const UserTaskPage = () => {
           color: currentColors.text,
         }}
       >
-      {/* ================= DESKTOP SIDEBAR ================= */}
-      <div className="hidden lg:block">
-        {/* <ProfSidebar onLogoutClick={() => setShowLogout(true)} /> */}
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
-      </div>
+        {/* ================= DESKTOP SIDEBAR ================= */}
+        <div className="hidden lg:block">
+          {/* <ProfSidebar onLogoutClick={() => setShowLogout(true)} /> */}
+          <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        </div>
 
-      {/* ================= MOBILE OVERLAY ================= */}
-      {mobileSidebarOpen && (
+        {/* ================= MOBILE OVERLAY ================= */}
+        {mobileSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+        )}
+
+        {/* ================= MOBILE/TABLET SIDEBAR ================= */}
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:block lg:hidden"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* ================= MOBILE/TABLET SIDEBAR ================= */}
-      <div
-        className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300
+          className={`fixed top-0 left-0 h-full w-64 z-50 transform transition-transform duration-300
         ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:block lg:hidden`}
-        style={{
-          backgroundColor: currentColors.surface,
-        }}
-      >
-        <Sidebar onLogoutClick={() => setShowLogout(true)} />
-      </div>
+          style={{
+            backgroundColor: currentColors.surface,
+          }}
+        >
+          <Sidebar onLogoutClick={() => setShowLogout(true)} />
+        </div>
 
-      {/* ================= MAIN ================= */}
-      <div
-        className="flex-1 flex flex-col w-full"
-        style={{ backgroundColor: currentColors.background }}
-      >
-        {/* ================= HEADER ================= */}
+        {/* ================= MAIN ================= */}
         <div
-          className={`lg:hidden p-4 border-b
+          className="flex-1 flex flex-col w-full"
+          style={{ backgroundColor: currentColors.background }}
+        >
+          {/* ================= HEADER ================= */}
+          <div
+            className={`lg:hidden p-4 border-b
           flex items-center gap-4 fixed top-0 left-0 right-0 z-30
           transition-transform duration-300
           ${showHeader ? "translate-y-0" : "-translate-y-full"}`}
-          style={{
-            backgroundColor: currentColors.surface,
-            borderColor: currentColors.border,
-          }}
-        >
-          <button
-            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="bg-transparent border-none text-2xl p-0"
-            style={{ color: currentColors.text }}
-          >
-            {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-          </button>
-          <h1 className="text-xl font-bold">{spaceName}</h1>
-        </div>
-
-        {/* HEADER SPACER */}
-        <div className="lg:hidden h-16" />
-
-        {/* ================= COVER ================= */}
-        <div
-          className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
-          onClick={handleCoverPhotoClick}
-        >
-          {coverPhotoUrl ? (
-            <>
-              {coverPhotoUrl.includes("gradient") ? (
-                <div
-                  className="w-full h-full"
-                  style={{ background: coverPhotoUrl }}
-                />
-              ) : (
-                <img
-                  src={coverPhotoUrl}
-                  alt="Space Cover"
-                  className="w-full h-full object-cover"
-                />
-              )}
-              <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
-              {isOwnerSpace && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                    <FiUpload size={16} />
-                    <span className="text-sm">Change Cover Photo</span>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
-              <div className="absolute inset-0 bg-black/30" />
-              {isOwnerSpace && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                    <FiUpload size={16} />
-                    <span className="text-sm">Upload Cover Photo</span>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-          {isOwnerSpace && (
-            <input
-              ref={coverPhotoInputRef}
-              type="file"
-              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-              onChange={handleCoverPhotoChange}
-              className="hidden"
-            />
-          )}
-        </div>
-
-        {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
-        {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
-        <div
-          className="lg:hidden px-4 py-3 border-b"
-          style={{
-            backgroundColor: currentColors.surface + "CC", // Add 80% opacity
-            borderColor: currentColors.border + "CC", // Add 80% opacity to border
-            backdropFilter: "blur(8px)"
-          }}
-        >
-          <div className="flex flex-col gap-2">
-            {/* Schedule */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Schedule
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_day || "TBD"} (
-                {currentSpace?.space_time_start ? new Date(
-                  `2000-01-01T${currentSpace.space_time_start}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"}{" "}
-                -{" "}
-                {currentSpace?.space_time_end ? new Date(
-                  `2000-01-01T${currentSpace.space_time_end}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"})
-              </span>
-            </div>
-
-            {/* Section */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Section
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_section ||
-                 currentSpace?.section ||
-                 currentSpace?.class_section ||
-                 currentSpace?.section_name ||
-                 currentSpace?.course_section ||
-                 currentSpace?.subject_section ||
-                 currentSpace?.space_block ||
-                 currentSpace?.block ||
-                 "N/A"
-                }
-              </span>
-            </div>
-
-            {/* Description */}
-            <div className="flex items-start gap-2">
-              <span className="text-xs font-semibold w-20 shrink-0 pt-0.5" style={{ color: currentColors.text }}>
-                Description
-              </span>
-              <span className="text-xs flex-1 break-words" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_description || 
-                  (currentSpace?.space_type === "course" 
-                    ? "Course space for lectures, assignments, and discussions."
-                    : "Collaborative space for sharing ideas and resources."
-                  )
-                }
-              </span>
-            </div>
-          </div>
-        </div>
-        )}
-
-        {/* SPACE INFO OVERLAY - Desktop version */}
-        {(currentSpace?.space_type === "course" || currentSpace?.space_day || currentSpace?.space_section || currentSpace?.space_schedule) && (
-        <div 
-          className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
-          style={{
-            backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
-            borderColor: currentColors.border + "CC", // Add 80% opacity to border
-            maxWidth: "1000px",
-            backdropFilter: "blur(8px)" // Add subtle blur for better readability
-          }}
-        >
-          <div className="grid grid-cols-3 gap-2">
-            {/* Schedule */}
-            <div>
-              <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
-                Schedule
-              </h3>
-              <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_day || "TBD"} (
-                {currentSpace?.space_time_start ? new Date(
-                  `2000-01-01T${currentSpace.space_time_start}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"}{" "}
-                -{" "}
-                {currentSpace?.space_time_end ? new Date(
-                  `2000-01-01T${currentSpace.space_time_end}`,
-                ).toLocaleTimeString([], {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }) : "TBD"})
-              </p>
-            </div>
-
-            {/* Section */}
-            <div>
-              <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
-                Section
-              </h3>
-              <p className="text-sm" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_section ||
-                 currentSpace?.section ||
-                 currentSpace?.class_section ||
-                 currentSpace?.section_name ||
-                 currentSpace?.course_section ||
-                 currentSpace?.subject_section ||
-                 currentSpace?.space_block ||
-                 currentSpace?.block ||
-                 "N/A"
-                }
-              </p>
-            </div>
-
-            {/* Description */}
-            <div>
-              <h3 className="font-semibold text-sm mb-2" style={{ color: currentColors.text }}>
-                Description
-              </h3>
-              <p className="text-sm line-clamp-3" style={{ color: currentColors.textSecondary }}>
-                {currentSpace?.space_description || 
-                  (currentSpace?.space_type === "course" 
-                    ? "Course space for lectures, assignments, and discussions."
-                    : "Collaborative space for sharing ideas and resources."
-                  )
-                }
-              </p>
-            </div>
-          </div>
-        </div>
-        )}
-
-        <div className="p-4 sm:p-6">
-          {/* ================= DESKTOP TITLE ================= */}
-          <div className="hidden md:block mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-400">
-                (
-                {currentSpace?.space_type === "course"
-                  ? currentSpace?.members?.length - 1 + " student(s)"
-                  : currentSpace?.members?.length + " member(s)" || 0}
-                )
-              </span>
-              {isOwnerSpace && (
-                <>
-                  <div onClick={handleInviteMember}>
-                    <Button text="Add Member" />
-                  </div>
-                  <div onClick={handlePendingInvitations} className="relative">
-                    <Button text="Pending Invites" />
-                    {pendingInvitesCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {pendingInvitesCount}
-                      </span>
-                    )}
-                  </div>
-                  <div onClick={handleDeleteRoom}>
-                    <Button text="Delete Room" />
-                  </div>
-                </>
-              )}
-              {(isFriendSpace || isCourseSpace) && (
-                <div className="flex flex-col gap-2 mt-2">
-                  <div
-                    className="flex items-center gap-2 p-2 rounded-md"
-                    style={{ backgroundColor: currentColors.surface }}
-                  >
-                    <span
-                      className="text-xs break-all"
-                      style={{ color: currentColors.accent }}
-                    >
-                      {currentSpace?.space_link || "Loading..."}
-                    </span>
-                    <button
-                      onClick={() => handleCopyLink(currentSpace?.space_link)}
-                      className="p-1 rounded transition-colors"
-                      style={{
-                        color: currentColors.textSecondary,
-                        backgroundColor: "transparent",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          currentColors.hover;
-                        e.currentTarget.style.color = currentColors.text;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color =
-                          currentColors.textSecondary;
-                      }}
-                      title="Copy to clipboard"
-                    >
-                      <FiCopy size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ================= TABS ================= */}
-          <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
-            <div className="flex justify-center min-w-max mx-auto px-4">
-              <div className="flex justify-center space-x-12">
-                <button
-                  onClick={() => navigate(`/space/${space_uuid}/${space_name}`)}
-                >
-                  Stream
-                </button>
-                <button
-                  className="font-semibold border-b-2 pb-2"
-                  style={{ borderColor: currentColors.text }}
-                >
-                  Tasks
-                </button>
-                <button
-                  onClick={() =>
-                    navigate(`/space/${space_uuid}/${space_name}/files`)
-                  }
-                >
-                  Files
-                </button>
-                <button
-                  onClick={() =>
-                    navigate(`/space/${space_uuid}/${space_name}/people`)
-                  }
-                >
-                  People
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Add Member Button - Mobile */}
-          {isOwnerSpace && (
-            <div className="md:hidden flex justify-end gap-2 mb-6">
-              <div onClick={handleInviteMember}>
-                <Button text="Add Member" />
-              </div>
-              <div onClick={handlePendingInvitations} className="relative">
-                <Button text="Pending Invites" />
-                {pendingInvitesCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {pendingInvitesCount}
-                  </span>
-                )}
-              </div>
-              <div onClick={handleDeleteRoom}>
-                <Button text="Delete Room" />
-              </div>
-            </div>
-          )}
-
-          {!isCreatingTask && !showTaskTypeSelection ? (
-            /* ================= TASKS LIST VIEW WITH SECTIONS ================= */
-            <div className="max-w-5xl mx-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Assigned Tasks</h2>
-                {isOwnerSpace && (
-                  <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
-                    onClick={() => {
-                      setSelectedTaskType("group-activity");
-                      setTaskCategory("group-activity");
-                      setIsCreatingTask(true);
-                    }}
-                  >
-                    <FiFileText size={16} />
-                    Create Task
-                  </button>
-                )}
-              </div>
-
-              {/* TASK SECTIONS */}
-              <TaskSection
-                category="quiz"
-                emoji="📝"
-                title="Quizzes"
-                tasks={allTasks}
-              />
-
-              <TaskSection
-                category="individual-activity"
-                emoji="📄"
-                title="Individual Activities"
-                tasks={allTasks}
-              />
-
-              <TaskSection
-                category="group-activity"
-                emoji="👥"
-                title="Group Activities"
-                tasks={allTasks}
-              />
-
-              <TaskSection
-                category="exam"
-                emoji="📋"
-                title="Exams"
-                tasks={allTasks}
-              />
-
-              {/* Show message if no tasks exist */}
-              {allTasks.length === 0 && (
-                <div
-                  className="rounded-xl p-4 sm:p-6 border"
-                  style={{
-                    backgroundColor: currentColors.surface,
-                    borderColor: isDarkMode ? currentColors.border : "#000000",
-                  }}
-                >
-                  <div
-                    className="text-center py-12"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    <FiFileText size={40} className="mx-auto mb-3 opacity-40" />
-                    <p className="text-lg mb-2">No tasks assigned yet</p>
-                    <p className="text-sm">
-                      Create your first task to get started!
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : showTaskTypeSelection ? (
-            /* ================= TASK TYPE SELECTION ================= */
-            <div className="max-w-5xl mx-auto">
-              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-white">
-                      Select Task Type
-                    </h2>
-                    <button
-                      onClick={() => setShowTaskTypeSelection(false)}
-                      className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
-                    >
-                      ×
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Quiz Card */}
-                    <div
-                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
-                      onClick={() => {
-                        setSelectedTaskType("quiz");
-                        setTaskCategory("quiz");
-                        setShowTaskTypeSelection(false);
-                        setIsCreatingTask(true);
-                      }}
-                    >
-                      <div className="text-center">
-                        <div className="text-4xl mb-4">📝</div>
-                        <h3 className="text-lg font-semibold text-white mb-2">
-                          Quiz
-                        </h3>
-                        <p className="text-gray-400 text-sm">
-                          Create a quiz with multiple choice, true/false,
-                          Identification, Enumeration, or short answer questions
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Individual Activity Card */}
-                    <div
-                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
-                      onClick={() => {
-                        setSelectedTaskType("individual-activity");
-                        setTaskCategory("individual-activity");
-                        setShowTaskTypeSelection(false);
-                        setIsCreatingTask(true);
-                      }}
-                    >
-                      <div className="text-center">
-                        <div className="text-4xl mb-4">📄</div>
-                        <h3 className="text-lg font-semibold text-white mb-2">
-                          Individual Activity
-                        </h3>
-                        <p className="text-gray-400 text-sm">
-                          Assign individual tasks, homework, or activities for
-                          each student
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Group Activity Card */}
-                    <div
-                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
-                      onClick={() => {
-                        setSelectedTaskType("group-activity");
-                        setTaskCategory("group-activity");
-                        setShowTaskTypeSelection(false);
-                        setIsCreatingTask(true);
-                      }}
-                    >
-                      <div className="text-center">
-                        <div className="text-4xl mb-4">👥</div>
-                        <h3 className="text-lg font-semibold text-white mb-2">
-                          Group Activity
-                        </h3>
-                        <p className="text-gray-400 text-sm">
-                          Create collaborative tasks for student groups to work
-                          together
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Exam Card */}
-                    <div
-                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
-                      onClick={() => {
-                        setSelectedTaskType("exam");
-                        setTaskCategory("exam");
-                        setShowTaskTypeSelection(false);
-                        setIsCreatingTask(true);
-                      }}
-                    >
-                      <div className="text-center">
-                        <div className="text-4xl mb-4">📋</div>
-                        <h3 className="text-lg font-semibold text-white mb-2">
-                          Exam
-                        </h3>
-                        <p className="text-gray-400 text-sm">
-                          Schedule formal examinations with time limits and
-                          grading criteria
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* ================= TASK BUILDERS ================= */
-            <div>
-              {selectedTaskType === "group-activity" && (
-                <GroupActivityBuilder
-                  currentColors={currentColors}
-                  onBack={() => {
-                    setIsCreatingTask(false);
-                    setSelectedTaskType(null);
-                    setShowTaskTypeSelection(false);
-                  }}
-                  onSave={(taskData) => handleUpload("draft", taskData)}
-                  onPublish={(taskData) => handleUpload("uploaded", taskData)}
-                  isLoading={
-                    draftTaskMutation.isLoading || uploadTaskMutation.isLoading
-                  }
-                />
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* PREVIEW MODAL */}
-      {showPreview && previewTask && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-            {/* Preview Header */}
-            <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10">
-              <h2 className="text-xl font-bold text-gray-800">
-                Task Preview - {previewTask.task_title}
-              </h2>
-              <button
-                onClick={handleClosePreview}
-                className="text-gray-500 hover:text-gray-700 text-2xl bg-transparent border-none outline-none hover:bg-transparent focus:outline-none focus:ring-0"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Preview Content */}
-            <div className="p-4">{getPreviewComponent(previewTask)}</div>
-          </div>
-        </div>
-      )}
-
-      {/* STUDENT QUIZ TAKER MODAL */}
-      {showStudentQuiz && studentQuizTask && (
-        <div className="fixed inset-0 z-50">
-          <StudentQuizTaker
-            quizData={studentQuizTask.rawData || studentQuizTask}
-            currentColors={currentColors}
-            onSubmit={handleQuizSubmit}
-            onExit={handleCloseStudentQuiz}
-          />
-        </div>
-      )}
-
-      {/* ADD MEMBER POPUP */}
-      <AddMember
-        currentSpace={currentSpace}
-        onInviteMember={sendInvite}
-        showInvitePopup={showInvitePopup}
-        setShowInvitePopup={setShowInvitePopup}
-      />
-
-      {/* LOGOUT MODAL */}
-      {showLogout && <Logout onClose={() => setShowLogout(false)} />}
-
-      {/* MANUAL GROUPS MODAL */}
-      {showManualGroups && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">
-                Manual Groups({numberOfGroups}{" "}
-                {numberOfGroups === 1 ? "Group" : "Groups"})
-              </h2>
-              <button
-                onClick={() => setShowManualGroups(false)}
-                className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="flex flex-col md:flex-row lg:flex-row gap-6">
-              {/* Groups - Left side for tablet and larger */}
-              <div className="flex-1 md:order-1 lg:order-1 order-2">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {groups.map((group) => (
-                    <div
-                      key={group.id}
-                      className={`bg-[#23272F] rounded-lg p-4 cursor-pointer transition-all ${
-                        activeGroup === group.id
-                          ? "ring-2 ring-blue-500"
-                          : "hover:bg-[#2a2f38]"
-                      }`}
-                      onClick={() => {
-                        // Reset the previously active group if it was in edit mode and not saved
-                        if (activeGroup && activeGroup !== group.id) {
-                          const prevGroup = groups.find(
-                            (g) => g.id === activeGroup,
-                          );
-                          if (
-                            prevGroup &&
-                            prevGroup.showInputs &&
-                            !prevGroup.isSaved
-                          ) {
-                            const updatedGroups = [...groups];
-
-                            // If it was a previously saved group, restore original data and set as saved
-                            if (
-                              prevGroup.wasPreviouslySaved &&
-                              prevGroup.originalData
-                            ) {
-                              updatedGroups[activeGroup - 1].leader =
-                                prevGroup.originalData.leader;
-                              updatedGroups[activeGroup - 1].members = [
-                                ...prevGroup.originalData.members,
-                              ];
-                              updatedGroups[activeGroup - 1].showInputs = false;
-                              updatedGroups[activeGroup - 1].isSaved = true;
-                              delete updatedGroups[activeGroup - 1]
-                                .originalData;
-                            } else {
-                              // For new groups, reset to empty state
-                              updatedGroups[activeGroup - 1].leader = "";
-                              updatedGroups[activeGroup - 1].members = [""];
-                              updatedGroups[activeGroup - 1].showInputs = false;
-                              updatedGroups[activeGroup - 1].isSaved = false;
-                            }
-
-                            setGroups(updatedGroups);
-                          }
-                        }
-
-                        setActiveGroup(group.id);
-                      }}
-                    >
-                      <div className="flex justify-between items-center mb-3">
-                        <h3 className="font-semibold text-white">
-                          Group {group.id}
-                        </h3>
-                        {group.showInputs && group.wasPreviouslySaved && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const updatedGroups = [...groups];
-
-                              // Restore original data if it exists
-                              if (updatedGroups[group.id - 1].originalData) {
-                                updatedGroups[group.id - 1].leader =
-                                  updatedGroups[
-                                    group.id - 1
-                                  ].originalData.leader;
-                                updatedGroups[group.id - 1].members = [
-                                  ...updatedGroups[group.id - 1].originalData
-                                    .members,
-                                ];
-                                delete updatedGroups[group.id - 1].originalData;
-                              }
-
-                              updatedGroups[group.id - 1].showInputs = false;
-                              updatedGroups[group.id - 1].isSaved = true;
-                              setGroups(updatedGroups);
-                            }}
-                            className="text-gray-400 text-xl bg-transparent border-none outline-none hover:bg-transparent hover:text-red-400 focus:outline-none focus:ring-0"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Show saved group content */}
-                      {group.isSaved ? (
-                        <div className="space-y-2">
-                          {group.leader && group.leader.trim() && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-yellow-400">
-                                Leader:
-                              </span>
-                              <span className="text-sm text-white">
-                                {group.leader}
-                              </span>
-                            </div>
-                          )}
-                          {group.members.filter((m) => m.trim()).length > 0 && (
-                            <div>
-                              <span className="text-xs font-medium text-green-400">
-                                Members:
-                              </span>
-                              <div className="mt-1 space-y-1">
-                                {group.members
-                                  .filter((m) => m.trim())
-                                  .map((member, index) => (
-                                    <div
-                                      key={index}
-                                      className="text-sm text-white pl-2"
-                                    >
-                                      • {member}
-                                    </div>
-                                  ))}
-                              </div>
-                            </div>
-                          )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              editGroup(group.id);
-                            }}
-                            className="w-full px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm mt-3"
-                          >
-                            Edit Group
-                          </button>
-                        </div>
-                      ) : (
-                        /* Show input fields for unsaved groups */
-                        <>
-                          {!group.showInputs ? (
-                            // Show Add People button when inputs are hidden
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleGroupInputs(group.id);
-                              }}
-                              className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                            >
-                              Add People
-                            </button>
-                          ) : (
-                            // Show input fields when inputs are visible
-                            <>
-                              {/* Leader Field */}
-                              <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                  Leader:
-                                </label>
-                                <div
-                                  className="flex gap-2 items-center"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <input
-                                    type="text"
-                                    value={group.leader}
-                                    onChange={(e) =>
-                                      handleGroupLeaderChange(
-                                        group.id,
-                                        e.target.value,
-                                      )
-                                    }
-                                    placeholder="Enter leader name"
-                                    className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
-                                  />
-                                  {group.leader.trim() && (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        const updatedGroups = [...groups];
-                                        updatedGroups[group.id - 1].leader = "";
-                                        setGroups(updatedGroups);
-                                      }}
-                                      disabled={
-                                        group.members.filter((member) =>
-                                          member.trim(),
-                                        ).length > 0
-                                      }
-                                      className={`px-2 py-1 text-xs rounded flex-shrink-0 ${
-                                        group.members.filter((member) =>
-                                          member.trim(),
-                                        ).length > 0
-                                          ? "bg-gray-500 text-gray-300 cursor-not-allowed"
-                                          : "bg-red-600 text-white hover:bg-red-700"
-                                      }`}
-                                    >
-                                      ×
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Members Field */}
-                              <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                  Members:
-                                </label>
-                                <div className="space-y-2 mb-3">
-                                  {group.members.map((member, memberIndex) => (
-                                    <div
-                                      key={memberIndex}
-                                      className="flex gap-2 items-center"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <input
-                                        type="text"
-                                        value={member}
-                                        onChange={(e) =>
-                                          handleGroupMemberChange(
-                                            group.id,
-                                            memberIndex,
-                                            e.target.value,
-                                          )
-                                        }
-                                        placeholder="Enter member name"
-                                        className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
-                                      />
-                                      {member.trim() && (
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeMemberFromGroup(
-                                              group.id,
-                                              memberIndex,
-                                            );
-                                          }}
-                                          className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs flex-shrink-0"
-                                        >
-                                          ×
-                                        </button>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {/* Save Group button */}
-                              <div className="flex gap-2">
-                                {!group.wasPreviouslySaved && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      resetGroupInputs(group.id);
-                                    }}
-                                    className="flex-1 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
-                                  >
-                                    Cancel
-                                  </button>
-                                )}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    saveGroup(group.id);
-                                  }}
-                                  disabled={
-                                    !group.leader.trim() &&
-                                    group.members.filter((member) =>
-                                      member.trim(),
-                                    ).length === 0
-                                  }
-                                  className={`${group.wasPreviouslySaved ? "w-full" : "flex-1"} px-3 py-2 text-sm rounded ${
-                                    !group.leader.trim() &&
-                                    group.members.filter((member) =>
-                                      member.trim(),
-                                    ).length === 0
-                                      ? "bg-gray-500 text-gray-300 cursor-not-allowed"
-                                      : "bg-blue-600 text-white hover:bg-blue-700"
-                                  }`}
-                                >
-                                  Save Group
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </>
-                      )}
-
-                      {/* Show member count for inactive groups */}
-                      {activeGroup !== group.id &&
-                        !group.isSaved &&
-                        group.members.filter((m) => m.trim()).length > 0 && (
-                          <div className="text-gray-400 text-sm">
-                            {group.members.filter((m) => m.trim()).length}{" "}
-                            members
-                          </div>
-                        )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Available Students - Right side for tablet and larger */}
-              <div className="lg:w-80 md:w-72 sm:w-64 bg-[#23272F] rounded-lg p-4 h-fit max-h-[300px] md:max-h-[280px] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:order-2 lg:order-2 order-1">
-                <h3 className="font-semibold text-white mb-4">
-                  Available Students (
-                  {availableMembers.length - getAssignedMembers().size})
-                </h3>
-                <div className="space-y-2">
-                  {availableMembers
-                    .slice(0, isTablet ? 5 : availableMembers.length)
-                    .map((member, index) => {
-                      const isAssigned = isMemberAssigned(member);
-                      const role = getMemberRole(member);
-                      return (
-                        <div
-                          key={index}
-                          className={`rounded p-3 text-white text-sm transition cursor-pointer ${
-                            isAssigned
-                              ? "bg-[#1a1f29] opacity-50 cursor-not-allowed"
-                              : "bg-[#161A20] hover:bg-[#1a1f29]"
-                          }`}
-                          onClick={() =>
-                            !isAssigned && addMemberFromAvailable(member)
-                          }
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className={isAssigned ? "line-through" : ""}>
-                              {member}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`w-2 h-2 rounded-full ${
-                                  role === "leader"
-                                    ? "bg-yellow-500"
-                                    : role === "member"
-                                      ? "bg-green-500"
-                                      : "bg-green-500"
-                                }`}
-                              ></div>
-                              <span className="text-xs text-gray-400">
-                                {role === "leader"
-                                  ? "Leader"
-                                  : role === "member"
-                                    ? "Member"
-                                    : "Click to add"}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={() => {
-                  // Save all groups with their leaders and members
-                  const groupsData = groups.map((group) => ({
-                    groupId: group.id,
-                    leader: group.leader.trim(),
-                    members: group.members.filter((member) => member.trim()), // Remove empty members
-                  }));
-                  // Here you would send this data to your backend
-                  setGroupsConfigured(true);
-                  setGroupCreationMethod("manual");
-                  setShowManualGroups(false);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Save Groups
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* GENERATE GROUPS MODAL */}
-      {showGenerateGroups && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
-          <div className="bg-[#1E222A] rounded-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl max-h-[90vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex justify-between items-center mb-4 sm:mb-6">
-              <h2 className="text-lg sm:text-xl font-bold text-white">
-                Generate Groups ({numberOfGroups}{" "}
-                {numberOfGroups === 1 ? "Group" : "Groups"})
-              </h2>
-              <button
-                onClick={() => setShowGenerateGroups(false)}
-                className="text-gray-400 text-xl sm:text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0 p-1"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="mb-4 sm:mb-6">
-              <p className="text-gray-300 text-sm sm:text-base mb-3 sm:mb-4">
-                The system will automatically generate {numberOfGroups} groups
-                and randomly assign students to them.
-              </p>
-
-              <div className="bg-[#23272F] rounded-lg p-3 sm:p-4">
-                <div className="flex justify-between items-center mb-2 sm:mb-3">
-                  <h3 className="font-semibold text-white text-sm sm:text-base">
-                    Generated Groups Preview:
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        if (numberOfGroups > 1) {
-                          const newNumGroups = numberOfGroups - 1;
-                          setNumberOfGroups(newNumGroups);
-                          shuffleGroups(newNumGroups);
-                        }
-                      }}
-                      disabled={numberOfGroups <= 1}
-                      className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
-                        numberOfGroups <= 1
-                          ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                          : "bg-gray-600 text-white hover:bg-gray-500"
-                      }`}
-                    >
-                      -
-                    </button>
-                    <span className="text-white font-medium min-w-[2rem] text-center">
-                      {numberOfGroups}
-                    </span>
-                    <button
-                      onClick={() => {
-                        const newNumGroups = numberOfGroups + 1;
-                        setNumberOfGroups(newNumGroups);
-                        shuffleGroups(newNumGroups);
-                      }}
-                      disabled={numberOfGroups >= availableMembers.length}
-                      className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
-                        numberOfGroups >= availableMembers.length
-                          ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                          : "bg-gray-600 text-white hover:bg-gray-500"
-                      }`}
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
-                  {generatedGroupsPreview.map((group, index) => (
-                    <div
-                      key={index}
-                      className="bg-[#161A20] rounded p-2 sm:p-3"
-                    >
-                      <div className="text-blue-400 font-semibold text-xs sm:text-sm mb-1 sm:mb-2">
-                        Group {group.id}
-                      </div>
-                      <div className="text-xs space-y-0.5 sm:space-y-1">
-                        <div className="text-yellow-400">
-                          <span className="font-medium">Leader:</span>
-                          <span className="block xs:inline xs:ml-1">
-                            {group.leader}
-                          </span>
-                        </div>
-                        <div className="text-green-400">
-                          <span className="font-medium">Members:</span>
-                          <span className="block xs:inline xs:ml-1">
-                            {group.members.join(", ")}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-gray-500 text-xs mt-1 sm:mt-2">
-                        Auto-assigned
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={() => shuffleGroups(numberOfGroups)}
-                className="mr-2 px-3 sm:px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm sm:text-base font-medium"
-              >
-                Shuffle
-              </button>
-              <button
-                onClick={() => {
-                  // Use the shuffled groups
-                  setGroups(generatedGroupsPreview);
-                  setGroupsConfigured(true);
-                  setGroupCreationMethod("generate");
-                  setShowGenerateGroups(false);
-                }}
-                className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:text-base font-medium"
-              >
-                Confirm Generate
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* RESET CONFIRMATION MODAL */}
-      {showResetConfirmation && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">Reset Groups</h2>
-              <button
-                onClick={() => setShowResetConfirmation(false)}
-                className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-gray-300 text-sm">
-                Are you sure you want to reset all groups? This will remove all
-                group assignments and you'll need to configure them again.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowResetConfirmation(false)}
-                className="flex-1 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  // Reset all groups
-                  setGroups([
-                    {
-                      id: 1,
-                      members: [],
-                      leader: "",
-                      showInputs: false,
-                      isSaved: false,
-                      wasPreviouslySaved: false,
-                    },
-                  ]);
-                  setNumberOfGroups(1);
-                  setGroupsConfigured(false);
-                  setGroupCreationMethod(null);
-                  setShowResetConfirmation(false);
-                }}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* DELETE CONFIRMATION DIALOG */}
-      <DeleteConfirmationDialog
-        isOpen={showDeleteDialog}
-        onClose={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-        space={
-          currentSpace || {
-            space_name: "Unknown Space",
-            members: [],
-            files: [],
-            tasks: [],
-          }
-        }
-      />
-
-      {/* COVER PHOTO EDITOR MODAL */}
-      {showCoverPhotoEditor && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">
-                Position Cover Photo
-              </h2>
-              <button
-                onClick={handleCoverPhotoCancel}
-                className="text-gray-400 hover:text-white p-1 bg-transparent"
-              >
-                <FiX size={20} />
-              </button>
-            </div>
-
-            {/* Editor Content */}
-            <div className="flex-1 p-6 overflow-y-auto">
-              {/* Gradient Options */}
-              <div className="mb-6">
-                <p
-                  className="text-sm font-medium mb-3"
-                  style={{ color: currentColors.text }}
-                >
-                  Color & Gradient
-                </p>
-                <div className="grid grid-cols-4 gap-2">
-                  {colorOptions.map((color, i) => (
-                    <div
-                      key={i}
-                      className="h-12 rounded cursor-pointer border-2 transition-colors"
-                      style={{
-                        background: color,
-                        borderColor: currentColors.border,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.borderColor =
-                          currentColors.accent || "#3B82F6";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.borderColor = currentColors.border;
-                      }}
-                      onClick={() => handleGradientSelection(color)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Separator Line */}
-              <div className="relative flex items-center my-4">
-                <div
-                  className="flex-1 border-t"
-                  style={{ borderColor: currentColors.border }}
-                ></div>
-                <span
-                  className="px-3 text-sm"
-                  style={{ color: currentColors.textSecondary }}
-                >
-                  or
-                </span>
-                <div
-                  className="flex-1 border-t"
-                  style={{ borderColor: currentColors.border }}
-                ></div>
-              </div>
-
-              {/* Upload Option (only show when gradient is selected) */}
-              {coverPhotoUrl && coverPhotoUrl.includes("gradient") && (
-                <div className="mb-4 flex justify-center">
-                  <button
-                    onClick={() => coverPhotoInputRef.current?.click()}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm"
-                    style={{
-                      backgroundColor: currentColors.background,
-                      color: currentColors.text,
-                      border: `1px solid ${currentColors.border}`,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor =
-                        currentColors.accent || "#3B82F6";
-                      e.target.style.color = "#ffffff";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = currentColors.background;
-                      e.target.style.color = currentColors.text;
-                    }}
-                  >
-                    <FiUpload size={14} />
-                    <span>Upload Photo</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Preview Area (only show if it's an image, not gradient) */}
-              {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
-                <div className="mb-6">
-                  <div
-                    className="relative w-full h-48 rounded-lg overflow-hidden"
-                    style={{ backgroundColor: currentColors.background }}
-                  >
-                    <div
-                      ref={coverPhotoEditorRef}
-                      className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
-                      style={{
-                        backgroundImage: `url(${coverPhotoUrl})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: `center ${coverPhotoPosition}%`,
-                        backgroundRepeat: "no-repeat",
-                      }}
-                      onMouseDown={handleMouseDown}
-                    />
-                    <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
-                    {isDragging && (
-                      <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
-                        Dragging...
-                      </div>
-                    )}
-                  </div>
-                  <p
-                    className="text-sm mt-2"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    Click and drag the image up or down to position it
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
-              <button
-                onClick={handleCoverPhotoCancel}
-                className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCoverPhotoSave}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
-              >
-                Apply
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* COVER PHOTO CONFIRMATION DIALOG */}
-      {showCoverPhotoConfirm && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-hidden">
-            {/* Header */}
-            <div className="p-4 border-b border-gray-700">
-              <h2 className="text-lg font-semibold text-white">
-                Change Cover Photo?
-              </h2>
-            </div>
-
-            {/* Content */}
-            <div className="p-4">
-              <p className="text-gray-300">
-                Do you want to change the cover photo for this space with the
-                image you uploaded?
-              </p>
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
-              <button
-                onClick={handleCancelCoverPhoto}
-                className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmCoverPhoto}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
-              >
-                Change Cover Photo
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PENDING INVITATIONS POPUP */}
-      {showPendingInvitations && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div
-            className="rounded-xl shadow-2xl max-w-md w-full border"
             style={{
               backgroundColor: currentColors.surface,
               borderColor: currentColors.border,
             }}
           >
-            {/* Header */}
-            <div
-              className="p-4 border-b flex items-center justify-between"
-              style={{ borderColor: currentColors.border }}
+            <button
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              className="bg-transparent border-none text-2xl p-0"
+              style={{ color: currentColors.text }}
             >
-              <h3
-                className="text-xl font-semibold"
-                style={{ color: currentColors.text }}
-              >
-                Pending Invites
-              </h3>
-              <button
-                onClick={() => setShowPendingInvitations(false)}
-                className="transition-colors p-1 rounded-lg"
-                style={{ color: currentColors.textSecondary }}
-                onMouseEnter={(e) => {
-                  e.target.style.color = currentColors.text;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.color = currentColors.textSecondary;
-                }}
-              >
-                <FiX size={20} />
-              </button>
-            </div>
-
-            {/* Invitations List */}
-            <div className="p-6">
-              {joinRequestsData.length === 0 ? (
-                <>
-                  <p className="mb-4" style={{ color: currentColors.text }}>
-                    No pending invitations at the moment.
-                  </p>
-                  <div
-                    className="text-sm"
-                    style={{ color: currentColors.textSecondary }}
-                  >
-                    Invited members will appear here once they have not yet
-                    accepted your invitation.
-                  </div>
-                </>
-              ) : (
-                joinRequestsData.map((invitation) => (
-                  <div
-                    key={invitation.account_id}
-                    className="rounded-lg p-4 border"
-                    style={{
-                      backgroundColor: currentColors.background,
-                      borderColor: currentColors.border,
-                    }}
-                  >
-                    <div className="flex items-start gap-3">
-                      <img
-                        src={invitation.profile_pic}
-                        alt={invitation.fullname}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                      <div className="flex-1">
-                        <h3
-                          className="font-medium"
-                          style={{ color: currentColors.text }}
-                        >
-                          {invitation.fullname}
-                        </h3>
-                        <p
-                          className="text-sm"
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          {invitation.email}
-                        </p>
-                        <p
-                          className="text-sm mt-1"
-                          style={{ color: currentColors.textSecondary }}
-                        >
-                          {invitation.message || "Hello world"}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span
-                            className="text-xs"
-                            style={{ color: currentColors.textSecondary }}
-                          >
-                            {invitation.added_at}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-3 mt-3">
-                      <button
-                        disabled={spaceLoading}
-                        onClick={() =>
-                          declineJoinRequest(invitation.account_id)
-                        }
-                        className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
-                        style={{
-                          backgroundColor: "#6B7280",
-                          color: "white",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = "#4B5563";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = "#6B7280";
-                        }}
-                      >
-                        Decline
-                      </button>
-                      <button
-                        disabled={spaceLoading}
-                        onClick={() => acceptJoinRequest(invitation.account_id)}
-                        className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
-                        style={{
-                          backgroundColor: "#2563EB",
-                          color: "white",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = "#1D4ED8";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = "#2563EB";
-                        }}
-                      >
-                        Accept
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            <div
-              className="flex justify-end p-6 border-t"
-              style={{ borderColor: currentColors.border }}
-            >
-              <button
-                onClick={() => setShowPendingInvitations(false)}
-                className="px-4 py-2 rounded-lg font-medium transition-colors"
-                style={{
-                  backgroundColor: currentColors.accent || "#3B82F6",
-                  color: "#ffffff",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor =
-                    currentColors.accentHover || "#2563EB";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor =
-                    currentColors.accent || "#3B82F6";
-                }}
-              >
-                Close
-              </button>
-            </div>
+              {mobileSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+            </button>
+            <h1 className="text-xl font-bold">{spaceName}</h1>
           </div>
-        </div>
-      )}
 
-      {/* VIEW SCORE MODAL */}
-      {showViewScore && viewScoreTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          {/* HEADER SPACER */}
+          <div className="lg:hidden h-16" />
+
+          {/* ================= COVER ================= */}
           <div
-            className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: currentColors.background }}
+            className="relative h-32 sm:h-40 md:h-48 group cursor-pointer"
+            onClick={handleCoverPhotoClick}
           >
-            {/* Modal Header */}
+            {coverPhotoUrl ? (
+              <>
+                {coverPhotoUrl.includes("gradient") ? (
+                  <div
+                    className="w-full h-full"
+                    style={{ background: coverPhotoUrl }}
+                  />
+                ) : (
+                  <img
+                    src={coverPhotoUrl}
+                    alt="Space Cover"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:bg-black/40" />
+                {isOwnerSpace && (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                      <FiUpload size={16} />
+                      <span className="text-sm">Change Cover Photo</span>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
+                <div className="absolute inset-0 bg-black/30" />
+                {isOwnerSpace && (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="bg-black/60 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                      <FiUpload size={16} />
+                      <span className="text-sm">Upload Cover Photo</span>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+            {isOwnerSpace && (
+              <input
+                ref={coverPhotoInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                onChange={handleCoverPhotoChange}
+                className="hidden"
+              />
+            )}
+          </div>
+
+          {/* MOBILE/TABLET SPACE INFO — sits below cover photo, fully readable */}
+          {(currentSpace?.space_type === "course" ||
+            currentSpace?.space_day ||
+            currentSpace?.space_section ||
+            currentSpace?.space_schedule) && (
             <div
-              className="sticky top-0 p-4 border-b flex justify-between items-center"
+              className="lg:hidden px-4 py-3 border-b"
               style={{
-                backgroundColor: currentColors.background,
-                borderColor: currentColors.border,
+                backgroundColor: currentColors.surface + "CC", // Add 80% opacity
+                borderColor: currentColors.border + "CC", // Add 80% opacity to border
+                backdropFilter: "blur(8px)",
               }}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                  style={{
-                    backgroundColor:
-                      currentColors.primary || currentColors.accent,
-                  }}
-                >
-                  {user?.fullname?.charAt(0).toUpperCase() || "U"}
-                </div>
-                <div>
-                  <h3
-                    className="text-lg font-bold"
+              <div className="flex flex-col gap-2">
+                {/* Schedule */}
+                <div className="flex items-start gap-2">
+                  <span
+                    className="text-xs font-semibold w-20 shrink-0 pt-0.5"
                     style={{ color: currentColors.text }}
                   >
-                    Your Quiz Results
+                    Schedule
+                  </span>
+                  <span
+                    className="text-xs flex-1 break-words"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {currentSpace?.space_day || "TBD"} (
+                    {currentSpace?.space_time_start
+                      ? new Date(
+                          `2000-01-01T${currentSpace.space_time_start}`,
+                        ).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "TBD"}{" "}
+                    -{" "}
+                    {currentSpace?.space_time_end
+                      ? new Date(
+                          `2000-01-01T${currentSpace.space_time_end}`,
+                        ).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "TBD"}
+                    )
+                  </span>
+                </div>
+
+                {/* Section */}
+                <div className="flex items-start gap-2">
+                  <span
+                    className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                    style={{ color: currentColors.text }}
+                  >
+                    Section
+                  </span>
+                  <span
+                    className="text-xs flex-1 break-words"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {currentSpace?.space_section ||
+                      currentSpace?.section ||
+                      currentSpace?.class_section ||
+                      currentSpace?.section_name ||
+                      currentSpace?.course_section ||
+                      currentSpace?.subject_section ||
+                      currentSpace?.space_block ||
+                      currentSpace?.block ||
+                      "N/A"}
+                  </span>
+                </div>
+
+                {/* Description */}
+                <div className="flex items-start gap-2">
+                  <span
+                    className="text-xs font-semibold w-20 shrink-0 pt-0.5"
+                    style={{ color: currentColors.text }}
+                  >
+                    Description
+                  </span>
+                  <span
+                    className="text-xs flex-1 break-words"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {currentSpace?.space_description ||
+                      (currentSpace?.space_type === "course"
+                        ? "Course space for lectures, assignments, and discussions."
+                        : "Collaborative space for sharing ideas and resources.")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SPACE INFO OVERLAY - Desktop version */}
+          {(currentSpace?.space_type === "course" ||
+            currentSpace?.space_day ||
+            currentSpace?.space_section ||
+            currentSpace?.space_schedule) && (
+            <div
+              className="hidden lg:block absolute top-4 right-4 p-4 rounded-lg border z-10"
+              style={{
+                backgroundColor: currentColors.surface + "CC", // Add 80% opacity (CC in hex)
+                borderColor: currentColors.border + "CC", // Add 80% opacity to border
+                maxWidth: "1000px",
+                backdropFilter: "blur(8px)", // Add subtle blur for better readability
+              }}
+            >
+              <div className="grid grid-cols-3 gap-2">
+                {/* Schedule */}
+                <div>
+                  <h3
+                    className="font-semibold text-sm mb-2"
+                    style={{ color: currentColors.text }}
+                  >
+                    Schedule
                   </h3>
                   <p
                     className="text-sm"
                     style={{ color: currentColors.textSecondary }}
                   >
-                    {viewScoreTask.task_title}
+                    {currentSpace?.space_day || "TBD"} (
+                    {currentSpace?.space_time_start
+                      ? new Date(
+                          `2000-01-01T${currentSpace.space_time_start}`,
+                        ).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "TBD"}{" "}
+                    -{" "}
+                    {currentSpace?.space_time_end
+                      ? new Date(
+                          `2000-01-01T${currentSpace.space_time_end}`,
+                        ).toLocaleTimeString([], {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "TBD"}
+                    )
                   </p>
-                  <div className="flex gap-4 mt-1 text-sm">
-                    <span style={{ color: currentColors.text }}>
-                      Score:{" "}
-                      <strong>
-                        {viewScoreTask.score || 0}/
-                        {viewScoreTask.total_score || 0}
-                      </strong>
-                    </span>
-                    <span style={{ color: currentColors.textSecondary }}>
-                      Completed: {new Date().toLocaleDateString()} at{" "}
-                      {new Date().toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
+                </div>
+
+                {/* Section */}
+                <div>
+                  <h3
+                    className="font-semibold text-sm mb-2"
+                    style={{ color: currentColors.text }}
+                  >
+                    Section
+                  </h3>
+                  <p
+                    className="text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {currentSpace?.space_section ||
+                      currentSpace?.section ||
+                      currentSpace?.class_section ||
+                      currentSpace?.section_name ||
+                      currentSpace?.course_section ||
+                      currentSpace?.subject_section ||
+                      currentSpace?.space_block ||
+                      currentSpace?.block ||
+                      "N/A"}
+                  </p>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <h3
+                    className="font-semibold text-sm mb-2"
+                    style={{ color: currentColors.text }}
+                  >
+                    Description
+                  </h3>
+                  <p
+                    className="text-sm line-clamp-3"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    {currentSpace?.space_description ||
+                      (currentSpace?.space_type === "course"
+                        ? "Course space for lectures, assignments, and discussions."
+                        : "Collaborative space for sharing ideas and resources.")}
+                  </p>
                 </div>
               </div>
-              <button
-                onClick={() => {
-                  setShowViewScore(false);
-                  setViewScoreTask(null);
-                }}
-                className="p-2 rounded-lg transition-colors"
-                style={{
-                  color: currentColors.text,
-                  backgroundColor: "transparent",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = isDarkMode
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(0, 0, 0, 0.05)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = "transparent";
-                }}
-              >
-                <FiX size={20} />
-              </button>
+            </div>
+          )}
+
+          <div className="p-4 sm:p-6">
+            {/* ================= DESKTOP TITLE ================= */}
+            <div className="hidden md:block mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold">{spaceName}</h1>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-xs text-gray-400">
+                  (
+                  {currentSpace?.space_type === "course"
+                    ? currentSpace?.members?.length - 1 + " student(s)"
+                    : currentSpace?.members?.length + " member(s)" || 0}
+                  )
+                </span>
+                {isOwnerSpace && (
+                  <>
+                    <div onClick={handleInviteMember}>
+                      <Button text="Add Member" />
+                    </div>
+                    <div
+                      onClick={handlePendingInvitations}
+                      className="relative"
+                    >
+                      <Button text="Pending Invites" />
+                      {pendingInvitesCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {pendingInvitesCount}
+                        </span>
+                      )}
+                    </div>
+                    <div onClick={handleDeleteRoom}>
+                      <Button text="Delete Room" />
+                    </div>
+                  </>
+                )}
+                {(isFriendSpace || isCourseSpace) && (
+                  <div className="flex flex-col gap-2 mt-2">
+                    <div
+                      className="flex items-center gap-2 p-2 rounded-md"
+                      style={{ backgroundColor: currentColors.surface }}
+                    >
+                      <span
+                        className="text-xs break-all"
+                        style={{ color: currentColors.accent }}
+                      >
+                        {currentSpace?.space_link || "Loading..."}
+                      </span>
+                      <button
+                        onClick={() => handleCopyLink(currentSpace?.space_link)}
+                        className="p-1 rounded transition-colors"
+                        style={{
+                          color: currentColors.textSecondary,
+                          backgroundColor: "transparent",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            currentColors.hover;
+                          e.currentTarget.style.color = currentColors.text;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                          e.currentTarget.style.color =
+                            currentColors.textSecondary;
+                        }}
+                        title="Copy to clipboard"
+                      >
+                        <FiCopy size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6">
-              <div className="space-y-6">
-                {/* Render quiz questions with student answers */}
-                {viewScoreTask.quiz_content?.questions?.map((question) => (
+            {/* ================= TABS ================= */}
+            <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-700 pb-4 mb-6">
+              <div className="flex justify-center min-w-max mx-auto px-4">
+                <div className="flex justify-center space-x-12">
+                  <button
+                    onClick={() =>
+                      navigate(`/space/${space_uuid}/${space_name}`)
+                    }
+                  >
+                    Stream
+                  </button>
+                  <button
+                    className="font-semibold border-b-2 pb-2"
+                    style={{ borderColor: currentColors.text }}
+                  >
+                    Tasks
+                  </button>
+                  <button
+                    onClick={() =>
+                      navigate(`/space/${space_uuid}/${space_name}/files`)
+                    }
+                  >
+                    Files
+                  </button>
+                  <button
+                    onClick={() =>
+                      navigate(`/space/${space_uuid}/${space_name}/people`)
+                    }
+                  >
+                    People
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Add Member Button - Mobile */}
+            {isOwnerSpace && (
+              <div className="md:hidden flex justify-end gap-2 mb-6">
+                <div onClick={handleInviteMember}>
+                  <Button text="Add Member" />
+                </div>
+                <div onClick={handlePendingInvitations} className="relative">
+                  <Button text="Pending Invites" />
+                  {pendingInvitesCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {pendingInvitesCount}
+                    </span>
+                  )}
+                </div>
+                <div onClick={handleDeleteRoom}>
+                  <Button text="Delete Room" />
+                </div>
+              </div>
+            )}
+
+            {!isCreatingTask && !showTaskTypeSelection ? (
+              /* ================= TASKS LIST VIEW WITH SECTIONS ================= */
+              <div className="max-w-5xl mx-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold">Assigned Tasks</h2>
+                  {isOwnerSpace && (
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                      onClick={() => {
+                        setSelectedTaskType("group-activity");
+                        setTaskCategory("group-activity");
+                        setIsCreatingTask(true);
+                      }}
+                    >
+                      <FiFileText size={16} />
+                      Create Task
+                    </button>
+                  )}
+                </div>
+
+                {/* TASK SECTIONS */}
+                <TaskSection
+                  category="quiz"
+                  emoji="📝"
+                  title="Quizzes"
+                  tasks={allTasks}
+                />
+
+                <TaskSection
+                  category="individual-activity"
+                  emoji="📄"
+                  title="Individual Activities"
+                  tasks={allTasks}
+                />
+
+                <TaskSection
+                  category="group-activity"
+                  emoji="👥"
+                  title="Group Activities"
+                  tasks={allTasks}
+                />
+
+                <TaskSection
+                  category="exam"
+                  emoji="📋"
+                  title="Exams"
+                  tasks={allTasks}
+                />
+
+                {/* Show message if no tasks exist */}
+                {allTasks.length === 0 && (
                   <div
-                    key={question.id}
-                    className="p-4 rounded-lg border"
+                    className="rounded-xl p-4 sm:p-6 border"
                     style={{
                       backgroundColor: currentColors.surface,
-                      borderColor: currentColors.border,
+                      borderColor: isDarkMode
+                        ? currentColors.border
+                        : "#000000",
                     }}
                   >
-                    <div className="flex items-start gap-3">
-                      <span
-                        className="font-bold text-lg"
-                        style={{
-                          color: currentColors.primary || currentColors.accent,
+                    <div
+                      className="text-center py-12"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      <FiFileText
+                        size={40}
+                        className="mx-auto mb-3 opacity-40"
+                      />
+                      <p className="text-lg mb-2">No tasks assigned yet</p>
+                      <p className="text-sm">
+                        Create your first task to get started!
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : showTaskTypeSelection ? (
+              /* ================= TASK TYPE SELECTION ================= */
+              <div className="max-w-5xl mx-auto">
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                  <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-white">
+                        Select Task Type
+                      </h2>
+                      <button
+                        onClick={() => setShowTaskTypeSelection(false)}
+                        className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
+                      >
+                        ×
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* Quiz Card */}
+                      <div
+                        className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                        onClick={() => {
+                          setSelectedTaskType("quiz");
+                          setTaskCategory("quiz");
+                          setShowTaskTypeSelection(false);
+                          setIsCreatingTask(true);
                         }}
                       >
-                        {question.position}.
-                      </span>
-                      <div className="flex-1">
-                        <p
-                          className="font-medium mb-3"
-                          style={{ color: currentColors.text }}
-                        >
-                          {question.question}
-                        </p>
+                        <div className="text-center">
+                          <div className="text-4xl mb-4">📝</div>
+                          <h3 className="text-lg font-semibold text-white mb-2">
+                            Quiz
+                          </h3>
+                          <p className="text-gray-400 text-sm">
+                            Create a quiz with multiple choice, true/false,
+                            Identification, Enumeration, or short answer
+                            questions
+                          </p>
+                        </div>
+                      </div>
 
-                        {/* Answer Options - Different rendering based on question type */}
-                        {question.type === "identification" ? (
-                          /* Identification type question */
-                          <div className="space-y-3">
-                            {/* Student Answer Input Field */}
-                            <div>
-                              <label className="block text-sm font-medium mb-2" style={{ color: currentColors.text }}>
-                                Your Answer:
-                              </label>
-                              <input
-                                type="text"
-                                value={viewScoreTask.student_answers[question.question_id] || ""}
-                                readOnly
-                                className={`w-full p-3 rounded border font-medium ${
-                                  checkIfAnswerIsCorrect(question, viewScoreTask.student_answers[question.question_id])
-                                    ? "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200"
-                                    : "bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200"
-                                }`}
-                                style={{
-                                  backgroundColor: checkIfAnswerIsCorrect(question, viewScoreTask.student_answers[question.question_id])
-                                    ? "rgba(16, 185, 129, 0.1)"
-                                    : "rgba(239, 68, 68, 0.1)",
-                                  borderColor: checkIfAnswerIsCorrect(question, viewScoreTask.student_answers[question.question_id])
-                                    ? "#10b981"
-                                    : "#ef4444",
-                                }}
-                              />
-                            </div>
-                            
-                            {/* Correct Answer Display */}
-                            <div className="mt-3">
-                              <span className="text-sm font-medium" style={{ color: currentColors.text }}>
-                                Correct answer: 
-                              </span>
-                              <span 
-                                className="ml-2 text-sm font-semibold px-2 py-1 rounded"
-                                style={{
-                                  backgroundColor: "#10b981",
-                                  color: "white"
-                                }}
-                              >
-                                {question.answers.find(answer => answer.is_correct)?.answer_text || "N/A"}
-                              </span>
-                            </div>
-                          </div>
-                        ) : (
-                          /* Multiple choice questions */
-                          <div className="space-y-2 mb-3">
-                            {question.answers.map((answer, index) => (
-                              <div
-                                key={index}
-                                className={`flex items-center gap-2 p-2 rounded ${
-                                  answer.is_correct
-                                    ? "bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800"
-                                    : "bg-gray-50 border border-gray-200 dark:bg-gray-800/50 dark:border-gray-700"
-                                }`}
-                              >
-                                <div
-                                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
-                                  style={{
-                                    backgroundColor: answer.is_correct && answer.letter_identifier === viewScoreTask.student_answers[question.question_id]
-                                      ? "#10b981" // Green for correct answer that matches student's choice
-                                      : !answer.is_correct && answer.letter_identifier === viewScoreTask.student_answers[question.question_id]
-                                      ? "#ef4444" // Red for student's incorrect choice
-                                      : currentColors.border, // Default for other answers
-                                    color: (answer.is_correct && answer.letter_identifier === viewScoreTask.student_answers[question.question_id]) ||
-                                           (!answer.is_correct && answer.letter_identifier === viewScoreTask.student_answers[question.question_id])
-                                      ? "white"
-                                      : currentColors.text,
-                                  }}
-                                >
-                                  {answer.letter_identifier ||
-                                    String.fromCharCode(65 + index)}
-                                </div>
-                                <span
-                                  className="text-sm"
-                                  style={{ color: currentColors.text }}
-                                >
-                                  {answer.answer_text}
-                                </span>
-                                {answer.is_correct && (
-                                  <FiCheck
-                                    className="text-green-600 dark:text-green-400 ml-auto"
-                                    size={16}
-                                  />
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      {/* Individual Activity Card */}
+                      <div
+                        className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                        onClick={() => {
+                          setSelectedTaskType("individual-activity");
+                          setTaskCategory("individual-activity");
+                          setShowTaskTypeSelection(false);
+                          setIsCreatingTask(true);
+                        }}
+                      >
+                        <div className="text-center">
+                          <div className="text-4xl mb-4">📄</div>
+                          <h3 className="text-lg font-semibold text-white mb-2">
+                            Individual Activity
+                          </h3>
+                          <p className="text-gray-400 text-sm">
+                            Assign individual tasks, homework, or activities for
+                            each student
+                          </p>
+                        </div>
+                      </div>
 
-                        {/* Student Answer Display - Only for non-identification questions */}
-                        {question.type !== "identification" && renderStudentAnswer(
-                          question,
-                          getStudentAnswerForQuestion(question),
-                        )}
+                      {/* Group Activity Card */}
+                      <div
+                        className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                        onClick={() => {
+                          setSelectedTaskType("group-activity");
+                          setTaskCategory("group-activity");
+                          setShowTaskTypeSelection(false);
+                          setIsCreatingTask(true);
+                        }}
+                      >
+                        <div className="text-center">
+                          <div className="text-4xl mb-4">👥</div>
+                          <h3 className="text-lg font-semibold text-white mb-2">
+                            Group Activity
+                          </h3>
+                          <p className="text-gray-400 text-sm">
+                            Create collaborative tasks for student groups to
+                            work together
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Exam Card */}
+                      <div
+                        className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                        onClick={() => {
+                          setSelectedTaskType("exam");
+                          setTaskCategory("exam");
+                          setShowTaskTypeSelection(false);
+                          setIsCreatingTask(true);
+                        }}
+                      >
+                        <div className="text-center">
+                          <div className="text-4xl mb-4">📋</div>
+                          <h3 className="text-lg font-semibold text-white mb-2">
+                            Exam
+                          </h3>
+                          <p className="text-gray-400 text-sm">
+                            Schedule formal examinations with time limits and
+                            grading criteria
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+            ) : (
+              /* ================= TASK BUILDERS ================= */
+              <div>
+                {selectedTaskType === "group-activity" && (
+                  <GroupActivityBuilder
+                    currentColors={currentColors}
+                    onBack={() => {
+                      setIsCreatingTask(false);
+                      setSelectedTaskType(null);
+                      setShowTaskTypeSelection(false);
+                    }}
+                    onSave={(taskData) => handleUpload("draft", taskData)}
+                    onPublish={(taskData) => handleUpload("uploaded", taskData)}
+                    isLoading={
+                      draftTaskMutation.isLoading ||
+                      uploadTaskMutation.isLoading
+                    }
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* PREVIEW MODAL */}
+        {showPreview && previewTask && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+              {/* Preview Header */}
+              <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10">
+                <h2 className="text-xl font-bold text-gray-800">
+                  Task Preview - {previewTask.task_title}
+                </h2>
+                <button
+                  onClick={handleClosePreview}
+                  className="text-gray-500 hover:text-gray-700 text-2xl bg-transparent border-none outline-none hover:bg-transparent focus:outline-none focus:ring-0"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Preview Content */}
+              <div className="p-4">{getPreviewComponent(previewTask)}</div>
+            </div>
+          </div>
+        )}
+
+        {/* STUDENT QUIZ TAKER MODAL */}
+        {showStudentQuiz && studentQuizTask && (
+          <div className="fixed inset-0 z-50">
+            <StudentQuizTaker
+              quizData={studentQuizTask.rawData || studentQuizTask}
+              currentColors={currentColors}
+              onSubmit={handleQuizSubmit}
+              onExit={handleCloseStudentQuiz}
+            />
+          </div>
+        )}
+
+        {/* ADD MEMBER POPUP */}
+        <AddMember
+          currentSpace={currentSpace}
+          onInviteMember={sendInvite}
+          showInvitePopup={showInvitePopup}
+          setShowInvitePopup={setShowInvitePopup}
+        />
+
+        {/* LOGOUT MODAL */}
+        {showLogout && <Logout onClose={() => setShowLogout(false)} />}
+
+        {/* MANUAL GROUPS MODAL */}
+        {showManualGroups && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-white">
+                  Manual Groups({numberOfGroups}{" "}
+                  {numberOfGroups === 1 ? "Group" : "Groups"})
+                </h2>
+                <button
+                  onClick={() => setShowManualGroups(false)}
+                  className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col md:flex-row lg:flex-row gap-6">
+                {/* Groups - Left side for tablet and larger */}
+                <div className="flex-1 md:order-1 lg:order-1 order-2">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {groups.map((group) => (
+                      <div
+                        key={group.id}
+                        className={`bg-[#23272F] rounded-lg p-4 cursor-pointer transition-all ${
+                          activeGroup === group.id
+                            ? "ring-2 ring-blue-500"
+                            : "hover:bg-[#2a2f38]"
+                        }`}
+                        onClick={() => {
+                          // Reset the previously active group if it was in edit mode and not saved
+                          if (activeGroup && activeGroup !== group.id) {
+                            const prevGroup = groups.find(
+                              (g) => g.id === activeGroup,
+                            );
+                            if (
+                              prevGroup &&
+                              prevGroup.showInputs &&
+                              !prevGroup.isSaved
+                            ) {
+                              const updatedGroups = [...groups];
+
+                              // If it was a previously saved group, restore original data and set as saved
+                              if (
+                                prevGroup.wasPreviouslySaved &&
+                                prevGroup.originalData
+                              ) {
+                                updatedGroups[activeGroup - 1].leader =
+                                  prevGroup.originalData.leader;
+                                updatedGroups[activeGroup - 1].members = [
+                                  ...prevGroup.originalData.members,
+                                ];
+                                updatedGroups[activeGroup - 1].showInputs =
+                                  false;
+                                updatedGroups[activeGroup - 1].isSaved = true;
+                                delete updatedGroups[activeGroup - 1]
+                                  .originalData;
+                              } else {
+                                // For new groups, reset to empty state
+                                updatedGroups[activeGroup - 1].leader = "";
+                                updatedGroups[activeGroup - 1].members = [""];
+                                updatedGroups[activeGroup - 1].showInputs =
+                                  false;
+                                updatedGroups[activeGroup - 1].isSaved = false;
+                              }
+
+                              setGroups(updatedGroups);
+                            }
+                          }
+
+                          setActiveGroup(group.id);
+                        }}
+                      >
+                        <div className="flex justify-between items-center mb-3">
+                          <h3 className="font-semibold text-white">
+                            Group {group.id}
+                          </h3>
+                          {group.showInputs && group.wasPreviouslySaved && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const updatedGroups = [...groups];
+
+                                // Restore original data if it exists
+                                if (updatedGroups[group.id - 1].originalData) {
+                                  updatedGroups[group.id - 1].leader =
+                                    updatedGroups[
+                                      group.id - 1
+                                    ].originalData.leader;
+                                  updatedGroups[group.id - 1].members = [
+                                    ...updatedGroups[group.id - 1].originalData
+                                      .members,
+                                  ];
+                                  delete updatedGroups[group.id - 1]
+                                    .originalData;
+                                }
+
+                                updatedGroups[group.id - 1].showInputs = false;
+                                updatedGroups[group.id - 1].isSaved = true;
+                                setGroups(updatedGroups);
+                              }}
+                              className="text-gray-400 text-xl bg-transparent border-none outline-none hover:bg-transparent hover:text-red-400 focus:outline-none focus:ring-0"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Show saved group content */}
+                        {group.isSaved ? (
+                          <div className="space-y-2">
+                            {group.leader && group.leader.trim() && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-yellow-400">
+                                  Leader:
+                                </span>
+                                <span className="text-sm text-white">
+                                  {group.leader}
+                                </span>
+                              </div>
+                            )}
+                            {group.members.filter((m) => m.trim()).length >
+                              0 && (
+                              <div>
+                                <span className="text-xs font-medium text-green-400">
+                                  Members:
+                                </span>
+                                <div className="mt-1 space-y-1">
+                                  {group.members
+                                    .filter((m) => m.trim())
+                                    .map((member, index) => (
+                                      <div
+                                        key={index}
+                                        className="text-sm text-white pl-2"
+                                      >
+                                        • {member}
+                                      </div>
+                                    ))}
+                                </div>
+                              </div>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                editGroup(group.id);
+                              }}
+                              className="w-full px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm mt-3"
+                            >
+                              Edit Group
+                            </button>
+                          </div>
+                        ) : (
+                          /* Show input fields for unsaved groups */
+                          <>
+                            {!group.showInputs ? (
+                              // Show Add People button when inputs are hidden
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleGroupInputs(group.id);
+                                }}
+                                className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                              >
+                                Add People
+                              </button>
+                            ) : (
+                              // Show input fields when inputs are visible
+                              <>
+                                {/* Leader Field */}
+                                <div className="mb-4">
+                                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Leader:
+                                  </label>
+                                  <div
+                                    className="flex gap-2 items-center"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <input
+                                      type="text"
+                                      value={group.leader}
+                                      onChange={(e) =>
+                                        handleGroupLeaderChange(
+                                          group.id,
+                                          e.target.value,
+                                        )
+                                      }
+                                      placeholder="Enter leader name"
+                                      className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
+                                    />
+                                    {group.leader.trim() && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const updatedGroups = [...groups];
+                                          updatedGroups[group.id - 1].leader =
+                                            "";
+                                          setGroups(updatedGroups);
+                                        }}
+                                        disabled={
+                                          group.members.filter((member) =>
+                                            member.trim(),
+                                          ).length > 0
+                                        }
+                                        className={`px-2 py-1 text-xs rounded flex-shrink-0 ${
+                                          group.members.filter((member) =>
+                                            member.trim(),
+                                          ).length > 0
+                                            ? "bg-gray-500 text-gray-300 cursor-not-allowed"
+                                            : "bg-red-600 text-white hover:bg-red-700"
+                                        }`}
+                                      >
+                                        ×
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Members Field */}
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Members:
+                                  </label>
+                                  <div className="space-y-2 mb-3">
+                                    {group.members.map(
+                                      (member, memberIndex) => (
+                                        <div
+                                          key={memberIndex}
+                                          className="flex gap-2 items-center"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <input
+                                            type="text"
+                                            value={member}
+                                            onChange={(e) =>
+                                              handleGroupMemberChange(
+                                                group.id,
+                                                memberIndex,
+                                                e.target.value,
+                                              )
+                                            }
+                                            placeholder="Enter member name"
+                                            className="flex-1 bg-[#161A20] rounded px-3 py-2 text-white text-sm outline-none border border-gray-600 focus:border-blue-500 min-w-0"
+                                          />
+                                          {member.trim() && (
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeMemberFromGroup(
+                                                  group.id,
+                                                  memberIndex,
+                                                );
+                                              }}
+                                              className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs flex-shrink-0"
+                                            >
+                                              ×
+                                            </button>
+                                          )}
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Save Group button */}
+                                <div className="flex gap-2">
+                                  {!group.wasPreviouslySaved && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        resetGroupInputs(group.id);
+                                      }}
+                                      className="flex-1 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                                    >
+                                      Cancel
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      saveGroup(group.id);
+                                    }}
+                                    disabled={
+                                      !group.leader.trim() &&
+                                      group.members.filter((member) =>
+                                        member.trim(),
+                                      ).length === 0
+                                    }
+                                    className={`${group.wasPreviouslySaved ? "w-full" : "flex-1"} px-3 py-2 text-sm rounded ${
+                                      !group.leader.trim() &&
+                                      group.members.filter((member) =>
+                                        member.trim(),
+                                      ).length === 0
+                                        ? "bg-gray-500 text-gray-300 cursor-not-allowed"
+                                        : "bg-blue-600 text-white hover:bg-blue-700"
+                                    }`}
+                                  >
+                                    Save Group
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </>
+                        )}
+
+                        {/* Show member count for inactive groups */}
+                        {activeGroup !== group.id &&
+                          !group.isSaved &&
+                          group.members.filter((m) => m.trim()).length > 0 && (
+                            <div className="text-gray-400 text-sm">
+                              {group.members.filter((m) => m.trim()).length}{" "}
+                              members
+                            </div>
+                          )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Available Students - Right side for tablet and larger */}
+                <div className="lg:w-80 md:w-72 sm:w-64 bg-[#23272F] rounded-lg p-4 h-fit max-h-[300px] md:max-h-[280px] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:order-2 lg:order-2 order-1">
+                  <h3 className="font-semibold text-white mb-4">
+                    Available Students (
+                    {availableMembers.length - getAssignedMembers().size})
+                  </h3>
+                  <div className="space-y-2">
+                    {availableMembers
+                      .slice(0, isTablet ? 5 : availableMembers.length)
+                      .map((member, index) => {
+                        const isAssigned = isMemberAssigned(member);
+                        const role = getMemberRole(member);
+                        return (
+                          <div
+                            key={index}
+                            className={`rounded p-3 text-white text-sm transition cursor-pointer ${
+                              isAssigned
+                                ? "bg-[#1a1f29] opacity-50 cursor-not-allowed"
+                                : "bg-[#161A20] hover:bg-[#1a1f29]"
+                            }`}
+                            onClick={() =>
+                              !isAssigned && addMemberFromAvailable(member)
+                            }
+                          >
+                            <div className="flex items-center justify-between">
+                              <span
+                                className={isAssigned ? "line-through" : ""}
+                              >
+                                {member}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`w-2 h-2 rounded-full ${
+                                    role === "leader"
+                                      ? "bg-yellow-500"
+                                      : role === "member"
+                                        ? "bg-green-500"
+                                        : "bg-green-500"
+                                  }`}
+                                ></div>
+                                <span className="text-xs text-gray-400">
+                                  {role === "leader"
+                                    ? "Leader"
+                                    : role === "member"
+                                      ? "Member"
+                                      : "Click to add"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={() => {
+                    // Save all groups with their leaders and members
+                    const groupsData = groups.map((group) => ({
+                      groupId: group.id,
+                      leader: group.leader.trim(),
+                      members: group.members.filter((member) => member.trim()), // Remove empty members
+                    }));
+                    // Here you would send this data to your backend
+                    setGroupsConfigured(true);
+                    setGroupCreationMethod("manual");
+                    setShowManualGroups(false);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Save Groups
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {/* GENERATE GROUPS MODAL */}
+        {showGenerateGroups && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
+            <div className="bg-[#1E222A] rounded-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl max-h-[90vh] overflow-y-auto [scrollbar-width:none] [ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-bold text-white">
+                  Generate Groups ({numberOfGroups}{" "}
+                  {numberOfGroups === 1 ? "Group" : "Groups"})
+                </h2>
+                <button
+                  onClick={() => setShowGenerateGroups(false)}
+                  className="text-gray-400 text-xl sm:text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0 p-1"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="mb-4 sm:mb-6">
+                <p className="text-gray-300 text-sm sm:text-base mb-3 sm:mb-4">
+                  The system will automatically generate {numberOfGroups} groups
+                  and randomly assign students to them.
+                </p>
+
+                <div className="bg-[#23272F] rounded-lg p-3 sm:p-4">
+                  <div className="flex justify-between items-center mb-2 sm:mb-3">
+                    <h3 className="font-semibold text-white text-sm sm:text-base">
+                      Generated Groups Preview:
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          if (numberOfGroups > 1) {
+                            const newNumGroups = numberOfGroups - 1;
+                            setNumberOfGroups(newNumGroups);
+                            shuffleGroups(newNumGroups);
+                          }
+                        }}
+                        disabled={numberOfGroups <= 1}
+                        className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
+                          numberOfGroups <= 1
+                            ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                            : "bg-gray-600 text-white hover:bg-gray-500"
+                        }`}
+                      >
+                        -
+                      </button>
+                      <span className="text-white font-medium min-w-[2rem] text-center">
+                        {numberOfGroups}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const newNumGroups = numberOfGroups + 1;
+                          setNumberOfGroups(newNumGroups);
+                          shuffleGroups(newNumGroups);
+                        }}
+                        disabled={numberOfGroups >= availableMembers.length}
+                        className={`w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition ${
+                          numberOfGroups >= availableMembers.length
+                            ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                            : "bg-gray-600 text-white hover:bg-gray-500"
+                        }`}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
+                    {generatedGroupsPreview.map((group, index) => (
+                      <div
+                        key={index}
+                        className="bg-[#161A20] rounded p-2 sm:p-3"
+                      >
+                        <div className="text-blue-400 font-semibold text-xs sm:text-sm mb-1 sm:mb-2">
+                          Group {group.id}
+                        </div>
+                        <div className="text-xs space-y-0.5 sm:space-y-1">
+                          <div className="text-yellow-400">
+                            <span className="font-medium">Leader:</span>
+                            <span className="block xs:inline xs:ml-1">
+                              {group.leader}
+                            </span>
+                          </div>
+                          <div className="text-green-400">
+                            <span className="font-medium">Members:</span>
+                            <span className="block xs:inline xs:ml-1">
+                              {group.members.join(", ")}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-gray-500 text-xs mt-1 sm:mt-2">
+                          Auto-assigned
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => shuffleGroups(numberOfGroups)}
+                  className="mr-2 px-3 sm:px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm sm:text-base font-medium"
+                >
+                  Shuffle
+                </button>
+                <button
+                  onClick={() => {
+                    // Use the shuffled groups
+                    setGroups(generatedGroupsPreview);
+                    setGroupsConfigured(true);
+                    setGroupCreationMethod("generate");
+                    setShowGenerateGroups(false);
+                  }}
+                  className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm sm:text-base font-medium"
+                >
+                  Confirm Generate
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* RESET CONFIRMATION MODAL */}
+        {showResetConfirmation && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-[#1E222A] rounded-xl p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">Reset Groups</h2>
+                <button
+                  onClick={() => setShowResetConfirmation(false)}
+                  className="text-gray-400 text-2xl bg-transparent border-none outline-none hover:bg-transparent hover:text-gray-400 focus:outline-none focus:ring-0"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-gray-300 text-sm">
+                  Are you sure you want to reset all groups? This will remove
+                  all group assignments and you'll need to configure them again.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowResetConfirmation(false)}
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // Reset all groups
+                    setGroups([
+                      {
+                        id: 1,
+                        members: [],
+                        leader: "",
+                        showInputs: false,
+                        isSaved: false,
+                        wasPreviouslySaved: false,
+                      },
+                    ]);
+                    setNumberOfGroups(1);
+                    setGroupsConfigured(false);
+                    setGroupCreationMethod(null);
+                    setShowResetConfirmation(false);
+                  }}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* DELETE CONFIRMATION DIALOG */}
+        <DeleteConfirmationDialog
+          isOpen={showDeleteDialog}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
+          space={
+            currentSpace || {
+              space_name: "Unknown Space",
+              members: [],
+              files: [],
+              tasks: [],
+            }
+          }
+        />
+
+        {/* COVER PHOTO EDITOR MODAL */}
+        {showCoverPhotoEditor && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#1E222A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-white">
+                  Position Cover Photo
+                </h2>
+                <button
+                  onClick={handleCoverPhotoCancel}
+                  className="text-gray-400 hover:text-white p-1 bg-transparent"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+
+              {/* Editor Content */}
+              <div className="flex-1 p-6 overflow-y-auto">
+                {/* Gradient Options */}
+                <div className="mb-6">
+                  <p
+                    className="text-sm font-medium mb-3"
+                    style={{ color: currentColors.text }}
+                  >
+                    Color & Gradient
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {colorOptions.map((color, i) => (
+                      <div
+                        key={i}
+                        className="h-12 rounded cursor-pointer border-2 transition-colors"
+                        style={{
+                          background: color,
+                          borderColor: currentColors.border,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.borderColor =
+                            currentColors.accent || "#3B82F6";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.borderColor = currentColors.border;
+                        }}
+                        onClick={() => handleGradientSelection(color)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Separator Line */}
+                <div className="relative flex items-center my-4">
+                  <div
+                    className="flex-1 border-t"
+                    style={{ borderColor: currentColors.border }}
+                  ></div>
+                  <span
+                    className="px-3 text-sm"
+                    style={{ color: currentColors.textSecondary }}
+                  >
+                    or
+                  </span>
+                  <div
+                    className="flex-1 border-t"
+                    style={{ borderColor: currentColors.border }}
+                  ></div>
+                </div>
+
+                {/* Upload Option (only show when gradient is selected) */}
+                {coverPhotoUrl && coverPhotoUrl.includes("gradient") && (
+                  <div className="mb-4 flex justify-center">
+                    <button
+                      onClick={() => coverPhotoInputRef.current?.click()}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        color: currentColors.text,
+                        border: `1px solid ${currentColors.border}`,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor =
+                          currentColors.accent || "#3B82F6";
+                        e.target.style.color = "#ffffff";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor =
+                          currentColors.background;
+                        e.target.style.color = currentColors.text;
+                      }}
+                    >
+                      <FiUpload size={14} />
+                      <span>Upload Photo</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Preview Area (only show if it's an image, not gradient) */}
+                {coverPhotoUrl && !coverPhotoUrl.includes("gradient") && (
+                  <div className="mb-6">
+                    <div
+                      className="relative w-full h-48 rounded-lg overflow-hidden"
+                      style={{ backgroundColor: currentColors.background }}
+                    >
+                      <div
+                        ref={coverPhotoEditorRef}
+                        className={`relative w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"} select-none`}
+                        style={{
+                          backgroundImage: `url(${coverPhotoUrl})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: `center ${coverPhotoPosition}%`,
+                          backgroundRepeat: "no-repeat",
+                        }}
+                        onMouseDown={handleMouseDown}
+                      />
+                      <div className="absolute inset-0 border-2 border-white/30 pointer-events-none" />
+                      {isDragging && (
+                        <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+                          Dragging...
+                        </div>
+                      )}
+                    </div>
+                    <p
+                      className="text-sm mt-2"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Click and drag the image up or down to position it
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+                <button
+                  onClick={handleCoverPhotoCancel}
+                  className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCoverPhotoSave}
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* COVER PHOTO CONFIRMATION DIALOG */}
+        {showCoverPhotoConfirm && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#1E222A] rounded-2xl w-full max-w-md overflow-hidden">
+              {/* Header */}
+              <div className="p-4 border-b border-gray-700">
+                <h2 className="text-lg font-semibold text-white">
+                  Change Cover Photo?
+                </h2>
+              </div>
+
+              {/* Content */}
+              <div className="p-4">
+                <p className="text-gray-300">
+                  Do you want to change the cover photo for this space with the
+                  image you uploaded?
+                </p>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+                <button
+                  onClick={handleCancelCoverPhoto}
+                  className="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-500 rounded-md transition text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmCoverPhoto}
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-md transition text-white"
+                >
+                  Change Cover Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PENDING INVITATIONS POPUP */}
+        {showPendingInvitations && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div
+              className="rounded-xl shadow-2xl max-w-md w-full border"
+              style={{
+                backgroundColor: currentColors.surface,
+                borderColor: currentColors.border,
+              }}
+            >
+              {/* Header */}
+              <div
+                className="p-4 border-b flex items-center justify-between"
+                style={{ borderColor: currentColors.border }}
+              >
+                <h3
+                  className="text-xl font-semibold"
+                  style={{ color: currentColors.text }}
+                >
+                  Pending Invites
+                </h3>
+                <button
+                  onClick={() => setShowPendingInvitations(false)}
+                  className="transition-colors p-1 rounded-lg"
+                  style={{ color: currentColors.textSecondary }}
+                  onMouseEnter={(e) => {
+                    e.target.style.color = currentColors.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.color = currentColors.textSecondary;
+                  }}
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+
+              {/* Invitations List */}
+              <div className="p-6">
+                {joinRequestsData.length === 0 ? (
+                  <>
+                    <p className="mb-4" style={{ color: currentColors.text }}>
+                      No pending invitations at the moment.
+                    </p>
+                    <div
+                      className="text-sm"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      Invited members will appear here once they have not yet
+                      accepted your invitation.
+                    </div>
+                  </>
+                ) : (
+                  joinRequestsData.map((invitation) => (
+                    <div
+                      key={invitation.account_id}
+                      className="rounded-lg p-4 border"
+                      style={{
+                        backgroundColor: currentColors.background,
+                        borderColor: currentColors.border,
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={invitation.profile_pic}
+                          alt={invitation.fullname}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                        <div className="flex-1">
+                          <h3
+                            className="font-medium"
+                            style={{ color: currentColors.text }}
+                          >
+                            {invitation.fullname}
+                          </h3>
+                          <p
+                            className="text-sm"
+                            style={{ color: currentColors.textSecondary }}
+                          >
+                            {invitation.email}
+                          </p>
+                          <p
+                            className="text-sm mt-1"
+                            style={{ color: currentColors.textSecondary }}
+                          >
+                            {invitation.message || "Hello world"}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span
+                              className="text-xs"
+                              style={{ color: currentColors.textSecondary }}
+                            >
+                              {invitation.added_at}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3 mt-3">
+                        <button
+                          disabled={spaceLoading}
+                          onClick={() =>
+                            declineJoinRequest(invitation.account_id)
+                          }
+                          className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
+                          style={{
+                            backgroundColor: "#6B7280",
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#4B5563";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#6B7280";
+                          }}
+                        >
+                          Decline
+                        </button>
+                        <button
+                          disabled={spaceLoading}
+                          onClick={() =>
+                            acceptJoinRequest(invitation.account_id)
+                          }
+                          className="px-3 py-1.5 text-sm rounded-md transition disabled:opacity-50"
+                          style={{
+                            backgroundColor: "#2563EB",
+                            color: "white",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#1D4ED8";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#2563EB";
+                          }}
+                        >
+                          Accept
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div
+                className="flex justify-end p-6 border-t"
+                style={{ borderColor: currentColors.border }}
+              >
+                <button
+                  onClick={() => setShowPendingInvitations(false)}
+                  className="px-4 py-2 rounded-lg font-medium transition-colors"
+                  style={{
+                    backgroundColor: currentColors.accent || "#3B82F6",
+                    color: "#ffffff",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor =
+                      currentColors.accentHover || "#2563EB";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor =
+                      currentColors.accent || "#3B82F6";
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW SCORE MODAL */}
+        {showViewScore && viewScoreTask && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div
+              className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              style={{ backgroundColor: currentColors.background }}
+            >
+              {/* Modal Header */}
+              <div
+                className="sticky top-0 p-4 border-b flex justify-between items-center"
+                style={{
+                  backgroundColor: currentColors.background,
+                  borderColor: currentColors.border,
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                    style={{
+                      backgroundColor:
+                        currentColors.primary || currentColors.accent,
+                    }}
+                  >
+                    {user?.fullname?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                  <div>
+                    <h3
+                      className="text-lg font-bold"
+                      style={{ color: currentColors.text }}
+                    >
+                      Your Quiz Results
+                    </h3>
+                    <p
+                      className="text-sm"
+                      style={{ color: currentColors.textSecondary }}
+                    >
+                      {viewScoreTask.task_title}
+                    </p>
+                    <div className="flex gap-4 mt-1 text-sm">
+                      <span style={{ color: currentColors.text }}>
+                        Score:{" "}
+                        <strong>
+                          {viewScoreTask.score || 0}/
+                          {viewScoreTask.total_score || 0}
+                        </strong>
+                      </span>
+                      <span style={{ color: currentColors.textSecondary }}>
+                        Completed: {new Date().toLocaleDateString()} at{" "}
+                        {new Date().toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowViewScore(false);
+                    setViewScoreTask(null);
+                  }}
+                  className="p-2 rounded-lg transition-colors"
+                  style={{
+                    color: currentColors.text,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = isDarkMode
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(0, 0, 0, 0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6">
+                <div className="space-y-6">
+                  {/* Render quiz questions with student answers */}
+                  {viewScoreTask.quiz_content?.questions?.map((question) => (
+                    <div
+                      key={question.id}
+                      className="p-4 rounded-lg border"
+                      style={{
+                        backgroundColor: currentColors.surface,
+                        borderColor: currentColors.border,
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span
+                          className="font-bold text-lg"
+                          style={{
+                            color:
+                              currentColors.primary || currentColors.accent,
+                          }}
+                        >
+                          {question.position}.
+                        </span>
+                        <div className="flex-1">
+                          <p
+                            className="font-medium mb-3"
+                            style={{ color: currentColors.text }}
+                          >
+                            {question.question}
+                          </p>
+
+                          {/* Answer Options - Different rendering based on question type */}
+                          {question.type === "identification" ? (
+                            /* Identification type question */
+                            <div className="space-y-3">
+                              {/* Student Answer Input Field */}
+                              <div>
+                                <label
+                                  className="block text-sm font-medium mb-2"
+                                  style={{ color: currentColors.text }}
+                                >
+                                  Your Answer:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={
+                                    viewScoreTask.student_answers[
+                                      question.question_id
+                                    ] || ""
+                                  }
+                                  readOnly
+                                  className={`w-full p-3 rounded border font-medium ${
+                                    checkIfAnswerIsCorrect(
+                                      question,
+                                      viewScoreTask.student_answers[
+                                        question.question_id
+                                      ],
+                                    )
+                                      ? "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200"
+                                      : "bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200"
+                                  }`}
+                                  style={{
+                                    backgroundColor: checkIfAnswerIsCorrect(
+                                      question,
+                                      viewScoreTask.student_answers[
+                                        question.question_id
+                                      ],
+                                    )
+                                      ? "rgba(16, 185, 129, 0.1)"
+                                      : "rgba(239, 68, 68, 0.1)",
+                                    borderColor: checkIfAnswerIsCorrect(
+                                      question,
+                                      viewScoreTask.student_answers[
+                                        question.question_id
+                                      ],
+                                    )
+                                      ? "#10b981"
+                                      : "#ef4444",
+                                  }}
+                                />
+                              </div>
+
+                              {/* Correct Answer Display */}
+                              <div className="mt-3">
+                                <span
+                                  className="text-sm font-medium"
+                                  style={{ color: currentColors.text }}
+                                >
+                                  Correct answer:
+                                </span>
+                                <span
+                                  className="ml-2 text-sm font-semibold px-2 py-1 rounded"
+                                  style={{
+                                    backgroundColor: "#10b981",
+                                    color: "white",
+                                  }}
+                                >
+                                  {question.answers.find(
+                                    (answer) => answer.is_correct,
+                                  )?.answer_text || "N/A"}
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            /* Multiple choice questions */
+                            <div className="space-y-2 mb-3">
+                              {question.answers.map((answer, index) => (
+                                <div
+                                  key={index}
+                                  className={`flex items-center gap-2 p-2 rounded ${
+                                    answer.is_correct
+                                      ? "bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800"
+                                      : "bg-gray-50 border border-gray-200 dark:bg-gray-800/50 dark:border-gray-700"
+                                  }`}
+                                >
+                                  <div
+                                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                                    style={{
+                                      backgroundColor:
+                                        answer.is_correct &&
+                                        answer.letter_identifier ===
+                                          viewScoreTask.student_answers[
+                                            question.question_id
+                                          ]
+                                          ? "#10b981" // Green for correct answer that matches student's choice
+                                          : !answer.is_correct &&
+                                              answer.letter_identifier ===
+                                                viewScoreTask.student_answers[
+                                                  question.question_id
+                                                ]
+                                            ? "#ef4444" // Red for student's incorrect choice
+                                            : currentColors.border, // Default for other answers
+                                      color:
+                                        (answer.is_correct &&
+                                          answer.letter_identifier ===
+                                            viewScoreTask.student_answers[
+                                              question.question_id
+                                            ]) ||
+                                        (!answer.is_correct &&
+                                          answer.letter_identifier ===
+                                            viewScoreTask.student_answers[
+                                              question.question_id
+                                            ])
+                                          ? "white"
+                                          : currentColors.text,
+                                    }}
+                                  >
+                                    {answer.letter_identifier ||
+                                      String.fromCharCode(65 + index)}
+                                  </div>
+                                  <span
+                                    className="text-sm"
+                                    style={{ color: currentColors.text }}
+                                  >
+                                    {answer.answer_text}
+                                  </span>
+                                  {answer.is_correct && (
+                                    <FiCheck
+                                      className="text-green-600 dark:text-green-400 ml-auto"
+                                      size={16}
+                                    />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Student Answer Display - Only for non-identification questions */}
+                          {question.type !== "identification" &&
+                            renderStudentAnswer(
+                              question,
+                              getStudentAnswerForQuestion(question),
+                            )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </FileProvider>
   );
 };
