@@ -114,22 +114,15 @@ const EditorHeader = ({
               </span>
             </div>
           </div>
-
           <button
+            onClick={onDownload}
             className="px-4 xl:px-6 py-1.5 xl:py-2 rounded-full font-medium text-sm xl:text-base shrink-0"
             style={{ backgroundColor: "#2c81e1", color: "white" }}
           >
-            Save
+            Download
           </button>
-          <button
-            className="px-4 xl:px-6 py-1.5 xl:py-2 rounded-full font-medium text-sm xl:text-base shrink-0"
-            style={{
-              backgroundColor: currentColors.surface,
-              color: currentColors.text,
-            }}
-          >
-            Cancel
-          </button>
+
+          
         </div>
       </div>
 
