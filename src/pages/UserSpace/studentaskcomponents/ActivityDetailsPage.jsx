@@ -638,8 +638,7 @@ const ActivityDetailsPage = () => {
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button
                 onClick={handleStartActivity}
                 className="flex-1 justify-center bg-blue-600 hover:bg-blue-700 text-white"
@@ -653,7 +652,7 @@ const ActivityDetailsPage = () => {
               >
                 Back to Tasks
               </Button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
