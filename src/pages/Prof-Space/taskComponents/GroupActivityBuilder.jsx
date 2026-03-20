@@ -560,6 +560,12 @@ const GroupActivityBuilder = ({
       return;
     }
 
+    // Additional validation for publishing group activities
+    if (status === "published" && availableMembers.length < 4) {
+      toast.error("You need at least 4 students in your course space to create and publish group activities.");
+      return;
+    }
+
     // Transform groups data to match required format
     const groupsPayload =
       groupsConfigured && groups.length > 0
@@ -1108,66 +1114,27 @@ const GroupActivityBuilder = ({
         )}
 
         {/* ACTION BUTTONS */}
-        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-8">
+        <div className="flex justify-end mt-8">
           <button
-            className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
+            className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-colors"
             style={{
-              backgroundColor: "#10b981",
+              backgroundColor: "#2563eb",
               color: "#ffffff",
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = "#059669";
+              e.target.style.backgroundColor = "#1d4ed8";
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = "#10b981";
+              e.target.style.backgroundColor = "#2563eb";
             }}
-            onClick={() => navigate("/create-document")}
+            onClick={() => handleSave("published")}
           >
-            <FiFilePlus className="inline mr-2" size={16} />
-            Create Document
+            {isLoading
+              ? "Publishing..."
+              : editingTask
+                ? "Update & Publish"
+                : "Publish Activity"}
           </button>
-
-          <div className="flex gap-3 sm:gap-4">
-            {!editingTask && (
-              <button
-                className="px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors"
-                style={{
-                  backgroundColor: currentColors.surface,
-                  color: currentColors.text,
-                  border: `1px solid ${currentColors.border}`,
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = currentColors.hover;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = currentColors.surface;
-                }}
-                onClick={() => handleSave("draft")}
-              >
-                {isLoading ? "Saving..." : "Save as Draft"}
-              </button>
-            )}
-            <button
-              className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base w-full sm:w-auto transition-colors"
-              style={{
-                backgroundColor: "#2563eb",
-                color: "#ffffff",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = "#1d4ed8";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = "#2563eb";
-              }}
-              onClick={() => handleSave("published")}
-            >
-              {isLoading
-                ? "Publishing..."
-                : editingTask
-                  ? "Update & Publish"
-                  : "Publish Activity"}
-            </button>
-          </div>
         </div>
       </div>
 

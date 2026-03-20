@@ -1259,6 +1259,29 @@ const UserTaskPage = () => {
                           Take Activity
                         </button>
                       )}
+                    {task.isLocal && task.task_category === "exam" && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleTakeActivity(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: task.has_answered
+                            ? "black"
+                            : "#10B981",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = "#059669";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = "#10B981";
+                        }}
+                      >
+                        Take Exam
+                      </button>
+                    )}
                     {!task.isLocal && task.task_category === "quiz" && (
                       <button
                         onClick={(e) => {
@@ -1320,6 +1343,36 @@ const UserTaskPage = () => {
                           {task.has_answered ? "View Score" : "Take Activity"}
                         </button>
                       )}
+                    {!task.isLocal && task.task_category === "exam" && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setTaskId(task?.id);
+                          task?.has_answered
+                            ? handleViewScore(task)
+                            : handleTakeActivity(task);
+                        }}
+                        className="flex-1 text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        style={{
+                          backgroundColor: task.has_answered
+                            ? "#6b7280"
+                            : "#10B981",
+                          color: "white",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#4b5563"
+                            : "#059669";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = task.has_answered
+                            ? "#6b7280"
+                            : "#10B981";
+                        }}
+                      >
+                        {task.has_answered ? "View Score" : "Take Exam"}
+                      </button>
+                    )}
                     {task.isLocal && (
                       <a
                         href="#"

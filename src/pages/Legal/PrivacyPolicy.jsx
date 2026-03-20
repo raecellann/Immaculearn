@@ -20,7 +20,7 @@ const Section = ({ number, title, children }) => (
   </div>
 );
 
-const PrivacyPolicy = () => {
+export const PrivacyPolicy = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -354,4 +354,3 @@ const PrivacyPolicy = () => {
   );
 };
 
-export default PrivacyPolicy;

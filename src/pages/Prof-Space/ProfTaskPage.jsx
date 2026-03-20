@@ -223,19 +223,20 @@ const ProfTaskPage = () => {
   const [responseSummaryData, setResponseSummaryData] = useState(null);
   const [selectedQuizForSummary, setSelectedQuizForSummary] = useState(null);
 
-  // Example available members in the professor's space
-  const availableMembers = [
-    "John Smith",
-    "Emily Johnson",
-    "Michael Brown",
-    "Sarah Davis",
-    "James Wilson",
-    "Lisa Anderson",
-    "Robert Taylor",
-    "Maria Garcia",
-    "David Martinez",
-    "Jennifer Lopez",
-  ];
+  // Extract member names from space members (excluding creators/admins, focusing on students)
+  const availableMembers =
+    currentSpace?.members
+      .filter((member) => member.role !== "creator") // Filter out creators/admins
+      .map((member) => member.full_name)
+      .filter((name) => name && name.trim()) || [];
+
+  // Calculate student count for validation
+  const studentCount = currentSpace?.members
+    ?.filter((member) => member.role !== "creator")
+    ?.length || 0;
+
+  // Check if group activity should be disabled
+  const isGroupActivityDisabled = studentCount < 4;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -2779,8 +2780,16 @@ const ProfTaskPage = () => {
 
                     {/* Group Activity Card - DISABLED */}
                     <div
-                      className="bg-[#23272F] rounded-lg p-6 cursor-pointer hover:bg-[#2a2f38] transition-all border border-gray-600 hover:border-blue-500"
+                      className={`bg-[#23272F] rounded-lg p-6 transition-all border ${
+                        isGroupActivityDisabled
+                          ? 'cursor-not-allowed opacity-60 border-gray-700'
+                          : 'cursor-pointer hover:bg-[#2a2f38] border-gray-600 hover:border-blue-500'
+                      }`}
                       onClick={() => {
+                        if (isGroupActivityDisabled) {
+                          toast.error("You need at least 4 students in your course space to create group activities.");
+                          return;
+                        }
                         setSelectedTaskType("group-activity");
                         setTaskCategory("group-activity");
                         setShowTaskTypeSelection(false);
@@ -2796,6 +2805,11 @@ const ProfTaskPage = () => {
                           Create collaborative tasks for student groups to work
                           together
                         </p>
+                        {isGroupActivityDisabled && (
+                          <div className="mt-3 text-xs text-orange-400 font-medium">
+                            Requires at least 4 students ({studentCount}/4)
+                          </div>
+                        )}
                       </div>
                     </div>
 
