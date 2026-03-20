@@ -529,6 +529,88 @@ const CollaborativeEditor = forwardRef(
           setPageIds([...pageIdsRef.current]);
           setTimeout(() => syncToYjs(), 50);
         },
+        toggleList: (listTag) => {
+          const sel = window.getSelection();
+          if (!sel || sel.rangeCount === 0) return;
+          const range = sel.getRangeAt(0);
+          let pageEl = null;
+          for (const p of pageRefs.current) {
+            if (p?.contains(range.commonAncestorContainer)) { pageEl = p; break; }
+          }
+          if (!pageEl) return;
+          const tag = listTag.toUpperCase();
+          let listNode = null;
+          let node = sel.anchorNode;
+          while (node && node !== pageEl) {
+            if (node.nodeName === tag) { listNode = node; break; }
+            node = node.parentNode;
+          }
+          if (listNode) {
+            // Already in a list of same type — unwrap
+            const parent = listNode.parentNode;
+            Array.from(listNode.children).forEach((li) => {
+              const div = document.createElement("div");
+              div.innerHTML = li.innerHTML || "<br>";
+              parent.insertBefore(div, listNode);
+            });
+            parent.removeChild(listNode);
+          } else {
+            // Wrap current block/selection in a list
+            const list = document.createElement(listTag.toLowerCase());
+            const li = document.createElement("li");
+            if (range.collapsed) {
+              let blockNode = range.commonAncestorContainer;
+              while (blockNode.parentNode && blockNode.parentNode !== pageEl) {
+                blockNode = blockNode.parentNode;
+              }
+              if (blockNode && blockNode !== pageEl && blockNode.nodeType === 1) {
+                li.innerHTML = blockNode.innerHTML || "<br>";
+                list.appendChild(li);
+                blockNode.replaceWith(list);
+              } else {
+                li.innerHTML = "<br>";
+                list.appendChild(li);
+                range.insertNode(list);
+              }
+            } else {
+              li.appendChild(range.extractContents());
+              list.appendChild(li);
+              range.insertNode(list);
+            }
+            const newRange = document.createRange();
+            newRange.selectNodeContents(li);
+            newRange.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+          }
+          pageEl.dispatchEvent(new Event("input", { bubbles: true }));
+        },
+        removeList: () => {
+          const sel = window.getSelection();
+          if (!sel || sel.rangeCount === 0) return;
+          let node = sel.anchorNode;
+          let listNode = null;
+          let pageEl = null;
+          for (const p of pageRefs.current) {
+            if (!p?.contains(node)) continue;
+            pageEl = p;
+            let n = node;
+            while (n && n !== p) {
+              if (n.nodeName === "UL" || n.nodeName === "OL") { listNode = n; break; }
+              n = n.parentNode;
+            }
+            break;
+          }
+          if (!listNode || !pageEl) return;
+          const parent = listNode.parentNode;
+          Array.from(listNode.children).forEach((li) => {
+            const div = document.createElement("div");
+            div.innerHTML = li.innerHTML || "<br>";
+            parent.insertBefore(div, listNode);
+          });
+          parent.removeChild(listNode);
+          pageEl.dispatchEvent(new Event("input", { bubbles: true }));
+        },
         commands: {
           setContent: stringToDOM,
           focus: () => pageRefs.current[0]?.focus(),
@@ -650,13 +732,27 @@ const CollaborativeEditor = forwardRef(
           overflowX:       "auto",
         }}
       >
-        {/* Placeholder CSS */}
+        {/* Placeholder + list CSS */}
         <style>{`
           [data-placeholder]:empty::before {
             content: attr(data-placeholder);
             color: #9ca3af;
             pointer-events: none;
             position: absolute;
+          }
+          [contenteditable] ul,
+          [contenteditable] ol {
+            padding-left: 2em;
+            margin: 0.25em 0;
+          }
+          [contenteditable] ul {
+            list-style-type: disc;
+          }
+          [contenteditable] ol {
+            list-style-type: decimal;
+          }
+          [contenteditable] li {
+            display: list-item;
           }
         `}</style>
 

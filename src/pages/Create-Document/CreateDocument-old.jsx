@@ -121,11 +121,11 @@ const CreateDocumentPage = () => {
 
   const applyList = (type) => {
     if (type === "bullet") {
-      tiptapEditor?.chain().focus().toggleBulletList().run();
+      editorRef.current?.toggleList("ul");
     } else if (type === "number") {
-      tiptapEditor?.chain().focus().toggleOrderedList().run();
+      editorRef.current?.toggleList("ol");
     } else {
-      tiptapEditor?.chain().focus().liftListItem("listItem").run();
+      editorRef.current?.removeList();
     }
   };
 
