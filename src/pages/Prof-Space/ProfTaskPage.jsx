@@ -231,9 +231,9 @@ const ProfTaskPage = () => {
       .filter((name) => name && name.trim()) || [];
 
   // Calculate student count for validation
-  const studentCount = currentSpace?.members
-    ?.filter((member) => member.role !== "creator")
-    ?.length || 0;
+  const studentCount =
+    currentSpace?.members?.filter((member) => member.role !== "creator")
+      ?.length || 0;
 
   // Check if group activity should be disabled
   const isGroupActivityDisabled = studentCount < 4;
@@ -1655,7 +1655,7 @@ const ProfTaskPage = () => {
                       {task.task_category === "group-activity" &&
                         !task.isLocal && (
                           <>
-                            <ButtonComponent
+                            {/* <ButtonComponent
                               onClick={(e) => {
                                 e.preventDefault();
                                 handleEditTask(task);
@@ -1671,7 +1671,7 @@ const ProfTaskPage = () => {
                               }}
                             >
                               Edit Activity
-                            </ButtonComponent>
+                            </ButtonComponent> */}
                             <ButtonComponent
                               onClick={(e) => {
                                 e.preventDefault();
@@ -2782,12 +2782,12 @@ const ProfTaskPage = () => {
                     <div
                       className={`bg-[#23272F] rounded-lg p-6 transition-all border ${
                         isGroupActivityDisabled
-                          ? 'cursor-not-allowed opacity-60 border-gray-700'
-                          : 'cursor-pointer hover:bg-[#2a2f38] border-gray-600 hover:border-blue-500'
+                          ? "cursor-not-allowed opacity-60 border-gray-700"
+                          : "cursor-pointer hover:bg-[#2a2f38] border-gray-600 hover:border-blue-500"
                       }`}
                       onClick={() => {
                         if (isGroupActivityDisabled) {
-                          toast.error("You need at least 4 students in your course space to create group activities.");
+                          // toast.error("You need at least 4 students in your course space to create group activities.");
                           return;
                         }
                         setSelectedTaskType("group-activity");

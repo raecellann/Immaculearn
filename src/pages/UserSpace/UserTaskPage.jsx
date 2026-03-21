@@ -1087,9 +1087,7 @@ const UserTaskPage = () => {
 
     const isQuizCategory = category === "quiz";
     const isIndividualActivityCategory = category === "individual-activity";
-    const displayedTasks = activeTasks.slice(0, 3);
-    // Show "See more" if there are more total tasks beyond what is displayed
-    const hasMoreTasks = categoryTasks.length > displayedTasks.length;
+    const displayedTasks = activeTasks;
 
     return (
       <div className="mb-8">
@@ -1662,34 +1660,6 @@ const UserTaskPage = () => {
           })}
         </div>
 
-        {/* See More Button for all categories when > 3 tasks */}
-        {hasMoreTasks && (
-          <div className="mt-4 text-right">
-            <ButtonComponent
-              onClick={() => {
-                // Navigate to ViewAllTaskPage with space parameters
-                const spaceId = space_uuid;
-                const spaceName = currentSpace?.space_name;
-                if (spaceId && spaceName) {
-                  navigate(
-                    `/tasks/all/${spaceId}/${encodeURIComponent(spaceName)}`,
-                  );
-                } else {
-                  console.warn("No space ID or name found for navigation");
-                }
-              }}
-              style={{
-                backgroundColor: currentColors.accent || "#2563eb",
-                borderColor: currentColors.accent || "#2563eb",
-                padding: "0.3em 0.8em",
-                fontSize: "0.75rem",
-                borderRadius: "6px",
-              }}
-            >
-              See more tasks
-            </ButtonComponent>
-          </div>
-        )}
       </div>
     );
   };

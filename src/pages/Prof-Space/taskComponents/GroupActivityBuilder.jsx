@@ -566,6 +566,24 @@ const GroupActivityBuilder = ({
       return;
     }
 
+    // Validate that groups are configured before publishing
+    if (status === "published" && !groupsConfigured) {
+      toast.error("You must create groups before publishing the activity.");
+      return;
+    }
+
+    // Validate that groups have members before publishing
+    if (status === "published" && groupsConfigured) {
+      const validGroups = groups.filter(
+        (g) => g.leader?.trim() || g.members?.some((m) => m?.trim())
+      );
+      
+      if (validGroups.length === 0) {
+        toast.error("You must create at least one group with members before publishing.");
+        return;
+      }
+    }
+
     // Transform groups data to match required format
     const groupsPayload =
       groupsConfigured && groups.length > 0
@@ -911,17 +929,27 @@ const GroupActivityBuilder = ({
 
         {/* GROUP MANAGEMENT SECTION */}
         {!allowSelfGrouping && (
-          <div className="mb-8">
+          <div className={`mb-8 ${!groupsConfigured ? 'border-2 border-red-300 rounded-lg' : ''}`}>
             <div
-              className="p-4 rounded-lg"
-              style={{ backgroundColor: currentColors.background }}
+              className={`p-4 rounded-lg ${!groupsConfigured ? 'bg-red-50' : ''}`}
+              style={{ 
+                backgroundColor: !groupsConfigured ? '#fef2f2' : currentColors.background 
+              }}
             >
               <h3
                 className="font-semibold mb-4"
                 style={{ color: currentColors.text }}
               >
-                Group Management
+                Group Management <span className="text-red-500">*</span>
               </h3>
+              
+              {!groupsConfigured && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+                  <p className="text-red-700 text-sm font-medium">
+                    Group configuration is required before publishing. Please create and configure groups below.
+                  </p>
+                </div>
+              )}
 
               {groupsConfigured ? (
                 <div className="space-y-3">
@@ -1114,19 +1142,28 @@ const GroupActivityBuilder = ({
         )}
 
         {/* ACTION BUTTONS */}
-        <div className="flex justify-end mt-8">
+        <div className="flex flex-col items-end mt-8">
           <button
-            className="px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-colors"
-            style={{
-              backgroundColor: "#2563eb",
-              color: "#ffffff",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = "#1d4ed8";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = "#2563eb";
-            }}
+            className={`px-4 sm:px-6 py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-colors ${
+              !activityTitle.trim() || 
+              !instruction.trim() || 
+              !score.trim() || 
+              !dueDate || 
+              !selectedLesson ||
+              !groupsConfigured || 
+              (groupsConfigured && groups.filter(g => g.leader?.trim() || g.members?.some(m => m?.trim())).length === 0)
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white`}
+            disabled={
+              !activityTitle.trim() || 
+              !instruction.trim() || 
+              !score.trim() || 
+              !dueDate || 
+              !selectedLesson ||
+              !groupsConfigured || 
+              (groupsConfigured && groups.filter(g => g.leader?.trim() || g.members?.some(m => m?.trim())).length === 0)
+            }
             onClick={() => handleSave("published")}
           >
             {isLoading
@@ -1135,6 +1172,18 @@ const GroupActivityBuilder = ({
                 ? "Update & Publish"
                 : "Publish Activity"}
           </button>
+          <div className="text-red-500 text-sm mt-2 text-right max-w-xs">
+            {(!activityTitle.trim() || !instruction.trim() || !score.trim() || !dueDate || !selectedLesson) && (
+              <p>Please complete all required fields before publishing.</p>
+            )}
+            {!groupsConfigured && activityTitle.trim() && instruction.trim() && score.trim() && dueDate && selectedLesson && (
+              <p>Please create groups before publishing.</p>
+            )}
+            {groupsConfigured && groups.filter(g => g.leader?.trim() || g.members?.some(m => m?.trim())).length === 0 && 
+             activityTitle.trim() && instruction.trim() && score.trim() && dueDate && selectedLesson && (
+              <p>Please add members to groups before publishing.</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1368,6 +1417,7 @@ const GroupActivityBuilder = ({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
+                                setActiveGroup(group.id); // Set group as active
                                 toggleGroupInputs(group.id);
                               }}
                               className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
