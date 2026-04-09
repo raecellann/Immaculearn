@@ -1,0 +1,263 @@
+
+export interface SpaceMemberProfile {
+    account_id: number;
+    birth_date: string;
+    course: string;
+    department: string;
+    email: string;
+    full_name: string;
+    gender: string;
+    profile_pic: string;
+    role: string;
+    year_level: string;
+}
+
+
+
+interface SpaceSettings {
+    space_cover: string;
+    max_member: number;
+}
+
+export interface SpaceCreateData {
+    space_name: string;
+    space_description?: string;
+    settings?: SpaceSettings;
+    space_cover?: string;
+}
+export interface CourseSpaceCreateData {
+    space_name: string;
+    space_description: string;
+    space_section: string;
+    space_cover: string;
+    space_day: string;
+    space_time_start: string;
+    space_time_end: string;
+    space_yr_lvl: number;
+    space_settings?: SpaceSettings;
+}
+
+export interface ApiResponse<T = any> {
+    success: boolean;
+    data?: T;
+    message?: string;
+}
+
+export interface SpacePendingInvitation {
+    account_id: number;
+    email: string;
+    fullname: string;
+    profile_pic: string;
+    added_at: string;
+}
+
+export interface PendingSpaceInvitation {
+  invitation_id: number;
+  space_id: number;
+  space_uuid: string;
+  space_name: string;
+  owner_id: number;
+  invited_at: string;
+  expires_at: string;
+  owner_profile_pic: string;
+  owner_email: string;
+  owner_fullname: string;
+}
+
+export interface Space {
+    space_id: string;
+    space_uuid: string;
+    space_name: string;
+    space_type: string;
+    members: SpaceMemberProfile[];
+    space_description: string | null;
+    settings?: SpaceSettings;
+    created_by: string; // User ID
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CourseSPace {
+    space_id: string;
+    space_uuid: string;
+    space_name: string;
+    space_description: string;
+    space_cover: string;
+    space_day: string;
+    space_time_start: string;
+    space_time_end: string;
+    space_yr_lvl: string;
+    space_course: string;
+    // space_type: string;
+    members: SpaceMemberProfile[];
+    // description: string | null;
+    settings?: SpaceSettings;
+    created_by: string; // User ID
+    created_at: string;
+    // updated_at: string;
+}
+
+
+
+
+
+
+
+export interface Task {
+    has_answered: boolean,
+    task_id: number;
+    lesson_id?: number;
+    space_id?: number;
+    task_title: string;
+    task_instruction?: string;
+    total_score?: number;
+    due_date: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface DraftTask {
+    id: number;
+    task_id?: number;
+    task_title: string;
+    task_instruction?: string;
+    task_scoring?: number;
+    task_due: string;
+    task_status: "Draft";
+    task_file?: string;
+    created_at: string;
+    updated_at: string;
+    space_id: string;
+}
+
+export interface TaskCreateData {
+    space_id: number;
+    title: string;
+    instruction?: string;
+    scoring?: number;
+    status: string;
+    due_date: string;
+    groupsData?: any[];
+}
+
+export interface TaskUpdateData {
+    task_id: number
+    title: string;
+    instruction?: string;
+    scoring?: number;
+    status: string;
+    due_date: string;
+    groupsData?: any[];
+}
+
+
+export interface Choice {
+  choice_id: number;
+  letter_identifier: string;
+  choice_answer: string;
+}
+
+export interface Question {
+  question_id: number;
+  task_id: number;
+  question: string;
+  question_type: string; // e.g., "mcq"
+  order_no: number;
+  choices: Choice[];
+}
+
+// The "data" array is just: Question[]
+export type QuestionnaireData = Question[];
+
+
+export type AnswerData = {
+  task_id: number;
+  answers: {
+    question_id: number;
+    choice_id: number;
+  }[];
+};
+
+
+export type StudentData = {
+    fullname: string,
+    prelim: number,
+    midterm: number,
+    prefinals: number,
+    finals: number,
+}
+
+
+
+export type UserCompletedTaskData = {
+  account_id: number;
+  student_fn: string;
+  student_ln: string;
+  full_name: string;
+  score: number;
+  total_items_score: number;
+  completed_at: string; // ISO date string
+};
+
+
+export type TaskChoice = {
+  choice_id: number;
+  letter_identifier: string;
+  choice_answer: string;
+  is_right_answer: number;
+};
+
+export type TaskAnswer = {
+  answer_id: number;
+  account_id: number;
+  choice_id: number | null;
+  answer_text: string | null;
+  answered_at: string;
+};
+
+export type RespondentsTaskData = {
+  question_id: number;
+  task_id: number;
+  question_type: string;
+  question: string;
+  identification_answer: string | null;
+  point: number;
+  position: number;
+  expected_count: number;
+  choices: TaskChoice[];
+  answers: TaskAnswer[];
+};
+
+
+
+export interface TaskAnswerChoice {
+    choice_id: number;
+    letter_identifier: string;
+    answer_text: string;
+    is_correct: boolean;
+}
+
+export interface TaskQuestion {
+    question_id: number;
+    position: number;
+    question: string;
+    type: "mcq" | "true-false" | "identification";
+    answers: TaskAnswerChoice[];
+}
+
+export interface StudentAnswerMap {
+    [question_id: string]: string; // key = question_id, value = choice_id as string OR text for identification
+}
+
+export interface TaskResultData {
+    questions: TaskQuestion[];
+    student_answers: StudentAnswerMap;
+    score: number;
+    total_items_score: number;
+}
+
+export interface TaskResultApiResponse {
+    success: boolean;
+    message?: string;
+    data: TaskResultData;
+}
